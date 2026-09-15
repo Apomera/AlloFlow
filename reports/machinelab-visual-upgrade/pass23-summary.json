@@ -1,0 +1,55 @@
+{
+  "enhancement": "Dedicated Drum camera preset",
+  "tests": {
+    "focusedPassed": 158,
+    "files": 4,
+    "added": 9
+  },
+  "browser": {
+    "light": {
+      "directory": "pass23-light",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest; drum preset is station-specific"
+      ]
+    },
+    "dark": {
+      "directory": "pass23-dark",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest; drum preset is station-specific"
+      ]
+    },
+    "contrast": {
+      "directory": "pass23-contrast",
+      "desktopScenarios": 18,
+      "mobileScenarios": 2,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard and held camera pose: windlass 390",
+        "Keyboard and held camera pose: windlass 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest; drum preset is station-specific"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "a7a9485d9c243afdcc4c8af0e0890b5129832a2a64b06e5590d837109833c6ef",
+  "published": false
+}

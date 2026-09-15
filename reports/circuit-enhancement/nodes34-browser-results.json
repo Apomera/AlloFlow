@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    "Per-terminal flow at a shared feeder, stable inspected node during branch selection, focus centering, explicit probe measurement and keyboard focus on close",
+    "Switch snapshots reverse resistor flow correctly; open contacts have no arrow; energy and node-voltage overlays remain compatible",
+    "Voltage-sensing inputs are highlighted separately and excluded from branch current totals",
+    "Known currents in floating circuits, unknown ideal-source sharing, and failed-solution suppression",
+    "Desktop/phone accessibility and focus containment, flat/camera/emphasis compatibility, saved inspection state and current-conservation explanation"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

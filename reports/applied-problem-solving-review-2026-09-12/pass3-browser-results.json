@@ -1,0 +1,69 @@
+{
+  "layouts": [
+    {
+      "viewport": 1280,
+      "width": 1280,
+      "firstFieldTop": 841.25,
+      "visibleFields": 1
+    },
+    {
+      "viewport": 390,
+      "width": 390,
+      "firstFieldTop": 1051.1875,
+      "visibleFields": 1
+    },
+    {
+      "viewport": 320,
+      "width": 320,
+      "firstFieldTop": 1217.6875,
+      "visibleFields": 1
+    }
+  ],
+  "checks": [
+    {
+      "name": "Initial 1280",
+      "issues": []
+    },
+    {
+      "name": "Initial 390",
+      "issues": []
+    },
+    {
+      "name": "Initial 320",
+      "issues": []
+    },
+    {
+      "name": "Quick evidence connection",
+      "issues": []
+    },
+    {
+      "name": "Complete linked-work review",
+      "issues": []
+    },
+    {
+      "name": "Linked-work coaching, review, edit focus, and template isolation",
+      "passed": true
+    },
+    {
+      "name": "Recovery banner 390",
+      "issues": []
+    },
+    {
+      "name": "Browser recovery preserves custom questions, evidence and focus",
+      "passed": true
+    },
+    {
+      "name": "Teacher source and task quality review 320",
+      "issues": []
+    },
+    {
+      "name": "Source status, teacher quality review, stale marking and preview isolation",
+      "passed": true
+    },
+    {
+      "name": "Offline teacher quality questions",
+      "issues": []
+    }
+  ],
+  "errors": []
+}

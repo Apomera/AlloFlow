@@ -367,7 +367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
   function copyMeetingPrepText(text) {
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        return Promise.resolve(navigator.clipboard.writeText(text))
+        return Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text))
           .then(function() { return true; })
           .catch(function() { return fallbackCopyMeetingPrep(text); });
       }

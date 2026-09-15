@@ -1,0 +1,22 @@
+{
+  "archived": [
+    "combined-build-checks-before-static-crop-fix.json",
+    "calibration-final-before-static-crop-fix.json",
+    "calibration-final-summary-before-static-crop-fix.json",
+    "remediation-unit-final-before-static-crop-fix.json",
+    "remediation-unit-final-summary-before-static-crop-fix.json",
+    "calibration-selection-checks-before-static-crop-fix.json",
+    "calibration-workflow-tests-before-static-crop-fix.json"
+  ],
+  "reason": "Preserve the green 547-test remediation and 112-test calibration evidence before owned static crop cleanup.",
+  "preservedContinuationEvidence": [
+    {
+      "name": "continuation-replayed-candidate.html",
+      "sha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5"
+    },
+    {
+      "name": "continuation-assembly-replay.json",
+      "sha256": "739a038b3bd136325a114700d3c1328200f005ed0fcf7fc8e959750faab026ba"
+    }
+  ]
+}

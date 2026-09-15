@@ -1,0 +1,160 @@
+  // Curated recipes use the same bounded, editable transaction as saved stamps.
+  function architecturalStarters() {
+    var kits=[];
+    function kit(id,name,category,description,build){
+      var cells=Object.create(null);
+      function put(x,y,z,type,shape,rotation){cells[x+','+y+','+z]={x:x,y:y,z:z,type:type||'stone',shape:shape||'cube',rotation:rotation||0};}
+      build(put);kits.push({id:'starter_'+id,name:name,category:category,description:description,blocks:Object.keys(cells).map(function(k){return cells[k];}).sort(compareBlocks)});
+    }
+    kit('arch','Garden arch','Architecture','A stone gateway with a timber lintel and slab cap.',function(p){for(var y=1;y<=3;y++){p(0,y,0);p(4,y,0);}for(var x=0;x<=4;x++){p(x,4,0,'wood');p(x,5,0,'stone','halfB');}});
+    kit('stairs','Timber stairs','Architecture','Four supported steps, ready for a terrace or doorway.',function(p){for(var x=0;x<4;x++)for(var z=0;z<3;z++)for(var y=1;y<=x+1;y++)p(x,y,z,'wood');});
+    kit('window','Framed window','Architecture','A brick surround with a glass center and projecting sill.',function(p){for(var x=0;x<5;x++)for(var y=1;y<=5;y++)p(x,y,0,x===0||x===4||y===1||y===5?'brick':'glass');for(var x=0;x<5;x++)p(x,1,1,'stone','halfB');});
+    kit('roof','Gabled roof','Architecture','A pitched roof section with rotated wedges and a solid lower layer.',function(p){for(var z=0;z<4;z++)for(var x=0;x<6;x++){var height=Math.min(x,5-x);for(var y=1;y<=height;y++)p(x,y,z,'wood');p(x,height+1,z,'wood','halfA',x<3?0:2);}});
+    kit('bridge','Footbridge','Landscape','A seven-block span with piers, a solid deck, and railings.',function(p){for(var x=0;x<7;x++)for(var z=0;z<3;z++){p(x,3,z,'wood');if(x===0||x===6){p(x,1,z);p(x,2,z);}if(z===0||z===2)p(x,4,z,'wood');}});
+    kit('bench','Garden bench','Landscape','Stone legs, a timber seat, and a comfortable back.',function(p){for(var x=0;x<5;x++){p(x,2,0,'wood');p(x,2,1,'wood');p(x,3,0,'wood');if(x===0||x===4){p(x,1,0);p(x,1,1);}}});
+    kit('pavilion','Market pavilion','Buildings','An open shelter with four columns, a raised floor, and a slab roof.',function(p){for(var x=0;x<7;x++)for(var z=0;z<5;z++){p(x,1,z,'stone');p(x,6,z,'wood','halfB');if((x===0||x===6)&&(z===0||z===4))for(var y=2;y<=5;y++)p(x,y,z,'wood');}});
+    kit('tower','Lookout tower','Buildings','A hollow stone lookout with a doorway and crenellated top.',function(p){for(var x=0;x<5;x++)for(var z=0;z<5;z++){p(x,1,z);if(x===0||x===4||z===0||z===4){for(var y=2;y<=6;y++)if(!(z===4&&x===2&&y<5))p(x,y,z);if((x+z)%2===0)p(x,7,z);}}});
+    return kits;
+  }
+
+  var WORLD_SHELF_KEY='alloflow.geometry-world.projects.v1', WORLD_SHELF_BYTES=1536*1024;
+  function readWorldShelf(storage) {
+    try {
+      var raw=(storage||window.localStorage).getItem(WORLD_SHELF_KEY);
+      if(raw==null)return {ok:true,projects:[]};
+      if(raw.length>WORLD_SHELF_BYTES || editableWorldByteLength(raw)>WORLD_SHELF_BYTES)throw Error('Project storage exceeds its safe limit.');
+      var parsed=JSON.parse(raw),seen=Object.create(null),total=0;
+      if(!parsed || parsed.schema!=='alloflow-geometry-projects/1' || !Array.isArray(parsed.projects) || parsed.projects.length>8)throw Error('The project shelf could not be read.');
+      var projects=parsed.projects.map(function(p){
+        if(!p || typeof p.id!=='string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(p.id) || seen[p.id] || typeof p.version!=='string' || p.version.length>100 || !Number.isFinite(p.savedAt) || !p.world || !Array.isArray(p.world.blocks))throw Error('A saved project is invalid.');
+        seen[p.id]=true;
+        var checked=p.world.blocks.length?normalizeEditableWorld(p.world):{ok:p.world.schema===EDITABLE_WORLD_SCHEMA,value:{schema:EDITABLE_WORLD_SCHEMA,title:editableTitle(p.world.title),coordinateSystem:'x-right,y-up,z-depth',blocks:[]}};
+        if(!checked.ok)throw Error(checked.error || 'A saved project is invalid.');
+        total+=checked.value.blocks.length;
+        return {id:p.id,version:p.version,savedAt:p.savedAt,world:checked.value,garden:p.garden!==false};
+      });
+      if(total>10000)throw Error('The project shelf contains too many blocks.');
+      return {ok:true,projects:projects.sort(function(a,b){return b.savedAt-a.savedAt;})};
+    }catch(error){return {ok:false,projects:[],reason:(error.message||'Browser storage is unavailable.')+' Download editable JSON to keep your work.'};}
+  }
+  function writeWorldShelf(projects,storage) {
+    try {
+      var raw=JSON.stringify({schema:'alloflow-geometry-projects/1',projects:projects}),checked=readWorldShelf({getItem:function(){return raw;}});
+      if(!checked.ok)return checked;
+      (storage||window.localStorage).setItem(WORLD_SHELF_KEY,raw);return checked;
+    }catch(_){return {ok:false,reason:'Autosave could not write to this browser. Download editable JSON to keep your work.'};}
+  }
+  function saveWorldDraft(engine,title,storage) {
+    if(!engine || engine._destroyed || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Local drafts are available in Free Build.'};
+    var shelf=readWorldShelf(storage);if(!shelf.ok)return shelf;
+    var world=editableWorld(engine),id=engine._workshopProjectId,previous=shelf.projects.find(function(p){return p.id===id;});
+    if(previous && previous.version!==engine._workshopProjectVersion)return {ok:false,reason:'This project changed in another tab. Download your current build, then reopen the saved project.'};
+    if(id && !previous)return {ok:false,reason:'This project was removed in another tab. Download your current build before starting another project.'};
+    if(!id && !world.blocks.length)return {ok:true,projects:shelf.projects,empty:true};
+    world.title=editableTitle(title || (previous && previous.world.title) || 'Untitled build');
+    if(world.blocks.length){var checked=normalizeEditableWorld(world);if(!checked.ok)return {ok:false,reason:checked.error+' Download your build before leaving.'};world=checked.value;}
+    var signature=JSON.stringify([world,engine._currentLesson.builderGarden!==false]);
+    if(previous && signature===engine._workshopSavedSignature)return {ok:true,projects:shelf.projects,project:previous,unchanged:true};
+    if(!id && shelf.projects.length>=8)return {ok:false,reason:'My Worlds holds 8 projects. Download and remove a saved project to make room. Your current build is unchanged.'};
+    var now=Date.now(),project={id:id||'world_'+now.toString(36)+'_'+Math.random().toString(36).slice(2,9),savedAt:now,version:now.toString(36)+'_'+Math.random().toString(36).slice(2,10),world:world,garden:engine._currentLesson.builderGarden!==false};
+    var result=writeWorldShelf(shelf.projects.filter(function(p){return p.id!==project.id;}).concat([project]),storage);
+    if(result.ok){engine._workshopProjectId=project.id;engine._workshopProjectVersion=project.version;engine._workshopSavedSignature=signature;result.project=project;}
+    return result;
+  }
+  function removeWorldProject(id,storage) {
+    var shelf=readWorldShelf(storage);return shelf.ok?writeWorldShelf(shelf.projects.filter(function(p){return p.id!==id;}),storage):shelf;
+  }
+  function installWorldAutosave(engine,onSave,storage) {
+    var original=engine.loadLesson;
+    function save(){if(engine._currentLesson && engine._currentLesson.sandbox){var r=saveWorldDraft(engine,null,storage);if(onSave)onSave(r);return r;}return {ok:true};}
+    function load(){save();engine._workshopProjectId=null;engine._workshopProjectVersion=null;engine._workshopSavedSignature=null;return original.apply(this,arguments);}
+    engine.loadLesson=load;
+    var timer=setInterval(save,2500);
+    function hidden(){if(document.visibilityState==='hidden')save();}
+    window.addEventListener('pagehide',save);document.addEventListener('visibilitychange',hidden);
+    return function(){save();clearInterval(timer);window.removeEventListener('pagehide',save);document.removeEventListener('visibilitychange',hidden);if(engine.loadLesson===load)engine.loadLesson=original;};
+  }
+
+  function updateWorkshopSelection(engine,cells,operation) {
+    if(!engine || engine._destroyed || engine._showcase || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Open Free Build to edit a selection.'};
+    var selected=Object.create(null);
+    if(operation==='add' || operation==='remove')(engine._builderSelection && engine._builderSelection.blocks || []).forEach(function(p){if(engine.blocks[keyFor(p)] && isStudentBlock(engine.blocks[keyFor(p)].userData))selected[keyFor(p)]=p;});
+    (cells||[]).forEach(function(p){var mesh=p && engine.blocks[keyFor(p)];if(!mesh || !isStudentBlock(mesh.userData))return;if(operation==='remove')delete selected[keyFor(p)];else selected[keyFor(p)]={x:p.x,y:p.y,z:p.z};});
+    var blocks=Object.keys(selected).map(function(k){return selected[k];});
+    if(blocks.length>MAX_BLOCKS)return {ok:false,reason:'Select at most '+MAX_BLOCKS+' blocks.'};
+    engine._builderSelection=blocks.length?{blocks:blocks}:null;
+    return {ok:true,count:blocks.length};
+  }
+  function workshopScreenSelection(engine,rect,viewport) {
+    var THREE=window.THREE;if(!THREE || !engine || !engine.camera || !viewport.width || !viewport.height)return [];
+    engine.camera.updateMatrixWorld(true);
+    return Object.keys(engine.blocks||{}).filter(function(k){var m=engine.blocks[k];if(!isStudentBlock(m.userData) || m.visible===false)return false;var p=m.userData.gridPos,q=new THREE.Vector3(p.x+.5,p.y+.5,p.z+.5).project(engine.camera),x=viewport.left+(q.x+1)*viewport.width/2,y=viewport.top+(1-q.y)*viewport.height/2;return q.z>=-1 && q.z<=1 && x>=rect.left && x<=rect.right && y>=rect.top && y<=rect.bottom;}).map(function(k){var p=engine.blocks[k].userData.gridPos;return {x:p.x,y:p.y,z:p.z};});
+  }
+  function installWorkshopPointer(engine,canvas,mode,operation,onSelection,onExit) {
+    var THREE=window.THREE;if(!THREE || !canvas || !engine.camera)return function(){};
+    var start=null,marquee=null,oldTouch=canvas.style.touchAction,oldCursor=canvas.style.cursor;
+    var target=new THREE.Vector3(0,2,0),records=selectionEditSnapshot(engine);
+    if(records.ok){var box=new THREE.Box3();records.blocks.forEach(function(b){box.expandByPoint(new THREE.Vector3(b.x+.5,b.y+.5,b.z+.5));});box.getCenter(target);}
+    engine.releaseInput && engine.releaseInput();try{if(document.pointerLockElement)document.exitPointerLock();}catch(_){}
+    engine._entryAnim=null;engine._viewPresetAnim=null;engine.flyMode=true;engine.velocity && engine.velocity.set(0,0,0);
+    canvas.style.touchAction='none';canvas.style.cursor=mode==='select'?'crosshair':'grab';
+    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
+    function stop(e){e.preventDefault();e.stopImmediatePropagation();}
+    function clear(){if(marquee){marquee.remove();marquee=null;}if(start && canvas.hasPointerCapture && canvas.hasPointerCapture(start.id))canvas.releasePointerCapture(start.id);start=null;}
+    function down(e){if(!allowed() || (e.button!==0 && e.button!==2))return;stop(e);start={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,id:e.pointerId,pan:e.button===2||e.shiftKey};canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);if(mode==='select'){marquee=document.createElement('div');marquee.className='gwe-selection-marquee';document.body.appendChild(marquee);}}
+    function look(){engine.camera.lookAt(target);engine.euler && engine.euler.setFromQuaternion(engine.camera.quaternion);engine.camera.updateMatrixWorld(true);}
+    function move(e){if(!start || start.id!==e.pointerId)return;stop(e);if(!allowed()){clear();return;}var dx=e.clientX-start.lastX,dy=e.clientY-start.lastY;start.lastX=e.clientX;start.lastY=e.clientY;
+      if(mode==='select'){Object.assign(marquee.style,{left:Math.min(start.x,e.clientX)+'px',top:Math.min(start.y,e.clientY)+'px',width:Math.abs(e.clientX-start.x)+'px',height:Math.abs(e.clientY-start.y)+'px'});}
+      else if(start.pan){var distance=engine.camera.position.distanceTo(target),scale=distance/Math.max(1,canvas.getBoundingClientRect().height),shift=new THREE.Vector3(-dx*scale,dy*scale,0).applyQuaternion(engine.camera.quaternion);target.add(shift);engine.camera.position.add(shift);look();}
+      else{var s=new THREE.Spherical().setFromVector3(engine.camera.position.clone().sub(target));s.theta-=dx*.008;s.phi=Math.max(.12,Math.min(Math.PI*.49,s.phi-dy*.008));engine.camera.position.copy(target).add(new THREE.Vector3().setFromSpherical(s));look();}
+    }
+    function up(e){if(!start || start.id!==e.pointerId)return;stop(e);if(mode==='select' && allowed()){
+      var cells=[],v=canvas.getBoundingClientRect();
+      if(Math.hypot(e.clientX-start.x,e.clientY-start.y)<6){var ray=new THREE.Raycaster();ray.far=160;engine.camera.updateMatrixWorld(true);ray.setFromCamera(new THREE.Vector2((e.clientX-v.left)/v.width*2-1,1-(e.clientY-v.top)/v.height*2),engine.camera);var hits=ray.intersectObjects(engine.getRaycastTargets?engine.getRaycastTargets():Object.values(engine.blocks));if(hits.length && isStudentBlock(hits[0].object.userData))cells=[hits[0].object.userData.gridPos];}
+      else cells=workshopScreenSelection(engine,{left:Math.min(start.x,e.clientX),right:Math.max(start.x,e.clientX),top:Math.min(start.y,e.clientY),bottom:Math.max(start.y,e.clientY)},v);
+      onSelection(updateWorkshopSelection(engine,cells,e.altKey?'remove':e.shiftKey?'add':operation));
+    }clear();}
+    function wheel(e){if(mode!=='orbit' || !allowed())return;stop(e);var offset=engine.camera.position.clone().sub(target),length=offset.length();offset.setLength(Math.max(2,Math.min(140,length*Math.exp(Math.max(-100,Math.min(100,e.deltaY))*.002))));engine.camera.position.copy(target).add(offset);look();}
+    function key(e){if(e.code==='Escape'){clear();onExit();}}
+    function block(e){if(allowed())stop(e);}
+    var handlers={pointerdown:down,pointermove:move,pointerup:up,pointercancel:clear,mousedown:block,click:block,dblclick:block,contextmenu:block,wheel:wheel,touchstart:block,touchmove:block,touchend:block};
+    Object.keys(handlers).forEach(function(k){canvas.addEventListener(k,handlers[k],{capture:true,passive:false});});window.addEventListener('keydown',key,true);
+    return function(){clear();Object.keys(handlers).forEach(function(k){canvas.removeEventListener(k,handlers[k],true);});window.removeEventListener('keydown',key,true);canvas.style.touchAction=oldTouch;canvas.style.cursor=oldCursor;};
+  }
+
+  function previewPrintPreparation(engine,kind) {
+    var snapshot=selectionEditSnapshot(engine);if(!snapshot.ok)return snapshot;
+    if(!engine._currentLesson || !engine._currentLesson.sandbox || engine._showcase || typeof engine.previewBuildBatch!=='function')return {ok:false,reason:'Open Free Build to prepare a print.'};
+    var min={x:Infinity,y:Infinity,z:Infinity},max={x:-Infinity,y:-Infinity,z:-Infinity};
+    snapshot.blocks.forEach(function(b){['x','y','z'].forEach(function(a){min[a]=Math.min(min[a],b[a]);max[a]=Math.max(max[a],b[a]);});});
+    if(kind==='lower'){if(min.y===1)return {ok:false,reason:'The selection already reaches the ground layer.'};return previewSelectionEdit(engine,'move',{x:0,y:1-min.y,z:0});}
+    if(kind!=='base')return {ok:false,reason:'Choose a print preparation action.'};
+    var width=max.x-min.x+3,depth=max.z-min.z+3;
+    if(width*depth+snapshot.blocks.length>MAX_BLOCKS)return {ok:false,reason:'The padded base would exceed the build limit. Select a smaller creation.'};
+    // Lift the complete selection one grid layer and fill a solid plate below it.
+    // Supports reach the lowest block of every occupied X/Z column, so raised
+    // components make face contact even when their first block is a wedge.
+    var additions=snapshot.blocks.map(function(b){return Object.assign({},b,{y:b.y+2-min.y});}),columns=Object.create(null);
+    additions.forEach(function(b){var k=b.x+','+b.z;columns[k]=Math.min(columns[k]||Infinity,b.y);});
+    for(var x=min.x-1;x<=max.x+1;x++)for(var z=min.z-1;z<=max.z+1;z++){
+      var top=columns[x+','+z]||2;
+      for(var y=1;y<top;y++){if(additions.length>=MAX_BLOCKS)return {ok:false,reason:'The base and support columns exceed the build limit. Select a smaller or lower creation.'};additions.push({x:x,y:y,z:z,type:'stone',shape:'cube',rotation:0});}
+    }
+    var removals=snapshot.blocks.map(function(b){return {x:b.x,y:b.y,z:b.z};}),label='Add connecting print base';
+    return Object.assign({},engine.previewBuildBatch(additions,removals,{label:label}),{engine:engine,lesson:engine._currentLesson,sourceSignature:snapshot.signature,additions:additions,removals:removals,label:label,beforeSelection:copyLocal(engine._builderSelection),afterSelection:{blocks:additions.map(function(b){return {x:b.x,y:b.y,z:b.z};})}});
+  }
+
+  function activityMilestones(guide,journal,npcs) {
+    if(!guide)return [];
+    return guide.activities.map(function(a,i){var npc=(npcs||[]).find(function(n){return n.data && n.data.name===a.npcName;}),p=a.position || (npc && npc.data.position),e=(journal.evidence||{})[a.id] || {},reviewed=!!(journal.reviewed||{})[a.id],met=e.check && e.check.status==='met';return {id:a.id,title:a.title,position:p,index:i,lit:reviewed||!!met,basis:met?'Numeric goal checked':reviewed?'Self-review recorded':'Ready to explore'};}).filter(function(a){return a.position && a.position.every(Number.isFinite);});
+  }
+  function createActivityMilestones(engine,milestones) {
+    var THREE=window.THREE;if(!THREE || !engine || !engine.scene || !milestones.length)return null;
+    var group=new THREE.Group();group.name='gw-activity-milestones';group.userData.gwDecorative=true;
+    var designs=[{geometry:new THREE.CylinderGeometry(.09,.13,1.8,6),color:0x70654f,y:.9},{geometry:new THREE.BoxGeometry(.7,.42,.06),color:0xb7c6af,y:1.65},{geometry:new THREE.OctahedronGeometry(.25,0),color:0xf2c96a,y:2.15}];
+    designs.forEach(function(d,index){var mat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.8}),mesh=new THREE.InstancedMesh(d.geometry,mat,milestones.length),matrix=new THREE.Matrix4(),q=new THREE.Quaternion(),scale=new THREE.Vector3(1,1,1);
+      milestones.forEach(function(m,i){var ground=engine._currentLesson.ground||{},p=m.position,base=Number.isFinite(ground.y)?ground.y+1:p[1];matrix.compose(new THREE.Vector3(p[0]+1.8,base+d.y,p[2]+1.8),q,scale);mesh.setMatrixAt(i,matrix);mesh.setColorAt(i,new THREE.Color(index===0?d.color:m.lit?(index===1?0x39775b:0xffce64):index===1?0x91a599:0x73877d));});mesh.userData.gwDecorative=true;group.add(mesh);});
+    engine.scene.add(group);return group;
+  }
+  function disposeActivityMilestones(group){if(!group)return;if(group.parent)group.parent.remove(group);group.children.forEach(function(m){m.geometry.dispose();m.material.dispose();});}
+

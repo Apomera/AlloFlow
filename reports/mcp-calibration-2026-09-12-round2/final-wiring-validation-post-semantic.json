@@ -1,0 +1,18 @@
+{
+  "yamlParsed": [
+    ".github/workflows/remote-mcp-verify.yml",
+    ".github/workflows/mcpb-release.yml"
+  ],
+  "parser": "PyYAML",
+  "calibrationSelectionExactlyOnce": [
+    "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+    "tests/generated_baseline_language.test.js",
+    "tests/doc_pipeline_title_attributes.test.js",
+    "tests/semantic_list_marker_coverage.test.js",
+    "tests/mcp_content_coverage.test.js",
+    "tests/mcp_narration_languages.test.js"
+  ],
+  "remoteWorkflowOccurrences": 3,
+  "releaseWorkflowOccurrences": 2,
+  "maintainedWorkflow": "verify.yml has no path filter; reads remediation_validation.json"
+}

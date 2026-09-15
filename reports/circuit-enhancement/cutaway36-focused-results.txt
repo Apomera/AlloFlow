@@ -1,0 +1,296 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_sample_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > persists only identity and an exact cursor; resolves against a fresh identical calculation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > retains distinct before/after samples at the same timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > ignores selection, probes, view, camera, notes and current cursor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a value edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a terminals edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a schedule edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a duration edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a initial edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"version":2}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":-1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":100}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·········stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":0.00300000001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":"during"}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > does not hold a copied frame, a DC solution, a failed run, or failed stale data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares null minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus null without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares undefined minus 1 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares NaN minus 2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares Infinity minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e+308 minus -1e+308 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -2 minus -5 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -5 minus -2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e-14 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares the same selected component and probe orientation in both frames without mutating them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > keeps internal floating voltage differences known while node-to-reference voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > suppresses nonfinite, missing and failed readings even when stale values exist
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > renders side-aware comparison, signed bars and markers in both scopes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···················stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > hides stale comparison values and markers after edits and in DC mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > clips held markers to the visible full-scope window but retains the board overview
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_storage_cutaway.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > computes equal and opposite plate charges at 4 V from microfarads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > computes equal and opposite plate charges at -4 V from microfarads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > computes equal and opposite plate charges at 0 V from microfarads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > shows a charged capacitor field even with zero DC current and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > follows inductor current 0.02 independently of voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > follows inductor current -0.02 independently of voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > follows inductor current 0 independently of voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > shows a switch changing current slope without changing inductor current or energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > uses known floating terminal voltage without inventing an absolute reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > keeps current unknown while preserving known capacitor charge
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > keeps unknown field state distinct from zero for null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > keeps unknown field state distinct from zero for undefined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > keeps unknown field state distinct from zero for NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > keeps unknown field state distinct from zero for Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > suppresses stale readings after a failed calculation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > rejects unsupported or absent components without adding an imagined storage model
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > does not change the solved state or normalize an unknown into zero
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats 0 coulombs as 0 C
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats 1e-12 coulombs as 1 pC
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats -2e-9 coulombs as -2 nC
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats 0.000003 coulombs as 3 µC
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats -0.004 coulombs as -4 mC
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats 2 coulombs as 2 C
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats null coulombs as Undetermined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats NaN coulombs as Undetermined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > storage cutaway readings > formats Infinity coulombs as Undetermined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > component cutaway presentation > adds optional dimensional plates, charge signs and an explicit geometry limit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > component cutaway presentation > reverses field direction and plate signs for negative capacitor voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > component cutaway presentation > keeps a zero-field and hidden-field picture distinct
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····························stdout | tests/circuit_network_storage_cutaway.test.js > component cutaway presentation > compares held and cursor inductor fields at exact switch sides
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_storage_cutaway.test.js > component cutaway presentation > hides failed or invalid held field data and offers an empty-state explanation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_energy_visuals.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > uses one whole-run reference for both storage types without modifying frames
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > retains the first calculated peak and its exact switch side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > keeps before and after when a known maximum first occurs after a jump
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power 1 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power -1 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power 0 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power null independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > shows zero energy as an empty gauge, not a full or unknown gauge
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > does not turn missing values into zero or infer an unknown initial energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy NaN from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy Infinity from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy -1 from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy undefined from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > does not add storage to resistors or amplify an empty reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > uses the actual solver joules for negative capacitor voltage and inductor current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > preserves inductor energy across a real flyback event while power reverses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > renders the optional layer, joule scale, peak navigation and energy relationship
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·················stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > suppresses failed-run gauges and keeps an actionable explanation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > explains a circuit without storage elements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all seventeen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  4 passed (4)
+      Tests  89 passed (89)
+   Start at  13:41:04
+   Duration  6.73s (transform 50ms, setup 89ms, import 176ms, tests 3.09s, environment 2.85s)
+

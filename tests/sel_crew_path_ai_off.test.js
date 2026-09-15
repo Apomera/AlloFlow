@@ -1,4 +1,4 @@
-// SEL Hub · the thirteen tools the Crew Launch packs link must work with student AI off.
+// SEL Hub · the eighteen tools the Crew Launch packs link must work with student AI off.
 //
 // PPS students have no Gemini. The Crew Launch packs (allopacks/crew_*) link
 // thirteen Hub tools; a King student reaches each one on the browser shell with
@@ -124,8 +124,8 @@ function sweep(id) {
 describe.skipIf(!R)('SEL Hub · Crew path with student AI off', () => {
   beforeAll(setup);
 
-  it('the packs link thirteen registered tools', () => {
-    expect(LINKED.length).toBe(13);
+  it('the packs link eighteen registered tools', () => {
+    expect(LINKED.length).toBe(18);
     for (const id of LINKED) expect(window.SelHub.isRegistered(id), id).toBe(true);
   });
 

@@ -1,0 +1,6 @@
+const fs=require('fs'),crypto=require('crypto');
+const mods=['view_simplified_module.js','pure_helpers_module.js','content_engine_module.js'];const result={};
+for(const f of mods){const source=fs.readFileSync(f);if(!source.equals(fs.readFileSync('desktop/web-app/public/'+f)))throw Error('Mirror drift: '+f);const hash=crypto.createHash('sha256').update(source).digest('hex').slice(0,8);for(const host of ['AlloFlowANTI.txt','desktop/web-app/src/AlloFlowANTI.txt','desktop/web-app/src/App.jsx']){const text=fs.readFileSync(host,'utf8');if(!text.includes(f+'?v='+hash) && !(host.startsWith('desktop/') && text.includes("'./"+f+"'")))throw Error('Stale module reference: '+host+' '+f);}result[f]={publicMirrorMatches:true,hash,hostReferencesValid:true};}
+const source=fs.readFileSync('view_simplified_source.jsx','utf8');const catalog=JSON.parse(fs.readFileSync('ui_strings.js','utf8')),mirror=JSON.parse(fs.readFileSync('desktop/web-app/public/ui_strings.js','utf8'));
+for(const match of source.matchAll(/readerText\('simplified\.([^']+)',/g)){if(!catalog.simplified[match[1]]||catalog.simplified[match[1]]!==mirror.simplified[match[1]])throw Error('Reader label mismatch: '+match[1]);}
+fs.writeFileSync('reports/adapted-text-review-2026-09-12/build-verification.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));

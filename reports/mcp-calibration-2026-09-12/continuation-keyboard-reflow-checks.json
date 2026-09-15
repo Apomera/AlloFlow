@@ -1,0 +1,44 @@
+{
+  "scope": "Targeted stored-response replay; keyboard/reflow and content-preservation checks, not a new live accessibility verdict.",
+  "verifiedAt": "2026-09-12T22:43:16.665Z",
+  "preservation": {
+    "visibleTextIdentical": true,
+    "linkDestinationsAndTextIdentical": true,
+    "imageSourcesAndAltIdentical": true
+  },
+  "checks": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "fileInputFocused": true,
+      "focusVisible": true,
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineWidth": "2px",
+      "outlineOffset": "2px",
+      "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+      "labelBackground": "rgb(71, 85, 105)"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "fileInputFocused": true,
+      "focusVisible": true,
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineWidth": "2px",
+      "outlineOffset": "2px",
+      "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+      "labelBackground": "rgb(71, 85, 105)"
+    },
+    {
+      "width": 1000,
+      "scrollWidth": 1000,
+      "fileInputFocused": true,
+      "focusVisible": true,
+      "outlineColor": "rgb(255, 255, 255)",
+      "outlineWidth": "2px",
+      "outlineOffset": "2px",
+      "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+      "labelBackground": "rgb(71, 85, 105)"
+    }
+  ]
+}

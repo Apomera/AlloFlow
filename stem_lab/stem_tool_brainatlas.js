@@ -581,7 +581,7 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
 
   // ── Audio (auto-injected) ──
   var _brainAC = null;
-  function getBrainAC() { if (!_brainAC) { try { _brainAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_brainAC && _brainAC.state === "suspended") { try { _brainAC.resume(); } catch(e) {} } return _brainAC; }
+  function getBrainAC() { if (!_brainAC) { try { _brainAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_brainAC && _brainAC.state === "suspended") { try { _brainAC.resume(); } catch(e) {} } return _brainAC; }
   function brainTone(f,d,tp,v) { var ac = getBrainAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxBrainClick() { brainTone(600, 0.03, "sine", 0.04); }
   function sfxBrainSuccess() { brainTone(523, 0.08, "sine", 0.07); setTimeout(function() { brainTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { brainTone(784, 0.1, "sine", 0.08); }, 140); }
@@ -7821,7 +7821,7 @@ var d = labToolData.brainAtlas || {};
                 if (mesh.geometry && mesh.geometry.dispose) mesh.geometry.dispose();
                 if (mesh.material && mesh.material.dispose) mesh.material.dispose();
               });
-              if (state.renderer) state.renderer.dispose();
+              if (state.renderer) state.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(state.renderer);
               canvas._brain3DState = null;
               if (window.__alloBrainAtlas3DCanvas === canvas) window.__alloBrainAtlas3DCanvas = null;
             };

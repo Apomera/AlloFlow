@@ -1,0 +1,968 @@
+{
+  "schema": 1,
+  "kind": "source-derived-content-token-investigation",
+  "createdAt": "2026-09-13T02:38:41.441Z",
+  "inputs": {
+    "source": {
+      "path": "mcp-testing/corpus/born-digital/ohchr-udhr-spanish.pdf",
+      "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+      "bytes": 186317,
+      "pages": 9,
+      "catalogLang": null,
+      "expectedDocumentLanguage": "es",
+      "languageBasis": "Directly extracted Spanish title/article prose, plus pinned development-pilot source language es."
+    },
+    "oracle": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-calibration-2026-09-12-round2\\spanish-source-oracle.json",
+      "sha256": "b1d85fe12f208eb234e69f9cc5702938593d21ca4cad3bbaea5c37bfb8c7ccd5"
+    },
+    "html": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-accessible.html",
+      "sha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0"
+    },
+    "report": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-remediation-report.json",
+      "sha256": "7817e5e9971162422c344bc09bb82a7abe36dd7c5689fff8c002508df03fe453"
+    },
+    "algorithm": {
+      "path": "desktop/mcp/remediation_narration_plan.cjs",
+      "sha256": "0c29f25a0d687902fa5e713cd91ff09134f231db1f1fb7ee47d7d55650ff1760"
+    },
+    "productionExtraction": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-extract-result.json",
+      "sha256": "8b45ca972a4b17e15dae0a2b6270187ca6dd4be12e97a191a76bd7c7ba43d92d",
+      "sourceTextSha256": "ba69fcf03d1eb804e49299e17d044ce3ac0502d64f9639d1421c3a13331a0bbc",
+      "characters": 12067
+    }
+  },
+  "originalCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 1959,
+    "outputTokens": 1957,
+    "matchedTokens": 1927,
+    "missingTokens": 32,
+    "tokenRecall": 0.9837,
+    "missingPassages": [
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 19,
+        "startToken": 720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 34,
+        "startToken": 1320,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 35,
+        "startToken": 1360,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 37,
+        "startToken": 1440,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 39,
+        "startToken": 1520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 40,
+        "startToken": 1560,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 41,
+        "startToken": 1600,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 46,
+        "startToken": 1800,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 48,
+        "startToken": 1880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 9,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+    "htmlSha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0"
+  },
+  "reproducedWithFrozenProductionExtract": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 1959,
+    "outputTokens": 1956,
+    "matchedTokens": 1927,
+    "missingTokens": 32,
+    "tokenRecall": 0.9837,
+    "missingPassages": [
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 19,
+        "startToken": 720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 34,
+        "startToken": 1320,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 35,
+        "startToken": 1360,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 37,
+        "startToken": 1440,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 39,
+        "startToken": 1520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 40,
+        "startToken": 1560,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 41,
+        "startToken": 1600,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 46,
+        "startToken": 1800,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 48,
+        "startToken": 1880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "frozen-production-extract",
+      "pagesExamined": null,
+      "emptyPageCandidates": null,
+      "pageErrorCount": null,
+      "lowConfidencePageCount": null,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank."
+  },
+  "missingTokenOccurrences": [
+    {
+      "index": 702,
+      "sourceUnit": 18,
+      "token": "1",
+      "context": "acusación contra ella en materia penal artículo 11 1 toda persona acusada de delito tiene derecho a"
+    },
+    {
+      "index": 744,
+      "sourceUnit": 19,
+      "token": "2",
+      "context": "asegurado todas las garantías necesarias para su defensa 2 nadie será condenado por actos u omisiones que"
+    },
+    {
+      "index": 830,
+      "sourceUnit": 21,
+      "token": "1",
+      "context": "ley contra tales injerencias o ataques artículo 13 1 toda persona tiene derecho a circular libremente y"
+    },
+    {
+      "index": 849,
+      "sourceUnit": 22,
+      "token": "2",
+      "context": "su residencia en el territorio de un estado 2 toda persona tiene derecho a salir de cualquier"
+    },
+    {
+      "index": 870,
+      "sourceUnit": 22,
+      "token": "1",
+      "context": "y a regresar a su país artículo 14 1 en caso de persecución toda persona tiene derecho"
+    },
+    {
+      "index": 890,
+      "sourceUnit": 23,
+      "token": "2",
+      "context": "y a disfrutar de él en cualquier país 2 este derecho no podrá ser invocado contra una"
+    },
+    {
+      "index": 921,
+      "sourceUnit": 24,
+      "token": "1",
+      "context": "y principios de las naciones unidas artículo 15 1 toda persona tiene derecho a una nacionalidad 2"
+    },
+    {
+      "index": 929,
+      "sourceUnit": 24,
+      "token": "2",
+      "context": "1 toda persona tiene derecho a una nacionalidad 2 a nadie se privará arbitrariamente de su nacionalidad"
+    },
+    {
+      "index": 947,
+      "sourceUnit": 24,
+      "token": "1",
+      "context": "del derecho a cambiar de nacionalidad artículo 16 1 los hombres y las mujeres a partir de"
+    },
+    {
+      "index": 996,
+      "sourceUnit": 25,
+      "token": "2",
+      "context": "matrimonio y en caso de disolución del matrimonio 2 sólo mediante libre y pleno consentimiento de los"
+    },
+    {
+      "index": 1011,
+      "sourceUnit": 26,
+      "token": "3",
+      "context": "de los futuros esposos podrá contraerse el matrimonio 3 la familia es el elemento natural y fundamental"
+    },
+    {
+      "index": 1037,
+      "sourceUnit": 26,
+      "token": "1",
+      "context": "de la sociedad y del estado artículo 17 1 toda persona tiene derecho a la propiedad individual"
+    },
+    {
+      "index": 1048,
+      "sourceUnit": 27,
+      "token": "2",
+      "context": "tiene derecho a la propiedad individual y colectivamente 2 nadie será privado arbitrariamente de su propiedad artículo"
+    },
+    {
+      "index": 1163,
+      "sourceUnit": 30,
+      "token": "1",
+      "context": "fronteras por cualquier medio de expresión artículo 20 1 toda persona tiene derecho a la libertad de"
+    },
+    {
+      "index": 1177,
+      "sourceUnit": 30,
+      "token": "2",
+      "context": "la libertad de reunión y de asociación pacíficas 2 nadie podrá ser obligado a pertenecer a una"
+    },
+    {
+      "index": 1189,
+      "sourceUnit": 30,
+      "token": "1",
+      "context": "obligado a pertenecer a una asociación artículo 21 1 toda persona tiene derecho a participar en el"
+    },
+    {
+      "index": 1210,
+      "sourceUnit": 31,
+      "token": "2",
+      "context": "directamente o por medio de representantes libremente escogidos 2 toda persona tiene el derecho de acceso en"
+    },
+    {
+      "index": 1229,
+      "sourceUnit": 31,
+      "token": "3",
+      "context": "igualdad a las funciones públicas de su país 3 la voluntad del pueblo es la base de"
+    },
+    {
+      "index": 1333,
+      "sourceUnit": 34,
+      "token": "1",
+      "context": "al libre desarrollo de su personalidad artículo 23 1 toda persona tiene derecho al trabajo a la"
+    },
+    {
+      "index": 1361,
+      "sourceUnit": 35,
+      "token": "2",
+      "context": "trabajo y a la protección contra el desempleo 2 toda persona tiene derecho sin discriminación alguna a"
+    },
+    {
+      "index": 1375,
+      "sourceUnit": 35,
+      "token": "3",
+      "context": "discriminación alguna a igual salario por trabajo igual 3 toda persona que trabaja tiene derecho a una"
+    },
+    {
+      "index": 1417,
+      "sourceUnit": 36,
+      "token": "4",
+      "context": "necesario por cualesquiera otros medios de protección social 4 toda persona tiene derecho a fundar sindicatos y"
+    },
+    {
+      "index": 1463,
+      "sourceUnit": 37,
+      "token": "1",
+      "context": "trabajo y a vacaciones periódicas pagadas artículo 25 1 toda persona tiene derecho a un nivel de"
+    },
+    {
+      "index": 1534,
+      "sourceUnit": 39,
+      "token": "2",
+      "context": "de subsistencia por circunstancias independientes de su voluntad 2 la maternidad y la infancia tienen derecho a"
+    },
+    {
+      "index": 1565,
+      "sourceUnit": 40,
+      "token": "1",
+      "context": "tienen derecho a igual protección social artículo 26 1 toda persona tiene derecho a la educación la"
+    },
+    {
+      "index": 1619,
+      "sourceUnit": 41,
+      "token": "2",
+      "context": "para todos en función de los méritos respectivos 2 la educación tendrá por objeto el pleno desarrollo"
+    },
+    {
+      "index": 1682,
+      "sourceUnit": 43,
+      "token": "3",
+      "context": "naciones unidas para el mantenimiento de la paz 3 los padres tendrán derecho preferente a escoger el"
+    },
+    {
+      "index": 1703,
+      "sourceUnit": 43,
+      "token": "1",
+      "context": "habrá de darse a sus hijos artículo 27 1 toda persona tiene derecho a tomar parte libremente"
+    },
+    {
+      "index": 1739,
+      "sourceUnit": 44,
+      "token": "2",
+      "context": "y en los beneficios que de él resulten 2 toda persona tiene derecho a la protección de"
+    },
+    {
+      "index": 1801,
+      "sourceUnit": 46,
+      "token": "1",
+      "context": "esta declaración se hagan plenamente efectivos artículo 29 1 toda persona tiene deberes respecto a la comunidad"
+    },
+    {
+      "index": 1822,
+      "sourceUnit": 46,
+      "token": "2",
+      "context": "ella puede desarrollar libre y plenamente su personalidad 2 en el ejercicio de sus derechos y en"
+    },
+    {
+      "index": 1887,
+      "sourceUnit": 48,
+      "token": "3",
+      "context": "y del bienestar general en una sociedad democrática 3 estos derechos y libertades no podrán en ningún"
+    }
+  ],
+  "remainingOutputTokens": [
+    [
+      "skip",
+      1
+    ],
+    [
+      "to",
+      1
+    ],
+    [
+      "main",
+      1
+    ],
+    [
+      "content",
+      1
+    ],
+    [
+      "9",
+      2
+    ],
+    [
+      "12",
+      1
+    ],
+    [
+      "this",
+      1
+    ],
+    [
+      "document",
+      1
+    ],
+    [
+      "was",
+      1
+    ],
+    [
+      "automatically",
+      1
+    ],
+    [
+      "transformed",
+      2
+    ],
+    [
+      "for",
+      1
+    ],
+    [
+      "accessibility",
+      1
+    ],
+    [
+      "compliance",
+      1
+    ],
+    [
+      "wcag",
+      1
+    ],
+    [
+      "2.2",
+      1
+    ],
+    [
+      "aa",
+      1
+    ],
+    [
+      "by",
+      1
+    ],
+    [
+      "alloflow",
+      1
+    ],
+    [
+      "original",
+      1
+    ],
+    [
+      "ohchr",
+      1
+    ],
+    [
+      "udhr",
+      1
+    ],
+    [
+      "spanishpdf",
+      1
+    ],
+    [
+      "pages",
+      1
+    ],
+    [
+      "/",
+      2
+    ],
+    [
+      "2026",
+      1
+    ]
+  ],
+  "classification": "All 32 official missing-token occurrences are semantic ordered-list markers preserved in the unchanged final HTML; no source-text omission found in this bounded investigation. Official gate remains review_required.",
+  "chromiumFacts": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\mcp-calibration-2026-09-12-round2\\spanish-content-list-marker-facts.json",
+    "sha256": "fcd87289aac2ec47f73ca4157d254763d4114728fc18085c385759255bee2165",
+    "browser": "148.0.7778.96",
+    "exactOfficialCountsReproduced": true,
+    "sourceSequenceMatchesWithSemanticListNumbers": true,
+    "normalizedSourceCharacters": 12059,
+    "listItems": 32,
+    "lists": 13,
+    "nonIgnoredAxListMarkers": 32
+  },
+  "tokenContextMapping": [
+    {
+      "index": 702,
+      "sourceUnit": 18,
+      "token": "1",
+      "context": "acusación contra ella en materia penal artículo 11 1 toda persona acusada de delito tiene derecho a",
+      "article": 11,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 744,
+      "sourceUnit": 19,
+      "token": "2",
+      "context": "asegurado todas las garantías necesarias para su defensa 2 nadie será condenado por actos u omisiones que",
+      "article": 11,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 830,
+      "sourceUnit": 21,
+      "token": "1",
+      "context": "ley contra tales injerencias o ataques artículo 13 1 toda persona tiene derecho a circular libremente y",
+      "article": 13,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 849,
+      "sourceUnit": 22,
+      "token": "2",
+      "context": "su residencia en el territorio de un estado 2 toda persona tiene derecho a salir de cualquier",
+      "article": 13,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 870,
+      "sourceUnit": 22,
+      "token": "1",
+      "context": "y a regresar a su país artículo 14 1 en caso de persecución toda persona tiene derecho",
+      "article": 14,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 890,
+      "sourceUnit": 23,
+      "token": "2",
+      "context": "y a disfrutar de él en cualquier país 2 este derecho no podrá ser invocado contra una",
+      "article": 14,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 921,
+      "sourceUnit": 24,
+      "token": "1",
+      "context": "y principios de las naciones unidas artículo 15 1 toda persona tiene derecho a una nacionalidad 2",
+      "article": 15,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 929,
+      "sourceUnit": 24,
+      "token": "2",
+      "context": "1 toda persona tiene derecho a una nacionalidad 2 a nadie se privará arbitrariamente de su nacionalidad",
+      "article": 15,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 947,
+      "sourceUnit": 24,
+      "token": "1",
+      "context": "del derecho a cambiar de nacionalidad artículo 16 1 los hombres y las mujeres a partir de",
+      "article": 16,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 996,
+      "sourceUnit": 25,
+      "token": "2",
+      "context": "matrimonio y en caso de disolución del matrimonio 2 sólo mediante libre y pleno consentimiento de los",
+      "article": 16,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1011,
+      "sourceUnit": 26,
+      "token": "3",
+      "context": "de los futuros esposos podrá contraerse el matrimonio 3 la familia es el elemento natural y fundamental",
+      "article": 16,
+      "semanticMarker": 3,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1037,
+      "sourceUnit": 26,
+      "token": "1",
+      "context": "de la sociedad y del estado artículo 17 1 toda persona tiene derecho a la propiedad individual",
+      "article": 17,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1048,
+      "sourceUnit": 27,
+      "token": "2",
+      "context": "tiene derecho a la propiedad individual y colectivamente 2 nadie será privado arbitrariamente de su propiedad artículo",
+      "article": 17,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1163,
+      "sourceUnit": 30,
+      "token": "1",
+      "context": "fronteras por cualquier medio de expresión artículo 20 1 toda persona tiene derecho a la libertad de",
+      "article": 20,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1177,
+      "sourceUnit": 30,
+      "token": "2",
+      "context": "la libertad de reunión y de asociación pacíficas 2 nadie podrá ser obligado a pertenecer a una",
+      "article": 20,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1189,
+      "sourceUnit": 30,
+      "token": "1",
+      "context": "obligado a pertenecer a una asociación artículo 21 1 toda persona tiene derecho a participar en el",
+      "article": 21,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1210,
+      "sourceUnit": 31,
+      "token": "2",
+      "context": "directamente o por medio de representantes libremente escogidos 2 toda persona tiene el derecho de acceso en",
+      "article": 21,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1229,
+      "sourceUnit": 31,
+      "token": "3",
+      "context": "igualdad a las funciones públicas de su país 3 la voluntad del pueblo es la base de",
+      "article": 21,
+      "semanticMarker": 3,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1333,
+      "sourceUnit": 34,
+      "token": "1",
+      "context": "al libre desarrollo de su personalidad artículo 23 1 toda persona tiene derecho al trabajo a la",
+      "article": 23,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1361,
+      "sourceUnit": 35,
+      "token": "2",
+      "context": "trabajo y a la protección contra el desempleo 2 toda persona tiene derecho sin discriminación alguna a",
+      "article": 23,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1375,
+      "sourceUnit": 35,
+      "token": "3",
+      "context": "discriminación alguna a igual salario por trabajo igual 3 toda persona que trabaja tiene derecho a una",
+      "article": 23,
+      "semanticMarker": 3,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1417,
+      "sourceUnit": 36,
+      "token": "4",
+      "context": "necesario por cualesquiera otros medios de protección social 4 toda persona tiene derecho a fundar sindicatos y",
+      "article": 23,
+      "semanticMarker": 4,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1463,
+      "sourceUnit": 37,
+      "token": "1",
+      "context": "trabajo y a vacaciones periódicas pagadas artículo 25 1 toda persona tiene derecho a un nivel de",
+      "article": 25,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1534,
+      "sourceUnit": 39,
+      "token": "2",
+      "context": "de subsistencia por circunstancias independientes de su voluntad 2 la maternidad y la infancia tienen derecho a",
+      "article": 25,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1565,
+      "sourceUnit": 40,
+      "token": "1",
+      "context": "tienen derecho a igual protección social artículo 26 1 toda persona tiene derecho a la educación la",
+      "article": 26,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1619,
+      "sourceUnit": 41,
+      "token": "2",
+      "context": "para todos en función de los méritos respectivos 2 la educación tendrá por objeto el pleno desarrollo",
+      "article": 26,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1682,
+      "sourceUnit": 43,
+      "token": "3",
+      "context": "naciones unidas para el mantenimiento de la paz 3 los padres tendrán derecho preferente a escoger el",
+      "article": 26,
+      "semanticMarker": 3,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1703,
+      "sourceUnit": 43,
+      "token": "1",
+      "context": "habrá de darse a sus hijos artículo 27 1 toda persona tiene derecho a tomar parte libremente",
+      "article": 27,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1739,
+      "sourceUnit": 44,
+      "token": "2",
+      "context": "y en los beneficios que de él resulten 2 toda persona tiene derecho a la protección de",
+      "article": 27,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1801,
+      "sourceUnit": 46,
+      "token": "1",
+      "context": "esta declaración se hagan plenamente efectivos artículo 29 1 toda persona tiene deberes respecto a la comunidad",
+      "article": 29,
+      "semanticMarker": 1,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1822,
+      "sourceUnit": 46,
+      "token": "2",
+      "context": "ella puede desarrollar libre y plenamente su personalidad 2 en el ejercicio de sus derechos y en",
+      "article": 29,
+      "semanticMarker": 2,
+      "tokenEqualsSemanticMarker": true
+    },
+    {
+      "index": 1887,
+      "sourceUnit": 48,
+      "token": "3",
+      "context": "y del bienestar general en una sociedad democrática 3 estos derechos y libertades no podrán en ningún",
+      "article": 29,
+      "semanticMarker": 3,
+      "tokenEqualsSemanticMarker": true
+    }
+  ],
+  "extractionSpacing": {
+    "pypdfOracleHasIntraWordSpaces": true,
+    "productionExtractionAlreadyJoinsThoseWords": true,
+    "spacingDifferencesExplainOfficialMissingTokens": false,
+    "note": "The source-only pypdf oracle has 24 additional split-word tokens. The original production extraction contains 1959 tokens and matches the final main source sequence exactly when semantic list numbers are represented. The 32 official misses are exclusively numeric list markers."
+  },
+  "runtimeNote": "The preliminary Node/Jsdom reproduction counts 1956 output tokens; actual Chromium148 counts1957 and reproduces every official count and passage. The report preserves both results explicitly.",
+  "evidenceLimits": "Model source/image review and machine source/DOM/accessibility-tree evidence; not human accessibility ground truth, screen-reader acceptance, or a new live pilot. No thresholds, source PDF, official output HTML, or official remediation report changed."
+}

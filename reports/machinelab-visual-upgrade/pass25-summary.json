@@ -1,0 +1,32 @@
+{
+  "enhancement": "Keep the observation clue beside the motion slider and provide a keyboard-accessible return to its explanation.",
+  "tests": {
+    "passed": 213,
+    "files": 4,
+    "added": 26
+  },
+  "browser": {
+    "light": {
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceSHA256": "cbc5c0deed3feeeec1e61b7c8d25a1195b2e0a823003e7a29b45b349a9f6c287",
+  "sourceMirrorParity": true,
+  "syntaxChecks": true,
+  "published": false
+}

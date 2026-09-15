@@ -1,0 +1,85 @@
+{
+  "enhancement": "Motion detective guided visual exploration across all six stations",
+  "tests": {
+    "focusedPassed": 187,
+    "files": 4,
+    "added": 29
+  },
+  "browser": {
+    "light": {
+      "directory": "pass24-light-final",
+      "desktopScenarios": 9,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard setup/reveal/scrub: lever 390",
+        "Keyboard setup/reveal/scrub: pulley 390",
+        "Keyboard setup/reveal/scrub: windlass 390",
+        "Keyboard setup/reveal/scrub: ramp 390",
+        "Keyboard setup/reveal/scrub: wedge 390",
+        "Keyboard setup/reveal/scrub: screw 390",
+        "Keyboard setup/reveal/scrub: lever 320",
+        "Keyboard setup/reveal/scrub: pulley 320",
+        "Keyboard setup/reveal/scrub: windlass 320",
+        "Keyboard setup/reveal/scrub: ramp 320",
+        "Keyboard setup/reveal/scrub: wedge 320",
+        "Keyboard setup/reveal/scrub: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "dark": {
+      "directory": "pass24-dark",
+      "desktopScenarios": 9,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard setup/reveal/scrub: lever 390",
+        "Keyboard setup/reveal/scrub: pulley 390",
+        "Keyboard setup/reveal/scrub: windlass 390",
+        "Keyboard setup/reveal/scrub: ramp 390",
+        "Keyboard setup/reveal/scrub: wedge 390",
+        "Keyboard setup/reveal/scrub: screw 390",
+        "Keyboard setup/reveal/scrub: lever 320",
+        "Keyboard setup/reveal/scrub: pulley 320",
+        "Keyboard setup/reveal/scrub: windlass 320",
+        "Keyboard setup/reveal/scrub: ramp 320",
+        "Keyboard setup/reveal/scrub: wedge 320",
+        "Keyboard setup/reveal/scrub: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    },
+    "contrast": {
+      "directory": "pass24-contrast",
+      "desktopScenarios": 9,
+      "mobileScenarios": 12,
+      "errors": [],
+      "overflow": false,
+      "checks": [
+        "Keyboard setup/reveal/scrub: lever 390",
+        "Keyboard setup/reveal/scrub: pulley 390",
+        "Keyboard setup/reveal/scrub: windlass 390",
+        "Keyboard setup/reveal/scrub: ramp 390",
+        "Keyboard setup/reveal/scrub: wedge 390",
+        "Keyboard setup/reveal/scrub: screw 390",
+        "Keyboard setup/reveal/scrub: lever 320",
+        "Keyboard setup/reveal/scrub: pulley 320",
+        "Keyboard setup/reveal/scrub: windlass 320",
+        "Keyboard setup/reveal/scrub: ramp 320",
+        "Keyboard setup/reveal/scrub: wedge 320",
+        "Keyboard setup/reveal/scrub: screw 320",
+        "Reduced motion holds half stroke",
+        "Old timer cannot interrupt newer run",
+        "Next station starts at rest"
+      ]
+    }
+  },
+  "sourceMirrorIdentical": true,
+  "sourceSha256": "561c6fdd25c2852d99f3954373589739797cb60827448fc6afa4d534ffd346f4",
+  "published": false
+}

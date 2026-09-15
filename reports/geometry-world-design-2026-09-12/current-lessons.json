@@ -1,0 +1,231 @@
+[
+  {
+    "id": "volumeExplorer",
+    "title": "Volume Explorer — Rectangular Prisms",
+    "ground": {
+      "xMin": -4,
+      "xMax": 24,
+      "zMin": -4,
+      "zMax": 24,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Find the volume of the blue rectangular prism (5×3×4)",
+      "Fill the empty pool with blocks and count them",
+      "Calculate the volume of the L-block"
+    ],
+    "structureInstructions": 9,
+    "npcs": 4,
+    "questions": 9
+  },
+  {
+    "id": "areaSurface",
+    "title": "Area & Surface Area",
+    "ground": {
+      "xMin": -4,
+      "xMax": 20,
+      "zMin": -4,
+      "zMax": 20,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Find the area of the base layer (blue prism)",
+      "Count the layers to find the height",
+      "Calculate the volume using Area × Height",
+      "Compare two prisms with the same volume but different shapes"
+    ],
+    "structureInstructions": 7,
+    "npcs": 4,
+    "questions": 8
+  },
+  {
+    "id": "buildChallenge",
+    "title": "Build Challenge — Design Your Dream Room",
+    "ground": {
+      "xMin": -2,
+      "xMax": 22,
+      "zMin": -2,
+      "zMax": 22,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Build a room with walls 4 blocks high",
+      "Calculate the interior volume of your room",
+      "Add a second room connected to the first",
+      "Find the total volume of both rooms combined"
+    ],
+    "structureInstructions": 6,
+    "npcs": 3,
+    "questions": 5
+  },
+  {
+    "id": "realWorld",
+    "title": "Real-World Volume — Packing & Shipping",
+    "ground": {
+      "xMin": -2,
+      "xMax": 22,
+      "zMin": -2,
+      "zMax": 22,
+      "y": 0,
+      "type": "stone"
+    },
+    "objectives": [
+      "Find how many small boxes fit in the shipping container",
+      "Calculate the wasted space in a partially filled crate",
+      "Design a package that holds exactly 36 cubic units"
+    ],
+    "structureInstructions": 16,
+    "npcs": 4,
+    "questions": 6
+  },
+  {
+    "id": "geometryGarden",
+    "title": "The Geometry Garden — A Place to Discover",
+    "ground": {
+      "xMin": -6,
+      "xMax": 50,
+      "zMin": -10,
+      "zMax": 20,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Walk the path through the garden",
+      "Use M to measure anything that interests you",
+      "Notice: which structures have the same volume but different shapes?",
+      "Find the hidden structure at the end of the path"
+    ],
+    "structureInstructions": 28,
+    "npcs": 7,
+    "questions": 0
+  },
+  {
+    "id": "compositeVolume",
+    "title": "Composite Volume — Breaking Apart & Combining",
+    "ground": {
+      "xMin": -2,
+      "xMax": 28,
+      "zMin": -2,
+      "zMax": 22,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Decompose the T-shape into 2 rectangular prisms",
+      "Calculate each part’s volume and find the total",
+      "Solve the step pyramid by counting layer volumes",
+      "Design your own composite shape with exactly 50 cubic units"
+    ],
+    "structureInstructions": 10,
+    "npcs": 5,
+    "questions": 10
+  },
+  {
+    "id": "fractionVolume",
+    "title": "Fractional Dimensions — Beyond Whole Numbers",
+    "ground": {
+      "xMin": -2,
+      "xMax": 22,
+      "zMin": -2,
+      "zMax": 18,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Compare a 4×3×2 prism to a 4×3×2.5 prism",
+      "Calculate volume when one dimension is a fraction",
+      "Understand that volume can be a non-whole number",
+      "Estimate the volume of a partially filled container"
+    ],
+    "structureInstructions": 10,
+    "npcs": 4,
+    "questions": 8
+  },
+  {
+    "id": "volumeEstimation",
+    "title": "Volume Estimation — Think Before You Count",
+    "ground": {
+      "xMin": -2,
+      "xMax": 30,
+      "zMin": -2,
+      "zMax": 18,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Estimate each structure’s volume BEFORE measuring",
+      "Use the reference cube (1 block) to calibrate your estimates",
+      "See how close your estimates are to the actual volumes",
+      "Estimation is a skill — it gets better with practice!"
+    ],
+    "structureInstructions": 9,
+    "npcs": 5,
+    "questions": 10
+  },
+  {
+    "id": "fractionBuilder",
+    "title": "Fraction Builder — Parts of a Whole",
+    "ground": {
+      "xMin": -2,
+      "xMax": 22,
+      "zMin": -2,
+      "zMax": 18,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Place two half-blocks side by side — do they equal one whole cube?",
+      "Build a structure using only half-blocks. What’s its volume?",
+      "Combine cubes and half-blocks to make exactly 3½ cubic units",
+      "Use the ◢ shape selector to switch between cube, half, and quarter shapes"
+    ],
+    "structureInstructions": 6,
+    "npcs": 5,
+    "questions": 9
+  },
+  {
+    "id": "base10Blocks",
+    "title": "Base 10 Place Value — Building Numbers in 3D",
+    "ground": {
+      "xMin": -4,
+      "xMax": 30,
+      "zMin": -4,
+      "zMax": 24,
+      "y": 0,
+      "type": "grass"
+    },
+    "objectives": [
+      "Identify units (1), tens (10), and hundreds (100) blocks",
+      "Build the number 234 using base-10 blocks",
+      "Compare two numbers by counting their blocks",
+      "Understand that 10 ones = 1 ten, 10 tens = 1 hundred"
+    ],
+    "structureInstructions": 14,
+    "npcs": 6,
+    "questions": 12
+  },
+  {
+    "id": "fluencyMaze",
+    "title": "Volume Fluency Maze — Measure to Navigate",
+    "ground": {
+      "xMin": -2,
+      "xMax": 40,
+      "zMin": -2,
+      "zMax": 30,
+      "y": 0,
+      "type": "stone"
+    },
+    "objectives": [
+      "Measure each structure at a junction to find its volume",
+      "Choose the path labeled with the correct answer",
+      "Reach the golden finish platform at the end",
+      "Complete the maze as fast as you can!"
+    ],
+    "structureInstructions": 22,
+    "npcs": 5,
+    "questions": 6
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "kind": "read-only application audit; report and evidence files added",
+  "sha256": "1e6e7959dc78f014589afed116727368ed41a7afbfd816e3c8ee43260c72b125",
+  "unchangedFromPreviousPass": true,
+  "mirrorIdentical": true,
+  "opportunities": 6,
+  "sourceLinksVerified": 20,
+  "gradeStates": 4,
+  "glossaryLanguages": 4,
+  "screenshots": 11,
+  "axeScans": 8,
+  "axeViolations": 0,
+  "axeIncompleteGroups": 8,
+  "manualContrastScope": "light-mode EEG name labels",
+  "manualContrastFailures": 5,
+  "browserErrors": 0,
+  "externalModelCalls": 0,
+  "previousPassingTests": 846,
+  "regressionSuiteRerun": false
+}

@@ -1,0 +1,14 @@
+const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert/strict');const {chromium}=require('playwright');const {GlHarness}=require('./harness.cjs');
+(async()=>{const harness=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1120,height:1600,appStyles:true});await harness.start();const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844},reducedMotion:'reduce'});const out=path.resolve('reports/anatomy-enhancements-2026-09-12'),result={};
+try{await harness.mount(page,{anatomy:{system:'skeletal',view:'anterior',complexity:3,_bodyView3d:false,_activeTab:'homeoHunt',_feedbackExperiment:{direction:'cool',prediction:'active',revealed:true}}},undefined,{expectCanvas:false});await page.addStyleTag({content:'#wrap{height:auto;min-height:100%;width:min(1120px,100%);margin:auto}'});
+await page.evaluate(()=>document.body.classList.add('theme-dark'));
+result.dark=await page.locator('#anatomy-feedback-disturbance').evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));assert.equal(result.dark.background,'rgb(30, 41, 59)');assert.equal(result.dark.color,'rgb(226, 232, 240)');
+await page.locator('#anatomy-feedback-explanation').fill('A smaller deviation needs a smaller corrective response.');
+await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(out,'phone-dark-feedback.png'),fullPage:true});await page.locator('[data-anatomy-feedback-experiment]').screenshot({path:path.join(out,'dark-feedback-detail.png')});
+const dict=JSON.parse(fs.readFileSync('lang/arabic.js','utf8')).stem.anatomy;
+await page.evaluate(dict=>{document.body.classList.remove('theme-dark');window.__ctx.t=(k,f)=>dict[k.slice(13)]||f;document.getElementById('wrap').dir='rtl';window.__rerender();window.scrollTo(0,0);},dict);
+result.arabic=await page.locator('[data-anatomy-feedback-results] svg').evaluate(el=>({direction:getComputedStyle(el).direction,labels:[...el.querySelectorAll('text')].map(text=>({text:text.textContent,x:text.getBBox().x,width:text.getBBox().width})),overflow:document.documentElement.scrollWidth>innerWidth}));
+assert.equal(result.arabic.direction,'ltr');assert.equal(result.arabic.overflow,false);assert(result.arabic.labels.every(label=>label.x>=0&&label.x+label.width<=360));
+await page.screenshot({path:path.join(out,'phone-arabic-feedback.png'),fullPage:true});await page.locator('[data-anatomy-feedback-experiment]').screenshot({path:path.join(out,'arabic-feedback-detail.png')});
+console.log(JSON.stringify(result));
+}finally{fs.writeFileSync(path.join(out,'theme-rtl-results.json'),JSON.stringify(result,null,2));await harness.destroy(page);await browser.close();await harness.stop();}})().catch(e=>{console.error(e);process.exitCode=1;});

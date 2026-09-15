@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "distinctTests": 353,
+  "suites": 22,
+  "method": "Latest result per file, test name, and occurrence across the broad run and targeted reruns. Occurrences retain parameterized cases with identical names. The broad run had one hook timeout and three worker-start timeouts; affected suites were rerun successfully.",
+  "reports": [
+    "regression-tests.json",
+    "final-focused-tests.json",
+    "recovered-suites.json"
+  ],
+  "unresolved": []
+}

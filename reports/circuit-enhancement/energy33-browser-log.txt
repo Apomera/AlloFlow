@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    "One common run-wide joule scale, exact capacitor/inductor peak navigation, shared board/dock selection, and preserved electrical history",
+    "Inductor energy stays continuous as switch power changes sign, and peak navigation preserves the before snapshot",
+    "Energy selection guidance, squared-energy relationship, both board views and camera/emphasis compatibility",
+    "Zero initial energy, nonzero stored DC energy at zero power, and distinct DC/time references",
+    "Desktop/phone layout and accessibility, energy-layer persistence and clean mode switching",
+    "Failed-run suppression, no-storage explanation and example recovery"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+{
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\tables\\nces-condition-of-education.pdf",
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\AppData\\Local\\Temp\\claude\\C--Users-cabba\\e24e746c-c388-4964-bc0b-00e441fc4464\\scratchpad\\nces-pilot\\out\\nces-condition-of-education-accessible.html",
+    "report": "C:\\Users\\cabba\\AppData\\Local\\Temp\\claude\\C--Users-cabba\\e24e746c-c388-4964-bc0b-00e441fc4464\\scratchpad\\nces-pilot\\out\\nces-condition-of-education-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\AppData\\Local\\Temp\\claude\\C--Users-cabba\\e24e746c-c388-4964-bc0b-00e441fc4464\\scratchpad\\nces-pilot\\out\\nces-condition-of-education-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 4,
+    "cautionCount": 2
+  },
+  "beforeScore": 74,
+  "afterScore": 76,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 2614,
+    "outputTokens": 3356,
+    "matchedTokens": 2541,
+    "missingTokens": 73,
+    "tokenRecall": 0.9721,
+    "missingPassages": [
+      {
+        "sourceUnit": 1,
+        "startToken": 0,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 15,
+        "startToken": 560,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 28,
+        "startToken": 1080,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 32,
+        "startToken": 1240,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 42,
+        "startToken": 1640,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 4
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 11
+      },
+      {
+        "sourceUnit": 55,
+        "startToken": 2160,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 56,
+        "startToken": 2200,
+        "expectedTokens": 40,
+        "missingTokens": 5
+      },
+      {
+        "sourceUnit": 57,
+        "startToken": 2240,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 58,
+        "startToken": 2280,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 59,
+        "startToken": 2320,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 61,
+        "startToken": 2400,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 62,
+        "startToken": 2440,
+        "expectedTokens": 40,
+        "missingTokens": 7
+      },
+      {
+        "sourceUnit": 63,
+        "startToken": 2480,
+        "expectedTokens": 40,
+        "missingTokens": 9
+      },
+      {
+        "sourceUnit": 64,
+        "startToken": 2520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 65,
+        "startToken": 2560,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 66,
+        "startToken": 2600,
+        "expectedTokens": 14,
+        "missingTokens": 2
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 5,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": [
+        19,
+        23
+      ],
+      "wholeDocument": false
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "1af930c7316af4c17c67b61d080741e4ac5b99c6b1f8e2af217a97a9c6664700",
+    "htmlSha256": "3617a560ebd3caf52e2a5a3402ba78a9550647f75fb20320ac7c5906a771b119"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": "16 source numeric value(s) not found unchanged in the output (20, 2023, 10, 90, 80, 70, 60, 40, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.",
+  "fidelityNotes": [
+    {
+      "kind": "numeric",
+      "msg": "16 source numeric value(s) not found unchanged in the output (20, 2023, 10, 90, 80, 70, 60, 40, …). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact."
+    }
+  ],
+  "candidateRejectionCount": 2,
+  "candidateRejections": [
+    {
+      "chunkId": "2",
+      "phase": "chunk",
+      "reason": "form-state-changed",
+      "pass": 1,
+      "sourceLocation": "control:3"
+    },
+    {
+      "chunkId": "5",
+      "phase": "chunk",
+      "reason": "form-state-changed",
+      "pass": 1,
+      "sourceLocation": "control:3"
+    }
+  ],
+  "verification": {
+    "ai": {
+      "score": 95,
+      "issueCount": 1,
+      "reviewIssueCount": 0,
+      "passCount": 47,
+      "chunksAudited": 6,
+      "chunksRequested": 6,
+      "partial": false,
+      "scoreDegraded": false,
+      "issues": [
+        {
+          "ruleId": "table-caption",
+          "severity": "moderate",
+          "wcag": "1.3.1",
+          "issue": "1 table(s) have no caption.",
+          "location": "first table",
+          "requiresManualReview": false
+        }
+      ]
+    },
+    "axe": {
+      "score": 100,
+      "totalViolations": 0,
+      "totalIncomplete": 0,
+      "violations": []
+    },
+    "equalAccess": {
+      "score": 76,
+      "failViolations": 1,
+      "potentialViolations": 5,
+      "manualViolations": 2,
+      "reviewFindingCount": 7,
+      "fails": [
+        {
+          "id": "label_name_visible",
+          "nodes": 4,
+          "description": "Accessible name does not match or contain the visible label text"
+        }
+      ],
+      "reviewFindings": [
+        {
+          "id": "style_color_misuse",
+          "nodes": 1,
+          "description": "Verify color is not used as the only visual means of conveying information"
+        },
+        {
+          "id": "text_block_heading",
+          "nodes": 1,
+          "description": "Confirm this text 'Preprimary, Elementary, and Secondary Education (pages 19 through 23)' is used as a heading and if so, modify to use a heading element or role"
+        },
+        {
+          "id": "text_sensory_misuse",
+          "nodes": 5,
+          "description": "Confirm the word(s) 'lower' of the user instruction is used to indicate a logical rather than visual position"
+        },
+        {
+          "id": "style_focus_visible",
+          "nodes": 6,
+          "description": "Check the keyboard focus indicator is visible when using CSS declaration for 'border' or 'outline'"
+        },
+        {
+          "id": "media_alt_brief",
+          "nodes": 2,
+          "description": "Text alternative is more than 150 characters"
+        },
+        {
+          "id": "style_highcontrast_visible",
+          "nodes": 1,
+          "description": "Confirm Windows high contrast mode is supported when using CSS to include, position or alter non-decorative content"
+        },
+        {
+          "id": "download_keyboard_controllable",
+          "nodes": 1,
+          "description": "Verify that the file download mechanism does not cause a keyboard trap"
+        }
+      ]
+    }
+  },
+  "verificationChecks": {
+    "ai": {
+      "status": "failed",
+      "findings": 1,
+      "reviewFindings": 0
+    },
+    "axe": {
+      "status": "passed",
+      "findings": 0,
+      "reviewFindings": 0
+    },
+    "equalAccess": {
+      "status": "failed",
+      "findings": 1,
+      "reviewFindings": 7
+    },
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 1,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": true,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 1,
+    "sliced": true
+  },
+  "taggedPdfError": "content_coverage_requires_review",
+  "runId": "run-mu0anlfc-z9gv1c",
+  "stats": {
+    "apiCalls": 42,
+    "visionCalls": 6,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required"
+}

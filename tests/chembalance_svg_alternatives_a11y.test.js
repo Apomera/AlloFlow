@@ -93,7 +93,13 @@ describe('ChemBalance SVG alternatives', () => {
 
     // The count is pinned so a new diagram cannot be added inattentively. The
     // real invariant is the loop: every one of them must carry a description.
-    expect(declarations).toHaveLength(4);
+    //
+    // 4 until the Nuclear section gained a live decay curve (5), then the
+    // Solutions dilution beaker (6), then the Acids & Bases buffer pH scale (7).
+    // Note this scanner is LINE-based, so role/aria-label must sit on the same
+    // line as the h('svg' - the decay curve originally wrapped them onto the next
+    // line and was correctly reported as undescribed.
+    expect(declarations).toHaveLength(7);
     for (const declaration of declarations) {
       expect(declaration).toMatch(/role:\s*['"]img['"]/);
       expect(declaration).toContain('aria-label');

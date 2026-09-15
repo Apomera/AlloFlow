@@ -1,0 +1,3214 @@
+{
+  "startedAt": "2026-09-13T02:17:07.173Z",
+  "browser": "148.0.7778.96",
+  "axe": "4.12.1",
+  "origin": "http://127.0.0.1:61665",
+  "method": "Local existing compiled shell and local canonical lazy modules; third-party requests blocked; fresh browser context; no authenticated or generated-content workflows",
+  "states": [
+    {
+      "name": "full-platform-1280",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61665/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n144 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\nAlloFlow\nCreate\nHistory\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\nReady\n\nREADY\n\nSource Material\n\nConfigure your settings and generate diverse entry points for your curriculum.\n\nSource Material\n\nOR CHOOSE A STARTING POINT\n\nOpen reading catalog\nBooks, articles & primary sources\nFind a resource online\nPaste a link or let AI search\nGenerate from a topic\nAI writes it for you\n?\nEnglish\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh (Falam) — Chin (Falam)\nLaiholh (Hakha) — Chin (Hakha)\n简体中文 — Chinese (Simplified)\n繁體中文 — Chinese (Traditional)\nدری — Dari\nNederlands — Dutch\nEsperanto\nفارسی — Farsi\nFrançais — French\nFrançais (Canada) — French (Canadian)\nDeutsch — German\nΕλληνικά — Greek\nગુજરાતી — Gujarati\nKreyòl Ayisyen — Haitian Creole\nHausa\nעברית — Hebrew\nहिन्दी — Hindi\nHmoob — Hmong\nIgbo\nBahasa Indonesia — Indonesian\nItaliano — Italian\n日本語 — Japanese\nಕನ್ನಡ — Kannada\nကညီကျိာ် — Karen\nភាសាខ្មែរ — Khmer\nIkinyarwanda — Kinyarwanda\nIkirundi — Kirundi\n한국어 — Korean\nພາສາລາວ — Lao\nLatina — Latin\nLingála — Lingala\nAf-Maay — Maay Maay\nമലയാളം — Malayalam\nमराठी — Marathi\nKajin Ṃajeḷ — Marshallese\nनेपाली — Nepali\nپښتو — Pashto\nPolski — Polish\nPortuguês (Angola) — Portuguese (Angola)\nPortuguês (Brasil) — Portuguese (Brazil)\nPortuguês (Portugal) — Portuguese (Portugal)\nਪੰਜਾਬੀ — Punjabi\nRomână — Romanian\nРусский — Russian\nSoomaali — Somali\nEspañol (España) — Spanish (Castilian)\nEspañol (Latinoamérica) — Spanish (Latin America)\nKiswahili — Swahili\nTagalog\nதமிழ் — Tamil\nతెలుగు — Telugu\nภาษาไทย — Thai\nትግርኛ — Tigrinya\nTürkçe — Turkish\nУкраїнська — Ukrainian\nاردو — Urdu\nTiếng Việt — Vietnamese\nYorùbá — Yoruba\nCustom...\nWelcome to AlloFlow\n\nHow will you be using the app today?\n\nStudent\nTeacher\nParent\nSupport learning at home with family-friendly tools.\nIndependent Learner\n\nVOICE ACCESS\n\nEnable Voice Access\n\nYour browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.\n\nSAVED TO DEVICE",
+      "violations": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#tab-create"
+              ],
+              "html": "<button role=\"tab\" aria-selected=\"true\" tabindex=\"0\" aria-controls=\"tour-input-panel\" id=\"tab-create\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_create\" aria-label=\"Create new content\">",
+              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"tour-input-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": [
+                    "aria-controls=\"tour-input-panel\""
+                  ],
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Invalid ARIA attribute value: aria-controls=\"tour-input-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#workspace-sidebar-pane"
+              ],
+              "html": "<div id=\"workspace-sidebar-pane\" class=\"flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 \" style=\"width: 35%; height: 100%; min-height: 0px; flex: 0 0 auto; display: flex;\" aria-label=\"Gemini Powered Scaffolds\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".z-\\[139\\] > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".z-\\[139\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">144 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".z-\\[139\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-brand-name"
+              ],
+              "html": "<span class=\"allo-premium-brand-name bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent\">AlloFlow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "18.0pt (24px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lg\\:inline"
+              ],
+              "html": "<span class=\"hidden lg:inline\">Teach Live</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[10rem\\]"
+              ],
+              "html": "<span class=\"max-w-[10rem] truncate\">Start &amp; setup</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "select"
+              ],
+              "html": "<select class=\"bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate\" aria-label=\"Select UI Language\" data-help-key=\"ui_language_select\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".pointer-events-auto > .bg-white\\/90.backdrop-blur-sm.border-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".w-20"
+              ],
+              "html": "<input type=\"text\" placeholder=\"Enter Language...\" class=\"text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600\" aria-label=\"Enter Language...\" data-help-key=\"ui_lang_manual_input\" value=\"\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".bg-white\\/90.backdrop-blur-sm.border-indigo-100:nth-child(2)"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-title"
+              ],
+              "html": "<h2 id=\"role-selection-title\" class=\"text-3xl font-black text-slate-800 mb-2 tracking-tight\">Welcome to AlloFlow</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "22.5pt (30px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-description"
+              ],
+              "html": "<p id=\"role-selection-description\" class=\"text-slate-600 mb-8 font-medium\">How will you be using the app today?</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-teal-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-teal-700\">Student</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_student\">",
+                      "target": [
+                        ".hover\\:border-teal-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-indigo-700.text-slate-700.font-bold"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-indigo-700\">Teacher</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_teacher\">",
+                      "target": [
+                        "button[data-help-key=\"role_teacher\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-orange-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-orange-700\">Parent</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_parent\">",
+                      "target": [
+                        ".hover\\:border-orange-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[13rem\\]"
+              ],
+              "html": "<span class=\"text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]\">Support learning at home with family-friendly tools.</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_parent\">",
+                      "target": [
+                        ".hover\\:border-orange-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-cyan-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-cyan-700\">Independent Learner</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_independent\">",
+                      "target": [
+                        ".hover\\:border-cyan-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".tracking-widest.mb-2.uppercase"
+              ],
+              "html": "<p class=\"text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2\">Voice Access</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".hover\\:bg-slate-50 > span"
+              ],
+              "html": "<span>Enable Voice Access</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-busy=\"false\" aria-describedby=\"role-mic-status\" data-help-key=\"role_voice_access\" ...>",
+                      "target": [
+                        ".hover\\:bg-slate-50"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-mic-tip"
+              ],
+              "html": "<p id=\"role-mic-tip\" class=\"text-[11px] text-slate-600 mt-2\">Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".text-green-700"
+              ],
+              "html": "<span class=\"text-green-700\">Saved to Device</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" class=\"fixed bottom-4 left-...\">",
+                      "target": [
+                        ".z-\\[1000\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"fixed inset-0 z-[300...\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-descr...\" data-allo-ui-modal=\"role-selection\" tabindex=\"-1\">",
+                      "target": [
+                        ".z-\\[300\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "select-name",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": "Open Start and setup options"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": "Expand"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open reading catalog\nBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find a resource online\nPaste a link or let AI search",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate from a topic\nAI writes it for you",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "SELECT",
+          "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်",
+          "label": "Select UI Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Import Language Pack"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Language..."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Set Custom Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teacher",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Parent\nSupport learning at home with family-friendly tools.",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Independent Learner",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Enable Voice Access",
+          "label": null
+        }
+      ]
+    },
+    {
+      "name": "full-platform-after-dialog",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61665/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n143 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\nAlloFlow\nCreate\nHistory\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\nReady\n\nREADY\n\nSource Material\n\nConfigure your settings and generate diverse entry points for your curriculum.\n\nSource Material\n\nOR CHOOSE A STARTING POINT\n\nOpen reading catalog\nBooks, articles & primary sources\nFind a resource online\nPaste a link or let AI search\nGenerate from a topic\nAI writes it for you\n?\nEnglish\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh (Falam) — Chin (Falam)\nLaiholh (Hakha) — Chin (Hakha)\n简体中文 — Chinese (Simplified)\n繁體中文 — Chinese (Traditional)\nدری — Dari\nNederlands — Dutch\nEsperanto\nفارسی — Farsi\nFrançais — French\nFrançais (Canada) — French (Canadian)\nDeutsch — German\nΕλληνικά — Greek\nગુજરાતી — Gujarati\nKreyòl Ayisyen — Haitian Creole\nHausa\nעברית — Hebrew\nहिन्दी — Hindi\nHmoob — Hmong\nIgbo\nBahasa Indonesia — Indonesian\nItaliano — Italian\n日本語 — Japanese\nಕನ್ನಡ — Kannada\nကညီကျိာ် — Karen\nភាសាខ្មែរ — Khmer\nIkinyarwanda — Kinyarwanda\nIkirundi — Kirundi\n한국어 — Korean\nພາສາລາວ — Lao\nLatina — Latin\nLingála — Lingala\nAf-Maay — Maay Maay\nമലയാളം — Malayalam\nमराठी — Marathi\nKajin Ṃajeḷ — Marshallese\nनेपाली — Nepali\nپښتو — Pashto\nPolski — Polish\nPortuguês (Angola) — Portuguese (Angola)\nPortuguês (Brasil) — Portuguese (Brazil)\nPortuguês (Portugal) — Portuguese (Portugal)\nਪੰਜਾਬੀ — Punjabi\nRomână — Romanian\nРусский — Russian\nSoomaali — Somali\nEspañol (España) — Spanish (Castilian)\nEspañol (Latinoamérica) — Spanish (Latin America)\nKiswahili — Swahili\nTagalog\nதமிழ் — Tamil\nతెలుగు — Telugu\nภาษาไทย — Thai\nትግርኛ — Tigrinya\nTürkçe — Turkish\nУкраїнська — Ukrainian\nاردو — Urdu\nTiếng Việt — Vietnamese\nYorùbá — Yoruba\nCustom...\nWelcome to AlloFlow\n\nHow will you be using the app today?\n\nStudent\nTeacher\nParent\nSupport learning at home with family-friendly tools.\nIndependent Learner\n\nVOICE ACCESS\n\nEnable Voice Access\n\nYour browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.\n\nSAVED TO DEVICE",
+      "violations": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#tab-create"
+              ],
+              "html": "<button role=\"tab\" aria-selected=\"true\" tabindex=\"0\" aria-controls=\"tour-input-panel\" id=\"tab-create\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_create\" aria-label=\"Create new content\">",
+              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"tour-input-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": [
+                    "aria-controls=\"tour-input-panel\""
+                  ],
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Invalid ARIA attribute value: aria-controls=\"tour-input-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#workspace-sidebar-pane"
+              ],
+              "html": "<div id=\"workspace-sidebar-pane\" class=\"flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 \" style=\"width: 35%; height: 100%; min-height: 0px; flex: 0 0 auto; display: flex;\" aria-label=\"Gemini Powered Scaffolds\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".z-\\[139\\] > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".z-\\[139\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">143 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".z-\\[139\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-brand-name"
+              ],
+              "html": "<span class=\"allo-premium-brand-name bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent\">AlloFlow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "18.0pt (24px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lg\\:inline"
+              ],
+              "html": "<span class=\"hidden lg:inline\">Teach Live</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[10rem\\]"
+              ],
+              "html": "<span class=\"max-w-[10rem] truncate\">Start &amp; setup</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "select"
+              ],
+              "html": "<select class=\"bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate\" aria-label=\"Select UI Language\" data-help-key=\"ui_language_select\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".pointer-events-auto > .bg-white\\/90.backdrop-blur-sm.border-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".w-20"
+              ],
+              "html": "<input type=\"text\" placeholder=\"Enter Language...\" class=\"text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600\" aria-label=\"Enter Language...\" data-help-key=\"ui_lang_manual_input\" value=\"\" style=\"\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".bg-white\\/90.backdrop-blur-sm.border-indigo-100:nth-child(2)"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-title"
+              ],
+              "html": "<h2 id=\"role-selection-title\" class=\"text-3xl font-black text-slate-800 mb-2 tracking-tight\">Welcome to AlloFlow</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "22.5pt (30px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-description"
+              ],
+              "html": "<p id=\"role-selection-description\" class=\"text-slate-600 mb-8 font-medium\">How will you be using the app today?</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-teal-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-teal-700\">Student</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_student\">",
+                      "target": [
+                        ".hover\\:border-teal-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-indigo-700.text-slate-700.font-bold"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-indigo-700\">Teacher</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_teacher\">",
+                      "target": [
+                        "button[data-help-key=\"role_teacher\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-orange-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-orange-700\">Parent</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_parent\">",
+                      "target": [
+                        ".hover\\:border-orange-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[13rem\\]"
+              ],
+              "html": "<span class=\"text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]\">Support learning at home with family-friendly tools.</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_parent\">",
+                      "target": [
+                        ".hover\\:border-orange-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-cyan-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-cyan-700\">Independent Learner</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_independent\">",
+                      "target": [
+                        ".hover\\:border-cyan-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".tracking-widest.mb-2.uppercase"
+              ],
+              "html": "<p class=\"text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2\">Voice Access</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".hover\\:bg-slate-50 > span"
+              ],
+              "html": "<span>Enable Voice Access</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-busy=\"false\" aria-describedby=\"role-mic-status\" data-help-key=\"role_voice_access\" ...>",
+                      "target": [
+                        ".hover\\:bg-slate-50"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-mic-tip"
+              ],
+              "html": "<p id=\"role-mic-tip\" class=\"text-[11px] text-slate-600 mt-2\">Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".text-green-700"
+              ],
+              "html": "<span class=\"text-green-700\">Saved to Device</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" class=\"fixed bottom-4 left-...\">",
+                      "target": [
+                        ".z-\\[1000\\]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"fixed inset-0 z-[300...\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"role-selection-title\" aria-describedby=\"role-selection-descr...\" data-allo-ui-modal=\"role-selection\" tabindex=\"-1\">",
+                      "target": [
+                        ".z-\\[300\\]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "select-name",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": "Open Start and setup options"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": "Expand"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open reading catalog\nBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find a resource online\nPaste a link or let AI search",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate from a topic\nAI writes it for you",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "SELECT",
+          "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်",
+          "label": "Select UI Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Import Language Pack"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Language..."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Set Custom Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teacher",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Parent\nSupport learning at home with family-friendly tools.",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Independent Learner",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Enable Voice Access",
+          "label": null
+        }
+      ]
+    },
+    {
+      "name": "full-platform-320",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61665/app/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "bodyText": "Skip to Content\nLoading tools…\n140 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nMore information\nAlloFlow\nCreate\nPreview\nHistory\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\n?\nEnglish\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh (Falam) — Chin (Falam)\nLaiholh (Hakha) — Chin (Hakha)\n简体中文 — Chinese (Simplified)\n繁體中文 — Chinese (Traditional)\nدری — Dari\nNederlands — Dutch\nEsperanto\nفارسی — Farsi\nFrançais — French\nFrançais (Canada) — French (Canadian)\nDeutsch — German\nΕλληνικά — Greek\nગુજરાતી — Gujarati\nKreyòl Ayisyen — Haitian Creole\nHausa\nעברית — Hebrew\nहिन्दी — Hindi\nHmoob — Hmong\nIgbo\nBahasa Indonesia — Indonesian\nItaliano — Italian\n日本語 — Japanese\nಕನ್ನಡ — Kannada\nကညီကျိာ် — Karen\nភាសាខ្មែរ — Khmer\nIkinyarwanda — Kinyarwanda\nIkirundi — Kirundi\n한국어 — Korean\nພາສາລາວ — Lao\nLatina — Latin\nLingála — Lingala\nAf-Maay — Maay Maay\nമലയാളം — Malayalam\nमराठी — Marathi\nKajin Ṃajeḷ — Marshallese\nनेपाली — Nepali\nپښتو — Pashto\nPolski — Polish\nPortuguês (Angola) — Portuguese (Angola)\nPortuguês (Brasil) — Portuguese (Brazil)\nPortuguês (Portugal) — Portuguese (Portugal)\nਪੰਜਾਬੀ — Punjabi\nRomână — Romanian\nРусский — Russian\nSoomaali — Somali\nEspañol (España) — Spanish (Castilian)\nEspañol (Latinoamérica) — Spanish (Latin America)\nKiswahili — Swahili\nTagalog\nதமிழ் — Tamil\nతెలుగు — Telugu\nภาษาไทย — Thai\nትግርኛ — Tigrinya\nTürkçe — Turkish\nУкраїнська — Ukrainian\nاردو — Urdu\nTiếng Việt — Vietnamese\nYorùbá — Yoruba\nCustom...\nWelcome to AlloFlow\n\nHow will you be using the app today?\n\nStudent\nTeacher\nParent\nSupport learning at home with family-friendly tools.\nIndependent Learner\n\nVOICE ACCESS\n\nEnable Voice Access\n\nYour browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">140 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-label=\"Expand\" class=\"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors\">",
+                      "target": [
+                        ".border-white\\/25"
+                      ]
+                    },
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#workspace-tab-preview"
+              ],
+              "html": "<button id=\"workspace-tab-previe...\" type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"workspace-preview-pa...\" class=\"relative min-h-[44px...\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<nav aria-label=\"Workspace views\" class=\"relative z-20 mb-3 w-full shrink-0 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none\">",
+                      "target": [
+                        ".z-20"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#workspace-tab-history"
+              ],
+              "html": "<button id=\"workspace-tab-histor...\" type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"workspace-sidebar-pa...\" class=\"min-h-[44px] rounded...\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<nav aria-label=\"Workspace views\" class=\"relative z-20 mb-3 w-full shrink-0 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none\">",
+                      "target": [
+                        ".z-20"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "select"
+              ],
+              "html": "<select class=\"bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate\" aria-label=\"Select UI Language\" data-help-key=\"ui_language_select\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".pointer-events-auto > .bg-white\\/90.backdrop-blur-sm.border-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".w-20"
+              ],
+              "html": "<input type=\"text\" placeholder=\"Enter Language...\" class=\"text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600\" aria-label=\"Enter Language...\" data-help-key=\"ui_lang_manual_input\" value=\"\" style=\"\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".bg-white\\/90.backdrop-blur-sm.border-indigo-100:nth-child(2)"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-title"
+              ],
+              "html": "<h2 id=\"role-selection-title\" class=\"text-3xl font-black text-slate-800 mb-2 tracking-tight\">Welcome to AlloFlow</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "22.5pt (30px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-description"
+              ],
+              "html": "<p id=\"role-selection-description\" class=\"text-slate-600 mb-8 font-medium\">How will you be using the app today?</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-teal-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-teal-700\">Student</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_student\">",
+                      "target": [
+                        ".hover\\:border-teal-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-indigo-700.text-slate-700.font-bold"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-indigo-700\">Teacher</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_teacher\">",
+                      "target": [
+                        "button[data-help-key=\"role_teacher\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "select-name",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": "Expand"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "SELECT",
+          "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်",
+          "label": "Select UI Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Import Language Pack"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Language..."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Set Custom Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teacher",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Parent\nSupport learning at home with family-friendly tools.",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Independent Learner",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Enable Voice Access",
+          "label": null
+        }
+      ]
+    },
+    {
+      "name": "full-platform-320-spacing",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61665/app/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "bodyText": "Skip to Content\nLoading tools…\n140 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nMore information\nAlloFlow\nCreate\nPreview\nHistory\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\n?\nEnglish\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh (Falam) — Chin (Falam)\nLaiholh (Hakha) — Chin (Hakha)\n简体中文 — Chinese (Simplified)\n繁體中文 — Chinese (Traditional)\nدری — Dari\nNederlands — Dutch\nEsperanto\nفارسی — Farsi\nFrançais — French\nFrançais (Canada) — French (Canadian)\nDeutsch — German\nΕλληνικά — Greek\nગુજરાતી — Gujarati\nKreyòl Ayisyen — Haitian Creole\nHausa\nעברית — Hebrew\nहिन्दी — Hindi\nHmoob — Hmong\nIgbo\nBahasa Indonesia — Indonesian\nItaliano — Italian\n日本語 — Japanese\nಕನ್ನಡ — Kannada\nကညီကျိာ် — Karen\nភាសាខ្មែរ — Khmer\nIkinyarwanda — Kinyarwanda\nIkirundi — Kirundi\n한국어 — Korean\nພາສາລາວ — Lao\nLatina — Latin\nLingála — Lingala\nAf-Maay — Maay Maay\nമലയാളം — Malayalam\nमराठी — Marathi\nKajin Ṃajeḷ — Marshallese\nनेपाली — Nepali\nپښتو — Pashto\nPolski — Polish\nPortuguês (Angola) — Portuguese (Angola)\nPortuguês (Brasil) — Portuguese (Brazil)\nPortuguês (Portugal) — Portuguese (Portugal)\nਪੰਜਾਬੀ — Punjabi\nRomână — Romanian\nРусский — Russian\nSoomaali — Somali\nEspañol (España) — Spanish (Castilian)\nEspañol (Latinoamérica) — Spanish (Latin America)\nKiswahili — Swahili\nTagalog\nதமிழ் — Tamil\nతెలుగు — Telugu\nภาษาไทย — Thai\nትግርኛ — Tigrinya\nTürkçe — Turkish\nУкраїнська — Ukrainian\nاردو — Urdu\nTiếng Việt — Vietnamese\nYorùbá — Yoruba\nCustom...\nWelcome to AlloFlow\n\nHow will you be using the app today?\n\nStudent\nTeacher\nParent\nSupport learning at home with family-friendly tools.\nIndependent Learner\n\nVOICE ACCESS\n\nEnable Voice Access\n\nYour browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">140 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-label=\"Expand\" class=\"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors\">",
+                      "target": [
+                        ".border-white\\/25"
+                      ]
+                    },
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#workspace-tab-preview"
+              ],
+              "html": "<button id=\"workspace-tab-previe...\" type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"workspace-preview-pa...\" class=\"relative min-h-[44px...\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<nav aria-label=\"Workspace views\" class=\"relative z-20 mb-3 w-full shrink-0 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none\">",
+                      "target": [
+                        ".z-20"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#workspace-tab-history"
+              ],
+              "html": "<button id=\"workspace-tab-histor...\" type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"workspace-sidebar-pa...\" class=\"min-h-[44px] rounded...\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<nav aria-label=\"Workspace views\" class=\"relative z-20 mb-3 w-full shrink-0 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none\">",
+                      "target": [
+                        ".z-20"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "select"
+              ],
+              "html": "<select class=\"bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate\" aria-label=\"Select UI Language\" data-help-key=\"ui_language_select\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".pointer-events-auto > .bg-white\\/90.backdrop-blur-sm.border-indigo-100"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".w-20"
+              ],
+              "html": "<input type=\"text\" placeholder=\"Enter Language...\" class=\"text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600\" aria-label=\"Enter Language...\" data-help-key=\"ui_lang_manual_input\" value=\"\" style=\"\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300\">",
+                      "target": [
+                        ".bg-white\\/90.backdrop-blur-sm.border-indigo-100:nth-child(2)"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-title"
+              ],
+              "html": "<h2 id=\"role-selection-title\" class=\"text-3xl font-black text-slate-800 mb-2 tracking-tight\">Welcome to AlloFlow</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "22.5pt (30px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#role-selection-description"
+              ],
+              "html": "<p id=\"role-selection-description\" class=\"text-slate-600 mb-8 font-medium\">How will you be using the app today?</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-3xl w-full text-center border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none relative\">",
+                      "target": [
+                        ".shadow-2xl"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-teal-700"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-teal-700\">Student</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_student\">",
+                      "target": [
+                        ".hover\\:border-teal-400"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".group-hover\\:text-indigo-700.text-slate-700.font-bold"
+              ],
+              "html": "<span class=\"font-bold text-slate-700 group-hover:text-indigo-700\">Teacher</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.0pt (16px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button class=\"flex flex-col items-...\" data-help-key=\"role_teacher\">",
+                      "target": [
+                        "button[data-help-key=\"role_teacher\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "select-name",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": "Expand"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "SELECT",
+          "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်",
+          "label": "Select UI Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Import Language Pack"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Language..."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Set Custom Language"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teacher",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Parent\nSupport learning at home with family-friendly tools.",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Independent Learner",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Enable Voice Access",
+          "label": null
+        }
+      ]
+    }
+  ],
+  "initialKeyboardSample": [
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "label": "Import Language Pack",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Enter Language...",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Student",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Teacher",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Parent\nSupport learning at home with family-friendly tools.",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Independent Learner",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Enable Voice Access",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "SELECT",
+      "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh",
+      "label": "Select UI Language",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "label": "Import Language Pack",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Enter Language...",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Student",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Teacher",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Parent\nSupport learning at home with family-friendly tools.",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Independent Learner",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Enable Voice Access",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "SELECT",
+      "text": "English\nLeb Acholi — Acholi\nአማርኛ — Amharic\nالعربية — Arabic\nবাংলা — Bengali\nမြန်မာ — Burmese\nLaiholh",
+      "label": "Select UI Language",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "label": "Import Language Pack",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Enter Language...",
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Student",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Teacher",
+      "label": null,
+      "outline": "rgb(15, 23, 42) solid 3px"
+    }
+  ],
+  "blockedOrigins": [],
+  "pageErrors": [],
+  "finishedAt": "2026-09-13T02:17:22.519Z"
+}

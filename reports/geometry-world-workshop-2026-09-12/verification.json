@@ -1,0 +1,20 @@
+{
+  "method": "Full Geometry World suite, followed by affected-file reruns after fixes. Each file is counted once using its latest completed report.",
+  "unit": {
+    "files": 75,
+    "passed": 1366,
+    "failed": 0,
+    "pending": 0
+  },
+  "failures": [],
+  "reports": [
+    "full-tests.json",
+    "final-regressions.json"
+  ],
+  "browser": {
+    "passed": 31,
+    "failed": 0,
+    "errors": []
+  },
+  "parity": true
+}

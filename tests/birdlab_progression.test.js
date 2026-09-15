@@ -525,7 +525,7 @@ describe('BirdLab field progression and scene engagement', () => {
     expect(source).toContain("'BirdLab Habitat Field Report'");
     expect(source).toContain("'Species records'");
     expect(source).toContain("'NOT FOUND'");
-    expect(source).toContain('navigator.clipboard.writeText(reportText)');
+    expect(source).toContain('(window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(reportText)');
     expect(source).toContain("document.execCommand('copy')");
     expect(source).toContain('function switchRecordFilter(nextFilter)');
     expect(source).toContain("upd('blRecordFilter', nextFilter)");

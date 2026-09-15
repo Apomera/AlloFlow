@@ -5361,7 +5361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             finally {area.remove();if(previous&&typeof previous.focus==='function')previous.focus();}
             finish(ok);
           }
-          try {if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text).then(function(){finish(true);},fallback);}catch(e){}
+          try {if(navigator.clipboard&&navigator.clipboard.writeText)return (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function(){finish(true);},fallback);}catch(e){}
           fallback();
         }
         function printStudySheet() {
@@ -11968,7 +11968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             } catch (e) {}
             if (controls) { try { controls.dispose(); } catch (e) {} }
             dispose3dResources(scene);
-            if (renderer) { try { renderer.dispose(); } catch (e) {} }
+            if (renderer) { try { renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); } catch (e) {} }
             canvas._anatomy3dAlive = false;
             canvas._anatomy3dInstanceKey = null;
             canvas._anatomy3dSyncState = null;

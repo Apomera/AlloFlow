@@ -1,0 +1,26 @@
+{
+  "scenarios": [
+    "Signal amplitude scaling and time zoom/S–E focus preserve circuit, history, sampled cursor, and measurement values; selected and fitted traces stay clipped to the plot",
+    "Keyboard zoom/pan/reset, bounded 64× magnification, overview slider, offscreen cursor notice and recovery",
+    "Interpolated rising crossings, nearest-sample navigation, focused marker, same-direction spacing, end controls, and SI crossing export",
+    "Direction filtering, no-match recovery, separate retained voltage/current levels and milliampere entry",
+    "Exact switch jump navigates to the after snapshot and retains its discontinuity under zoom",
+    "Desktop/phone accessibility and containment, clipped paths, and persisted zoom/crossing preferences",
+    "Unknown current and failed-run suppression with example reload recovery"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

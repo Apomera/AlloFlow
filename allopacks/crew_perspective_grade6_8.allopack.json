@@ -1,0 +1,593 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 7: Two Sides of One Story",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_perspective_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL Relationship Skills (communicating effectively; resolving conflicts constructively); EL Education Crew (Crew Launch: community and belonging); Maine DOE PBIS Tier 1 (teaching perspective-taking as an expected behavior)"
+  },
+  "sourceTopic": "Perspective-taking before judgment",
+  "history": [
+    {
+      "id": "cp-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 7: Two Sides of One Story",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Respect. \"I am a respectful member of the King community.\"\n\nThis week is about the stories we tell ourselves about other people, and about asking before we decide.\n\n1. Read **Two Sides of One Story** (10 minutes).\n2. Learn the **Glossary** words, then win the **Word Scramble**.\n3. Keep the **Story or Fact?** chart open.\n4. Sort the cards in **What Do You Actually Know?**\n5. Take the quiz. Question 2 is about Dev and Priya.\n6. Open the SEL Hub and choose [Perspective Lens](#sel-hub/perspective?station=sel_station_crew_launch_perspective). Do one Viewpoint Swap on a fictional moment. Then open [Peer Support Coach](#sel-hub/peersupport?station=sel_station_crew_launch_perspective) and pick two open questions you could ask a friend without sounding like an interrogation.\n7. Use the **Sentence Frames** to take one moment apart: the fact, the story, the question.\n8. Lock it in with **Remember Notice, Hold, Ask**.\n9. Finish with the **Explore Challenge: The Other Side of the Table**.\n\nYour commitment: this week, before you decide what someone meant, ask one question first. Bring back what you found out. 🔍\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cp-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "cp-glossary"
+          },
+          {
+            "id": "cp-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cp-goal-manual",
+            "label": "I asked one question before deciding what someone meant this week, and I can say what I found out",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cp-reading",
+      "type": "simplified",
+      "title": "Two Sides of One Story",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Two Sides of One Story\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nHere is something that happens in every middle school every day. Someone does a small thing, and someone else decides what it meant. A classmate walks past your table without saying hi. A group chat goes quiet after you post. A partner in science takes the good beaker without asking. In each case, your brain writes a **story** in about half a second: they are mad at me, they think I am annoying, they do not care.\n\nThe story feels like a **fact**. It is not. It is a guess, made fast, with almost no information. Psychologists call the pattern an **attribution**: deciding why someone did something. The trouble is that we usually attribute other people's actions to who they are (\"she is rude\") and our own to the situation (\"I was in a hurry\"). That gap is where most **Crew** conflicts start.\n\nHere is a moment from a fictional Crew. Dev posts a photo of his science model in the Crew chat. Three people react. Priya, who usually reacts to everything, does not. By the next morning Dev has decided that Priya thinks his model is bad, and he does not sit near her. Priya has no idea why. Her phone had been taken away the night before. Two people spent a day being cold to each other over a story that one of them made up.\n\nThe fix is not to stop having stories. You cannot. The fix is to notice the story, hold it loosely, and ask. \"Hey, everything okay this morning?\" costs five seconds. It would have saved Dev a day. In the **Perspective** Lens tool this week you will practice a **viewpoint swap**: taking the same moment and telling it from the other person's side, with the details you actually have and the ones you filled in.\n\nWorking **cooperatively** is a Respect behavior in the King **HOWLs**, and it depends on this skill more than on anything else. Groups do not fall apart because people disagree. They fall apart because people decide what a disagreement meant before they check. A Crew where people ask before they decide can survive almost any **misunderstanding**.\n\nOne more thing. Sometimes you ask, and the answer is that the person really was upset with you. That is not a failure. Now you know, and you can do something about it. A story you made up cannot be fixed. A real problem can.",
+      "meta": "6th-8th Grade • Leveled reading • ~420 words"
+    },
+    {
+      "id": "cp-glossary",
+      "type": "glossary",
+      "title": "Perspective Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Story",
+          "def": "The explanation your brain writes for what someone did, usually fast and with little information.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Fact",
+          "def": "Something you saw or heard that anyone else in the room would agree happened.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Attribution",
+          "def": "Deciding why someone did something.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Perspective",
+          "def": "How a situation looks from one particular person's position.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Assume",
+          "def": "To treat a guess as if it were known.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Open question",
+          "def": "A question that cannot be answered with yes or no, so the other person gets to say what actually happened.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Viewpoint swap",
+          "def": "Telling the same moment from the other person's side.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Misunderstanding",
+          "def": "When two people have different stories about the same moment and neither has checked.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Hold loosely",
+          "def": "To keep a guess in mind without treating it as settled.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Cooperate",
+          "def": "To work with others toward a shared goal, even when you disagree.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 12 terms • Tiered"
+    },
+    {
+      "id": "cp-anchor",
+      "type": "anchor-chart",
+      "title": "Story or Fact?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "STORY OR FACT?",
+        "sections": [
+          {
+            "label": "A FACT",
+            "bullets": [
+              "Anyone in the room would agree it happened",
+              "Example: She walked past without saying hi"
+            ],
+            "iconPrompt": "a plain camera"
+          },
+          {
+            "label": "A STORY",
+            "bullets": [
+              "Your explanation for the fact",
+              "Written in half a second",
+              "Example: She is mad at me"
+            ],
+            "iconPrompt": "a thought bubble with a question mark"
+          },
+          {
+            "label": "THE GAP",
+            "bullets": [
+              "Other people: \"that is who they are\"",
+              "Ourselves: \"I was in a hurry\"",
+              "Most conflicts start here"
+            ],
+            "iconPrompt": "two arrows pointing at one dot from different sides"
+          },
+          {
+            "label": "NOTICE, HOLD, ASK",
+            "bullets": [
+              "Notice the story",
+              "Hold it loosely",
+              "Ask one open question"
+            ],
+            "iconPrompt": "an open hand with a small speech bubble above it"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cp-sort",
+      "type": "concept-sort",
+      "title": "What Do You Actually Know?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cp-fact",
+            "label": "FACT (you saw or heard it)",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "cp-story",
+            "label": "STORY (you decided what it meant)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "cp-ask",
+            "label": "OPEN QUESTION (finds out)",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cp-i1",
+            "content": "Priya did not react to the photo.",
+            "categoryId": "cp-fact"
+          },
+          {
+            "id": "cp-i2",
+            "content": "Priya thinks my model is bad.",
+            "categoryId": "cp-story"
+          },
+          {
+            "id": "cp-i3",
+            "content": "Hey, did you see the photo I posted?",
+            "categoryId": "cp-ask"
+          },
+          {
+            "id": "cp-i4",
+            "content": "My partner took the good beaker.",
+            "categoryId": "cp-fact"
+          },
+          {
+            "id": "cp-i5",
+            "content": "My partner thinks I am useless in the lab.",
+            "categoryId": "cp-story"
+          },
+          {
+            "id": "cp-i6",
+            "content": "How do you want to split the setup today?",
+            "categoryId": "cp-ask"
+          },
+          {
+            "id": "cp-i7",
+            "content": "The chat went quiet after I posted.",
+            "categoryId": "cp-fact"
+          },
+          {
+            "id": "cp-i8",
+            "content": "Everyone is annoyed with me.",
+            "categoryId": "cp-story"
+          },
+          {
+            "id": "cp-i9",
+            "content": "Are you mad at me? Yes or no.",
+            "categoryId": "cp-story"
+          },
+          {
+            "id": "cp-i10",
+            "content": "What was going on for you last night?",
+            "categoryId": "cp-ask"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "cp-quiz",
+      "type": "quiz",
+      "title": "Story or Fact?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "According to the reading, what is a \"story\"?",
+            "options": [
+              "The explanation your brain writes, fast, for what someone did",
+              "A lie someone tells to get out of trouble with an adult",
+              "A fact that everyone in the room would agree actually happened",
+              "A question you ask another person to find out what they meant"
+            ],
+            "correctAnswer": "The explanation your brain writes, fast, for what someone did",
+            "conceptLabel": "story is a guess"
+          },
+          {
+            "type": "mcq",
+            "question": "Why did Dev stop sitting near Priya?",
+            "options": [
+              "Priya told him in the chat that she did not like his model",
+              "The Crew leader moved the seats for a new project group",
+              "He decided her silence meant she thought his model was bad",
+              "Priya had been cold to him at lunch the day before"
+            ],
+            "correctAnswer": "He decided her silence meant she thought his model was bad",
+            "conceptLabel": "a story felt like a fact"
+          },
+          {
+            "type": "mcq",
+            "question": "Which pattern does the reading say causes most Crew conflicts?",
+            "options": [
+              "People disagreeing about how the work should get done",
+              "Explaining others by who they are and ourselves by the situation",
+              "People not liking each other from the first day of Crew",
+              "Group chats that move too fast for anyone to keep up"
+            ],
+            "correctAnswer": "Explaining others by who they are and ourselves by the situation",
+            "conceptLabel": "the attribution gap"
+          },
+          {
+            "type": "mcq",
+            "question": "What does the reading say to do with a story once you notice it?",
+            "options": [
+              "Stop having stories about people",
+              "Act on it quickly before it gets worse",
+              "Tell the story to a friend to see if they agree",
+              "Hold it loosely and ask one question"
+            ],
+            "correctAnswer": "Hold it loosely and ask one question",
+            "conceptLabel": "ask before you decide"
+          },
+          {
+            "type": "mcq",
+            "question": "You ask, and it turns out the person really was upset with you. What does the reading say about that?",
+            "options": [
+              "Asking was a mistake because it made things awkward",
+              "Now you know, and a real problem can be fixed; a made-up one cannot",
+              "You should apologize even if you do not know what for",
+              "It proves your story was right, so trust your stories next time"
+            ],
+            "correctAnswer": "Now you know, and a real problem can be fixed; a made-up one cannot",
+            "conceptLabel": "a real problem can be fixed"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A classmate walks past your table without saying hi. Write one story you could tell yourself that is not about you, and one question that would find out.",
+            "expectedAnswer": "Any non-personal story (they were late, they were thinking about a test, they did not see me) plus a question such as \"Hey, everything okay this morning?\"",
+            "conceptLabel": "ask before you decide"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of a story you told yourself about someone this month. What was the fact underneath it?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cp-frames",
+      "type": "sentence-frames",
+      "title": "Fact, Story, Question",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The fact is: ____. (Anyone in the room would agree.)"
+          },
+          {
+            "text": "The story I told myself was: ____."
+          },
+          {
+            "text": "A different story that is not about me: ____."
+          },
+          {
+            "text": "What I actually know for sure: ____. What I filled in: ____."
+          },
+          {
+            "text": "One open question I could ask: ____?"
+          },
+          {
+            "text": "If the answer is that they really were upset, I will ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Fact and story separated | The story is written as if it were the fact | Fact and story are on different lines | Fact, story, and the filled-in parts are all named |\n| A second story | No other explanation offered | One other explanation, still about me | One explanation that is about the other person's situation |\n| The question | Yes or no question, or an accusation | An open question | An open question a friend could answer without feeling accused |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cp-faq",
+      "type": "faq",
+      "title": "Perspective Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
+          "question": "What if I ask and they say \"nothing\" but obviously something is wrong?",
+          "answer": "Then you have done your part for now. \"Okay. I am around if you want to talk\" leaves the door open. You cannot make someone tell you; you can make sure they know you asked."
+        },
+        {
+          "question": "Is it nosy to ask people why they did things?",
+          "answer": "An open question about the moment (\"everything okay this morning?\") is caring. A demand (\"why did you ignore me?\") is an accusation with a question mark on it. The difference is whether the other person gets to say what actually happened."
+        },
+        {
+          "question": "What if my story turns out to be right?",
+          "answer": "Sometimes it will. Then you have a real problem instead of a guess, and real problems can be worked on. The point is not that your stories are always wrong. It is that you cannot tell which ones are right without asking."
+        },
+        {
+          "question": "Do I have to do this with everyone?",
+          "answer": "No. Do it when the story is about to change how you treat someone. That is the moment it matters."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Respect HOWL says you work cooperatively with others. Cooperation depends on not deciding what people meant before you check. Your teachers score HOWLs; Crew is where you practice them."
+        }
+      ],
+      "meta": "7 questions"
+    },
+    {
+      "id": "cp-memory",
+      "type": "memory-aid",
+      "title": "Remember Notice, Hold, Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Notice, Hold, Ask",
+        "instructions": "Each card locks in one idea from Two Sides of One Story. Look at the example aid, make it your own, and tell how it helps you catch a story.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The fix is not to stop having stories. You cannot. The fix is to notice the story, hold it loosely, and ask. A story you made up cannot be fixed. A real problem can.",
+        "lessonRef": {
+          "resourceId": "cp-reading",
+          "title": "Two Sides of One Story"
+        },
+        "cards": [
+          {
+            "id": "cp-ma-nha",
+            "target": "Notice the story, hold it loosely, ask one question",
+            "essentialFacts": [
+              "Notice the story.",
+              "Hold it loosely.",
+              "Ask one open question."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Notice, Hold, Ask: N-H-A, like \"Nah.\" When the story shows up, say \"nah\" to it in your head, then ask.",
+            "mapping": "The three steps in order spell a sound that means \"not so fast,\" which is exactly what to say to a half-second story.",
+            "scaffoldStarter": "When I notice ____, I hold it ____, and I ask ____.",
+            "scaffoldSteps": [
+              "Write the three verbs in order.",
+              "Find a sound or word their first letters make.",
+              "Say it the next time a story shows up."
+            ],
+            "coachPrompts": [
+              "Which of the three steps did Dev skip?"
+            ],
+            "studentPrompt": "Make your own three-step cue for notice, hold, ask.",
+            "reasoningPrompt": "How does your cue help you slow down a story that already feels true?",
+            "hookFact": {
+              "text": "A story you made up cannot be fixed. A real problem can.",
+              "sourceTitle": "Two Sides of One Story (this lesson)"
+            }
+          },
+          {
+            "id": "cp-ma-gap",
+            "target": "We explain others by who they are and ourselves by the situation",
+            "essentialFacts": [
+              "We usually explain other people's actions by who they are.",
+              "We usually explain our own actions by the situation."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "THEM = trait, ME = moment. \"She is rude\" versus \"I was rushing.\" Same behavior, two different explanations.",
+            "mapping": "Pairing them with trait and me with moment makes the unfairness visible in four words, so you can flip it: give them a moment too.",
+            "scaffoldStarter": "For them I say ____. For me I say ____.",
+            "scaffoldSteps": [
+              "Write one thing someone did that annoyed you.",
+              "Write the trait you gave them.",
+              "Write the moment that could explain it instead."
+            ],
+            "coachPrompts": [
+              "What moment could explain Priya not reacting?"
+            ],
+            "studentPrompt": "Make your own pair for the gap.",
+            "reasoningPrompt": "How does your pair help you give someone else a situation instead of a label?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • notice hold ask, the gap"
+    },
+    {
+      "id": "cp-challenge",
+      "type": "applied-challenge",
+      "title": "Explore Challenge: The Other Side of the Table",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Other Side of the Table",
+        "instructions": "Take one real, low-stakes moment from this week where you decided what someone meant. Write it from your side, then from theirs with only the facts you have, then ask your one question and record what you learned.",
+        "selectionMode": "manual",
+        "family": "explore",
+        "fitReason": "The HOWL behavior is working cooperatively with others. Cooperation breaks when a story is treated as a fact; exploring the other side with real facts, and then checking, is the skill itself rather than a description of it.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "explore",
+          "context": "Somewhere this week a classmate, a teammate, or a family member did something small, and you decided what it meant. Pick a moment that is low stakes: nobody was unsafe, nobody was cruel. Just a story you wrote fast.",
+          "role": "A person checking their own story",
+          "audience": "Yourself, and your Crew, who will hear the fact and the question but not the private parts",
+          "drivingQuestion": "What did I actually know, what did I fill in, and what did I find out when I asked?",
+          "seedDirection": "Write the moment from your side first, as you felt it. Then rewrite it from the other side using only facts anyone would agree on. Notice how much you filled in. Then ask your open question.",
+          "lockedLessonFacts": [
+            "A story is the explanation your brain writes for what someone did, fast and with little information.",
+            "We tend to explain others by who they are and ourselves by the situation.",
+            "The fix is to notice the story, hold it loosely, and ask one open question.",
+            "A story you made up cannot be fixed; a real problem can."
+          ],
+          "openQuestions": [
+            "Which details in my version are facts and which are filled in?",
+            "What is one explanation that is about their situation, not about me?",
+            "What open question could I ask without it sounding like an accusation?",
+            "What will I do if the answer is that they really were upset?"
+          ],
+          "stakeholders": [
+            "The other person, who has their own story",
+            "You",
+            "Your Crew, who only needs the fact and the question"
+          ],
+          "criteria": [
+            "The fact and the story are on separate lines",
+            "The other-side version uses only facts",
+            "The question is open, not yes or no",
+            "The record says what you found out, even if it was \"nothing\"",
+            "Uses at least three glossary words"
+          ],
+          "constraints": [
+            "One moment, low stakes",
+            "No names of real people in the Crew share",
+            "The question is asked in person or by voice, not in a group chat",
+            "Half a page"
+          ],
+          "deliverable": "A half-page record with four parts: my side, their side (facts only), the question I asked, what I found out.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student's lab partner took the good beaker without asking.",
+            "move": "From the other side, with facts only: \"He picked up the nearest beaker. He did not look at me.\" The question: \"Do you want to trade off who sets up?\" The answer: he had not noticed there was a better one.",
+            "whyItHelps": "It shows how little was actually known and how small the question was."
+          },
+          "frameStarter": "The fact was ____. My story was ____. From their side, the facts are ____. I asked ____. I found out ____.",
+          "frameChoices": [
+            "I was wrong about ____.",
+            "I was right about ____, and now we can ____.",
+            "They said nothing was wrong, so I ____."
+          ],
+          "coachPrompts": [
+            "Which line of your story would you not be able to point to on video?",
+            "What is the smallest question that would find out?"
+          ]
+        },
+        "coachHint": "If a student picks a high-stakes moment (someone was cruel, someone was unsafe), steer to a smaller one. This challenge is for stories, not for harm.",
+        "sourceExcerpt": "The fix is not to stop having stories. You cannot. The fix is to notice the story, hold it loosely, and ask.",
+        "lessonRef": {
+          "resourceId": "cp-reading",
+          "title": "Two Sides of One Story"
+        }
+      },
+      "meta": "6th-8th Grade • Explore brief • one moment, two sides"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_perspective",
+      "name": "Crew station: Week 7: Two Sides of One Story",
+      "tools": [
+        "perspective",
+        "peersupport"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 7: Two Sides of One Story pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_perspective_time",
+          "type": "timeSpent",
+          "toolId": "perspective",
+          "label": "Spend 5 minutes in Perspective Lens",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_perspective_check",
+          "type": "manualComplete",
+          "toolId": "peersupport",
+          "label": "I asked one question before deciding what someone meant this week, and I can say what I found out",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

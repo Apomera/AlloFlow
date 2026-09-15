@@ -39,7 +39,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _gsAC = null;
-  function getGsAC() { if (!_gsAC) { try { _gsAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_gsAC && _gsAC.state === "suspended") { try { _gsAC.resume(); } catch(e) {} } return _gsAC; }
+  function getGsAC() { if (!_gsAC) { try { _gsAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_gsAC && _gsAC.state === "suspended") { try { _gsAC.resume(); } catch(e) {} } return _gsAC; }
   function gsTone(f,d,tp,v) { var ac = getGsAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxGsClick() { gsTone(600, 0.03, "sine", 0.04); }
   function sfxGsSuccess() { gsTone(523, 0.08, "sine", 0.07); setTimeout(function() { gsTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { gsTone(784, 0.1, "sine", 0.08); }, 140); }
@@ -1717,7 +1717,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() {
                   var gd = { version: 2, name: projectName, gridW: gridW, gridH: gridH, gameType: gameType, tiles: tiles, sprites: sprites, events: events };
                   var code = btoa(unescape(encodeURIComponent(JSON.stringify(gd))));
-                  navigator.clipboard.writeText(code).then(function() {
+                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(code).then(function() {
                     if (addToast) addToast('\uD83D\uDCCB Share code copied!', 'success');
                   });
                 },

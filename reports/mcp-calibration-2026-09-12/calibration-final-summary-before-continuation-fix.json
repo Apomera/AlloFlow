@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-09-12T22:20:35.274Z",
+  "command": "npm run verify:mcp-calibration -- --reporter=json --outputFile=reports/mcp-calibration-2026-09-12/calibration-final.json",
+  "files": 11,
+  "passed": 97,
+  "failed": 0,
+  "skipped": 0,
+  "strictNoSkipValidation": true,
+  "selectedTests": [
+    "tests/doc_pipeline_inherited_contrast.test.js",
+    "tests/doc_pipeline_placeholder_audit_payload.test.js",
+    "tests/mcp_agent_bridge_e2e.test.js",
+    "tests/mcp_agent_bridge_restart_e2e.test.js",
+    "tests/mcp_http_transport.test.js",
+    "tests/mcp_keyless_workflow.test.js",
+    "tests/mcp_refinement_expert_annotations.test.js",
+    "tests/mcp_refinement_study_analysis.test.js",
+    "tests/mcp_refinement_study_protocol.test.js",
+    "tests/mcp_refinement_study_runner.test.js",
+    "tests/remediation_visibility_selector_recovery.test.js"
+  ],
+  "sourceSha256": "299f8d3f7f6e2e402c72009617edf268b773a2d88688470341344e6276bffd68",
+  "generatedSha256": "79005470c06a4dc408c53bc645e35f3f19e80b48316e21b8cd3645dbd882a8a5",
+  "evidenceClass": "Automated fixture, protocol, recovery, and source regression evidence; no live provider calls or human quality calibration."
+}

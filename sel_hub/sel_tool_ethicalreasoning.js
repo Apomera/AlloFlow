@@ -2098,8 +2098,8 @@ window.SelHub = window.SelHub || {
 
             // Copy/export button
             h('button', { onClick: function() {
-              if (navigator.clipboard && d.dtSummary) {
-                navigator.clipboard.writeText(d.dtSummary).then(function() {
+              if (d.dtSummary) {
+                window.SelHub.copyText(d.dtSummary).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
                   addToast('\u2705 Decision tree copied to clipboard!');
                 }).catch(function() {
                   addToast('Could not copy. Try selecting and copying the text manually.');

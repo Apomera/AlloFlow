@@ -1705,3 +1705,204 @@ reflection prompts, 30 conference occasions and 30 harms are real content and st
 scripts stay in `scratch/` and the scratchpad; a gate would need an allow-list for legitimate
 per-grade copies elsewhere in the hub (none found tonight, but the emotions and zones tools carry
 per-band variants by design).
+
+### 19n. 2026-09-13 (night, second walk) — the first screen a student sees from a pack link
+
+**Method.** `scratch/crew_tools_shots.cjs`: real Chromium, the real hub module and all 72 tools,
+no AI provider, the host's Tailwind loaded (four tools are className-styled and looked broken
+without it, which was the harness, not the tools), a viewport meta so the phone viewport is a phone
+and not a scaled desktop, a station active, each of the 13 Crew-linked tools opened the way a pack
+link opens it. Desktop 1280x800 and phone 390x844, 26 shots, zero page errors, no horizontal
+overflow anywhere.
+
+**What the shots showed.**
+- Desktop: the tool was below the fold. Above it sat the "Saving and sharing" disclosure, the
+  "Learning guide and ways to practice" disclosure, the station block, then the tool header. A
+  student who clicked "Emotion Zones" saw two empty-looking boxes and a pink panel.
+- Phone: the same stack filled two screens before any tool content, and the header's three pills
+  ("5-8 min", "Private checkpoint", "Share Packet eligible") took two more rows.
+- HOWL Tracker greeted the student with 27 section tabs in three rows, most of them for the adult
+  who runs Crew (protocols, climate scenarios, rituals, opener randomizer, coaching moves).
+- Self-Advocacy Studio's profile heading read "My's Learning Profile" when no name was set.
+
+**FIXED — tool first.** In the tool view the order is now station guide, tool, then the learning
+guide and the saving disclosure below it. The catalog view is unchanged. The station guide is
+tighter while a tool is open (smaller padding, 16px title, shorter summary padding).
+
+**FIXED — phone.** With a tool open on a narrow screen the station's tool chips fold into the
+steps disclosure (summary: "Station tools, steps and reflection"); the steps' own "Open activity"
+buttons and the catalog view still reach every station tool. The two policy pills give way; the
+time pill and Export stay. The tool's own tab bar is now on the first phone screen.
+
+**FIXED — HOWL Tracker tabs.** Fifteen student sections show (Home, Pulse, Goals, Goal Coach,
+Weekly check-in, History, SLC rehearsal, Print, HOWL Radar, SMART Lab, Rubric, Quarter Timeline,
+Exemplars, Reflection, Graduate). Twelve sit behind "For Crew leaders (12)" (`aria-expanded`,
+`aria-controls`), which opens itself when the current section is one of them. Stored in tool data
+as `showLeaderTabs`.
+
+**FIXED — "My's Learning Profile"** in `sel_tool_selfadvocacy.js`: "My Learning Profile" until a
+name is entered, then "Name's Learning Profile".
+
+**Verification.** `tests/sel_station_resume.test.js` (9): on a 390px viewport the station nav is
+inside the disclosure and the summary reads "Station tools…"; at desktop width it is not.
+`tests/sel_howl_content_honesty_2.test.js` (10): default mount shows at most 16 tabs and no leader
+tab; the toggle reports collapsed; a click adds 12; opened on Protocols the leader row is already
+there. Eleven hub and HOWL suites plus the click sweep: 300 passed. a11y gate 0/0. The shots were
+retaken after each change and read.
+
+**Seen, not changed.** Emotion Zones' own tab bar has 14 tabs and scrolls sideways on desktop;
+Executive Function opens on a locked progression ("2/11") that a 15-minute Crew slot will not
+unlock; Growth Mindset shows an "AI Coach" tab with AI off (19c confirmed it explains itself). Each
+is a tool-design question rather than a defect, and each is worth a look before the PD.
+
+### 19o. 2026-09-13 (night, third pass) — what the first screen says and offers
+
+Follow-through on the "seen, not changed" list in 19n, plus one thing the walk made obvious once
+the tool was on the first screen: the hub's header line under every tool.
+
+**FIXED — eight generic "Next step" lines.** The tool header shows Purpose, Next step and Saved
+work. Five of the thirteen Crew tools had a specific next step in `_standardShellTools`; the other
+eight showed "Complete one small step, then decide whether to save." They now say what the first
+step is, matched to what the Crew packs ask for: Executive Function "Go to Start and pick one launch
+move for today, then Hold to choose your capture spot."; HOWL Tracker "Log a Pulse, then do the
+Weekly check-in: rate each HOWL and add one specific example."; Growth Mindset "Open Reframe It…";
+DEAR MAN, Window of Tolerance, Sensory Regulation, Crew Protocols, Perspective Lens likewise, each
+with a time estimate.
+
+**FIXED — Emotion Zones: 23 tabs became 9 plus "More (14)".** Check-In, Zone Wheel, In-the-Moment,
+Pulse, Breathe, Body Map, My Plans, My Toolbox and History show; the other fourteen (Day Compass,
+Explore, Body Mapper Pro, Scenarios, Sorter Game, Zone Quiz, Strategy Matcher, Help a Friend,
+Descriptors, Triggers, Classroom, Parents, Limits, Heatmap) sit behind a toggle with `aria-expanded`
+that opens itself when the active tab is one of them. The arrow-key ring covers the visible tabs.
+
+**FIXED — Executive Function looked locked.** Unexplored tabs were slate-600 at weight 500 under a
+"2/11" badge, which reads as a progression lock; there is none (the badge counts explored tabs).
+Tabs are now dark text at weight 600 and the badge reads "2 of 11 explored".
+
+**FIXED — Growth Mindset's AI coach with no provider.** The tab read "AI Coach" and opened a chat
+with a disabled input and the placeholder "Tell me what you're struggling with…". With no provider
+the tab now reads "AI Coach (off)" and the panel says "The AI coach is off here… Reframe It does the
+same work by hand" with an "Open Reframe It" button. The consent screen, where the safety layer
+provides one, still comes first.
+
+**Verification.** `tests/sel_crew_first_screen.test.js` (17): every one of the 13 Crew tools has a
+specific next line over 30 characters; Zones shows 9 tabs, the toggle adds 14, a hidden active tab
+opens the row, End moves to the last visible tab; Executive Function's badge and tab colour; Growth
+Mindset's off state and hand-off. Click sweep, wired-content, links, Crew AI-off, station resume and
+controls suites rerun; a11y gate and ratchet rerun; screenshots retaken.
+
+### 19p. 2026-09-13 (late night) — the words Crew, HOWL and EL Education are defined where they are used
+
+**Aaron's question.** "We have Crew nomenclature but do we actually explain what a Crew is for
+those uninitiated to EL?" The audit said no. The six Crew Launch packs cited "EL Education Crew" in
+their standards lines and one of them (norms) had a student glossary entry for Crew; none defined
+HOWL or EL Education, none linked anywhere, and their FAQs assumed the reader knew what a HOWL grade
+was. The HOWL Tracker's Library has a good "Crew as the heart of school" entry but no links. Crew
+Protocols' About tab links EL Education among its sources. The hub's tool descriptions use "Crew
+time" as if it were "homeroom".
+
+**Sources, verified tonight.** King's "Expeditionary Learning Model" page, King's Student and
+Family Handbook grading guide (the three HOWL statements; HOWLs graded per class on progress reports
+and trimester report cards, apart from academics), King's About page (one of the first ten EL
+schools, 1992; EL Credentialed and Mentor School since 2016), and the Hechinger Report's 2018 piece
+on Crew at King were read and say what is attributed to them. EL Education's own pages (Crew; the
+Core Practice "Building the Culture and Structure of Crew"; the Core Practices list) load but render
+by script, so they are linked as the organisation's pages on each topic and not quoted.
+
+**FIXED — one primer, four places.**
+- `window.SelHub.elPrimer` (four terms: EL Education, Crew, HOWLs, Protocols and learning targets;
+  six sources) and `window.SelHub.renderElPrimer(h, { fg, bg, bd, open })`, a collapsed disclosure
+  "New to Crew or HOWLs? Start here" with the terms as a definition list and the sources as links
+  that open in a new tab (`rel="noopener noreferrer"`, "opens in a new tab" for screen readers).
+- HOWL Tracker: Home shows it collapsed above the quarter banner; Library shows it open.
+- Crew Protocols: About shows it open above the sources, with a King source card added.
+- The six packs: every glossary now defines Crew and HOWL (bolded on first use in the reading like
+  any glossary word); every FAQ opens with "What is Crew, anyway?" and "What is a HOWL?", each
+  answer linking King's pages and EL's; the glossary and FAQ meta counts were corrected on the way
+  (they said "10 terms" and "5 questions" regardless).
+- `docs/EL_CREW_PRIMER.md`: the one-page teacher primer with the same terms, the HOWL table, the
+  sources with dates, and how AlloFlow uses the words.
+
+**Verification.** `tests/sel_el_primer.test.js` (11): the doc exists with the three statements and
+the King and EL links; all six packs carry the glossary terms, the two FAQ openers with their links,
+and the bolded term in the reading; the hub exposes the primer with four terms and six https
+sources; HOWL Home renders it collapsed and Library open, Crew Protocols About with the King card;
+every rendered link is https, new-tab, noopener, and announced. Pack audit: 10 resources, 0 issues
+per pack. Link and Crew AI-off suites, catalog suites, HOWL suites, click sweep, first-screen suite
+rerun; a11y gate and ratchet rerun.
+
+**Not done.** The hub's two Crew tool descriptions still say "Crew time" without a gloss; the
+catalog card for a Crew pack does not say what Crew is (the FAQ inside does). Both are one-liners
+for the next pass, after Aaron decides how much the general catalog should assume EL vocabulary.
+
+### 19q. 2026-09-13 (late night) — the Crew Launch teacher guide
+
+`docs/CREW_LAUNCH_TEACHER_GUIDE.md`, one page per week for the six packs, written from the packs
+themselves: the 40-minute run sheet with minute marks (the packs say 40, not the 15 I had been
+assuming), the Hub step and what the tool opens on, the commitment, an evidence pair (what counts,
+what does not) in the HOWL's own language, the predictable questions lifted from each pack's FAQ,
+and a 15-minute trim. A "before week 1" page covers loading a pack, no student AI, the run sheet,
+the station's two steps, what HOWL evidence means, and the objectives. An "after week 6" page
+points at the HOWL Tracker History read-aloud and names candidates for weeks 7 to 12. Also
+published as a shareable page for Christian's teachers. Not a code change; nothing to test beyond
+the packs it was read from.
+
+### 19r. 2026-09-13 (late night) — Crew Launch weeks 7 to 12, and a clipboard defect in twelve tools
+
+**Six new packs**, same shape and generator as weeks 1 to 6 (`gen_crew_lib2.py` loads the week 1-6
+helpers without running them; `gen_crew_launch_2a/2b/2c.py`), two per HOWL:
+
+| Wk | Pack | HOWL behavior | Hub tools | Commitment |
+|---|---|---|---|---|
+| 7 | `crew_perspective` Two Sides of One Story | Respect: work cooperatively | Perspective Lens, Peer Support Coach | ask one question before deciding what someone meant |
+| 8 | `crew_upstander` Small Moves, Not Big Speeches | Respect: respectful member of the community | Upstander Training, Peer Support Coach | one small move when someone is left out or talked over |
+| 9 | `crew_attention` Where Your Attention Goes | Responsibility: participate fully and mindfully | Digital Wellbeing Studio, Executive Function | phone in the bag for one class a day; notice the first reach |
+| 10 | `crew_halfway` The Halfway Check | Responsibility: prepared; thoughtful and timely | Goal Setter, HOWL Tracker, Executive Function | one change from the review, five days, a count |
+| 11 | `crew_teamwork` Your Part of the Whole | Perseverance: high quality work | Teamwork Builder, DEAR MAN | name your part (what, where, by when) and finish it |
+| 12 | `crew_story` The Story of Your Trimester | Perseverance: self-assess, learn from feedback | HOWL Tracker, Strengths Finder | rehearse the two-minute story; change one thing from feedback |
+
+Week 10 reopens the week-4 system and the September HOWL Tracker goal. Week 12 is the student-led
+conference rehearsal (King holds them; the reading says so) and closes the trimester with one level,
+one piece of evidence, and one gap per HOWL. Each pack: reading (fictional Crew, one named moment),
+10 glossary terms plus Crew and HOWL, chart, sort, quiz (5 MCQ + short answer), frames with rubric,
+FAQ opening with the two EL questions, memory aid, applied challenge, station with two steps,
+images shot list. All twelve packs audit at 10 resources, 0 issues.
+
+**A quiz balancer, because the audit caught me.** The first two new quizzes had the correct answer
+in position B three times of five and as the longest option. `balance_quiz(items, positions)` in the
+lib now places each correct answer at a chosen position and refuses to write a quiz whose correct
+answer is more than 1.35x the longest distractor or under 0.6x the shortest (the audit's rule), so
+the tell is fixed in the wording before the file exists.
+
+**FIXED — twelve SEL tools called the clipboard directly.** Linking Strengths Finder from week 12
+put it in the Crew AI-off click sweep, which threw on a copy button: `navigator.clipboard` is
+undefined in jsdom, and the tool called `.writeText` on it unguarded. The wider fact, already
+recorded for the STEM tools on 2026-09-06 and never checked on the SEL side: Gemini Canvas blocks
+`navigator.clipboard` by permissions policy, so every copy button that calls it directly fails on
+every click there. Twelve SEL tools did (32 call sites: advocacy 5, restorativecircle 10, and one or
+two each in civicaction, community, dearman, ethicalreasoning, execfunction, goals, safety,
+selfadvocacy, strengths, teamwork). None used the shell's `window.alloCopyText`, which has the
+execCommand fallback Canvas needs.
+
+Now: `window.SelHub.copyText(text)` in the hub module (shell helper first, then the Clipboard API,
+then execCommand; resolves true or false, never throws) and `window.SelHub.COPY_UNAVAILABLE`, the
+line a tool shows on false ("Copy is not available here. Select the text and press Ctrl+C…"). All
+32 sites rerouted; the three that toasted "Copied" before the copy resolved now toast inside the
+resolved branch; DEAR MAN's existing select-the-text fallback runs on false.
+
+**Verification.** `tests/sel_copy_text.test.js` (16): no tool contains `navigator.clipboard`;
+exactly twelve route through the helper with a failure line; the helper prefers the shell helper,
+uses the API without one, falls back to execCommand when the API rejects (the Canvas case) and
+reports what execCommand said, and resolves false without throwing or leaving a textarea when there
+is no clipboard at all. `tests/sel_crew_path_ai_off.test.js` now walks 18 linked tools (was 13).
+Pack-count tests updated to twelve; the screenshot walk reads its tool list from the packs. Suites
+run: copy, Crew AI-off, links (85), primer (23), station resume, catalog: green; three suites timed
+out once under seven-way parallel load and passed alone (timeouts, not assertions). a11y 0/0;
+ratchet 1. Real Chromium: station click, close, reopen and exit on all twelve packs, and the
+first-screen walk of all eighteen tools, both green: 12 of 12 packs opened the tool, started the station, showed the first step, resumed
+after close, and cleared on exit; 18 of 18 tools rendered on desktop and phone with no page errors
+and no horizontal overflow. The walk showed the five new tools with the generic header line; they
+now have specific Next-step lines, and the first-screen test reads its tool list from the packs.
+
+**Teacher guide.** The glance table carries twelve weeks; the "after week 6" section names the six
+packs and says their per-week pages are the next writing task.

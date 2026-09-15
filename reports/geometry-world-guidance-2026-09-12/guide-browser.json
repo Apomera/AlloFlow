@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "pass": true,
+      "label": "Guide artwork leaves every Harbor cell intact"
+    },
+    {
+      "pass": true,
+      "label": "Pinned guide is represented in both compass and world nameplate"
+    },
+    {
+      "pass": true,
+      "label": "Pin redraw reuses the texture and preserves consistent unlit typography"
+    },
+    {
+      "pass": true,
+      "label": "Decorative compass stays hidden from assistive technology"
+    },
+    {
+      "pass": true,
+      "label": "High contrast theme repaints guide textures"
+    },
+    {
+      "pass": true,
+      "label": "Ungraded welcome remains a discovery and removing pin clears both representations"
+    },
+    {
+      "pass": true,
+      "label": "Answer and contrast changes retain the same GPU texture"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "before": {
+    "count": 2673,
+    "name": "Harbor Welcome",
+    "uuid": "89073D80-4D68-4FF5-BCCF-D6DB77B1EEA1",
+    "kind": "discovery"
+  },
+  "tracked": {
+    "name": "Harbor Welcome",
+    "state": {
+      "kind": "discovery",
+      "tracked": true,
+      "contrast": false
+    },
+    "uuid": "89073D80-4D68-4FF5-BCCF-D6DB77B1EEA1",
+    "hidden": "true",
+    "toneMapped": false,
+    "depthWrite": false
+  },
+  "contrast": {
+    "kind": "discovery",
+    "tracked": true,
+    "contrast": true
+  },
+  "after": {
+    "state": {
+      "kind": "discovery",
+      "tracked": false,
+      "contrast": false
+    },
+    "pinned": false,
+    "uuid": "89073D80-4D68-4FF5-BCCF-D6DB77B1EEA1"
+  },
+  "failure": "locator.selectOption: Timeout 90000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Time of day / environment preset', { exact: true })\u001b[22m\n\n    at eval (<anonymous>:54:74)",
+  "pass": false
+}

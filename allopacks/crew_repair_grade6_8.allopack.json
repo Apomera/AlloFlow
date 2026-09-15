@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "Repair When Something Goes Wrong",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Repair When Something Goes Wrong\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nThe second respect behavior in the King HOWLs is **stewarding** community **resources** and materials. A steward is someone who takes care of something that belongs to everyone. The Crew room, the shared laptops, the field trip gear, the time the group has together: none of it belongs to one person, and all of it can be damaged.\n\nThings will go wrong. A laptop gets left on the bus. A shared marker set comes back with half the caps missing. Someone borrows a Crew member's charger and forgets to return it. The question is not whether **harm** happens. It is what happens next.\n\nThere are two ways to think about what happens next. The first asks, \"What rule was broken, and what is the punishment?\" The second asks, \"Who was **affected**, what do they need, and how do we make it right?\" The second one is called a **restorative** approach. It does not skip **responsibility**. It puts responsibility to work.\n\nHere is a fictional example. Jonah borrowed the Crew's speaker for a project and returned it with a cracked case. In a punishment approach, Jonah loses speaker privileges for a month, and the Crew still has a cracked speaker. In a restorative approach, the Crew leader, Ms. Delgado, asks four questions. What happened? Who was affected? What do they need? What will you do to **repair** it? Jonah explains it fell off a desk. The Crew was affected because the speaker is shared. They need it to work for Friday. Jonah tapes the case, tests it, and offers to be the one who carries it on Friday. The Crew gets its speaker back, and Jonah gets his **standing** back. Both matter.\n\nRepair has three moves. Name it: say plainly what happened without excuses or blame. Own it: say what part was yours. Fix it: do something that helps the people affected, not just something that makes you feel less bad. An **apology** without a fix is only the first move.\n\nRepair is also something the people affected take part in. If you were the one whose charger was lost, you can say what you need. Maybe it is the charger back. Maybe it is a heads-up next time. Saying what you need is not being difficult. It is how repair gets done accurately.\n\nStewardship is the quiet version of repair. It is the habit of putting things back, plugging things in, and checking the cart before Crew ends, so that most of the time nothing needs repairing at all. A Crew that stewards well spends its time on each other instead of on missing caps.",
+      "data": "## Repair When Something Goes Wrong\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nThe second respect behavior in the King **HOWLs** is **stewarding** community **resources** and materials. A steward is someone who takes care of something that belongs to everyone. The **Crew** room, the shared laptops, the field trip gear, the time the group has together: none of it belongs to one person, and all of it can be damaged.\n\nThings will go wrong. A laptop gets left on the bus. A shared marker set comes back with half the caps missing. Someone borrows a Crew member's charger and forgets to return it. The question is not whether **harm** happens. It is what happens next.\n\nThere are two ways to think about what happens next. The first asks, \"What rule was broken, and what is the punishment?\" The second asks, \"Who was **affected**, what do they need, and how do we make it right?\" The second one is called a **restorative** approach. It does not skip **responsibility**. It puts responsibility to work.\n\nHere is a fictional example. Jonah borrowed the Crew's speaker for a project and returned it with a cracked case. In a punishment approach, Jonah loses speaker privileges for a month, and the Crew still has a cracked speaker. In a restorative approach, the Crew leader, Ms. Delgado, asks four questions. What happened? Who was affected? What do they need? What will you do to **repair** it? Jonah explains it fell off a desk. The Crew was affected because the speaker is shared. They need it to work for Friday. Jonah tapes the case, tests it, and offers to be the one who carries it on Friday. The Crew gets its speaker back, and Jonah gets his **standing** back. Both matter.\n\nRepair has three moves. Name it: say plainly what happened without excuses or blame. Own it: say what part was yours. Fix it: do something that helps the people affected, not just something that makes you feel less bad. An **apology** without a fix is only the first move.\n\nRepair is also something the people affected take part in. If you were the one whose charger was lost, you can say what you need. Maybe it is the charger back. Maybe it is a heads-up next time. Saying what you need is not being difficult. It is how repair gets done accurately.\n\nStewardship is the quiet version of repair. It is the habit of putting things back, plugging things in, and checking the cart before Crew ends, so that most of the time nothing needs repairing at all. A Crew that stewards well spends its time on each other instead of on missing caps.",
       "meta": "6th-8th Grade • Leveled reading • ~450 words"
     },
     {
@@ -105,9 +105,19 @@
           "term": "Standing",
           "def": "How the group sees you. Repair gives it back.",
           "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
         }
       ],
-      "meta": "6th-8th Grade • 10 terms • Tiered"
+      "meta": "6th-8th Grade • 12 terms • Tiered"
     },
     {
       "id": "cr-anchor",
@@ -361,6 +371,14 @@
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": [
         {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
           "question": "Does repair mean nobody gets consequences?",
           "answer": "No. Repair is a consequence: you do the work of making it right. It is usually harder than losing a privilege, and it is the only one that gives the group its thing back."
         },
@@ -381,7 +399,7 @@
           "answer": "The Respect HOWL includes stewarding community resources and materials. Putting things back and repairing what breaks is what teachers are looking for when they score it."
         }
       ],
-      "meta": "5 questions"
+      "meta": "7 questions"
     },
     {
       "id": "cr-memory",

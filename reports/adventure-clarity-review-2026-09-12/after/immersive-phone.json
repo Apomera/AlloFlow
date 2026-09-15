@@ -1,0 +1,52 @@
+{
+  "name": "immersive-phone",
+  "errors": [],
+  "text": "No Scene Image\n\nLvl 2\n💰\n20\nMake a Choice\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nJourney notebook\nRecorded decisions: 3\n+",
+  "scrollAreas": [],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Read each scene automatically",
+      "disabled": false,
+      "top": 17,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Hide UI",
+      "disabled": false,
+      "top": 17,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Exit Immersive Mode",
+      "disabled": false,
+      "top": 17,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Inventory",
+      "disabled": false,
+      "top": 107,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Make a Choice",
+      "disabled": false,
+      "top": 399,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

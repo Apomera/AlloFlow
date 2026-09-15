@@ -1,0 +1,48 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "canvas": {
+        "x": 76,
+        "y": 419.59375,
+        "width": 1128,
+        "height": 580
+      },
+      "basket": {
+        "left": 661.1111111111112,
+        "right": 854.6111111111112,
+        "top": 784.0444444444444,
+        "bottom": 1009.7944444444444,
+        "width": 2256,
+        "height": 1160
+      }
+    },
+    {
+      "width": 320,
+      "canvas": {
+        "x": 6,
+        "y": 483.5,
+        "width": 308,
+        "height": 360
+      },
+      "basket": {
+        "left": 141.52586206896552,
+        "right": 227.02586206896552,
+        "top": 471.5346206896552,
+        "bottom": 571.2846206896552,
+        "width": 616,
+        "height": 760
+      }
+    }
+  ],
+  "assertions": [
+    "Only 13 eligible crop plots are collected; unready, low-health, and habitat plots remain",
+    "Distinct produce travels from actual plot centers into the basket",
+    "Basket contents survive planning and restored saves without replaying animation",
+    "Collection expires, cancels on reset, and releases references on unmount",
+    "Reduced-motion frames are identical at different scene times",
+    "Desktop, mobile, night, and maximized visuals fit; garden state and canvas context stay unchanged"
+  ],
+  "errors": [],
+  "accessibility": []
+}

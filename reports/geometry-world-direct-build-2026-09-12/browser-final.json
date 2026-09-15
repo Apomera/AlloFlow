@@ -1,0 +1,95 @@
+{
+  "assertions": [
+    {
+      "name": "A low-pitch roof exports as one closed printable component",
+      "pass": true,
+      "details": {
+        "parts": 1,
+        "open": 0,
+        "nonManifold": 0
+      }
+    },
+    {
+      "name": "Quarter-turn rotation previews through the canvas control",
+      "pass": true
+    },
+    {
+      "name": "Quarter-turn swaps the rectangular footprint",
+      "pass": true
+    },
+    {
+      "name": "Handles follow the browser fullscreen element",
+      "pass": true
+    },
+    {
+      "name": "Handles return to the page after leaving fullscreen",
+      "pass": true
+    },
+    {
+      "name": "Repeated arrow keys accumulate grid steps",
+      "pass": true
+    },
+    {
+      "name": "Cancel resets the next keyboard move to one cell",
+      "pass": true
+    },
+    {
+      "name": "Touch handles provide a 44px target",
+      "pass": true,
+      "details": {
+        "x": 88.734375,
+        "y": 343.828125,
+        "width": 46,
+        "height": 46
+      }
+    },
+    {
+      "name": "Touch dragging previews without placing or breaking blocks",
+      "pass": true
+    },
+    {
+      "name": "Exiting touch manipulation removes the overlay",
+      "pass": true
+    },
+    {
+      "name": "Visibility filtering excludes a block hidden directly behind another",
+      "pass": true,
+      "details": {
+        "visible": [
+          {
+            "x": 0,
+            "y": 1,
+            "z": 2
+          }
+        ],
+        "all": [
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "Planted apron faces upward and courtyard keeps three draw calls",
+      "pass": true,
+      "details": {
+        "upward": 72,
+        "cast": 3,
+        "drawCalls": 3
+      }
+    },
+    {
+      "name": "Welcome navigation remains available after direct editing",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Local Chromium, real WebGL, fullscreen and emulated touch."
+}

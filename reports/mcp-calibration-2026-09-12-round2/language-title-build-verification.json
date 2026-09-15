@@ -1,0 +1,24 @@
+{
+  "sourceSha256": "43df46187f382c55e53012f8dd1240ae71d53c885fdfc25c9f0fbccb6f8a9b85",
+  "rootModuleSha256": "6e4f854ff2c8ae90156a303f8c69337c7261912ce742882f01f5dae220c1ca63",
+  "desktopModuleSha256": "6e4f854ff2c8ae90156a303f8c69337c7261912ce742882f01f5dae220c1ca63",
+  "shippingMirrorsEqual": true,
+  "sourceBabelParse": true,
+  "generatedSyntaxParse": true,
+  "sourceLfOnly": true,
+  "existingNulBytes": 3,
+  "focusedTests": {
+    "passed": 27,
+    "failed": 0,
+    "total": 27,
+    "command": "node node_modules/vitest/vitest.mjs run tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js tests/ell_language.test.js --maxWorkers=1"
+  },
+  "buildCommand": "node _build_doc_pipeline_module.js",
+  "integrityCommand": "node check-pipeline-integrity.js",
+  "changes": [
+    "Apply existing detected-language helper immediately after generated wrapper, before both baseline audits.",
+    "Preserve existing attributed titles in foundations and primary preflight; replace explicit title text safely without retaining stale language."
+  ],
+  "scoringPolicyChanged": false,
+  "sourceProseChanged": false
+}

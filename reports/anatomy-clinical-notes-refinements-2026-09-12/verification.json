@@ -1,0 +1,18 @@
+{
+  "syntax": "pass",
+  "sha256": "b9c2d3e64ff752970239433e3839439876f40791a25e329227e84c45b5656a42",
+  "mirrorIdentical": true,
+  "clinicalNotes": 13,
+  "localizedStrings": 33,
+  "validatedPacks": 6,
+  "testFiles": 44,
+  "passedTests": 818,
+  "failedTests": 0,
+  "axeScans": 35,
+  "axeViolations": 0,
+  "axeIncomplete": 1,
+  "reviewedIncomplete": 1,
+  "reviewedContrastRatio": 9.896764973632585,
+  "browserErrors": 0,
+  "screenshots": 10
+}

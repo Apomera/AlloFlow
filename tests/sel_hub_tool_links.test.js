@@ -378,9 +378,9 @@ describe('SEL Hub · every #sel-hub link shipped in a pack resolves to a real to
     }
   });
 
-  it('the six Crew Launch packs link at least one Hub tool each', () => {
+  it('the twelve Crew Launch packs link at least one Hub tool each', () => {
     const crew = packs.filter((f) => f.startsWith('crew_'));
-    expect(crew.length).toBe(6);
+    expect(crew.length).toBe(12);
     for (const f of crew) {
       const text = readFileSync(resolve(ROOT, 'allopacks', f), 'utf8');
       expect(text, f).toMatch(/\]\(#sel-hub\/[A-Za-z]+\?station=sel_station_crew_launch_[a-z]+\)/);

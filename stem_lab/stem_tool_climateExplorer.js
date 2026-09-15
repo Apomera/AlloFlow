@@ -35,7 +35,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
   // ── Sound Effects ──
   var _audioCtx = null;
-  function getAudioCtx() { if (!_audioCtx) try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} return _audioCtx; }
+  function getAudioCtx() {
+    if (!_audioCtx) { try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
+    if (_audioCtx && _audioCtx.state === 'suspended') { try { _audioCtx.resume(); } catch(e) {} }
+    return _audioCtx;
+  }
   function playTone(freq, dur, type, vol) {
     var ac = getAudioCtx(); if (!ac) return;
     var o = ac.createOscillator(), g = ac.createGain();
@@ -301,10 +305,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       var tab = d.tab || 'carbon';
       // Carbon state
-      var ccTransport = d.ccTransport || 0;
-      var ccFood = d.ccFood || 0;
-      var ccEnergy = d.ccEnergy || 0;
-      var ccWaste = d.ccWaste || 0;
+      // A saved project file is INPUT: a student can hand-edit it, copy it, or
+      // carry it between tool versions. `|| 0` catches null but NOT an index
+      // that is out of range, fractional, or a non-numeric string -- and
+      // CARBON.<cat>.opts[bad].kg then threw, blanking the whole lab through
+      // the shell's unkeyed error boundary. Clamp to a real option instead.
+      // Same shape as WeldLab's persistedIndex(), defaulting rather than -1
+      // because these four always need a valid selection.
+      function ccIndex(raw, len) {
+        var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+        if (!isFinite(n)) return 0;
+        n = Math.floor(n);
+        return (n >= 0 && n < len) ? n : 0;
+      }
+      // NOTE: CARBON is declared far below this line. `var` hoists the
+      // declaration but not the assignment, so its option counts cannot be
+      // read here -- the clamp happens where CARBON is live, just above
+      // carbonTotal(). These four hold the RAW persisted values until then.
+      var ccTransport = d.ccTransport;
+      var ccFood = d.ccFood;
+      var ccEnergy = d.ccEnergy;
+      var ccWaste = d.ccWaste;
       var ccScale = d.ccScale || 'school';
       var ccSchoolSize = d.ccSchoolSize || 500;
       // Renewables state
@@ -312,7 +333,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var rsWind = d.rsWind != null ? d.rsWind : 5;
       var rsHydro = d.rsHydro != null ? d.rsHydro : 15;
       var rsNuclear = d.rsNuclear != null ? d.rsNuclear : 10;
-      var rsTimespan = d.rsTimespan || 25;
+      // buildTimeline() loops `y <= rsTimespan` and the readouts index
+      // timeline[length-1], so a persisted -1 / "abc" / {} produced an EMPTY
+      // timeline and threw on .gt. Only the four offered spans are valid.
+      var rsTimespan = (function(raw) {
+        var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+        return (isFinite(n) && [5, 10, 25, 50].indexOf(Math.floor(n)) !== -1) ? Math.floor(n) : 25;
+      })(d.rsTimespan);
       // Justice state
       var cjRegion = d.cjRegion || null;
       var cjView = d.cjView || 'risk';
@@ -455,8 +482,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // Energy mix
         if (rsSolar + rsWind + rsHydro + rsNuclear > 0) {
           lines.push('## Renewable Energy Design');
-          lines.push('- Solar ' + rsSolar + '% · Wind ' + rsWind + '% · Hydro ' + rsHydro + '% · Nuclear ' + rsNuclear + '% · Fossil ' + rsFossil + '%');
-          lines.push('- **Emission reduction vs. fossil baseline:** ' + rsReductionPct + '%');
+          lines.push('- Solar ' + rsSolar + '% · Wind ' + rsWind + '% · Hydro ' + rsHydro + '% · Nuclear ' + rsNuclear + '% · Fossil ' + rsFossil + '% · Storage ' + rsStorage + '/100');
+          lines.push('- **Emission reduction vs. fossil baseline:** ' + rsReductionPctFull + '%');
+          lines.push('- **Firm capacity (reserve target ' + RELIABILITY_TARGET + '):** ' + rsReliability + (rsBrownout ? ' — below target, so this mix would not serve load around the clock' : ' — serves load around the clock'));
           lines.push('- **Cumulative CO\u2082 avoided over ' + rsTimespan + ' years:** ' + cumulativeAvoided.toFixed(1) + ' Gt');
           lines.push('');
         }
@@ -478,6 +506,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           });
           lines.push('');
         }
+        // The student's own writing from the Radiative Forcing tab. This is the
+        // only place in the tool where they reason in their own words, and the
+        // report — the artifact a teacher actually reads — was dropping it.
+        var iqWork = d.forceHunt || {};
+        var hypothesisText = (iqWork.hypothesis || '').trim();
+        var explanationText = (iqWork.explanation || '').trim();
+        if (hypothesisText || explanationText) {
+          lines.push('## \uD83D\uDD2C In My Own Words');
+          if (hypothesisText) {
+            lines.push('**Hypothesis** (when does albedo overcome greenhouse forcing?)');
+            lines.push('');
+            lines.push('> ' + hypothesisText.split('\n').join('\n> '));
+            lines.push('');
+          }
+          if (explanationText) {
+            lines.push('**Explanation** (how albedo, cloud feedback, and greenhouse gases work together)');
+            lines.push('');
+            lines.push('> ' + explanationText.split('\n').join('\n> '));
+            lines.push('');
+          }
+        }
         // Badges earned
         var earnedBadges = BADGES.filter(function(b) { return badges[b.id]; });
         if (earnedBadges.length > 0) {
@@ -493,8 +542,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       function exportClimateReport() {
         var report = buildClimateReport();
         earnBadge('reporter');
+        // Route through the host helper, not the raw Clipboard API: in Canvas
+        // the Clipboard API is blocked and only alloCopyText's execCommand
+        // fallback lands, so a direct writeText silently dropped the report
+        // there. The helper keeps writeText's contract (resolves on success,
+        // rejects once every path has failed), so the handlers below still mean
+        // what they meant.
         if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(report).then(function() {
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function() {
             if (addToast) addToast('📋 Climate report copied to clipboard!', 'success');
             awardXP(10);
           }, function() {
@@ -548,16 +603,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         if (activeCount >= 5 && !badges.habitMaster) setTimeout(function() { earnBadge('habitMaster'); }, 0);
       })();
 
+      // `badges` is a render-time capture, so two earnBadge() calls in ONE
+      // handler both built their copy from the same base and the second
+      // upd() clobbered the first -- a badge was silently lost. (The carbon
+      // calculator does exactly that: firstCalc + lowFootprint on one click.)
+      // Merging inside the state updater makes each award additive, and
+      // _awarded tracks the ids granted during this handler so the early-out
+      // and the climateChampion count stay correct before the re-render.
+      var _awarded = {};
       function earnBadge(id) {
-        if (badges[id]) return;
-        var nb = Object.assign({}, badges);
-        nb[id] = Date.now();
-        upd('badges', nb);
+        if (badges[id] || _awarded[id]) return;
+        _awarded[id] = Date.now();
+        setLabToolData(function(prev) {
+          var copy = Object.assign({}, prev);
+          var ce = Object.assign({}, copy.climateExplorer || {});
+          var nb = Object.assign({}, ce.badges || {});
+          if (nb[id]) return prev;
+          nb[id] = Date.now();
+          // Earning the tenth badge earns the champion badge in the same write.
+          if (Object.keys(nb).length >= 10 && !nb.climateChampion) nb.climateChampion = Date.now();
+          ce.badges = nb;
+          copy.climateExplorer = ce;
+          return copy;
+        });
         awardXP(15);
         playSound('badge');
         var b = BADGES.find(function(x) { return x.id === id; });
         if (addToast) addToast(b ? b.icon + ' ' + b.label + '!' : '\uD83C\uDFC5 Badge earned!', 'success');
-        if (Object.keys(nb).length >= 10) { if (!nb.climateChampion) { nb.climateChampion = Date.now(); upd('badges', nb); } }
       }
 
       // ── Track tab visits ──
@@ -611,6 +683,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           ]
         }
       };
+
+      // CARBON is live from here on, so the raw persisted indices captured
+      // near the top can finally be clamped to real options. Reassigning the
+      // same four names keeps every downstream reader (carbonTotal,
+      // carbonTotalWith, the option buttons, the export report) safe without
+      // each having to re-validate.
+      ccTransport = ccIndex(ccTransport, CARBON.transport.opts.length);
+      ccFood = ccIndex(ccFood, CARBON.food.opts.length);
+      ccEnergy = ccIndex(ccEnergy, CARBON.energy.opts.length);
+      ccWaste = ccIndex(ccWaste, CARBON.waste.opts.length);
 
       var TREES_PER_YEAR = 22; // kg CO2 per tree per year
 
@@ -710,6 +792,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
       var ct = carbonTotal();
 
+      // Same sum, but with ONE category overridden by a value that has not
+      // reached state yet. Click handlers need this: the cc* variables above
+      // are render-time captures, so they cannot see the choice being made.
+      function carbonTotalWith(stateKey, optIdx) {
+        var idx = {
+          ccTransport: ccTransport, ccFood: ccFood,
+          ccEnergy: ccEnergy, ccWaste: ccWaste
+        };
+        idx[stateKey] = optIdx;
+        return CARBON.transport.opts[idx.ccTransport].kg +
+          CARBON.food.opts[idx.ccFood].kg +
+          CARBON.energy.opts[idx.ccEnergy].kg +
+          CARBON.waste.opts[idx.ccWaste].kg;
+      }
+
       // ── Granular calculator state & helpers ──
       var granularFreq = d.granularFreq || {}; // { itemId: frequency }
       var granularExpanded = d.granularExpanded || {}; // { category: true }
@@ -776,15 +873,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var rsGCO2 = (rsSolar / 100 * EMISSIONS_FACTOR.solar + rsWind / 100 * EMISSIONS_FACTOR.wind +
         rsHydro / 100 * EMISSIONS_FACTOR.hydro + rsNuclear / 100 * EMISSIONS_FACTOR.nuclear +
         rsFossil / 100 * EMISSIONS_FACTOR.fossil);
-      var rsTargetGt = BASELINE_GT * (rsGCO2 / EMISSIONS_FACTOR.fossil);
-      var rsReductionPct = Math.round((1 - rsTargetGt / BASELINE_GT) * 100);
+
+      // ══ GRID RELIABILITY (firm vs. variable capacity) ══
+      //  A teaching model, not a grid simulator. Before this block the four
+      //  sliders were independent and free: a student could drag all four to
+      //  100%, reach 0% fossil, and be told the mix "could help us meet the
+      //  Paris Agreement goals" -- with no scarcity and no physics. That
+      //  teaches the opposite of the real lesson, which is that every energy
+      //  mix is a TRADE-OFF.
+      //  Two constraints now do the teaching:
+      //    1. Conservation. The mix is a share of ONE grid, so it sums to
+      //       100%. Raising one source lowers the others (see rebalanceMix).
+      //    2. Intermittency. Solar and wind generate only when the sun shines
+      //       and the wind blows, so they cannot by themselves keep the lights
+      //       on. Hydro and nuclear are dispatchable ("firm"); fossil is firm
+      //       too, which is exactly why it is hard to retire. Storage turns
+      //       variable output into firm supply, and it is the lever that makes
+      //       a high-renewable grid actually work.
+      //  Capacity-credit values are rounded teaching figures in the range
+      //  reported by grid operators (ISO-NE / NREL), NOT operator numbers for
+      //  any specific grid.
+      var FIRM_CREDIT = { solar: 0.15, wind: 0.25, hydro: 0.85, nuclear: 0.95, fossil: 0.90 };
+      var rsStorage = typeof d.rsStorage === 'number' ? d.rsStorage : 0;
+      var rsVariable = rsSolar + rsWind;
+      // Each 10 points of storage firms up ~9 points of variable generation.
+      var storageFirmed = Math.min(rsVariable, rsStorage * 0.9);
+      var rsFirm = (rsSolar * FIRM_CREDIT.solar + rsWind * FIRM_CREDIT.wind +
+        rsHydro * FIRM_CREDIT.hydro + rsNuclear * FIRM_CREDIT.nuclear +
+        rsFossil * FIRM_CREDIT.fossil) + storageFirmed * (1 - FIRM_CREDIT.solar);
+      var rsReliability = Math.max(0, Math.min(100, Math.round(rsFirm)));
+      // Grid planners hold firm capacity above peak demand as a reserve
+      // margin. 85 is the teaching threshold: reachable several different
+      // ways (firm generation, or variable generation plus storage), but
+      // never by accident.
+      var RELIABILITY_TARGET = 85;
+      var rsBrownout = rsReliability < RELIABILITY_TARGET;
+
+      // Storage is not free: batteries carry manufacturing emissions.
+      var rsStorageGCO2 = rsStorage * 0.33; // g CO2/kWh, amortized lifecycle
+      var rsGCO2Full = rsGCO2 + rsStorageGCO2;
+      var rsTargetGtFull = BASELINE_GT * (rsGCO2Full / EMISSIONS_FACTOR.fossil);
+      var rsReductionPctFull = Math.round((1 - rsTargetGtFull / BASELINE_GT) * 100);
+
+      // Conserving rebalance: when one source moves, the OTHERS absorb the
+      // change in proportion to their current size, so the grid totals 100%.
+      // Fossil is the remainder, so it takes up slack first; only when the
+      // clean sources alone exceed 100% do they scale each other down.
+      // Announce only the brownout TRANSITION, never the running number.
+      // rsReliability moves with every slider tick, so a live region holding
+      // it would re-announce continuously during a drag (see Particle Lab).
+      // The percentages stay in plain, non-live content; crossing the reserve
+      // threshold in either direction is the event worth speaking.
+      function announceReliabilityShift(nextMix) {
+        if (!announceToSR) return;
+        var s = nextMix.rsSolar != null ? nextMix.rsSolar : rsSolar;
+        var w = nextMix.rsWind != null ? nextMix.rsWind : rsWind;
+        var h = nextMix.rsHydro != null ? nextMix.rsHydro : rsHydro;
+        var n = nextMix.rsNuclear != null ? nextMix.rsNuclear : rsNuclear;
+        var st = nextMix.rsStorage != null ? nextMix.rsStorage : rsStorage;
+        var f = Math.max(0, 100 - s - w - h - n);
+        var firm = s * FIRM_CREDIT.solar + w * FIRM_CREDIT.wind + h * FIRM_CREDIT.hydro +
+          n * FIRM_CREDIT.nuclear + f * FIRM_CREDIT.fossil +
+          Math.min(s + w, st * 0.9) * (1 - FIRM_CREDIT.solar);
+        var nextBrownout = Math.round(firm) < RELIABILITY_TARGET;
+        if (nextBrownout === rsBrownout) return;
+        announceToSR(nextBrownout
+          ? t('stem.climateExplorer.sr_brownout', 'Brownout risk. This mix no longer has enough firm capacity to meet demand.')
+          : t('stem.climateExplorer.sr_reliable', 'Reliable. This mix can now serve demand around the clock.'));
+      }
+
+      function rebalanceMix(changedKey, nextVal) {
+        var keys = ['rsSolar', 'rsWind', 'rsHydro', 'rsNuclear'];
+        var cur = { rsSolar: rsSolar, rsWind: rsWind, rsHydro: rsHydro, rsNuclear: rsNuclear };
+        nextVal = Math.max(0, Math.min(100, Math.round(nextVal) || 0));
+        var others = keys.filter(function(k) { return k !== changedKey; });
+        var otherSum = others.reduce(function(a, k) { return a + cur[k]; }, 0);
+        var out = {};
+        out[changedKey] = nextVal;
+        var room = 100 - nextVal;
+        if (otherSum <= room) {
+          others.forEach(function(k) { out[k] = cur[k]; });
+        } else if (otherSum > 0) {
+          var scale = room / otherSum;
+          others.forEach(function(k) { out[k] = Math.round(cur[k] * scale); });
+        } else {
+          others.forEach(function(k) { out[k] = 0; });
+        }
+        return out;
+      }
 
       function buildTimeline() {
         var tl = [];
         for (var y = 0; y <= rsTimespan; y++) {
           var p = rsTimespan > 0 ? y / rsTimespan : 1;
           var eased = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-          var gt = BASELINE_GT + (rsTargetGt - BASELINE_GT) * eased;
+          var gt = BASELINE_GT + (rsTargetGtFull - BASELINE_GT) * eased;
           tl.push({ year: 2025 + y, gt: Math.max(0, gt) });
         }
         return tl;
@@ -794,10 +977,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       for (var ti = 1; ti < timeline.length; ti++) cumulativeAvoided += BASELINE_GT - timeline[ti].gt;
 
       var SCENARIOS = [
-        { label: t('stem.climateExplorer.100_solar_city', '100% Solar City'), mix: [100, 0, 0, 0], desc: t('stem.climateExplorer.cities_like_burlington_vt_already_run_', 'Cities like Burlington, VT already run on 100% renewable electricity!'), hope: 'Solar is now the cheapest electricity source in history.' },
-        { label: t('stem.climateExplorer.balanced_green_mix', 'Balanced Green Mix'), mix: [30, 30, 20, 15], desc: t('stem.climateExplorer.a_diverse_portfolio_is_the_most_resili', 'A diverse portfolio is the most resilient approach.'), hope: 'Sweden and France already achieve over 90% clean electricity.' },
-        { label: t('stem.climateExplorer.wind_powered_future', 'Wind-Powered Future'), mix: [10, 60, 10, 10], desc: t('stem.climateExplorer.denmark_gets_55_of_electricity_from_wi', 'Denmark gets 55% of electricity from wind already.'), hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
-        { label: t('stem.climateExplorer.current_pace', 'Current Pace'), mix: [15, 12, 15, 10], desc: t('stem.climateExplorer.the_world_adds_renewables_faster_than_', 'The world adds renewables faster than ever.'), hope: 'Solar capacity doubles every 2-3 years worldwide.' }
+        { label: t('stem.climateExplorer.100_solar_city', '100% Solar City'), mix: [100, 0, 0, 0], storage: 0, desc: t('stem.climateExplorer.cities_like_burlington_vt_already_run_', 'Cities like Burlington, VT already run on 100% renewable electricity!'), hope: 'Solar is now the cheapest electricity source in history.' },
+        { label: t('stem.climateExplorer.balanced_green_mix', 'Balanced Green Mix'), mix: [30, 30, 20, 15], storage: 30, desc: t('stem.climateExplorer.a_diverse_portfolio_is_the_most_resili', 'A diverse portfolio is the most resilient approach.'), hope: 'Sweden and France already achieve over 90% clean electricity.' },
+        { label: t('stem.climateExplorer.wind_powered_future', 'Wind-Powered Future'), mix: [10, 60, 10, 10], storage: 55, desc: t('stem.climateExplorer.denmark_gets_55_of_electricity_from_wi', 'Denmark gets 55% of electricity from wind already.'), hope: 'Wind turbines can be built on farms \u2014 land beneath still grows crops.' },
+        { label: t('stem.climateExplorer.current_pace', 'Current Pace'), mix: [15, 12, 15, 10], storage: 10, desc: t('stem.climateExplorer.the_world_adds_renewables_faster_than_', 'The world adds renewables faster than ever.'), hope: 'Solar capacity doubles every 2-3 years worldwide.' }
       ];
 
       // ══════════════════════════════════════
@@ -896,10 +1079,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { id: 'solar', cat: 'energy', emoji: '\u2600\uFE0F', title: t('stem.climateExplorer.solar_power_revolution', 'Solar Power Revolution'), what: 'Panels that turn sunlight into electricity \u2014 on roofs, in fields, even floating on lakes.', where: 'Worldwide. India, China, and the US lead in new solar capacity.', impact: 'Solar is now the cheapest electricity in history. Could power 40% of US electricity from rooftops alone.' },
         { id: 'wind', cat: 'energy', emoji: '\uD83C\uDF2C\uFE0F', title: t('stem.climateExplorer.wind_energy', 'Wind Energy'), what: 'Turbines that capture wind energy. Offshore wind farms can power entire cities.', where: 'Denmark (55% wind-powered), UK, US, China.', impact: 'One offshore turbine can power 16,000 homes. Wind jobs are among the fastest-growing.' },
         { id: 'evs', cat: 'transport', emoji: '\uD83D\uDE97', title: t('stem.climateExplorer.electric_vehicles', 'Electric Vehicles'), what: 'Cars, buses, and trucks powered by batteries instead of gasoline.', where: 'Norway (80% of new cars are electric), China, Europe, US.', impact: 'EVs produce 50-70% less lifetime emissions than gas cars, improving as grids get cleaner.' },
-        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests absorb 2.6 billion tons of CO\u2082/year \u2014 about 30% of human emissions.' },
+        { id: 'forests', cat: 'nature', emoji: '\uD83C\uDF33', title: t('stem.climateExplorer.forest_restoration', 'Forest Restoration'), what: 'Planting billions of trees and protecting existing forests \u2014 nature\'s carbon capture.', where: 'Ethiopia planted 350M trees in one day. Great Green Wall spans Africa.', impact: 'Forests take up about 2.6 billion tons of CO\u2082 a year. Land ecosystems together absorb roughly 30% of what humans emit \u2014 forests are the largest single part of that.' },
         { id: 'capture', cat: 'capture', emoji: '\uD83C\uDFED', title: t('stem.climateExplorer.carbon_capture', 'Carbon Capture'), what: 'Machines that pull CO\u2082 from the air and store it underground or turn it into stone.', where: 'Iceland (Climeworks Orca plant), US, Norway.', impact: 'Still early \u2014 current plants capture 36,000 tons/year. Goal: billions by 2050.' },
         { id: 'kelp', cat: 'nature', emoji: '\uD83C\uDF3F', title: t('stem.climateExplorer.ocean_kelp_farms', 'Ocean Kelp Farms'), what: 'Kelp grows 60\u00D7 faster than land trees, absorbing massive CO\u2082 while creating habitat.', where: 'Australia, US Pacific coast, Norway, South Korea.', impact: 'Could sequester 1-10 Gt CO\u2082/year while providing food, fertilizer, and biofuel.' },
-        { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: t('stem.climateExplorer.green_cities', 'Green Cities'), what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities produce 70% of emissions. Redesigning them is the highest-impact change.' },
+        { id: 'cities', cat: 'transport', emoji: '\uD83C\uDFD9\uFE0F', title: t('stem.climateExplorer.green_cities', 'Green Cities'), what: 'Bike lanes, electric buses, urban gardens, green roofs, and walkable neighborhoods.', where: 'Copenhagen, Amsterdam, Singapore, Bogot\u00E1, Portland.', impact: 'Cities concentrate about 70% of energy-related emissions, so urban design decides how much energy millions of people need in the first place. That leverage is why it ranks high, not that any single change tops the list.' },
         { id: 'youth', cat: 'all', emoji: '\u270A', title: t('stem.climateExplorer.youth_climate_movement', 'Youth Climate Movement'), what: 'Students leading climate action through innovation, activism, and policy advocacy.', where: 'Every continent. Fridays for Future (170+ countries), Sunrise Movement.', impact: 'Youth pressure helped pass the EU Green Deal and influenced the Paris Agreement.', highlight: true }
       ];
 
@@ -1056,7 +1239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         { emoji: '\uD83C\uDF31', text: t('stem.climateExplorer.plant_a_tree_or_start_a_school_garden', 'Plant a tree or start a school garden'), impact: '1 tree absorbs ~22 kg CO\u2082/year', diff: 'medium' },
         { emoji: '\uD83D\uDCDD', text: t('stem.climateExplorer.write_a_letter_to_your_representative', 'Write a letter to your representative'), impact: 'Policy changes affect millions', diff: 'medium' },
         { emoji: '\u267B\uFE0F', text: t('stem.climateExplorer.start_a_recycling_program_at_school', 'Start a recycling program at school'), impact: 'Diverts 30-50% of waste from landfills', diff: 'hard' },
-        { emoji: '\uD83D\uDCE2', text: t('stem.climateExplorer.organize_a_climate_awareness_event', 'Organize a climate awareness event'), impact: 'Reaching 100 people multiplies impact 100\u00D7', diff: 'hard' }
+        { emoji: '\uD83D\uDCE2', text: t('stem.climateExplorer.organize_a_climate_awareness_event', 'Organize a climate awareness event'), impact: 'Reaches people no single household change can', diff: 'hard' }
       ];
 
       // ══════════════════════════════════════
@@ -1148,6 +1331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         canvas.width = w * dpr; canvas.height = h * dpr;
         canvas.style.height = h + 'px';
         var c = canvas.getContext('2d');
+        if (!c) { canvas._donutKey = null; return; }
         c.scale(dpr, dpr);
         var cx = w / 2, cy = h / 2, r = 65, inner = 40;
         var segs = [
@@ -1191,6 +1375,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         canvas.width = w * dpr; canvas.height = h * dpr;
         canvas.style.height = h + 'px';
         var c = canvas.getContext('2d');
+        if (!c) { canvas._tlKey = null; return; }
         c.scale(dpr, dpr);
         var pad = { l: 40, r: 16, t: 16, b: 24 };
         var gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
@@ -1265,9 +1450,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         return el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
           el('span', { style: { fontSize: 16, width: 24, textAlign: 'center' } }, emoji),
           el('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 60 } }, label),
+          // WCAG 2.2 Target Size (Minimum, 2.5.8) asks for 24x24 CSS px. The track
+          // was 6px tall, so the whole pointer target was 6px on a phone — the
+          // hardest control in the tool to hit and the one students drag most.
+          // Keep the 6px TRACK (accentColor paints it) and give the input a 24px
+          // box around it, so the look is unchanged and the target is compliant.
           el('input', { type: 'range', min: 0, max: 100, value: value, onChange: onChange,
             'aria-label': label + ' slider',
-            style: { flex: 1, accentColor: color, height: 6 } }),
+            style: { flex: 1, accentColor: color, height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
           el('span', { style: { fontSize: 13, fontWeight: 900, color: color, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, value + '%')
         );
       }
@@ -1752,9 +1942,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       upd(stateKey, oi);
                       playSound('calculate');
                       if (!badges.firstCalc) { earnBadge('firstCalc'); }
-                      // Check low footprint after update
-                      var newTotal = carbonTotal().total; // recompute
-                      if (newTotal < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
+                      // carbonTotal() reads ccTransport/ccFood/ccEnergy/ccWaste, which are
+                      // captured from `d` at RENDER time -- so calling it here returns the
+                      // total from BEFORE this click. The badge then landed one click late,
+                      // on whatever the student did next. Score the pending choice instead.
+                      var pending = carbonTotalWith(stateKey, oi);
+                      if (pending < 2000 && !badges.lowFootprint) earnBadge('lowFootprint');
                     }, opt.emoji, opt.label, opt.kg + ' kg/yr'), { key: oi });
                   })
                 ),
@@ -1767,7 +1960,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(59,130,246,0.08))', border: '1px solid rgba(34,197,94,0.2)', marginTop: 8 } },
               // Canvas donut chart
               el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawDonut(c, ct); }, 0); },
-                'aria-label': t('stem.climateExplorer.interactive_climate_explorer_carbon_fo', 'Interactive climate explorer carbon footprint donut chart visualization'), role: 'img',
+                // The canvas is tabbable, so a keyboard user LANDS here. A generic
+                // "donut chart visualization" told them nothing about their own
+                // footprint; the label now carries the same figures the chart draws,
+                // largest share first, the way the Keeling chart below already does.
+                'aria-label': (function() {
+                  var parts = [
+                    { label: t('stem.climateExplorer.transport_3', 'Transport'), kg: ct.transport },
+                    { label: t('stem.climateExplorer.food_2', 'Food'), kg: ct.food },
+                    { label: t('stem.climateExplorer.energy_2', 'Energy'), kg: ct.energy },
+                    { label: t('stem.climateExplorer.waste_2', 'Waste'), kg: ct.waste }
+                  ].slice().sort(function(a, b) { return b.kg - a.kg; });
+                  var pct = function(kg) { return ct.total > 0 ? Math.round(kg / ct.total * 100) : 0; };
+                  return 'Carbon footprint breakdown. Total ' + Math.round(ct.total).toLocaleString() +
+                    ' kilograms CO2 per year. ' +
+                    parts.map(function(p) { return p.label + ' ' + Math.round(p.kg).toLocaleString() + ' kilograms, ' + pct(p.kg) + ' percent'; }).join('. ') + '.';
+                })(), role: 'img',
                 style: { width: '100%', height: 180, display: 'block', marginBottom: 8 } }),
               // Legend
               el('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 8 } },
@@ -1915,7 +2123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                           el('input', { type: 'range', min: 0, max: item.max, step: 1, value: freq,
                             onChange: function(e) { setItemFreq(item.id, parseInt(e.target.value, 10)); },
                             'aria-label': item.label + ' frequency',
-                            style: { flex: 1, accentColor: '#60a5fa' } }),
+                            style: { flex: 1, accentColor: '#60a5fa', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
                           el('span', { style: { minWidth: 95, textAlign: 'right', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontFamily: 'monospace' } },
                             freq + ' ' + item.unit),
                           // Pledge toggle (only makes sense when user has a current freq)
@@ -2067,17 +2275,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 color: '#ecfdf5'
               }
             },
-              el('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83C\uDFAF Goal: drive fossil share to 5% or lower'),
+              el('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83C\uDFAF Goal: fossil share at 5% or lower \u2014 without a brownout'),
               el('div', { style: { fontSize: 11, lineHeight: 1.5, color: '#bbf7d0' } },
-                'The four sliders are your renewable mix. Whatever they do not add up to gets filled by fossil fuels. ',
-                'Hit Fossil at or below 5% to earn the Net-Zero badge. Below the sliders you will see total gigatons of CO\u2082 avoided over 25 years for your design, with an AI analysis of trade-offs.'
+                'These are shares of one grid, so they always total 100%: raise one source and the others give way. Whatever the clean sources do not cover gets filled by fossil fuels. ',
+                'The hard part is that solar and wind only generate when the sun shines and the wind blows, so a clean grid also has to stay Reliable. Get Fossil to 5% or lower AND keep Reliable out of the red to earn the Net-Zero badge.'
               )
             ),
 
             // Scenario presets
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
               SCENARIOS.map(function(sc, si) {
-                return el('button', { key: si, onClick: function() { upd({ rsSolar: sc.mix[0], rsWind: sc.mix[1], rsHydro: sc.mix[2], rsNuclear: sc.mix[3] }); playSound('scenario'); var ns = Object.assign({}, scenariosTried); ns[si] = true; upd('scenariosTried', ns); if (Object.keys(ns).length >= 4 && !badges.scenarioTester) earnBadge('scenarioTester'); },
+                return el('button', { key: si, onClick: function() { upd({ rsSolar: sc.mix[0], rsWind: sc.mix[1], rsHydro: sc.mix[2], rsNuclear: sc.mix[3], rsStorage: sc.storage || 0 }); playSound('scenario'); var ns = Object.assign({}, scenariosTried); ns[si] = true; upd('scenariosTried', ns); if (Object.keys(ns).length >= 4 && !badges.scenarioTester) earnBadge('scenarioTester'); },
                   style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)', color: ceInk.amber, fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
                   sc.label);
               })
@@ -2086,10 +2294,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             // Energy mix sliders
             el('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 16 } },
               el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 800, marginBottom: 10, textTransform: 'uppercase' } }, 'Design Your Energy Mix'),
-              slider('Solar', '\u2600\uFE0F', rsSolar, '#f59e0b', function(e) { upd('rsSolar', parseInt(e.target.value)); playSound('slider'); }),
-              slider('Wind', '\uD83C\uDF2C\uFE0F', rsWind, '#60a5fa', function(e) { upd('rsWind', parseInt(e.target.value)); playSound('slider'); }),
-              slider('Hydro', '\uD83D\uDCA7', rsHydro, '#22d3ee', function(e) { upd('rsHydro', parseInt(e.target.value)); playSound('slider'); }),
-              slider('Nuclear', '\u2622\uFE0F', rsNuclear, '#a78bfa', function(e) { upd('rsNuclear', parseInt(e.target.value)); playSound('slider'); }),
+              slider('Solar', '\u2600\uFE0F', rsSolar, '#f59e0b', function(e) { var _mx = rebalanceMix('rsSolar', parseInt(e.target.value)); announceReliabilityShift(_mx); upd(_mx); playSound('slider'); }),
+              slider('Wind', '\uD83C\uDF2C\uFE0F', rsWind, '#60a5fa', function(e) { var _mx = rebalanceMix('rsWind', parseInt(e.target.value)); announceReliabilityShift(_mx); upd(_mx); playSound('slider'); }),
+              slider('Hydro', '\uD83D\uDCA7', rsHydro, '#22d3ee', function(e) { var _mx = rebalanceMix('rsHydro', parseInt(e.target.value)); announceReliabilityShift(_mx); upd(_mx); playSound('slider'); }),
+              slider('Nuclear', '\u2622\uFE0F', rsNuclear, '#a78bfa', function(e) { var _mx = rebalanceMix('rsNuclear', parseInt(e.target.value)); announceReliabilityShift(_mx); upd(_mx); playSound('slider'); }),
               el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, padding: '8px 12px', borderRadius: 8, background: rsFossil > 50 ? 'rgba(239,68,68,0.1)' : rsFossil > 20 ? 'rgba(245,158,11,0.1)' : 'rgba(34,197,94,0.1)' } },
                 el('span', { style: { fontSize: 16 } }, '\uD83C\uDFED'),
                 el('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 60 } }, 'Fossil'),
@@ -2098,7 +2306,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 ),
                 el('span', { style: { fontSize: 13, fontWeight: 900, color: rsFossil > 50 ? '#ef4444' : rsFossil > 20 ? '#f59e0b' : '#22c55e', width: 40, textAlign: 'right', fontFamily: 'monospace' } }, rsFossil + '%')
               ),
-              rsFossil <= 5 && !badges.netZero && (function() { earnBadge('netZero'); return null; })()
+              // ── Storage: the lever that makes a variable grid work ──
+              el('div', { style: { marginTop: 12, paddingTop: 12, borderTop: '1px dashed rgba(255,255,255,0.12)' } },
+                slider('Storage', '\uD83D\uDD0B', rsStorage, '#34d399', function(e) { var _st = parseInt(e.target.value) || 0; announceReliabilityShift({ rsStorage: _st }); upd('rsStorage', _st); playSound('slider'); }),
+                el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, marginTop: 2 } },
+                  t('stem.climateExplorer.storage_hint', 'Batteries and pumped hydro hold solar and wind output until it is needed. Storage is what turns variable generation into power you can count on, but building it carries its own manufacturing emissions.'))
+              ),
+
+              // ── Reliability: does this grid keep the lights on? ──
+              el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, padding: '8px 12px', borderRadius: 8, background: rsBrownout ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.10)' } },
+                el('span', { style: { fontSize: 16 } }, rsBrownout ? '\uD83D\uDD0C' : '\uD83D\uDCA1'),
+                el('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 60 } }, t('stem.climateExplorer.reliable_label', 'Reliable')),
+                el('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                  el('div', { style: { width: Math.min(100, Math.round(rsReliability / RELIABILITY_TARGET * 100)) + '%', height: '100%', borderRadius: 4, background: rsBrownout ? '#ef4444' : '#22c55e', transition: 'all 0.5s' } })
+                ),
+                el('span', { style: { fontSize: 13, fontWeight: 900, color: rsBrownout ? '#ef4444' : ceInk.green, width: 40, textAlign: 'right', fontFamily: 'monospace' } }, rsReliability + '%')
+              ),
+              el('div', { style: { fontSize: 11, lineHeight: 1.55, marginTop: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.03)', color: rsBrownout ? '#fca5a5' : '#bbf7d0' } },
+                rsBrownout
+                  ? t('stem.climateExplorer.brownout_msg', 'Brownout risk: firm capacity is ') + rsReliability + t('stem.climateExplorer.brownout_msg2', ' against a reserve target of ') + RELIABILITY_TARGET + t('stem.climateExplorer.brownout_msg3', '. Solar and wind do not generate on demand, so a grid leaning on them needs storage, hydro, or nuclear to cover the gap.')
+                  : t('stem.climateExplorer.reliable_msg', 'This mix can serve demand around the clock. Firm capacity is ') + rsReliability + t('stem.climateExplorer.reliable_msg2', ', at or above the reserve target of ') + RELIABILITY_TARGET + '.'
+              ),
+
+              // ── Model boundary, matching every other tab in this tool ──
+              el('div', { style: { fontSize: 10, lineHeight: 1.5, marginTop: 8, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                t('stem.climateExplorer.renewables_boundary', 'Teaching model: shares of one grid, with rounded capacity-credit values in the range grid operators report. It is not a grid simulator, a cost model, or a forecast for any real power system.')),
+
+              rsFossil <= 5 && !rsBrownout && !badges.netZero && (function() { earnBadge('netZero'); return null; })()
             ),
 
             // Timespan selector
@@ -2114,7 +2348,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             el('div', { style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06))', border: '1px solid rgba(34,197,94,0.15)' } },
               el('div', { style: { display: 'flex', justifyContent: 'space-around', textAlign: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 } },
                 el('div', null,
-                  el('div', { style: { color: rsReductionPct > 50 ? '#4ade80' : rsReductionPct > 20 ? '#fbbf24' : '#f87171', fontSize: 28, fontWeight: 900 } }, rsReductionPct + '%'),
+                  el('div', { style: { color: rsReductionPctFull > 50 ? '#4ade80' : rsReductionPctFull > 20 ? '#fbbf24' : '#f87171', fontSize: 28, fontWeight: 900 } }, rsReductionPctFull + '%'),
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 600 } }, 'Emissions Reduction')
                 ),
                 el('div', null,
@@ -2128,18 +2362,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               ),
               // Canvas emissions timeline
               el('canvas', { tabIndex: 0, ref: function(c) { if (c) setTimeout(function() { drawTimeline(c, timeline, BASELINE_GT); }, 0); },
-                'aria-label': t('stem.climateExplorer.interactive_climate_explorer_emissions', 'Interactive climate explorer emissions timeline visualization'), role: 'img',
+                // This chart's whole point is the TRAJECTORY -- the curve bending
+                // away from today's emissions toward the 1.5C line. The stat tiles
+                // above give endpoints but never the shape, so the label walks the
+                // curve and states where it lands relative to the target.
+                'aria-label': (function() {
+                  var endGt = timeline[timeline.length - 1].gt;
+                  var endYear = timeline[timeline.length - 1].year;
+                  var TARGET_GT = 20; // the 1.5C line the chart draws
+                  var stops = [];
+                  [0, Math.floor(timeline.length / 2), timeline.length - 1].forEach(function(i, n, arr) {
+                    if (arr.indexOf(i) !== n) return; // skip duplicates on short spans
+                    stops.push(timeline[i].year + ', ' + timeline[i].gt.toFixed(1) + ' gigatons');
+                  });
+                  return 'Projected global energy emissions, ' + timeline[0].year + ' to ' + endYear +
+                    ', for your energy mix. Starts at ' + timeline[0].gt.toFixed(1) +
+                    ' gigatons per year and ' + (endGt < timeline[0].gt ? 'falls to ' : 'rises to ') +
+                    endGt.toFixed(1) + ' by ' + endYear + '. ' +
+                    (endGt <= TARGET_GT
+                      ? 'That is at or below the 1.5 degree line of 20 gigatons marked on the chart.'
+                      : 'That is ' + (endGt - TARGET_GT).toFixed(1) + ' gigatons above the 1.5 degree line of 20 gigatons marked on the chart.') +
+                    ' Values along the way: ' + stops.join('; ') + '.';
+                })(), role: 'img',
                 style: { width: '100%', height: 160, display: 'block', borderRadius: 8, marginBottom: 12, background: 'rgba(0,0,0,0.15)' } }),
 
               // Hopeful message
               el('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)', textAlign: 'center' } },
-                el('div', { style: { color: ceInk.green, fontSize: 13, fontWeight: 800 } },
-                  rsReductionPct >= 80 ? '\uD83C\uDF1F Amazing! This mix could help us meet the Paris Agreement goals!' :
-                  rsReductionPct >= 50 ? '\u26A1 Great progress! Every percentage point of clean energy compounds over time.' :
-                  rsReductionPct >= 20 ? '\uD83C\uDF31 A good start! Try adding more renewables to see bigger impact.' :
+                el('div', { style: { color: rsBrownout ? '#fca5a5' : ceInk.green, fontSize: 13, fontWeight: 800 } },
+                  // A clean mix that cannot serve load is not a win, so the
+                  // brownout case is reported before any praise.
+                  rsBrownout ? '\uD83D\uDD0C This mix is clean but cannot keep the lights on yet. Clean AND reliable is the real design problem.' :
+                  rsReductionPctFull >= 80 ? '\uD83C\uDF1F A clean, reliable grid. This is the combination real energy planners are working toward.' :
+                  rsReductionPctFull >= 50 ? '\u26A1 Great progress! Every percentage point of clean energy compounds over time.' :
+                  rsReductionPctFull >= 20 ? '\uD83C\uDF31 A good start! Try shifting more of the mix to clean sources.' :
                   '\uD83D\uDCA1 The world is transitioning \u2014 try increasing solar and wind to see the difference!'
                 ),
-                rsReductionPct >= 50 && el('div', { style: { color: '#6ee7b7', fontSize: 11, marginTop: 4 } },
+                rsReductionPctFull >= 50 && !rsBrownout && el('div', { style: { color: '#6ee7b7', fontSize: 11, marginTop: 4 } },
                   'Fun fact: Solar capacity has grown 300\u00D7 since 2000. The clean energy revolution is accelerating.')
               )
             ),
@@ -2149,7 +2407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('button', { onClick: function() {
                   if (aiLoading) return;
                   upd('aiLoading', true);
-                  var prompt = 'You are a hopeful climate science educator for a ' + gradeBand + ' student. They designed an energy mix: ' + rsSolar + '% solar, ' + rsWind + '% wind, ' + rsHydro + '% hydro, ' + rsNuclear + '% nuclear, ' + rsFossil + '% fossil. Give a 2-3 sentence encouraging analysis of their mix. Mention one real-world country or city doing something similar. End with an inspiring fact. Keep it under 80 words. Do NOT use markdown.';
+                  var prompt = 'You are a hopeful climate science educator for a ' + gradeBand + ' student. They designed an energy mix: ' + rsSolar + '% solar, ' + rsWind + '% wind, ' + rsHydro + '% hydro, ' + rsNuclear + '% nuclear, ' + rsFossil + '% fossil, with storage at ' + rsStorage + '/100. Firm capacity covers ' + rsReliability + '% of demand' + (rsBrownout ? ' (below the 100% needed, so this grid would brown out)' : '') + '. Give a 2-3 sentence encouraging analysis that names the real trade-off between clean generation and round-the-clock reliability. Mention one real-world country or city doing something similar. End with an inspiring fact. Keep it under 90 words. Do NOT use markdown.';
                   callGemini(prompt, true, false, 0.8).then(function(r) { upd({ aiResponse: r, aiLoading: false }); playSound('scenario'); if (!badges.aiConsultant) earnBadge('aiConsultant'); }).catch(function() { upd('aiLoading', false); });
                 }, disabled: aiLoading,
                 style: { padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(34,197,94,0.3)', background: aiLoading ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.08)', color: ceInk.green, fontSize: 12, fontWeight: 700, cursor: aiLoading ? 'wait' : 'pointer' } },
@@ -2176,7 +2434,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 cv.style.height = h + 'px';
                 // setTransform (absolute) not scale (relative): the realloc that used to
                 // reset the transform is conditional now, so scale() would COMPOUND.
-                var c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+                var c = cv.getContext('2d');
+                if (!c) return;
+                c.setTransform(dpr, 0, 0, dpr, 0, 0);
                 c.clearRect(0, 0, w, h);
                 // Axes
                 var padL = 50, padR = 20, padT = 20, padB = 40;
@@ -2359,7 +2619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('input', { type: 'range', min: 0, max: 50, step: 1, value: userBurnRate,
                     onChange: function(e) { upd('budgetBurnRate', parseInt(e.target.value, 10)); playSound('slider'); },
                     'aria-label': t('stem.climateExplorer.annual_global_co2_emission_rate', 'Annual global CO2 emission rate'),
-                    style: { width: '100%', accentColor: '#ef4444' } }),
+                    style: { width: '100%', accentColor: '#ef4444', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, marginTop: 2 } },
                     el('span', null, '0 (net-zero)'),
                     el('span', null, '20 (halved)'),
@@ -2513,7 +2773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                       playSound('slider');
                     },
                     'aria-label': t('stem.climateExplorer.sea_level_rise_in_meters', 'Sea level rise in meters'),
-                    style: { width: '100%', accentColor: '#3b82f6' } }),
+                    style: { width: '100%', accentColor: '#3b82f6', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } },
                     [0, 1, 2, 3, 5, 10].map(function(m) {
                       return el('span', { key: m, style: { color: slr === m ? '#60a5fa' : '#94a3b8' } }, m + ' m');
@@ -3654,7 +3914,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           // CLIMATE POLICY PATHWAYS: 40-YEAR MAINE CAMPAIGN
           // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
           tab === 'pathways' && (function() {
-            var path = d.pathway || defaultPathwayState();
+            // A saved file can carry `pathway` as a number, string, array, or an
+            // object from an older shape with no `sectors`. Every one of those
+            // reached path.sectors.map() and blanked the lab. Require the shape
+            // this view actually reads before trusting it.
+            var _rawPath = d.pathway;
+            var path = (_rawPath && typeof _rawPath === 'object' && !Array.isArray(_rawPath) &&
+              Array.isArray(_rawPath.sectors)) ? _rawPath : defaultPathwayState();
             function setPath(patch) { upd('pathway', Object.assign({}, path, patch)); }
             var T_GREEN = '#15803d', T_GREEN_HI = '#86efac';
 
@@ -4317,12 +4583,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     el('label', { htmlFor: 'fh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.l + ': ', el('span', { style: { color: '#67e8f9', fontFamily: 'monospace' } }, iq[s.k])),
                     el('input', { id: 'fh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': s.l }));
+                      style: { width: '100%', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' }, 'aria-label': s.l }));
                 })
               ),
               el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
                 el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.albedo, c: iq.cloudFB, g: iq.ghg, f: forcingIndex.toFixed(2), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-                el('button', { onClick: function() { setIQ({ albedo: 30, cloudFB: 0, ghg: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                el('button', { onClick: function() { setIQ({ albedo: 30, cloudFB: 0, ghg: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', minHeight: 24, background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
               ),
               el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.climateExplorer.hypothesis_when_does_albedo_overcome_g', 'Hypothesis: When does albedo overcome GHG forcing?'),
                 style: { width: '100%', minHeight: 50, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
@@ -4332,7 +4598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('li', null, 'Real Earth albedo ≈ 30%. What if it drops to 15%?'),
                   el('li', null, 'Cloud feedback is one important source of climate-projection uncertainty. Investigate why.'))),
               el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
-                el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
+                el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 24, height: 24, flexShrink: 0, cursor: 'pointer' } }), 'I understand — explain in own words'),
               iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.climateExplorer.explain_how_albedo_cloud_feedback_and_', 'Explain how albedo, cloud feedback, and GHGs jointly drive climate state.'),
                 style: { width: '100%', minHeight: 60, padding: 6, background: '#fff', color: '#1e293b', border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
               el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Model limit: arbitrary classroom index = GHG control - albedo control + cloud-feedback control. It omits spectral absorption, latitude, seasons, oceans, ice dynamics, carbon-cycle feedbacks, response times, and uncertainty; labels are prompts, not predictions.')

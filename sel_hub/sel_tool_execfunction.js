@@ -507,13 +507,13 @@ window.SelHub = window.SelHub || {
               'aria-label': t.label,
               onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#475569'), fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#1e293b'), fontWeight: a ? 700 : 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
             );
             })
           ),
-          h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + ' of ' + TABS.length + ' explored'),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '🔊' : '🔇')
         )
       );
@@ -850,7 +850,7 @@ window.SelHub = window.SelHub || {
             h('button', {
               onClick: function() {
                 var txt = 'Goal: ' + planGoal + '\n' + schedule.map(function(s) { return s.due.toLocaleDateString() + '  ' + s.chunk; }).join('\n');
-                try { navigator.clipboard.writeText(txt); if (addToast) addToast('Schedule copied to clipboard.', 'success'); if (awardXP) awardXP(10, 'Made a backward plan!'); } catch(e) {}
+                try { window.SelHub.copyText(txt).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; } if (addToast) addToast('Schedule copied to clipboard.', 'success'); if (awardXP) awardXP(10, 'Made a backward plan!'); }); } catch(e) {}
               },
               'aria-label': 'Copy schedule',
               style: { marginTop: '6px', padding: '8px 14px', background: CYAN, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }

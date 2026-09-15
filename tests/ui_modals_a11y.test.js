@@ -36,6 +36,28 @@ describe('Shared UI modal accessibility', () => {
     ]) expect(source).toContain(fallback);
   });
 
+  // 2026-09-13: only the Parent card explained itself; the other three looked unfinished next
+  // to it. Every card now carries one line, and the line reads the same key in ui_strings.
+  it('gives every role card a description whose fallback matches ui_strings', () => {
+    const strings = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
+    const expected = {
+      'roles.student_description': strings.roles.student_description,
+      'roles.teacher_description': strings.roles.teacher_description,
+      'parent_mode.role_description': strings.parent_mode.role_description,
+      'roles.independent_description': strings.roles.independent_description,
+    };
+    for (const [key, english] of Object.entries(expected)) {
+      expect(english, key).toBeTruthy();
+      expect(source).toContain(`roleDescription('${key}', '${english}')`);
+      expect(moduleText).toContain(english);
+    }
+    // The old one-off Parent span (slate-500: 4.26:1 on the indigo hover tint) is gone.
+    expect(source).not.toContain("t('parent_mode.role_description') ||");
+    expect(source).toContain('text-xs leading-snug text-slate-600 text-center max-w-[13rem]');
+    // The remembered-role badge is offered on every card the host can remember, Student included.
+    for (const role of ['student', 'teacher', 'parent', 'independent']) expect(source).toContain(`lastTimeBadge('${role}')`);
+  });
+
   it('hands role-selection Voice Access to the host coordinator without a second recognizer', () => {
     expect(source).toContain('const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceAccess }) => {');
     expect(source).toContain("if (typeof onStartVoiceAccess === 'function') {");

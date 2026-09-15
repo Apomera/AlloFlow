@@ -1,0 +1,42 @@
+{
+  "scenarios": [
+    "Current-driven diode, shared current, voltage/power split and read-only bare-junction comparison",
+    "Zero-resistance compatibility, undo and resistance preservation across junction presets",
+    "100 mA and 1 kΩ solve above 100 V terminal voltage while keeping internal junction conduction bounded",
+    "Current sweep, live/held operating points and reference invalidation after electrical edits",
+    "Reverse breakdown, separate Rs and Rz, signed drops, positive power and persisted inspector disclosure",
+    "Failed circuits hide internal readings, power shares and current arrows",
+    "Desktop and narrow-phone diagrams, distinct material IDs, readable controls and zero scoped accessibility violations"
+  ],
+  "examples": [
+    {
+      "id": "diode-resistance",
+      "solved": true,
+      "clearRoutes": true
+    },
+    {
+      "id": "diode-resistance-sweep",
+      "solved": true,
+      "clearRoutes": true
+    },
+    {
+      "id": "zener-resistance",
+      "solved": true,
+      "clearRoutes": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

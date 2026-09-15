@@ -46,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
 
   // ── Audio + WCAG (auto-injected) ──
   var _plantAC = null;
-  function getPlantAC() { if (!_plantAC) { try { _plantAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_plantAC && _plantAC.state==="suspended") { try { _plantAC.resume(); } catch(e) {} } return _plantAC; }
+  function getPlantAC() { if (!_plantAC) { try { _plantAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_plantAC && _plantAC.state==="suspended") { try { _plantAC.resume(); } catch(e) {} } return _plantAC; }
   function plantTone(f,d,tp,v) { var ac=getPlantAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxPlantClick() { plantTone(600,0.03,"sine",0.04); }
   function sfxPlantSuccess() { plantTone(523,0.08,"sine",0.07); setTimeout(function(){plantTone(659,0.08,"sine",0.07);},70); setTimeout(function(){plantTone(784,0.1,"sine",0.08);},140); }
@@ -8262,7 +8262,7 @@ var d = (labToolData.companionPlanting) || {};
                 return;
               }
               var copyPromise;
-              try { copyPromise = navigator.clipboard.writeText(cgProgressSummaryText); } catch (copyError) { copyPromise = Promise.reject(copyError); }
+              try { copyPromise = (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(cgProgressSummaryText); } catch (copyError) { copyPromise = Promise.reject(copyError); }
               Promise.resolve(copyPromise).then(function() {
                 cgUpd({ progressExportStatus: 'copied', resumeAcknowledged: true, skipProgressCheckpoint: true });
                 if (typeof announceToSR === 'function') announceToSR(message);
@@ -8316,7 +8316,7 @@ var d = (labToolData.companionPlanting) || {};
                 return;
               }
               var portfolioCopyPromise;
-              try { portfolioCopyPromise = navigator.clipboard.writeText(cgEvidencePortfolioText); }
+              try { portfolioCopyPromise = (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(cgEvidencePortfolioText); }
               catch (portfolioCopyError) {
                 cgSetEvidencePortfolioStatus('manual', 'Automatic copying failed. The portfolio text is open for manual copying.');
                 if (addToast) addToast('Copy unavailable - select the portfolio text instead.', 'warning');

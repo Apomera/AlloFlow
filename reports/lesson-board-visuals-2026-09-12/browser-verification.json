@@ -1,0 +1,143 @@
+{
+  "passed": true,
+  "scope": "Production board UI and authored activities. Image provider is a fixture returning real generated sample artwork; no configured provider credentials were used.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "setup glossary links and generated artwork previews",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "illustrated board and accessible map",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "vocabulary pictures and translations after review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text-only focus restored without changing progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "constructed project artwork in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete illustrated expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "glossaryReuse": true,
+      "artworkRequests": 2,
+      "backupBytes": 149853,
+      "saveReload": true,
+      "definitionsAfterReview": true,
+      "hideImagesPreservesRun": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "setup glossary links and generated artwork previews",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "illustrated board and accessible map",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "vocabulary pictures and translations after review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text-only focus restored without changing progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "constructed project artwork in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete illustrated expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "glossaryReuse": true,
+      "artworkRequests": 2,
+      "backupBytes": 149853,
+      "saveReload": true,
+      "definitionsAfterReview": true,
+      "hideImagesPreservesRun": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "setup glossary links and generated artwork previews",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "illustrated board and accessible map",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "vocabulary pictures and translations after review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text-only focus restored without changing progress",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "constructed project artwork in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete illustrated expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "glossaryReuse": true,
+      "artworkRequests": 2,
+      "backupBytes": 149853,
+      "saveReload": true,
+      "definitionsAfterReview": true,
+      "hideImagesPreservesRun": true,
+      "expeditionComplete": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,45 @@
+{
+  "checks": [
+    {
+      "label": "Coastal setting preserves every one of the2673lesson cells",
+      "pass": true
+    },
+    {
+      "label": "All five authored math targets retain their exact measurements",
+      "pass": true
+    },
+    {
+      "label": "Harbor metadata selects the original coastal setting",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "world": {
+    "count": 2673,
+    "truncated": false,
+    "theme": "coastal",
+    "landscape": {
+      "theme": "coastal",
+      "tier": "saver",
+      "islands": 3,
+      "beacons": 1,
+      "sailboats": 1,
+      "shoreSegments": 40,
+      "glints": 14
+    },
+    "measures": [
+      6,
+      24,
+      24,
+      24,
+      24
+    ]
+  },
+  "render": {
+    "calls": 754,
+    "triangles": 95053,
+    "geometries": 699
+  },
+  "pass": true
+}

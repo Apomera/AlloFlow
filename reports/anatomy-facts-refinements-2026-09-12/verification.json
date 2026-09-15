@@ -1,0 +1,18 @@
+{
+  "syntax": "pass",
+  "sha256": "fdc55db4c0f378ff4ca921f3d2d0681a78b4d2d6774e7e7008a0f075397489f1",
+  "mirrorIdentical": true,
+  "localizedStrings": 82,
+  "validatedPacks": 6,
+  "facts": 30,
+  "summaries": 6,
+  "structureDescriptions": 8,
+  "testFiles": 43,
+  "passedTests": 784,
+  "failedTests": 0,
+  "axeScans": 40,
+  "axeViolations": 0,
+  "axeIncomplete": 0,
+  "browserErrors": 0,
+  "screenshots": 10
+}

@@ -1,0 +1,594 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 12: The Story of Your Trimester",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_story_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (integrating personal and social identities; examining prejudices and biases about one's own ability); CASEL Self-Management (setting personal and collective goals); EL Education Crew (Crew Launch: student-led conferences and HOWL reflection); Maine DOE PBIS Tier 1 (teaching self-assessment as an expected behavior)"
+  },
+  "sourceTopic": "Trimester HOWL self-assessment and student-led conference rehearsal",
+  "history": [
+    {
+      "id": "cy-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 12: The Story of Your Trimester",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Perseverance. \"I persevere to produce high quality work.\"\n\nThis week you tell the story of your trimester: one level, one piece of evidence, and one gap for each HOWL, rehearsed for a student-led conference.\n\n1. Read **The Story of Your Trimester** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Claim or Evidence?** chart open.\n4. Sort the cards in **Adjective or Evidence?**\n5. Take the quiz. Question 3 is about Zoe and Malik.\n6. Open the SEL Hub and choose [HOWL Tracker](#sel-hub/howlTracker?station=sel_station_crew_launch_story). Open History and the SLC rehearsal tab, and pull one piece of evidence per HOWL from your check-ins and station records. Then open [Strengths Finder](#sel-hub/strengths?station=sel_station_crew_launch_story) to name what you did well in words more specific than \"good.\"\n7. Use the **Sentence Frames** to write your three-HOWL story with one gap.\n8. Lock it in with **Remember Level, Evidence, Gap**.\n9. Finish with the **Explore Challenge: Two Minutes, Three HOWLs**, and rehearse it with a partner.\n\nYour commitment: this week, rehearse your two-minute trimester story with a partner, and take one piece of their feedback into the version you will use at the conference. 🎙\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cy-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cy-glossary"
+          },
+          {
+            "id": "cy-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cy-goal-manual",
+            "label": "I rehearsed my two-minute trimester story with a partner this week and changed one thing because of their feedback",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cy-reading",
+      "type": "simplified",
+      "title": "The Story of Your Trimester",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## The Story of Your Trimester\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nTwelve weeks ago your **Crew** wrote norms. Since then you have repaired something, named your zone, built a system, made an ask, rated your own work, asked a question before deciding, made a small move, set a boundary, checked your system halfway, and named your part of a whole. Some of it stuck. Some of it did not. All of it is **evidence**.\n\nAt an EL school, the end of a **trimester** is when you tell the story of your learning to someone who matters. At King that includes a **student-led conference**: you, a family member, and a teacher, and you do the talking. Your **HOWL** grades will be on the report card. The conference is where you say what is behind them. This week is a **rehearsal**.\n\nThe Perseverance HOWL includes assessing your own work with targets and rubrics and learning from feedback. A trimester story is that skill turned on yourself. The target is the HOWL statement. The rubric is the 1 to 4 scale. The evidence is what actually happened, and that is the part that decides whether the story is any good.\n\nHere is a moment from a fictional Crew. Two students rehearse their Responsibility story. Zoe says, \"I think I am a 3 because I try hard and I am pretty responsible.\" Her partner, Malik, says, \"I would say a 3. In week 4 I built a launch check and it worked four mornings out of five for two weeks. Then it broke when my schedule changed, and at the halfway check I moved it to after dinner and got five out of five the next week. It is not a 4 because there are still mornings I forget my charger.\" Both **claim** a 3. Only one of them has told a story a listener could believe, because only one of them has a count, a date, and a thing that went wrong.\n\nThat is the whole secret of a good trimester story. **Adjectives** are not evidence. \"Responsible,\" \"hard-working,\" and \"respectful\" are claims. A morning count, a norm you kept on a Tuesday, an ask you made in ELA, a small move at lunch: those are evidence. The best stories also include the part that did not work, because a story with no **gap** in it is a story nobody believes, and because the gap is where next trimester starts.\n\nYour HOWL Tracker has your weekly check-ins, your station records, and your history. Your Strengths Finder can help you name what you actually did well, in words that are more specific than \"good.\" Put them together. Three HOWLs, one **level** each, one piece of evidence each, one gap. Two minutes. Say it to a partner this week. Say it to a family member at the conference. That is what learning from feedback looks like when the feedback is your own.",
+      "meta": "6th-8th Grade • Leveled reading • ~480 words"
+    },
+    {
+      "id": "cy-glossary",
+      "type": "glossary",
+      "title": "Trimester Story Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Evidence",
+          "def": "Something that actually happened, with a day, a class, or a count, that supports a claim.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Claim",
+          "def": "A statement about yourself that has not been backed up yet.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Adjective",
+          "def": "A describing word like responsible or hard-working; a claim, not evidence.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Level",
+          "def": "Where you place yourself on the 1 to 4 HOWL scale.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Gap",
+          "def": "The part that did not work, which is where next trimester starts.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Student-led conference",
+          "def": "A meeting where you, a family member, and a teacher talk about your learning, and you do the talking.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rehearse",
+          "def": "To say it out loud to someone before it counts.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Self-assess",
+          "def": "To rate your own work against a target before someone else does.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Trimester",
+          "def": "One third of the school year; the span a HOWL grade covers.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Believable",
+          "def": "A story a listener can check, because it has a count, a date, and a gap.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 12 terms • Tiered"
+    },
+    {
+      "id": "cy-anchor",
+      "type": "anchor-chart",
+      "title": "Claim or Evidence?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "CLAIM OR EVIDENCE?",
+        "sections": [
+          {
+            "label": "A CLAIM",
+            "bullets": [
+              "\"I am pretty responsible\"",
+              "\"I try hard\"",
+              "An adjective about yourself"
+            ],
+            "iconPrompt": "a speech bubble holding a single star"
+          },
+          {
+            "label": "EVIDENCE",
+            "bullets": [
+              "A count: four mornings of five",
+              "A date: Tuesday, in science",
+              "A thing you did: the ask in ELA"
+            ],
+            "iconPrompt": "a small calendar page with a checkmark and a tally"
+          },
+          {
+            "label": "THE STORY",
+            "bullets": [
+              "One level per HOWL",
+              "One piece of evidence per HOWL",
+              "One gap",
+              "Two minutes"
+            ],
+            "iconPrompt": "three cards in a row with a small clock"
+          },
+          {
+            "label": "WHY THE GAP",
+            "bullets": [
+              "A story with no gap is not believed",
+              "The gap is where next trimester starts"
+            ],
+            "iconPrompt": "a path with one visible step missing and a footprint beyond it"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cy-sort",
+      "type": "concept-sort",
+      "title": "Adjective or Evidence?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cy-claim",
+            "label": "CLAIM (an adjective about yourself)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "cy-evidence",
+            "label": "EVIDENCE (a count, a date, a thing you did)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cy-gap",
+            "label": "GAP (what did not work, named)",
+            "color": "bg-sky-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cy-i1",
+            "content": "I am pretty responsible.",
+            "categoryId": "cy-claim"
+          },
+          {
+            "id": "cy-i2",
+            "content": "My launch check worked four mornings out of five for two weeks.",
+            "categoryId": "cy-evidence"
+          },
+          {
+            "id": "cy-i3",
+            "content": "There are still mornings I forget my charger.",
+            "categoryId": "cy-gap"
+          },
+          {
+            "id": "cy-i4",
+            "content": "I try really hard.",
+            "categoryId": "cy-claim"
+          },
+          {
+            "id": "cy-i5",
+            "content": "In week 5 I asked Ms. Ortiz for one paragraph that got a 4 on evidence, and she showed me.",
+            "categoryId": "cy-evidence"
+          },
+          {
+            "id": "cy-i6",
+            "content": "I did not do the one-word check-in in any class after week 3.",
+            "categoryId": "cy-gap"
+          },
+          {
+            "id": "cy-i7",
+            "content": "I am a respectful person.",
+            "categoryId": "cy-claim"
+          },
+          {
+            "id": "cy-i8",
+            "content": "On a Tuesday in science I waited for Malik to finish before I pointed out the wire.",
+            "categoryId": "cy-evidence"
+          },
+          {
+            "id": "cy-i9",
+            "content": "My part of the poster was done Wednesday; the group changed my list twice.",
+            "categoryId": "cy-evidence"
+          },
+          {
+            "id": "cy-i10",
+            "content": "I set the phone boundary but only kept it in one class, not every day.",
+            "categoryId": "cy-gap"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "cy-quiz",
+      "type": "quiz",
+      "title": "The Story of Your Trimester",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What is a student-led conference, according to the reading?",
+            "options": [
+              "A meeting where the teacher explains your grades to your family while you listen",
+              "A meeting where students in a Crew vote on the norms they want for next trimester",
+              "A meeting with a family member and a teacher about your learning, where you do the talking",
+              "A meeting where you present your finished expedition product to the whole class"
+            ],
+            "correctAnswer": "A meeting with a family member and a teacher about your learning, where you do the talking",
+            "conceptLabel": "student-led conference"
+          },
+          {
+            "type": "mcq",
+            "question": "In a trimester story, what is the target and what is the rubric?",
+            "options": [
+              "The target is the HOWL statement; the rubric is the 1 to 4 scale",
+              "The target is the report card; the rubric is your teacher's opinion",
+              "The target is a 4; the rubric is how hard you tried",
+              "The target is the expedition product; the rubric is the audience's reaction"
+            ],
+            "correctAnswer": "The target is the HOWL statement; the rubric is the 1 to 4 scale",
+            "conceptLabel": "target and rubric"
+          },
+          {
+            "type": "mcq",
+            "question": "Zoe and Malik both claim a 3. Why is Malik's story the believable one?",
+            "options": [
+              "Because he speaks more confidently than Zoe",
+              "Because he has a count, a date, and a thing that went wrong",
+              "Because he claims a lower level than he deserves",
+              "Because he built a launch check and Zoe did not"
+            ],
+            "correctAnswer": "Because he has a count, a date, and a thing that went wrong",
+            "conceptLabel": "evidence not adjectives"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say to include the part that did not work?",
+            "options": [
+              "So the teacher can lower your grade fairly and explain why",
+              "Because every good story needs a sad part somewhere in the middle",
+              "So your family knows you are being honest about the whole trimester",
+              "Because a story with no gap is not believed, and the gap is where next trimester starts"
+            ],
+            "correctAnswer": "Because a story with no gap is not believed, and the gap is where next trimester starts",
+            "conceptLabel": "why the gap"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the shape of the two-minute story?",
+            "options": [
+              "Three HOWLs, one level each, one piece of evidence each, one gap",
+              "One HOWL, three levels, three pieces of evidence",
+              "All twelve weeks in order, one sentence each",
+              "Your best week, told in detail"
+            ],
+            "correctAnswer": "Three HOWLs, one level each, one piece of evidence each, one gap",
+            "conceptLabel": "the shape of the story"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Pick one HOWL. Write a two-sentence account of it for a student-led conference: the level you would claim, and the one piece of evidence that shows it.",
+            "expectedAnswer": "A level (1 to 4) and a specific moment (a class, a day, what happened) rather than a general claim.",
+            "conceptLabel": "evidence not adjectives"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which of the twelve weeks gave you the strongest piece of evidence? Which gave you the gap?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cy-frames",
+      "type": "sentence-frames",
+      "title": "My Trimester Story",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "Respect: I would say a ____. My evidence is ____ (week ____, ____)."
+          },
+          {
+            "text": "Responsibility: I would say a ____. My evidence is ____ (week ____, ____)."
+          },
+          {
+            "text": "Perseverance: I would say a ____. My evidence is ____ (week ____, ____)."
+          },
+          {
+            "text": "The gap is ____. It is not a ____ because ____."
+          },
+          {
+            "text": "Next trimester starts with ____."
+          },
+          {
+            "text": "My partner's feedback was ____, so I changed ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Evidence, not adjectives | Three adjectives | One HOWL with real evidence | Every HOWL has a count, a date, or a thing you did |\n| The gap | No gap, or \"nothing really\" | A gap named vaguely | A gap named specifically, with what starts next trimester |\n| Rehearsed | Written, not said | Said once to a partner | Said, feedback taken, one thing changed |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cy-faq",
+      "type": "faq",
+      "title": "Trimester Story Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
+          "question": "What if I do not have evidence for a HOWL?",
+          "answer": "Then the honest story is \"I do not have a moment I can point to for this one, and that is my gap.\" That sentence is evidence of self-assessment, which is the Perseverance HOWL doing its job. Then pick the week that would have given you one, and start there."
+        },
+        {
+          "question": "What if my level is lower than what I think my teacher will give?",
+          "answer": "Say your level and your evidence anyway. A conference where you claim a 2 with a real story and your teacher says \"I saw a 3, here is why\" is the best kind. The reverse, a 4 with adjectives, is the worst kind."
+        },
+        {
+          "question": "Do I have to talk about the gap in front of my family?",
+          "answer": "Yes, and it is the part families remember best, because it sounds like you. A gap with a plan attached is not a confession. It is the next trimester."
+        },
+        {
+          "question": "Two minutes is not very long.",
+          "answer": "Correct. Three HOWLs, one level, one piece of evidence, one gap: that is nine sentences. Two minutes is generous. If it runs long, you have adjectives in it."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Perseverance HOWL says you self-assess with targets and learn from feedback. A trimester story is both, about yourself, out loud. Your teachers score HOWLs; the conference is where you say what is behind the score."
+        }
+      ],
+      "meta": "7 questions"
+    },
+    {
+      "id": "cy-memory",
+      "type": "memory-aid",
+      "title": "Remember Level, Evidence, Gap",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Level, Evidence, Gap",
+        "instructions": "Each card locks in one idea from The Story of Your Trimester. Look at the example aid, make it your own, and tell how it helps you tell the story.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "keyword-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Adjectives are not evidence. A morning count, a norm you kept on a Tuesday, an ask you made in ELA, a small move at lunch: those are evidence. Three HOWLs, one level each, one piece of evidence each, one gap. Two minutes.",
+        "lessonRef": {
+          "resourceId": "cy-reading",
+          "title": "The Story of Your Trimester"
+        },
+        "cards": [
+          {
+            "id": "cy-ma-leg",
+            "target": "For each HOWL: a level, a piece of evidence, and one gap",
+            "essentialFacts": [
+              "Three HOWLs, one level each, one piece of evidence each, one gap.",
+              "Two minutes."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Level, Evidence, Gap. L-E-G. Three legs hold up a stool; take one away and the story tips over.",
+            "mapping": "The three beats in order make a word, and the stool picture says why all three are needed.",
+            "scaffoldStarter": "Level: ____. Evidence: ____. Gap: ____.",
+            "scaffoldSteps": [
+              "Write the three words in order.",
+              "Fill them for one HOWL.",
+              "Say it in under forty seconds."
+            ],
+            "coachPrompts": [
+              "Which leg was missing from Zoe's story?"
+            ],
+            "studentPrompt": "Make your own three-beat cue for the story.",
+            "reasoningPrompt": "How does your cue keep adjectives out of your story?",
+            "hookFact": {
+              "text": "A story with no gap in it is a story nobody believes.",
+              "sourceTitle": "The Story of Your Trimester (this lesson)"
+            }
+          },
+          {
+            "id": "cy-ma-adj",
+            "target": "Adjectives are claims; counts, dates, and things you did are evidence",
+            "essentialFacts": [
+              "Adjectives are not evidence; responsible, hard-working, and respectful are claims.",
+              "A morning count, a norm kept on a Tuesday, an ask made in ELA, a small move at lunch: those are evidence."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "ADJECTIVE = ALLEGED. Both start with A. An adjective about yourself is an allegation until a date or a count shows up.",
+            "mapping": "The shared first letter ties the grammar word to its status in a story: unproven until evidence arrives.",
+            "scaffoldStarter": "When I say I am ____, the evidence is ____.",
+            "scaffoldSteps": [
+              "Write one adjective you would use about yourself.",
+              "Find one moment with a day or a count that shows it.",
+              "Cross out the adjective and keep the moment."
+            ],
+            "coachPrompts": [
+              "What moment could replace \"I try hard\" in Zoe's story?"
+            ],
+            "studentPrompt": "Make your own pair for adjective.",
+            "reasoningPrompt": "How does your pair help you catch a claim before you say it at the conference?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • level evidence gap, adjectives"
+    },
+    {
+      "id": "cy-challenge",
+      "type": "applied-challenge",
+      "title": "Explore Challenge: Two Minutes, Three HOWLs",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Two Minutes, Three HOWLs",
+        "instructions": "Build your two-minute trimester story from your HOWL Tracker history and station records: one level, one piece of evidence, and one gap for each of the three HOWLs. Rehearse it with a partner, take one piece of their feedback, and record the version you will use at the conference.",
+        "selectionMode": "manual",
+        "family": "explore",
+        "fitReason": "The HOWL behaviors are self-assessing with targets and rubrics and learning from feedback to revise. The story is the self-assessment; the partner rehearsal is the feedback; the changed version is the revision.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "explore",
+          "context": "You have twelve weeks of check-ins, station records, and moments. Your family will hear about your HOWLs at the conference. Right now the story in your head is probably three adjectives. You are going to replace them with evidence.",
+          "role": "A student preparing to lead a conference",
+          "audience": "A partner in Crew first; then a family member and a teacher at the student-led conference",
+          "drivingQuestion": "What level would I claim for each HOWL, what one moment proves it, and what is my gap?",
+          "seedDirection": "Open HOWL Tracker History. For each HOWL, find the check-in or station record with the most specific evidence. Write the level and the moment. Pick one gap across all three. Say it to a partner in two minutes. Ask them what was an adjective. Change that one thing.",
+          "lockedLessonFacts": [
+            "The target is the HOWL statement; the rubric is the 1 to 4 scale; the evidence is what actually happened.",
+            "Adjectives are claims; a count, a date, or a thing you did is evidence.",
+            "A story with no gap is not believed, and the gap is where next trimester starts.",
+            "Three HOWLs, one level each, one piece of evidence each, one gap, two minutes."
+          ],
+          "openQuestions": [
+            "Which week gave me the strongest evidence for each HOWL?",
+            "Is my level one I can back up, or one I hope for?",
+            "Which gap is the honest one?",
+            "What did my partner hear as an adjective?"
+          ],
+          "stakeholders": [
+            "You",
+            "Your rehearsal partner",
+            "A family member at the conference",
+            "The teacher who scores the HOWL"
+          ],
+          "criteria": [
+            "Each HOWL has a level and one piece of evidence with a day, a class, or a count",
+            "One gap is named specifically",
+            "The story was said aloud to a partner and timed",
+            "One thing was changed because of feedback, and the record says what",
+            "Uses at least three glossary words"
+          ],
+          "constraints": [
+            "Two minutes or less",
+            "No adjectives about yourself without a moment attached",
+            "Evidence comes from your own records, not from memory alone",
+            "The gap is real"
+          ],
+          "deliverable": "A one-page story card: three HOWLs with level and evidence, the gap, the next-trimester line, and one sentence on what the partner changed.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student's first draft for Respect was \"I am respectful to everyone.\"",
+            "move": "Her partner said that was an adjective. She opened her week 8 station record: \"At lunch on a Thursday I said 'wait, what happened next' when Tomas got cut off.\" The level stayed a 3. The sentence changed.",
+            "whyItHelps": "It shows the feedback loop working in one exchange: adjective out, moment in, level unchanged."
+          },
+          "frameStarter": "Respect: a ____, because ____. Responsibility: a ____, because ____. Perseverance: a ____, because ____. My gap is ____. Next trimester starts with ____.",
+          "frameChoices": [
+            "My partner heard \"____\" as an adjective, so I replaced it with ____.",
+            "The evidence I am proudest of is from week ____.",
+            "I would tell a sixth grader starting Crew to ____."
+          ],
+          "coachPrompts": [
+            "Could a teacher check every piece of evidence in your story?",
+            "Is your gap the real one or the safe one?"
+          ]
+        },
+        "coachHint": "Students will want to skip the gap. Model your own: one HOWL, one real gap, one plan. It takes twenty seconds and changes the room.",
+        "sourceExcerpt": "Three HOWLs, one level each, one piece of evidence each, one gap. Two minutes. Say it to a partner this week. Say it to a family member at the conference. That is what learning from feedback looks like when the feedback is your own.",
+        "lessonRef": {
+          "resourceId": "cy-reading",
+          "title": "The Story of Your Trimester"
+        }
+      },
+      "meta": "6th-8th Grade • Explore brief • two minutes, three HOWLs"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_story",
+      "name": "Crew station: Week 12: The Story of Your Trimester",
+      "tools": [
+        "howlTracker",
+        "strengths"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 12: The Story of Your Trimester pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_story_time",
+          "type": "timeSpent",
+          "toolId": "howlTracker",
+          "label": "Spend 5 minutes in HOWL Tracker",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_story_check",
+          "type": "manualComplete",
+          "toolId": "strengths",
+          "label": "I rehearsed my two-minute trimester story with a partner this week and changed one thing because of their feedback",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

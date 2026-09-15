@@ -1,0 +1,37 @@
+{
+  "evidenceClass": "Real Chromium and production MCP stdio failure/recovery calibration with scripted replies; no live provider calls.",
+  "observations": [
+    {
+      "mode": "cancel",
+      "maxRunMinutes": 5,
+      "pendingRequestsBeforeInterruption": 1,
+      "firstPendingAfterMs": 2857,
+      "observedStatus": "cancelled",
+      "observedError": "Agent-bridge run cancelled",
+      "pendingAtSettlement": 0,
+      "elapsedMs": 2868,
+      "persistedStatus": "cancelled",
+      "lateReplyRejected": true,
+      "laneReleasedForResume": true,
+      "freshRequestIds": true,
+      "invalidBatchWasAtomic": true,
+      "resumedStatus": "completed",
+      "scriptedRepliesAfterResume": 11,
+      "verificationHtmlBound": true,
+      "durableCompletedStatus": "completed"
+    },
+    {
+      "mode": "deadline",
+      "maxRunMinutes": 1,
+      "pendingRequestsBeforeInterruption": 1,
+      "firstPendingAfterMs": 39839,
+      "observedStatus": "running",
+      "observedError": null,
+      "pendingAtSettlement": 3,
+      "elapsedMs": 75006,
+      "persistedStatus": "running",
+      "manualCancelAccepted": true,
+      "afterManualCancel": "cancelled"
+    }
+  ]
+}

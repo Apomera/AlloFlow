@@ -1,0 +1,827 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "label": "Native blank sandbox begins with no entry animation",
+      "pass": true
+    },
+    {
+      "label": "Native desktop entry has 625 ground cells and no student blocks",
+      "pass": true
+    },
+    {
+      "label": "Empty sandbox gives Start building as an enabled action",
+      "pass": true
+    },
+    {
+      "label": "Print Lab action is disabled before the first block",
+      "pass": true
+    },
+    {
+      "label": "Sandbox toolbar omits zero-question score and Objectives",
+      "pass": true
+    },
+    {
+      "label": "Desktop B adds exactly one first block",
+      "pass": true
+    },
+    {
+      "label": "First placement preserves the native camera position",
+      "pass": true
+    },
+    {
+      "label": "Native Wood choice is reflected in current state",
+      "pass": true
+    },
+    {
+      "label": "Native Gold choice is reflected in current state",
+      "pass": true
+    },
+    {
+      "label": "Native Glass quarter-wedge choices are reflected in current state",
+      "pass": true
+    },
+    {
+      "label": "Explicitly selected creation stays selected after looking away",
+      "pass": true
+    },
+    {
+      "label": "Showcase opens for the selected creation",
+      "pass": true
+    },
+    {
+      "label": "Escape returns from Showcase with the same selection",
+      "pass": true
+    },
+    {
+      "label": "desktopEntry has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "phoneSelected has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "phoneCollapsed has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "smallCollapsed has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "smallSelected has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "smallScrolled has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "touchEntry has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "touchSmallPanel has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "touchSmallScrolled has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "touchBack has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "smallSelected has a reachable 44px Back to building footer",
+      "pass": true
+    },
+    {
+      "label": "smallScrolled has a reachable 44px Back to building footer",
+      "pass": true
+    },
+    {
+      "label": "touchSmallPanel has a reachable 44px Back to building footer",
+      "pass": true
+    },
+    {
+      "label": "touchSmallScrolled has a reachable 44px Back to building footer",
+      "pass": true
+    },
+    {
+      "label": "Touch Place is a reachable 44px target at native entry",
+      "pass": true
+    },
+    {
+      "label": "Native touch Place adds exactly one first block",
+      "pass": true
+    },
+    {
+      "label": "Touch Back to building restores visible placement controls",
+      "pass": true
+    },
+    {
+      "label": "Broad interaction pass has no page or console errors",
+      "pass": true
+    },
+    {
+      "label": "Change material closes the panel and focuses a reachable native selected choice",
+      "pass": true,
+      "detail": {
+        "label": "Select Stone block, key 1, currently selected",
+        "collapsed": true,
+        "atCenter": true,
+        "width": 44,
+        "height": 44
+      },
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "Change material preserves camera and blocks",
+      "pass": true,
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "Change shape closes the panel and focuses a reachable native selected choice",
+      "pass": true,
+      "detail": {
+        "label": "Select Cube shape, 1 cubic unit, currently selected",
+        "collapsed": true,
+        "atCenter": true,
+        "width": 44,
+        "height": 44
+      },
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "Change shape preserves camera and blocks",
+      "pass": true,
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "Start building returns keyboard focus to the world",
+      "pass": true,
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "B places the first block after keyboard Start building",
+      "pass": true,
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "Scrolled Back to building restores world focus",
+      "pass": true,
+      "source": "final-build-focus.json"
+    },
+    {
+      "label": "final-build-focus.json has no page or console errors",
+      "pass": true
+    },
+    {
+      "label": "Native first B places one block before camera fixtures",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Native first B preserves the entry camera position",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Native Undo removes the first block",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Looking above ground shows neutral aim guidance instead of blocked state",
+      "pass": true,
+      "detail": {
+        "state": "aim",
+        "code": "no_target",
+        "color": "rgb(41, 71, 58)",
+        "background": "rgba(243, 238, 220, 0.98)",
+        "contrast": 8.788068754152091,
+        "width": 108.90625,
+        "height": 44,
+        "atCenter": true,
+        "text": "Look down at the nearby ground or a block face.\nAim at build area"
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Aim has a reachable target at least44×44",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Neutral aim text has at least4.5:1 nominal contrast",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Aim points to a valid placement target",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Aim preserves camera position and world geometry",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Shape feedback and placement guidance are visually separated",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "x": 654.125,
+          "y": 781.8125,
+          "w": 131.75,
+          "h": 32.1875
+        },
+        "hint": {
+          "x": 611.859375,
+          "y": 736.8125,
+          "w": 216.28125,
+          "h": 37
+        },
+        "overlap": false
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Compact desktop feedback leaves the actual crosshair clear",
+      "pass": true,
+      "detail": {
+        "stack": {
+          "x": 611.859375,
+          "y": 112,
+          "w": 216.28125,
+          "h": 77.1875
+        },
+        "crosshair": {
+          "x": 709,
+          "y": 290.5,
+          "w": 22,
+          "h": 22
+        },
+        "crosshairCenter": {
+          "x": 720,
+          "y": 301.5
+        },
+        "viewport": {
+          "x": 10,
+          "y": 63,
+          "w": 1420,
+          "h": 477
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 475
+        },
+        "canvasCenter": {
+          "x": 720,
+          "y": 301.5
+        },
+        "overlapsCrosshair": false
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Actual crosshair matches the rendered canvas center",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "desktop hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 709,
+          "y": 263,
+          "w": 22,
+          "h": 22,
+          "cx": 720,
+          "cy": 274
+        },
+        "canvas": {
+          "x": 11,
+          "y": 9,
+          "w": 1418,
+          "h": 530,
+          "cx": 720,
+          "cy": 274
+        },
+        "viewport": {
+          "x": 10,
+          "y": 8,
+          "w": 1420,
+          "h": 532,
+          "cx": 720,
+          "cy": 274
+        }
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "390px hidden game bar exposes both recovery controls without overlap",
+      "pass": true,
+      "detail": {
+        "home": {
+          "x": 290.359375,
+          "y": 56,
+          "w": 91.640625,
+          "h": 44,
+          "atCenter": true
+        },
+        "bar": {
+          "x": 137.8046875,
+          "y": 8,
+          "w": 114.390625,
+          "h": 44,
+          "atCenter": true
+        },
+        "overlap": false,
+        "overflow": false
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "390px hidden game bar gives both recovery controls 44px targets",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "390px hidden game bar has no document overflow",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Narrow World home opens the welcome screen",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "Continue returns from World home with the game bar still hidden",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "390px hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "cx": 195,
+          "cy": 422
+        },
+        "canvas": {
+          "x": 7,
+          "y": 7,
+          "w": 376,
+          "h": 830,
+          "cx": 195,
+          "cy": 422
+        },
+        "viewport": {
+          "x": 6,
+          "y": 6,
+          "w": 378,
+          "h": 832,
+          "cx": 195,
+          "cy": 422
+        }
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "320px hidden game bar exposes both recovery controls without overlap",
+      "pass": true,
+      "detail": {
+        "home": {
+          "x": 220.359375,
+          "y": 56,
+          "w": 91.640625,
+          "h": 44,
+          "atCenter": true
+        },
+        "bar": {
+          "x": 102.8046875,
+          "y": 8,
+          "w": 114.390625,
+          "h": 44,
+          "atCenter": true
+        },
+        "overlap": false,
+        "overflow": false
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "320px hidden game bar gives both recovery controls 44px targets",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "320px hidden game bar has no document overflow",
+      "pass": true,
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "320px expanded Position keeps recovery controls reachable",
+      "pass": true,
+      "detail": {
+        "positionOpen": true,
+        "home": true,
+        "bar": true,
+        "overflow": false
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "320px hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "cx": 160,
+          "cy": 350
+        },
+        "canvas": {
+          "x": 7,
+          "y": 7,
+          "w": 306,
+          "h": 686,
+          "cx": 160,
+          "cy": 350
+        },
+        "viewport": {
+          "x": 6,
+          "y": 6,
+          "w": 308,
+          "h": 688,
+          "cx": 160,
+          "cy": 350
+        }
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "390px shown game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 184,
+          "y": 437.5,
+          "w": 22,
+          "h": 22,
+          "cx": 195,
+          "cy": 448.5
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 376,
+          "h": 777,
+          "cx": 195,
+          "cy": 448.5
+        },
+        "viewport": {
+          "x": 6,
+          "y": 59,
+          "w": 378,
+          "h": 779,
+          "cx": 195,
+          "cy": 448.5
+        }
+      },
+      "source": "final-neutral-aim.json"
+    },
+    {
+      "label": "final-neutral-aim.json has no page or console errors",
+      "pass": true
+    },
+    {
+      "label": "ready 320×700 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 158.5,
+          "right": 123.890625,
+          "bottom": 214.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 242,
+          "w": 146,
+          "h": 62,
+          "right": 158,
+          "bottom": 304
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 361
+        },
+        "gap": 27.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×700 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×700 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×700 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 390×844 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 158.5,
+          "right": 123.890625,
+          "bottom": 214.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 314,
+          "w": 200.078125,
+          "h": 37,
+          "right": 212.078125,
+          "bottom": 351
+        },
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "right": 206,
+          "bottom": 433
+        },
+        "gap": 99.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 390×844 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 390×844 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 390×844 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×568 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 96,
+          "right": 123.890625,
+          "bottom": 152
+        },
+        "hint": {
+          "x": 12,
+          "y": 176,
+          "w": 146,
+          "h": 62,
+          "right": 158,
+          "bottom": 238
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 273,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 295
+        },
+        "gap": 24,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×568 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×568 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "ready 320×568 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×700 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 136.5,
+          "right": 109.609375,
+          "bottom": 192.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 242,
+          "w": 146,
+          "h": 128.78125,
+          "right": 158,
+          "bottom": 370.78125
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 361
+        },
+        "gap": 49.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×700 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×700 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×700 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 390×844 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 136.5,
+          "right": 109.609375,
+          "bottom": 192.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 314,
+          "w": 216,
+          "h": 103.78125,
+          "right": 228,
+          "bottom": 417.78125
+        },
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "right": 206,
+          "bottom": 433
+        },
+        "gap": 121.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 390×844 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 390×844 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 390×844 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×568 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 96,
+          "right": 109.609375,
+          "bottom": 152
+        },
+        "hint": {
+          "x": 12,
+          "y": 176,
+          "w": 146,
+          "h": 128.78125,
+          "right": 158,
+          "bottom": 304.78125
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 273,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 295
+        },
+        "gap": 24,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      },
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×568 leaves the crosshair center clear",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×568 keeps both recovery controls reachable without document overflow",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "aim 320×568 exposes the screen-reader toggle through panel scrolling",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    },
+    {
+      "label": "Expanded Position pass has no page or console errors",
+      "pass": true,
+      "source": "final-expanded-position.json"
+    }
+  ],
+  "interactionStates": 27,
+  "scope": "Current local production; real React/Three WebGL served on loopback; no external API or printer connected",
+  "expandedPositionLayouts": 6
+}

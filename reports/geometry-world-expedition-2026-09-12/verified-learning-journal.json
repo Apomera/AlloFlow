@@ -1,0 +1,42 @@
+{
+  "schema": "alloflow-geometry-journal/1",
+  "lesson": "Geometry Harbor - An Area and Volume Expedition",
+  "activities": [
+    {
+      "title": "Arrival quay: build and revise",
+      "challenge": "On the sand practice pad, build a 3 by 2 by 1 cargo model from six unit cubes. Measure it, then reshape your cubes into a 6 by 1 by 1 row.",
+      "reflection": "I measured six cubes. Rearranging them changed the length but preserved the volume.",
+      "reviewed": true
+    },
+    {
+      "title": "Market gardens: measure growing space",
+      "challenge": "Study the gold 6 by 4 garden model. Count rows, calculate the planting area, and explain how many plants fit at one plant per tile.",
+      "reflection": "",
+      "reviewed": false
+    },
+    {
+      "title": "Market gardens: redesign the boundary",
+      "challenge": "Compare the gold 6 by 4 garden with the cyan 8 by 3 garden. On the 12 by 6 sand work pad, build 24 cubes in one layer, then revise to a 12 by 2 rectangle.",
+      "reflection": "",
+      "reviewed": false
+    },
+    {
+      "title": "Reservoir works: predict and fill",
+      "challenge": "Fill only the reservoir interior: x = 8 to 11, z = -7 to -5, and two layers above the cyan floor. Predict, fill one layer, then complete the second.",
+      "reflection": "",
+      "reviewed": false
+    },
+    {
+      "title": "Reservoir works: compare capacities",
+      "challenge": "Measure the cyan 6 by 2 by 2 model and the gold 4 by 3 by 2 model separately. Explain their equal capacity using base area and layers.",
+      "reflection": "",
+      "reviewed": false
+    },
+    {
+      "title": "Makers pavilion: design and explain",
+      "challenge": "On the 6 by 6 sand makers pad, design a connected room model using exactly 24 unit cubes. Measure it, revise its dimensions, and explain both versions.",
+      "reflection": "",
+      "reviewed": false
+    }
+  ]
+}

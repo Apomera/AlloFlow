@@ -1,0 +1,48 @@
+{
+  "evidenceClass": "Independent root-agent DOM verification of the actual immutable live HTML against the frozen nine-page source oracle; no human acceptance or gate override.",
+  "sourceSha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+  "htmlSha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0",
+  "documentLanguage": "es",
+  "titleElements": 2,
+  "articleHeadings": {
+    "expected": 30,
+    "actual": 30,
+    "unique": true,
+    "ordered": true
+  },
+  "orderedLists": 13,
+  "listItems": 32,
+  "articleLetterSequences": {
+    "matched": 30,
+    "total": 30,
+    "normalization": "Ignore whitespace, punctuation and digits; article numbers checked independently."
+  },
+  "preamble": {
+    "matched": true,
+    "normalization": "Whitespace normalization"
+  },
+  "wholeMain": {
+    "matched": true,
+    "sourceNonWhitespaceCharacters": 10101,
+    "outputNonWhitespaceCharacters": 10101,
+    "method": "Clone main, remove non-content style/script/template, reconstruct ordered list labels using actual ol start/li value, compare all nine frozen source page texts after removing whitespace only; punctuation and numbers retained."
+  },
+  "reportedBy": "/root",
+  "artifactChanged": false,
+  "verificationGateOverridden": false,
+  "visualReview": {
+    "reviewer": "/root",
+    "screenshots": [
+      "spanish-final-320-top.png",
+      "spanish-final-320-article29.png",
+      "spanish-final-1000-top.png",
+      "spanish-final-1000-article29.png"
+    ],
+    "observations": [
+      "Text, headings and lists are readable, aligned, and wrap within the shown viewport.",
+      "Article 29 three clauses are visibly grouped at width 1000 and DOM-confirmed at both widths.",
+      "No clipped horizontal text or overlaps observed."
+    ],
+    "limits": "No screen-reader or PDF/UA conformance claim."
+  }
+}

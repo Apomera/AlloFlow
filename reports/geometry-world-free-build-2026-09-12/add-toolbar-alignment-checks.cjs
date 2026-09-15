@@ -1,0 +1,9 @@
+'use strict';
+const fs=require('node:fs'),file='reports/geometry-world-free-build-2026-09-12/verify-neutral-aim.cjs';let s=fs.readFileSync(file,'utf8');const anchor="  await page.screenshot({path:path.join(out,'final-feedback-wide-550.png'),timeout:120000});";if(s.split(anchor).length!==2)throw Error('Unexpected compact screenshot anchor');s=s.replace(anchor,anchor+`
+  r.alignmentLayouts=[];
+  for(const spec of [{name:'desktop hidden game bar',width:1440,height:550,hide:true},{name:'390px hidden game bar',width:390,height:844},{name:'390px shown game bar',width:390,height:844,show:true}]){
+   await page.setViewportSize({width:spec.width,height:spec.height});if(spec.hide)await page.getByRole('button',{name:'Hide the Geometry World game bar',exact:true}).click();if(spec.show)await page.getByRole('button',{name:'Show the Geometry World game bar',exact:true}).click();
+   await page.waitForFunction(()=>{const a=document.querySelector('.gw-crosshair').getBoundingClientRect(),b=__geoWorldEngine.renderer.domElement.getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)<=1&&Math.abs(a.y+a.height/2-b.y-b.height/2)<=1;},{},{timeout:15000});
+   const detail=await page.evaluate(()=>{const rect=n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,cx:r.x+r.width/2,cy:r.y+r.height/2};};return{crosshair:rect(document.querySelector('.gw-crosshair')),canvas:rect(__geoWorldEngine.renderer.domElement),viewport:rect(document.querySelector('#geoworld-fs-wrap'))};});r.alignmentLayouts.push({name:spec.name,...detail});check(spec.name+' aligns crosshair with the canvas',Math.abs(detail.crosshair.cx-detail.canvas.cx)<=1&&Math.abs(detail.crosshair.cy-detail.canvas.cy)<=1,detail);
+  }
+`);const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

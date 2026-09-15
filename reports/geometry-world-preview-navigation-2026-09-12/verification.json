@@ -1,0 +1,25 @@
+{
+  "scope": "Local Geometry World source in a minimal React/Three.js host; no deployment or physical printer validation.",
+  "unitTests": 243,
+  "testFiles": 16,
+  "failedTests": 0,
+  "pendingTests": 0,
+  "browserChecks": 23,
+  "browserErrors": 0,
+  "sourceSyntax": "passed",
+  "desktopParity": "passed",
+  "scopedWhitespace": "passed",
+  "deployed": false,
+  "files": [
+    {
+      "source": "stem_lab/stem_tool_geometryworld.js",
+      "desktop": "desktop/web-app/public/stem_lab/stem_tool_geometryworld.js",
+      "sha256": "3889f55ee8880cbbe1017d5be0eb3e237254ea6099139d9428c2d98a32dc582f"
+    },
+    {
+      "source": "stem_lab/stem_tool_geometryworld_builder.js",
+      "desktop": "desktop/web-app/public/stem_lab/stem_tool_geometryworld_builder.js",
+      "sha256": "b6a12f2bbb4ec15d57275228720e31ccbb7aecc0e248b69180809f14f0d10a0d"
+    }
+  ]
+}

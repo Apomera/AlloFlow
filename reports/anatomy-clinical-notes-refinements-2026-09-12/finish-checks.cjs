@@ -1,0 +1,12 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+const file='tests/anatomy_clinical_notes_refinements.test.js';let source=fs.readFileSync(file,'utf8');
+source=source.replace('keeps source attribution with its structure, including the shared spleen entry','keeps source attribution with its structure across system changes');
+source=source.replace("s.patch({ system: 'organs' });", "s.patch({ system: 'organs', view: 'posterior', selectedStructure: 'kidneys' });");
+source=source.replace("toBe(bank.spleen.clinical);", "toBe(bank.kidneys.clinical);").replace("toBe(bank.spleen.reference);", "toBe(bank.kidneys.reference);");
+source=source.replace("s.patch({ system: 'skeletal', selectedStructure: 'skull' });", "s.patch({ system: 'skeletal', view: 'anterior', selectedStructure: 'skull' });");
+fs.writeFileSync(file,source);
+const browserFile=__dirname+'/browser.cjs';source=fs.readFileSync(browserFile,'utf8');
+source=source.replace("await state({system:row.system,view:row.view,selectedStructure:null});", "const [otherId,otherRow] = Object.entries(bank).find(([otherId]) => otherId !== id);\n      await state({system:otherRow.system,view:otherRow.view,selectedStructure:otherId});");
+fs.writeFileSync(browserFile,source);
+const probe=fs.readFileSync(__dirname+'/probe.cjs','utf8').replace("return {rect:n.getBoundingClientRect(),", "const rect=n.getBoundingClientRect(),points=[];for(let y=rect.top+2;y<rect.bottom;y+=15){points.push({y,elements:document.elementsFromPoint(rect.x+rect.width/2,y).slice(0,6).map(e=>({tag:e.tagName,id:e.id,cls:e.className,position:getComputedStyle(e).position,bg:getComputedStyle(e).backgroundColor,rect:e.getBoundingClientRect()}))});}return {points,rect:n.getBoundingClientRect(),").replace("'/probe.json'","'/probe2.json'");
+fs.writeFileSync(__dirname+'/probe2.cjs',probe);

@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-09-13T01:26:56.445Z",
+  "source": "stem_lab/stem_tool_renewables.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_renewables.js",
+  "sha256": "79887a84de3e071d14a4f0c877c674c2f96844352992c58fb324dbe228aea923",
+  "byteIdentical": true,
+  "syntaxFiles": [
+    "stem_lab/stem_tool_renewables.js",
+    "desktop/web-app/public/stem_lab/stem_tool_renewables.js",
+    "reports/renewables-enhancement/map-explanation-browser-qa.cjs",
+    "reports/renewables-enhancement/design-map-browser-qa.cjs"
+  ],
+  "syntaxPassed": true,
+  "scopedWhitespacePassed": true,
+  "preview": "http://127.0.0.1:8790/",
+  "previewMatchesSource": true
+}

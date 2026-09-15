@@ -1,0 +1,55 @@
+{
+  "checks": [
+    {
+      "name": "Review next improvement 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Editing from review 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Updated review 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Review next improvement 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Editing from review 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Updated review 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Review next improvement 320",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Editing from review 320",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Updated review 320",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Linked-work review shortcut",
+      "axeViolations": 0,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

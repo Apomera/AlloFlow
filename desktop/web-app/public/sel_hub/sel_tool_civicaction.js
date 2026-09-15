@@ -1936,8 +1936,8 @@ window.SelHub = window.SelHub || {
                     text += '\n';
                   });
                   text += '\nThank you for completing this survey!\n';
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text);
+                  if (window.SelHub && window.SelHub.copyText) {
+                    window.SelHub.copyText(text).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                     addToast('Survey copied to clipboard! Share it with your community.', 'success');
                   } else {
                     addToast('Survey generated with ' + surveyQuestions.length + ' questions.', 'success');

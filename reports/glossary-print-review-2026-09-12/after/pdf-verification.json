@@ -1,0 +1,205 @@
+[
+  {
+    "file": "BingoGame-A4.pdf",
+    "pages": 3,
+    "textLengths": [
+      289,
+      289,
+      289
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "BingoGame-Letter.pdf",
+    "pages": 3,
+    "textLengths": [
+      289,
+      289,
+      289
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "CrosswordGame-A4.pdf",
+    "pages": 3,
+    "textLengths": [
+      106,
+      1574,
+      1682
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "CrosswordGame-Letter.pdf",
+    "pages": 3,
+    "textLengths": [
+      106,
+      1574,
+      1682
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Export-flash-cards-A4.pdf",
+    "pages": 5,
+    "textLengths": [
+      209,
+      1165,
+      848,
+      1043,
+      22
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Export-flash-cards-Letter.pdf",
+    "pages": 4,
+    "textLengths": [
+      1032,
+      856,
+      850,
+      550
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Export-language-cards-A4.pdf",
+    "pages": 4,
+    "textLengths": [
+      1033,
+      856,
+      850,
+      550
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Export-language-cards-Letter.pdf",
+    "pages": 4,
+    "textLengths": [
+      1033,
+      856,
+      850,
+      550
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "Export-table-A4.pdf",
+    "pages": 4,
+    "textLengths": [
+      1091,
+      899,
+      1103,
+      156
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "Export-table-Letter.pdf",
+    "pages": 4,
+    "textLengths": [
+      1089,
+      907,
+      1122,
+      141
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Flashcards-language-A4.pdf",
+    "pages": 4,
+    "textLengths": [
+      1212,
+      712,
+      699,
+      176
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Flashcards-language-Letter.pdf",
+    "pages": 4,
+    "textLengths": [
+      1029,
+      714,
+      710,
+      346
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Flashcards-standard-A4.pdf",
+    "pages": 4,
+    "textLengths": [
+      1363,
+      826,
+      822,
+      402
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "Flashcards-standard-Letter.pdf",
+    "pages": 4,
+    "textLengths": [
+      1363,
+      826,
+      822,
+      402
+    ],
+    "appChrome": false,
+    "hasLongDefinition": true
+  },
+  {
+    "file": "MatchingGame-A4.pdf",
+    "pages": 1,
+    "textLengths": [
+      920
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "MatchingGame-Letter.pdf",
+    "pages": 1,
+    "textLengths": [
+      920
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "WordSearch-A4.pdf",
+    "pages": 2,
+    "textLengths": [
+      667,
+      602
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  },
+  {
+    "file": "WordSearch-Letter.pdf",
+    "pages": 2,
+    "textLengths": [
+      667,
+      602
+    ],
+    "appChrome": false,
+    "hasLongDefinition": false
+  }
+]

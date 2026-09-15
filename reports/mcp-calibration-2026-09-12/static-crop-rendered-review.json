@@ -1,0 +1,112 @@
+{
+  "scope": "Targeted static cleanup of a stored accepted candidate; actual Chromium content, keyboard, reflow and replacement checks; not a new live verdict.",
+  "verifiedAt": "2026-09-12T23:09:10.468Z",
+  "historicalCandidateSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+  "outputs": [
+    {
+      "variant": "mcp",
+      "file": "static-crop-replayed-candidate.html",
+      "sha256": "95c6f3f99ebe1c6f0fe56e330799efcf5a29e0763217bea690808ed9a098e934",
+      "preservation": {
+        "textExcludingUnsupportedRendererControls": true,
+        "links": true,
+        "imageBytesAndAlt": true
+      },
+      "states": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "cropButtons": 0,
+          "fileInputs": 1,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0,
+          "keyboardFileInputReached": true,
+          "focus": {
+            "visible": true,
+            "outline": "rgb(255, 255, 255)",
+            "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+          }
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "cropButtons": 0,
+          "fileInputs": 1,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0,
+          "keyboardFileInputReached": true,
+          "focus": {
+            "visible": true,
+            "outline": "rgb(255, 255, 255)",
+            "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+          }
+        },
+        {
+          "width": 1000,
+          "scrollWidth": 1000,
+          "cropButtons": 0,
+          "fileInputs": 1,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0,
+          "keyboardFileInputReached": true,
+          "focus": {
+            "visible": true,
+            "outline": "rgb(255, 255, 255)",
+            "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+          }
+        }
+      ],
+      "replacementWorks": true
+    },
+    {
+      "variant": "browser",
+      "file": "static-browser-export-candidate.html",
+      "sha256": "d7062eac912782485240b0e7120e6be9082dbc2523b23c1b426f6859d225bd7b",
+      "preservation": {
+        "textExcludingUnsupportedRendererControls": true,
+        "links": true,
+        "imageBytesAndAlt": true
+      },
+      "states": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "cropButtons": 0,
+          "fileInputs": 0,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "cropButtons": 0,
+          "fileInputs": 0,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0
+        },
+        {
+          "width": 1000,
+          "scrollWidth": 1000,
+          "cropButtons": 0,
+          "fileInputs": 0,
+          "scripts": 0,
+          "images": 1,
+          "ghostPlaceholders": 0
+        }
+      ],
+      "replacementWorks": null
+    }
+  ],
+  "errors": [],
+  "visualReview": {
+    "reviewer": "assistant",
+    "desktopAndMobileReviewed": true,
+    "humanAcceptance": false,
+    "findings": "Readable layout; expected control removal; no clipped text or horizontal overflow observed in either variant."
+  }
+}

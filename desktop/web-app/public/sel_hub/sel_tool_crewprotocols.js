@@ -780,7 +780,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
 
           h('div', { style: { padding: 16, borderRadius: 12, background: _cpBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _cpFg('#7dd3fc'), fontSize: 16 } }, '📚 Sources and learn more'),
+            (window.SelHub && window.SelHub.renderElPrimer) ? window.SelHub.renderElPrimer(h, { fg: _cpFg, bg: _cpBg, open: true }) : null,
             sourceCard('EL Education', 'eleducation.org', 'The foundational source for Crew as a school structure. Free protocols and guidance.', 'https://eleducation.org/'),
+            sourceCard('King Middle School, Portland, Maine', 'king.portlandschools.org', 'One of the first ten EL schools (1992); Crew meets daily. The learning-model page and the grading guide with the three HOWLs.', 'https://king.portlandschools.org/about/learning-models'),
             sourceCard('International Institute for Restorative Practices (IIRP)', 'iirp.edu', 'Standards body for restorative circles and conferences in schools.', 'https://www.iirp.edu/'),
             sourceCard('Gibbs, J. (2014)', 'Reaching All by Creating Tribes Learning Communities (4th ed.)', 'The Tribes framework. Long-running source for community-building protocols.', null),
             sourceCard('Northeast Foundation for Children (Responsive Classroom)', 'responsiveclassroom.org', 'Responsive Classroom\'s Morning Meeting structure is the foundation of much US elementary practice.', 'https://www.responsiveclassroom.org/'),

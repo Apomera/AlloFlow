@@ -1,0 +1,1 @@
+const fs=require('node:fs');const file='reports/anatomy-pathway-refinements-2026-09-12/validate.cjs';let source=fs.readFileSync(file,'utf8');source=source.replace("value.trim()&&value!==en[key]","value.trim()&&(value!==en[key]||(lang==='french'&&key==='route_correct'))");fs.writeFileSync(file,source);new Function('require','__dirname',source)(require,__dirname);

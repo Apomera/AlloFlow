@@ -1,0 +1,62 @@
+{
+  "enhancement": "Schematic station previews, visible proven labels, and keyboard navigation with one Tab stop and a labelled workshop panel.",
+  "tests": {
+    "passed": 242,
+    "files": 4,
+    "added": 10
+  },
+  "browser": {
+    "light": {
+      "directory": "pass29-light-final",
+      "viewports": [
+        1150,
+        390,
+        320
+      ],
+      "screenshots": 3,
+      "checks": [
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 1150",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 390",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 320"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "directory": "pass29-dark",
+      "viewports": [
+        1150,
+        390,
+        320
+      ],
+      "screenshots": 3,
+      "checks": [
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 1150",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 390",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 320"
+      ],
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "directory": "pass29-contrast",
+      "viewports": [
+        1150,
+        390,
+        320
+      ],
+      "screenshots": 3,
+      "checks": [
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 1150",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 390",
+        "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 320"
+      ],
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceMirrorParity": true,
+  "syntaxChecks": true,
+  "sourceSHA256": "7850e46acac58a7c325c48baee0d4b4ac622ebc127d6529f4732d26fed910cda",
+  "published": false
+}

@@ -1,0 +1,420 @@
+{
+  "schema": 1,
+  "verifiedAt": "2026-09-12T23:15:05.100Z",
+  "scope": "MCP engineering calibration, recovery, artifact review and regression fixes; not provider efficacy or human conformance certification",
+  "validation": {
+    "remediation": {
+      "status": "passed",
+      "files": 31,
+      "passed": 576,
+      "strictNoSkipValidation": true,
+      "command": "node node_modules/vitest/vitest.mjs run tests/aifix_chunk_gates.test.js tests/aifix_source_associations.test.js tests/doc_pipeline_build_parity.test.js tests/document_export_inspection_failures.test.js tests/remediation_form_association_index.test.js tests/remediation_form_context.test.js tests/remediation_gate_regressions.test.js tests/remediation_inline_math_option_groups.test.js tests/remediation_residual_live.test.js tests/remediation_review_evidence.test.js tests/remediation_review_helpers.test.js tests/remediation_semantic_fidelity.test.js tests/remediation_source_contract_integration.test.js tests/remediation_validation.test.js tests/rendered_fidelity_calibration.test.js tests/rendered_fidelity_resilience.test.js tests/rendered_fidelity_review.test.js tests/source_remediation_contract.test.js tests/remediation_continuity.test.js tests/remediation_autoloop_dependencies.test.js tests/remediation_view_lifecycle_regressions.test.js tests/remediation_workspace.test.js tests/remediation_retry_startup.test.js tests/batch_checkpoint_boundary_commit.test.js tests/utils_pure_storage.test.js tests/remediation_visibility_selector_recovery.test.js tests/doc_pipeline_inherited_contrast.test.js tests/doc_pipeline_placeholder_audit_payload.test.js tests/aifix_chunk_boundary_whitespace.test.js tests/doc_pipeline_focus_wrap_browser.test.js tests/static_crop_cleanup.test.js --maxWorkers=2 --allowOnly=false --testTimeout=30000 --reporter=json --outputFile=reports/mcp-calibration-2026-09-12/remediation-unit-final.json"
+    },
+    "mcp": {
+      "status": "passed",
+      "verifiedAt": "2026-09-12T23:14:11.638Z",
+      "command": "npm run verify:mcp-calibration -- --reporter=json --outputFile=reports/mcp-calibration-2026-09-12/calibration-final.json",
+      "files": 14,
+      "passed": 141,
+      "selectedTests": [
+        "tests/aifix_chunk_boundary_whitespace.test.js",
+        "tests/doc_pipeline_focus_wrap_browser.test.js",
+        "tests/doc_pipeline_inherited_contrast.test.js",
+        "tests/doc_pipeline_placeholder_audit_payload.test.js",
+        "tests/mcp_agent_bridge_e2e.test.js",
+        "tests/mcp_agent_bridge_restart_e2e.test.js",
+        "tests/mcp_http_transport.test.js",
+        "tests/mcp_keyless_workflow.test.js",
+        "tests/mcp_refinement_expert_annotations.test.js",
+        "tests/mcp_refinement_study_analysis.test.js",
+        "tests/mcp_refinement_study_protocol.test.js",
+        "tests/mcp_refinement_study_runner.test.js",
+        "tests/remediation_visibility_selector_recovery.test.js",
+        "tests/static_crop_cleanup.test.js"
+      ],
+      "failed": 0,
+      "skipped": 0,
+      "strictNoSkipValidation": true,
+      "sourceSha256": "48163c2357dbb6053bb3ed7bbd5f7da07bcc631039caa082044fab0f9e18a5d7",
+      "generatedSha256": "ae28108f2927be625303662cc2553f525cf97fdfa4e78b2fef3e2d12680b3116",
+      "evidenceClass": "Automated fixture, protocol, recovery, browser, and source regression evidence; no live provider calls or human quality calibration.",
+      "priorGreenEvidence": "calibration-final-summary-before-static-crop-fix.json"
+    },
+    "affected": {
+      "status": "passed",
+      "files": 4,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0,
+      "strictNoSkipValidation": true,
+      "reports": [
+        "static-crop-affected-final.json",
+        "static-crop-security-boundary-final.json"
+      ],
+      "selectedTests": [
+        "tests/placeholder_chrome_audit.test.js",
+        "tests/remediation_pipeline_deep_hardening.test.js",
+        "tests/strip_executable_scripts.test.js",
+        "tests/remediation_security_boundary_inventory.test.js"
+      ]
+    },
+    "workflow": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": "calibration-workflow-tests.json"
+    }
+  },
+  "build": {
+    "schema": 1,
+    "phase": "all-requested-automated-checks-passed",
+    "verifiedAt": "2026-09-12T23:14:11.638Z",
+    "sourceBabelParse": true,
+    "sourceSha256": "48163c2357dbb6053bb3ed7bbd5f7da07bcc631039caa082044fab0f9e18a5d7",
+    "sourceBytes": 3403199,
+    "sourceLines": 48580,
+    "sourceCrlfCount": 0,
+    "existingNulByteCount": 3,
+    "keyDeclarationCounts": {
+      "const fixContrastViolations =": 1,
+      "const _ACE_CDN_URLS =": 1,
+      "const aiFixChunked =": 1,
+      "const acceptFixedHtmlDetailed =": 1,
+      "const _restoreChunkBoundaryWhitespace =": 1,
+      "function _stripGeneratedImageEditorControls(html, stripFileHandlers) {": 1
+    },
+    "sourceTopLevelStatements": 249,
+    "knownSpliceCorruptionAbsent": true,
+    "priorGreenEvidence": "combined-build-checks-before-static-crop-fix.json",
+    "build": {
+      "command": "node _build_doc_pipeline_module.js",
+      "exitCode": 0,
+      "stdout": "[DocPipeline] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\doc_pipeline_module.js (48751 lines)\n[DocPipeline] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\doc_pipeline_module.js",
+      "stderr": ""
+    },
+    "generatedBabelParse": true,
+    "shippingMirrorsMatch": true,
+    "generatedSha256": "ae28108f2927be625303662cc2553f525cf97fdfa4e78b2fef3e2d12680b3116",
+    "generatedBytes": 3416521,
+    "integrity": {
+      "command": "node dev-tools/check_pipeline_integrity.js --quiet",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "driverSyntax": {
+      "command": "node --check desktop/mcp/remediation_headless_driver.cjs",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "sourceAndArtifactsUnchangedAfterTests": true,
+    "scopedDiffWhitespaceCheckPassed": true,
+    "newTestsWhitespaceCheckPassed": true,
+    "historicalContinuationEvidenceUnchanged": true,
+    "remediationUnit": {
+      "report": "remediation-unit-final.json",
+      "summary": "remediation-unit-final-summary.json",
+      "files": 31,
+      "passed": 576,
+      "strictNoSkipValidation": true,
+      "includesFreshShippingBuildParity": true
+    },
+    "mcpCalibration": {
+      "report": "calibration-final.json",
+      "summary": "calibration-final-summary.json",
+      "files": 14,
+      "passed": 141,
+      "strictNoSkipValidation": true
+    },
+    "workflowConfiguration": {
+      "report": "calibration-workflow-tests.json",
+      "passed": 6
+    },
+    "staticControlAffectedChecks": {
+      "summary": "static-crop-affected-final-summary.json",
+      "files": 4,
+      "passed": 44,
+      "strictNoSkipValidation": true
+    },
+    "staticCleanupChromiumReplay": {
+      "report": "static-crop-replay.json",
+      "rawCandidate": "static-crop-replayed-candidate.html",
+      "canonicalCandidate": "static-browser-export-candidate.html",
+      "sourceBound": true,
+      "evidenceClass": "Targeted cleanup replay; not a new live MCP verdict or human acceptance."
+    },
+    "historicalContinuationReplay": {
+      "report": "continuation-assembly-replay.json",
+      "candidate": "continuation-replayed-candidate.html",
+      "unchanged": true
+    }
+  },
+  "targetedReplay": {
+    "decision": {
+      "accepted": true,
+      "readingOrderWarn": null,
+      "sizeRatio": 1.0032807873889733,
+      "textRatio": 1,
+      "textLost": 0
+    },
+    "evidence": [
+      {
+        "totalChunks": 2,
+        "shippedOriginalChunks": 1,
+        "candidateRejectionCount": 0,
+        "candidateRejections": []
+      }
+    ],
+    "calls": 2,
+    "storedPayloadsMatched": true,
+    "changed": true,
+    "restoredImageCount": 1,
+    "allImageSourcesIdentical": true,
+    "remainingImageTokens": false,
+    "evidenceClass": "Targeted real-Chromium regression replay of stored requests 19/20 and their answers; not a new live MCP verdict or human acceptance.",
+    "verifiedAt": "2026-09-12T22:39:02.474Z",
+    "sourceSha256": "7b6391a04185b9f0da51430fd5041d97ec6623d8aef443182c5f97695fe24a2a",
+    "originalHtmlSha256": "82cfbb5e9bbb05f5b8e4132e66090f92446dc7a6baf2c5569ffc3adcf0847d4a",
+    "storedResponsesSha256": "656f5fbf2a7c337ca0dbd5992fa53eebf505a497c1b9ae900f06505132bef85c",
+    "candidateHtmlSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+    "candidateFile": "reports/mcp-calibration-2026-09-12/continuation-replayed-candidate.html",
+    "historicalArtifactUnchanged": true
+  },
+  "renderedReview": {
+    "fullDocumentVisuallyReviewed": true,
+    "mobileScreenshotVisuallyReviewed": true,
+    "focusedControlScreenshotVisuallyReviewed": true,
+    "keyboardReflow": {
+      "scope": "Targeted stored-response replay; keyboard/reflow and content-preservation checks, not a new live accessibility verdict.",
+      "verifiedAt": "2026-09-12T22:43:16.665Z",
+      "preservation": {
+        "visibleTextIdentical": true,
+        "linkDestinationsAndTextIdentical": true,
+        "imageSourcesAndAltIdentical": true
+      },
+      "checks": [
+        {
+          "width": 320,
+          "scrollWidth": 320,
+          "fileInputFocused": true,
+          "focusVisible": true,
+          "outlineColor": "rgb(255, 255, 255)",
+          "outlineWidth": "2px",
+          "outlineOffset": "2px",
+          "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+          "labelBackground": "rgb(71, 85, 105)"
+        },
+        {
+          "width": 390,
+          "scrollWidth": 390,
+          "fileInputFocused": true,
+          "focusVisible": true,
+          "outlineColor": "rgb(255, 255, 255)",
+          "outlineWidth": "2px",
+          "outlineOffset": "2px",
+          "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+          "labelBackground": "rgb(71, 85, 105)"
+        },
+        {
+          "width": 1000,
+          "scrollWidth": 1000,
+          "fileInputFocused": true,
+          "focusVisible": true,
+          "outlineColor": "rgb(255, 255, 255)",
+          "outlineWidth": "2px",
+          "outlineOffset": "2px",
+          "boxShadow": "rgb(17, 24, 39) 0px 0px 0px 4px",
+          "labelBackground": "rgb(71, 85, 105)"
+        }
+      ]
+    }
+  },
+  "staticCrop": {
+    "before": {
+      "scope": "Historical continuation candidate: reproduce unsupported crop control after static cleanup",
+      "verifiedAt": "2026-09-12T22:52:07.846Z",
+      "cropButtons": 1,
+      "scripts": 0,
+      "callback": "undefined",
+      "notifier": "undefined",
+      "pageCache": "undefined",
+      "domChanged": false,
+      "alerts": 0,
+      "dialogs": 0,
+      "errors": []
+    },
+    "after": {
+      "before": {
+        "cropButtons": 1,
+        "ownedFilePickers": 1
+      },
+      "rawFacts": {
+        "cropButtons": 0,
+        "ownedFilePickers": 1,
+        "replaceHasOnchange": true,
+        "sourceBlocksPreserved": true,
+        "sourceBlockCount": 23,
+        "linksPreserved": true,
+        "imagesAndAltPreserved": true,
+        "imageCount": 1,
+        "visibleTextMatchesWithoutRemovedRendererLabels": true,
+        "eventHandlerCount": 1
+      },
+      "canonicalFacts": {
+        "cropButtons": 0,
+        "ownedFilePickers": 0,
+        "replaceHasOnchange": false,
+        "sourceBlocksPreserved": true,
+        "sourceBlockCount": 23,
+        "linksPreserved": true,
+        "imagesAndAltPreserved": true,
+        "imageCount": 1,
+        "visibleTextMatchesWithoutRemovedRendererLabels": true,
+        "eventHandlerCount": 0
+      },
+      "rawIdempotent": true,
+      "canonicalIdempotent": true,
+      "schema": 1,
+      "verifiedAt": "2026-09-12T23:08:33.704Z",
+      "evidenceClass": "Targeted real-Chromium cleanup replay of the historical continuation candidate; not a new live MCP run, verdict, or human acceptance.",
+      "sourceSha256": "48163c2357dbb6053bb3ed7bbd5f7da07bcc631039caa082044fab0f9e18a5d7",
+      "historicalCandidate": "continuation-replayed-candidate.html",
+      "historicalCandidateSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+      "historicalEvidenceUnchanged": true,
+      "rawOutput": {
+        "file": "static-crop-replayed-candidate.html",
+        "sha256": "95c6f3f99ebe1c6f0fe56e330799efcf5a29e0763217bea690808ed9a098e934",
+        "entryPoint": "_stripExecutableScripts",
+        "scope": "Remove unsupported owned crop control; retain raw Replace input handler."
+      },
+      "canonicalOutput": {
+        "file": "static-browser-export-candidate.html",
+        "sha256": "d7062eac912782485240b0e7120e6be9082dbc2523b23c1b426f6859d225bd7b",
+        "entryPoint": "_alloSanitizeRemediationHtml",
+        "scope": "Remove owned image editor controls before canonical sanitization strips event handlers."
+      }
+    },
+    "renderedReview": {
+      "scope": "Targeted static cleanup of a stored accepted candidate; actual Chromium content, keyboard, reflow and replacement checks; not a new live verdict.",
+      "verifiedAt": "2026-09-12T23:09:10.468Z",
+      "historicalCandidateSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+      "outputs": [
+        {
+          "variant": "mcp",
+          "file": "static-crop-replayed-candidate.html",
+          "sha256": "95c6f3f99ebe1c6f0fe56e330799efcf5a29e0763217bea690808ed9a098e934",
+          "preservation": {
+            "textExcludingUnsupportedRendererControls": true,
+            "links": true,
+            "imageBytesAndAlt": true
+          },
+          "states": [
+            {
+              "width": 320,
+              "scrollWidth": 320,
+              "cropButtons": 0,
+              "fileInputs": 1,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0,
+              "keyboardFileInputReached": true,
+              "focus": {
+                "visible": true,
+                "outline": "rgb(255, 255, 255)",
+                "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+              }
+            },
+            {
+              "width": 390,
+              "scrollWidth": 390,
+              "cropButtons": 0,
+              "fileInputs": 1,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0,
+              "keyboardFileInputReached": true,
+              "focus": {
+                "visible": true,
+                "outline": "rgb(255, 255, 255)",
+                "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+              }
+            },
+            {
+              "width": 1000,
+              "scrollWidth": 1000,
+              "cropButtons": 0,
+              "fileInputs": 1,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0,
+              "keyboardFileInputReached": true,
+              "focus": {
+                "visible": true,
+                "outline": "rgb(255, 255, 255)",
+                "shadow": "rgb(17, 24, 39) 0px 0px 0px 4px"
+              }
+            }
+          ],
+          "replacementWorks": true
+        },
+        {
+          "variant": "browser",
+          "file": "static-browser-export-candidate.html",
+          "sha256": "d7062eac912782485240b0e7120e6be9082dbc2523b23c1b426f6859d225bd7b",
+          "preservation": {
+            "textExcludingUnsupportedRendererControls": true,
+            "links": true,
+            "imageBytesAndAlt": true
+          },
+          "states": [
+            {
+              "width": 320,
+              "scrollWidth": 320,
+              "cropButtons": 0,
+              "fileInputs": 0,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0
+            },
+            {
+              "width": 390,
+              "scrollWidth": 390,
+              "cropButtons": 0,
+              "fileInputs": 0,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0
+            },
+            {
+              "width": 1000,
+              "scrollWidth": 1000,
+              "cropButtons": 0,
+              "fileInputs": 0,
+              "scripts": 0,
+              "images": 1,
+              "ghostPlaceholders": 0
+            }
+          ],
+          "replacementWorks": null
+        }
+      ],
+      "errors": [],
+      "visualReview": {
+        "reviewer": "assistant",
+        "desktopAndMobileReviewed": true,
+        "humanAcceptance": false,
+        "findings": "Readable layout; expected control removal; no clipped text or horizontal overflow observed in either variant."
+      }
+    }
+  },
+  "calibrationLimits": {
+    "scoringPolicyChanged": false,
+    "liveClientModelPilots": 2,
+    "thirdLiveRunPerformed": false,
+    "geminiStudyExecuted": false,
+    "humanReviewPerformed": false,
+    "taggedPdfDelivered": false,
+    "pdfWithholdingReason": "active_content_scan_unavailable"
+  }
+}

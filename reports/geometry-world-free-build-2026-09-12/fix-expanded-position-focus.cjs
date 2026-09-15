@@ -1,0 +1,2 @@
+'use strict';
+const fs=require('node:fs'),file='reports/geometry-world-free-build-2026-09-12/verify-expanded-position.cjs';let s=fs.readFileSync(file,'utf8');const old='   await page.setViewportSize(spec);';if(s.split(old).length!==2)throw Error('Unexpected viewport checkpoint');s=s.replace(old,old+"await page.locator('#geoworld-fs-wrap').focus();");const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

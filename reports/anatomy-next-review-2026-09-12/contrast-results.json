@@ -1,0 +1,146 @@
+{
+  "method": "WCAG sRGB relative luminance using browser-computed text color and alpha-composited backgrounds at both endpoints of the actual detail-panel gradient. Computed alpha is rounded by Chromium; ratios are approximate. All color channels vary monotonically between the gradient endpoints, so they bound the local background luminance. Scope: 12px bold wave-name labels in light mode only.",
+  "threshold": 4.5,
+  "results": [
+    {
+      "label": "Delta (δ)",
+      "foreground": "rgb(99, 102, 241)",
+      "gradientEndpointResults": [
+        {
+          "background": [
+            250.32,
+            250.41,
+            254.57999999999998
+          ],
+          "ratio": 4.305339249591838
+        },
+        {
+          "background": [
+            243.53,
+            245.56,
+            251.67
+          ],
+          "ratio": 4.118079460948799
+        }
+      ],
+      "range": [
+        4.118079460948799,
+        4.305339249591838
+      ],
+      "passesAtBothEnds": false,
+      "failsAtBothEnds": true
+    },
+    {
+      "label": "Theta (θ)",
+      "foreground": "rgb(139, 92, 246)",
+      "gradientEndpointResults": [
+        {
+          "background": [
+            251.51999999999998,
+            250.10999999999999,
+            254.73
+          ],
+          "ratio": 4.083067731949164
+        },
+        {
+          "background": [
+            244.73,
+            245.26,
+            251.82
+          ],
+          "ratio": 3.9054219494746025
+        }
+      ],
+      "range": [
+        3.9054219494746025,
+        4.083067731949164
+      ],
+      "passesAtBothEnds": false,
+      "failsAtBothEnds": true
+    },
+    {
+      "label": "Alpha (α)",
+      "foreground": "rgb(6, 182, 212)",
+      "gradientEndpointResults": [
+        {
+          "background": [
+            247.53,
+            252.81,
+            253.70999999999998
+          ],
+          "ratio": 2.361688510256089
+        },
+        {
+          "background": [
+            240.74,
+            247.96,
+            250.8
+          ],
+          "ratio": 2.259468643484579
+        }
+      ],
+      "range": [
+        2.259468643484579,
+        2.361688510256089
+      ],
+      "passesAtBothEnds": false,
+      "failsAtBothEnds": true
+    },
+    {
+      "label": "Beta (β)",
+      "foreground": "rgb(245, 158, 11)",
+      "gradientEndpointResults": [
+        {
+          "background": [
+            254.7,
+            252.09,
+            247.68
+          ],
+          "ratio": 2.0993496605192346
+        },
+        {
+          "background": [
+            247.91,
+            247.24,
+            244.77
+          ],
+          "ratio": 2.008309212787919
+        }
+      ],
+      "range": [
+        2.008309212787919,
+        2.0993496605192346
+      ],
+      "passesAtBothEnds": false,
+      "failsAtBothEnds": true
+    },
+    {
+      "label": "Gamma (γ)",
+      "foreground": "rgb(239, 68, 68)",
+      "gradientEndpointResults": [
+        {
+          "background": [
+            254.51999999999998,
+            249.39,
+            249.39
+          ],
+          "ratio": 3.620691751885534
+        },
+        {
+          "background": [
+            247.73,
+            244.54,
+            246.48
+          ],
+          "ratio": 3.4626975642103828
+        }
+      ],
+      "range": [
+        3.4626975642103828,
+        3.620691751885534
+      ],
+      "passesAtBothEnds": false,
+      "failsAtBothEnds": true
+    }
+  ]
+}

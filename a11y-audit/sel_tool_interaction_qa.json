@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-11T21:20:11.288Z",
+  "generatedAt": "2026-09-15T00:34:01.769Z",
   "scope": [
     "zones",
     "coping",
@@ -48,9 +48,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2037,
+                "textLength": 2919,
                 "hasHeading": true,
-                "controlCount": 41,
+                "controlCount": 56,
                 "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now"
               }
             },
@@ -58,6 +58,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -94,8 +96,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
-                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Best for: Start here. Name what is happening before choosing a strategy.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "text": "Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate. Bes",
+                "aria": "Emotion Zones, grades K-12",
                 "toolCardId": "zones",
                 "inSelDialog": true
               }
@@ -123,9 +125,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 33955,
+                "textLength": 34170,
                 "hasHeading": true,
-                "controlCount": 363,
+                "controlCount": 367,
                 "selectedToolText": "Opened Coping Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🧨 Self regulation Coping Toolkit 3-10 min Private checkpoint Share Packet eligible Export"
               }
             },
@@ -133,6 +135,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -169,8 +173,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🧨Coping Toolkit•Explore and practice coping strategies — breathing, grounding, movement, ",
-                "aria": "Coping Toolkit (Grades K-12). Explore and practice coping strategies — breathing, grounding, movement, and more.. Best for: Calm now. Try one body or grounding strategy, then notice what changed.. Teacher cue: 3-10 min, Solo or group. Best for a regulation reset.",
+                "text": "Explore and practice coping strategies — breathing, grounding, movement, and more. Best fo",
+                "aria": "Coping Toolkit, grades K-12",
                 "toolCardId": "coping",
                 "inSelDialog": true
               }
@@ -198,9 +202,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1678,
+                "textLength": 1566,
                 "hasHeading": true,
-                "controlCount": 32,
+                "controlCount": 37,
                 "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Private checkpoint Share Packet"
               }
             },
@@ -208,6 +212,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -244,8 +250,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "📓Feelings Journal•Daily check-in journal — log moods, triggers, and reflections over time",
-                "aria": "Feelings Journal (Grades K-12). Daily check-in journal — log moods, triggers, and reflections over time.. Teacher cue: 5-12 min, Solo. Private reflection. Sharing should be optional.",
+                "text": "Daily check-in journal — log moods, triggers, and reflections over time. Teacher cue: 5-12",
+                "aria": "Feelings Journal, grades K-12",
                 "toolCardId": "journal",
                 "inSelDialog": true
               }
@@ -273,9 +279,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1886,
+                "textLength": 2101,
                 "hasHeading": true,
-                "controlCount": 47,
+                "controlCount": 51,
                 "selectedToolText": "Opened Emotion Explorer ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 😊 Self awareness Emotions Explorer 4-8 min Private checkpoint Share Packet eligible Exp"
               }
             },
@@ -283,6 +289,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -319,8 +327,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "😊Emotion Explorer•Build emotional vocabulary — identify, name, and rate the intensity of ",
-                "aria": "Emotion Explorer (Grades K-8). Build emotional vocabulary — identify, name, and rate the intensity of feelings.. Best for: Name it. Build precise feeling words and notice intensity.. Teacher cue: 5-8 min, Solo or pair. Good vocabulary warm-up.",
+                "text": "Build emotional vocabulary — identify, name, and rate the intensity of feelings. Best for:",
+                "aria": "Emotion Explorer, grades K-8",
                 "toolCardId": "emotions",
                 "inSelDialog": true
               }
@@ -348,9 +356,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 3496,
+                "textLength": 3711,
                 "hasHeading": true,
-                "controlCount": 33,
+                "controlCount": 37,
                 "selectedToolText": "Opened CBT Thought Record ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Inner work CBT Thought Record 8-15 min Private checkpoint Share Packet eligible Exp"
               }
             },
@@ -358,6 +366,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -394,8 +404,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "📓CBT Thought Record•The 7-column thought record from Cognitive Behavioral Therapy.Strong ",
-                "aria": "CBT Thought Record (Grades 5-12). The 7-column thought record from Cognitive Behavioral Therapy.",
+                "text": "The 7-column thought record from Cognitive Behavioral Therapy.📓CBT Thought Record•The 7-c",
+                "aria": "CBT Thought Record, grades 5-12",
                 "toolCardId": "thoughtRecord",
                 "inSelDialog": true
               }
@@ -423,9 +433,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1029,
+                "textLength": 1244,
                 "hasHeading": true,
-                "controlCount": 17,
+                "controlCount": 21,
                 "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Expo"
               }
             },
@@ -433,6 +443,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -469,8 +481,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
-                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,.... Best for: Make a plan. Sort worry from action and choose one practical next step.",
+                "text": "CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs ",
+                "aria": "Anxiety Toolkit, grades 5-12",
                 "toolCardId": "anxietyToolkit",
                 "inSelDialog": true
               }
@@ -498,9 +510,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2605,
+                "textLength": 2820,
                 "hasHeading": true,
-                "controlCount": 23,
+                "controlCount": 40,
                 "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share"
               }
             },
@@ -508,6 +520,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -544,8 +558,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.Get su",
-                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Best for: Get support. Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.. Use with care: If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "text": "Learn about personal boundaries, trusted adults, and safe vs. Best for: Get support. Learn",
+                "aria": "Safety & Boundaries, grades K-8. Use with care",
                 "toolCardId": "safety",
                 "inSelDialog": true
               }
@@ -573,9 +587,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1882,
+                "textLength": 2611,
                 "hasHeading": true,
-                "controlCount": 27,
+                "controlCount": 35,
                 "selectedToolText": "Opened Conflict Resolution ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Conflict Resolution Lab 6-12 min Private checkpoint Share Pack"
               }
             },
@@ -583,6 +597,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -619,8 +635,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "⚖️Conflict Resolution•Practice a low-stakes or hypothetical conflict with perspective-taki",
-                "aria": "Conflict Resolution (Grades 2-12). Practice a low-stakes or hypothetical conflict with perspective-taking, I-statements, de-escalation, and repair choices.. Best for: Practice repair. Best for low-stakes or hypothetical conflict practice.. Use with care: If there are threats, coercion, bullying, abuse, or an unsafe power difference, pause and involve a trusted adult instead of negotiating alone.. Teacher cue: 8-12 min, Pair or small group. Preview norms before role-play.",
+                "text": "Practice a low-stakes or hypothetical conflict with perspective-taking, I-statements, de-e",
+                "aria": "Conflict Resolution, grades 2-12. Use with care",
                 "toolCardId": "conflict",
                 "inSelDialog": true
               }
@@ -648,9 +664,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1354,
+                "textLength": 1591,
                 "hasHeading": true,
-                "controlCount": 45,
+                "controlCount": 49,
                 "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self awareness Strengths Finder 5-10 min Private checkpoint Share Packet eligible Expo"
               }
             },
@@ -658,6 +674,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -694,8 +712,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "⭐Strengths Finder•Discover and reflect on personal strengths, talents, and growth areas.Re",
-                "aria": "Strengths Finder (Grades K-12). Discover and reflect on personal strengths, talents, and growth areas.. Best for: Reflect. Open-ended strengths reflection with no score, rank, or diagnosis.",
+                "text": "Discover and reflect on personal strengths, talents, and growth areas. Best for: Reflect. ",
+                "aria": "Strengths Finder, grades K-12",
                 "toolCardId": "strengths",
                 "inSelDialog": true
               }
@@ -723,9 +741,9 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 803,
+                "textLength": 1018,
                 "hasHeading": true,
-                "controlCount": 21,
+                "controlCount": 25,
                 "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Private checkpoint Share Packet "
               }
             },
@@ -733,6 +751,8 @@
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -769,8 +789,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🗣️Social Skills Lab•Practice conversation skills, active listening, body language, and co",
-                "aria": "Social Skills Lab (Grades K-8). Practice conversation skills, active listening, body language, and cooperation.",
+                "text": "Practice conversation skills, active listening, body language, and cooperation.🤗Social Sk",
+                "aria": "Social Skills Lab, grades K-8",
                 "toolCardId": "social",
                 "inSelDialog": true
               }
@@ -798,16 +818,18 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2193,
+                "textLength": 2457,
                 "hasHeading": true,
-                "controlCount": 11,
-                "selectedToolText": "Opened Peer Support Coach ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Peer Support Coach SEL practice Private checkpoint Share Packet"
+                "controlCount": 15,
+                "selectedToolText": "Opened Peer Support Coach ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Peer Support Coach 5-10 min Private checkpoint Share Packet eli"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": false,
+                "pillsExpected": true,
                 "hasStandardShell": true,
                 "hasPrivateCheckpoint": true,
                 "hasSharePacketEligible": true,
@@ -844,8 +866,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🤝Peer Support Coach•Learn OARS listening skills and when to get adult help.8-15 min | Pai",
-                "aria": "Peer Support Coach (Grades 3-12). Learn OARS listening skills and when to get adult help.. Teacher cue: 8-15 min, Pair practice. Strong for listening-skills rehearsal.",
+                "text": "Learn OARS listening skills and when to get adult help. Teacher cue: 8-15 min, Pair practi",
+                "aria": "Peer Support Coach, grades 3-12",
                 "toolCardId": "peersupport",
                 "inSelDialog": true
               }
@@ -884,19 +906,21 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2006,
+                "textLength": 2847,
                 "hasHeading": true,
-                "controlCount": 41,
-                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now PurposeName your current zone "
+                "controlCount": 56,
+                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Export now PurposeName your current zone and choose a regulation strategy that fit"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": true,
+                "pillsExpected": false,
                 "hasStandardShell": true,
-                "hasPrivateCheckpoint": true,
-                "hasSharePacketEligible": true,
+                "hasPrivateCheckpoint": false,
+                "hasSharePacketEligible": false,
                 "hasSavedWorkCue": true,
                 "hasExportButton": true
               }
@@ -930,8 +954,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🚦Emotion Zones•Identify your zone (blue, green, yellow, red) and explore strategies to se",
-                "aria": "Emotion Zones (Grades K-12). Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate.. Best for: Start here. Name what is happening before choosing a strategy.. Teacher cue: 5-8 min, Solo or group. Useful first check-in before any sharing.",
+                "text": "Identify your zone (blue, green, yellow, red) and explore strategies to self-regulate. Bes",
+                "aria": "Emotion Zones, grades K-12",
                 "toolCardId": "zones",
                 "inSelDialog": true
               }
@@ -959,19 +983,21 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1647,
+                "textLength": 1494,
                 "hasHeading": true,
-                "controlCount": 32,
-                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Private checkpoint Share Packet eligible Export now PurposeWri"
+                "controlCount": 37,
+                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Export now PurposeWrite a private reflection and notice patter"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": true,
+                "pillsExpected": false,
                 "hasStandardShell": true,
-                "hasPrivateCheckpoint": true,
-                "hasSharePacketEligible": true,
+                "hasPrivateCheckpoint": false,
+                "hasSharePacketEligible": false,
                 "hasSavedWorkCue": true,
                 "hasExportButton": true
               }
@@ -1005,8 +1031,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "📓Feelings Journal•Daily check-in journal — log moods, triggers, and reflections over time",
-                "aria": "Feelings Journal (Grades K-12). Daily check-in journal — log moods, triggers, and reflections over time.. Teacher cue: 5-12 min, Solo. Private reflection. Sharing should be optional.",
+                "text": "Daily check-in journal — log moods, triggers, and reflections over time. Teacher cue: 5-12",
+                "aria": "Feelings Journal, grades K-12",
                 "toolCardId": "journal",
                 "inSelDialog": true
               }
@@ -1034,19 +1060,21 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 998,
+                "textLength": 1172,
                 "hasHeading": true,
-                "controlCount": 17,
-                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Export now PurposeSort worry, reduc"
+                "controlCount": 21,
+                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Export now PurposeSort worry, reduce anxiety intensity, and choose a practic"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": true,
+                "pillsExpected": false,
                 "hasStandardShell": true,
-                "hasPrivateCheckpoint": true,
-                "hasSharePacketEligible": true,
+                "hasPrivateCheckpoint": false,
+                "hasSharePacketEligible": false,
                 "hasSavedWorkCue": true,
                 "hasExportButton": true
               }
@@ -1080,8 +1108,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🫧Anxiety Toolkit•CBT-based skills for working with anxiety: psychoeducation, the worry tr",
-                "aria": "Anxiety Toolkit (Grades 5-12). CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs unproductive worry), scheduled worry time,.... Best for: Make a plan. Sort worry from action and choose one practical next step.",
+                "text": "CBT-based skills for working with anxiety: psychoeducation, the worry tree (productive vs ",
+                "aria": "Anxiety Toolkit, grades 5-12",
                 "toolCardId": "anxietyToolkit",
                 "inSelDialog": true
               }
@@ -1109,19 +1137,21 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2574,
+                "textLength": 2748,
                 "hasHeading": true,
-                "controlCount": 23,
-                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share Packet eligible Export now Pur"
+                "controlCount": 40,
+                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Export now PurposeCreate a practical safety plan and id"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": true,
+                "pillsExpected": false,
                 "hasStandardShell": true,
-                "hasPrivateCheckpoint": true,
-                "hasSharePacketEligible": true,
+                "hasPrivateCheckpoint": false,
+                "hasSharePacketEligible": false,
                 "hasSavedWorkCue": true,
                 "hasExportButton": true
               }
@@ -1155,8 +1185,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🛡️Safety & Boundaries•Learn about personal boundaries, trusted adults, and safe vs.Get su",
-                "aria": "Safety & Boundaries (Grades K-8). Learn about personal boundaries, trusted adults, and safe vs.. Best for: Get support. Learn boundaries and trusted-adult steps; this is not a test of whether a situation is safe.. Use with care: If you are in immediate danger or someone is hurting you, stop and contact a trusted adult or emergency support now.. Teacher cue: 8-15 min, Solo. Preview first; avoid forced disclosure.",
+                "text": "Learn about personal boundaries, trusted adults, and safe vs. Best for: Get support. Learn",
+                "aria": "Safety & Boundaries, grades K-8. Use with care",
                 "toolCardId": "safety",
                 "inSelDialog": true
               }
@@ -1184,19 +1214,21 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 772,
+                "textLength": 946,
                 "hasHeading": true,
-                "controlCount": 21,
-                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Private checkpoint Share Packet eligible Export now PurposePrac"
+                "controlCount": 25,
+                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Export now PurposePractice conversation, listening, body langua"
               }
             },
             {
               "id": "tool-save-consistency-cues",
               "pass": true,
               "details": {
+                "compactViewport": true,
+                "pillsExpected": false,
                 "hasStandardShell": true,
-                "hasPrivateCheckpoint": true,
-                "hasSharePacketEligible": true,
+                "hasPrivateCheckpoint": false,
+                "hasSharePacketEligible": false,
                 "hasSavedWorkCue": true,
                 "hasExportButton": true
               }
@@ -1230,8 +1262,8 @@
               "activeAfterBack": {
                 "tag": "button",
                 "id": "",
-                "text": "🗣️Social Skills Lab•Practice conversation skills, active listening, body language, and co",
-                "aria": "Social Skills Lab (Grades K-8). Practice conversation skills, active listening, body language, and cooperation.",
+                "text": "Practice conversation skills, active listening, body language, and cooperation.🤗Social Sk",
+                "aria": "Social Skills Lab, grades K-8",
                 "toolCardId": "social",
                 "inSelDialog": true
               }

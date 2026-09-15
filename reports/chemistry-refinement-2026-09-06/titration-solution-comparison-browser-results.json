@@ -1,0 +1,93 @@
+{
+  "checks": [
+    "Independent aliquot and whole-sample dilution examples preserve records, use the retained preparation mass, have proportional volume areas and solute symbols, and agree with calculated mass concentration including tiny samples.",
+    "Completion gates, explicit reload, navigation and disclosure reset, native radio keyboard navigation, Escape focus return, forced colors, desktop/phone accessibility and layout, malformed state recovery, and unchanged live chemistry pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "aliquot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "aliquot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dilute250",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dilute250",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dilute500",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dilute500",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-preparation",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-preparation",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "new-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "new-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "invalid-preparation",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "invalid-preparation",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-09-13T01:32:29.492Z",
+  "realNetwork": true,
+  "syntheticQueryOnly": true,
+  "transport": "existing WebSearchProvider, Canvas compatibility proxy",
+  "requests": [
+    {
+      "url": "https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/search?q=site%3Ausgs.gov%20soil%20infiltration%20runoff&num=3",
+      "method": "GET"
+    }
+  ],
+  "results": [
+    {
+      "query": "site:usgs.gov soil infiltration runoff",
+      "source": "Serper",
+      "offline": false,
+      "noTransport": false,
+      "results": [
+        {
+          "url": "https://www.usgs.gov/publications/empirical-method-determining-average-soil-infiltration-rates-and-runoff-powder-river",
+          "title": "An empirical method for determining average soil infiltration rates ...",
+          "snippet": "This report describes a method to estimate infiltration rates of soils for use in estimating runoff from small basins. Average rainfall intensity is plotted ...",
+          "source": "Serper"
+        },
+        {
+          "url": "https://www.usgs.gov/water-science-school/science/infiltration-and-water-cycle",
+          "title": "Infiltration and the Water Cycle | U.S. Geological Survey - USGS",
+          "snippet": "Soils absorbing less water result in more runoff overland into streams. Soil saturation: Like a wet sponge, soil already saturated from previous ...",
+          "source": "Serper"
+        },
+        {
+          "url": "https://pubs.usgs.gov/publication/70180391",
+          "title": "Infiltration and runoff generation processes in fire-affected soils",
+          "snippet": "Post-wildfire runoff was investigated by combining field measurements and modelling of infiltration into fire-affected soils to predict ...",
+          "source": "Serper"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This verifies retrieval, not AI generation, classroom usefulness, publication dates, or truth of every search snippet.",
+    "Node transport does not verify browser CORS."
+  ]
+}

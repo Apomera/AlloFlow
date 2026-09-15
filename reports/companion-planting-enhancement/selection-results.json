@@ -1,0 +1,37 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "selectionSurvivesHover": true,
+      "keyboardRoundTrip": true,
+      "reducedMotionStable": true
+    },
+    {
+      "width": 320,
+      "selectionSurvivesHover": true,
+      "keyboardRoundTrip": true,
+      "reducedMotionStable": true
+    }
+  ],
+  "assertions": [
+    "Selected crop stays marked while another plot is hovered",
+    "Show in garden and return to details preserve saved state",
+    "Browsing, closing, restored habitat, and invalid selections update correctly",
+    "Locate pulse starts on drawing, ends after 850ms, and cancels safely",
+    "Preview evidence takes priority over inspection decoration",
+    "Phone, large text, night, maximized layout, balanced canvas, and cleanup"
+  ],
+  "errors": [],
+  "locate": {
+    "starts": true,
+    "changes": true,
+    "expires": true,
+    "previewCancels": true,
+    "changedCropCancels": true,
+    "closedCancels": true,
+    "reducedCancels": true,
+    "identity": true,
+    "alpha": 1
+  },
+  "accessibility": []
+}

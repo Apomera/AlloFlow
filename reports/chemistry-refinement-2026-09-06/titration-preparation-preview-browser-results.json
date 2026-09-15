@@ -1,0 +1,105 @@
+{
+  "checks": [
+    "Previewed portions match their applied model volumes, selection and zoom preserve records, warnings identify overshoot, mixing still requires eye alignment, and live titration fields stay unchanged.",
+    "Desktop/mobile accessibility and overflow checks, radio keyboard navigation, Escape disclosure focus, error focus and inline restart, forced colors, completed records, and malformed source recovery pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "fine-at-mark",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-at-mark",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "coarse-warning",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "coarse-warning",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "enlarged-preview",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "enlarged-preview",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "actual-at-mark",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "actual-at-mark",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "overshoot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "restart-preview",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "restart-preview",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

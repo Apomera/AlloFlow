@@ -1,0 +1,269 @@
+### remediation_job_result
+The completed job's full summary (verdict, scores, honesty disclosures, output file paths; per-file summaries for batch jobs). Available only once remediation_job_status reports completed. Read-only.
+
+{
+  "type": "object",
+  "required": [
+    "job_id"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  },
+  "additionalProperties": false
+}
+
+### pdf_remediate_agent_start
+Run the full remediation pipeline with YOUR model (the MCP client's) as the engine — NO Gemini key and NO Gemini egress. The pipeline pauses at each internal model call and publishes it as a pending request; fetch them with remediation_agent_requests and answer each with remediation_agent_respond, following the embedded prompt's format contract exactly. Expect roughly 10-40 requests per document (more with auto_continue or scanned pages; scanned pages arrive as images). Document-derived content is surfaced to the client conversation instead of being sent to Gemini. Writes the same outputs and honesty-gated report as pdf_remediate. The run occupies the single-flight lane until it finishes, fails, is cancelled, or hits max_run_minutes.
+
+{
+  "type": "object",
+  "oneOf": [
+    {
+      "required": [
+        "file_path"
+      ]
+    },
+    {
+      "required": [
+        "dir_path"
+      ]
+    }
+  ],
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)"
+    },
+    "dir_path": {
+      "type": "string",
+      "description": "Process this folder sequentially (up to 60 supported documents, non-recursive). Use instead of file_path."
+    },
+    "skip_existing": {
+      "type": "boolean",
+      "description": "Reuse hash-verified completed remediations (default true); never skip based on file names alone."
+    },
+    "narration": {
+      "type": "string",
+      "enum": [
+        "none",
+        "accessible",
+        "natural"
+      ],
+      "description": "Optional local Kokoro/Piper narration after remediation. Accessible announces document structure; natural is continuous reading. Default none."
+    },
+    "narration_voice": {
+      "type": "string",
+      "description": "auto (default), a Kokoro English voice id, or the language-matched Piper voice from document_narration_voices."
+    },
+    "narration_provider": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "kokoro",
+        "piper"
+      ],
+      "default": "auto"
+    },
+    "narration_language": {
+      "type": "string",
+      "description": "BCP-47 language override; auto uses the document lang attribute."
+    },
+    "readalong_epub": {
+      "type": "boolean",
+      "description": "Include a synchronized EPUB with narration (default true when narration is requested)."
+    },
+    "max_run_minutes": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 180,
+      "description": "Wall-clock limit for this interactive run (default 60; the env default of 30 is usually too tight for a conversation-paced run)"
+    },
+    "effort": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "thorough"
+      ],
+      "description": "Thorough enables 3 fix passes, 1 polish pass, bounded auto-continue and independent PDF/UA validation. Explicit options override the preset."
+    },
+    "output_dir": {
+      "type": "string",
+      "description": "Directory for output files (default: alongside the input)"
+    },
+    "target_score": {
+      "type": "number",
+      "minimum": 50,
+      "maximum": 100,
+      "description": "Stop-improving target (default 95)"
+    },
+    "fix_passes": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Max auto-fix passes (default 2)"
+    },
+    "polish_passes": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 3,
+      "description": "Extra polish passes (default 0)"
+    },
+    "tagged_pdf": {
+      "type": "boolean",
+      "description": "Also build the tagged PDF export (default true)"
+    },
+    "auto_continue": {
+      "type": "boolean",
+      "description": "Run the app's auto-continue improvement loop after the primary pass: extra fix rounds merged through the same canonical reducer the app uses, until the target score + complete verification or the rounds are spent (default false; adds time and Gemini quota)"
+    },
+    "auto_continue_rounds": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Max auto-continue rounds (default 3)"
+    },
+    "validate_ua": {
+      "type": "boolean",
+      "description": "Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default false; ~1 min extra)"
+    },
+    "ocr_language": {
+      "type": "string",
+      "description": "Supported lower-case ISO/BCP 47 OCR language tag (for example 'es', 'fr', or 'zh-hant'); omit or pass '' for auto-detect. Legacy Tesseract codes such as 'spa' and 'fra' are not accepted.",
+      "maxLength": 12,
+      "pattern": "^(?:$|(?:en|es|fr|de|it|pt|nl|ru|uk|pl|tr|sv|da|nb|no|fi|cs|sk|ro|hu|el|bg|hr|sr|he|ar|fa|ps|ur|hi|bn|pa|gu|ta|te|kn|ml|th|lo|km|my|vi|id|ms|tl|ja|ko|am|ti|sw|so|ht|zh)(?:-[a-z]{2,4})?)$"
+    },
+    "page_range": {
+      "type": "string",
+      "pattern": "^[0-9]{1,4}(-[0-9]{1,4})?$",
+      "description": "Remediate only these 1-indexed pages of a PDF, e.g. \"12-18\" or \"5\". Big quota/time saver on long documents; the pipeline treats a full-document range as no range. PDF inputs only."
+    }
+  },
+  "additionalProperties": false
+}
+
+### remediation_agent_requests
+Fetch the agent-bridge run's state and any model calls waiting for an answer. Long-polls up to wait_seconds (default 20) so a quiet poll returns as soon as the pipeline asks for something. Each pending request carries the pipeline's own prompt (answer its format contract EXACTLY — malformed replies are retried and waste turns) and, for vision requests, rendered page images as correlated image content. Large prompts are paged with promptNextOffset; omitted images can be fetched one at a time with request_id + image_index. When status is 'completed' the final report is included. Answer honestly from the document content provided: fabricated audit evidence poisons the honesty-gated verdict that teachers rely on.
+
+{
+  "type": "object",
+  "required": [
+    "run_id"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "wait_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 30,
+      "description": "Long-poll window when nothing is pending yet (default 20)"
+    },
+    "include_images": {
+      "type": "boolean",
+      "description": "Attach vision-request images as image content blocks (default true; capped at ~4MB per response)"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Return one pending request (required when paging a prompt or fetching one image)"
+    },
+    "prompt_offset": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character offset for the selected request prompt; use promptNextOffset until null"
+    },
+    "image_index": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "Attach only this zero-based image from the selected request"
+    }
+  },
+  "additionalProperties": false
+}
+
+### remediation_agent_runs
+List recent saved runs, including interrupted work after a restart. Use this to recover run IDs and decide which user-requested task to resume. Does not start work or download anything.
+
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  }
+}
+
+### remediation_agent_resume
+Resume an interrupted document, folder, or narration run after a restart. Reuses hash-verified completed remediations and audio sections; an unfinished document may restart. Requires an active client to answer pending model requests. Optional narration may download public dependencies.
+
+{
+  "type": "object",
+  "required": [
+    "run_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string"
+    }
+  }
+}
+
+### remediation_agent_respond_batch
+Atomically validate and accept 1-32 independent pending model replies, then return the next requests and correlated images. Saves tool round trips; read every prompt page and required image before replying. For a single reply this also replaces a separate respond/poll pair.
+
+{
+  "type": "object",
+  "required": [
+    "run_id",
+    "responses"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "wait_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 30
+    },
+    "responses": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "required": [
+          "request_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 3000000
+          }
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "passed": 894
+  },
+  "reason": "passed",
+  "failures": [],
+  "errors": [],
+  "method": "Full anatomy suite plus successful rerun of both affected test files after updating obsolete truncation assertions and comparison selectors. Implementation source did not change after the full run.",
+  "fullRun": {
+    "passed": 892,
+    "failed": 2
+  },
+  "finalTargetedRun": {
+    "passed": 58
+  },
+  "resolvedAssertions": [
+    "Anatomy prose truncation > clips the compare card and flashcard clinical text on a boundary in stem_lab/stem_tool_anatomy.js",
+    "Anatomy prose truncation > clips the compare card and flashcard clinical text on a boundary in desktop/web-app/public/stem_lab/stem_tool_anatomy.js"
+  ]
+}

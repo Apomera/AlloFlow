@@ -165,7 +165,7 @@ window.StemLab = window.StemLab || {
   var _tlAC = null;
   function getTlAC() {
     if (!_tlAC) {
-      try { _tlAC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+      try { _tlAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) {}
     }
     if (_tlAC && _tlAC.state === 'suspended') { try { _tlAC.resume(); } catch (e) {} }
     return _tlAC;

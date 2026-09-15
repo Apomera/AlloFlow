@@ -30,6 +30,14 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
+var X = _lazyIcon('X');
+const _alloRuntimeAiAvailable = () => {
+  try {
+    return typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked && window.__alloStudentAiDisabled !== true;
+  } catch (_) {
+    return false;
+  }
+};
 const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps) => {
   const { sanitizeTruncatedCitations, warnLog, SimpleBarChart, SimpleDonutChart, formatInlineText, normalizeResourceLinks, t } = deps;
   const _t = t || ((k) => null);
@@ -53,6 +61,7 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   normalizedText = normalizedText.replace(/\n{3,}/g, "\n\n");
   normalizedText = normalizedText.replace(/(^|\n)\s*#\s*(?=\n|$)/g, "$1");
   normalizedText = normalizedText.replace(/^Title:\s*(.+)/m, "# $1");
+  normalizedText = normalizedText.replace(/\[\[CHART:([\s\S]*?)\]\]/g, (m, body) => "\n[[CHART: " + body.replace(/\s*\n\s*/g, " ").trim() + "]]\n");
   const lines = normalizedText.split("\n");
   const elements = [];
   let tableBuffer = [];
@@ -2060,7 +2069,7 @@ function openConceptMap3D(opts) {
         handle = CG3D.render(body, graph, renderOpts);
       };
     }
-    if (typeof window.callGemini === "function") {
+    if (_alloRuntimeAiAvailable()) {
       aiBtn = document.createElement("button");
       aiBtn.textContent = "\u2728 " + (t("concept_map.view_3d_arrange") || "Arrange by meaning");
       aiBtn.style.cssText = "font-size:12px;font-weight:800;padding:6px 12px;min-height:44px;border-radius:8px;border:none;white-space:nowrap;background:linear-gradient(90deg,#7c3aed,#4f46e5);color:#fff;cursor:pointer;";
@@ -2348,7 +2357,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   };
   const requestHint = () => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
-    if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || typeof window.callGemini !== "function") return;
+    if (!E || !E.buildStrandHintPrompt || !challenge || !lastScore || !_alloRuntimeAiAvailable()) return;
     const badId = Object.keys(lastScore.results).find((id) => lastScore.results[id] !== "correct");
     if (!badId) return;
     const n = (challenge.graph.nodes || []).find((x) => x.id === badId);
@@ -2370,7 +2379,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const handleArrange = () => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
-    if (!E || !graphRef.current || typeof window.callGemini !== "function") return;
+    if (!E || !graphRef.current || !_alloRuntimeAiAvailable()) return;
     setArranging(true);
     E.layoutWithGemini(graphRef.current, window.callGemini, { topic: data?.main || title || "" }).then((merged) => {
       graphRef.current = merged;
@@ -2443,7 +2452,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   };
   const aiRateConstelLink = () => {
     const CG3D = window.AlloModules && window.AlloModules.ConceptGraph3D;
-    if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || typeof window.callGemini !== "function" || constelBusy) return;
+    if (!CG3D || !persist || !constelA || !constelB || constelA === constelB || !_alloRuntimeAiAvailable() || constelBusy) return;
     const la = (constelNodes.find((n) => n.id === constelA) || {}).label || constelA;
     const lb = (constelNodes.find((n) => n.id === constelB) || {}).label || constelB;
     setConstelBusy(true);
@@ -2493,7 +2502,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const doSculptFromLabel = () => {
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
     const cur = selectedNodeRef.current;
-    if (!P3D || !cur || !persist || directBusy || typeof window.callGemini !== "function") return;
+    if (!P3D || !cur || !persist || directBusy || !_alloRuntimeAiAvailable()) return;
     setDirectBusy("generating");
     Promise.resolve(window.callGemini(P3D.buildRecipePrompt(cur.label), true)).then((res) => {
       if (!artAliveRef.current) return;
@@ -2525,7 +2534,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       setDirectBusy(null);
     };
     if (artType === "sculpture") {
-      if (!P3D || typeof window.callGemini !== "function") {
+      if (!P3D || !_alloRuntimeAiAvailable()) {
         setDirectBusy(null);
         return;
       }
@@ -2544,7 +2553,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   };
   const handleArtSubmit = () => {
     const cur = selectedNodeRef.current;
-    if (!cur || directBusy || typeof window.callGemini !== "function") return;
+    if (!cur || directBusy || !_alloRuntimeAiAvailable()) return;
     const userPrompt = directPrompt.trim();
     if (!userPrompt) return;
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
@@ -2590,7 +2599,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const handleArtRefine = () => {
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
     const cur = selectedNodeRef.current;
-    if (!P3D || !cur || !persist || refineBusy || typeof window.callGemini !== "function") return;
+    if (!P3D || !cur || !persist || refineBusy || !_alloRuntimeAiAvailable()) return;
     const art = artRef.current && artRef.current[cur.id];
     const instr = refinePrompt.trim();
     if (!art || art.type !== "sculpture" || !art.recipe || !instr) return;
@@ -2670,7 +2679,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
     if (!isTeacherMode || !persist || furnishing || challenge) return;
-    if (typeof window.callGemini !== "function") return;
+    if (!_alloRuntimeAiAvailable()) return;
     const wantImages = furnishMode === "image";
     if (wantImages && !canImagen) {
       if (addToast) addToast(t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture.", "info");
@@ -3034,7 +3043,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u2714 ",
     t("concept_space.challenge_check") || "Check placements"
-  ), lastScore && !lastScore.complete && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), lastScore && !lastScore.complete && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: requestHint,
@@ -3114,7 +3123,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u{1F3AF} ",
     t("concept_space.challenge_play") || "Strand Challenge"
-  ), isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Strand Challenge: ", challengeLiveReadiness.message), isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Concept Recall: ", recallLiveReadiness.message), hasContent && typeof window.callGemini === "function" && !failed && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !challenge && !recall && challengeLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Strand Challenge: ", challengeLiveReadiness.message), isTeacherMode && !challenge && !recall && recallLiveReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Concept Recall: ", recallLiveReadiness.message), hasContent && _alloRuntimeAiAvailable() && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleArrange,
@@ -3136,7 +3145,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u21BA ",
     t("concept_space.reset") || "Reset arrangement"
-  ), hasContent && persist && isTeacherMode && !failed && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), hasContent && persist && isTeacherMode && !failed && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setFurnishOpen((o) => !o),
@@ -3377,7 +3386,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u2B50 ",
     t("cg3d.constel_save") || "Set my weight"
-  ), typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: aiRateConstelLink,
@@ -3401,7 +3410,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   }, "aria-label": t("common.close") || "Close", className: "text-slate-400 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtRefine();
-  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: typeof window.callGemini !== "function", className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: !_alloRuntimeAiAvailable(), className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtSubmit();
   }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: directPrompt, onChange: (e) => {
@@ -4453,7 +4462,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const handleSculpt = () => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
-    if (!MP || !P3D || !persist || sculpting || furnishing || typeof window.callGemini !== "function") return;
+    if (!MP || !P3D || !persist || sculpting || furnishing || !_alloRuntimeAiAvailable()) return;
     const palace = MP.buildPalace(data || {});
     const targets = palace.loci.filter((l) => l.id !== "__entry" && !objects3d[l.id]);
     if (!targets.length) {
@@ -4511,7 +4520,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const handleDirectSubmit = async (promptOverride) => {
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     const cur = currentRef.current;
-    if (!MP?.buildPromptEvalPrompt || !cur || cur.id === "__entry" || !persist || typeof window.callGemini !== "function") return;
+    if (!MP?.buildPromptEvalPrompt || !cur || cur.id === "__entry" || !persist || !_alloRuntimeAiAvailable()) return;
     if (directType === "image" ? !canImagen : !window.AlloModules?.Prim3D) return;
     const userPrompt = typeof promptOverride === "string" && promptOverride.trim() ? promptOverride.trim() : directPrompt.trim();
     if (!userPrompt) return;
@@ -4559,7 +4568,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     try {
       let value, depth = null;
       if (context.type === "sculpture") {
-        if (!P3D || typeof window.callGemini !== "function") throw new Error("Sculpture generation unavailable");
+        if (!P3D || !_alloRuntimeAiAvailable()) throw new Error("Sculpture generation unavailable");
         const res = await window.callGemini(P3D.buildRecipePrompt(finalPrompt), true);
         const text = typeof res === "string" ? res : res && (res.text || res.output || res.response) || "";
         value = P3D.parseRecipe(text);
@@ -4725,7 +4734,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     const P3D = window.AlloModules && window.AlloModules.Prim3D;
     const cur = currentRef.current;
-    if (!MP || !P3D || !cur || cur.id === "__entry" || !persist || refineBusy || typeof window.callGemini !== "function") return;
+    if (!MP || !P3D || !cur || cur.id === "__entry" || !persist || refineBusy || !_alloRuntimeAiAvailable()) return;
     const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
     const instr = refinePrompt.trim();
     if (!rec || !instr || rec.glbItem) return;
@@ -4858,7 +4867,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (!locus || locus.id === "__entry" || !persist || quickCreateRef.current?.status === "generating") return;
     if (locus.applied && !_quickPreviewValid(locus)) return;
     if (type === "image" && !canImagen) return;
-    if (type === "sculpture" && (!P3D || typeof window.callGemini !== "function")) return;
+    if (type === "sculpture" && (!P3D || !_alloRuntimeAiAvailable())) return;
     const job = _beginArtJob(type, locus);
     if (!job) return;
     const target = _artTarget(locus);
@@ -5344,7 +5353,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2328 ",
     t("memory_palace.recall_expert") || "Expert recall"
-  ), isTeacherMode && liveRecallReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Recall walk: ", liveRecallReadiness.message))), (customizeOpen || furnishing || sculpting) && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3", role: "group", "aria-label": t("memory_palace.controls_create") || "Create & personalize" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800" }, t("memory_palace.controls_create") || "Create & personalize"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, hasContent && !failed && !noWalk && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && liveRecallReadiness?.ok === false && /* @__PURE__ */ React.createElement("span", { role: "status", className: "max-w-xs rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-900" }, "Recall walk: ", liveRecallReadiness.message))), (customizeOpen || furnishing || sculpting) && /* @__PURE__ */ React.createElement("div", { className: "col-span-full rounded-2xl border border-indigo-200 bg-indigo-50/60 p-3", role: "group", "aria-label": t("memory_palace.controls_create") || "Create & personalize" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800" }, t("memory_palace.controls_create") || "Create & personalize"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -5403,7 +5412,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u{1F5BC} ",
     furnishing ? (t("memory_palace.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("memory_palace.furnish") || "Furnish with AI images"
-  ), hasContent && !failed && !noWalk && persist && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+  ), hasContent && !failed && !noWalk && persist && _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleSculpt,
@@ -5799,7 +5808,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       },
       "\u{1F5BC} ",
       t("memory_palace.quick_image_here") || "Quick image here"
-    ), typeof window.callGemini === "function" && !!(window.AlloModules && window.AlloModules.Prim3D) && /* @__PURE__ */ React.createElement(
+    ), _alloRuntimeAiAvailable() && !!(window.AlloModules && window.AlloModules.Prim3D) && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -5824,7 +5833,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       },
       "\u{1F381} ",
       t("memory_palace.empty_use_builtins") || "Use built-in cues"
-    ), typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    ), _alloRuntimeAiAvailable() && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

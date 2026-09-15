@@ -1,0 +1,20 @@
+function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,lowConfidencePages,pageRange}) {
+  const words=new Intl.Segmenter(undefined,{granularity:'word'});
+  const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment:part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
+  const doc=new DOMParser().parseFromString(outputHtml||'','text/html');
+  doc.querySelectorAll('script,style,button,input,select,textarea,template,[hidden],[aria-hidden="true"],annotation,annotation-xml,[data-allo-latex-src]').forEach(node=>node.remove());
+  doc.querySelectorAll('[style]').forEach(node=>{if(node.style.display==='none'||node.style.visibility==='hidden')node.remove();});
+  doc.querySelectorAll('img').forEach(node=>node.replaceWith(doc.createTextNode(' '+(node.getAttribute('alt')||'')+' ')));
+  doc.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,td,th,caption,figcaption,div,section,br').forEach(node=>node.appendChild(doc.createTextNode(' ')));
+  const source=tokens(sourceText),output=tokens(doc.body.textContent),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
+  let missingTokens=0,missingPassageCount=0;const missingPassages=[];let sourceUnit=0;
+  // Bounded chunks give callers source locations even when extraction flattened paragraphs.
+  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(const token of source.slice(at,at+40)){const count=available.get(token)||0;if(count)available.set(token,count-1);else missing++;}
+    missingTokens+=missing;if(missing)missingPassageCount++;if(missing&&missingPassages.length<50)missingPassages.push({sourceUnit,startToken:at,expectedTokens:Math.min(40,source.length-at),missingTokens:missing});
+  }
+  const pageList=Array.isArray(pages)?pages:null;
+  const pageIds=items=>Array.isArray(items)?items.slice(0,100).map(item=>typeof item==='number'?item:item?.pageNum??item?.page??null).filter(value=>Number.isSafeInteger(value)&&value>0):[];
+  const extraction={method:method||'unknown',pagesExamined:pageList?pageList.length:null,emptyPageCandidates:pageList?pageList.filter(page=>!String(page?.text||'').trim()).length:null,pageErrorCount:Array.isArray(pageErrors)?pageErrors.length:null,lowConfidencePageCount:Array.isArray(lowConfidencePages)?lowConfidencePages.length:null,errorPages:pageIds(pageErrors),lowConfidencePages:pageIds(lowConfidencePages)};
+  const reviewRequired=!source.length||missingTokens>0||(extraction.pageErrorCount||0)>0||(extraction.lowConfidencePageCount||0)>0;
+  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
+}

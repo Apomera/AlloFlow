@@ -1,0 +1,4013 @@
+[
+  {
+    "width": 1280,
+    "errors": [],
+    "closeBounds": {
+      "left": 1212,
+      "right": 1256,
+      "top": 16,
+      "bottom": 60
+    },
+    "viewport": 1280,
+    "bodyWidth": 1280,
+    "headings": [
+      "BehaviorLens",
+      "Start with one observation",
+      "Welcome to BehaviorLens",
+      "Observe–Describe–Respond Logging(ABC Data Collection)",
+      "Live Observation",
+      "Frequency Counter",
+      "Interval Recording",
+      "Data Sheet",
+      "Session Data Tracker",
+      "IOA Calculator",
+      "Task Analysis",
+      "Structured Learning Trials(DTT Data Sheet)",
+      "What Motivates Me Survey(Preference Assessment)",
+      "Latency Recorder",
+      "Natural Language ABC",
+      "Batch Import",
+      "Voice-to-ABC",
+      "Operational Definition Builder",
+      "AI Pattern Analysis",
+      "Behavior Overview",
+      "Hypothesis Diagram",
+      "Data Triangulation",
+      "Impact Calculator",
+      "Data Quality Check",
+      "Trend Dashboard",
+      "Predictive Insights",
+      "Ask AlloBot",
+      "Specialist Consultation Dashboard(BCBA Consultation)",
+      "ABA Graph Engine",
+      "Single-Case Design",
+      "Time Pattern Finder(Scatterplot Analysis)",
+      "Stakeholder Feedback Survey(Social Validity)",
+      "Cumulative Progress View(Cumulative Record)",
+      "Pattern Validation Analysis(Conditional Probability)",
+      "Caseload Dashboard",
+      "Cross-Student Comparison",
+      "Effect Size Calculator",
+      "Progress Monitor",
+      "Competing Pathways",
+      "Can't Do / Won't Do",
+      "Behavior Timeline Heatmap",
+      "SMART Goal Builder",
+      "Student–Teacher Agreement(Behavior Contract)",
+      "Fidelity Checklist",
+      "Feasibility Check",
+      "GAS Rubric",
+      "Pocket BIP",
+      "Intervention Plan",
+      "Progress Narrative",
+      "IEP Meeting Prep",
+      "Safety & Wellbeing Screening(Risk Screening)",
+      "BIP Generator",
+      "Positive Reinforcement Planner(DR Strategy Selector)",
+      "Communication Skills Planner(FCT Template)",
+      "Maintenance & Generalization",
+      "Support Plan Fidelity(Treatment Integrity)",
+      "IEP Goal Generator",
+      "MTSS/RTI Tiers",
+      "Progress Reports",
+      "Positive Behavior Tracker(Token Board)",
+      "Emotional Regulation Cycle(Escalation Cycle)",
+      "Preference & Motivation Finder(Reinforcer Assessment)",
+      "Choice Board",
+      "Traffic Light",
+      "Student Self-Check",
+      "My Progress Quest",
+      "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+      "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+      "Motivation & Preferences Survey(Reinforcement Inventory)",
+      "Replacement Behavior Tracker",
+      "Environment Audit",
+      "Cultural Context Reflection",
+      "Strength-Based Reframe",
+      "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+      "Restorative Conversation Guide",
+      "Home Note",
+      "Student Snapshot Exchange",
+      "FERPA Consent Manager",
+      "Home Behavior Log",
+      "Family Voice",
+      "Communication Log",
+      "Routine Hotspot Matrix",
+      "Crisis Plan",
+      "Relationship Map",
+      "Proactive Environment Planner(Antecedent Modification Planner)",
+      "Export Reports",
+      "Record Review",
+      "ABA Quick Guide",
+      "Supportive Conversation Practice(Counseling Simulation)",
+      "Practice Sandbox",
+      "ABA Concept Glossary",
+      "Guided Workflows",
+      "Team Notes",
+      "Session Notes",
+      "PD Learning Path",
+      "ABA Knowledge Quiz",
+      "What's the Function?",
+      "Virtual Practicum",
+      "ABA Case Study Training",
+      "AI Observation Coach",
+      "Workspace Sharing",
+      "Print-Ready Report",
+      "MI Practice Simulator",
+      "Skill Tracker & Mentorship"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": null,
+        "text": "1. Capture an ABC observation"
+      },
+      {
+        "label": null,
+        "text": "2. Define the behavior clearly"
+      },
+      {
+        "label": null,
+        "text": "3. Review the observations"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Add at least 3 ABC observations before running AI analysis."
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": []
+  },
+  {
+    "width": 390,
+    "errors": [],
+    "closeBounds": {
+      "left": 334,
+      "right": 378,
+      "top": 12,
+      "bottom": 56
+    },
+    "viewport": 390,
+    "bodyWidth": 390,
+    "headings": [
+      "BehaviorLens",
+      "Start with one observation",
+      "Welcome to BehaviorLens",
+      "Observe–Describe–Respond Logging(ABC Data Collection)",
+      "Live Observation",
+      "Frequency Counter",
+      "Interval Recording",
+      "Data Sheet",
+      "Session Data Tracker",
+      "IOA Calculator",
+      "Task Analysis",
+      "Structured Learning Trials(DTT Data Sheet)",
+      "What Motivates Me Survey(Preference Assessment)",
+      "Latency Recorder",
+      "Natural Language ABC",
+      "Batch Import",
+      "Voice-to-ABC",
+      "Operational Definition Builder",
+      "AI Pattern Analysis",
+      "Behavior Overview",
+      "Hypothesis Diagram",
+      "Data Triangulation",
+      "Impact Calculator",
+      "Data Quality Check",
+      "Trend Dashboard",
+      "Predictive Insights",
+      "Ask AlloBot",
+      "Specialist Consultation Dashboard(BCBA Consultation)",
+      "ABA Graph Engine",
+      "Single-Case Design",
+      "Time Pattern Finder(Scatterplot Analysis)",
+      "Stakeholder Feedback Survey(Social Validity)",
+      "Cumulative Progress View(Cumulative Record)",
+      "Pattern Validation Analysis(Conditional Probability)",
+      "Caseload Dashboard",
+      "Cross-Student Comparison",
+      "Effect Size Calculator",
+      "Progress Monitor",
+      "Competing Pathways",
+      "Can't Do / Won't Do",
+      "Behavior Timeline Heatmap",
+      "SMART Goal Builder",
+      "Student–Teacher Agreement(Behavior Contract)",
+      "Fidelity Checklist",
+      "Feasibility Check",
+      "GAS Rubric",
+      "Pocket BIP",
+      "Intervention Plan",
+      "Progress Narrative",
+      "IEP Meeting Prep",
+      "Safety & Wellbeing Screening(Risk Screening)",
+      "BIP Generator",
+      "Positive Reinforcement Planner(DR Strategy Selector)",
+      "Communication Skills Planner(FCT Template)",
+      "Maintenance & Generalization",
+      "Support Plan Fidelity(Treatment Integrity)",
+      "IEP Goal Generator",
+      "MTSS/RTI Tiers",
+      "Progress Reports",
+      "Positive Behavior Tracker(Token Board)",
+      "Emotional Regulation Cycle(Escalation Cycle)",
+      "Preference & Motivation Finder(Reinforcer Assessment)",
+      "Choice Board",
+      "Traffic Light",
+      "Student Self-Check",
+      "My Progress Quest",
+      "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+      "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+      "Motivation & Preferences Survey(Reinforcement Inventory)",
+      "Replacement Behavior Tracker",
+      "Environment Audit",
+      "Cultural Context Reflection",
+      "Strength-Based Reframe",
+      "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+      "Restorative Conversation Guide",
+      "Home Note",
+      "Student Snapshot Exchange",
+      "FERPA Consent Manager",
+      "Home Behavior Log",
+      "Family Voice",
+      "Communication Log",
+      "Routine Hotspot Matrix",
+      "Crisis Plan",
+      "Relationship Map",
+      "Proactive Environment Planner(Antecedent Modification Planner)",
+      "Export Reports",
+      "Record Review",
+      "ABA Quick Guide",
+      "Supportive Conversation Practice(Counseling Simulation)",
+      "Practice Sandbox",
+      "ABA Concept Glossary",
+      "Guided Workflows",
+      "Team Notes",
+      "Session Notes",
+      "PD Learning Path",
+      "ABA Knowledge Quiz",
+      "What's the Function?",
+      "Virtual Practicum",
+      "ABA Case Study Training",
+      "AI Observation Coach",
+      "Workspace Sharing",
+      "Print-Ready Report",
+      "MI Practice Simulator",
+      "Skill Tracker & Mentorship"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": null,
+        "text": "1. Capture an ABC observation"
+      },
+      {
+        "label": null,
+        "text": "2. Define the behavior clearly"
+      },
+      {
+        "label": null,
+        "text": "3. Review the observations"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Add at least 3 ABC observations before running AI analysis."
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": []
+  },
+  {
+    "width": 320,
+    "errors": [],
+    "closeBounds": {
+      "left": 264,
+      "right": 308,
+      "top": 12,
+      "bottom": 56
+    },
+    "viewport": 320,
+    "bodyWidth": 320,
+    "headings": [
+      "BehaviorLens",
+      "Start with one observation",
+      "Welcome to BehaviorLens",
+      "Observe–Describe–Respond Logging(ABC Data Collection)",
+      "Live Observation",
+      "Frequency Counter",
+      "Interval Recording",
+      "Data Sheet",
+      "Session Data Tracker",
+      "IOA Calculator",
+      "Task Analysis",
+      "Structured Learning Trials(DTT Data Sheet)",
+      "What Motivates Me Survey(Preference Assessment)",
+      "Latency Recorder",
+      "Natural Language ABC",
+      "Batch Import",
+      "Voice-to-ABC",
+      "Operational Definition Builder",
+      "AI Pattern Analysis",
+      "Behavior Overview",
+      "Hypothesis Diagram",
+      "Data Triangulation",
+      "Impact Calculator",
+      "Data Quality Check",
+      "Trend Dashboard",
+      "Predictive Insights",
+      "Ask AlloBot",
+      "Specialist Consultation Dashboard(BCBA Consultation)",
+      "ABA Graph Engine",
+      "Single-Case Design",
+      "Time Pattern Finder(Scatterplot Analysis)",
+      "Stakeholder Feedback Survey(Social Validity)",
+      "Cumulative Progress View(Cumulative Record)",
+      "Pattern Validation Analysis(Conditional Probability)",
+      "Caseload Dashboard",
+      "Cross-Student Comparison",
+      "Effect Size Calculator",
+      "Progress Monitor",
+      "Competing Pathways",
+      "Can't Do / Won't Do",
+      "Behavior Timeline Heatmap",
+      "SMART Goal Builder",
+      "Student–Teacher Agreement(Behavior Contract)",
+      "Fidelity Checklist",
+      "Feasibility Check",
+      "GAS Rubric",
+      "Pocket BIP",
+      "Intervention Plan",
+      "Progress Narrative",
+      "IEP Meeting Prep",
+      "Safety & Wellbeing Screening(Risk Screening)",
+      "BIP Generator",
+      "Positive Reinforcement Planner(DR Strategy Selector)",
+      "Communication Skills Planner(FCT Template)",
+      "Maintenance & Generalization",
+      "Support Plan Fidelity(Treatment Integrity)",
+      "IEP Goal Generator",
+      "MTSS/RTI Tiers",
+      "Progress Reports",
+      "Positive Behavior Tracker(Token Board)",
+      "Emotional Regulation Cycle(Escalation Cycle)",
+      "Preference & Motivation Finder(Reinforcer Assessment)",
+      "Choice Board",
+      "Traffic Light",
+      "Student Self-Check",
+      "My Progress Quest",
+      "Calming & Co-Regulation Toolkit(De-escalation Toolkit)",
+      "Self-Regulation Strategy Builder(Replacement Behavior Planner)",
+      "Motivation & Preferences Survey(Reinforcement Inventory)",
+      "Replacement Behavior Tracker",
+      "Environment Audit",
+      "Cultural Context Reflection",
+      "Strength-Based Reframe",
+      "Equity & Self-Awareness Check(Bias Reflection Monitor)",
+      "Restorative Conversation Guide",
+      "Home Note",
+      "Student Snapshot Exchange",
+      "FERPA Consent Manager",
+      "Home Behavior Log",
+      "Family Voice",
+      "Communication Log",
+      "Routine Hotspot Matrix",
+      "Crisis Plan",
+      "Relationship Map",
+      "Proactive Environment Planner(Antecedent Modification Planner)",
+      "Export Reports",
+      "Record Review",
+      "ABA Quick Guide",
+      "Supportive Conversation Practice(Counseling Simulation)",
+      "Practice Sandbox",
+      "ABA Concept Glossary",
+      "Guided Workflows",
+      "Team Notes",
+      "Session Notes",
+      "PD Learning Path",
+      "ABA Knowledge Quiz",
+      "What's the Function?",
+      "Virtual Practicum",
+      "ABA Case Study Training",
+      "AI Observation Coach",
+      "Workspace Sharing",
+      "Print-Ready Report",
+      "MI Practice Simulator",
+      "Skill Tracker & Mentorship"
+    ],
+    "buttons": [
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Family Mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": null,
+        "text": "1. Capture an ABC observation"
+      },
+      {
+        "label": null,
+        "text": "2. Define the behavior clearly"
+      },
+      {
+        "label": null,
+        "text": "3. Review the observations"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "📋 Data Collection",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "🧠 Analysis & Insights",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Add at least 3 ABC observations before running AI analysis."
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "🎯 Planning & Goals",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Add observations to use this tool"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "⭐ Student Support",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "🌍 Equity & Culture",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "👪 Family & Team",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "🏫 Environment",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "🔧 Utilities",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Download backup"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": []
+  }
+]

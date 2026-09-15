@@ -1,0 +1,19 @@
+{
+  "evidenceClass": "Real Chromium and production MCP stdio failure/recovery calibration with scripted replies; no live provider calls.",
+  "observations": [
+    {
+      "mode": "deadline",
+      "maxRunMinutes": 1,
+      "pendingRequestsBeforeInterruption": 1,
+      "firstPendingAfterMs": 5960,
+      "deadlineObservationOrigin": "first published request: the driver wall-clock timer is already armed",
+      "observedStatus": "running",
+      "observedError": null,
+      "pendingAtSettlement": 3,
+      "elapsedMs": 80965,
+      "persistedStatus": "running",
+      "manualCancelAccepted": true,
+      "afterManualCancel": "cancelled"
+    }
+  ]
+}

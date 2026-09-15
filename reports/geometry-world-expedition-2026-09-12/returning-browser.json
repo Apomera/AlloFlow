@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "label": "Returning visit resets persisted subpage to four modes despite a saved Print Lab backup",
+      "pass": true
+    },
+    {
+      "label": "Returning user has a visible Continue action",
+      "pass": true
+    },
+    {
+      "label": "Stale overlays are cleared",
+      "pass": true
+    },
+    {
+      "label": "Escape returns to the previous mode card with keyboard focus",
+      "pass": true
+    },
+    {
+      "label": "Native Print Lab round trip preserves blocks, selection, history and print scale",
+      "pass": true
+    },
+    {
+      "label": "Consuming the return marker does not reopen Home",
+      "pass": true
+    },
+    {
+      "label": "Subsequent state updates keep the returned workspace open",
+      "pass": true
+    },
+    {
+      "label": "Home is still reachable manually after Print Lab",
+      "pass": true
+    },
+    {
+      "label": "Opening Home preserves the returned workspace",
+      "pass": true
+    },
+    {
+      "label": "Ordinary re-entry shows the main menu again",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

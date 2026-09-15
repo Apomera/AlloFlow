@@ -88,7 +88,7 @@ window.StemLab = window.StemLab || {
   // ── Sound Effects ──
   // ══════════════════════════════════════════════════════════════
   var _audioCtx = null;
-  function getAC() { if (!_audioCtx) try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} return _audioCtx; }
+  function getAC() { if (!_audioCtx) try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} return _audioCtx; }
   function playTone(f, dur, type, vol) {
     var ac = getAC(); if (!ac) return;
     try { var o = ac.createOscillator(), g = ac.createGain(); o.type = type || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(vol || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.12)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (dur || 0.12)); } catch(e) {}

@@ -1,0 +1,90 @@
+{
+  "id": "applied-review-fixture",
+  "type": "applied-challenge",
+  "data": {
+    "title": "Choose a water-saving plan for a school garden",
+    "instructions": "Use the lesson on water movement to compare two plans. Explain your choice, check a weak point, and revise your reasoning.",
+    "family": "decide",
+    "agencyMode": "progressive",
+    "scope": "standard",
+    "selectionMode": "auto",
+    "fitReason": "The lesson supports comparing choices using evidence and constraints.",
+    "brief": {
+      "context": "In this fictional classroom scenario, a school garden team wants to reduce water waste while keeping its plants healthy. Compare two possible approaches before recommending a plan. The school has not collected local measurements yet.",
+      "role": "Garden planning adviser",
+      "audience": "The school garden team",
+      "drivingQuestion": "Which watering plan should the garden team try first, and what evidence would change your recommendation?",
+      "seedDirection": "Apply the lesson on evaporation, infiltration, and runoff to a practical choice.",
+      "lockedLessonFacts": [
+        "Water can enter the soil through infiltration.",
+        "Water at the soil surface can evaporate.",
+        "Water that does not soak into the ground may run off."
+      ],
+      "openQuestions": [
+        "How quickly does the garden soil absorb water?",
+        "What resources and time can the team realistically use?"
+      ],
+      "criteria": [
+        "Use two lesson ideas accurately.",
+        "Compare at least two possible approaches.",
+        "Explain a tradeoff and a way to check the recommendation."
+      ],
+      "constraints": [
+        "Use available classroom materials for a small trial.",
+        "Treat unsupplied costs and measurements as unknowns."
+      ],
+      "stakeholders": [
+        "Students who care for the garden",
+        "Staff who manage water use"
+      ],
+      "deliverable": "A short recommendation with reasons, one tradeoff, and a plan for a small check.",
+      "evidenceBoundary": "The lesson statements are provided for this fixture. Conditions at a real school must be checked. Do not invent costs, water savings, or trial results.",
+      "factLocked": true,
+      "factVerified": false,
+      "factSources": [
+        {
+          "text": "Water can enter the soil through infiltration.",
+          "sourceQuote": "Water infiltrates soil",
+          "sourceLocation": ""
+        },
+        {
+          "text": "Water at the soil surface can evaporate.",
+          "sourceQuote": "Deliberately unmatched quotation",
+          "sourceLocation": ""
+        },
+        {
+          "text": "Water that does not soak into the ground may run off.",
+          "sourceQuote": "",
+          "sourceLocation": ""
+        }
+      ]
+    },
+    "supports": {
+      "parallelExample": {
+        "context": "A library team compares two ways to organize returned books.",
+        "move": "Compare both options against the same criteria, identify a tradeoff, then plan a small trial that could change the recommendation.",
+        "whyItHelps": "A shared set of criteria makes the reasoning easier to inspect."
+      },
+      "frameStarter": "How could we reduce ___ while still ___?",
+      "frameChoices": [
+        "Compare the timing of watering.",
+        "Compare ways to deliver water to the soil."
+      ],
+      "coachPrompts": [
+        "Which lesson idea matters most here?",
+        "What observation could change your choice?"
+      ]
+    },
+    "workspace": {},
+    "sourceExcerpt": "REVIEW_PRIVATE_SOURCE: This is an authored fictional fixture for interface review. Water infiltrates soil, evaporates, or runs off.",
+    "lessonRef": {
+      "gradeLevel": "6th Grade",
+      "language": "English"
+    },
+    "plan": {
+      "learningTarget": "Apply infiltration and runoff to compare options.",
+      "availableTime": "25 minutes",
+      "materials": "Lesson text, paper and pencil; a proposed trial only."
+    }
+  }
+}

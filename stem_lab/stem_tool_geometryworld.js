@@ -91,7 +91,7 @@
       '.gw-root button:active:not(:disabled){transform:translateY(1px);}',
       '.gw-root button:focus-visible,.gw-root input:focus-visible,.gw-root select:focus-visible,.gw-root textarea:focus-visible,.gw-root a[href]:focus-visible,.gw-root [tabindex]:focus-visible,.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}',
       '#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{margin:0!important;border:0!important;border-radius:0!important;}',
-      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
+      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;transform:none!important;width:auto!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
       '@media(max-width:520px){.gw-intro-card{padding:20px 16px;max-height:calc(100vh - 24px);overflow:auto;border-radius:18px;}.gw-primary-cta{width:100%;padding-left:20px!important;padding-right:20px!important;}}',
       '.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;overflow:visible!important;padding:7px 10px!important;gap:8px!important}.gw-status-cluster{grid-row:auto!important;width:auto!important;overflow:visible!important;padding:0!important}.gw-compact-action{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:5px;padding:5px 10px;border:1px solid rgba(167,139,250,.38);border-radius:9px;background:rgba(76,29,149,.34);color:#f5f3ff;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}.gw-compact-action:hover{background:rgba(91,33,182,.52)}.gw-compact-action[aria-expanded="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.58);color:#fff}.gw-toolbar-collapse{width:34px;padding:5px}.gw-toolbar-reveal,.gw-fullscreen-quickbar{position:absolute;top:8px;left:50%;z-index:115;transform:translateX(-50%)}.gw-toolbar-reveal{display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:6px 11px;border:1px solid rgba(196,181,253,.52);border-radius:10px;background:rgba(15,23,42,.92);box-shadow:0 10px 28px rgba(2,6,23,.48);color:#f5f3ff;font-size:10px;font-weight:850;cursor:pointer;backdrop-filter:blur(10px)}.gw-fullscreen-quickbar{display:none;align-items:center;gap:6px}.gw-fullscreen-quickbar .gw-compact-action{min-height:36px;background:rgba(15,23,42,.9);box-shadow:0 8px 24px rgba(2,6,23,.42);backdrop-filter:blur(9px)}',
       '.gw-prediction-panel{position:absolute!important;top:64px;left:50%;z-index:46;box-sizing:border-box;width:min(680px,calc(100% - 24px))!important;max-width:none!important;transform:translateX(-50%);border:1px solid rgba(196,181,253,.38)!important;background:linear-gradient(155deg,rgba(30,27,75,.98),rgba(15,23,42,.98))!important;box-shadow:0 22px 64px rgba(2,6,23,.62),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-prediction-heading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid rgba(167,139,250,.2)}.gw-prediction-title{color:#f5f3ff;font-size:11px;font-weight:850}.gw-prediction-close{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border:1px solid rgba(196,181,253,.3);border-radius:8px;background:rgba(15,23,42,.62);color:#f8fafc;font-size:17px;cursor:pointer}',
@@ -161,7 +161,10 @@
 
   // ── Sound Effects ──
   var _ac = null;
-  function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
+  // Mute is a flag, not a suspended context: the context is the lab's shared one (StemLab.audioContext), so
+  // suspending it would silence every other tool and any other tool's sound would undo this mute.
+  var _gwMuted = false;
+  function getAC() { if (_gwMuted) return null; if (!_ac) { try { _ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } return _ac; }
   function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.1, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.15)); } catch(e) {} }
   // Noise burst helper — for footsteps, impacts
   function noiseBurst(duration, volume, filterFreq) {
@@ -6614,6 +6617,7 @@
       var showLessonIntro = d.showLessonIntro || false;
       var showGeometryHome = !!d.showGeometryHome;
       var soundMuted = d.soundMuted || false;
+      _gwMuted = !!soundMuted;
       var renderQuality = d.renderQuality || 'auto';
       // Touch mode is an explicit, persisted preference on touch devices. It
       // defaults on so the first mobile visit has clear, discoverable controls;
@@ -12548,7 +12552,7 @@
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
           if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }
           if (engine.renderer) {
-            engine.renderer.dispose();
+            engine.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(engine.renderer);
             // Detach the WebGL canvas. initEngine creates + appends a fresh canvas every
             // time, so leaving the disposed one behind stacked a blank surface over the
             // live world (both are 100%-height block elements in the same container).
@@ -13105,7 +13109,7 @@
           if (addToast) addToast('Clipboard access is unavailable. Expand Technical details to select the error manually.', 'info');
           return;
         }
-        navigator.clipboard.writeText(report)
+        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report)
           .then(function() { if (addToast) addToast('Geometry World error details copied.', 'success'); })
           .catch(function() { if (addToast) addToast('Could not copy automatically. Select the technical details manually.', 'error'); });
       }
@@ -13119,7 +13123,11 @@
         delete window[engineKey + '_failure'];
         setWebglError(false);
       }
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      // minHeight: the STEM host wraps a plugin in a block that has only a min-height, so height:100% resolves to auto
+      // and the workspace collapsed to its toolbar plus the canvas's intrinsic 150px (a 164px world and a 220px home
+      // chooser on a phone in the live shell, 2026-09-14). The calc keeps landscape phones sane; a host that gives a
+      // real height is never capped.
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
@@ -13722,11 +13730,8 @@
             onClick: function() {
               var newMuted = !soundMuted;
               upd('soundMuted', newMuted);
-              // Actually mute/unmute the audio context
-              var ac = getAC();
-              if (ac) {
-                if (newMuted) { ac.suspend(); } else { ac.resume(); }
-              }
+              _gwMuted = newMuted; // every sound helper reads getAC(), which returns null while muted
+              if (!newMuted) { var ac = getAC(); if (ac && ac.state === 'suspended') { try { ac.resume(); } catch (resumeError) {} } }
               if (addToast) addToast(newMuted ? '\uD83D\uDD07 Sound muted' : '\uD83D\uDD0A Sound on', 'info');
             },
             title: soundMuted ? 'Unmute sounds' : 'Mute all sounds',

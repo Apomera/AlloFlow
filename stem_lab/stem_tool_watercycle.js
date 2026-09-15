@@ -75,7 +75,7 @@
 
   // ── Water Cycle Audio System ──
   var _wcAC = null;
-  function getWCAC() { if (!_wcAC) { try { _wcAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
+  function getWCAC() { if (!_wcAC) { try { _wcAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_wcAC && _wcAC.state === 'suspended') { try { _wcAC.resume(); } catch(e) {} } return _wcAC; }
   function wcTone(f, d2, t, v) { var ac = getWCAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d2||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d2||0.1)); } catch(e) {} }
   function wcNoise(dur, vol, hz, type) { var ac = getWCAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.1)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type=type||'lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.1)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
   
@@ -11221,7 +11221,7 @@ const d = labToolData.waterCycle || {};
                   ).forEach(function(texture3d) {
                   if (texture3d && texture3d.dispose) texture3d.dispose();
                 });
-                renderer3d.dispose();
+                renderer3d.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer3d);
                 canvasEl._wcPrecip3dSync = null;
                 canvasEl._wcPrecip3dAdvanceLifecycle = null;
                 canvasEl._wcPrecip3dResetCamera = null;
@@ -16639,7 +16639,7 @@ const d = labToolData.waterCycle || {};
                   });
                 }
               });
-              renderer.dispose();
+              renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               landingMapBackground = null;
               canvasEl._wcPilotOnSnapshot = null;
               canvasEl._wcPilotInput = null;
@@ -28928,7 +28928,7 @@ const d = labToolData.waterCycle || {};
               labelTextures3d.forEach(function(labelTexture3d) { if (labelTexture3d && labelTexture3d.dispose) labelTexture3d.dispose(); });
               if (cloudTexture3d && cloudTexture3d.dispose) cloudTexture3d.dispose();
               if (horizonTexture3d && horizonTexture3d.dispose) horizonTexture3d.dispose();
-              renderer.dispose();
+              renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               canvasEl._wc3dCleanup = null;
               canvasEl._wc3dResetCamera = null;
               canvasEl._wc3dAdjustCamera = null;

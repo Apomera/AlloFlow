@@ -3165,6 +3165,7 @@ window.StemLab = window.StemLab || {
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-image-help{padding:0 20px 14px;margin-top:-4px;color:#b9ced9;font-size:11px;line-height:1.7}\n[data-circuit-builder-root] .circuit-image-help p{margin:0}\n[data-circuit-builder-root] .circuit-image-help p[role=status]:not(:empty){color:#d1efdf;margin-top:4px}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-image-help{padding:0 13px 13px}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-probe-panel{margin:0 20px 16px;padding:12px 15px;border:1px solid #596478;border-radius:12px;background:linear-gradient(120deg,#1b2c40,#122d39);color:#d7e7ef}\n[data-circuit-builder-root] .circuit-probe-panel>summary{font-size:13px;font-weight:650;color:#e2edf9;cursor:pointer;line-height:24px}\n[data-circuit-builder-root] .circuit-probe-panel>summary>span{font-size:10px;font-weight:400;color:#b8d0df;margin-left:12px;display:inline-block}\n[data-circuit-builder-root] .circuit-probe-panel>p{font-size:12px;line-height:1.7;margin:10px 0;color:#c1d5e2}\n[data-circuit-builder-root] .circuit-probe-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}\n[data-circuit-builder-root] .circuit-probe-controls label{display:grid;gap:6px;min-width:0;font-size:11px;color:#edc9d3}\n[data-circuit-builder-root] .circuit-probe-controls label+label{color:#d2e0ed}\n[data-circuit-builder-root] .circuit-probe-controls select{width:100%;min-width:0;min-height:38px;border:1px solid #5d7b90;background:#0f2434;color:#e2edf5;border-radius:7px;padding:6px;font-size:12px}\n[data-circuit-builder-root] .circuit-probe-display{background:#071a26;border:1px solid #3e6475;border-radius:9px;padding:14px}\n[data-circuit-builder-root] .circuit-probe-display>span{font-size:11px;color:#b7d7df;display:block}\n[data-circuit-builder-root] .circuit-probe-display>strong{display:block;color:#bef1dd;font:500 27px/1.5 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-probe-display>p{font-size:12px;line-height:1.7;color:#c1d7df;margin:3px 0 0}\n[data-circuit-builder-root] .circuit-probe-panel .circuit-action-row button{font-size:11px;min-height:36px}\n[data-circuit-builder-root] .circuit-probe-panel>.circuit-probe-tip{font-size:11px;margin-bottom:0}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-probe-panel{margin:0 13px 13px;padding:11px}[data-circuit-builder-root] .circuit-probe-controls{gap:8px}[data-circuit-builder-root] .circuit-probe-controls select{font-size:11px}}\n";
     circStyle.textContent += '[data-circuit-builder-root] .circuit-probe-controls>div{display:grid;gap:6px;min-width:0}[data-circuit-builder-root] .circuit-probe-controls>div+div label{color:#d2e0ed}';
+    circStyle.textContent += "[data-circuit-builder-root] .circuit-drag-handle{cursor:grab;touch-action:none;user-select:none;min-width:24px;min-height:28px;padding:2px 4px;border:1px solid transparent;border-radius:6px;background:transparent;color:#a3b4c4;font-size:17px;line-height:1}[data-circuit-builder-root] .circuit-drag-handle:hover{color:#f1f5f9;border-color:#475569}[data-circuit-builder-root] .circuit-drag-handle:active{cursor:grabbing}[data-circuit-builder-root] .circuit-move-btn{min-width:28px;min-height:28px;padding:0 6px;border:1px solid #475569;border-radius:6px;background:#0f172a;color:#cbd5e1;font-size:11px;line-height:1}[data-circuit-builder-root] .circuit-move-btn:hover:not(:disabled){background:#1e293b;color:#ffffff}[data-circuit-builder-root] .circuit-move-btn:disabled{opacity:.45;cursor:default}[data-circuit-builder-root] [data-circuit-dragging=true]{opacity:.55}[data-circuit-builder-root] [data-circuit-drop-target=true]{outline:2px dashed #facc15;outline-offset:2px}[data-circuit-builder-root] .circuit-drag-handle:focus-visible,[data-circuit-builder-root] .circuit-move-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}";
     circStyle.textContent += "[data-circuit-builder-root] .circuit-frame-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(110deg,#183444,#102332);border-block:1px solid #476777;color:#e6f4fa}[data-circuit-builder-root] .circuit-frame-mode,[data-circuit-builder-root] .circuit-frame-zoom{display:flex;align-items:center;gap:4px}[data-circuit-builder-root] .circuit-frame-bar button{min-height:36px;padding:6px 12px;border:1px solid #668796;border-radius:8px;background:#122b3b;color:#e6f4fa;font-size:12px;font-weight:600}[data-circuit-builder-root] .circuit-frame-bar button[aria-pressed=true]{background:#baeeda;border-color:#baeeda;color:#143f42}[data-circuit-builder-root] .circuit-frame-bar button:disabled{opacity:.48;cursor:default}[data-circuit-builder-root] .circuit-frame-zoom span{min-width:48px;text-align:center;font:600 12px ui-monospace,monospace}[data-circuit-builder-root] .circuit-frame-center{margin-left:auto}[data-circuit-builder-root] .circuit-scene-viewport[data-drag-mode=pan]{cursor:move}[data-circuit-builder-root] .circuit-position-controls{margin:0 18px 12px;padding:12px 14px;background:#122b3b;border:1px solid #527486;border-radius:10px;color:#dcecf5;font-size:12px}[data-circuit-builder-root] .circuit-position-controls summary{cursor:pointer;font-weight:600}[data-circuit-builder-root] .circuit-position-controls summary span{display:inline-block;margin-left:12px;font-weight:400;color:#b8d0dd}[data-circuit-builder-root] .circuit-position-controls>div{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px}[data-circuit-builder-root] .circuit-position-controls label{display:flex;align-items:center;gap:10px;flex:1;min-width:220px}[data-circuit-builder-root] .circuit-position-controls input{width:100%;accent-color:#8ee1c5}[data-circuit-builder-root] .circuit-frame-bar button:focus-visible,[data-circuit-builder-root] .circuit-position-controls :focus-visible{outline:3px solid #facc15;outline-offset:3px}@media(max-width:600px){[data-circuit-builder-root] .circuit-frame-bar{gap:8px;padding:10px}[data-circuit-builder-root] .circuit-frame-bar button{padding:6px 10px}[data-circuit-builder-root] .circuit-position-controls{margin-inline:12px}}";
     circStyle.textContent += "[data-circuit-builder-root].circuit-workspace-switch{max-width:896px;margin:0 auto 14px;padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0b2232;border:1px solid #456675;border-radius:14px;color:#c9deeb;font-size:12px}[data-circuit-builder-root].circuit-workspace-switch button{padding:10px 16px;border:1px solid #6a8997;border-radius:9px;background:#132d3c;color:#eaf5fb;font-weight:700}[data-circuit-builder-root].circuit-workspace-switch button[aria-pressed=true]{background:#b5efd9;border-color:#b5efd9;color:#143d38}[data-circuit-builder-root].circuit-workspace-switch span{margin-left:auto}[data-circuit-builder-root].circuit-mixed-root{max-width:896px;margin:auto;color:#e6f2f8;background:#081b28;padding:20px;border:1px solid #3e6073;border-radius:20px}[data-circuit-builder-root] .circuit-mixed-hero{padding:8px 4px 20px}[data-circuit-builder-root] .circuit-mixed-hero h2{font-size:30px;line-height:1.2;font-weight:800;margin:12px 0}[data-circuit-builder-root] .circuit-mixed-hero p{font-size:14px;line-height:1.7;color:#c4d9e5}[data-circuit-builder-root] .circuit-mixed-controls{padding:14px;border:1px solid #436477;border-radius:14px;background:#102d3b;margin-bottom:18px}[data-circuit-builder-root] .circuit-mixed-controls>label{display:flex;align-items:center;gap:15px;font-size:13px}[data-circuit-builder-root] .circuit-mixed-controls input{flex:1;min-width:80px;accent-color:#99e5ce}[data-circuit-builder-root].circuit-mixed-root select{max-width:100%;padding:9px;background:#0b2535;border:1px solid #7193a4;border-radius:8px;color:#e5f3fa;font-size:13px}[data-circuit-builder-root] .circuit-mixed-connections{margin-top:20px;padding:16px;border:1px solid #416477;border-radius:16px;background:#102735}[data-circuit-builder-root] .circuit-mixed-connections h3,[data-circuit-builder-root] .circuit-mixed-evidence h3{font-size:20px;font-weight:750}[data-circuit-builder-root] .circuit-mixed-branch{margin-top:14px;padding:14px;background:linear-gradient(120deg,#143947,#102b39);border:1px solid #4f7685;border-radius:12px}[data-circuit-builder-root] .circuit-mixed-branch-heading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;margin-bottom:15px}[data-circuit-builder-root] .circuit-mixed-branch-heading span{color:#c1dce7;font:12px ui-monospace,monospace}[data-circuit-builder-root] .circuit-mixed-path{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 0 10px}[data-circuit-builder-root] .circuit-mixed-path button{position:relative;flex:1;min-width:105px;padding:12px 8px;border:1px solid #688b9b;border-radius:10px;background:#0a2232;color:#deedf4;text-align:center}[data-circuit-builder-root] .circuit-mixed-path button[aria-pressed=true]{border-color:#afeed7;background:#23504d;box-shadow:0 0 0 2px #9ce5ca22}[data-circuit-builder-root] .circuit-mixed-path button>*{display:block;font-size:12px;line-height:1.8}[data-circuit-builder-root] .circuit-mixed-path small{color:#b9e2ef}[data-circuit-builder-root] .circuit-mixed-terminal{flex-shrink:0;font:700 11px ui-monospace,monospace;color:#d4e6ef}[data-circuit-builder-root] .circuit-mixed-evidence{padding:20px;margin-top:18px;background:linear-gradient(110deg,#153c40,#102d3a);border:1px solid #5d938c;border-radius:16px}[data-circuit-builder-root] .circuit-mixed-evidence p{font-size:13px;line-height:1.8;margin-top:10px;color:#d2e7ee}[data-circuit-builder-root] .circuit-mixed-readings{margin:12px;padding:12px;border:1px solid #557888;border-radius:12px;color:#d7eaf4;font-size:13px}[data-circuit-builder-root] .circuit-mixed-readings>summary{min-height:24px}[data-circuit-builder-root] .circuit-mixed-scroll{overflow-x:auto;border:1px solid #527586;border-radius:16px}[data-circuit-builder-root] .circuit-mixed-schematic svg{display:block;min-width:760px;width:100%;height:auto}@media(max-width:600px){[data-circuit-builder-root].circuit-mixed-root{padding:12px}[data-circuit-builder-root] .circuit-mixed-hero h2{font-size:25px}[data-circuit-builder-root] .circuit-mixed-connections{padding:10px}[data-circuit-builder-root] .circuit-mixed-branch{padding:10px}[data-circuit-builder-root].circuit-workspace-switch span{width:100%;margin-left:0}}";
     circStyle.textContent += "[data-circuit-builder-root] .circuit-time-scope{border:1px solid #52758a;border-radius:16px;padding:18px;margin:18px 0;background:linear-gradient(120deg,#173241,#0c2534);color:#e1f0f5}[data-circuit-builder-root] .circuit-time-scope h3{font-size:22px;font-weight:750;margin-top:7px}[data-circuit-builder-root] .circuit-signal-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:14px 0}[data-circuit-builder-root] .circuit-signal-controls label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px}[data-circuit-builder-root] .circuit-signal-controls button{background:#173d4e;border:1px solid #7494a4;color:#eaf7fc;border-radius:9px;min-height:40px;padding:8px 12px;font-size:12px;font-weight:650}[data-circuit-builder-root] .circuit-signal-controls input{accent-color:#a0eed6;max-width:180px}[data-circuit-builder-root] .circuit-scope-chart{overflow-x:auto;border-radius:14px;border:1px solid #365868}[data-circuit-builder-root] .circuit-scope-chart svg{display:block;width:100%;min-width:660px;height:auto}[data-circuit-builder-root] .circuit-scope-legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12px;margin:12px 0}[data-circuit-builder-root] .circuit-scope-legend span:nth-child(1){color:#d4cafa}[data-circuit-builder-root] .circuit-scope-legend span:nth-child(2){color:#8bf0d0}[data-circuit-builder-root] .circuit-scope-legend span:nth-child(3){color:#ffda82}[data-circuit-builder-root] .circuit-scope-cursor{display:block;font-size:13px;margin:12px 0}[data-circuit-builder-root] .circuit-scope-cursor strong{float:right;font-family:ui-monospace,monospace}[data-circuit-builder-root] .circuit-scope-cursor input{width:100%;accent-color:#a0eed6;display:block;margin-top:10px}[data-circuit-builder-root] .circuit-scope-readings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}[data-circuit-builder-root] .circuit-scope-readings>div{padding:12px;background:#092130;border:1px solid #496c7c;border-radius:10px}[data-circuit-builder-root] .circuit-scope-readings span{display:block;font-size:11px;color:#bed6e3;margin-bottom:6px}[data-circuit-builder-root] .circuit-scope-readings strong{font:600 15px ui-monospace,monospace;color:#d4fff0}[data-circuit-builder-root] .circuit-time-model{font-size:12px;line-height:1.8;margin-top:12px}[data-circuit-builder-root] .circuit-time-model p{margin:10px 0}[data-circuit-builder-root] .circuit-time-model a{color:#a4e9f4;text-decoration:underline}@media(max-width:600px){[data-circuit-builder-root] .circuit-time-scope{padding:12px}[data-circuit-builder-root] .circuit-scope-readings{grid-template-columns:1fr}[data-circuit-builder-root] .circuit-scope-readings>div{display:flex;justify-content:space-between;gap:8px}[data-circuit-builder-root] .circuit-signal-controls label{width:100%}}";
@@ -3258,7 +3259,7 @@ window.StemLab = window.StemLab || {
   var _audioCtx = null;
   function getAudioCtx() {
     if (!_audioCtx) {
-      try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* audio not available */ }
+      try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) { /* audio not available */ }
     }
     return _audioCtx;
   }
@@ -3810,6 +3811,14 @@ window.StemLab = window.StemLab || {
             }
           };
 
+          // ── Reorder state. Order changes the drawing only: in a series loop every
+          // part carries the same current wherever it sits, and in parallel each
+          // branch sees the full supply. Drag is pointer-based (mouse and touch;
+          // HTML5 drag events do not fire on touch or in every host) with a 6 px
+          // threshold so a plain click still selects. Keyboard: the move buttons,
+          // plus arrow keys on the drag handle.
+          var reorderDragRef = React.useRef(null);
+          var reorderState = React.useState(null), reorderDrag = reorderState[0], setReorderDrag = reorderState[1];
           // ── State defaults ──
 
           var solved = React.useMemo(function(){return solveCircuit(d);},[d.components,d.mode,d.voltage]);
@@ -4044,6 +4053,70 @@ window.StemLab = window.StemLab || {
             performRemoveComponent(idx);
           };
 
+          // ── Move component (undoable: updMulti snapshots the previous order) ──
+          var moveComponent = function(from, to) {
+            var n = components.length;
+            if (from === to || from < 0 || to < 0 || from >= n || to >= n) return;
+            var next = components.slice();
+            var moved = next.splice(from, 1)[0];
+            next.splice(to, 0, moved);
+            updMulti({ components: next, selectedPart: to });
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.circuit.sr_part_moved', '{value1} moved to position {value2} of {value3}. Readings do not change with position.').replace('{value1}', getCompLabel(moved)).replace('{value2}', String(to + 1)).replace('{value3}', String(n)));
+          };
+          var reorderNote = __alloT('stem.circuit.reorder_note', 'Position changes the drawing, not the readings: in a series loop every part carries the same current wherever it sits, and in parallel each branch gets the full supply voltage.');
+          // Which editor row is under the pointer (the list can be two columns wide).
+          var reorderRowAt = function(x, y) {
+            var el = typeof document !== 'undefined' && typeof document.elementFromPoint === 'function' ? document.elementFromPoint(x, y) : null;
+            var row = el && el.closest ? el.closest('[data-circuit-row-index]') : null;
+            return row ? Number(row.getAttribute('data-circuit-row-index')) : -1;
+          };
+          // Which schematic slot the pointer is over, in the SVG's own coordinates
+          // (the drawing keeps its aspect ratio, so one scale factor serves both axes).
+          var reorderSchematicSlot = function(svg, x, y) {
+            var n = components.length;
+            if (!svg || !n) return -1;
+            var rect = svg.getBoundingClientRect();
+            if (!rect.width || !rect.height) return -1;
+            if (mode === 'series') { var spacing = Math.min(70, 280 / n); return Math.max(0, Math.min(n - 1, Math.round(((x - rect.left) / rect.width * W - 80) / spacing))); }
+            var gap = Math.min(30, 80 / n);
+            return Math.max(0, Math.min(n - 1, Math.round(((y - rect.top) / rect.height * H - 40) / gap)));
+          };
+          var reorderPointerHandlers = function(index, comp, source) {
+            var locate = function(e) { return source === 'schematic' ? reorderSchematicSlot(e.currentTarget.ownerSVGElement || null, e.clientX, e.clientY) : reorderRowAt(e.clientX, e.clientY); };
+            var finish = function(e, commit) {
+              var dr = reorderDragRef.current;
+              if (!dr || dr.pointerId !== e.pointerId) return;
+              reorderDragRef.current = null;
+              try { if (e.currentTarget.hasPointerCapture && e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+              if (!dr.active) { if (commit && source === 'schematic') upd('selectedPart', index); return; }
+              setReorderDrag(null);
+              if (commit && dr.over != null && dr.over !== dr.from) moveComponent(dr.from, dr.over);
+            };
+            return {
+              onPointerDown: function(e) {
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                if (source === 'list') { e.preventDefault(); try { e.currentTarget.focus({ preventScroll: true }); } catch (err) {} }
+                try { if (e.currentTarget.setPointerCapture) e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+                reorderDragRef.current = { id: comp.id, from: index, over: index, pointerId: e.pointerId, x: e.clientX, y: e.clientY, active: false };
+              },
+              onPointerMove: function(e) {
+                var dr = reorderDragRef.current;
+                if (!dr || dr.pointerId !== e.pointerId) return;
+                if (!dr.active) { if (Math.abs(e.clientX - dr.x) + Math.abs(e.clientY - dr.y) < 6) return; dr.active = true; dr.shown = false; }
+                var over = locate(e);
+                if (over === -1) over = dr.over;
+                if (over !== dr.over || !dr.shown) { dr.over = over; dr.shown = true; setReorderDrag({ id: dr.id, from: dr.from, over: over, source: source }); }
+              },
+              onPointerUp: function(e) { finish(e, true); },
+              onPointerCancel: function(e) { finish(e, false); },
+              onLostPointerCapture: function(e) { finish(e, false); }
+            };
+          };
+          // Keep focus on the moved part's control after React reorders the rows.
+          var refocusReorder = function(rootEl, selector) {
+            setTimeout(function() { var el = rootEl && rootEl.querySelector ? rootEl.querySelector(selector) : null; if (el && !el.disabled) el.focus(); }, 0);
+          };
+
           // ── Clear components ──
           var clearComponents = function() {
             if (components.length === 0) return;
@@ -4265,7 +4338,7 @@ window.StemLab = window.StemLab || {
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-400 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
             )); };
           var renderSchematic = function() { return h('div', { className: 'relative', hidden: d.benchView === '3d', style:{maxWidth:'100%',overflowX:'auto'} },
-              h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.'),
+              h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.') : '')),
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
                 className: 'w-full rounded-xl border transition-all ' + (isShort ? 'bg-red-950/20 border-red-500/50 shadow-lg shadow-red-500/10' : 'bg-slate-900 border-slate-800 shadow-inner'),
@@ -4405,7 +4478,7 @@ window.StemLab = window.StemLab || {
                       var ledGlow = comp.type === 'led' && current > 0.005 ? Math.min(current * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
 
-                      return h('g', { key: comp.id },
+                      return h('g', Object.assign({ key: comp.id, className: 'circuit-schematic-part', 'data-circuit-schematic-part': comp.id, style: { cursor: components.length > 1 ? 'grab' : 'pointer', touchAction: 'none' }, opacity: reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.id === comp.id ? 0.5 : 1 }, reorderPointerHandlers(i, comp, 'schematic')),
                         // Power aura scales with P = VI, revealing where energy becomes heat or light.
                         compP > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
                           cx: cx, cy: 78, rx: 18 + Math.min(compP, 20) * 0.7, ry: 25 + Math.min(compP, 20) * 0.8,
@@ -4514,7 +4587,7 @@ window.StemLab = window.StemLab || {
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = Math.min(tick / 120, 1);
 
-                      return h('g', { key: comp.id },
+                      return h('g', Object.assign({ key: comp.id, className: 'circuit-schematic-part', 'data-circuit-schematic-part': comp.id, style: { cursor: components.length > 1 ? 'grab' : 'pointer', touchAction: 'none' }, opacity: reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.id === comp.id ? 0.5 : 1 }, reorderPointerHandlers(i, comp, 'schematic')),
                         // Each branch gets its own P = VI aura, making parallel power sharing visible.
                         compP2 > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
                           cx: 220, cy: cy, rx: 28 + Math.min(compP2, 20) * 0.55, ry: 13 + Math.min(compP2, 20) * 0.35,
@@ -4590,6 +4663,13 @@ window.StemLab = window.StemLab || {
                         comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('text', { x: 272, y: cy + 3.5, style: { fontSize: '7px', fontFamily: 'monospace' }, fill: '#38bdf8' }, isIdealParallelBranch2 ? __alloT('stem.circuit.meter_reading_short', 'short') : compI2.toFixed(2) + 'A')
                       );
                     }),
+                // Drop slot while a part is dragged along the wire.
+                reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.over != null && reorderDrag.over !== reorderDrag.from && (function() {
+                  var n = Math.max(components.length, 1);
+                  if (mode === 'series') { var sx = 80 + reorderDrag.over * Math.min(70, 280 / n); return h('rect', { 'data-circuit-drop-slot': reorderDrag.over, 'aria-hidden': 'true', pointerEvents: 'none', x: sx - 17, y: 48, width: 34, height: 58, rx: 6, fill: 'rgba(250,204,21,0.14)', stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 3' }); }
+                  var sy = 40 + reorderDrag.over * Math.min(30, 80 / n);
+                  return h('rect', { 'data-circuit-drop-slot': reorderDrag.over, 'aria-hidden': 'true', pointerEvents: 'none', x: 196, y: sy - 12, width: 48, height: 24, rx: 6, fill: 'rgba(250,204,21,0.14)', stroke: '#facc15', strokeWidth: 1.5, strokeDasharray: '4 3' });
+                })(),
 
                 // Persistent schematic fault marker: visible even without canvas animation.
                 isShort && h('g', { 'aria-hidden': 'true', pointerEvents: 'none', className: 'circuit-short' },
@@ -4831,6 +4911,10 @@ window.StemLab = window.StemLab || {
               components.length>0&&h('section',{className:'circuit-part-inspector','aria-label':'Inspect a circuit component'},
                 h('label',{htmlFor:'circuit-inspect-part'},'Inspect part '),
                 h('select',{id:'circuit-inspect-part',value:selectedIndex,onChange:function(e){upd('selectedPart',Number(e.target.value));}},components.map(function(c,i){return h('option',{key:i,value:i},(i+1)+'. '+c.type);})),
+                components.length>1&&h('div',{className:'circuit-action-row','aria-label':'Move the selected part'},
+                  h('button',{type:'button',disabled:selectedIndex===0,onClick:function(){moveComponent(selectedIndex,selectedIndex-1);}},mode==='series'?__alloT('stem.circuit.move_earlier_loop','Move earlier in the loop'):__alloT('stem.circuit.move_up_branch','Move up a branch')),
+                  h('button',{type:'button',disabled:selectedIndex===components.length-1,onClick:function(){moveComponent(selectedIndex,selectedIndex+1);}},mode==='series'?__alloT('stem.circuit.move_later_loop','Move later in the loop'):__alloT('stem.circuit.move_down_branch','Move down a branch')),
+                  h('span',{className:'circuit-help'},reorderNote)),
 
                 selected&&h('dl',{className:'circuit-inspector-readings'},
                   h('div',null,h('dt',null,'Voltage across'),h('dd',null,circuitPreciseVoltageText(selected.voltage))),
@@ -4915,12 +4999,33 @@ window.StemLab = window.StemLab || {
             // ══════════════════════════════════════
             h('div', { className: 'bg-slate-900/60 border border-slate-800 p-4 rounded-xl backdrop-blur-md mt-4' },
               // Component editor list
+              components.length > 1 && h('p', { className: 'circuit-help mb-2', id: 'circuit-reorder-hint' }, __alloT('stem.circuit.reorder_hint', 'Drag the \u2807 handle, use the arrow buttons, or drag a part along the wire in the drawing to move it.') + ' ' + reorderNote),
               components.length > 0 && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 components.map(function(comp, i) {
                   var compIcon = getCompIcon(comp.type);
                   var compLabel = getCompLabel(comp);
 
-                  return h('div', { key: comp.id, className: 'flex items-center gap-2 bg-slate-950/60 rounded-lg px-3 py-2 border border-slate-800/80 hover:border-slate-700 transition-all' },
+                  var dragging = !!(reorderDrag && reorderDrag.source === 'list' && reorderDrag.id === comp.id);
+                  var dropTarget = !!(reorderDrag && reorderDrag.source === 'list' && reorderDrag.over === i && reorderDrag.id !== comp.id);
+                  var moveLabel = function(dir) {
+                    var key = mode === 'series' ? (dir < 0 ? 'stem.circuit.aria_move_earlier' : 'stem.circuit.aria_move_later') : (dir < 0 ? 'stem.circuit.aria_move_up' : 'stem.circuit.aria_move_down');
+                    var fb = mode === 'series' ? (dir < 0 ? 'Move {value1} earlier in the loop' : 'Move {value1} later in the loop') : (dir < 0 ? 'Move {value1} up a branch' : 'Move {value1} down a branch');
+                    return __alloT(key, fb).replace('{value1}', compLabel + ' ' + (i + 1));
+                  };
+                  return h('div', { key: comp.id, 'data-circuit-row-index': i, 'data-circuit-dragging': dragging ? 'true' : undefined, 'data-circuit-drop-target': dropTarget ? 'true' : undefined, className: 'flex items-center gap-2 bg-slate-950/60 rounded-lg px-3 py-2 border border-slate-800/80 hover:border-slate-700 transition-all' },
+                    components.length > 1 && h('button', Object.assign({
+                      type: 'button', 'data-circuit-drag-handle': comp.id, className: 'circuit-drag-handle',
+                      'aria-label': __alloT('stem.circuit.aria_drag_handle', 'Drag {value1} to a new position, or press the arrow keys').replace('{value1}', compLabel + ' ' + (i + 1)),
+                      title: __alloT('stem.circuit.drag_handle_title', 'Drag to move · arrow keys move · Home/End to the ends'),
+                      onKeyDown: function(e) {
+                        var back = e.key === 'ArrowLeft' || e.key === 'ArrowUp', fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown';
+                        if (!back && !fwd && e.key !== 'Home' && e.key !== 'End') return;
+                        e.preventDefault();
+                        var to = e.key === 'Home' ? 0 : e.key === 'End' ? components.length - 1 : back ? i - 1 : i + 1;
+                        moveComponent(i, to);
+                        refocusReorder(e.currentTarget.closest('[data-circuit-builder-root]'), '[data-circuit-drag-handle="' + comp.id + '"]');
+                      }
+                    }, reorderPointerHandlers(i, comp, 'list')), h('span', { 'aria-hidden': 'true' }, '\u2807')),
                     h('span', { className: 'text-base' }, compIcon),
                     h('span', { className: 'text-xs font-bold text-slate-300 min-w-[50px] truncate' }, compLabel),
 
@@ -4999,10 +5104,18 @@ window.StemLab = window.StemLab || {
                       style: { backgroundColor: comp.ledColor || '#ef4444' }
                     }),
 
+                    // Move buttons (series: earlier/later along the loop; parallel: up/down a branch)
+                    components.length > 1 && h('span', { className: 'ml-auto flex items-center gap-1' },
+                      h('button', { type: 'button', className: 'circuit-move-btn', 'data-circuit-move': 'back', 'data-circuit-move-id': comp.id, disabled: i === 0, 'aria-label': moveLabel(-1),
+                        onClick: function(e) { var rootEl = e.currentTarget.closest('[data-circuit-builder-root]'); moveComponent(i, i - 1); refocusReorder(rootEl, i - 1 === 0 ? '[data-circuit-move="fwd"][data-circuit-move-id="' + comp.id + '"]' : '[data-circuit-move="back"][data-circuit-move-id="' + comp.id + '"]'); }
+                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25C0' : '\u25B2')),
+                      h('button', { type: 'button', className: 'circuit-move-btn', 'data-circuit-move': 'fwd', 'data-circuit-move-id': comp.id, disabled: i === components.length - 1, 'aria-label': moveLabel(1),
+                        onClick: function(e) { var rootEl = e.currentTarget.closest('[data-circuit-builder-root]'); moveComponent(i, i + 1); refocusReorder(rootEl, i + 1 === components.length - 1 ? '[data-circuit-move="back"][data-circuit-move-id="' + comp.id + '"]' : '[data-circuit-move="fwd"][data-circuit-move-id="' + comp.id + '"]'); }
+                      }, h('span', { 'aria-hidden': 'true' }, mode === 'series' ? '\u25B6' : '\u25BC'))),
                     // Remove button
                     h('button', { 'data-circuit-remove-id': comp.id, 'aria-label': __alloT('stem.circuit.aria_remove_component', 'Remove Component'),
                       onClick: function() { removeComponent(i); },
-                      className: 'transition-colors text-slate-500 hover:text-red-400 ml-auto font-bold text-lg px-1 tracking-tight'
+                      className: 'transition-colors text-slate-500 hover:text-red-400 ' + (components.length > 1 ? '' : 'ml-auto ') + 'font-bold text-lg px-1 tracking-tight'
                     }, '\u00D7')
                   );
                 })

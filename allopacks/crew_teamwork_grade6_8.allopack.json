@@ -1,0 +1,594 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 11: Your Part of the Whole",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_teamwork_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effectively); CASEL Responsible Decision-Making (anticipating and evaluating consequences); EL Education Crew (Crew Launch: expedition products and learning targets); Maine DOE PBIS Tier 1 (teaching cooperative work as an expected behavior)"
+  },
+  "sourceTopic": "High quality work in a group: named parts and early asks",
+  "history": [
+    {
+      "id": "ct-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 11: Your Part of the Whole",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Perseverance. \"I persevere to produce high quality work.\"\n\nThis week is about high quality work when the work belongs to a group: naming your part, finishing it, and asking early when it depends on someone else.\n\n1. Read **Your Part of the Whole** (10 minutes).\n2. Learn the **Glossary** words, then win the **Word Scramble**.\n3. Keep the **What, Where, By When** chart open.\n4. Sort the cards in **Named Part or Hope?**\n5. Take the quiz. Question 3 is about Lena and Omar's notebook.\n6. Open the SEL Hub and choose [Teamwork Builder](#sel-hub/teamwork?station=sel_station_crew_launch_teamwork). Look at Roles, then write a Communication Plan for a real group you are in this trimester. Then open [DEAR MAN](#sel-hub/dearMan?station=sel_station_crew_launch_teamwork) and build the ask you would send a teammate whose part you are waiting on.\n7. Use the **Sentence Frames** to write your part of the whole for one real group.\n8. Lock it in with **Remember What, Where, By When**.\n9. Finish with the **Propose Challenge: A Parts List for Our Group**.\n\nYour commitment: this week, in one real group task, say your part of the whole out loud (what, where, by when) and finish it before the deadline. 🧩\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "ct-goal-scramble",
+            "label": "Win the Word Scramble",
+            "kind": "game",
+            "gameType": "wordScramble",
+            "resourceRef": "ct-glossary"
+          },
+          {
+            "id": "ct-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "ct-goal-manual",
+            "label": "I named my part of the whole out loud in one real group task this week and finished it before the deadline",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "ct-reading",
+      "type": "simplified",
+      "title": "Your Part of the Whole",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Your Part of the Whole\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nAt King, a lot of the work that matters is group work. **Expeditions** end in a product a team made together: a field guide, a documentary, a museum exhibit. High **quality** work, the Perseverance **HOWL**, is easy to picture when it is yours alone. When it belongs to four people, it gets complicated fast. Who did what? Who did nothing? Who did everything at midnight the night before and resents the other three?\n\nHere is the trap most groups fall into. The work is assigned to the group, so nobody in the group owns any **particular** piece of it. Everyone assumes someone else has the graphs. The graphs do not exist until Thursday night, when one person makes them badly because there is no time to make them well. The product is worse than any one member could have made alone, and everyone is a little angry. Researchers call part of this **social loafing**: people put in less effort when responsibility is spread across a group. It is not laziness. It is what happens when a part has no name on it.\n\nThe fix is a sentence. \"My part of the **whole** is the two data graphs, on the shared slide, by Wednesday.\" What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a **hope**. Once every sentence has a name, the loafing mostly stops, because it is **visible**.\n\nHere is a moment from a fictional **Crew**. Lena's expedition group has a poster due Friday. On Monday she says her sentence out loud: the two graphs, on the slide, by Wednesday. On Tuesday she realizes the data she needs is in Omar's notebook and Omar is out sick. She could wait. Instead she uses what she learned in week 5 and asks: a text to Omar, \"Could you send a photo of the water-test page?\" The photo comes. The graphs are done Wednesday. On Friday the poster is good, and the group knows exactly whose graphs those are.\n\nPersevering in a group has two halves. The first is finishing your part, on time, at the quality you would want if your name were the only one on it. The second is asking early when your part **depends** on someone else's, instead of waiting and then blaming. Both halves are yours. Neither one requires the rest of the group to be perfect.\n\nOne more thing. Sometimes your part is done and someone else's is not, and Friday is coming. You are allowed to help. You are also allowed to say, calmly, to the group and to the teacher, which part was yours. That is not tattling. That is what \"my part of the whole\" means: the whole is shared, and the parts have names.",
+      "meta": "6th-8th Grade • Leveled reading • ~480 words"
+    },
+    {
+      "id": "ct-glossary",
+      "type": "glossary",
+      "title": "Group Work Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Part",
+          "def": "One named piece of a group's work that belongs to one person.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Whole",
+          "def": "The product the group makes together, which is only as good as its parts.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Social loafing",
+          "def": "Putting in less effort because responsibility is spread across a group.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Expedition",
+          "def": "A long project at King that ends in a real product for a real audience.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Depend",
+          "def": "When your part cannot be finished until someone else's is.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Deadline",
+          "def": "The time by which a part or the whole has to be done.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Quality",
+          "def": "How good the work is, judged as if your name were the only one on it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Hope",
+          "def": "A plan with no names on it.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Visible",
+          "def": "Written or said where the group can see it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Ask early",
+          "def": "To request what your part depends on as soon as you know you need it.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 12 terms • Tiered"
+    },
+    {
+      "id": "ct-anchor",
+      "type": "anchor-chart",
+      "title": "What, Where, By When",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT, WHERE, BY WHEN",
+        "sections": [
+          {
+            "label": "THE TRAP",
+            "bullets": [
+              "The work is the group's, so no piece is anyone's",
+              "Everyone assumes someone else has it",
+              "It gets made badly Thursday night"
+            ],
+            "iconPrompt": "four figures around an empty table looking at each other"
+          },
+          {
+            "label": "THE SENTENCE",
+            "bullets": [
+              "What: the two graphs",
+              "Where: the shared slide",
+              "By when: Wednesday",
+              "With a name on it"
+            ],
+            "iconPrompt": "a single puzzle piece with a small name tag"
+          },
+          {
+            "label": "TWO HALVES OF PERSEVERING",
+            "bullets": [
+              "Finish your part at your own quality",
+              "Ask early when your part depends on someone"
+            ],
+            "iconPrompt": "a circle split into two halves, one a checkmark, one a speech bubble"
+          },
+          {
+            "label": "WHEN FRIDAY COMES",
+            "bullets": [
+              "You may help",
+              "You may say which part was yours",
+              "That is not tattling"
+            ],
+            "iconPrompt": "a calendar page with a small flag"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "ct-sort",
+      "type": "concept-sort",
+      "title": "Named Part or Hope?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "ct-part",
+            "label": "NAMED PART (what, where, by when, whose)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "ct-hope",
+            "label": "HOPE (no name, no when)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "ct-ask",
+            "label": "ASK EARLY (a part depends on someone)",
+            "color": "bg-sky-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "ct-i1",
+            "content": "Lena: the two data graphs, on the shared slide, by Wednesday.",
+            "categoryId": "ct-part"
+          },
+          {
+            "id": "ct-i2",
+            "content": "Someone should probably do the graphs.",
+            "categoryId": "ct-hope"
+          },
+          {
+            "id": "ct-i3",
+            "content": "\"Could you send a photo of the water-test page?\"",
+            "categoryId": "ct-ask"
+          },
+          {
+            "id": "ct-i4",
+            "content": "We will all work on the poster together.",
+            "categoryId": "ct-hope"
+          },
+          {
+            "id": "ct-i5",
+            "content": "Omar: the water-test data typed into the shared sheet, by Tuesday.",
+            "categoryId": "ct-part"
+          },
+          {
+            "id": "ct-i6",
+            "content": "\"I need the photos before I can do the layout. Can you share them by Wednesday?\"",
+            "categoryId": "ct-ask"
+          },
+          {
+            "id": "ct-i7",
+            "content": "The intro paragraph will get written at some point.",
+            "categoryId": "ct-hope"
+          },
+          {
+            "id": "ct-i8",
+            "content": "Priya: the title and the three captions, on the poster file, by Thursday morning.",
+            "categoryId": "ct-part"
+          },
+          {
+            "id": "ct-i9",
+            "content": "\"Which of us is doing the sources page? I can, if nobody has it.\"",
+            "categoryId": "ct-ask"
+          },
+          {
+            "id": "ct-i10",
+            "content": "It will come together Thursday night.",
+            "categoryId": "ct-hope"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "ct-quiz",
+      "type": "quiz",
+      "title": "Parts and Wholes",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does the reading say is the trap most groups fall into?",
+            "options": [
+              "One person does all the work because the others are lazy",
+              "The work belongs to the group, so no piece belongs to anyone",
+              "The teacher assigns too much for the time given",
+              "Groups argue about who is in charge"
+            ],
+            "correctAnswer": "The work belongs to the group, so no piece belongs to anyone",
+            "conceptLabel": "the trap"
+          },
+          {
+            "type": "mcq",
+            "question": "What is social loafing, according to the reading?",
+            "options": [
+              "Doing all of the group work at the last minute by yourself",
+              "Refusing to work with the people the teacher put you with",
+              "Talking about other things instead of working during group time",
+              "Putting in less effort because responsibility is spread out"
+            ],
+            "correctAnswer": "Putting in less effort because responsibility is spread out",
+            "conceptLabel": "social loafing"
+          },
+          {
+            "type": "mcq",
+            "question": "When Lena found the data was in Omar's notebook and Omar was out sick, what did she do?",
+            "options": [
+              "She waited for Omar to come back",
+              "She made up numbers so the graphs would be done",
+              "She texted Omar and asked for a photo of the page",
+              "She told the teacher that Omar had not done his part"
+            ],
+            "correctAnswer": "She texted Omar and asked for a photo of the page",
+            "conceptLabel": "ask early"
+          },
+          {
+            "type": "mcq",
+            "question": "What are the three pieces of the sentence that names a part?",
+            "options": [
+              "What, where, and by when",
+              "Who, why, and how",
+              "First, next, and last",
+              "Easy, medium, and hard"
+            ],
+            "correctAnswer": "What, where, and by when",
+            "conceptLabel": "name your part"
+          },
+          {
+            "type": "mcq",
+            "question": "Your part is done and a teammate's is not, and Friday is coming. What does the reading say?",
+            "options": [
+              "Do their part too and say nothing",
+              "Refuse to help so they learn a lesson",
+              "Ask the teacher to move you to another group",
+              "You may help, and you may say which part was yours"
+            ],
+            "correctAnswer": "You may help, and you may say which part was yours",
+            "conceptLabel": "parts have names"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your group has four people and one poster due Friday. Write your part of the whole in one sentence, with what and by when.",
+            "expectedAnswer": "A named part with a deadline: \"I will finish the two data graphs and have them on the shared slide by Wednesday.\"",
+            "conceptLabel": "name your part"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of a group project that went badly. Which part had no name on it?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "ct-frames",
+      "type": "sentence-frames",
+      "title": "My Part of the Whole",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The group is ____ and the whole is ____, due ____."
+          },
+          {
+            "text": "My part of the whole is ____ (what), on ____ (where), by ____ (by when)."
+          },
+          {
+            "text": "My part depends on ____ from ____. I will ask by ____."
+          },
+          {
+            "text": "The ask, in one sentence: \"____?\""
+          },
+          {
+            "text": "I will know my part is at my own quality when ____."
+          },
+          {
+            "text": "If someone else's part is late on Friday, I will ____ and I will say ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| What, where, by when | A topic (\"the graphs\") | What and by when | What, where, by when, and a name |\n| Depends and asks | Does not notice what the part depends on | Names what it depends on | Names it, and has the ask written with a date |\n| Own quality | \"Good enough for a group\" | Names one quality mark | Names what it would look like with only my name on it |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "ct-faq",
+      "type": "faq",
+      "title": "Group Work Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
+          "question": "What if my group will not agree on parts?",
+          "answer": "Then name yours anyway, out loud and in the shared file. \"I am doing the graphs, on the slide, by Wednesday.\" One named part often makes the others visible. If the group still will not, that is a sentence for the teacher on Tuesday, not Friday."
+        },
+        {
+          "question": "What if I end up doing everything?",
+          "answer": "You are allowed to help. You are also allowed to say, calmly, which parts were yours. Write it down as it happens; a parts list with names is fair to everyone, including you."
+        },
+        {
+          "question": "Is asking a teammate for their part nagging?",
+          "answer": "Asking early, once, with a date, is planning. Asking on Thursday night, three times, in capitals, is what happens when nobody asked early."
+        },
+        {
+          "question": "What if my part depends on someone who never delivers?",
+          "answer": "Ask early with a date. If the date passes, tell the teacher that day, with your part done and the dependency named. That is the whole job; the rest is not yours to carry."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Perseverance HOWL says you persevere to produce high quality work. In a group, that means your part finished at your own quality and your asks made early. Your teachers score HOWLs; Crew is where you practice them."
+        }
+      ],
+      "meta": "7 questions"
+    },
+    {
+      "id": "ct-memory",
+      "type": "memory-aid",
+      "title": "Remember What, Where, By When",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember What, Where, By When",
+        "instructions": "Each card locks in one idea from Your Part of the Whole. Look at the example aid, make it your own, and tell how it helps you name a part.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "acronym-acrostic",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The fix is a sentence. \"My part of the whole is the two data graphs, on the shared slide, by Wednesday.\" What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a hope.",
+        "lessonRef": {
+          "resourceId": "ct-reading",
+          "title": "Your Part of the Whole"
+        },
+        "cards": [
+          {
+            "id": "ct-ma-www",
+            "target": "A named part says what, where, and by when",
+            "essentialFacts": [
+              "A part is named by what, where, and by when.",
+              "Once every part has a sentence like that, the group has a plan instead of a hope."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "acronym-acrostic",
+            "mode": "scaffolded",
+            "aiExample": "W-W-W: What, Where, When. Three W's, like a web address for your part. If the sentence is missing a W, the part is a hope.",
+            "mapping": "Three words that start the same way are easy to count on your fingers, so a missing one is easy to catch.",
+            "scaffoldStarter": "What: ____. Where: ____. When: ____.",
+            "scaffoldSteps": [
+              "Write the three W words.",
+              "Fill each one for a real part.",
+              "Check: could a teammate find it and check it?"
+            ],
+            "coachPrompts": [
+              "Which W was missing from \"someone should do the graphs\"?"
+            ],
+            "studentPrompt": "Make your own three-letter hook for naming a part.",
+            "reasoningPrompt": "How does your hook help you tell a part from a hope?",
+            "hookFact": {
+              "text": "A hope is a plan with no names on it.",
+              "sourceTitle": "Your Part of the Whole (this lesson)"
+            }
+          },
+          {
+            "id": "ct-ma-halves",
+            "target": "Persevering in a group is finishing your part and asking early",
+            "essentialFacts": [
+              "The first half is finishing your part, on time, at the quality you would want with only your name on it.",
+              "The second half is asking early when your part depends on someone else's."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A relay runner has two jobs: run your leg, and be ready with your hand out for the baton before it arrives. Waiting with your hands down is how relays get dropped.",
+            "mapping": "Running your leg is finishing your part; the hand out early is asking early for what you depend on.",
+            "scaffoldStarter": "My leg of the race is ____. The baton I need is ____ from ____.",
+            "scaffoldSteps": [
+              "Name your part as a leg of a race.",
+              "Name what you need handed to you.",
+              "Say when you will put your hand out."
+            ],
+            "coachPrompts": [
+              "What was the baton Lena needed, and when did she put her hand out?"
+            ],
+            "studentPrompt": "Make your own picture for the two halves.",
+            "reasoningPrompt": "How does your picture remind you that waiting is not the same as persevering?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • three W, two halves"
+    },
+    {
+      "id": "ct-challenge",
+      "type": "applied-challenge",
+      "title": "Propose Challenge: A Parts List for Our Group",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Parts List for Our Group",
+        "instructions": "For one real group task this trimester, propose a parts list to your group: every part with what, where, by when, and a name, plus the asks each part depends on. Get the group to agree, use it, and report what happened by Friday.",
+        "selectionMode": "manual",
+        "family": "propose",
+        "fitReason": "The HOWL behavior is persevering to produce high quality work. A parts list the student proposes and the group adopts makes every part visible, which is what stops loafing and what makes a finished, named part possible.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "propose",
+          "context": "You are in a real group with a real product due. Right now the plan is probably a hope. You are going to propose a parts list and see whether the group will use it.",
+          "role": "A group member proposing a plan",
+          "audience": "Your group, and the teacher who assigned the product",
+          "drivingQuestion": "Can a parts list with names, places, and dates turn our hope into a plan, and does the product get better?",
+          "seedDirection": "List every piece of the product. Put one name on each. Add where it lives and when it is due, earlier than the final deadline. Mark which parts depend on which. Propose it to the group and revise it with them. Use it for the week.",
+          "lockedLessonFacts": [
+            "When the work belongs to the group, no piece belongs to anyone, and it gets made badly at the last minute.",
+            "A part is named by what, where, and by when.",
+            "Persevering in a group means finishing your part and asking early when it depends on someone.",
+            "You may help, and you may say which part was yours."
+          ],
+          "openQuestions": [
+            "Which parts depend on which?",
+            "Whose part comes first?",
+            "Where will the list live so everyone can see it?",
+            "What happens if a date passes?"
+          ],
+          "stakeholders": [
+            "Each group member",
+            "The member whose part everyone else depends on",
+            "The teacher",
+            "The audience the product is for"
+          ],
+          "criteria": [
+            "Every part has what, where, by when, and a name",
+            "Dependencies are marked with an ask and a date",
+            "The group agreed to the list, with at least one change from them",
+            "The Friday report says which parts landed on time",
+            "Uses at least three glossary words"
+          ],
+          "constraints": [
+            "One real group task",
+            "The list lives in a shared place",
+            "Part deadlines are before the final deadline",
+            "Your own part is finished at your own quality"
+          ],
+          "deliverable": "The agreed parts list (with names, places, dates, and asks) and a half-page Friday report: what landed, what did not, and what you would change.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional group had a museum-exhibit panel due Friday and no plan.",
+            "move": "One member proposed: research, on the shared doc, Tuesday (Kai); layout, in the design file, Thursday (Mei, depends on Kai); captions, in the file, Wednesday (Dev). Mei asked Kai on Monday for the research by Tuesday. Three of three landed.",
+            "whyItHelps": "It shows that the ask sits inside the list, dated, so nobody has to nag on Thursday."
+          },
+          "frameStarter": "Our whole is ____, due ____. Parts: ____ (____, by ____). ____ depends on ____, so the ask is ____ by ____.",
+          "frameChoices": [
+            "The group changed ____ in my list.",
+            "On Friday, ____ of ____ parts landed on time.",
+            "Next time I would ____."
+          ],
+          "coachPrompts": [
+            "Whose part is first in the chain, and does that person know?",
+            "Is your own part named as tightly as everyone else's?"
+          ]
+        },
+        "coachHint": "If a group refuses the list, the student still names their own part and reports that. A proposal the group declined is still a proposal made.",
+        "sourceExcerpt": "The fix is a sentence. What, where, and by when. Once every part has a sentence like that, the group has a plan instead of a hope. Once every sentence has a name, the loafing mostly stops, because it is visible.",
+        "lessonRef": {
+          "resourceId": "ct-reading",
+          "title": "Your Part of the Whole"
+        }
+      },
+      "meta": "6th-8th Grade • Propose brief • one parts list"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_teamwork",
+      "name": "Crew station: Week 11: Your Part of the Whole",
+      "tools": [
+        "teamwork",
+        "dearMan"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 11: Your Part of the Whole pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_teamwork_time",
+          "type": "timeSpent",
+          "toolId": "teamwork",
+          "label": "Spend 5 minutes in Teamwork Builder",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_teamwork_check",
+          "type": "manualComplete",
+          "toolId": "dearMan",
+          "label": "I named my part of the whole out loud in one real group task this week and finished it before the deadline",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

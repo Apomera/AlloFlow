@@ -1,0 +1,101 @@
+{
+  "name": "debate-phone",
+  "errors": [],
+  "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n0/100\nOpponent\nYou\n\nRead the scene, then choose or write what happens next.\n\nStart over\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nWrite a response ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nYour argument\n\nState your claim and connect it to evidence from the scene.\n\nEnter to send · Shift + Enter for a new line.\n\nDictate\nSend argument\n💡 Give me a clue\nOne clue per scene. You still decide what happens.",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": "region",
+      "label": "Adventure controls",
+      "class": "rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] overflow-y-auto overscroll-contain ",
+      "height": 374,
+      "scrollHeight": 421
+    },
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+      "height": 508,
+      "scrollHeight": 1031
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Open story summary",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Open reading view",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Read each scene automatically",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start new adventure",
+      "disabled": false,
+      "top": 368,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Write a response ↓",
+      "disabled": false,
+      "top": 426,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "TEXTAREA",
+      "label": "Your argument",
+      "disabled": false,
+      "top": 955,
+      "height": 130,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Dictate",
+      "disabled": false,
+      "top": 1124,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Send argument",
+      "disabled": true,
+      "top": 1176,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "💡 Give me a clue",
+      "disabled": false,
+      "top": 1245,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

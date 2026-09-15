@@ -1,0 +1,83 @@
+{
+  "savedAtUtc": "2026-09-12T22:34:19.249932+00:00",
+  "provenance": "Observed Vitest and Chromium results from completed tool calls; saved without rerunning tests.",
+  "sourcePath": "doc_pipeline_source.jsx",
+  "sourceSha256AtReportSave": "21241ee25ac465f36a3825a84d0e4a5757925583a1611b901000247854f23657",
+  "focusSanitizerSliceSha256": "cb609ab14eb611d3aeabf24c1b16c503589210bff9170d07bd52285f0c2c2462",
+  "baseline": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/doc_pipeline_focus_wrap_browser.test.js --maxWorkers=1",
+    "testCount": 9,
+    "passed": 4,
+    "failed": 5,
+    "observedStart": "18:30:57",
+    "failures": [
+      {
+        "case": "image-control slate focus",
+        "observedBestBandContrast": 1.4661086381937314,
+        "required": 3
+      },
+      {
+        "case": "middle-gray focus",
+        "observedBestBandContrast": 1.1541876538204896,
+        "required": 3
+      },
+      {
+        "case": "legacy generated focus marker",
+        "observedBestBandContrast": 1.4661086381937314,
+        "required": 3
+      },
+      {
+        "case": "source URLs at 320px",
+        "observedScrollWidth": 527,
+        "viewport": 320
+      },
+      {
+        "case": "source URLs at 390px",
+        "observedScrollWidth": 527,
+        "viewport": 390
+      }
+    ]
+  },
+  "changes": [
+    "Generated focus default uses a 2px solid white outline and 4px solid black shadow, producing two visible bands across light and dark surfaces.",
+    "Forced-colors mode uses CanvasText for the outline and removes box shadow.",
+    "Re-sanitizing upgrades the renderer-owned legacy focus style without duplicating its marker.",
+    "Generated PDF document anchor style uses overflow-wrap:anywhere without changing visible link text or destinations.",
+    "Existing WCAG focus characterization reads the production sanitizer slice rather than a copied legacy CSS implementation."
+  ],
+  "verification": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/doc_pipeline_focus_wrap_browser.test.js tests/doc_pipeline_wcag.test.js tests/doc_pipeline_inherited_contrast.test.js tests/skip_link_cell_bullets.test.js --maxWorkers=1",
+    "exitCode": 0,
+    "testFiles": 4,
+    "testCount": 111,
+    "passed": 111,
+    "failed": 0,
+    "observedStart": "18:33:05",
+    "observedDurationSeconds": 6.25,
+    "browserSuite": "tests/doc_pipeline_focus_wrap_browser.test.js",
+    "browserTestCount": 9,
+    "browserPassed": 9,
+    "browserCases": [
+      "light surface",
+      "image-control slate surface",
+      "dark surface",
+      "middle-gray surface",
+      "forced-colors light",
+      "forced-colors dark",
+      "legacy marker upgrade and idempotence",
+      "source footnote URL reflow at 320px",
+      "source footnote URL reflow at 390px"
+    ],
+    "browserAssertions": [
+      "Keyboard Tab focuses the real file input and activates :focus-visible.",
+      "At least one solid 2px focus band has measured relative-luminance contrast at least 3:1 against its local surrounding surface.",
+      "Forced-colors mode retains a contrasting 2px outline when browser shadows are suppressed.",
+      "Repeated sanitization does not duplicate the owned focus style.",
+      "Neither source URL overflows its viewport; visible text and href stay exact."
+    ],
+    "fullSourceBabelParse": {
+      "exitCode": 0,
+      "observedOutput": "Full source Babel parse passed"
+    }
+  }
+}

@@ -1,0 +1,4092 @@
+{
+  "schema": "feature-registry-inventory/v1",
+  "counts": {
+    "commands": 198,
+    "panels": 34,
+    "resourceTypes": 24,
+    "sidebarControls": 18,
+    "stemTools": 149,
+    "selTools": 72,
+    "alloPacks": 62,
+    "hubCards": 72,
+    "appsScripts": 6,
+    "modules": 216,
+    "langPacks": 63,
+    "unitTestFiles": 3970,
+    "e2eSpecs": 427
+  },
+  "commands": [
+    {
+      "id": "app_tour",
+      "label": "Show me around the app",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "apply_lesson_template",
+      "label": "Start from a saved template",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "assumptions",
+      "label": "Assumptions and uncertainties",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "check_assignment_progress",
+      "label": "Check assignment progress",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "clear_my_answers",
+      "label": "Clear my answers (start over)",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "clear_workspace",
+      "label": "Clear everything and start fresh",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "close_current_surface",
+      "label": "Close the current surface",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "close_read_this_page",
+      "label": "Close the page reader",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "create_activity_rubric",
+      "label": "Create a rubric for this activity",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "create_lesson",
+      "label": "Create a lesson (tell me the topic)",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "cycle_reading_theme",
+      "label": "Change the reading theme",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "describe_current_media",
+      "label": "Describe the current media",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "describe_current_screen",
+      "label": "Describe the current screen",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "edit_assignment_directions",
+      "label": "Edit assignment directions",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "evidence",
+      "label": "Evidence and lesson connections",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "export_pack",
+      "label": "Download the lesson pack",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "find_reading",
+      "label": "Find the right book",
+      "roles": "all",
+      "opensPanel": "readingLibrary",
+      "gated": false
+    },
+    {
+      "id": "font_bigger",
+      "label": "Make the text bigger",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "font_reset",
+      "label": "Reset the text size",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "font_smaller",
+      "label": "Make the text smaller",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_analysis",
+      "label": "Analyze this source",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_full_pack",
+      "label": "Generate the Full Pack",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_glossary",
+      "label": "Make a vocabulary glossary",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_outline",
+      "label": "Make a concept outline",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_quiz",
+      "label": "Make a quiz from this",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_sentence_frames",
+      "label": "Make sentence frames",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "generate_simplified",
+      "label": "Simplify this text",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "go_back",
+      "label": "Go back",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "go_dashboard",
+      "label": "Go to the dashboard",
+      "roles": "all",
+      "opensPanel": "dashboard",
+      "gated": false
+    },
+    {
+      "id": "jump_to_lesson_plan",
+      "label": "Jump to my lesson plan",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "launch_flashcards",
+      "label": "Study with flashcards",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "line_spacing_less",
+      "label": "Decrease line spacing",
+      "roles": "all",
+      "opensPanel": "selHub",
+      "gated": false
+    },
+    {
+      "id": "line_spacing_more",
+      "label": "Increase line spacing",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "list_current_actions",
+      "label": "List available actions",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "next_assignment_step",
+      "label": "What should I do next?",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "next_read_this_page",
+      "label": "Read the next item",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_educator_tools",
+      "label": "Choose Educator Tools",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_full_platform",
+      "label": "Choose Full Platform",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_guided_setup",
+      "label": "Choose Guided Setup",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_independent_role",
+      "label": "Choose Independent",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_learning_tools",
+      "label": "Choose Learning Tools",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_parent_role",
+      "label": "Choose Parent",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_student_role",
+      "label": "Choose Student",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "onboarding_teacher_role",
+      "label": "Choose Teacher",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_accessibility_lab",
+      "label": "Open the Accessibility Lab",
+      "roles": "teacher",
+      "opensPanel": "accessibilityLab",
+      "gated": false
+    },
+    {
+      "id": "open_adventure_reading_practice",
+      "label": "Practice reading this Adventure scene",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_ai_settings",
+      "label": "Open AI settings",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_allo_studio",
+      "label": "Open Page Designer",
+      "roles": "teacher",
+      "opensPanel": "alloStudio",
+      "gated": false
+    },
+    {
+      "id": "open_allohaven",
+      "label": "Open AlloHaven",
+      "roles": "all",
+      "opensPanel": "alloHaven",
+      "gated": false
+    },
+    {
+      "id": "open_assessment_builder",
+      "label": "Open Assessment Builder",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "open_assignment_directions",
+      "label": "Open assignment directions",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_behavior_lens",
+      "label": "Open the Behavior Lens",
+      "roles": "teacher",
+      "opensPanel": "behaviorLens",
+      "gated": false
+    },
+    {
+      "id": "open_block_suggestions",
+      "label": "Get document block suggestions",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_brainstorm_modes",
+      "label": "Choose a brainstorm activity type",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_cinematic_studio",
+      "label": "Open Cinematic Studio",
+      "roles": "teacher",
+      "opensPanel": "cinematicStudio",
+      "gated": false
+    },
+    {
+      "id": "open_class_analytics",
+      "label": "Open class analytics",
+      "roles": "teacher",
+      "opensPanel": "classAnalytics",
+      "gated": false
+    },
+    {
+      "id": "open_class_session",
+      "label": "Open class session",
+      "roles": "teacher",
+      "opensPanel": "sessionModal",
+      "gated": false
+    },
+    {
+      "id": "open_command_blueprints",
+      "label": "Saved Command Blueprints",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_community_catalog",
+      "label": "Open the Community Catalog",
+      "roles": "teacher",
+      "opensPanel": "communityCatalog",
+      "gated": false
+    },
+    {
+      "id": "open_discussion_builder",
+      "label": "Build a class discussion",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_document_builder",
+      "label": "Open the Document Builder",
+      "roles": "teacher",
+      "opensPanel": "exportPreview",
+      "gated": false
+    },
+    {
+      "id": "open_dynamic_assessment",
+      "label": "Open Dynamic Assessment",
+      "roles": "teacher",
+      "opensPanel": "dynamicAssessment",
+      "gated": false
+    },
+    {
+      "id": "open_educator_hub",
+      "label": "Open the Educator Hub",
+      "roles": "teacher",
+      "opensPanel": "educatorHub",
+      "gated": false
+    },
+    {
+      "id": "open_export_menu",
+      "label": "Open the export menu",
+      "roles": "teacher",
+      "opensPanel": "exportMenu",
+      "gated": false
+    },
+    {
+      "id": "open_fluency_maze",
+      "label": "Open the Fluency Maze",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_free_forms",
+      "label": "Open Free Forms",
+      "roles": "all",
+      "opensPanel": "stemLab",
+      "gated": false
+    },
+    {
+      "id": "open_group_tools",
+      "label": "Open group tools",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_history",
+      "label": "Open history",
+      "roles": "all",
+      "opensPanel": "exportPreview",
+      "gated": false
+    },
+    {
+      "id": "open_it_coach",
+      "label": "Coach me through another website",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_jigsaw_builder",
+      "label": "Build a jigsaw activity",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_leadership_hub",
+      "label": "Open the Leadership Hub",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_learning_hub",
+      "label": "Open the Learning Hub",
+      "roles": "all",
+      "opensPanel": "learningHub",
+      "gated": false
+    },
+    {
+      "id": "open_learning_web_explorer",
+      "label": "Open Learning Web: Explore",
+      "roles": "all",
+      "opensPanel": "learningWebExplorer",
+      "gated": false
+    },
+    {
+      "id": "open_lingua_practice",
+      "label": "Open Lingua Practice",
+      "roles": "all",
+      "opensPanel": "linguaPractice",
+      "gated": false
+    },
+    {
+      "id": "open_lit_lab",
+      "label": "Open Lit Lab",
+      "roles": "all",
+      "opensPanel": "litLab",
+      "gated": false
+    },
+    {
+      "id": "open_live_poll",
+      "label": "Start a live poll",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_live_session_center",
+      "label": "Open Live Session Center",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_lumen",
+      "label": "Open Lumen (data canvas)",
+      "roles": "teacher",
+      "opensPanel": "stemLab",
+      "gated": false
+    },
+    {
+      "id": "open_math_fluency",
+      "label": "Open Math Fluency probes",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_mind_map",
+      "label": "Open Learning Web: Unit Path",
+      "roles": "teacher",
+      "opensPanel": "mindMap",
+      "gated": false
+    },
+    {
+      "id": "open_notebook",
+      "label": "Open my notebook",
+      "roles": "all",
+      "opensPanel": "notebook",
+      "gated": false
+    },
+    {
+      "id": "open_open_groove",
+      "label": "Open Open Groove Studio",
+      "roles": "all",
+      "opensPanel": "openGroove",
+      "gated": false
+    },
+    {
+      "id": "open_persona_chat",
+      "label": "Open Persona interview",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_pictionary_host",
+      "label": "Start Concept Pictionary",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_poet_tree",
+      "label": "Open Poet Tree",
+      "roles": "all",
+      "opensPanel": "poetTree",
+      "gated": false
+    },
+    {
+      "id": "open_project_settings",
+      "label": "Open project settings",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_quick_check",
+      "label": "Run a quick check",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_reading_library",
+      "label": "Open the Reading Library",
+      "roles": "all",
+      "opensPanel": "readingLibrary",
+      "gated": false
+    },
+    {
+      "id": "open_report_writer",
+      "label": "Open the Report Writer",
+      "roles": "teacher",
+      "opensPanel": "reportWriter",
+      "gated": false
+    },
+    {
+      "id": "open_research_hub",
+      "label": "Open Research Hub",
+      "roles": "all",
+      "opensPanel": "researchHub",
+      "gated": false
+    },
+    {
+      "id": "open_research_suite",
+      "label": "Open Research Suite",
+      "roles": "teacher",
+      "opensPanel": "researchSuite",
+      "gated": false
+    },
+    {
+      "id": "open_roster",
+      "label": "Open the class roster",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_sel_hub",
+      "label": "Open the SEL Hub",
+      "roles": "all",
+      "opensPanel": "selHub",
+      "gated": false
+    },
+    {
+      "id": "open_share_collect",
+      "label": "Open Share & Collect",
+      "roles": "teacher",
+      "opensPanel": "recentQrShares",
+      "gated": false
+    },
+    {
+      "id": "open_source_generator",
+      "label": "Generate source from a topic",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_source_input",
+      "label": "Open source input",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_source_url",
+      "label": "Find a resource online",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_stem_lab",
+      "label": "Open the STEAM Lab",
+      "roles": "all",
+      "opensPanel": "stemLab",
+      "gated": false
+    },
+    {
+      "id": "open_stem_tool",
+      "label": "Open a specific STEM tool",
+      "roles": "all",
+      "opensPanel": "stemLab",
+      "gated": false
+    },
+    {
+      "id": "open_storyforge",
+      "label": "Open StoryForge",
+      "roles": "all",
+      "opensPanel": "storyForge",
+      "gated": false
+    },
+    {
+      "id": "open_student_signal",
+      "label": "Send a teacher signal",
+      "roles": "student",
+      "opensPanel": "classAnalytics",
+      "gated": false
+    },
+    {
+      "id": "open_study_timer",
+      "label": "Start a study timer",
+      "roles": "all",
+      "opensPanel": "selHub",
+      "gated": false
+    },
+    {
+      "id": "open_submission_inbox",
+      "label": "Open the submission inbox",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "open_symbol_studio",
+      "label": "Open Symbol Studio",
+      "roles": "teacher",
+      "opensPanel": "symbolStudio",
+      "gated": false
+    },
+    {
+      "id": "open_test_prep_hub",
+      "label": "Open Test Prep Hub",
+      "roles": "all",
+      "opensPanel": "testPrepHub",
+      "gated": false
+    },
+    {
+      "id": "open_text_settings",
+      "label": "Open text settings",
+      "roles": "all",
+      "opensPanel": "readThisPage",
+      "gated": false
+    },
+    {
+      "id": "open_timeline_studio",
+      "label": "Open Timeline Studio",
+      "roles": "all",
+      "opensPanel": "timelineStudio",
+      "gated": false
+    },
+    {
+      "id": "open_translate",
+      "label": "Open translation",
+      "roles": "teacher",
+      "opensPanel": "sessionModal",
+      "gated": false
+    },
+    {
+      "id": "open_udl_guide",
+      "label": "Open the UDL Guide",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "open_video_studio",
+      "label": "Open Video Studio",
+      "roles": "teacher",
+      "opensPanel": "videoStudio",
+      "gated": false
+    },
+    {
+      "id": "open_voice_settings",
+      "label": "Open voice settings",
+      "roles": "all",
+      "opensPanel": "readThisPage",
+      "gated": false
+    },
+    {
+      "id": "open_wizard",
+      "label": "Start the lesson wizard",
+      "roles": "teacher",
+      "opensPanel": "notebook",
+      "gated": false
+    },
+    {
+      "id": "pause_read_this_page",
+      "label": "Pause page reading",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_downloads",
+      "label": "Go to pipeline downloads",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_fix_again",
+      "label": "Run the accessibility fix again",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_issues",
+      "label": "Read the remaining issues",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_new_doc",
+      "label": "Start over with a new document",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_score",
+      "label": "What’s my accessibility score?",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_stop",
+      "label": "Stop the running fix",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_tour",
+      "label": "Show me around these results",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "pipeline_verification",
+      "label": "Go to pipeline verification",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "plan_full_pack",
+      "label": "Plan a Full Pack",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "possibilities",
+      "label": "Possibilities",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "preview_assignment_as_student",
+      "label": "Preview the shared assignment as a student",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "previous_read_this_page",
+      "label": "Read the previous item",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "read_assignment_directions",
+      "label": "Read my directions aloud",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "read_media_descriptions",
+      "label": "Read all media descriptions",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "read_this_page",
+      "label": "Read this page to me",
+      "roles": "all",
+      "opensPanel": "readThisPage",
+      "gated": false
+    },
+    {
+      "id": "rebuild_lesson_step",
+      "label": "Rebuild one step of the plan",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "repeat_last_response",
+      "label": "Repeat the last response",
+      "roles": "all",
+      "opensPanel": "educatorHub",
+      "gated": false
+    },
+    {
+      "id": "repeat_read_this_page",
+      "label": "Repeat the current item",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "report_problem",
+      "label": "Report a problem",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_describe",
+      "label": "Describe the current resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_exit",
+      "label": "Exit the current resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_feedback",
+      "label": "Review feedback for this resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_list",
+      "label": "List available resources",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_next",
+      "label": "Open the next resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_open",
+      "label": "Open a resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_previous",
+      "label": "Open the previous resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_read",
+      "label": "Read the current resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resource_read_media",
+      "label": "Read media descriptions",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "response",
+      "label": "Draft deliverable",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resume_latest_work",
+      "label": "Resume my latest work",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "resume_read_this_page",
+      "label": "Resume page reading",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "return_to_start",
+      "label": "Return to Start",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "review_teacher_feedback",
+      "label": "Review teacher feedback",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "revision",
+      "label": "Revision",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "run_lesson_blueprint",
+      "label": "Generate the lesson plan",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "save_my_work",
+      "label": "Save my work",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "send_teacher_signal",
+      "label": "Ask my teacher for help",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_adventure_reading_practice",
+      "label": "Set Adventure scene reading practice",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_adventure_typing_pace",
+      "label": "Set Adventure typing pace",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_font_size",
+      "label": "Set the text size (say a number)",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_grade_level",
+      "label": "Set the grade level",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_output_language",
+      "label": "Set output language",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_source_length",
+      "label": "Set source length",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_source_tone",
+      "label": "Set source tone",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "set_ui_language",
+      "label": "Change the interface language",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "share_assignment",
+      "label": "Share this assignment",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": true
+    },
+    {
+      "id": "show_success_criteria",
+      "label": "Show the success criteria",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "stakeholders",
+      "label": "People, systems, and constraints",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "start_lesson_blueprint",
+      "label": "Blueprint Mode — build a lesson",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "start_test_prep_hands_free",
+      "label": "Start hands-free Test Prep",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "stop_reading",
+      "label": "Stop reading aloud",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "submit_work",
+      "label": "Submit my work",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "suggest_contextual_next_steps",
+      "label": "Suggest 3 next steps",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "surprise_me_contextually",
+      "label": "Surprise me with a useful next step",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "switch_theme",
+      "label": "Switch the theme (light / dark / high contrast)",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "test_prep_hands_free_status",
+      "label": "Check Test Prep voice status",
+      "roles": "all",
+      "opensPanel": "researchHub",
+      "gated": false
+    },
+    {
+      "id": "toggle_animations",
+      "label": "Turn animations off (reduced motion)",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_bot",
+      "label": "Show or hide AlloBot",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_cloud_sync",
+      "label": "Turn cloud sync on or off",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_color_overlay",
+      "label": "Toggle the color overlay",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_dictation",
+      "label": "Toggle dictation",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_focus_mode",
+      "label": "Toggle focus mode",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_help_mode",
+      "label": "Toggle help mode",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_line_focus",
+      "label": "Toggle line focus",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_mute",
+      "label": "Mute or unmute all audio",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_reading_ruler",
+      "label": "Toggle the reading ruler",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_socratic",
+      "label": "Toggle the Socratic chat",
+      "roles": "student",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "toggle_visual_supports",
+      "label": "Toggle visual supports",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tradeoffs",
+      "label": "Tradeoffs and alternatives",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "translate_document",
+      "label": "Translate this document (say a language)",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_describe",
+      "label": "Describe the tutorial step",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_exit",
+      "label": "Exit the tutorial",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_focus",
+      "label": "Focus the current guided tool",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_list_actions",
+      "label": "List tutorial actions",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_next",
+      "label": "Go to the next tutorial step",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_previous",
+      "label": "Go to the previous tutorial step",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_review_latest",
+      "label": "Review the latest guided resource",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "tutorial_skip",
+      "label": "Skip the current guided step",
+      "roles": "",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "undo_settings",
+      "label": "Undo my last settings change",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "use_contextual_suggestion",
+      "label": "Use a suggested next step",
+      "roles": "",
+      "opensPanel": "videoStudio",
+      "gated": false
+    },
+    {
+      "id": "use_gemini_canvas",
+      "label": "Use AlloFlow inside Gemini Canvas",
+      "roles": "teacher",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "voice_start",
+      "label": "Start voice control",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "voice_stop",
+      "label": "Stop voice control",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "zen_off",
+      "label": "Exit focus view",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    },
+    {
+      "id": "zen_on",
+      "label": "Enter focus view",
+      "roles": "all",
+      "opensPanel": "",
+      "gated": false
+    }
+  ],
+  "panels": [
+    {
+      "panel": "accessibilityLab",
+      "openers": [
+        "Open the Accessibility Lab"
+      ]
+    },
+    {
+      "panel": "alloHaven",
+      "openers": [
+        "Open AlloHaven"
+      ]
+    },
+    {
+      "panel": "alloStudio",
+      "openers": [
+        "Open Page Designer"
+      ]
+    },
+    {
+      "panel": "behaviorLens",
+      "openers": [
+        "Open the Behavior Lens"
+      ]
+    },
+    {
+      "panel": "cinematicStudio",
+      "openers": [
+        "Open Cinematic Studio"
+      ]
+    },
+    {
+      "panel": "classAnalytics",
+      "openers": [
+        "Open class analytics",
+        "Send a teacher signal"
+      ]
+    },
+    {
+      "panel": "communityCatalog",
+      "openers": [
+        "Open the Community Catalog"
+      ]
+    },
+    {
+      "panel": "dashboard",
+      "openers": [
+        "Go to the dashboard"
+      ]
+    },
+    {
+      "panel": "dynamicAssessment",
+      "openers": [
+        "Open Dynamic Assessment"
+      ]
+    },
+    {
+      "panel": "educatorHub",
+      "openers": [
+        "Open the Educator Hub",
+        "Repeat the last response"
+      ]
+    },
+    {
+      "panel": "exportMenu",
+      "openers": [
+        "Open the export menu"
+      ]
+    },
+    {
+      "panel": "exportPreview",
+      "openers": [
+        "Open history",
+        "Open the Document Builder"
+      ]
+    },
+    {
+      "panel": "learningHub",
+      "openers": [
+        "Open the Learning Hub"
+      ]
+    },
+    {
+      "panel": "learningWebExplorer",
+      "openers": [
+        "Open Learning Web: Explore"
+      ]
+    },
+    {
+      "panel": "linguaPractice",
+      "openers": [
+        "Open Lingua Practice"
+      ]
+    },
+    {
+      "panel": "litLab",
+      "openers": [
+        "Open Lit Lab"
+      ]
+    },
+    {
+      "panel": "mindMap",
+      "openers": [
+        "Open Learning Web: Unit Path"
+      ]
+    },
+    {
+      "panel": "notebook",
+      "openers": [
+        "Open my notebook",
+        "Start the lesson wizard"
+      ]
+    },
+    {
+      "panel": "openGroove",
+      "openers": [
+        "Open Open Groove Studio"
+      ]
+    },
+    {
+      "panel": "poetTree",
+      "openers": [
+        "Open Poet Tree"
+      ]
+    },
+    {
+      "panel": "readingLibrary",
+      "openers": [
+        "Find the right book",
+        "Open the Reading Library"
+      ]
+    },
+    {
+      "panel": "readThisPage",
+      "openers": [
+        "Open text settings",
+        "Open voice settings",
+        "Read this page to me"
+      ]
+    },
+    {
+      "panel": "recentQrShares",
+      "openers": [
+        "Open Share & Collect"
+      ]
+    },
+    {
+      "panel": "reportWriter",
+      "openers": [
+        "Open the Report Writer"
+      ]
+    },
+    {
+      "panel": "researchHub",
+      "openers": [
+        "Check Test Prep voice status",
+        "Open Research Hub"
+      ]
+    },
+    {
+      "panel": "researchSuite",
+      "openers": [
+        "Open Research Suite"
+      ]
+    },
+    {
+      "panel": "selHub",
+      "openers": [
+        "Decrease line spacing",
+        "Open the SEL Hub",
+        "Start a study timer"
+      ]
+    },
+    {
+      "panel": "sessionModal",
+      "openers": [
+        "Open class session",
+        "Open translation"
+      ]
+    },
+    {
+      "panel": "stemLab",
+      "openers": [
+        "Open Free Forms",
+        "Open Lumen (data canvas)",
+        "Open a specific STEM tool",
+        "Open the STEAM Lab"
+      ]
+    },
+    {
+      "panel": "storyForge",
+      "openers": [
+        "Open StoryForge"
+      ]
+    },
+    {
+      "panel": "symbolStudio",
+      "openers": [
+        "Open Symbol Studio"
+      ]
+    },
+    {
+      "panel": "testPrepHub",
+      "openers": [
+        "Open Test Prep Hub"
+      ]
+    },
+    {
+      "panel": "timelineStudio",
+      "openers": [
+        "Open Timeline Studio"
+      ]
+    },
+    {
+      "panel": "videoStudio",
+      "openers": [
+        "Open Video Studio",
+        "Use a suggested next step"
+      ]
+    }
+  ],
+  "resourceTypes": [
+    "adventure",
+    "alignment-report",
+    "analysis",
+    "anchor-chart",
+    "applied-challenge",
+    "brainstorm",
+    "concept-sort",
+    "dbq",
+    "faq",
+    "gemini-bridge",
+    "glossary",
+    "image",
+    "lesson-plan",
+    "math",
+    "mcq",
+    "memory-aid",
+    "note-taking",
+    "outline",
+    "persona",
+    "quiz",
+    "reflection",
+    "sentence-frames",
+    "simplified",
+    "timeline"
+  ],
+  "sidebar": [
+    {
+      "control": "anchor_chart_type",
+      "options": [
+        "auto",
+        "comparison",
+        "concept-map",
+        "criteria-success",
+        "misconception",
+        "process",
+        "question-guide",
+        "reference",
+        "routine",
+        "strategy",
+        "vocabulary",
+        "worked-example"
+      ]
+    },
+    {
+      "control": "concept_sort_image_mode",
+      "options": [
+        "always",
+        "auto",
+        "never"
+      ]
+    },
+    {
+      "control": "Image style source",
+      "options": [
+        "inherit",
+        "override"
+      ]
+    },
+    {
+      "control": "math_mode",
+      "options": [
+        "Conceptual",
+        "Difficulty Ladder",
+        "Fluency Maze",
+        "Fluency Probes",
+        "Problem Set Generator",
+        "Real-World Application",
+        "Spiral Review",
+        "Step-by-Step"
+      ]
+    },
+    {
+      "control": "math_subject",
+      "options": [
+        "Algebra",
+        "Biology",
+        "Calculus",
+        "Chemistry",
+        "Computer Science",
+        "Earth Science",
+        "Economics",
+        "General Math",
+        "Geometry",
+        "Physics"
+      ]
+    },
+    {
+      "control": "note_taking_template",
+      "options": [
+        "cornell-notes",
+        "double-entry",
+        "guided-notes",
+        "lab-report",
+        "q-and-a",
+        "reading-response"
+      ]
+    },
+    {
+      "control": "outline_structure",
+      "options": [
+        "3D Concept Space",
+        "Cause and Effect",
+        "Claim-Evidence-Reasoning",
+        "Fishbone",
+        "Flow Chart",
+        "Frayer Model",
+        "KWL Chart",
+        "Key Concept Map",
+        "Memory Palace",
+        "Problem Solution",
+        "See-Think-Wonder",
+        "Story Map",
+        "Structured Outline",
+        "T-Chart",
+        "Venn Diagram"
+      ]
+    },
+    {
+      "control": "scaffolds_type",
+      "options": [
+        "Discussion Prompts",
+        "Paragraph Frame",
+        "Sentence Starters"
+      ]
+    },
+    {
+      "control": "select (Same as Source Text…)",
+      "options": [
+        "10th Grade",
+        "11th Grade",
+        "12th Grade",
+        "1st Grade",
+        "2nd Grade",
+        "3rd Grade",
+        "4th Grade",
+        "5th Grade",
+        "6th Grade",
+        "7th Grade",
+        "8th Grade",
+        "9th Grade",
+        "College",
+        "Kindergarten",
+        "Same as Global Level",
+        "Same as Source Text"
+      ]
+    },
+    {
+      "control": "simplified_dok",
+      "options": [
+        "Level 1: Recall & Reproduction",
+        "Level 2: Skill/Concept",
+        "Level 3: Strategic Thinking",
+        "Level 4: Extended Thinking",
+        "Mixed"
+      ]
+    },
+    {
+      "control": "simplified_format",
+      "options": [
+        "Dialogue Script",
+        "Mock Advertisement",
+        "Narrative Story",
+        "News Report",
+        "Podcast Script",
+        "Poetry",
+        "Social Media Thread",
+        "Standard Text"
+      ]
+    },
+    {
+      "control": "simplified_grade_level",
+      "options": [
+        "10th Grade",
+        "11th Grade",
+        "12th Grade",
+        "1st Grade",
+        "2nd Grade",
+        "3rd Grade",
+        "4th Grade",
+        "5th Grade",
+        "6th Grade",
+        "7th Grade",
+        "8th Grade",
+        "9th Grade",
+        "College",
+        "Graduate Level",
+        "Kindergarten"
+      ]
+    },
+    {
+      "control": "simplified_language",
+      "options": [
+        "All Selected Languages",
+        "English"
+      ]
+    },
+    {
+      "control": "simplified_length",
+      "options": [
+        "Condense (50%)",
+        "Double (200%)",
+        "Expand (125%)",
+        "Extend (150%)",
+        "Same as Source",
+        "Shorten (75%)"
+      ]
+    },
+    {
+      "control": "simplified.diff_label",
+      "options": [
+        "1",
+        "2",
+        "Both",
+        "Custom",
+        "None"
+      ]
+    },
+    {
+      "control": "timeline.settings.mode_label",
+      "options": [
+        "auto",
+        "cause-effect",
+        "chronological",
+        "hierarchy",
+        "intensity",
+        "lifecycle",
+        "narrative",
+        "procedural",
+        "size"
+      ]
+    },
+    {
+      "control": "visuals_art_style",
+      "options": [
+        "3D Render",
+        "Comic Book Style",
+        "Isometric Diagram",
+        "Line Art",
+        "Pixel Art",
+        "Technical Blueprint",
+        "Watercolor",
+        "custom"
+      ]
+    },
+    {
+      "control": "visuals_layout_mode",
+      "options": [
+        "auto",
+        "before-after",
+        "comparison",
+        "labeled-diagram",
+        "sequence",
+        "single"
+      ]
+    }
+  ],
+  "stem": [
+    {
+      "id": "a11yauditor",
+      "name": "Digital Accessibility Auditor",
+      "nameSource": "header"
+    },
+    {
+      "id": "accesslens",
+      "name": "Access Lens (learner accessibility camera kit)",
+      "nameSource": "header"
+    },
+    {
+      "id": "algebracas",
+      "name": "Algebra CAS",
+      "nameSource": "header"
+    },
+    {
+      "id": "allobotsage",
+      "name": "AlloBot: Starbound Sage",
+      "nameSource": "header"
+    },
+    {
+      "id": "alphafold",
+      "name": "AlphaFold Explorer launcher + AI bridge",
+      "nameSource": "header"
+    },
+    {
+      "id": "anatomy",
+      "name": "Human Anatomy Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "angles",
+      "name": "Angle Explorer Plugin (Enhanced)",
+      "nameSource": "header"
+    },
+    {
+      "id": "applab",
+      "name": "AppLab: AI Mini-App Generator",
+      "nameSource": "header"
+    },
+    {
+      "id": "aquaculture",
+      "name": "AquacultureLab: Mussel Farm Sim",
+      "nameSource": "header"
+    },
+    {
+      "id": "aquarium",
+      "name": "Aquarium Ecosystem Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "arccity",
+      "name": "Arc City (Phase 1: Line District → Arc Heights)",
+      "nameSource": "header"
+    },
+    {
+      "id": "archstudio",
+      "name": "Architecture Studio / Brick Builder",
+      "nameSource": "header"
+    },
+    {
+      "id": "areamodel",
+      "name": "Area Model Plugin (Enhanced v3)",
+      "nameSource": "header"
+    },
+    {
+      "id": "areaperimeter",
+      "name": "Area & Perimeter Lab",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "arithmetic",
+      "name": "Arithmetic Strategy Studio - whole-number operations with visual reasoning.",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "artstudio",
+      "name": "STEAM Lab Art Studio Tools",
+      "nameSource": "header"
+    },
+    {
+      "id": "assessmentliteracy",
+      "name": "Assessment Literacy Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "astronomy",
+      "name": "Night Sky & Astronomy Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "atctower",
+      "name": "ATC Tower: Air Traffic Control Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "autorepair",
+      "name": "Auto Repair Shop",
+      "nameSource": "header"
+    },
+    {
+      "id": "bakingscience",
+      "name": "Baking Lab v1.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "beehive",
+      "name": "Beehive Colony Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "behaviorlab",
+      "name": "Behavior Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "bikelab",
+      "name": "BikeLab: Physics & Repair",
+      "nameSource": "header"
+    },
+    {
+      "id": "birdlab",
+      "name": "BirdLab: I-Spy Ornithology / Species ID",
+      "nameSource": "header"
+    },
+    {
+      "id": "brainatlas",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "bridgelab",
+      "name": "Bridge Engineering Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "calculus",
+      "name": "window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "cell",
+      "name": "Cell Biology Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "cellatlas",
+      "name": "Cell Atlas Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "cellular",
+      "name": "Cellular Automaton Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "cephalopodlab",
+      "name": "Cephalopod Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "chembalance",
+      "name": "Chemistry Lab v3.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "circuit",
+      "name": "Circuit Builder Plugin (Enhanced v2)",
+      "nameSource": "header"
+    },
+    {
+      "id": "circuitshelf",
+      "name": "Circuit Shelf (Falstad CircuitJS1 + Predict-Explore-Explain coach)",
+      "nameSource": "header"
+    },
+    {
+      "id": "citylab",
+      "name": "City Planning Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "climateExplorer",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "coasterlab",
+      "name": "Coaster Lab (3-D roller coaster physics & simulation inspection)",
+      "nameSource": "header"
+    },
+    {
+      "id": "coding",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "companionplanting",
+      "name": "Companion Planting Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "consciousness",
+      "name": "'use strict';",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "coordgrid",
+      "name": "Coordinate Grid Plugin (Enhanced v3)",
+      "nameSource": "header"
+    },
+    {
+      "id": "cyberdefense",
+      "name": "Cyber Defense Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "datalab",
+      "name": "Data Lab (CODAP + Socratic tutor) launcher + AI bridge",
+      "nameSource": "header"
+    },
+    {
+      "id": "dataplot",
+      "name": "STEAM Lab Data Plotter (Enhanced v2)",
+      "nameSource": "header"
+    },
+    {
+      "id": "datastudio",
+      "name": "stem_tool_creative.js — STEAM Lab Creative Tools",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "decomposer",
+      "name": "Standalone Material Decomposer (ES5)",
+      "nameSource": "header"
+    },
+    {
+      "id": "dinolab",
+      "name": "Dino Lab (Paleontology Studio)",
+      "nameSource": "header"
+    },
+    {
+      "id": "dissection",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "dna",
+      "name": "DNA / Genetics Lab  v3.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "echolocation",
+      "name": "Bat Echolocation & Sound Physics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "echotrainer",
+      "name": "Echo Navigator: 3D Spatial Audio Echolocation Trainer",
+      "nameSource": "header"
+    },
+    {
+      "id": "economicslab",
+      "name": "Economics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "ecosystem",
+      "name": "Ecosystem Simulator Plugin (Enhanced v3)",
+      "nameSource": "header"
+    },
+    {
+      "id": "eligibility",
+      "name": "Diagnosis, Evaluation & School Eligibility",
+      "nameSource": "header"
+    },
+    {
+      "id": "epidemic",
+      "name": "Epidemic Modeling Lab  v4.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "evolab",
+      "name": "EvoLab: Evolution & Natural Selection",
+      "nameSource": "header"
+    },
+    {
+      "id": "fieldjourneys",
+      "name": "var __defProp = Object.defineProperty;",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "fireecology",
+      "name": "Fire Ecology & Indigenous Land Stewardship",
+      "nameSource": "header"
+    },
+    {
+      "id": "firstresponse",
+      "name": "First Response Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "fisherlab",
+      "name": "FisherLab: Boating & Fishing Sim",
+      "nameSource": "header"
+    },
+    {
+      "id": "flightsim",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "forge",
+      "name": "the Tool Forge: a plugin-authoring harness for STEAM Lab /",
+      "nameSource": "header"
+    },
+    {
+      "id": "fractions",
+      "name": "Fraction Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "freeforms",
+      "name": "Free Forms: a constructive 3D \"World of Forms\"",
+      "nameSource": "header"
+    },
+    {
+      "id": "funcgrapher",
+      "name": "Function Grapher",
+      "nameSource": "header"
+    },
+    {
+      "id": "galaxy",
+      "name": "Galaxy Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "gamestudio",
+      "name": "Game Design Studio (STEAM Lab)",
+      "nameSource": "header"
+    },
+    {
+      "id": "geo",
+      "name": "STEAM Lab Geo Tools",
+      "nameSource": "header"
+    },
+    {
+      "id": "geologyexplorer",
+      "name": "Geology Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "geometryworld",
+      "name": "Geometry World: 3D Block-Based Math Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "geometryworld_builder",
+      "name": "Geometry World Builder enhancement",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "geosandbox",
+      "name": "3D Geometry Sandbox",
+      "nameSource": "header"
+    },
+    {
+      "id": "gisstudio",
+      "name": "GIS Studio - accessible, Maine-first geographic information systems lab.",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "graphcalc",
+      "name": "Graphing Calculator (ES5)",
+      "nameSource": "header"
+    },
+    {
+      "id": "heatlab",
+      "name": "Heat & Thermodynamics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "inequality",
+      "name": "Inequality Grapher",
+      "nameSource": "header"
+    },
+    {
+      "id": "kitchenlab",
+      "name": "Kitchen Lab (Cooking & Food Safety)",
+      "nameSource": "header"
+    },
+    {
+      "id": "lawnavigator",
+      "name": "Education Law Navigator",
+      "nameSource": "header"
+    },
+    {
+      "id": "learning_lab",
+      "name": "Learning Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "lifeskills",
+      "name": "Life Skills Lab  v5.23",
+      "nameSource": "header"
+    },
+    {
+      "id": "llm_literacy",
+      "name": "AI Literacy Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "logiclab",
+      "name": "Logic Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "lumen",
+      "name": "Lumen (LIVE; honest evidence-COMMUNICATION instrument)",
+      "nameSource": "header"
+    },
+    {
+      "id": "machinelab",
+      "name": "Machine Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "magnetism",
+      "name": "Magnetism & Electromagnetism",
+      "nameSource": "header"
+    },
+    {
+      "id": "manipulatives",
+      "name": "Math Manipulatives",
+      "nameSource": "header"
+    },
+    {
+      "id": "microbiology",
+      "name": "Microbiology Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "migration",
+      "name": "Migration & Wind Patterns Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "molecule",
+      "name": "Molecule Lab (Enhanced Standalone)",
+      "nameSource": "header"
+    },
+    {
+      "id": "moleculeshelf",
+      "name": "Molecule Shelf (Mol* viewer + Notice-Wonder coach)",
+      "nameSource": "header"
+    },
+    {
+      "id": "money",
+      "name": "Money Math",
+      "nameSource": "header"
+    },
+    {
+      "id": "moonmission",
+      "name": "Apollo Moon Mission Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "multtable",
+      "name": "Multiplication Table Plugin (Enhanced v3)",
+      "nameSource": "header"
+    },
+    {
+      "id": "music",
+      "name": "Music Synthesizer",
+      "nameSource": "header"
+    },
+    {
+      "id": "nuclearlab",
+      "name": "Nuclear & Radiation Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "numberline",
+      "name": "Number Line Plugin (Enhanced v3)",
+      "nameSource": "header"
+    },
+    {
+      "id": "nutritionlab",
+      "name": "NutritionLab: Nutrition Science",
+      "nameSource": "header"
+    },
+    {
+      "id": "openbim",
+      "name": "accessible OpenBIM planning and Bonsai companion",
+      "nameSource": "header"
+    },
+    {
+      "id": "optics",
+      "name": "Optics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "oratory",
+      "name": "Oratory & Prosody Communication Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "organismid",
+      "name": "Taxonomy Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "papertrail",
+      "name": "PaperTrail: official documents, decoded",
+      "nameSource": "header"
+    },
+    {
+      "id": "parentinglab",
+      "name": "Science of Parenting Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "particlelab3d",
+      "name": "Particle Lab 3D",
+      "nameSource": "header"
+    },
+    {
+      "id": "pets",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "physics",
+      "name": "Physics Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "platetectonics",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) - shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "playlab",
+      "name": "Sports Play & Coverage Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "printingpress",
+      "name": "PrintingPress",
+      "nameSource": "header"
+    },
+    {
+      "id": "printlab",
+      "name": "Print Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "probability",
+      "name": "Probability Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "punnett",
+      "name": "Punnett Square Lab v3.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "raptorhunt",
+      "name": "Raptor Hunt: Predator Physics + Biology",
+      "nameSource": "header"
+    },
+    {
+      "id": "ratios",
+      "name": "Ratios, Rates & Proportions Lab",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "renewables",
+      "name": "Renewables Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "roadready",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "rocks",
+      "name": "Rocks & Minerals + Rock Cycle tools",
+      "nameSource": "header"
+    },
+    {
+      "id": "scaleexplorer",
+      "name": "Scale Explorer (powers of ten)",
+      "nameSource": "header"
+    },
+    {
+      "id": "schoolbehaviortoolkit",
+      "name": "School Behavior Toolkit",
+      "nameSource": "header"
+    },
+    {
+      "id": "semiconductor",
+      "name": "Semiconductor Lab Plugin v3.0",
+      "nameSource": "header"
+    },
+    {
+      "id": "simshelf",
+      "name": "Sim Shelf (PhET simulations + POE coach) launcher + AI bridge",
+      "nameSource": "header"
+    },
+    {
+      "id": "singing",
+      "name": "Singing & Vocal Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "skatelab",
+      "name": "Skate Lab — a physics-first 2D / 3D motion workbench.",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "solarsystem",
+      "name": "Solar System Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "sourcebook",
+      "name": "open visual-source finder for education and art",
+      "nameSource": "header"
+    },
+    {
+      "id": "spacecolony",
+      "name": "Kepler Colony",
+      "nameSource": "header"
+    },
+    {
+      "id": "spaceexplorer",
+      "name": "Space Explorer: Roguelike STEM Missions",
+      "nameSource": "header"
+    },
+    {
+      "id": "spacestation",
+      "name": "Space Station (ISS engineering + astronaut life)",
+      "nameSource": "header"
+    },
+    {
+      "id": "statslab",
+      "name": "Statistics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "stewardship",
+      "name": "Maine Stewardship Campaigns hub",
+      "nameSource": "header"
+    },
+    {
+      "id": "swimlab",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "throwlab",
+      "name": "Sports Physics Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "timeline",
+      "name": "Timeline Studio (TimelineJS + AI document→timeline)",
+      "nameSource": "header"
+    },
+    {
+      "id": "timeschedule",
+      "name": "Time & Schedule Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "titration",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "trajectorycomputing",
+      "name": "Trajectory Computing Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "treelab",
+      "name": "Tree Life Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "typingpractice",
+      "name": "── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "unitconvert",
+      "name": "window.StemLab = window.StemLab || { registerTool: function(){}, registerModule: function(){} };",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "universe",
+      "name": "Universe Time-Lapse Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "volume",
+      "name": "3D Volume Explorer Plugin (Enhanced v4)",
+      "nameSource": "header"
+    },
+    {
+      "id": "watercycle",
+      "name": "Water Cycle Interactive Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "wave",
+      "name": "Wave Simulator",
+      "nameSource": "header"
+    },
+    {
+      "id": "weathersystems",
+      "name": "Weather Systems & Forecasting Lab",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "weldlab",
+      "name": "WeldLab: Welding & Metal Joining",
+      "nameSource": "header"
+    },
+    {
+      "id": "wheelandfire",
+      "name": "Wheel & Fire: Pottery Lab",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "worldbuilder",
+      "name": "World Builder: Collaborative Literary RPG",
+      "nameSource": "header"
+    },
+    {
+      "id": "zoomgallery",
+      "name": "Zoom Gallery (OpenSeadragon deep-zoom + Notice-Wonder coach)",
+      "nameSource": "header"
+    }
+  ],
+  "sel": [
+    {
+      "id": "advocacy",
+      "name": "Self-Advocacy Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "anxietytoolkit",
+      "name": "Anxiety Toolkit",
+      "nameSource": "header"
+    },
+    {
+      "id": "behavioralactivation",
+      "name": "Behavioral Activation",
+      "nameSource": "header"
+    },
+    {
+      "id": "bigfeelings",
+      "name": "Big Feelings (Anger Toolkit)",
+      "nameSource": "header"
+    },
+    {
+      "id": "bodystory",
+      "name": "Body Story",
+      "nameSource": "header"
+    },
+    {
+      "id": "careconstellations",
+      "name": "Care Constellations",
+      "nameSource": "header"
+    },
+    {
+      "id": "careercompass",
+      "name": "Career Compass",
+      "nameSource": "header"
+    },
+    {
+      "id": "circlesofsupport",
+      "name": "Circles of Support",
+      "nameSource": "header"
+    },
+    {
+      "id": "civicaction",
+      "name": "Civic Action & Hope Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "community",
+      "name": "Community & Culture",
+      "nameSource": "header"
+    },
+    {
+      "id": "compassion",
+      "name": "Self-Compassion Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "conflict",
+      "name": "Conflict Resolution Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "conflicttheater",
+      "name": "Conflict Theater",
+      "nameSource": "header"
+    },
+    {
+      "id": "coping",
+      "name": "Coping Toolkit",
+      "nameSource": "header"
+    },
+    {
+      "id": "costbenefit",
+      "name": "Cost-Benefit Analysis Grid",
+      "nameSource": "header"
+    },
+    {
+      "id": "crewprotocols",
+      "name": "Crew Protocols Library",
+      "nameSource": "header"
+    },
+    {
+      "id": "crisiscompanion",
+      "name": "Crisis Companion",
+      "nameSource": "header"
+    },
+    {
+      "id": "cultureexplorer",
+      "name": "Culture Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "dearman",
+      "name": "DEAR MAN: assertive-ask script builder",
+      "nameSource": "header"
+    },
+    {
+      "id": "decisions",
+      "name": "Decision Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "digitalwellbeing",
+      "name": "Digital Wellbeing Studio",
+      "nameSource": "header"
+    },
+    {
+      "id": "disabilityvoices",
+      "name": "Disability Voices",
+      "nameSource": "header"
+    },
+    {
+      "id": "ecomap",
+      "name": "Ecomap",
+      "nameSource": "header"
+    },
+    {
+      "id": "emotions",
+      "name": "Emotions Explorer",
+      "nameSource": "header"
+    },
+    {
+      "id": "ethicalreasoning",
+      "name": "Ethical Reasoning Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "execfunction",
+      "name": "Executive Function Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "friendship",
+      "name": "Friendship Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "genogram",
+      "name": "Genogram",
+      "nameSource": "header"
+    },
+    {
+      "id": "goals",
+      "name": "Goal Setter",
+      "nameSource": "header"
+    },
+    {
+      "id": "griefloss",
+      "name": "Grief & Loss Companion",
+      "nameSource": "header"
+    },
+    {
+      "id": "growthmindset",
+      "name": "Growth Mindset Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "healthyrelationships",
+      "name": "Healthy Relationships",
+      "nameSource": "header"
+    },
+    {
+      "id": "howl",
+      "name": "Habits of Work and Learning (HOWL) Tracker",
+      "nameSource": "header"
+    },
+    {
+      "id": "identitysupport",
+      "name": "Identity Support (LGBTQ+ inclusive)",
+      "nameSource": "header"
+    },
+    {
+      "id": "journal",
+      "name": "Feelings Journal",
+      "nameSource": "header"
+    },
+    {
+      "id": "landplace",
+      "name": "Land & Place: Stewardship Studio",
+      "nameSource": "header"
+    },
+    {
+      "id": "maps",
+      "name": "MAPS: Making Action Plans",
+      "nameSource": "header"
+    },
+    {
+      "id": "mindfulness",
+      "name": "Mindfulness Corner",
+      "nameSource": "header"
+    },
+    {
+      "id": "motivationalinterviewing",
+      "name": "Motivational Interviewing",
+      "nameSource": "header"
+    },
+    {
+      "id": "onepageprofile",
+      "name": "One-Page Profile",
+      "nameSource": "header"
+    },
+    {
+      "id": "orientations",
+      "name": "Orientations: Ways of Living, Compared",
+      "nameSource": "header"
+    },
+    {
+      "id": "path",
+      "name": "PATH: Planning Alternative Tomorrows with Hope",
+      "nameSource": "header"
+    },
+    {
+      "id": "peersupport",
+      "name": "Peer Support Coach",
+      "nameSource": "header"
+    },
+    {
+      "id": "perma",
+      "name": "PERMA Wellbeing Profile",
+      "nameSource": "header"
+    },
+    {
+      "id": "perspective",
+      "name": "Perspective-Taking Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "practicejourneys",
+      "name": "var __defProp = Object.defineProperty;",
+      "nameSource": "first-line"
+    },
+    {
+      "id": "quietquestions",
+      "name": "Quiet Questions: Inner Inquiry Practice",
+      "nameSource": "header"
+    },
+    {
+      "id": "restorativecircle",
+      "name": "Restorative Circle Process",
+      "nameSource": "header"
+    },
+    {
+      "id": "safety",
+      "name": "Safety & Boundaries",
+      "nameSource": "header"
+    },
+    {
+      "id": "selfadvocacy",
+      "name": "Self-Advocacy Studio",
+      "nameSource": "header"
+    },
+    {
+      "id": "sensoryregulation",
+      "name": "Sensory Regulation",
+      "nameSource": "header"
+    },
+    {
+      "id": "sfbt",
+      "name": "Solution-Focused Brief Therapy",
+      "nameSource": "header"
+    },
+    {
+      "id": "sleep",
+      "name": "Sleep & Rest Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "social",
+      "name": "Social Skills Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "sociallab",
+      "name": "Social Skills Practice Lab",
+      "nameSource": "header"
+    },
+    {
+      "id": "somaticreset",
+      "name": "Body & Breath Reset",
+      "nameSource": "header"
+    },
+    {
+      "id": "sourcesofstrength",
+      "name": "Sources of Strength",
+      "nameSource": "header"
+    },
+    {
+      "id": "strengths",
+      "name": "Strengths Finder",
+      "nameSource": "header"
+    },
+    {
+      "id": "stressbucket",
+      "name": "Stress Bucket",
+      "nameSource": "header"
+    },
+    {
+      "id": "substancepsychoed",
+      "name": "Substance Use Psychoeducation",
+      "nameSource": "header"
+    },
+    {
+      "id": "teamwork",
+      "name": "Teamwork Builder",
+      "nameSource": "header"
+    },
+    {
+      "id": "thoughtrecord",
+      "name": "CBT Thought Record",
+      "nameSource": "header"
+    },
+    {
+      "id": "tipp",
+      "name": "TIPP: Distress Tolerance crisis-survival skill",
+      "nameSource": "header"
+    },
+    {
+      "id": "transitions",
+      "name": "Transitions & Change Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "traumapsychoed",
+      "name": "Trauma Psychoeducation",
+      "nameSource": "header"
+    },
+    {
+      "id": "upstander",
+      "name": "Upstander Workshop",
+      "nameSource": "header"
+    },
+    {
+      "id": "valuescommittedaction",
+      "name": "Values & Committed Action",
+      "nameSource": "header"
+    },
+    {
+      "id": "viastrengths",
+      "name": "VIA Character Strengths Self-Sort",
+      "nameSource": "header"
+    },
+    {
+      "id": "voicedetective",
+      "name": "Voice Detective",
+      "nameSource": "header"
+    },
+    {
+      "id": "wheeloflife",
+      "name": "Wheel of Life",
+      "nameSource": "header"
+    },
+    {
+      "id": "windowoftolerance",
+      "name": "Window of Tolerance",
+      "nameSource": "header"
+    },
+    {
+      "id": "zones",
+      "name": "Emotion Zones Plugin (Enhanced v2)",
+      "nameSource": "header"
+    }
+  ],
+  "packs": [
+    {
+      "file": "american_revolution_causes_grade5",
+      "title": "Causes of the American Revolution — How a Fight Becomes a War",
+      "grade": "5th Grade",
+      "standards": "C3 D2.His.1.3-5 (create and use a chronological sequence of related events); C3 D2.His.14.3-5 (explain probable causes and effects of events and developments); "
+    },
+    {
+      "file": "ancient_egypt_grade6",
+      "title": "Why Cities Grew on the Nile — Surplus, Specialists, and Writing",
+      "grade": "6th Grade",
+      "standards": "C3 Framework D2.His.14.6-8 (explain multiple causes and effects of events and developments in the past); C3 Framework D2.Geo.5.6-8 (analyze the combinations of "
+    },
+    {
+      "file": "area_perimeter_grade4",
+      "title": "Area and Perimeter — The Fence and the Floor",
+      "grade": "3rd-4th Grade",
+      "standards": "CCSS.MATH.CONTENT.3.MD.C.7 (relate area to the operations of multiplication and addition); CCSS.MATH.CONTENT.3.MD.D.8 (solve real world problems involving perim"
+    },
+    {
+      "file": "argument_evidence_grade6",
+      "title": "Says Who? — Claims, Evidence, and the Reasoning in Between",
+      "grade": "6th Grade",
+      "standards": "CCSS.ELA-LITERACY.RI.6.8 (trace and evaluate the argument and specific claims in a text, distinguishing claims that are supported by reasons and evidence from c"
+    },
+    {
+      "file": "body_systems_grade6",
+      "title": "Body Systems — The Team That Keeps You Alive",
+      "grade": "6th Grade",
+      "standards": "NGSS MS-LS1-3 (use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells); CCSS.ELA-LITERACY.RST.6-8"
+    },
+    {
+      "file": "cell_structure_grade7",
+      "title": "The Cell — The Smallest Living Factory",
+      "grade": "7th Grade",
+      "standards": "NGSS MS-LS1-1 (conduct an investigation to provide evidence that living things are made of cells, either one cell or many); NGSS MS-LS1-2 (develop and use a mod"
+    },
+    {
+      "file": "central_idea_grade7",
+      "title": "Central Idea and Evidence — Reading Like a Detective",
+      "grade": "7th Grade",
+      "standards": "CCSS.ELA-LITERACY.RI.7.2 (determine two or more central ideas in a text and analyze their development over the course of the text); CCSS.ELA-LITERACY.RI.7.1 (ci"
+    },
+    {
+      "file": "chemical_reactions_grade8",
+      "title": "Did Anything New Actually Form? — Reactions and Conservation of Mass",
+      "grade": "8th Grade",
+      "standards": "NGSS MS-PS1-2 (analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occur"
+    },
+    {
+      "file": "constitution_grade8",
+      "title": "The Constitution — Rules for the Rule-Makers",
+      "grade": "8th Grade",
+      "standards": "C3 D2.Civ.4.6-8 (explain the powers and limits of government institutions); C3 D2.Civ.3.6-8 (examine the origins and purposes of rules, laws, and key constituti"
+    },
+    {
+      "file": "context_clues_grade3",
+      "title": "The Words Around the Word — Working Out What It Means",
+      "grade": "3rd Grade",
+      "standards": "CCSS.ELA-LITERACY.L.3.4.A (use sentence-level context as a clue to the meaning of a word or phrase); CCSS.ELA-LITERACY.L.3.4.B (determine the meaning of a new w"
+    },
+    {
+      "file": "crew_ask_grade6_8",
+      "title": "Crew Launch Week 5: Asking for What You Need",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Perseverance (advocate for learning through questions); CASEL Relationship Skills (communicating effectively; seeking or offering suppor"
+    },
+    {
+      "file": "crew_attention_grade6_8",
+      "title": "Crew Launch Week 9: Where Your Attention Goes",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Management (managing one's emotions; using planning and organizational skil"
+    },
+    {
+      "file": "crew_feedback_grade6_8",
+      "title": "Crew Launch Week 6: Feedback Is Information, Not a Verdict",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (having a growth mindset"
+    },
+    {
+      "file": "crew_halfway_grade6_8",
+      "title": "Crew Launch Week 10: The Halfway Check",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals;"
+    },
+    {
+      "file": "crew_norms_grade6_8",
+      "title": "Crew Launch Week 1: Norms We Can Name and Keep",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Relationship Skills (teamwork and collaborative problem-solving; communicating effective"
+    },
+    {
+      "file": "crew_perspective_grade6_8",
+      "title": "Crew Launch Week 7: Two Sides of One Story",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Respect (work cooperatively with others); CASEL Social Awareness (taking others' perspectives; recognizing situational demands); CASEL R"
+    },
+    {
+      "file": "crew_repair_grade6_8",
+      "title": "Crew Launch Week 2: Repair When Something Goes Wrong",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Respect (steward community resources and materials); CASEL Responsible Decision-Making (evaluating consequences of actions; contributing"
+    },
+    {
+      "file": "crew_story_grade6_8",
+      "title": "Crew Launch Week 12: The Story of Your Trimester",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Perseverance (self-assess work using targets and rubrics; learn from feedback and revise); CASEL Self-Awareness (integrating personal an"
+    },
+    {
+      "file": "crew_system_grade6_8",
+      "title": "Crew Launch Week 4: One System for the Week",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (planning and organizati"
+    },
+    {
+      "file": "crew_teamwork_grade6_8",
+      "title": "Crew Launch Week 11: Your Part of the Whole",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Perseverance (produce high quality work; advocate for learning through questions); CASEL Relationship Skills (teamwork and collaborative"
+    },
+    {
+      "file": "crew_upstander_grade6_8",
+      "title": "Crew Launch Week 8: Small Moves, Not Big Speeches",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Respect (respectful member of the King community); CASEL Social Awareness (demonstrating empathy and compassion; understanding and expre"
+    },
+    {
+      "file": "crew_zones_grade6_8",
+      "title": "Crew Launch Week 3: Where Am I Right Now?",
+      "grade": "6th-8th Grade",
+      "standards": "King Middle School HOWL Responsibility (participate fully and mindfully); CASEL Self-Awareness (identifying one's emotions; linking feelings, values, and though"
+    },
+    {
+      "file": "data_and_typical_grade6",
+      "title": "What Counts as Typical — Reading Data Honestly",
+      "grade": "6th Grade",
+      "standards": "CCSS.MATH.CONTENT.6.SP.A.1 (recognize a statistical question as one that anticipates variability in the data and accounts for it in the answers); CCSS.MATH.CONT"
+    },
+    {
+      "file": "day_night_sky_grade1",
+      "title": "Day Sky, Night Sky — Why the Sky Changes",
+      "grade": "1st Grade",
+      "standards": "NGSS 1-ESS1-1 (use observations of the sun, moon, and stars to describe patterns that can be predicted); CCSS.ELA-LITERACY.RI.1.1 (ask and answer questions abou"
+    },
+    {
+      "file": "decimal_place_value_grade5",
+      "title": "Same Digits, Different Values — Decimals",
+      "grade": "5th Grade",
+      "standards": "CCSS.MATH.CONTENT.5.NBT.A.3 (read, write, and compare decimals to thousandths using place-value reasoning)"
+    },
+    {
+      "file": "ecosystems_food_webs_grade5",
+      "title": "Food Webs — Who Eats Whom, and What Happens Next",
+      "grade": "5th Grade",
+      "standards": "NGSS 5-LS2-1 (develop a model to describe the movement of matter among plants, animals, decomposers, and the environment); NGSS 5-PS3-1 (use models to describe "
+    },
+    {
+      "file": "energy_transfer_grade4",
+      "title": "Energy Moves — How Things Make Other Things Happen",
+      "grade": "4th Grade",
+      "standards": "NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide"
+    },
+    {
+      "file": "equal_groups_grade3",
+      "title": "Equal Groups — What Multiplication Really Means",
+      "grade": "3rd Grade",
+      "standards": "CCSS.MATH.CONTENT.3.OA.A.1 (interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each); CCSS.MATH."
+    },
+    {
+      "file": "figurative_language_grade5",
+      "title": "Figurative Language — Say It Sideways",
+      "grade": "5th Grade",
+      "standards": "CCSS.ELA-LITERACY.L.5.5 (demonstrate understanding of figurative language, word relationships, and nuances); CCSS.ELA-LITERACY.L.5.5.A (interpret figurative lan"
+    },
+    {
+      "file": "forces_motion_grade3",
+      "title": "Forces and Motion — Pushes, Pulls, and Why Things Stop",
+      "grade": "3rd Grade",
+      "standards": "NGSS 3-PS2-1 (plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object); NGSS 3-PS2-2 ("
+    },
+    {
+      "file": "fractions_number_line_grade4",
+      "title": "Fractions on the Number Line — Finding the Space Between",
+      "grade": "3rd-4th Grade",
+      "standards": "CCSS.MATH.CONTENT.3.NF.A.2 (understand a fraction as a number on the number line); CCSS.MATH.CONTENT.3.NF.A.3 (explain equivalence of fractions and compare frac"
+    },
+    {
+      "file": "habitats_diversity_grade2",
+      "title": "Who Lives Here? — Comparing Habitats",
+      "grade": "2nd Grade",
+      "standards": "NGSS 2-LS4-1 (observe plants and animals to compare the diversity of life in different habitats)"
+    },
+    {
+      "file": "linear_equations_grade8",
+      "title": "Linear Equations — Slope, Start, and the Story a Line Tells",
+      "grade": "8th Grade",
+      "standards": "CCSS.MATH.CONTENT.8.EE.B.5 (graph proportional relationships, interpreting the unit rate as the slope); CCSS.MATH.CONTENT.8.EE.B.6 (use similar triangles to exp"
+    },
+    {
+      "file": "local_government_grade4",
+      "title": "Who Decided That? — Local Government and How Rules Change",
+      "grade": "4th Grade",
+      "standards": "C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change "
+    },
+    {
+      "file": "magnetism_grade6",
+      "title": "Magnetism — Invisible Push and Pull",
+      "grade": "6th-7th Grade",
+      "standards": "NGSS MS-PS2-3 (ask questions about data to determine the factors that affect the strength of electric and magnetic forces); NGSS MS-PS2-5 (conduct an investigat"
+    },
+    {
+      "file": "main_idea_grade4",
+      "title": "Main Idea — What Is This Really About?",
+      "grade": "4th-5th Grade",
+      "standards": "CCSS.ELA-LITERACY.RI.4.2 (determine the main idea of a text and explain how it is supported by key details); CCSS.ELA-LITERACY.RI.5.2 (determine two or more mai"
+    },
+    {
+      "file": "making_ten_grade1",
+      "title": "Ten Is a Friendly Number — Making Ten to Add",
+      "grade": "1st Grade",
+      "standards": "CCSS.MATH.CONTENT.1.OA.C.6 (add and subtract within 20, using strategies such as making ten and decomposing a number leading to a ten); CCSS.MATH.CONTENT.1.OA.B"
+    },
+    {
+      "file": "map_skills_grade3",
+      "title": "Reading a Map — Every Map Leaves Something Out",
+      "grade": "3rd Grade",
+      "standards": "C3 Framework D2.Geo.1.3-5 (construct maps and other graphic representations of both familiar and unfamiliar places); C3 Framework D2.Geo.2.3-5 (use maps and oth"
+    },
+    {
+      "file": "materials_grade2",
+      "title": "Why Windows Are Not Wool — Matching Materials to Jobs",
+      "grade": "2nd Grade",
+      "standards": "NGSS 2-PS1-1 (plan and conduct an investigation to describe and classify different kinds of materials by their observable properties); NGSS 2-PS1-2 (analyze dat"
+    },
+    {
+      "file": "moon_phases_grade6",
+      "title": "Moon Phases and Eclipses — Why the Moon Changes Shape",
+      "grade": "6th Grade",
+      "standards": "NGSS MS-ESS1-1 (develop and use a model of the Earth-Sun-Moon system to describe the cyclic patterns of lunar phases, eclipses of the Sun and Moon, and seasons)"
+    },
+    {
+      "file": "natural_selection_grade8",
+      "title": "Nothing Is Trying — How Natural Selection Actually Works",
+      "grade": "8th Grade",
+      "standards": "NGSS MS-LS4-4 (construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability"
+    },
+    {
+      "file": "photosynthesis_grade7",
+      "title": "Photosynthesis — How Plants Eat Sunlight",
+      "grade": "7th Grade",
+      "standards": "NGSS MS-LS1-6 (construct an explanation for how photosynthesis cycles matter and flows energy); NGSS MS-LS1-7 (develop a model to describe how food is rearrange"
+    },
+    {
+      "file": "place_value_grade2",
+      "title": "Ten Is a Bundle — Place Value to 1000",
+      "grade": "2nd Grade",
+      "standards": "CCSS.MATH.CONTENT.2.NBT.A.1 (understand that the three digits of a three-digit number represent amounts of hundreds, tens, and ones); CCSS.MATH.CONTENT.2.NBT.A."
+    },
+    {
+      "file": "plant_needs_grade3",
+      "title": "What Plants Need — The Quiet Life of a Seed",
+      "grade": "3rd Grade",
+      "standards": "NGSS 2-LS2-1 (plan and conduct an investigation to determine if plants need sunlight and water to grow); NGSS 3-LS1-1 (develop models to describe that organisms"
+    },
+    {
+      "file": "plate_tectonics_grade6",
+      "title": "Plate Tectonics — The Earth Puzzle",
+      "grade": "6th Grade",
+      "standards": "NGSS MS-ESS2-3 (analyze and interpret data on the distribution of fossils and rocks to provide evidence of past plate motions); NGSS MS-ESS2-2 (construct an exp"
+    },
+    {
+      "file": "point_of_view_grade4",
+      "title": "Point of View — Who Is Telling This Story?",
+      "grade": "4th Grade",
+      "standards": "CCSS.ELA-LITERACY.RL.4.6 (compare and contrast the point of view from which different stories are narrated, including the difference between first- and third-pe"
+    },
+    {
+      "file": "probability_models_grade7",
+      "title": "Likely Is Not Certain — Probability Models",
+      "grade": "7th Grade",
+      "standards": "CCSS.MATH.CONTENT.7.SP.C.5 (interpret probabilities from zero to one); CCSS.MATH.CONTENT.7.SP.C.6 (compare long-run relative frequencies with predicted probabil"
+    },
+    {
+      "file": "proportional_relationships_grade7",
+      "title": "Proportional Relationships — When Doubling One Doubles the Other",
+      "grade": "7th Grade",
+      "standards": "CCSS.MATH.CONTENT.7.RP.A.2 (recognize and represent proportional relationships between quantities); CCSS.MATH.CONTENT.7.RP.A.2.B (identify the constant of propo"
+    },
+    {
+      "file": "ratios_real_life_grade6",
+      "title": "Ratios in Real Life — Recipes, Maps, and Best Buys",
+      "grade": "6th Grade",
+      "standards": "CCSS.MATH.CONTENT.6.RP.A.1 (understand the concept of a ratio and use ratio language); CCSS.MATH.CONTENT.6.RP.A.2 (understand the concept of a unit rate); CCSS."
+    },
+    {
+      "file": "rules_and_fairness_grade1",
+      "title": "Why We Have Rules — Fair, Safe, and Together",
+      "grade": "1st Grade",
+      "standards": "C3 Framework D2.Civ.1.K-2 (describe roles and responsibilities of people in authority); C3 Framework D2.Civ.6.K-2 (describe how communities work to accomplish c"
+    },
+    {
+      "file": "scarcity_choice_grade7",
+      "title": "Everything Has a Cost — Scarcity, Choice, and What You Gave Up",
+      "grade": "7th Grade",
+      "standards": "C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate al"
+    },
+    {
+      "file": "simple_machines_grade5",
+      "title": "Simple Machines — Trading Distance for Strength",
+      "grade": "5th-6th Grade",
+      "standards": "NGSS 3-5-ETS1-1 (define a simple design problem reflecting a need, with criteria and constraints); NGSS 3-5-ETS1-2 (generate and compare multiple possible solut"
+    },
+    {
+      "file": "sound_vibration_grade1",
+      "title": "Feel the Buzz — Sound and Vibration",
+      "grade": "1st Grade",
+      "standards": "NGSS 1-PS4-1 (investigate evidence that vibrating materials can make sound and sound can make materials vibrate)"
+    },
+    {
+      "file": "states_of_matter_grade4",
+      "title": "States of Matter — Same Stuff, Different Behavior",
+      "grade": "4th-5th Grade",
+      "standards": "NGSS 5-PS1-1 (develop a model to describe that matter is made of particles too small to be seen); NGSS 5-PS1-2 (measure and graph quantities to provide evidence"
+    },
+    {
+      "file": "story_retell_grade2",
+      "title": "Tell It Back — Beginning, Middle, and End",
+      "grade": "2nd Grade",
+      "standards": "CCSS.ELA-LITERACY.RL.2.5 (describe the overall structure of a story, including how the beginning introduces it and the ending concludes the action); CCSS.ELA-LI"
+    },
+    {
+      "file": "theme_development_grade8",
+      "title": "What the Story Is Really Saying — Tracing Theme",
+      "grade": "8th Grade",
+      "standards": "CCSS.ELA-LITERACY.RL.8.2 (determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the"
+    },
+    {
+      "file": "then_and_now_grade2",
+      "title": "Then and Now — How Life Changes Over Time",
+      "grade": "2nd Grade",
+      "standards": "C3 Framework D2.His.1.K-2 (create a chronological sequence of multiple events); C3 Framework D2.His.2.K-2 (compare life in the past to life today); C3 Framework"
+    },
+    {
+      "file": "volume_grade5",
+      "title": "Filling Space — Volume and Why You Multiply Three Numbers",
+      "grade": "5th Grade",
+      "standards": "CCSS.MATH.CONTENT.5.MD.C.3 (recognize volume as an attribute of solid figures and understand concepts of volume measurement); CCSS.MATH.CONTENT.5.MD.C.4 (measur"
+    },
+    {
+      "file": "water_cycle_grade6",
+      "title": "The Water Cycle — Earth's Recycling System",
+      "grade": "6th Grade",
+      "standards": "NGSS MS-ESS2-4 (water cycling through Earth systems driven by sunlight and gravity); CCSS.ELA-LITERACY.RST.6-8.4 (determine the meaning of symbols, key terms, a"
+    },
+    {
+      "file": "weather_vs_climate_grade5",
+      "title": "Weather vs. Climate — Today's Mood, Decades of Personality",
+      "grade": "5th-6th Grade",
+      "standards": "NGSS 3-ESS2-2 (obtain and combine information to describe climates in different world regions); NGSS MS-ESS2-5 (collect data to provide evidence for how the mot"
+    },
+    {
+      "file": "weathering_erosion_grade4",
+      "title": "Break, Move, Settle — Changing Land",
+      "grade": "4th Grade",
+      "standards": "NGSS 4-ESS2-1 (use observations or measurements as evidence of weathering effects or erosion rates)"
+    },
+    {
+      "file": "word_families_grade1",
+      "title": "Learn One, Read Many — Word Families",
+      "grade": "1st Grade",
+      "standards": "CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial"
+    }
+  ],
+  "hubs": [
+    {
+      "hub": "Educator Hub",
+      "cards": [
+        {
+          "id": "lesson",
+          "title": "Help me build a lesson"
+        },
+        {
+          "id": "lumen",
+          "title": "Lumen"
+        },
+        {
+          "id": "document",
+          "title": "Document Hub"
+        },
+        {
+          "id": "whiteboard",
+          "title": "Whiteboard"
+        },
+        {
+          "id": "throughline",
+          "title": "Learning Web: Unit Path"
+        },
+        {
+          "id": "page-designer",
+          "title": "Page Designer"
+        },
+        {
+          "id": "video-studio",
+          "title": "Video Studio"
+        },
+        {
+          "id": "symbol-studio",
+          "title": "Symbol Studio"
+        },
+        {
+          "id": "allosheet",
+          "title": "AlloSheet"
+        },
+        {
+          "id": "polls-signups",
+          "title": "Polls &amp; Sign-ups"
+        },
+        {
+          "id": "assessment-center",
+          "title": "Assessment Center"
+        },
+        {
+          "id": "dynamic-assessment",
+          "title": "Dynamic Assessment"
+        },
+        {
+          "id": "behavior-lens",
+          "title": "BehaviorLens"
+        },
+        {
+          "id": "report-writer",
+          "title": "Report Writer"
+        },
+        {
+          "id": "pdf-accessibility",
+          "title": "PDF Accessibility"
+        },
+        {
+          "id": "accessibility-lab",
+          "title": "Accessibility Lab"
+        },
+        {
+          "id": "community-catalog",
+          "title": "Community Catalog"
+        },
+        {
+          "id": "research-suite",
+          "title": "Research Suite"
+        },
+        {
+          "id": "professional-development",
+          "title": "Professional Development"
+        },
+        {
+          "id": "leadership-hub",
+          "title": "Leadership Hub"
+        },
+        {
+          "id": "school-rewards",
+          "title": "School Rewards & Store"
+        },
+        {
+          "id": "communications-studio",
+          "title": "Communications Studio"
+        }
+      ]
+    },
+    {
+      "hub": "Learning Hub",
+      "cards": [
+        {
+          "id": "lumen-study",
+          "title": "Lumen Study"
+        },
+        {
+          "id": "reading-library",
+          "title": "Reading Library"
+        },
+        {
+          "id": "stem-lab",
+          "title": "STEAM Lab"
+        },
+        {
+          "id": "text-inquiry",
+          "title": "Text Inquiry Studio"
+        },
+        {
+          "id": "lingua-practice",
+          "title": "Lingua Practice"
+        },
+        {
+          "id": "test-prep",
+          "title": "Test Prep Hub"
+        },
+        {
+          "id": "sel-hub",
+          "title": "SEL Hub"
+        },
+        {
+          "id": "screen-coach",
+          "title": "Screen Coach"
+        },
+        {
+          "id": "research-hub",
+          "title": "Research Hub"
+        },
+        {
+          "id": "learning-web-explorer",
+          "title": "Learning Web: Explore"
+        },
+        {
+          "id": "timeline-studio",
+          "title": "Timeline Studio"
+        },
+        {
+          "id": "storyforge",
+          "title": "StoryForge"
+        },
+        {
+          "id": "litlab",
+          "title": "LitLab"
+        },
+        {
+          "id": "poettree",
+          "title": "PoetTree"
+        },
+        {
+          "id": "open-groove",
+          "title": "Open Groove Studio"
+        },
+        {
+          "id": "allohaven",
+          "title": "AlloHaven"
+        }
+      ]
+    },
+    {
+      "hub": "Leadership Hub",
+      "cards": [
+        {
+          "id": "announcements",
+          "title": "Family Announcements"
+        },
+        {
+          "id": "diagnosisEligibility",
+          "title": "Diagnosis, Evaluation & School Eligibility"
+        },
+        {
+          "id": "dispro",
+          "title": "Disproportionality Analyzer"
+        },
+        {
+          "id": "evaluation",
+          "title": "Educator Evaluation"
+        },
+        {
+          "id": "meetings",
+          "title": "Meeting Documentation"
+        },
+        {
+          "id": "mtss",
+          "title": "MTSS Triage"
+        },
+        {
+          "id": "rewards",
+          "title": "School Rewards & Store"
+        },
+        {
+          "id": "timelines",
+          "title": "SpEd Timelines"
+        },
+        {
+          "id": "walkthrough",
+          "title": "UDL Walkthrough"
+        },
+        {
+          "id": "walkthroughCopilot",
+          "title": "Walkthrough Copilot"
+        }
+      ]
+    },
+    {
+      "hub": "Research Hub",
+      "cards": [
+        {
+          "id": "civic_policy",
+          "title": "Civic & Policy Inquiry"
+        },
+        {
+          "id": "community_qualitative",
+          "title": "Community & Qualitative Inquiry"
+        },
+        {
+          "id": "creative_cultural",
+          "title": "Creative & Cultural Inquiry"
+        },
+        {
+          "id": "engineering",
+          "title": "Engineering Design"
+        },
+        {
+          "id": "engineering_design",
+          "title": "Engineering Design"
+        },
+        {
+          "id": "humanistic_interpretation",
+          "title": "Humanistic Interpretation"
+        },
+        {
+          "id": "humanities",
+          "title": "Humanities & Social Research"
+        },
+        {
+          "id": "scientific",
+          "title": "Scientific Inquiry"
+        },
+        {
+          "id": "scientific_investigation",
+          "title": "Scientific Investigation"
+        }
+      ]
+    },
+    {
+      "hub": "Test Prep Hub",
+      "cards": [
+        {
+          "id": "choose_practice_set",
+          "title": ""
+        },
+        {
+          "id": "foundations",
+          "title": "Foundations"
+        },
+        {
+          "id": "general",
+          "title": "General"
+        },
+        {
+          "id": "id",
+          "title": ""
+        },
+        {
+          "id": "list_practice_sets",
+          "title": ""
+        },
+        {
+          "id": "practice_help",
+          "title": ""
+        },
+        {
+          "id": "practice_read_choices",
+          "title": ""
+        },
+        {
+          "id": "practice_read_option",
+          "title": ""
+        },
+        {
+          "id": "practice_read_question",
+          "title": ""
+        },
+        {
+          "id": "practice_repeat_feedback",
+          "title": ""
+        },
+        {
+          "id": "practice_start_hands_free_required",
+          "title": ""
+        },
+        {
+          "id": "practice_status",
+          "title": ""
+        },
+        {
+          "id": "start_practice",
+          "title": ""
+        },
+        {
+          "id": "start_practice_hands_free",
+          "title": ""
+        },
+        {
+          "id": "start_test_prep_hands_free",
+          "title": ""
+        }
+      ]
+    }
+  ],
+  "scripts": [
+    {
+      "script": "educator_evaluation",
+      "version": "",
+      "actions": [],
+      "scopes": [
+        "userinfo.email",
+        "spreadsheets",
+        "documents",
+        "drive",
+        "script.send_mail"
+      ],
+      "access": "DOMAIN / USER_DEPLOYING",
+      "manifest": true
+    },
+    {
+      "script": "educator_evaluation_share",
+      "version": "",
+      "actions": [],
+      "scopes": [
+        "userinfo.email",
+        "drive"
+      ],
+      "access": "MYSELF / USER_DEPLOYING",
+      "manifest": true
+    },
+    {
+      "script": "leadership_hub_backup",
+      "version": "",
+      "actions": [],
+      "scopes": [
+        "drive.file"
+      ],
+      "access": "ANYONE_ANONYMOUS / USER_DEPLOYING",
+      "manifest": true
+    },
+    {
+      "script": "school_rewards",
+      "version": "",
+      "actions": [],
+      "scopes": [
+        "userinfo.email",
+        "spreadsheets",
+        "drive",
+        "script.send_mail",
+        "script.scriptapp"
+      ],
+      "access": "DOMAIN / USER_DEPLOYING",
+      "manifest": true
+    },
+    {
+      "script": "session_mailbox",
+      "version": "24",
+      "actions": [
+        "activityupsert",
+        "auth",
+        "claim",
+        "clonepack",
+        "closeall",
+        "ddel",
+        "deliver",
+        "deliverform",
+        "delpack",
+        "dget",
+        "dpatch",
+        "dset",
+        "end",
+        "extendpack",
+        "fetchpage",
+        "getactivityadmin",
+        "getactivitysummary",
+        "getpack",
+        "hello",
+        "join",
+        "joinactivity",
+        "moderateactivity",
+        "mysessions",
+        "open",
+        "putpack",
+        "putsubmission",
+        "recv",
+        "rotateadmin",
+        "send"
+      ],
+      "scopes": [
+        "drive.file",
+        "script.external_request"
+      ],
+      "access": "ANYONE_ANONYMOUS / USER_DEPLOYING",
+      "manifest": true
+    },
+    {
+      "script": "walkthrough_records",
+      "version": "",
+      "actions": [],
+      "scopes": [
+        "drive.file",
+        "script.send_mail"
+      ],
+      "access": "ANYONE_ANONYMOUS / USER_DEPLOYING",
+      "manifest": true
+    }
+  ],
+  "exportFormats": {
+    "primary": [
+      "html",
+      "print-pdf",
+      "pptx"
+    ],
+    "office": [
+      "docx",
+      "odt"
+    ],
+    "packages": [
+      "h5p",
+      "ims",
+      "qti"
+    ],
+    "drive": [
+      "google-doc",
+      "google-form"
+    ]
+  },
+  "modules": [
+    "accessibility_evidence_module.js",
+    "accessibility_lab_module.js",
+    "adaptive_controller_module.js",
+    "adventure_handlers_module.js",
+    "adventure_module.js",
+    "adventure_session_handlers_module.js",
+    "agent_core_blueprint_service_module.js",
+    "agent_core_contracts_module.js",
+    "agent_core_ui_adapter_module.js",
+    "allo_command_context_module.js",
+    "allo_crypto_module.js",
+    "allo_data_module.js",
+    "allo_device_vault_module.js",
+    "allo_quest_contract_module.js",
+    "allo_recovery_vault_integration_module.js",
+    "allo_vr_module.js",
+    "allobot_module.js",
+    "allohaven_module.js",
+    "alt_text_module.js",
+    "anchor_charts_module.js",
+    "annotation_suite_module.js",
+    "app_styles_module.js",
+    "applied_challenge_module.js",
+    "audio_banks_module.js",
+    "audio_helpers_module.js",
+    "audit_remediator_module.js",
+    "behavior_lens_module.js",
+    "behavior_lens_workspace_module.js",
+    "brand_profile_editor_module.js",
+    "brand_profile_module.js",
+    "canvas_tips_module.js",
+    "catalog_module.js",
+    "cinematic_studio_module.js",
+    "concept_graph_3d_module.js",
+    "concept_graph_engine_module.js",
+    "concept_map_handlers_module.js",
+    "concept_pictionary_module.js",
+    "concept_quest_solo_module.js",
+    "concept_quest_teacher_module.js",
+    "content_engine_module.js",
+    "device_access_code_module.js",
+    "doc_builder_renderer_module.js",
+    "doc_pipeline_module.js",
+    "educator_evaluation_module.js",
+    "escape_room_module.js",
+    "export_handlers_module.js",
+    "export_module.js",
+    "firestore_sync_module.js",
+    "fluency_module.js",
+    "games_module.js",
+    "gemini_api_module.js",
+    "generate_dispatcher_module.js",
+    "generation_helpers_module.js",
+    "generation_matrix_module.js",
+    "glb_library_module.js",
+    "glossary_helpers_module.js",
+    "guided_mode_config_module.js",
+    "host_handlers_module.js",
+    "image_asset_editor_module.js",
+    "immersive_reader_module.js",
+    "instructional_context_module.js",
+    "karaoke_audio_store_module.js",
+    "key_concept_map_module.js",
+    "label_positions_module.js",
+    "landmark_module.js",
+    "large_file_module.js",
+    "learning_web_explorer_module.js",
+    "learning_web_registry_module.js",
+    "lesson_teaching_research_module.js",
+    "lesson_teaching_script_host_module.js",
+    "lesson_teaching_script_module.js",
+    "lexical_graph_module.js",
+    "lingua_practice_module.js",
+    "live_aac_module.js",
+    "live_polling_module.js",
+    "mailbox_script_source_module.js",
+    "math_create_module.js",
+    "math_fluency_module.js",
+    "math_helpers_module.js",
+    "math_manipulative_grader_module.js",
+    "memory_aid_module.js",
+    "memory_palace_module.js",
+    "mind_map_module.js",
+    "misc_components_module.js",
+    "misc_handlers_module.js",
+    "module_scope_extras_module.js",
+    "note_taking_templates_module.js",
+    "pd_core_module.js",
+    "persona_session_artifact_module.js",
+    "persona_ui_module.js",
+    "personas_module.js",
+    "phase_k_helpers_module.js",
+    "phase_n_misc_helpers_module.js",
+    "phase_o_misc_handlers_module.js",
+    "poet_tree_module.js",
+    "prim3d_module.js",
+    "printable_model_module.js",
+    "prompts_library_module.js",
+    "pure_helpers_module.js",
+    "question_board_contract_module.js",
+    "question_board_transport_module.js",
+    "question_board_view_module.js",
+    "quickstart_module.js",
+    "read_aloud_artifact_audio_module.js",
+    "read_aloud_artifact_contract_module.js",
+    "read_aloud_audio_service_module.js",
+    "reading_library_module.js",
+    "remediation_audio_module.js",
+    "report_writer_module.js",
+    "resource_read_aloud_module.js",
+    "review_document_session_module.js",
+    "safety_checker_module.js",
+    "school_rewards_module.js",
+    "seating_chart_module.js",
+    "semantic_review_module.js",
+    "session_transport_module.js",
+    "shared_activity_module.js",
+    "standards_context_module.js",
+    "standards_provider_module.js",
+    "story_forge_module.js",
+    "story_stage_module.js",
+    "student_analytics_module.js",
+    "student_interaction_module.js",
+    "studio_module.js",
+    "studio_response_module.js",
+    "submission_crypto_module.js",
+    "symbol_studio_module.js",
+    "teacher_module.js",
+    "test_prep_hub_module.js",
+    "text_pipeline_helpers_module.js",
+    "text_utility_helpers_module.js",
+    "timeline_revision_module.js",
+    "timeline_studio_module.js",
+    "tool_catalog_module.js",
+    "tts_module.js",
+    "udl_chat_module.js",
+    "ui_font_library_module.js",
+    "ui_language_selector_module.js",
+    "ui_modals_module.js",
+    "ui_polish_module.js",
+    "utils_pure_module.js",
+    "verification_policy_module.js",
+    "video_studio_host_bridge_module.js",
+    "view_adventure_module.js",
+    "view_alignment_report_module.js",
+    "view_analysis_module.js",
+    "view_assignment_center_module.js",
+    "view_brainstorm_module.js",
+    "view_canvas_recovery_dialog_module.js",
+    "view_cloze_interaction_panel_module.js",
+    "view_cold_path_surfaces_module.js",
+    "view_concept_sort_module.js",
+    "view_confirm_dialog_module.js",
+    "view_dbq_module.js",
+    "view_directions_composer_module.js",
+    "view_directions_result_module.js",
+    "view_educator_hub_modal_module.js",
+    "view_end_session_preview_module.js",
+    "view_export_preview_module.js",
+    "view_fab_stack_module.js",
+    "view_faq_module.js",
+    "view_full_pack_run_module.js",
+    "view_gemini_bridge_module.js",
+    "view_global_level_up_module.js",
+    "view_glossary_module.js",
+    "view_guided_mode_banner_module.js",
+    "view_header_module.js",
+    "view_hints_modal_module.js",
+    "view_history_panel_module.js",
+    "view_image_module.js",
+    "view_info_modal_module.js",
+    "view_kokoro_offer_modal_module.js",
+    "view_launch_pad_module.js",
+    "view_learning_hub_modal_module.js",
+    "view_lesson_plan_module.js",
+    "view_lesson_teaching_script_module.js",
+    "view_live_lesson_run_module.js",
+    "view_live_session_dock_module.js",
+    "view_math_module.js",
+    "view_misc_modals_module.js",
+    "view_misc_panels_module.js",
+    "view_outline_module.js",
+    "view_pdf_audit_module.js",
+    "view_persona_chat_module.js",
+    "view_persona_workspace_module.js",
+    "view_project_settings_module.js",
+    "view_prompt_dialog_module.js",
+    "view_quiz_module.js",
+    "view_renderers_module.js",
+    "view_sentence_frames_module.js",
+    "view_session_modal_module.js",
+    "view_share_session_surfaces_module.js",
+    "view_sidebar_panels_module.js",
+    "view_sidebar_tabs_nav_module.js",
+    "view_simplified_module.js",
+    "view_socratic_chat_module.js",
+    "view_spotlight_tour_module.js",
+    "view_storybook_export_modal_module.js",
+    "view_student_join_panel_module.js",
+    "view_student_save_adventure_module.js",
+    "view_study_timer_modal_module.js",
+    "view_submission_inbox_module.js",
+    "view_teacher_history_tab_module.js",
+    "view_timeline_module.js",
+    "view_udl_guide_button_module.js",
+    "view_video_library_module.js",
+    "view_video_ref_player_module.js",
+    "view_visual_supports_modal_module.js",
+    "view_word_sounds_preview_module.js",
+    "view_xp_modal_module.js",
+    "visual_panel_module.js",
+    "voice_config_module.js",
+    "voice_module.js",
+    "word_sounds_module.js",
+    "word_sounds_setup_module.js",
+    "word_timing_module.js"
+  ],
+  "langPacks": [
+    "acholi",
+    "amharic",
+    "arabic",
+    "bengali",
+    "burmese",
+    "chin_falam",
+    "chin_hakha",
+    "chinese_simplified",
+    "chinese_traditional",
+    "dari",
+    "dutch",
+    "esperanto",
+    "farsi",
+    "french",
+    "french_canadian",
+    "german",
+    "greek",
+    "gujarati",
+    "haitian_creole",
+    "hausa",
+    "hebrew",
+    "hindi",
+    "hmong",
+    "igbo",
+    "indonesian",
+    "italian",
+    "japanese",
+    "kannada",
+    "karen",
+    "khmer",
+    "kinyarwanda",
+    "kirundi",
+    "korean",
+    "lao",
+    "latin",
+    "lingala",
+    "maay_maay",
+    "malayalam",
+    "marathi",
+    "marshallese",
+    "nepali",
+    "pashto",
+    "polish",
+    "portuguese_angola",
+    "portuguese_brazil",
+    "portuguese_portugal",
+    "punjabi",
+    "romanian",
+    "russian",
+    "somali",
+    "spanish_castilian",
+    "spanish_latin_america",
+    "swahili",
+    "tagalog",
+    "tamil",
+    "telugu",
+    "thai",
+    "tigrinya",
+    "turkish",
+    "ukrainian",
+    "urdu",
+    "vietnamese",
+    "yoruba"
+  ],
+  "tests": {
+    "unit": 3970,
+    "e2e": 427
+  }
+}

@@ -1,0 +1,317 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_orbit.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > bounds saved camera settings and wraps azimuth without mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > normalizes invalid persisted camera fields to finite defaults
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > maps each branch to its own named nodes and two real 3D terminal paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps electrical values and solved readings independent of graphics options
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps topology stable when component values change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps sensing paths separate from current-carrying terminal routes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps every supported device family in a dense finite scene
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 35 elevation 52
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 0 elevation 85
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 180 elevation 38
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 155 elevation 15
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1 azimuth -90 elevation 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > reuses an already loaded compatible engine
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > uses the shared loader with required orbit controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > rejects a missing loader, failed asset, and missing camera controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > bounds a stalled loader and clears its timer after successful loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > offers orbit mode while preserving the default projected board
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·············stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > renders keyboard controls, named selections, snapshot readings, and model limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > shows time and switch side from the shared snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_sample_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > persists only identity and an exact cursor; resolves against a fresh identical calculation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > retains distinct before/after samples at the same timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > ignores selection, probes, view, camera, notes and current cursor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a value edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a terminals edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a schedule edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a duration edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a initial edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"version":2}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":-1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":100}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":0.00300000001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":"during"}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > does not hold a copied frame, a DC solution, a failed run, or failed stale data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares null minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus null without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares undefined minus 1 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares NaN minus 2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares Infinity minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e+308 minus -1e+308 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -2 minus -5 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -5 minus -2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e-14 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares the same selected component and probe orientation in both frames without mutating them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > keeps internal floating voltage differences known while node-to-reference voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > suppresses nonfinite, missing and failed readings even when stale values exist
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > renders side-aware comparison, signed bars and markers in both scopes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····················stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > hides stale comparison values and markers after edits and in DC mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > clips held markers to the visible full-scope window but retains the board overview
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit_signal.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > places nonuniform samples on elapsed time and preserves exact sample indices
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > retains adjacent switch-event sides at one timestamp and selects the first tied extremum
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > breaks the path at unknown, nonfinite, and missing component readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > withholds readings from failed frames and invalid time positions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > anchors one-sign and zero traces to a finite zero baseline
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > keeps normalized geometry finite for huge and subnormal signals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > limits stored-energy traces to capacitors and inductors
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > uses signed power from real solved sources and loads without taking its magnitude
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > reads real RLC stored energy and preserves the solver frames and held reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·············stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > exposes named controls, a textual alternative, and signed-power guidance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > falls back to voltage for a non-storage part without changing the saved energy preference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > shows the shared held sample on the trace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > does not show a time trace for a DC snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit_flow.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > follows signed branch current independently of voltage or power direction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > correctly distinguishes a supplying source and an absorbing resistor in a solved circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds ambiguous parallel ideal-source currents while keeping the circuit valid
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > does not infer a current direction from zero power in an ideal wire
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current undefined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current -Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > distinguishes zero and signed subthreshold readings without claiming they are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > moves in opposite directions on A and B leads of the same branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > reverses the entire pattern when the signed branch current reverses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > uses equal illustrative speed for every route length and current magnitude
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > wraps onto the lead and caps geometry for long routes and long-running motion
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > has no markers for unknown, zero, or degenerate leads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > does not change the simulation, held sample, or shared time when changing display preferences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+················stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > offers manual stepping and explicit playback with signed terminal and power explanations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > respects saved circuit motion pause and exposes a deliberate resume action
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > explains why capacitor current trails do not cross the dielectric
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > identifies ambiguous current as undetermined without drawing a direction in its reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all twenty SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  5 passed (5)
+      Tests  95 passed (95)
+   Start at  20:27:31
+   Duration  12.93s (transform 101ms, setup 121ms, import 308ms, tests 6.00s, environment 5.28s)
+

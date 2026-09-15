@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "testsPassed": 65,
+  "uniqueSuites": [
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/applied_challenge_interaction.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/applied_challenge_review_flow.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/applied_challenge_review_next.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/applied_challenge_source_workflow.test.js",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/applied_challenge_export.test.js"
+  ],
+  "exportWorkerStartupRecovered": true,
+  "primaryReport": "pass7-tests.json",
+  "exportRecheck": "pass7-export-recheck.json"
+}

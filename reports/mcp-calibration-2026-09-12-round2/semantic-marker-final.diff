@@ -1,0 +1,91 @@
+diff --git a/desktop/mcp/remediation_narration_plan.cjs b/desktop/mcp/remediation_narration_plan.cjs
+index a3bcd3c13..7a0b6fb14 100644
+--- a/desktop/mcp/remediation_narration_plan.cjs
++++ b/desktop/mcp/remediation_narration_plan.cjs
+@@ -145,20 +145,84 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
+   const words=new Intl.Segmenter(undefined,{granularity:'word'});
+   const tokens=text=>{const normalized=String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase(),out=[];for(const part of words.segment(normalized)){if(part.isWordLike){const word=/\p{N}/u.test(part.segment)?part.segment:part.segment.replace(/[^\p{L}\p{M}]/gu,'');if(word)out.push(word);}else{out.push(...(part.segment.match(/[\p{S}%/]/gu)||[]));if(/[-–—]/u.test(part.segment)&&/\p{N}/u.test(normalized.slice(Math.max(0,part.index-1),part.index+part.segment.length+1)))out.push('-');}}return out;};
+   const doc=new DOMParser().parseFromString(outputHtml||'','text/html');
++  // Synthetic labels may match only positively identified source list markers,
++  // never ordinary numeric prose. Keep these credits outside the text token pool.
++  const sourceMarkerCredits=new Set(),originalItems=new Map(),blockedLists=new Set();
++  for(const ol of doc.querySelectorAll('ol'))originalItems.set(ol,[...ol.children].filter(node=>node.tagName==='LI'));
++  const styles=[...doc.querySelectorAll('style')].map(node=>node.textContent||'');
++  let customListNumbering=!!doc.querySelector('link[rel~="stylesheet"]')||styles.some(css=>/\b(?:list-style(?:-type|-image)?|counter-reset|counter-set|counter-increment)\s*:|::?marker\b|@import\b/i.test(css));
++  // Resolve ordinary selectors only. Conditional or unparseable numbering stays
++  // conservative; no stylesheet, script, or rendering context is loaded here.
++  for(const css of styles)for(const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)){
++    const declarations=[...rule[2].matchAll(/(?:^|;)\s*(display|visibility)\s*:\s*([^;]+)/gi)].map(match=>({property:match[1].toLowerCase(),value:match[2].replace(/!important/gi,'').trim().toLowerCase()}));
++    const suppressesItem=declarations.some(value=>value.property==='display'&&value.value!=='list-item');
++    const hidesSubtree=declarations.some(value=>value.property==='display'&&value.value==='none'||value.property==='visibility'&&['hidden','collapse'].includes(value.value));
++    if(!suppressesItem&&!hidesSubtree)continue;
++    try{for(const node of doc.querySelectorAll(rule[1].trim())){
++      if(node.tagName==='LI'&&node.parentElement.tagName==='OL')blockedLists.add(node.parentElement);
++      if(hidesSubtree){if(node.tagName==='OL')blockedLists.add(node);for(const ol of node.querySelectorAll('ol'))blockedLists.add(ol);}
++    }}catch(_){customListNumbering=true;}
++  }
+   doc.querySelectorAll('script,style,button,input,select,textarea,template,[hidden],[aria-hidden="true"],annotation,annotation-xml,[data-allo-latex-src]').forEach(node=>node.remove());
+   doc.querySelectorAll('[style]').forEach(node=>{if(node.style.display==='none'||node.style.visibility==='hidden')node.remove();});
+   doc.querySelectorAll('img').forEach(node=>node.replaceWith(doc.createTextNode(' '+(node.getAttribute('alt')||'')+' ')));
++  if(!customListNumbering){
++    const normalize=text=>String(text||'').normalize('NFKC').replace(/(\p{L})-\s*\n\s*(?=\p{L})/gu,'$1').toLowerCase().replace(/\s+/g,' ').trim();
++    const sourceNormalized=normalize(sourceText),candidates=[];
++    let previousOffset=0,tokenOffset=0;
++    for(const match of sourceNormalized.matchAll(/(-?\d+)[.)]\s+/g)){
++      if(match.index&& !/\s/.test(sourceNormalized[match.index-1]))continue;
++      tokenOffset+=tokens(sourceNormalized.slice(previousOffset,match.index)).length;previousOffset=match.index;
++      candidates.push({label:match[1],at:tokenOffset,count:tokens(match[1]).length,bodyAt:match.index+match[0].length,used:false});
++    }
++    const validInteger=value=>/^[+-]?\d+$/.test(String(value).trim())&&Number(value)>=-2147483648&&Number(value)<=2147483647;
++    const decimalStyles=node=>{
++      for(let current=node;current;current=current.parentElement){
++        const css=current.getAttribute('style')||'',type=current.style.listStyleType;
++        if(['hidden','collapse'].includes(current.style.visibility))return false;
++        if(type&&type!=='decimal')return false;
++        if(/\b(?:counter-reset|counter-set|counter-increment|list-style-image)\s*:/i.test(css))return false;
++        const shorthand=css.match(/(?:^|;)\s*list-style\s*:\s*([^;]+)/i);
++        if(shorthand&&shorthand[1].replace(/!important/gi,'').trim().split(/\s+/).some(value=>!['decimal','inside','outside'].includes(value.toLowerCase())))return false;
++      }
++      return !node.style.display||node.style.display==='list-item';
++    };
++    for(const ol of doc.querySelectorAll('ol')){
++      if(blockedLists.has(ol)||(ol.hasAttribute('type')&&ol.getAttribute('type')!=='1'))continue;
++      const items=[...ol.children].filter(node=>node.tagName==='LI');
++      // Excluded direct items can change reversed/default/value-based counters.
++      if(items.length!==(originalItems.get(ol)||[]).length)continue;
++      if(ol.hasAttribute('start')&&!validInteger(ol.getAttribute('start')))continue;
++      if(items.some(node=>node.hasAttribute('value')&&!validInteger(node.getAttribute('value'))))continue;
++      const step=ol.hasAttribute('reversed')?-1:1;
++      let ordinal=ol.hasAttribute('start')?ol.start:step<0?items.length:1;
++      for(const item of items){
++        if(item.hasAttribute('value'))ordinal=item.value;
++        const literal=new RegExp('^\\s*'+ordinal+'[.)]\\s+').test(item.textContent||'');
++        if((!item.hasAttribute('type')||item.getAttribute('type')==='1')&&decimalStyles(item)&&!literal){
++          // Anchor to this item's actual prose before its first nested list. This
++          // also identifies flattened PDF markers without guessing from digits alone.
++          let ownText='',child;const walker=doc.createTreeWalker(item,5);while((child=walker.nextNode())){if(child.nodeType===1&&(child.tagName==='OL'||child.tagName==='UL'))break;if(child.nodeType===3)ownText+=child.textContent||'';}
++          ownText=normalize(ownText);
++          const candidate=ownText&&candidates.find(value=>!value.used&&value.label===String(ordinal)&&sourceNormalized.slice(value.bodyAt).startsWith(ownText)&&(!sourceNormalized[value.bodyAt+ownText.length]||/\s/.test(sourceNormalized[value.bodyAt+ownText.length])));
++          if(candidate){candidate.used=true;for(let offset=0;offset<candidate.count;offset++)sourceMarkerCredits.add(candidate.at+offset);}
++        }
++        ordinal=Math.min(2147483647,Math.max(-2147483648,ordinal+step));
++      }
++    }
++  }
++  doc.querySelectorAll('ol,ul').forEach(node=>node.insertBefore(doc.createTextNode(' '),node.firstChild));
+   doc.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,td,th,caption,figcaption,div,section,br').forEach(node=>node.appendChild(doc.createTextNode(' ')));
+   const source=tokens(sourceText),output=tokens(doc.body.textContent),available=new Map();for(const token of output)available.set(token,(available.get(token)||0)+1);
+   let missingTokens=0,missingPassageCount=0;const missingPassages=[];let sourceUnit=0;
+   // Bounded chunks give callers source locations even when extraction flattened paragraphs.
+-  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(const token of source.slice(at,at+40)){const count=available.get(token)||0;if(count)available.set(token,count-1);else missing++;}
++  for(let at=0;at<source.length;at+=40){sourceUnit++;let missing=0;for(let offset=0;offset<Math.min(40,source.length-at);offset++){if(sourceMarkerCredits.has(at+offset))continue;const token=source[at+offset],count=available.get(token)||0;if(count)available.set(token,count-1);else missing++;}
+     missingTokens+=missing;if(missing)missingPassageCount++;if(missing&&missingPassages.length<50)missingPassages.push({sourceUnit,startToken:at,expectedTokens:Math.min(40,source.length-at),missingTokens:missing});
+   }
+   const pageList=Array.isArray(pages)?pages:null;
+   const pageIds=items=>Array.isArray(items)?items.slice(0,100).map(item=>typeof item==='number'?item:item?.pageNum??item?.page??null).filter(value=>Number.isSafeInteger(value)&&value>0):[];
+   const extraction={method:method||'unknown',pagesExamined:pageList?pageList.length:null,emptyPageCandidates:pageList?pageList.filter(page=>!String(page?.text||'').trim()).length:null,pageErrorCount:Array.isArray(pageErrors)?pageErrors.length:null,lowConfidencePageCount:Array.isArray(lowConfidencePages)?lowConfidencePages.length:null,errorPages:pageIds(pageErrors),lowConfidencePages:pageIds(lowConfidencePages)};
+   const reviewRequired=!source.length||missingTokens>0||(extraction.pageErrorCount||0)>0||(extraction.lowConfidencePageCount||0)>0;
+-  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
++  return {status:!source.length?'unavailable':reviewRequired?'review_required':'matched',reviewRequired,method:'normalized-token-occurrence-check',sourceTokens:source.length,outputTokens:output.length+sourceMarkerCredits.size,matchedTokens:source.length-missingTokens,missingTokens,tokenRecall:source.length?Math.round((source.length-missingTokens)/source.length*10000)/10000:null,missingPassages,missingPassagesTruncated:Math.max(0,missingPassageCount-50),extraction,scope:{pageRange:pageRange||null,wholeDocument:!pageRange},note:'Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.'};
+ }
+ module.exports={assessSourceCoverage,LABELS,normalizeLanguage,voiceCatalog,selectVoice,planDocument,routePlan,kokoroVoiceIds};

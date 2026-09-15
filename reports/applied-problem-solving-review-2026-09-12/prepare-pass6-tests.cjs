@@ -1,0 +1,3 @@
+const fs=require('fs');
+const fresh='tests/applied_challenge_source_workflow.test.js';let s=fs.readFileSync(fresh,'utf8');s=s.replace("await type('select option[value=\"own\"]', 'own').catch(()=>{});",'');fs.writeFileSync(fresh,s);
+const old='tests/applied_challenge_search.test.js';s=fs.readFileSync(old,'utf8');s=s.replace("rows:[{evidence:'https://example.org/soil'}]","rows:[{id:'one',claim:'My option',evidence:'https://example.org/soil'}]");s=s.replace("Array.from({length:12},()=>({evidence:''}))","Array.from({length:12},(_,i)=>({id:'row-'+i,claim:'',evidence:''}))");fs.writeFileSync(old,s);

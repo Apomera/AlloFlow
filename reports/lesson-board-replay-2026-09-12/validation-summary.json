@@ -1,0 +1,34 @@
+{
+  "passed": true,
+  "implementedLocally": true,
+  "deployed": false,
+  "regression": {
+    "testFiles": 34,
+    "tests": 528,
+    "passed": 528,
+    "failed": 0,
+    "report": "regressions.json"
+  },
+  "browser": {
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "scans": 62,
+    "report": "browser-verification.json"
+  },
+  "classroom": {
+    "browsers": 4,
+    "scans": 23,
+    "supportChars": 27297,
+    "completedDocumentChars": 36331,
+    "report": "live/verification.json"
+  },
+  "limitations": [
+    "The board browser checks used authored activities and the generated sample pictures saved in the prior visual report.",
+    "No live image-provider requests were needed for this pass. The classroom text provider used a fixture.",
+    "The classroom test used the production adapter and a local Code.gs sandbox, not a deployed classroom.",
+    "No deployment or learner pilot was performed."
+  ]
+}

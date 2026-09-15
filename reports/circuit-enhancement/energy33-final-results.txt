@@ -1,0 +1,113 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all sixteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_energy_visuals.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > uses one whole-run reference for both storage types without modifying frames
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > retains the first calculated peak and its exact switch side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > keeps before and after when a known maximum first occurs after a jump
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power 1 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power -1 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power 0 independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > classifies signed power null independently of stored energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > shows zero energy as an empty gauge, not a full or unknown gauge
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > does not turn missing values into zero or infer an unknown initial energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy NaN from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy Infinity from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy -1 from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > rejects invalid energy undefined from maxima and meters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > does not add storage to resistors or amplify an empty reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > uses the actual solver joules for negative capacitor voltage and inductor current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy display semantics > preserves inductor energy across a real flyback event while power reverses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > renders the optional layer, joule scale, peak navigation and energy relationship
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·················stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > suppresses failed-run gauges and keeps an actionable explanation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_energy_visuals.test.js > stored energy presentation > explains a circuit without storage elements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  12:20:56
+   Duration  6.18s (transform 53ms, setup 74ms, import 189ms, tests 2.83s, environment 2.54s)
+

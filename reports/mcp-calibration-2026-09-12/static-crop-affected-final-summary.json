@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "files": 4,
+  "passed": 44,
+  "failed": 0,
+  "skipped": 0,
+  "strictNoSkipValidation": true,
+  "reports": [
+    "static-crop-affected-final.json",
+    "static-crop-security-boundary-final.json"
+  ],
+  "selectedTests": [
+    "tests/placeholder_chrome_audit.test.js",
+    "tests/remediation_pipeline_deep_hardening.test.js",
+    "tests/strip_executable_scripts.test.js",
+    "tests/remediation_security_boundary_inventory.test.js"
+  ]
+}

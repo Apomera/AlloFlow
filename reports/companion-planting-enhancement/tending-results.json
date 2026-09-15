@@ -1,0 +1,26 @@
+{
+  "viewports": [
+    {
+      "viewport": 1280,
+      "componentWidth": 1128,
+      "height": 255,
+      "overflow": false
+    },
+    {
+      "viewport": 320,
+      "componentWidth": 308,
+      "height": 536.09375,
+      "overflow": false
+    }
+  ],
+  "assertions": [
+    "Exact action previews and bounded care receipts",
+    "Plot-level pest scope and soil nutrient caps",
+    "No time or budget changes from tending",
+    "Day advance clears immediate receipts",
+    "Desktop, phone, large text, keyboard, and motion preferences",
+    "Legacy saves and planning hide unsupported care receipts"
+  ],
+  "errors": [],
+  "accessibility": []
+}

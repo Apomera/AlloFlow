@@ -1,0 +1,6 @@
+'use strict';
+const fs=require('node:fs'),file='reports/geometry-world-free-build-2026-09-12/verify-neutral-aim.cjs';let s=fs.readFileSync(file,'utf8').replace('width:1440,height:900','width:1440,height:1000');const anchor="  await page.screenshot({path:path.join(out,'final-aim-ready-and-shape-feedback.png'),timeout:120000});";if(s.split(anchor).length!==2)throw Error('Unexpected primary screenshot anchor');s=s.replace(anchor,anchor+`
+  await page.setViewportSize({width:1440,height:550});await page.locator('#geoworld-fs-wrap').focus();await page.keyboard.press('KeyQ');
+  r.compactLayout=await page.evaluate(()=>{const stack=document.querySelector('.gw-feedback-stack')?.getBoundingClientRect(),world=document.querySelector('#geoworld-fs-wrap')?.getBoundingClientRect();if(!stack||!world)return null;const x=world.x+world.width/2,y=world.y+world.height/2;return {stack:{x:stack.x,y:stack.y,w:stack.width,h:stack.height},crosshair:{x,y},overlapsCrosshair:x>=stack.left&&x<=stack.right&&y>=stack.top&&y<=stack.bottom};});
+  await page.screenshot({path:path.join(out,'final-feedback-wide-550.png'),timeout:120000});
+`);const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

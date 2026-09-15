@@ -1,0 +1,61 @@
+{
+  "keys": 1285,
+  "languages": {
+    "lang/french.js": {
+      "missing": 679,
+      "total": 1285,
+      "examples": [
+        "stem.anatomy.hint_explore",
+        "stem.anatomy.hint_quiz",
+        "stem.anatomy.hint_tour",
+        "stem.anatomy.hint_connections",
+        "stem.anatomy.hint_ai",
+        "stem.anatomy.hint_spotter",
+        "stem.anatomy.hint_pathways",
+        "stem.anatomy.hint_cards"
+      ]
+    },
+    "lang/spanish_latin_america.js": {
+      "missing": 679,
+      "total": 1285,
+      "examples": [
+        "stem.anatomy.hint_explore",
+        "stem.anatomy.hint_quiz",
+        "stem.anatomy.hint_tour",
+        "stem.anatomy.hint_connections",
+        "stem.anatomy.hint_ai",
+        "stem.anatomy.hint_spotter",
+        "stem.anatomy.hint_pathways",
+        "stem.anatomy.hint_cards"
+      ]
+    },
+    "lang/arabic.js": {
+      "missing": 679,
+      "total": 1285,
+      "examples": [
+        "stem.anatomy.hint_explore",
+        "stem.anatomy.hint_quiz",
+        "stem.anatomy.hint_tour",
+        "stem.anatomy.hint_connections",
+        "stem.anatomy.hint_ai",
+        "stem.anatomy.hint_spotter",
+        "stem.anatomy.hint_pathways",
+        "stem.anatomy.hint_cards"
+      ]
+    }
+  },
+  "files": {
+    "stem_lab/stem_tool_anatomy.js": {
+      "sha256": "2b6e72e2b58b75cc4e3c1c1d7b53835f7ebf6bec538c028f0bb4dadabeaeb522",
+      "bytes": 1516776
+    },
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": {
+      "sha256": "2b6e72e2b58b75cc4e3c1c1d7b53835f7ebf6bec538c028f0bb4dadabeaeb522",
+      "bytes": 1516776
+    },
+    "stem_tool_anatomy.js": {
+      "sha256": "d32939f75ec2f8f9778c55fb5f06130056953d1f737692d5b28687299df958a1",
+      "bytes": 740633
+    }
+  }
+}

@@ -916,7 +916,7 @@ window.SelHub = window.SelHub || {
       lesson: 'Some advocacy is fast (a sit-in). Some is slow (a 25-year climb). Both count. The slow advocacy gets less attention but moves more.',
       youCanDo: 'If you want change in an institution, sometimes the right strategy is joining it and changing it from inside. Activist + institutional positions both have power.',
       identifier: '"Not Without a Struggle" (1996), her memoir.' },
-    { id: 'lydiaXZ', name: 'Lydia X. Z. Brown', years: '1991-present', area: 'Disability justice',
+    { id: 'lydiaXZ', name: 'Ly Xīnzhèn M. Zhǎngsūn Brown', years: '1991-present', area: 'Disability justice',
       story: 'Autistic disability-rights advocate, lawyer, and writer. Has written extensively on intersectional disability justice — the ways race, gender, sexuality, and disability all intersect. Has organized against guardianship laws that strip autistic adults of decision-making rights. Centers the voices of disabled people of color who are most often left out of mainstream disability advocacy.',
       strategy: 'Intersectional analysis. The thing about advocating for one identity is that identities don\'t exist alone; people have multiple ones at once.',
       lesson: 'Mainstream advocacy movements often default to the most-privileged person within the marginalized group. Real advocacy includes the people the movement itself was missing.',
@@ -6713,7 +6713,7 @@ window.SelHub = window.SelHub || {
                   })
                 ) : hh('span'),
                 hh('div', { style: { display: 'flex', gap: 4 } },
-                  advBtn('📋 Copy', function() { try { navigator.clipboard.writeText(s.script); } catch(e) {} }, 'ghost', { padding: '4px 8px', fontSize: 9 }),
+                  advBtn('📋 Copy', function() { try { window.SelHub.copyText(s.script).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); }); } catch(e) {} }, 'ghost', { padding: '4px 8px', fontSize: 9 }),
                   advBtn('+1 used', function() { markUsed(s.id); }, 'good', { padding: '4px 10px', fontSize: 9 })
                 )
               )
@@ -9849,7 +9849,7 @@ var MENTOR_QUOTES = [
     { id: 'mq6', mentor: 'Haben Girma', context: 'On lawyering', quote: "When access is denied, fight back. The law is on your side.", useWhen: 'When you are told no and not given a reason.', followup: 'Whose job is it to tell you the legal reason? Not yours.' },
     { id: 'mq7', mentor: 'Ed Roberts', context: 'On the Berkeley sit-in', quote: 'If we have learned one thing from the civil rights movement, it is that when others speak for you, you lose.', useWhen: 'When you let a parent or teacher answer for you in a meeting.', followup: 'What is one sentence YOU could say in your next meeting, before anyone else jumps in?' },
     { id: 'mq8', mentor: 'Alice Wong', context: 'On disabled wisdom', quote: 'Disabled people are the experts on our own lives.', useWhen: 'When a professional tells you they know your experience better than you.', followup: 'You can disagree with experts. What is one thing you know about yourself that they got wrong?' },
-    { id: 'mq9', mentor: 'Lydia X.Z. Brown', context: 'On the autistic community', quote: 'Nothing about us without us.', useWhen: 'When decisions about your supports happen in a room you are not in.', followup: 'Whose meeting are you missing? Can you ask to be invited?' },
+    { id: 'mq9', mentor: 'Disability-rights movement (used by ASAN and Ari Ne\'eman)', context: 'A movement slogan, not one person\'s line — it predates the autistic self-advocacy movement that carried it forward', quote: 'Nothing about us without us.', useWhen: 'When decisions about your supports happen in a room you are not in.', followup: 'Whose meeting are you missing? Can you ask to be invited?' },
     { id: 'mq10', mentor: 'Greta Thunberg', context: 'On being underestimated', quote: 'I have Aspergers and that means I\'m sometimes a bit different from the norm. And, given the right circumstances, being different is a superpower.', useWhen: 'When you wonder if your neurodivergence stops you from leading.', followup: 'Pick one circumstance where being different IS the strength. Use it today.' },
     { id: 'mq11', mentor: 'Malala Yousafzai', context: 'On the right to learn', quote: 'One child, one teacher, one book, one pen can change the world.', useWhen: 'When you feel too small to push back on a school decision.', followup: 'Write one sentence to one teacher this week. Save it. Read it back if you doubt your voice.' },
     { id: 'mq12', mentor: 'Malala Yousafzai', context: 'On fear', quote: 'I raise up my voice, not so I can shout, but so that those without a voice can be heard.', useWhen: 'When advocating for yourself feels selfish.', followup: 'Who else benefits when YOU ask for what you need? Name one classmate who needs the same thing.' },
@@ -11721,7 +11721,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
           upd('phraseFavs', nf);
         }
         function copyPhrase(text) {
-          if (navigator.clipboard) { navigator.clipboard.writeText(text); if (addToast) addToast('Copied to clipboard', 'success'); }
+          if (window.SelHub && window.SelHub.copyText) { window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; } if (addToast) addToast('Copied to clipboard', 'success'); }); }
         }
         phraseLibContent = h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 6, color: _advFg('#f1f5f9'), fontSize: 18 } }, '💬 Phrase Library'),
@@ -12240,7 +12240,7 @@ var TRAUMA_INFORMED_ADVOCACY = [
         var letterOpenId = d.letterOpenId || null;
         var letterCustom = d.letterCustom || {};
         function copyLetter(text) {
-          if (navigator.clipboard) { navigator.clipboard.writeText(text); if (addToast) addToast('Letter copied', 'success'); }
+          if (window.SelHub && window.SelHub.copyText) { window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; } if (addToast) addToast('Letter copied', 'success'); }); }
         }
         function updateCustom(letterId, body) {
           var nc = Object.assign({}, letterCustom); nc[letterId] = body; upd('letterCustom', nc);
@@ -14176,8 +14176,8 @@ var TRAUMA_INFORMED_ADVOCACY = [
             ltAllFilled && h('button', { 'aria-label': 'Copy & Save',
               onClick: function() {
                 var text = curLt.format(ltFields);
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(text).then(function() {
+                if (window.SelHub && window.SelHub.copyText) {
+                  window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
                     addToast('Letter copied to clipboard!', 'success');
                   }).catch(function() {
                     addToast('Could not copy. Try selecting the text manually.', 'info');

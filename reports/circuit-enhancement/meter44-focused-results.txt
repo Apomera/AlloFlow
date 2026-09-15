@@ -1,0 +1,432 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_form_labels_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > names the AI tutor question field independently of its placeholder
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > associates visible labels with both Ohm inquiry text areas
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > retains accessible names on every other form control
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_form_labels_a11y.test.js > Circuit Lab form labels > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_node_inspection.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > maps terminal B current into a shared node and terminal A currents out
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a -0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 1e-15 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > lists both same-node terminals and cancels their known currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not infer aggregate currents when parallel ideal-source currents are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps known currents when the node voltage is floating
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > separates voltage sensing from current-carrying source/output terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > retains both sensing inputs when they reference the same node
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not invent a node terminal for current sensing through another source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps zero-current open contacts in the connection list
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > suppresses stale finite readings in a failed solution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > falls back to a used node and handles an empty network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > skips duplicate route points while placing a finite arrow
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··················stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > renders an optional node action, per-terminal flows and balance readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > preserves probe action labels outside inspection mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > describes sensing connections and failed totals explicitly
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > persists only identity and an exact cursor; resolves against a fresh identical calculation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > retains distinct before/after samples at the same timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > ignores selection, probes, view, camera, notes and current cursor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a value edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a terminals edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a schedule edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a duration edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a initial edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"version":2}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":-1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":100}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":0.00300000001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":"during"}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > does not hold a copied frame, a DC solution, a failed run, or failed stale data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares null minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus null without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares undefined minus 1 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares NaN minus 2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares Infinity minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e+308 minus -1e+308 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -2 minus -5 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -5 minus -2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e-14 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···········stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares the same selected component and probe orientation in both frames without mutating them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > keeps internal floating voltage differences known while node-to-reference voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > suppresses nonfinite, missing and failed readings even when stale values exist
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > renders side-aware comparison, signed bars and markers in both scopes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > hides stale comparison values and markers after edits and in DC mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > clips held markers to the visible full-scope window but retains the board overview
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > bounds saved camera settings and wraps azimuth without mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > normalizes invalid persisted camera fields to finite defaults
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > maps each branch to its own named nodes and two real 3D terminal paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps electrical values and solved readings independent of graphics options
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps topology stable when component values change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps sensing paths separate from current-carrying terminal routes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps every supported device family in a dense finite scene
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 35 elevation 52
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 0 elevation 85
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 180 elevation 38
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 155 elevation 15
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1 azimuth -90 elevation 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > reuses an already loaded compatible engine
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > uses the shared loader with required orbit controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > rejects a missing loader, failed asset, and missing camera controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > bounds a stalled loader and clears its timer after successful loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > offers orbit mode while preserving the default projected board
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > renders keyboard controls, named selections, snapshot readings, and model limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > shows time and switch side from the shared snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit_meter.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > measures a divider drop and exposes each lead voltage relative to reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > reverses polarity by swapping leads without changing the solution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > retains a known differential reading when both absolute potentials float
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > distinguishes the same floating node from different nodes of equal known voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > identifies unused nodes and separately floating sections without fabricating a difference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > does not report zero for failed circuits, even if both leads use node 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > withholds a nonfinite differential value NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > withholds a nonfinite differential value Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > withholds a nonfinite differential value -Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > compares the same newly selected lead pair at both held and current snapshots
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > retains exact before and after switch-event voltages at an identical timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > offers named lead controls and a native disclosure while keeping the signed summary readable
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > renders reference uncertainty alongside a known floating voltage instead of zero node potentials
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > explains node inspection and offers lead placement without claiming a probe is active
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+x·stdout | tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > labels voltage colors as reference-relative and hides invalid numeric readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+xstdout | tests/circuit_network_orbit_signal.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > places nonuniform samples on elapsed time and preserves exact sample indices
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > retains adjacent switch-event sides at one timestamp and selects the first tied extremum
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > breaks the path at unknown, nonfinite, and missing component readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > withholds readings from failed frames and invalid time positions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > handles unavailable runs without inventing extrema
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > anchors one-sign and zero traces to a finite zero baseline
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > keeps normalized geometry finite for huge and subnormal signals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > limits stored-energy traces to capacitors and inductors
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > uses signed power from real solved sources and loads without taking its magnitude
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > Calculated 3D signal data > reads real RLC stored energy and preserves the solver frames and held reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+········stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > exposes named controls, a textual alternative, and signed-power guidance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > falls back to voltage for a non-storage part without changing the saved energy preference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > shows the shared held sample on the trace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit_signal.test.js > 3D waveform teaching > does not show a time trace for a DC snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/circuit_network_node_inspection.test.js > node connection inspection > maps terminal B current into a shared node and terminal A currents out
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/circuit_network_node_inspection.test.js:5:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > bounds saved camera settings and wraps azimuth without mutating input
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/circuit_network_orbit.test.js:5:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/circuit_network_orbit_meter.test.js > 3D differential voltage instrument > measures a divider drop and exposes each lead voltage relative to reference
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/circuit_network_orbit_meter.test.js:5:1
+      3| let api;
+      4| const divider={components:[{id:1,type:'voltage',a:'A',b:'0',value:12},…
+      5| beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_circuit.js…
+       | ^
+      6| describe('3D differential voltage instrument',()=>{
+      7|  it('measures a divider drop and exposes each lead voltage relative to…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > renders reference uncertainty alongside a known floating voltage instead of zero node potentials
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/circuit_network_orbit_meter.test.js:48:2
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/circuit_network_orbit_meter.test.js > 3D voltage instrument presentation > labels voltage colors as reference-relative and hides invalid numeric readings
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/circuit_network_orbit_meter.test.js:55:2
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/circuit_network_sample_comparison.test.js > calculated sample hold > persists only identity and an exact cursor; resolves against a fresh identical calculation
+Error: Hook timed out in 10000ms.
+If this is a long-running hook, pass a timeout value as the last argument or configure it globally with "hookTimeout".
+ ❯ tests/circuit_network_sample_comparison.test.js:6:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  4 failed | 2 passed (6)
+      Tests  6 failed | 110 passed (116)
+   Start at  21:27:44
+   Duration  291.29s (transform 5.77s, setup 339ms, import 7.80s, tests 165.10s, environment 67.11s)
+

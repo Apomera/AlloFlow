@@ -445,7 +445,7 @@
     );
   }
 
-  function getCodeAC() { if (!_codeAC) { try { _codeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
+  function getCodeAC() { if (!_codeAC) { try { _codeAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_codeAC && _codeAC.state === 'suspended') { try { _codeAC.resume(); } catch(e) {} } return _codeAC; }
   function codeTone(f, d, t, v) { var ac = getCodeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCodeRun() { codeTone(440, 0.06, 'sine', 0.06); setTimeout(function() { codeTone(554, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { codeTone(659, 0.08, 'sine', 0.07); }, 100); }
   function sfxCodeError() { codeTone(220, 0.15, 'sawtooth', 0.06); setTimeout(function() { codeTone(180, 0.12, 'sawtooth', 0.05); }, 80); }
@@ -1755,7 +1755,7 @@
             function fireAudio(a) {
               if (!a) return;
               try {
-                var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                var audioCtx = window.__codingAudioCtx || (window.__codingAudioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()));
                 var osc = audioCtx.createOscillator();
                 var gain = audioCtx.createGain();
                 osc.type = 'sine';
@@ -2001,7 +2001,7 @@
             try {
               var encoded = btoa(JSON.stringify(blocks));
               var url = window.location.origin + window.location.pathname + '?codingShare=' + encoded;
-              navigator.clipboard.writeText(url).then(function() {
+              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url).then(function() {
                 if (addToast) addToast('🔗 Share link copied to clipboard!', 'success');
               });
             } catch(e) {
@@ -2082,7 +2082,7 @@
             var noteIdx = 0;
             window.__bgMusicInterval = setInterval(function() {
               try {
-                var actx = window.__codingAudioCtx || (window.__codingAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+                var actx = window.__codingAudioCtx || (window.__codingAudioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()));
                 var o = actx.createOscillator(); var g = actx.createGain();
                 o.type = 'triangle'; o.frequency.value = notes[noteIdx % notes.length];
                 g.gain.value = 0.08; o.connect(g); g.connect(actx.destination);

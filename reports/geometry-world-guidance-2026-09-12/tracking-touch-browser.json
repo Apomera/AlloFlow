@@ -1,0 +1,48 @@
+{
+  "scope": "Current production; single-page real WebGL, native Home/Learn/Start and touch Track/Stop",
+  "checks": [
+    {
+      "pass": true,
+      "label": "Native touch Home/Learn/Start enters a live WebGL lesson"
+    },
+    {
+      "pass": true,
+      "label": "Touch journal fits a 390px viewport"
+    },
+    {
+      "pass": true,
+      "label": "Touch Track has a reachable 44px target"
+    },
+    {
+      "pass": true,
+      "label": "Touch Track explicitly pins the selected activity"
+    },
+    {
+      "pass": true,
+      "label": "Touch Track preserves player position, blocks, scores, and reviewed work"
+    },
+    {
+      "pass": true,
+      "label": "Touch tracking updates the real mentor label"
+    },
+    {
+      "pass": true,
+      "label": "Touch Stop clears the pin and keeps the journal open"
+    },
+    {
+      "pass": true,
+      "label": "Touch Stop preserves player position and learning state"
+    },
+    {
+      "pass": true,
+      "label": "Touch Stop clears the real compass marker"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "sources": {
+    "stem_tool_geometryworld.js": "b8a97d39dc340ebb79305eef7abd5f9802a3bcd6ace3031f51bf814ec5fe176c",
+    "stem_tool_geometryworld_builder.js": "47327ddd192e4da45840ce52dc1f009f1514112031ad563294f78cb3d57225a9"
+  },
+  "pass": true
+}

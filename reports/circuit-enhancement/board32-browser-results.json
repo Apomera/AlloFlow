@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    "Shared before/after switch timestamp, sample buttons and keyboard stepping update the 3D lever and full scope without editing the circuit",
+    "Camera focus and scope/editor shortcuts move keyboard focus; emphasis, grid, camera and probes preserve electrical history and scope preferences",
+    "Whole-run preview seeking, shared playback and boundary keyboard controls",
+    "Desktop/phone focus containment, dock reflow, saved workspace restoration and accessibility",
+    "Unknown branch current, failed-run suppression, DC fallback and example recovery"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

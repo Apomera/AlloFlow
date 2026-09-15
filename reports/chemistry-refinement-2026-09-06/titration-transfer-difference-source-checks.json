@@ -1,0 +1,9 @@
+{
+  "sourceSyntax": true,
+  "sourcePublicMatch": true,
+  "equipmentLiteralReferences": 482,
+  "equipmentEnglishKeys": 464,
+  "newEnglishKeys": 10,
+  "fallbacksMatchCatalog": true,
+  "translationsPending": true
+}

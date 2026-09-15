@@ -1,0 +1,35 @@
+{
+  "verifiedAt": "2026-09-12T19:19:11.123Z",
+  "modelVersion": 4,
+  "supplyGapAnalysisVersion": 1,
+  "unitTests": {
+    "passed": 275,
+    "files": 13,
+    "newSupplyGapTests": 28
+  },
+  "browserWorkflows": [
+    {
+      "name": "supply-gaps",
+      "accessibilityAudits": 21
+    },
+    {
+      "name": "microgrid",
+      "accessibilityAudits": 13
+    },
+    {
+      "name": "demand-shift",
+      "accessibilityAudits": 16
+    }
+  ],
+  "accessibilityAudits": 50,
+  "sourceSha256": "2f9a306771481acb61d39a0f9975633c990d5b5fc3ceab23e95b393b7038ca19",
+  "sourceMirrorMatches": true,
+  "visualReview": [
+    "desktop gap timeline and accounting",
+    "31-period selection stress case",
+    "3D peak inspection",
+    "320px selected-period detail"
+  ],
+  "preview": "http://127.0.0.1:8790/",
+  "scope": "Real tool in isolated local React/Three.js host; not full-application deployment testing"
+}

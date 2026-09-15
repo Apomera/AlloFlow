@@ -7022,7 +7022,7 @@ function updateCoreRig3d(dt3d) {
       else if (motionMedia3d && motionMedia3d.removeListener) motionMedia3d.removeListener(syncGeologyMotion3d);
       if (ro) try { ro.disconnect(); } catch (e) {}
       try {
-        geo.dispose(); mat.dispose(); renderer.dispose();
+        geo.dispose(); mat.dispose(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
         coreRigGeometries3d.forEach(function (rigGeometry3d) { rigGeometry3d.dispose(); });
         coreRigMaterials3d.forEach(function (rigMaterial3d) { rigMaterial3d.dispose(); });
         hoverSourceGeo.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose();

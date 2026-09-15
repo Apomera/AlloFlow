@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "Course support schedule",
+    "language": "en",
+    "source_page_count": 1,
+    "source_sha256": "5e5d69b10511b30cd4178e219f96e052852c3f3b3bb4c4baf2ad146a70130ac4",
+    "document_type": "handout"
+  },
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "Course support schedule Weekly support services Day Service Location Monday Tutoring Library Tuesday Captioning Room 204"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "Course support schedule",
+      "source_page": 1
+    },
+    {
+      "type": "table",
+      "caption": "Weekly support services",
+      "columns": [
+        "Day",
+        "Service",
+        "Location"
+      ],
+      "rows": [
+        [
+          "Monday",
+          "Tutoring",
+          "Library"
+        ],
+        [
+          "Tuesday",
+          "Captioning",
+          "Room 204"
+        ]
+      ],
+      "row_headers": true,
+      "source_page": 1
+    }
+  ],
+  "review_notes": []
+}

@@ -1,0 +1,233 @@
+{
+  "checks": [
+    "Actual setup, tare and addition controls agree with independent forecasts, inclusive target-band edges, exact targets, overshoots and per-portion capacity limits.",
+    "Comparison toggling preserves mass and records; stale records, off-pan samples, keyboard focus and descriptions, remount defaults, forced colors, narrow layout, tiny/malformed values, and live chemistry isolation pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "compact",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "compact",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "missing-boat",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "missing-boat",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "shield-closed",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "shield-closed",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "medium-reaches-target",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "medium-reaches-target",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-lower-band",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-lower-band",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-target",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-target",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-upper-band",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-upper-band",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "would-overshoot",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "would-overshoot",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "violations": []
+    },
+    {
+      "state": "portion-specific-limit",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "portion-specific-limit",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "at-capacity",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "at-capacity",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "violations": []
+    }
+  ]
+}

@@ -103,7 +103,7 @@ window.StemLab = window.StemLab || {
       // ═══ SOUND EFFECTS ═══
       var _audioCtx = null;
       var getAudio = function() {
-        if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (!_audioCtx) { try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
         return _audioCtx;
       };
       var playTone = function(freq, dur, type, vol) {

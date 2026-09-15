@@ -97,7 +97,7 @@ describe('Learning Lab Script Library accessibility', () => {
   });
 
   it('handles asynchronous clipboard success and failure', () => {
-    expect(library).toContain('Promise.resolve(navigator.clipboard.writeText(text)).then(function()');
+    expect(library).toContain('Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text)).then(function()');
     expect(library).toContain('Script copied. Review and adapt it before using it.');
     expect(library).toContain('The script could not be copied automatically.');
     expect(library).toContain('.catch(function()');

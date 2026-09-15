@@ -14408,7 +14408,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         function copyHabitatFieldReport() {
           var reportText = buildHabitatFieldReportText();
           if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(reportText).then(function() { finishFieldReportCopy(true); }).catch(function() { fallbackCopyFieldReport(reportText); });
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(reportText).then(function() { finishFieldReportCopy(true); }).catch(function() { fallbackCopyFieldReport(reportText); });
           } else fallbackCopyFieldReport(reportText);
         }
 

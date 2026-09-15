@@ -1,0 +1,85 @@
+{
+  "name": "written-phone",
+  "errors": [],
+  "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nWrite a response ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nYour next action\n\nDescribe what you want to do and why.\n\nEnter to send · Shift + Enter for a new line.\n\nDictate\nSend action\n💡 Give me a clue\nOne clue per scene. You still decide what happens.",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+      "height": 691,
+      "scrollHeight": 1031
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Open story summary",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Open reading view",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Read each scene automatically",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Write a response ↓",
+      "disabled": false,
+      "top": 243,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "TEXTAREA",
+      "label": "Your next action",
+      "disabled": false,
+      "top": 772,
+      "height": 130,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Dictate",
+      "disabled": false,
+      "top": 941,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Send action",
+      "disabled": true,
+      "top": 993,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "💡 Give me a clue",
+      "disabled": false,
+      "top": 1062,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

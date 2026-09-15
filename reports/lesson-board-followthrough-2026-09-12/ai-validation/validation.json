@@ -1,0 +1,23 @@
+{
+  "status": "blocked",
+  "reason": "missing-credential",
+  "backend": "gemini",
+  "cases": [
+    {
+      "id": "fractions-primary",
+      "level": "Grade3",
+      "goal": "core"
+    },
+    {
+      "id": "ecosystems-middle",
+      "level": "Grade6",
+      "goal": "expedition"
+    },
+    {
+      "id": "evidence-secondary",
+      "level": "Grade9",
+      "goal": "architect"
+    }
+  ],
+  "calls": 0
+}

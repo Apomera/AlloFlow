@@ -1,0 +1,4432 @@
+{
+  "startedAt": "2026-09-13T03:37:34.703Z",
+  "browser": "148.0.7778.96",
+  "axe": "4.12.1",
+  "origin": "http://127.0.0.1:61885",
+  "method": "Local existing compiled shell and local canonical lazy modules; third-party requests blocked; fresh browser context; no authenticated or generated-content workflows",
+  "states": [
+    {
+      "name": "backend-initial-1280",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n144 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\n?\nAI Backend Settings\n\nFIRST-TIME SETUP · CHOOSE YOUR AI\n\nAlloFlow uses an AI engine to create lessons, read aloud, and answer questions. Pick how you'd like it to work — you can change this any time.\n\n🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get AI: open AlloFlow inside Google Gemini. Free with a Google account, using your Gemini plan's daily quota (personal, Education, or paid plans all work). Nothing to install and no key to manage.\n\nOpens gemini.google.com in a new tab. Plan details at google.com/gemini\n\n✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's cloud with a free key — we'll walk you through getting one (about 2 minutes).\n\nWorks anywhere · needs internet\n\n🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this computer — no account, no internet needed after setup. One click downloads a starter AI model.\n\n8 GB+ memory recommended · ~2.5 GB one-time download\n\n🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI on this computer? Connect it.\n\nSaved work on this device\n\nOpen your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.\n\nOpen saved work\n▼\nAdvanced settings\nAI Backend Settings\nEnglish\nAlloFlow\n\nCHOOSE YOUR LEARNING PATHWAY\n\nCHOOSE YOUR WORKSPACE\n\nHow would you like to begin?\n\nStart with step-by-step guidance or open the complete AlloFlow workspace.\n\nRECOMMENDED\nGuided Mode\nStep-by-step guidance through lesson creation and student activities\nFull Platform\nComplete access to all AlloFlow features: lessons, STEAM Lab, and tools\n\nDESTINATIONS\n\nOpen a tool directly\n\nJump straight to a focused collection without opening the full workspace first.\n\nLearning Tools\nSTEAM Lab, StoryForge, SEL Hub, Research Hub & more: explore, create, investigate, and grow\nEducator Tools\nBehaviorLens, Report Writer, and other professional educator tools.\nVoice & device setup\nOptional\n\nYou can switch modes anytime from the menu\n\n🤖\nNot sure? Ask AlloBot\nSAVED TO DEVICE",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".lp-utility-bar"
+              ],
+              "html": "<div class=\"lp-utility-bar\" aria-label=\"Launch Pad settings\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".lp-ai-settings > span"
+              ],
+              "html": "<span>AI Backend Settings</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-ai-settings\" aria-label=\"AI Backend Settings\" aria-describedby=\"launch-pad-ai-settings-status\" aria-busy=\"false\" aria-disabled=\"false\" title=\"AI Backend Settings\" style=\"cursor: pointer; opacity: 1;\">",
+                      "target": [
+                        ".lp-ai-settings"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-lang-trigger > span"
+              ],
+              "html": "<span style=\"max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;\">English</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-lang-trigger\" aria-label=\"Change language. Current: English\" aria-expanded=\"false\" aria-controls=\"launch-pad-language-list\" aria-disabled=\"false\" style=\"opacity: 1; cursor: pointer;\">",
+                      "target": [
+                        ".lp-lang-trigger"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-logo-block > h1"
+              ],
+              "html": "<h1 style=\"font-size: clamp(32px, 5vw, 41px); line-height: 1; font-weight: 900; background: linear-gradient(100deg, rgb(255, 247, 214), rgb(252, 211, 77) 42%, rgb(251, 146, 60)) text; color: transparent; margin: 0px 0px 10px; letter-spacing: -1.45px;\">AlloFlow</h1>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "30.8pt (41px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<h1 style=\"font-size: clamp(32px, 5vw, 41px); line-height: 1; font-weight: 900; background: linear-gradient(100deg, rgb(255, 247, 214), rgb(252, 211, 77) 42%, rgb(251, 146, 60)) text; color: transparent; margin: 0px 0px 10px; letter-spacing: -1.45px;\">AlloFlow</h1>",
+                      "target": [
+                        ".lp-logo-block > h1"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-logo-block > p"
+              ],
+              "html": "<p style=\"font-size: 10px; color: rgb(174, 187, 210); font-weight: 780; letter-spacing: 2.25px; text-transform: uppercase; margin: 0px;\">Choose your learning pathway</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-choice-section > .lp-section-intro > .lp-eyebrow"
+              ],
+              "html": "<p class=\"lp-eyebrow\">Choose your workspace</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-choice-title"
+              ],
+              "html": "<h2 id=\"launch-pad-choice-title\" class=\"lp-section-title\">How would you like to begin?</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "18.8pt (25px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-choice-section > .lp-section-intro > .lp-section-copy"
+              ],
+              "html": "<p class=\"lp-section-copy\">Start with step-by-step guidance or open the complete AlloFlow workspace.</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-badge"
+              ],
+              "html": "<span class=\"lp-badge\">Recommended</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<span class=\"lp-badge\">Recommended</span>",
+                      "target": [
+                        ".lp-badge"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-guided-title"
+              ],
+              "html": "<span id=\"launch-pad-guided-title\" class=\"lp-card-title\">Guided Mode</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.8pt (17px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-emphasis=\"recommended\" data-pathway=\"guided\" aria-labelledby=\"launch-pad-guided-title\" aria-describedby=\"launch-pad-guided-badge launch-pad-guided-desc\">",
+                      "target": [
+                        "button[data-emphasis=\"recommended\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-guided-desc"
+              ],
+              "html": "<span id=\"launch-pad-guided-desc\" class=\"lp-card-desc\">Step-by-step guidance through lesson creation and student activities</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-emphasis=\"recommended\" data-pathway=\"guided\" aria-labelledby=\"launch-pad-guided-title\" aria-describedby=\"launch-pad-guided-badge launch-pad-guided-desc\">",
+                      "target": [
+                        "button[data-emphasis=\"recommended\"]"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-full-title"
+              ],
+              "html": "<span id=\"launch-pad-full-title\" class=\"lp-card-title\">Full Platform</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.8pt (17px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-emphasis=\"standard\" data-pathway=\"full\" aria-labelledby=\"launch-pad-full-title\" aria-describedby=\"launch-pad-full-desc\">",
+                      "target": [
+                        "button[data-emphasis=\"standard\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-full-desc"
+              ],
+              "html": "<span id=\"launch-pad-full-desc\" class=\"lp-card-desc\">Complete access to all AlloFlow features: lessons, STEAM Lab, and tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-emphasis=\"standard\" data-pathway=\"full\" aria-labelledby=\"launch-pad-full-title\" aria-describedby=\"launch-pad-full-desc\">",
+                      "target": [
+                        "button[data-emphasis=\"standard\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-direct-section > .lp-section-intro > .lp-eyebrow"
+              ],
+              "html": "<p class=\"lp-eyebrow\">Destinations</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-direct-title"
+              ],
+              "html": "<h2 id=\"launch-pad-direct-title\" class=\"lp-section-title\">Open a tool directly</h2>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "18.8pt (25px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lp-direct-section > .lp-section-intro > .lp-section-copy"
+              ],
+              "html": "<p class=\"lp-section-copy\">Jump straight to a focused collection without opening the full workspace first.</p>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-learning-title"
+              ],
+              "html": "<span id=\"launch-pad-learning-title\" class=\"lp-card-title\">Learning Tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.8pt (17px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-pathway=\"learning\" aria-labelledby=\"launch-pad-learning-title\" aria-describedby=\"launch-pad-learning-desc\">",
+                      "target": [
+                        "button[data-pathway=\"learning\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-learning-desc"
+              ],
+              "html": "<span id=\"launch-pad-learning-desc\" class=\"lp-card-desc\">STEAM Lab, StoryForge, SEL Hub, Research Hub &amp; more: explore, create, investigate, and grow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-pathway=\"learning\" aria-labelledby=\"launch-pad-learning-title\" aria-describedby=\"launch-pad-learning-desc\">",
+                      "target": [
+                        "button[data-pathway=\"learning\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-educator-title"
+              ],
+              "html": "<span id=\"launch-pad-educator-title\" class=\"lp-card-title\">Educator Tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "12.8pt (17px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-pathway=\"educator\" aria-labelledby=\"launch-pad-educator-title\" aria-describedby=\"launch-pad-educator-desc\">",
+                      "target": [
+                        "button[data-pathway=\"educator\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#launch-pad-educator-desc"
+              ],
+              "html": "<span id=\"launch-pad-educator-desc\" class=\"lp-card-desc\">BehaviorLens, Report Writer, and other professional educator tools.</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" class=\"lp-card\" data-pathway=\"educator\" aria-labelledby=\"launch-pad-educator-title\" aria-describedby=\"launch-pad-educator-desc\">",
+                      "target": [
+                        "button[data-pathway=\"educator\"]"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"lp-root\" data-alloflow-launch...=\"true\" role=\"region\" aria-label=\"Choose how to use Al...\" style=\"position: fixed; ins...\">",
+                      "target": [
+                        ".lp-root"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "html-has-lang",
+        "html-lang-valid",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "summary-name",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Close"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get AI: open A",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's cloud with",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this computer —",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI on this co",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open saved work",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "▼\nAdvanced settings",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Backend Settings",
+          "label": "AI Backend Settings"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "English",
+          "label": "Change language. Current: English"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "RECOMMENDED\nGuided Mode\nStep-by-step guidance through lesson creation and studen",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Full Platform\nComplete access to all AlloFlow features: lessons, STEAM Lab, and ",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Learning Tools\nSTEAM Lab, StoryForge, SEL Hub, Research Hub & more: explore, cre",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Educator Tools\nBehaviorLens, Report Writer, and other professional educator tool",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Enable Voice Access"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Skip Voice Access setup"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "🤖\nNot sure? Ask AlloBot",
+          "label": "Open AlloBot onboarding help"
+        }
+      ]
+    },
+    {
+      "name": "teacher-workspace-1280",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n82 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\nAlloFlow\nCreate\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\nReady\n\nREADY\n\nSource Material\n\nConfigure your settings and generate diverse entry points for your curriculum.\n\nSource Material\n\nOR CHOOSE A STARTING POINT\n\nOpen reading catalog\nBooks, articles & primary sources\nFind a resource online\nPaste a link or let AI search\nGenerate from a topic\nAI writes it for you\n?\nStudent tools\nQuick Start\n\nStep 1 of 4\n\nSKIP\nGlobal Context\n\nSelect the target grade level for your resources.\n\nK\n1st\n2nd\n3rd\n4th\n5th\n6th\n7th\n8th\n9th\n10th\n11th\n12th\nCollege\nLearning Goal & Standards\n\nDescribe the skill or concept (e.g. \"Fractions\"). AI will find relevant standards.\n\nFind\nNext",
+      "violations": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#tab-create"
+              ],
+              "html": "<button role=\"tab\" aria-selected=\"true\" tabindex=\"0\" aria-controls=\"tour-input-panel\" id=\"tab-create\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_create\" aria-label=\"Create new content\">",
+              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"tour-input-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": [
+                    "aria-controls=\"tour-input-panel\""
+                  ],
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Invalid ARIA attribute value: aria-controls=\"tour-input-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".hover\\:border-indigo-500.hover\\:text-indigo-700.px-2:nth-child(14)"
+              ],
+              "html": "<button type=\"button\" data-help-key=\"wizard_grade_option\" aria-pressed=\"false\" class=\"py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700\">College</button>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#64748b",
+                    "bgColor": "#eef2ff",
+                    "contrastRatio": 4.25,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" data-help-key=\"wizard_grade_option\" aria-pressed=\"false\" class=\"py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700\">College</button>",
+                      "target": [
+                        ".hover\\:border-indigo-500.hover\\:text-indigo-700.px-2:nth-child(14)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#workspace-sidebar-pane"
+              ],
+              "html": "<div id=\"workspace-sidebar-pane\" class=\"flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 \" style=\"width: 35%; height: 100%; min-height: 0px; flex: 0 0 auto; display: flex;\" aria-label=\"Gemini Powered Scaffolds\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".alloflow-student-tools-launcher"
+              ],
+              "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"alloflow-student-tools-panel\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">82 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-brand-name"
+              ],
+              "html": "<span class=\"allo-premium-brand-name bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent\">AlloFlow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "18.0pt (24px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lg\\:inline"
+              ],
+              "html": "<span class=\"hidden lg:inline\">Teach Live</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[10rem\\]"
+              ],
+              "html": "<span class=\"max-w-[10rem] truncate\">Start &amp; setup</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".tracking-tight.font-black.text-sm"
+              ],
+              "html": "<span class=\"text-sm font-black tracking-tight\">Student tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+                      "target": [
+                        ".alloflow-student-tools-launcher"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-progressbar-name",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Guide & Assistant\nPedagogy, Navigation & Auto-Setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open reading catalog\nBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find a resource online\nPaste a link or let AI search",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate from a topic\nAI writes it for you",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student tools",
+          "label": "Open Student Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "SKIP",
+          "label": "Skip"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Close Wizard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "K",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1st",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2nd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3rd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "5th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "6th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "7th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "8th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "9th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "10th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "11th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "12th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "College",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Region"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Learning Goal"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find",
+          "label": "Search learning standards"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Next",
+          "label": "Next"
+        }
+      ]
+    },
+    {
+      "name": "teacher-workspace-after-dialog",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n82 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\nAlloFlow\nCreate\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\nReady\n\nREADY\n\nSource Material\n\nConfigure your settings and generate diverse entry points for your curriculum.\n\nSource Material\n\nOR CHOOSE A STARTING POINT\n\nOpen reading catalog\nBooks, articles & primary sources\nFind a resource online\nPaste a link or let AI search\nGenerate from a topic\nAI writes it for you\n?\nStudent tools\nQuick Start\n\nStep 1 of 4\n\nSKIP\nGlobal Context\n\nSelect the target grade level for your resources.\n\nK\n1st\n2nd\n3rd\n4th\n5th\n6th\n7th\n8th\n9th\n10th\n11th\n12th\nCollege\nLearning Goal & Standards\n\nDescribe the skill or concept (e.g. \"Fractions\"). AI will find relevant standards.\n\nFind\nNext",
+      "violations": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#tab-create"
+              ],
+              "html": "<button role=\"tab\" aria-selected=\"true\" tabindex=\"0\" aria-controls=\"tour-input-panel\" id=\"tab-create\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_create\" aria-label=\"Create new content\">",
+              "failureSummary": "Fix all of the following:\n  Invalid ARIA attribute value: aria-controls=\"tour-input-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": [
+                    "aria-controls=\"tour-input-panel\""
+                  ],
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Invalid ARIA attribute value: aria-controls=\"tour-input-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".hover\\:border-indigo-500.hover\\:text-indigo-700.px-2:nth-child(14)"
+              ],
+              "html": "<button type=\"button\" data-help-key=\"wizard_grade_option\" aria-pressed=\"false\" class=\"py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700\">College</button>",
+              "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fgColor": "#64748b",
+                    "bgColor": "#eef2ff",
+                    "contrastRatio": 4.25,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": null,
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" data-help-key=\"wizard_grade_option\" aria-pressed=\"false\" class=\"py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700\">College</button>",
+                      "target": [
+                        ".hover\\:border-indigo-500.hover\\:text-indigo-700.px-2:nth-child(14)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element has insufficient color contrast of 4.25 (foreground color: #64748b, background color: #eef2ff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#workspace-sidebar-pane"
+              ],
+              "html": "<div id=\"workspace-sidebar-pane\" class=\"flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 \" style=\"width: 35%; height: 100%; min-height: 0px; flex: 0 0 auto; display: flex;\" aria-label=\"Gemini Powered Scaffolds\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".alloflow-student-tools-launcher"
+              ],
+              "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"alloflow-student-tools-panel\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">82 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-brand-name"
+              ],
+              "html": "<span class=\"allo-premium-brand-name bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent\">AlloFlow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "18.0pt (24px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lg\\:inline"
+              ],
+              "html": "<span class=\"hidden lg:inline\">Teach Live</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[10rem\\]"
+              ],
+              "html": "<span class=\"max-w-[10rem] truncate\">Start &amp; setup</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".tracking-tight.font-black.text-sm"
+              ],
+              "html": "<span class=\"text-sm font-black tracking-tight\">Student tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+                      "target": [
+                        ".alloflow-student-tools-launcher"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-progressbar-name",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Guide & Assistant\nPedagogy, Navigation & Auto-Setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open reading catalog\nBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find a resource online\nPaste a link or let AI search",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate from a topic\nAI writes it for you",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student tools",
+          "label": "Open Student Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "SKIP",
+          "label": "Skip"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Close Wizard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "K",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1st",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2nd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3rd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "5th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "6th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "7th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "8th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "9th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "10th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "11th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "12th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "College",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Region"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Learning Goal"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find",
+          "label": "Search learning standards"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Next",
+          "label": "Next"
+        }
+      ]
+    },
+    {
+      "name": "teacher-workspace-320",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "bodyText": "Skip to Content\nLoading tools…\n82 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nMore information\nAlloFlow\nCreate\nPreview\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\n?\nStudent tools\nQuick Start\n\nStep 1 of 4\n\nSKIP\nGlobal Context\n\nSelect the target grade level for your resources.\n\nK\n1st\n2nd\n3rd\n4th\n5th\n6th\n7th\n8th\n9th\n10th\n11th\n12th\nCollege\nLearning Goal & Standards\n\nDescribe the skill or concept (e.g. \"Fractions\"). AI will find relevant standards.\n\nFind\nNext",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".alloflow-student-tools-launcher"
+              ],
+              "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"alloflow-student-tools-panel\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" class=\"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors\">",
+                      "target": [
+                        ".border-white\\/25"
+                      ]
+                    },
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".alloflow-student-tools-launcher > .tracking-tight.font-black"
+              ],
+              "html": "<span class=\"text-sm font-black tracking-tight\">Student tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+                      "target": [
+                        ".alloflow-student-tools-launcher"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#quickstart-wizard-title"
+              ],
+              "html": "<h2 id=\"quickstart-wizard-title\" class=\"text-xl font-black text-slate-800 flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "15.0pt (20px)",
+                    "fontWeight": "bold",
+                    "messageKey": "elmPartiallyObscuring",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it partially overlaps other elements"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-progressbar-name",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Guide & Assistant\nPedagogy, Navigation & Auto-Setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student tools",
+          "label": "Open Student Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "SKIP",
+          "label": "Skip"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Close Wizard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "K",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1st",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2nd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3rd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "5th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "6th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "7th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "8th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "9th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "10th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "11th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "12th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "College",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Region"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Learning Goal"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find",
+          "label": "Search learning standards"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Next",
+          "label": "Next"
+        }
+      ]
+    },
+    {
+      "name": "teacher-workspace-320-spacing",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "bodyText": "Skip to Content\nLoading tools…\n82 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nMore information\nAlloFlow\nCreate\nPreview\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\n📦\n\nLoading Source input...\n\nModule loading from CDN. If this persists, check your connection.\n\n📦\n\nLoading Generator tools...\n\nModule loading from CDN. If this persists, check your connection.\n\n?\nStudent tools\nQuick Start\n\nStep 1 of 4\n\nSKIP\nGlobal Context\n\nSelect the target grade level for your resources.\n\nK\n1st\n2nd\n3rd\n4th\n5th\n6th\n7th\n8th\n9th\n10th\n11th\n12th\nCollege\nLearning Goal & Standards\n\nDescribe the skill or concept (e.g. \"Fractions\"). AI will find relevant standards.\n\nFind\nNext",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".alloflow-student-tools-launcher"
+              ],
+              "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"alloflow-student-tools-panel\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "elmPartiallyObscured",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div role=\"status\" aria-live=\"polite\" class=\"bg-slate-50 rounded-xl p-6 text-center border border-slate-400\">",
+                      "target": [
+                        ".p-6.text-center.border-slate-400:nth-child(3)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it's partially obscured by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">82 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "elmPartiallyObscured",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div role=\"status\" aria-live=\"polite\" class=\"bg-slate-50 rounded-xl p-6 text-center border border-slate-400\">",
+                      "target": [
+                        ".p-6.text-center.border-slate-400:nth-child(3)"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it's partially obscured by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" class=\"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors\">",
+                      "target": [
+                        ".border-white\\/25"
+                      ]
+                    },
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".alloflow-student-tools-launcher > .tracking-tight.font-black"
+              ],
+              "html": "<span class=\"text-sm font-black tracking-tight\">Student tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+                      "target": [
+                        ".alloflow-student-tools-launcher"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "#quickstart-wizard-title"
+              ],
+              "html": "<h2 id=\"quickstart-wizard-title\" class=\"text-xl font-black text-slate-800 flex items-center gap-2\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "15.0pt (20px)",
+                    "fontWeight": "bold",
+                    "messageKey": "elmPartiallyObscuring",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it partially overlaps other elements"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-progressbar-name",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Preview",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Guide & Assistant\nPedagogy, Navigation & Auto-Setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "?",
+          "label": "Turn on Help Mode to learn about any UI element. Click on buttons, panels, or tools to see detailed explanations."
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student tools",
+          "label": "Open Student Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "SKIP",
+          "label": "Skip"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Close Wizard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "K",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1st",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2nd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3rd",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "5th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "6th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "7th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "8th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "9th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "10th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "11th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "12th",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "College",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Region"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": "Enter Learning Goal"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find",
+          "label": "Search learning standards"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Next",
+          "label": "Next"
+        }
+      ]
+    },
+    {
+      "name": "teacher-loaded-1280",
+      "title": "AlloFlow | Adaptive UDL Platform",
+      "url": "http://127.0.0.1:61885/app/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "bodyText": "Skip to Content\nLoading tools…\n79 left\nAlloFlow\nTEACHER / SOURCE MATERIAL\nNote: Do not input Personally Identifiable Information (PII).\nTeach Live\nStart & setup\nMore information\nAlloFlow\nCreate\nHistory\nAI Guide & Assistant\nPedagogy, Navigation & Auto-Setup\nSource Material\nUpload\nLoad Project\nLink\nGenerate\n📖\nBooks\nFind a tool\n\nNarrow the list below by purpose, or search it.\n\nCollapse\n\nA filter is on: showing 8 of 24 tools.\n\nShow all tools\nSearch by name\n8 shown\nRecommended\nMake accessible\nEngage\nAssess & deliver\nAll tools\nExpand All\nUniversal Settings\n\n5th Grade · English\n\nAnalyze Source Material\nGlossary\nText Adaptation\nLesson Images\nAssess\nLesson Plan\nAssignment Directions\nyou write it\nPack optionsAuto (AI Decides)\n✨\nNeeds AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas\nPlan full pack\nStart with a resource list you can review and edit before generation.\nReady\n\nREADY\n\nSource Material\n\nConfigure your settings and generate diverse entry points for your curriculum.\n\nSource Material\n\nOR CHOOSE A STARTING POINT\n\nOpen reading catalog\nBooks, articles & primary sources\nFind a resource online\nPaste a link or let AI search\nGenerate from a topic\nAI writes it for you\nStudent tools",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "description": "Ensure ARIA attributes are not prohibited for an element's role",
+          "help": "Elements must only use permitted ARIA attributes",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                "#workspace-sidebar-pane"
+              ],
+              "html": "<div id=\"workspace-sidebar-pane\" class=\"flex flex-col gap-4 overflow-y-auto pe-2 custom-scrollbar transition-all duration-200 \" style=\"width: 35%; height: 100%; min-height: 0px; flex: 0 0 auto; display: flex;\" aria-label=\"Gemini Powered Scaffolds\">",
+              "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "aria-valid-attr-value",
+          "impact": "critical",
+          "description": "Ensure all ARIA attributes have valid values",
+          "help": "ARIA attributes must conform to valid values",
+          "tags": [
+            "cat.aria",
+            "wcag2a",
+            "wcag412",
+            "EN-301-549",
+            "EN-9.4.1.2",
+            "RGAAv4",
+            "RGAA-7.1.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".alloflow-student-tools-launcher"
+              ],
+              "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+              "failureSummary": "Fix all of the following:\n  Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\"",
+              "any": [],
+              "all": [
+                {
+                  "id": "aria-valid-attr-value",
+                  "data": {
+                    "messageKey": "controlsWithinPopup",
+                    "needsReview": "aria-controls=\"alloflow-student-tools-panel\""
+                  },
+                  "relatedNodes": [],
+                  "impact": "critical",
+                  "message": "Unable to determine if aria-controls referenced ID exists on the page while using aria-haspopup: aria-controls=\"alloflow-student-tools-panel\""
+                }
+              ],
+              "none": []
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "tags": [
+            "cat.color",
+            "wcag2aa",
+            "wcag143",
+            "TTv5",
+            "TT13.c",
+            "EN-301-549",
+            "EN-9.1.4.3",
+            "ACT",
+            "RGAAv4",
+            "RGAA-3.2.1"
+          ],
+          "nodes": [
+            {
+              "target": [
+                ".bottom-4 > .gap-1\\.5"
+              ],
+              "html": "<span class=\"flex items-center gap-1.5\">",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".gap-1\\.5 > span:nth-child(2)"
+              ],
+              "html": "<span aria-hidden=\"true\" style=\"display: inline-block; min-width: 8ch; font-variant-numeric: tabular-nums; white-space: nowrap;\">80 left</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div data-allo-module-loading-pill=\"\" role=\"status\" aria-live=\"polite\" class=\"fixed bottom-4 left-4 z-[139] no-print flex items-center gap-2 bg-slate-800/90 text-slate-100 rounded-full pl-3 pr-2 py-1.5 shadow-lg text-[11px] font-bold backdrop-blur-sm\">",
+                      "target": [
+                        ".bottom-4"
+                      ]
+                    },
+                    {
+                      "html": "<div class=\"absolute inset-0 bg-dot-pattern opacity-20\"></div>",
+                      "target": [
+                        ".bg-dot-pattern"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-brand-name"
+              ],
+              "html": "<span class=\"allo-premium-brand-name bg-gradient-to-r from-amber-300 via-orange-300 to-orange-400 bg-clip-text text-transparent\">AlloFlow</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "18.0pt (24px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "3:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-context-line"
+              ],
+              "html": "<span class=\"allo-premium-context-line text-[11px] font-black uppercase tracking-[.14em] text-indigo-100\">Teacher <span aria-hidden=\"true\">/</span> Source Material</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".allo-premium-pii-text"
+              ],
+              "html": "<span class=\"allo-premium-pii-text\">Note: Do not input Personally Identifiable Information (PII).</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "8.3pt (11px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".lg\\:inline"
+              ],
+              "html": "<span class=\"hidden lg:inline\">Teach Live</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".max-w-\\[10rem\\]"
+              ],
+              "html": "<span class=\"max-w-[10rem] truncate\">Start &amp; setup</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".border-white\\/25 > span"
+              ],
+              "html": "<span>More information</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a pseudo element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "pseudoContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<header class=\"allo-premium-header ...\" aria-label=\"Main application hea...\">",
+                      "target": [
+                        "header"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a pseudo element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".tracking-tight.font-black.text-sm"
+              ],
+              "html": "<span class=\"text-sm font-black tracking-tight\">Student tools</span>",
+              "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "10.5pt (14px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+                      "target": [
+                        ".alloflow-student-tools-launcher"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "passes": [
+        "aria-allowed-attr",
+        "aria-conditional-attr",
+        "aria-deprecated-role",
+        "aria-hidden-body",
+        "aria-hidden-focus",
+        "aria-prohibited-attr",
+        "aria-required-attr",
+        "aria-required-children",
+        "aria-required-parent",
+        "aria-roles",
+        "aria-valid-attr-value",
+        "aria-valid-attr",
+        "avoid-inline-spacing",
+        "button-name",
+        "bypass",
+        "color-contrast",
+        "document-title",
+        "duplicate-id-aria",
+        "form-field-multiple-labels",
+        "html-has-lang",
+        "html-lang-valid",
+        "label",
+        "link-name",
+        "meta-viewport",
+        "nested-interactive",
+        "scrollable-region-focusable",
+        "target-size"
+      ],
+      "controls": [
+        {
+          "tag": "A",
+          "text": "Skip to Content",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Teacher Grading Dashboard"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Learning Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Educator Tools"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Teach Live",
+          "label": "Teach Live"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Start & setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "More information",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Create",
+          "label": "Create new content"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "History",
+          "label": "History"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "AI Guide & Assistant\nPedagogy, Navigation & Auto-Setup",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Upload",
+          "label": "Upload file"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Link",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate",
+          "label": "Generate"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "📖\nBooks",
+          "label": null
+        },
+        {
+          "tag": "TEXTAREA",
+          "text": "",
+          "label": "Source material input"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Collapse",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Show all tools",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Recommended",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Make accessible",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Engage",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Assess & deliver",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "All tools",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Expand All",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Universal Settings\n\n5th Grade · English",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Analyze Source Material",
+          "label": "Search"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Glossary",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Text Adaptation",
+          "label": "Read"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Lesson Images",
+          "label": "Toggle images"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Assess",
+          "label": "Check Answer"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Lesson Plan",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Assignment Directions\nyou write it",
+          "label": null
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "label": null
+        },
+        {
+          "tag": "SELECT",
+          "text": "",
+          "label": "Pack size"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "✨\nNeeds AI setup · Tap to connect an AI, or use AlloFlow inside Gemini Canvas",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Plan full pack\nStart with a resource list you can review and edit before generat",
+          "label": "Plan Full Pack"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Collapse header"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "label": "Maximize View"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Source Material",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Open reading catalog\nBooks, articles & primary sources",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Find a resource online\nPaste a link or let AI search",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Generate from a topic\nAI writes it for you",
+          "label": null
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Student tools",
+          "label": "Open Student Tools"
+        }
+      ]
+    }
+  ],
+  "backendKeyboard": [
+    {
+      "tag": "DIV",
+      "name": "AI Backend Settings\n\nFIRST-TIME SETUP · CHOOSE YOUR AI\n\nAlloFlow uses ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "✨\nGoogle Gemini\nRECOMMENDED\n\nBest quality and speed. Runs in Google's ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔒\nPrivate AI on this computer\nMOST PRIVATE\n\nEverything stays on this ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🔌\nAn AI app I already run\n\nAlready use LM Studio, Ollama, or LocalAI ",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Open saved work",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "▼\nAdvanced settings",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "Close",
+      "inDialog": true
+    },
+    {
+      "tag": "BUTTON",
+      "name": "🚀\nUse AlloFlow inside Gemini Canvas\nNO SETUP\n\nThe easiest way to get ",
+      "inDialog": true
+    }
+  ],
+  "backendAfterEscape": {
+    "dialogCount": 0,
+    "focus": "AI Backend Settings"
+  },
+  "collegeStyle": {
+    "html": "<button type=\"button\" data-help-key=\"wizard_grade_option\" aria-pressed=\"false\" class=\"py-3 px-2 rounded-xl border-2 font-bold transition-all motion-reduce:transition-none text-sm border-slate-200 text-slate-600 hover:border-indigo-500 hover:bg-indigo-50 hover:text-indigo-700\">College</button>",
+    "color": "rgb(100, 116, 139)",
+    "background": "rgb(238, 242, 255)",
+    "rules": [
+      "button, input, optgroup, select, textarea { font-feature-settings: inherit; color: inherit; font-family: inherit; font-size: 100%; font-variation-settings: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; margin: 0px; padding: 0px; }",
+      ".text-slate-600 { --tw-text-opacity: 1; color: rgb(71 85 105/var(--tw-text-opacity,1)); }",
+      ".hover\\:text-indigo-700:hover { --tw-text-opacity: 1; color: rgb(67 56 202/var(--tw-text-opacity,1)); }",
+      ".fixed.inset-0:not(.theme-dark):not(.theme-contrast) .text-slate-600 { color: rgb(100, 116, 139) !important; }"
+    ]
+  },
+  "initialKeyboardSample": [
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "label": "Close Wizard",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "K",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "1st",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "2nd",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "3rd",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "4th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "5th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "6th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "7th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "8th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "9th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "10th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "11th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "12th",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "College",
+      "label": null,
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Enter Region",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "label": "Enter Learning Goal",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Next",
+      "label": "Next",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "SKIP",
+      "label": "Skip",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "label": "Close Wizard",
+      "outline": "rgb(139, 92, 246) solid 2px"
+    }
+  ],
+  "sourcePanelReady": true,
+  "labelInName": {
+    "testEngine": {
+      "name": "axe-core",
+      "version": "4.12.1"
+    },
+    "testRunner": {
+      "name": "axe"
+    },
+    "testEnvironment": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+      "windowWidth": 1280,
+      "windowHeight": 800,
+      "orientationAngle": 0,
+      "orientationType": "landscape-primary"
+    },
+    "timestamp": "2026-09-13T03:38:05.486Z",
+    "url": "http://127.0.0.1:61885/app/",
+    "toolOptions": {
+      "runOnly": {
+        "type": "rule",
+        "values": [
+          "label-content-name-mismatch"
+        ]
+      },
+      "rules": {
+        "label-content-name-mismatch": {
+          "enabled": true
+        }
+      },
+      "reporter": "v1"
+    },
+    "inapplicable": [],
+    "passes": [
+      {
+        "id": "label-content-name-mismatch",
+        "impact": null,
+        "tags": [
+          "cat.semantics",
+          "wcag21a",
+          "wcag253",
+          "EN-301-549",
+          "EN-9.2.5.3",
+          "RGAAv4",
+          "RGAA-6.1.5",
+          "experimental"
+        ],
+        "description": "Ensure that elements labelled through their content must have their visible text as part of their accessible name",
+        "help": "Elements must have their visible text as part of their accessible name",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/label-content-name-mismatch?application=axeAPI",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button type=\"button\" class=\"inline-flex shrink-0...\" data-help-key=\"header_session_start\" title=\"Teach live or open t...\" aria-label=\"Teach Live\">",
+            "target": [
+              ".text-indigo-950"
+            ]
+          },
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button role=\"tab\" aria-selected=\"true\" tabindex=\"0\" aria-controls=\"tour-input-panel\" id=\"tab-create\" aria-label=\"Create new content\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_create\">",
+            "target": [
+              "#tab-create"
+            ]
+          },
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button role=\"tab\" aria-selected=\"false\" tabindex=\"-1\" aria-controls=\"ui-roster-strip\" id=\"tab-history\" aria-label=\"History\" class=\"relative min-h-11 px...\" data-help-key=\"sidebar_tab_history\">",
+            "target": [
+              "#tab-history"
+            ]
+          },
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button type=\"button\" id=\"tour-upload-source\" aria-label=\"Upload file\" aria-busy=\"false\" class=\"text-xs flex items-c...\" title=\"Upload a document, e...\">",
+            "target": [
+              "#tour-upload-source"
+            ]
+          },
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button type=\"button\" aria-label=\"Generate\" data-help-key=\"source_generate_btn\" aria-busy=\"false\" class=\"text-xs flex items-center gap-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-full font-medium transition-colors motion-reduce:transition-none\">",
+            "target": [
+              "button[aria-label=\"Generate\"]"
+            ]
+          },
+          {
+            "any": [
+              {
+                "id": "label-content-name-mismatch",
+                "data": null,
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "Element contains visible text as part of it's accessible name"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": null,
+            "html": "<button type=\"button\" aria-expanded=\"false\" aria-controls=\"alloflow-student-too...\" aria-haspopup=\"dialog\" class=\"alloflow-student-too...\" aria-label=\"Open Student Tools\" data-dictation-activ...=\"false\" data-help-key=\"fab_toggle\">",
+            "target": [
+              ".alloflow-student-tools-launcher"
+            ]
+          }
+        ]
+      }
+    ],
+    "incomplete": [],
+    "violations": []
+  },
+  "headerLabelEvidence": [
+    {
+      "html": "<button type=\"button\" aria-expanded=\"false\" class=\"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl border border-white/25 bg-white/10 px-3 text-xs font-black text-white hover:bg-white/20 transition-colors\"><span>More information</span><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-down\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg></button>",
+      "visibleText": "More information",
+      "ariaLabel": null,
+      "labelledby": null,
+      "inert": false,
+      "hidden": null
+    }
+  ],
+  "verification": {
+    "sourceReady": true,
+    "labelInNamePassed": true,
+    "quickStartContrastPassed": false,
+    "loadedWorkspacePassed": true,
+    "backendFocusContained": true,
+    "backendFocusRestored": true
+  },
+  "blockedOrigins": [
+    "https://cdn.jsdelivr.net"
+  ],
+  "pageErrors": [],
+  "finishedAt": "2026-09-13T03:38:05.498Z"
+}

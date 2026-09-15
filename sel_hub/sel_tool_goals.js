@@ -1647,8 +1647,8 @@ window.SelHub = window.SelHub || {
           }
           text += '\nProgress: ' + goal.progress + '%';
           if (goal.smart && goal.smart.S) text += '\nWhy: ' + goal.smart.R;
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function() {
+          if (window.SelHub && window.SelHub.copyText) {
+            window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
               if (addToast) addToast('\uD83D\uDCCB Goal copied to clipboard! Share with your buddy!', 'success');
               upd({ hasSharedGoal: true });
             }).catch(function() {
@@ -1818,8 +1818,8 @@ window.SelHub = window.SelHub || {
             text += '\uD83D\uDCA1 What I Learned: ' + goal.completionJournal.whatLearned + '\n';
           }
           text += '\n\u2014 Set with Goal Setter by AlloFlow';
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function() {
+          if (window.SelHub && window.SelHub.copyText) {
+            window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
               if (addToast) addToast('\uD83D\uDCCB Achievement copied to clipboard!', 'success');
             }).catch(function() {
               if (addToast) addToast('Could not copy \u2014 try selecting the text manually.', 'warning');

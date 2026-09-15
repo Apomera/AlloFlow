@@ -22,6 +22,7 @@ describe('deterministic contrast repair respects inherited surfaces', () => {
     ['Replace', '#475569'],
     ['Upload image', '#1d4ed8'],
     ['Pick extracted', '#7c3aed'],
+    ['Generate (AI)', '#0f766e'],
   ])('keeps the passing white %s label on its generated image control', (text, background) => {
     const html = wrap(`<label style="background:${background};color:#fff !important"><svg aria-hidden="true"></svg><span style="color:#ffffff !important">${text}</span></label>`);
     const result = fixContrastViolations(html);
@@ -47,7 +48,7 @@ describe('deterministic contrast repair respects inherited surfaces', () => {
     expect(style.getPropertyPriority('color')).toBe('important');
   });
 
-  it.each(['#475569', '#1d4ed8', '#7c3aed'])('recovers an already damaged image-control label on %s', (background) => {
+  it.each(['#475569', '#1d4ed8', '#7c3aed', '#0f766e'])('recovers an already damaged image-control label on %s', (background) => {
     const html = wrap(`<label style="background:${background};color:#fff"><span style="color:#737373 !important">Image action</span></label>`);
     const first = fixContrastViolations(html).html;
     const second = fixContrastViolations(first).html;

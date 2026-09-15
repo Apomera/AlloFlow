@@ -2284,7 +2284,7 @@ window.SelHub = window.SelHub || {
                   } catch(e) {
                     // Fallback: copy to clipboard
                     try {
-                      navigator.clipboard.writeText(planText);
+                      window.SelHub.copyText(planText).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                       addToast('\uD83D\uDCCB Safety Plan copied to clipboard!', 'success');
                     } catch(e2) {
                       addToast('Could not export. Try copying your plan manually.', 'error');

@@ -1,0 +1,176 @@
+{
+  "passed": true,
+  "scope": "Production board UI, authored activities, and reused generated sample pictures. No AI requests.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,4 @@
+const fs=require('node:fs'),parser=require('@babel/parser'),traverse=require('@babel/traverse').default;
+const en=JSON.parse(fs.readFileSync('dev-tools/i18n/stem_anatomy_en.json','utf8')),values={};
+traverse(parser.parse(fs.readFileSync('stem_lab/stem_tool_anatomy.js','utf8'),{sourceType:'script'}),{CallExpression(p){const a=p.node.arguments;if(['t','__alloT'].includes(p.node.callee.name)&&a[0]?.type==='StringLiteral'&&a[1]?.type==='StringLiteral'){const k=a[0].value.slice(13);if(a[0].value.startsWith('stem.anatomy.')&&!en[k]&&/^(motion_|shared_context|parent_context|axis_context|quads_mechanism|muscle_tension|study_)/.test(k))values[k]=a[1].value;}}});
+fs.writeFileSync('reports/anatomy-learning-continuity-2026-09-12/english-new.json',JSON.stringify(values,null,2)+'\n');console.log(values);

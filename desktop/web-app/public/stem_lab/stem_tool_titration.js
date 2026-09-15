@@ -14,7 +14,7 @@
 
   // ── Audio + WCAG (auto-injected) ──
   var _titrAC = null;
-  function getTitrAC() { if (!_titrAC) { try { _titrAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_titrAC && _titrAC.state==="suspended") { try { _titrAC.resume(); } catch(e) {} } return _titrAC; }
+  function getTitrAC() { if (!_titrAC) { try { _titrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_titrAC && _titrAC.state==="suspended") { try { _titrAC.resume(); } catch(e) {} } return _titrAC; }
   function titrTone(f,d,tp,v) { var ac=getTitrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxTitrClick() { titrTone(600,0.03,"sine",0.04); }
   function sfxTitrSuccess() { titrTone(523,0.08,"sine",0.07); setTimeout(function(){titrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){titrTone(784,0.1,"sine",0.08);},140); }

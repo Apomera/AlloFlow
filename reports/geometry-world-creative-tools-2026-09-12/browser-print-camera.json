@@ -1,0 +1,19 @@
+{
+  "assertions": [],
+  "errors": [],
+  "scope": "Native Print guide camera controls with ordinary motion; local actual React and Three",
+  "before": {
+    "position": [
+      0.5,
+      4.2,
+      3.5
+    ],
+    "quaternion": [
+      -0.3582637671833657,
+      0,
+      0,
+      0.9336204116896669
+    ]
+  },
+  "failure": "page.waitForFunction: Timeout 20000ms exceeded.\n    at eval (<anonymous>:25:1299)"
+}

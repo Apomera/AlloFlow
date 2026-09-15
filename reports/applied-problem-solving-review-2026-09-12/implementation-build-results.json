@@ -1,0 +1,16 @@
+{
+  "compiled": [
+    "desktop/web-app/src/App.jsx",
+    "applied_challenge_source.jsx",
+    "generate_dispatcher_source.jsx",
+    "view_sidebar_panels_source.jsx"
+  ],
+  "mirrors": {
+    "applied_challenge_module.js": "8f558a1df57760ad6d7dddbae8c3e4dbc0075a2da8b65960340b57c66d9e3c37",
+    "doc_pipeline_module.js": "fcd73e61e50610607d427cd116dc55c5edf41d6612152da0f19b0deb9219519b",
+    "generate_dispatcher_module.js": "c85ffa194069a918b97c8e1a9e502678a8912d0dbd8ba457a7b8c8cedf8e901f",
+    "view_sidebar_panels_module.js": "63255e18ae447213db0c7eefd7e86f5011a48e35dfd864b085aa9c2458b052e5",
+    "studio_response_module.js": "62c3bd84f2eb877cbad550416865394a5b2e2dab16fdf8e335a4a0087b6e13c3",
+    "ui_strings.js": "8910f2b0d33b3f043123ce934270eb2f8eee3a6dc6e8f7a3957a30121e841d60"
+  }
+}

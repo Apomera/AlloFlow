@@ -1,0 +1,230 @@
+{
+  "checkedAt": "2026-09-13T03:46:08.914Z",
+  "errors": [],
+  "criteria": 55,
+  "ratings": {
+    "Partially Supports": 53,
+    "Not Applicable": 2
+  },
+  "mirrors": [
+    {
+      "file": "view_header_module.js",
+      "matches": true
+    },
+    {
+      "file": "view_udl_guide_button_module.js",
+      "matches": true
+    },
+    {
+      "file": "quickstart_module.js",
+      "matches": true
+    },
+    {
+      "file": "video_studio/video_studio.html",
+      "matches": true
+    }
+  ],
+  "sourceFiles": [
+    {
+      "file": "view_header_source.jsx",
+      "sha256": "3dd7d40261e01a88b9c285ac335831e5876e959707ee5967db951def288b81f5"
+    },
+    {
+      "file": "view_header_module.js",
+      "sha256": "bc242f4f13f103dec033efca624d03d57d948901b5d7cda642c8e2be04e0735b"
+    },
+    {
+      "file": "view_udl_guide_button_source.jsx",
+      "sha256": "99bea89fb9b2b0fa21b211afb30c9930cfcfa470923709e5cf53f6663cef2e69"
+    },
+    {
+      "file": "view_udl_guide_button_module.js",
+      "sha256": "cc9662af38aa120843572b6e1fe32a318645405aa3d494d739de265cd04f29a5"
+    },
+    {
+      "file": "quickstart_source.jsx",
+      "sha256": "b47f76f8c6a6816579581db5db0922c4b0fa686a9a03614c9d411cf2b1ae0a4c"
+    },
+    {
+      "file": "quickstart_module.js",
+      "sha256": "d81fedebaa1d6b62b5c37875f938a5631774876c7e57f3f49a41aa90741558cb"
+    },
+    {
+      "file": "video_studio/video_studio.html",
+      "sha256": "ede011605e69d5cbfedc90e7cd5fb4327e5135eb501aec59e57d9fae67bf965c"
+    },
+    {
+      "file": "desktop/web-app/public/catalog.html",
+      "sha256": "19f5b6b955db53a44f6b8cd766e50ab20241df2d23bdf1dffa73033c13492ffa"
+    },
+    {
+      "file": "desktop/web-app/public/view_header_module.js",
+      "sha256": "bc242f4f13f103dec033efca624d03d57d948901b5d7cda642c8e2be04e0735b"
+    },
+    {
+      "file": "desktop/web-app/public/view_udl_guide_button_module.js",
+      "sha256": "cc9662af38aa120843572b6e1fe32a318645405aa3d494d739de265cd04f29a5"
+    },
+    {
+      "file": "desktop/web-app/public/quickstart_module.js",
+      "sha256": "d81fedebaa1d6b62b5c37875f938a5631774876c7e57f3f49a41aa90741558cb"
+    },
+    {
+      "file": "desktop/web-app/public/video_studio/video_studio.html",
+      "sha256": "ede011605e69d5cbfedc90e7cd5fb4327e5135eb501aec59e57d9fae67bf965c"
+    },
+    {
+      "file": "app/static/css/main.bba82ce3.css",
+      "sha256": "5480cb3c507cdc4e5e9a87d1196f2e6827c0e5c6bba5293de54d77f64d6a8ab8"
+    }
+  ],
+  "testResults": {
+    "total": 38,
+    "passed": 38,
+    "failed": 0
+  },
+  "initialPageGates": {
+    "expectedStates": 9,
+    "observedStates": 9,
+    "passed": true
+  },
+  "workspaceGates": {
+    "sourceReady": true,
+    "labelInNamePassed": true,
+    "quickStartContrastPassed": true,
+    "loadedWorkspacePassed": true,
+    "backendFocusContained": true,
+    "backendFocusRestored": true
+  },
+  "controlStatesPassed": true,
+  "artifacts": [
+    {
+      "file": "app-1280.png",
+      "sha256": "e1fcc26bbaefe4aaf221f26d0de6813bb0fd13949e67b084e1a81e795a1c1872"
+    },
+    {
+      "file": "app-320-spacing.png",
+      "sha256": "c0410847fb2719b45d40ad9553d292ff6fd7ec138d59df46745bcc4652a1c762"
+    },
+    {
+      "file": "app-320.png",
+      "sha256": "637680be682aa4b67b9c0b6afd7db9bc59c5773d9daf5069f2aadf40578ca799"
+    },
+    {
+      "file": "backend-initial-1280.png",
+      "sha256": "1152b338711750bb5ff7d394b14ae4cbaa27a5df5d4ae6fda84cbb0d77dffe84"
+    },
+    {
+      "file": "before-quickstart-fix.json",
+      "sha256": "e1f42023a5566a7e52fdd0f733f294819276da004607f06a34c4ebddd2ce8ba7"
+    },
+    {
+      "file": "browser-audit.json",
+      "sha256": "bcbd3edec3be840394a97a41f63fd030274de4a7c24ee118a67de6ecf132e0cc"
+    },
+    {
+      "file": "browser-label-check.json",
+      "sha256": "c85e0195e6194a92ea4112f63ff6baa8055e9dfd46dce093b13d6ae2fe146624"
+    },
+    {
+      "file": "catalog-1280.png",
+      "sha256": "cb230d7371b0f37f1ed02a50c906197a628e4ee56022ba1792cbec5ee6c50f7f"
+    },
+    {
+      "file": "catalog-320-spacing.png",
+      "sha256": "12003524f1a4dade459f08ff0ce46e78dc27ff36ff71c61e447906fec4d347e4"
+    },
+    {
+      "file": "catalog-320.png",
+      "sha256": "5fb00262f0d6536d9d2b1b3896468571a826673fcd97d66c0c4f4f7f054f2782"
+    },
+    {
+      "file": "control-states.json",
+      "sha256": "9a0bfddbef2d38b70e650811c16e8d382a3f5d87077afb389219265706b77daf"
+    },
+    {
+      "file": "final-regressions.json",
+      "sha256": "6134f7c288c1d4588a2fc9f6e2e01a3956017c585f973b43ce8ade2dbe6615b6"
+    },
+    {
+      "file": "loading-observation.json",
+      "sha256": "e8b1423fd73873f6c7a29f0c38543639ade002b042c9b611169c9b49a4337dfc"
+    },
+    {
+      "file": "quickstart-retest.json",
+      "sha256": "240e08dbc93a7020031c8b6b9eb400da23e283bd26187900e93ceaf348c5e527"
+    },
+    {
+      "file": "README.md",
+      "sha256": "b41037e7ceeae107d69571a188b0a1fecfa626c748a671c66af0c7ce10b8f13e"
+    },
+    {
+      "file": "regressions.json",
+      "sha256": "32c5555fb20f12486270a5431daff56f3e732eb911354f0b5ef7a92b58132dcf"
+    },
+    {
+      "file": "run-browser.cjs",
+      "sha256": "9b5cd70b5a3ecaeca88d39d24845911601a9a16e68aa025622dfbaf0051df644"
+    },
+    {
+      "file": "run-control-states.cjs",
+      "sha256": "2de6b669f22257b63d63bc9821538d9664cd90f5cbff65e6df96bbe0366daad9"
+    },
+    {
+      "file": "run-label-check.cjs",
+      "sha256": "4c4df12ff175bac9b47b1cc448eafe98de7c04854eaba9e08241c66f0d73f31d"
+    },
+    {
+      "file": "source-manifest.json",
+      "sha256": "00c01bf9a5eb4ac845b51975660008502e8bc85ca2c55ba6cae4b1301b1e4f6b"
+    },
+    {
+      "file": "teacher-loaded-1280.png",
+      "sha256": "35be53e706f7918d42bca329b6a69ad9470abddbaad3f663cdf253db7182cd24"
+    },
+    {
+      "file": "teacher-loaded-320-spacing.png",
+      "sha256": "7da2fec105ddd2292b28af92304b90c4cee9ed0884d2976c5fa8cc79f7fb3345"
+    },
+    {
+      "file": "teacher-loaded-320.png",
+      "sha256": "aff02d1b3f2fd01e45f00698e4bb69bf65e5349c2498e87a21b8ef01b093b6e9"
+    },
+    {
+      "file": "teacher-workspace-1280.png",
+      "sha256": "a8ee3ad7ca902a24d0c87b9f4b3e6d9aab5e03479e207397518fc07fa6df6565"
+    },
+    {
+      "file": "teacher-workspace-320-spacing.png",
+      "sha256": "05789b7986e02793d5dafb413b0cdecca4ccd1f010740231f5033e40f5b2cbf4"
+    },
+    {
+      "file": "teacher-workspace-320.png",
+      "sha256": "7b84b1db2b1ddbd9ea3052725e7ee079ee8eebaf09dc4e507f88cffae03bfe7e"
+    },
+    {
+      "file": "teacher-workspace-after-dialog.png",
+      "sha256": "bea0cc1451899da197a8191a276bfae9ba9ecd0f1923a33eb63646e2418ac37e"
+    },
+    {
+      "file": "update-documents.cjs",
+      "sha256": "f1ecb05dacca788766f30513c288f2cfbfdf1cb1528bda6fd6a1249178ec4f9a"
+    },
+    {
+      "file": "validate.cjs",
+      "sha256": "8ee286ceae674cf02f6d4d65c02e07899d7ae590132a8b51a26545a2047ac01e"
+    },
+    {
+      "file": "video-studio-1280.png",
+      "sha256": "0f89a06850c596ebedcf2ef29a68b50a238cffb743bae247e9244aab48445f03"
+    },
+    {
+      "file": "video-studio-320-spacing.png",
+      "sha256": "aff08cff587f2c77df3feab5b8af67427b955d0e0155c6b7855682ac1e7ef1f8"
+    },
+    {
+      "file": "video-studio-320.png",
+      "sha256": "32287a88567914a429c1a0f223e7fd9058d91bea571554bf852ab8d071e178fb"
+    }
+  ]
+}

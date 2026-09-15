@@ -1675,7 +1675,7 @@ dataRef.current = d;
 
             try {
 
-              if (!_blAudioCtx) _blAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              if (!_blAudioCtx) _blAudioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
 
               var osc = _blAudioCtx.createOscillator();
 
@@ -5953,7 +5953,7 @@ dataRef.current = d;
               React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-text)', lineHeight: 1.6, marginBottom: 10 } },
                 __alloT('stem.behaviorlab.if_you_have_just_read_the_critical_fra', "If you have just read the critical-frame panels above, the next step is to hear from the people whose work shaped — and critiqued — applied behavior analysis. "),
                 React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_in_', "We deliberately built that content in the SEL Hub, not here.")),
-                __alloT('stem.behaviorlab.putting_named_real_autistic_adults_ins', " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, and Patty Berne — with documented quotes, context, and a curated reading list.")),
+                __alloT('stem.behaviorlab.putting_named_real_autistic_adults_ins', " Putting named real autistic adults inside a tool whose central image is a Skinner box would be exactly what the disability community has documented as harmful. The tool you want includes Ari Ne'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, and Patty Berne — with documented quotes, context, and a curated reading list.")),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-muted)', lineHeight: 1.55, fontStyle: 'italic' } },
                 __alloT('stem.behaviorlab.open_sel_hub_identity_care', "Open SEL Hub → Identity & Care → "),
                 React.createElement("b", { style: { color: '#f9a8d4' } }, __alloT('stem.behaviorlab.disability_voices', '"🎤 Disability Voices."')))

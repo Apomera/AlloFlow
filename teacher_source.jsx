@@ -3893,6 +3893,30 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const answeredCount = answeredUidSet.size;
     const unscoredReceiptCount = validReceiptUids.filter(uid => !Object.prototype.hasOwnProperty.call(responses || {}, uid)).length;
     const percentage = totalStudents > 0 ? Math.min(100, Math.round((answeredCount / totalStudents) * 100)) : 0;
+    // Success-criteria rollup for the lesson plan: class results per concept
+    // label, published on window and announced so the plan's strip stays live
+    // without threading session data through the plan view. Counts only.
+    const criterionRollup = React.useMemo(() => {
+      const agg = (typeof window !== 'undefined' && window.AlloModules) ? window.AlloModules.QuizLiveAggregators : null;
+      if (!agg || typeof agg.aggregateSuccessCriteria !== 'function') return null;
+      try { return agg.aggregateSuccessCriteria(quizState, generatedContent, roster); } catch (_) { return null; }
+    }, [quizState, generatedContent, roster]);
+    const planCriteria = React.useMemo(() => {
+      const plan = (Array.isArray(history) ? history : []).slice().reverse()
+        .find(item => item && item.type === 'lesson-plan' && item.data && Array.isArray(item.data.successCriteria) && item.data.successCriteria.length > 0);
+      return plan ? plan.data.successCriteria : [];
+    }, [history]);
+    useEffect(() => {
+      if (typeof window === 'undefined' || !criterionRollup || !criterionRollup.byConcept || !Object.keys(criterionRollup.byConcept).length) return;
+      window.__alloCriterionRollup = {
+        byConcept: criterionRollup.byConcept,
+        respondents: criterionRollup.respondents,
+        quizId: generatedContent?.id || null,
+        sessionLabel: activeSessionCode ? `live session ${activeSessionCode}` : 'the live session',
+        updatedAt: Date.now()
+      };
+      try { window.dispatchEvent(new CustomEvent('alloflow:criterion-rollup')); } catch (_) {}
+    }, [criterionRollup, generatedContent?.id, activeSessionCode]);
     const quizLiveAggregators = (typeof window !== 'undefined' && window.AlloModules)
       ? window.AlloModules.QuizLiveAggregators : null;
     const battleQuestionCount = (generatedContent?.data?.questions || []).filter(item => quizLiveAggregators?.presentationQuestionIsGameScorable
@@ -4546,6 +4570,25 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                   <span className="ml-1 font-black text-purple-800">This prompt remains distribution-only.</span>
                 )}
             </div>
+            {planCriteria.length > 0 && criterionRollup && criterionRollup.byConcept && (
+              <div className="border-b border-indigo-100 bg-white px-4 py-2 text-xs" data-live-success-criteria="true">
+                <div className="font-black uppercase tracking-wider text-indigo-700 mb-1">Success criteria (this lesson plan)</div>
+                <ul className="space-y-1">
+                  {planCriteria.map((c, i) => {
+                    if (!c || typeof c !== 'object') return null;
+                    const s = criterionRollup.byConcept[c.id];
+                    const pct = s && s.total > 0 ? Math.round((s.met / s.total) * 100) : null;
+                    return <li key={c.id || i} className="flex flex-wrap items-center gap-2">
+                      <span className="text-slate-700">{typeof c.statement === 'string' ? c.statement : ''}</span>
+                      <span className="font-mono text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-1">{c.id}</span>
+                      {pct === null
+                        ? <span className="text-[11px] text-slate-500">no scored answers yet</span>
+                        : <span className={`font-bold ${pct >= 80 ? 'text-emerald-700' : pct >= 60 ? 'text-amber-700' : 'text-rose-700'}`} data-criterion-mastery={c.id}>{`${pct}% met (${s.met}/${s.total})`}</span>}
+                    </li>;
+                  })}
+                </ul>
+              </div>
+            )}
             <div className="bg-slate-50 border-b border-slate-200 p-4">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1">
@@ -7570,11 +7613,11 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         });
         const quizAvg = quizCount > 0 ? Math.round(totalQuizScore / quizCount) + "%" : "N/A";
         const xp = student.stats?.totalXP || "N/A";
-        const probeCount = s.probeHistory ? Object.values(s.probeHistory).flat().length : 0;
-        const wcpmProbes = s.probeHistory ? Object.values(s.probeHistory).flat().filter(x => x.wcpm !== undefined) : [];
+        const probeCount = student.probeHistory ? Object.values(student.probeHistory).flat().length : 0;
+        const wcpmProbes = student.probeHistory ? Object.values(student.probeHistory).flat().filter(x => x && x.wcpm !== undefined) : [];
         const avgWcpm = wcpmProbes.length > 0 ? (wcpmProbes.reduce((sum,x) => sum + x.wcpm, 0) / wcpmProbes.length).toFixed(0) : 'N/A';
-        const surveyCount = s.surveyResponses ? s.surveyResponses.length : 0;
-        const sessionCount = s.sessionCounter || 0;
+        const surveyCount = student.surveyResponses ? student.surveyResponses.length : 0;
+        const sessionCount = student.sessionCounter || 0;
         // Notebook activity columns
         const hist = student.history || [];
         const noteEntries = hist.filter(h => h && h.type === 'note-taking');

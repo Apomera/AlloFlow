@@ -18230,7 +18230,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       var notifyFail = function() { finish(false); };
       try {
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(notifyOk).catch(function() {
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(notifyOk).catch(function() {
             legacyCopy(text, notifyOk, notifyFail);
           });
           return;

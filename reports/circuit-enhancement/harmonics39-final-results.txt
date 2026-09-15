@@ -1,0 +1,308 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_measurements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > integrates a ramp exactly despite highly uneven sample spacing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > clips interval boundaries by linear interpolation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant 0 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant 3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant -3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > keeps tiny ripple on a large offset numerically resolved
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > respects both sides of switch discontinuities without inventing a ramp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > refuses an unknown interval without erasing independent known voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0.5 to 0.5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0.8 to 0.2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds -0.1 to 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0 to 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds NaN to 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects a failed run, missing part, and gaps at the run boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > uses the last complete source cycle and bounds custom fractions without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > fits gain, offset, and lag with uneven samples and a non-integer-cycle window
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > preserves phase sign -1 relative to a phase-shifted reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > preserves phase sign 1 relative to a phase-shifted reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > reports inversion as a half-cycle phase difference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > reports a DC-only output with no invented phase or residual percentage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > separates a known third harmonic as sine-fit residual
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects short windows, sparse data, and a non-sine comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > uses current units for a current-source comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > measures an actual bandwidth-limited follower against its analytical steady response
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+························stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > exports SI measurements and preserves unavailable metrics as blanks
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > renders interval statistics, accessible markers, and separate fit units
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > keeps measurement controls optional and suppresses invalid-interval values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > keeps failed runs from exposing stale statistics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_harmonics.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > recovers sine and cosine coefficients with the exact linear-interpolation attenuation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > separates a known third and fifth harmonic and computes the requested THD
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > matches analytical triangle Fourier coefficients for twelve orders
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > integrates a square wave with before/after event times without inventing ramps
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > integrates a ramp and warns when the period endpoints do not match
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > weights strongly nonuniform adaptive samples by time
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > keeps a millivolt ripple resolved on a million-volt offset
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > reports DC 0 without inventing a fundamental or THD
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > reports DC 3 without inventing a fundamental or THD
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > reports DC -3 without inventing a fundamental or THD
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > does not mistake twice the chosen base frequency for H1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > selects a whole number of trailing source cycles and does not mutate settings or run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > uses the configured frequency even when a reference waveform is phase shifted
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > keeps known voltage usable when branch current is undetermined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > does not fill missing run coverage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > preserves unresolved orders as unknown and refuses a partial requested THD
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > uses the worst gap rather than average sample rate
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > does not disguise a sparse original interval by clipping its boundaries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > accepts a triangle source as a frequency reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > accepts a pulse source as a frequency reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····················stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > handles a current-source reference with amperes and signed reconstruction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > reconstructs the measured phase and DC from all or one harmonic
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > flags nonharmonic sources and one-time switching inside the interval
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > rejects failed runs, absent references, invalid metrics, DC, and too-short windows
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > exports reconstructible SI coefficients and explicit unavailable entries
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > measures the actual solver triangle against its analytical harmonics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > time-weighted harmonic analysis > verifies RC harmonic attenuation against the analytical transfer at each order
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_network_harmonics.test.js > harmonic explorer presentation > renders accessible selectable bars, reconstruction, SI table, and model limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > harmonic explorer presentation > keeps the instrument optional and hides stale values for invalid cycle requests
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > harmonic explorer presentation > does not substitute another reference after an explicit saved source disappears
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_harmonics.test.js > harmonic explorer presentation > suppresses the entire instrument on a failed time run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_scope_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > defaults to the full run and bounds maximum zoom without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":0.9,"end":0.1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":null,"end":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":-1,"end":3}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > centers a bounded viewport at either end of the run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > clips a linear segment at both edges without changing its slope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > keeps vertical switching segments at a viewport boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > does not interpolate or join across an unknown region
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > returns no path when the viewport has no data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > interpolates rising and falling edges at nonuniform sample times
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters rising edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters falling edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > recognizes an exact sample at the level once
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > reports the interval spent at threshold before crossing to the other side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > preserves the exact time and after snapshot of a switch jump
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > never bridges an unknown trace segment
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > rejects unknown traces, failed runs and nonfinite levels
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > measures spacing between like directions rather than alternate edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > finds sine crossings without counting floating-point zero noise at endpoints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > resolves small signals with a relative level tolerance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > uses amperes for current levels and exported readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > does not infer same-direction spacing across an unknown gap
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > finds a real simulated switch jump and resolves its after state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > renders named navigation controls, zoom extent and an exact event marker
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > hides navigation and crossings when the simulation fails
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······························stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all twenty SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  4 passed (4)
+      Tests  93 passed (93)
+   Start at  16:05:52
+   Duration  8.03s (transform 77ms, setup 107ms, import 220ms, tests 3.78s, environment 3.12s)
+

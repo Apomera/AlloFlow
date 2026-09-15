@@ -1,0 +1,619 @@
+{
+  "runs": [
+    {
+      "report": "drawing-tests.json",
+      "passed": 71,
+      "failed": 0,
+      "pending": 0,
+      "files": 4
+    },
+    {
+      "report": "garden-print-tests.json",
+      "passed": 24,
+      "failed": 0,
+      "pending": 0,
+      "files": 3
+    },
+    {
+      "report": "selection-editing-tests.json",
+      "passed": 82,
+      "failed": 1,
+      "pending": 0,
+      "files": 1
+    },
+    {
+      "report": "drawing-tests-final.json",
+      "passed": 72,
+      "failed": 0,
+      "pending": 0,
+      "files": 4
+    },
+    {
+      "report": "activity-journal-tests.json",
+      "passed": 100,
+      "failed": 0,
+      "pending": 0,
+      "files": 6
+    },
+    {
+      "report": "selection-camera-regressions.json",
+      "passed": 208,
+      "failed": 0,
+      "pending": 0,
+      "files": 7
+    },
+    {
+      "report": "selection-ui-final.json",
+      "passed": 103,
+      "failed": 0,
+      "pending": 0,
+      "files": 3
+    },
+    {
+      "report": "activity-journal-final-tests.json",
+      "passed": 104,
+      "failed": 0,
+      "pending": 0,
+      "files": 6
+    },
+    {
+      "report": "full-geometry-regression.json",
+      "passed": 1324,
+      "failed": 5,
+      "pending": 12,
+      "files": 74
+    },
+    {
+      "report": "block-events-final.json",
+      "passed": 31,
+      "failed": 0,
+      "pending": 0,
+      "files": 1
+    },
+    {
+      "report": "drawing-focused-reach-tests.json",
+      "passed": 58,
+      "failed": 0,
+      "pending": 0,
+      "files": 2
+    },
+    {
+      "report": "studio-mobile-followup-tests.json",
+      "passed": 12,
+      "failed": 2,
+      "pending": 0,
+      "files": 2
+    },
+    {
+      "report": "studio-mobile-final-tests.json",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0,
+      "files": 2
+    }
+  ],
+  "latestFiles": 74,
+  "passed": 1335,
+  "failed": 0,
+  "pending": 12,
+  "files": [
+    {
+      "file": "geometry_world_builder_navigation.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 13,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_drawing_navigation.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 7,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_drawing_tools.test.js",
+      "report": "drawing-focused-reach-tests.json",
+      "passed": 34,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_placement_transaction.test.js",
+      "report": "drawing-focused-reach-tests.json",
+      "passed": 24,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_coastal_landscape.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_garden_workshop.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 7,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_print_guide.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 8,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selection_editing.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 83,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_activity_build_journal.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 46,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_activity_guide.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 6,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_activity_tracking.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 0,
+      "failed": [],
+      "pending": 12
+    },
+    {
+      "file": "geometry_world_generation_collisions.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 6,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_generation_depth.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 33,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_generation_scope.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 1,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_creation_camera_fit.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 24,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_creation_focus.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 31,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_import_transaction.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 17,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_printlab_bridge.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 29,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selected_inspector.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 10,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selection_camera.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 14,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selection_editor_ui.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 7,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_aim_at_build_area.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 6,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_block_fidelity.test.js",
+      "report": "block-events-final.json",
+      "passed": 31,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_building_preview.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 43,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_crosshair_viewport.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 1,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_discoverability.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 13,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_display_controls.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 27,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_dock_selection.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 2,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_empty_guidance.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 10,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_engine_lifecycle.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_free_build_guidance.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_generated_landscape_theme.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 3,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_ground_batching.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 15,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_ground_edges.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 5,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_guided_preset_correctness.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 18,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_home_chooser.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 14,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_input_transitions.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 12,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_keyboard_access.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 63,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_lesson_overview.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 8,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_match_block.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 64,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_material_graphics.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 4,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_measurement_annotations.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_measurement_model.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 46,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_mobile_inspector.test.js",
+      "report": "studio-mobile-final-tests.json",
+      "passed": 11,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_npc_speech.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 20,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_npc_visuals.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 13,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_pointer_lock.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 11,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_preset_correctness.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 17,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_preview_materials.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 6,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_print_presentation.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_print_workflow.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 14,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_reduced_motion.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 12,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_retained_selection.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 12,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_rotated_placement.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 19,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_scale_controls.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 39,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_scoring_model.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 21,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selected_files.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 23,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selection_frame.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 22,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selection_poll_cache.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 18,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_session_report.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 8,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_shape_controls.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 18,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_showcase_composition.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 27,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_showcase_export.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 11,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_showcase_files_ui.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 9,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_showcase_pop_contacts.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 6,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_standalone_export.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 2,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_stl_export.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 22,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_studio_color_sync.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 12,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_studio_presentation.test.js",
+      "report": "studio-mobile-final-tests.json",
+      "passed": 3,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_studio_softlight.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 31,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_surface_rendering.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 7,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_visual_pipeline.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 55,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_visual_state_lifecycle.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 15,
+      "failed": [],
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_wayfinding.test.js",
+      "report": "full-geometry-regression.json",
+      "passed": 21,
+      "failed": [],
+      "pending": 0
+    }
+  ]
+}

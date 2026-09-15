@@ -1,0 +1,1 @@
+const fs=require('fs');const p='tests/applied_challenge_interaction.test.js';let s=fs.readFileSync(p,'utf8');const old='1 of 1 rows have both a claim and support';if(!s.includes(old))throw Error('Old progress assertion missing');s=s.replace(old,'1 of 1 rows have a claim and written evidence notes');fs.writeFileSync(p,s);

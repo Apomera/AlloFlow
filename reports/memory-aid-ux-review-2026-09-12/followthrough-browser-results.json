@@ -1,0 +1,37 @@
+[
+  {
+    "width": 1280,
+    "application": true,
+    "reviewDateSaved": true,
+    "reviewDateSurvivesReload": true,
+    "unsupportedExport": true,
+    "a11y": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "application": true,
+    "reviewDateSaved": true,
+    "reviewDateSurvivesReload": true,
+    "unsupportedExport": true,
+    "a11y": [],
+    "errors": []
+  },
+  {
+    "width": 320,
+    "application": true,
+    "reviewDateSaved": true,
+    "reviewDateSurvivesReload": true,
+    "unsupportedExport": true,
+    "a11y": [],
+    "errors": []
+  },
+  {
+    "pipelinePrintPresets": [
+      "study",
+      "recall",
+      "no-hints",
+      "teacher"
+    ]
+  }
+]

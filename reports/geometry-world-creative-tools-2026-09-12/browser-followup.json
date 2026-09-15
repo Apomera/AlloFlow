@@ -1,0 +1,5213 @@
+{
+  "scope": "Native camera, printing return, and lesson evidence flows; selected structures use explicit block fixture",
+  "checks": {
+    "followup-view-front": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n📏\n📝\nEstimate\n⚙️\nMenu\n▲\nACHIEVEMENT UNLOCKED\nFirst Measurement\nMeasured your first structure\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 0 Y 4 Z 3\nS\n180°\nTARGETX 0 Y 1 Z 1\n🔇 SR OFF\nMatch\nFly\nUndo\n6\nHome\nClear\nLook down at the nearby ground or a block face.\nAim at build area\n📏 Measured: 3×2×1 = 6 • Observation only: no eligible committed estimate was compared.\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nCreation framed\nPrevious view\nOrbit & views\nBuild tools",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 631,
+        "studentBlocks": 6,
+        "studentShapes": {
+          "cube": 6
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 8.872676222589861,
+          "y": 2.800001738070361,
+          "z": 1.0000000000000004
+        },
+        "yaw": 1.3535051857861364
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": false,
+          "code": "no_target",
+          "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+          "aim": true
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [
+          {
+            "L": 3,
+            "W": 2,
+            "H": 1,
+            "vol": "6",
+            "occupiedVolume": 6,
+            "boundingVolume": 6,
+            "missingVolume": 0,
+            "hasFractions": false,
+            "surfaceArea": 22,
+            "blocks": 6,
+            "materialCount": 1,
+            "isSolidPrism": true,
+            "isComplete": true,
+            "estimateTargetKey": "gw-structure:0:1:0:3:2:1:6:6:1hgdgr",
+            "estimateStatus": "observation",
+            "prediction": null,
+            "percentError": null,
+            "strategy": "",
+            "reason": "",
+            "diagnosisCode": "",
+            "t": 1789236891131
+          }
+        ],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [
+          "gw-structure:0:1:0:3:2:1:6:6:1hgdgr"
+        ],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": {
+          "components": 1,
+          "triangles": 44,
+          "nonManifoldEdges": 0,
+          "openEdges": 0,
+          "contactGroups": [
+            [
+              {
+                "x": 0,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 0
+              }
+            ]
+          ],
+          "selectionSignature": "[[\"0,1,0\",true,true,0,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"0,1,1\",true,true,0,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,0\",true,true,1,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,1\",true,true,1,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,0\",true,true,2,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,1\",true,true,2,1,1,\"cube\",0,\"wood\",1,\"student\",false]]"
+        },
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "volumeRepresentationKey": "",
+        "volumeRepresentationFromKey": "",
+        "volumeRepresentationVisitedKeys": [],
+        "volumeRepresentationReason": "",
+        "volumeRepresentationInvariantChecked": false,
+        "volumeRepresentationEvidenceChecked": false,
+        "volumeRepresentationConnectionSaved": false,
+        "retrievalAnswer": "",
+        "retrievalResult": null,
+        "retrievalAttemptCount": 0,
+        "actionFeedback": "📏 Measured: 3×2×1 = 6 • Observation only: no eligible committed estimate was compared.",
+        "earnedBadges": {
+          "first_measure": {
+            "earned": "2026-09-12T18:14:51.832Z"
+          }
+        },
+        "lastBadgeNotification": {
+          "id": "first_measure",
+          "name": "First Measurement",
+          "icon": "📏",
+          "desc": "Measured your first structure"
+        },
+        "creationFocusAvailable": true
+      },
+      "focus": {
+        "view": {
+          "name": "front",
+          "zoom": 1,
+          "azimuth": 1.5707963267948966,
+          "elevation": 0.12
+        },
+        "manual": false,
+        "transition": false,
+        "frame": true,
+        "pose": [
+          8.872676222589861,
+          2.800001738070361,
+          1.0000000000000004
+        ]
+      },
+      "active": "<body><div id=\"wrap\"><div id=\"geoworld-fs-workspace\" role=\"region\" data-geometry-fullscreen-workspace=\"true\" data-fullscreen=\"false\" data-toolbar-collapsed=\"false\" data-hud-preset=\"builder\" data-measurement-expanded=\"false\" data-touch-mode=",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": {
+          "x": 1244.375,
+          "y": 118,
+          "w": 183.625,
+          "h": 73
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1219.6875,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 93.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Aim at the build area",
+          "box": {
+            "x": 817.0390625,
+            "y": 621.8125,
+            "w": 108.90625,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "Previous view",
+          "box": {
+            "x": 126.453125,
+            "y": 125,
+            "w": 103.671875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit & views",
+          "box": {
+            "x": 242.125,
+            "y": 125,
+            "w": 90.171875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit left",
+          "box": {
+            "x": 242.125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Orbit right",
+          "box": {
+            "x": 291.203125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt up",
+          "box": {
+            "x": 242.125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt down",
+          "box": {
+            "x": 291.203125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Closer",
+          "box": {
+            "x": 242.125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Farther",
+          "box": {
+            "x": 291.203125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Front",
+          "box": {
+            "x": 242.125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Side",
+          "box": {
+            "x": 291.203125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Top",
+          "box": {
+            "x": 242.125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Free view",
+          "box": {
+            "x": 291.203125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 1310.375,
+            "y": 133,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-view-side": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n📏\n📝\nEstimate\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 8 Y 2 Z 1\nW\n270°\nTARGETX 0 Y 1 Z 1\n🔇 SR OFF\nMatch\nFly\nUndo\n6\nHome\nClear\nLook down at the nearby ground or a block face.\nAim at build area\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nCreation framed\nPrevious view\nOrbit & views\nBuild tools\nCreation framed · front view. Keep building, or choose Previous view to return.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 631,
+        "studentBlocks": 6,
+        "studentShapes": {
+          "cube": 6
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 8.872676222589861,
+          "y": 2.800001738070361,
+          "z": 1.0000000000000004
+        },
+        "yaw": 1.3535051857861364
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": false,
+          "code": "no_target",
+          "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+          "aim": true
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [
+          {
+            "L": 3,
+            "W": 2,
+            "H": 1,
+            "vol": "6",
+            "occupiedVolume": 6,
+            "boundingVolume": 6,
+            "missingVolume": 0,
+            "hasFractions": false,
+            "surfaceArea": 22,
+            "blocks": 6,
+            "materialCount": 1,
+            "isSolidPrism": true,
+            "isComplete": true,
+            "estimateTargetKey": "gw-structure:0:1:0:3:2:1:6:6:1hgdgr",
+            "estimateStatus": "observation",
+            "prediction": null,
+            "percentError": null,
+            "strategy": "",
+            "reason": "",
+            "diagnosisCode": "",
+            "t": 1789236891131
+          }
+        ],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [
+          "gw-structure:0:1:0:3:2:1:6:6:1hgdgr"
+        ],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": {
+          "components": 1,
+          "triangles": 44,
+          "nonManifoldEdges": 0,
+          "openEdges": 0,
+          "contactGroups": [
+            [
+              {
+                "x": 0,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 0
+              }
+            ]
+          ],
+          "selectionSignature": "[[\"0,1,0\",true,true,0,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"0,1,1\",true,true,0,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,0\",true,true,1,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,1\",true,true,1,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,0\",true,true,2,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,1\",true,true,2,1,1,\"cube\",0,\"wood\",1,\"student\",false]]"
+        },
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "volumeRepresentationKey": "",
+        "volumeRepresentationFromKey": "",
+        "volumeRepresentationVisitedKeys": [],
+        "volumeRepresentationReason": "",
+        "volumeRepresentationInvariantChecked": false,
+        "volumeRepresentationEvidenceChecked": false,
+        "volumeRepresentationConnectionSaved": false,
+        "retrievalAnswer": "",
+        "retrievalResult": null,
+        "retrievalAttemptCount": 0,
+        "actionFeedback": "",
+        "earnedBadges": {
+          "first_measure": {
+            "earned": "2026-09-12T18:14:51.832Z"
+          }
+        },
+        "lastBadgeNotification": null,
+        "creationFocusAvailable": true
+      },
+      "focus": {
+        "view": {
+          "name": "side",
+          "zoom": 1,
+          "azimuth": 0,
+          "elevation": 0.12
+        },
+        "manual": false,
+        "transition": false,
+        "frame": true,
+        "pose": [
+          8.872676222589861,
+          2.800001738070361,
+          1.0000000000000004
+        ]
+      },
+      "active": "<body><div id=\"wrap\"><div id=\"geoworld-fs-workspace\" role=\"region\" data-geometry-fullscreen-workspace=\"true\" data-fullscreen=\"false\" data-toolbar-collapsed=\"false\" data-hud-preset=\"builder\" data-measurement-expanded=\"false\" data-touch-mode=",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": {
+          "x": 1244.375,
+          "y": 118,
+          "w": 183.625,
+          "h": 73
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1219.6875,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 93.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Aim at the build area",
+          "box": {
+            "x": 817.046875,
+            "y": 662,
+            "w": 108.90625,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "Previous view",
+          "box": {
+            "x": 126.453125,
+            "y": 125,
+            "w": 103.671875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit & views",
+          "box": {
+            "x": 242.125,
+            "y": 125,
+            "w": 90.171875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit left",
+          "box": {
+            "x": 242.125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Orbit right",
+          "box": {
+            "x": 291.203125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt up",
+          "box": {
+            "x": 242.125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt down",
+          "box": {
+            "x": 291.203125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Closer",
+          "box": {
+            "x": 242.125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Farther",
+          "box": {
+            "x": 291.203125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Front",
+          "box": {
+            "x": 242.125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Side",
+          "box": {
+            "x": 291.203125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Top",
+          "box": {
+            "x": 242.125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Free view",
+          "box": {
+            "x": 291.203125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 1310.375,
+            "y": 133,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-view-top": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n📏\n📝\nEstimate\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 1 Y 2 Z 8\nS\n180°\nTARGETX 0 Y 1 Z 1\n🔇 SR OFF\nMatch\nFly\nUndo\n6\nHome\nClear\nLook down at the nearby ground or a block face.\nAim at build area\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nCreation framed\nPrevious view\nOrbit & views\nBuild tools\nCreation framed · side view. Keep building, or choose Previous view to return.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 631,
+        "studentBlocks": 6,
+        "studentShapes": {
+          "cube": 6
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 1.5,
+          "y": 2.8000017391836067,
+          "z": 8.37267622890339
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": false,
+          "code": "no_target",
+          "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+          "aim": true
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [
+          {
+            "L": 3,
+            "W": 2,
+            "H": 1,
+            "vol": "6",
+            "occupiedVolume": 6,
+            "boundingVolume": 6,
+            "missingVolume": 0,
+            "hasFractions": false,
+            "surfaceArea": 22,
+            "blocks": 6,
+            "materialCount": 1,
+            "isSolidPrism": true,
+            "isComplete": true,
+            "estimateTargetKey": "gw-structure:0:1:0:3:2:1:6:6:1hgdgr",
+            "estimateStatus": "observation",
+            "prediction": null,
+            "percentError": null,
+            "strategy": "",
+            "reason": "",
+            "diagnosisCode": "",
+            "t": 1789236891131
+          }
+        ],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [
+          "gw-structure:0:1:0:3:2:1:6:6:1hgdgr"
+        ],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": {
+          "components": 1,
+          "triangles": 44,
+          "nonManifoldEdges": 0,
+          "openEdges": 0,
+          "contactGroups": [
+            [
+              {
+                "x": 0,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 0
+              }
+            ]
+          ],
+          "selectionSignature": "[[\"0,1,0\",true,true,0,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"0,1,1\",true,true,0,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,0\",true,true,1,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,1\",true,true,1,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,0\",true,true,2,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,1\",true,true,2,1,1,\"cube\",0,\"wood\",1,\"student\",false]]"
+        },
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "volumeRepresentationKey": "",
+        "volumeRepresentationFromKey": "",
+        "volumeRepresentationVisitedKeys": [],
+        "volumeRepresentationReason": "",
+        "volumeRepresentationInvariantChecked": false,
+        "volumeRepresentationEvidenceChecked": false,
+        "volumeRepresentationConnectionSaved": false,
+        "retrievalAnswer": "",
+        "retrievalResult": null,
+        "retrievalAttemptCount": 0,
+        "actionFeedback": "",
+        "earnedBadges": {
+          "first_measure": {
+            "earned": "2026-09-12T18:14:51.832Z"
+          }
+        },
+        "lastBadgeNotification": null,
+        "creationFocusAvailable": true
+      },
+      "focus": {
+        "view": {
+          "name": "top",
+          "zoom": 1,
+          "azimuth": 0,
+          "elevation": 1.5307963267948965
+        },
+        "manual": false,
+        "transition": false,
+        "frame": true,
+        "pose": [
+          1.5,
+          2.8000017391836067,
+          8.37267622890339
+        ]
+      },
+      "active": "<body><div id=\"wrap\"><div id=\"geoworld-fs-workspace\" role=\"region\" data-geometry-fullscreen-workspace=\"true\" data-fullscreen=\"false\" data-toolbar-collapsed=\"false\" data-hud-preset=\"builder\" data-measurement-expanded=\"false\" data-touch-mode=",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": {
+          "x": 1262.375,
+          "y": 118,
+          "w": 165.625,
+          "h": 59
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1219.6875,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 93.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Aim at the build area",
+          "box": {
+            "x": 817.046875,
+            "y": 662,
+            "w": 108.90625,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "Previous view",
+          "box": {
+            "x": 126.453125,
+            "y": 125,
+            "w": 103.671875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit & views",
+          "box": {
+            "x": 242.125,
+            "y": 125,
+            "w": 90.171875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit left",
+          "box": {
+            "x": 242.125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Orbit right",
+          "box": {
+            "x": 291.203125,
+            "y": 175,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt up",
+          "box": {
+            "x": 242.125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Tilt down",
+          "box": {
+            "x": 291.203125,
+            "y": 234.1875,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Closer",
+          "box": {
+            "x": 242.125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Farther",
+          "box": {
+            "x": 291.203125,
+            "y": 293.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Front",
+          "box": {
+            "x": 242.125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Side",
+          "box": {
+            "x": 291.203125,
+            "y": 343.375,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Top",
+          "box": {
+            "x": 242.125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Free view",
+          "box": {
+            "x": 291.203125,
+            "y": 395.375,
+            "w": 44,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 1319.375,
+            "y": 125,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-view-orbit": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n📏\n📝\nEstimate\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 1 Y 4 Z 1\nS\n180°\nTARGETX 0 Y 1 Z 1\n🔇 SR OFF\nMatch\nFly\nUndo\n6\nHome\nClear\nLook down at the nearby ground or a block face.\nAim at build area\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nCreation framed\nPrevious view\nOrbit & views\nOrbit left\nOrbit right\nTilt up\nTilt down\nCloser\nFarther\nFront\nSide\nTop\nFree view\nBuild tools\nCreation framed · top view. Keep building, or choose Previous view to return.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 631,
+        "studentBlocks": 6,
+        "studentShapes": {
+          "cube": 6
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 1.5,
+          "y": 4.2060788265550935,
+          "z": 1.2598957249869613
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": false,
+          "code": "no_target",
+          "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+          "aim": true
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [
+          {
+            "L": 3,
+            "W": 2,
+            "H": 1,
+            "vol": "6",
+            "occupiedVolume": 6,
+            "boundingVolume": 6,
+            "missingVolume": 0,
+            "hasFractions": false,
+            "surfaceArea": 22,
+            "blocks": 6,
+            "materialCount": 1,
+            "isSolidPrism": true,
+            "isComplete": true,
+            "estimateTargetKey": "gw-structure:0:1:0:3:2:1:6:6:1hgdgr",
+            "estimateStatus": "observation",
+            "prediction": null,
+            "percentError": null,
+            "strategy": "",
+            "reason": "",
+            "diagnosisCode": "",
+            "t": 1789236891131
+          }
+        ],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [
+          "gw-structure:0:1:0:3:2:1:6:6:1hgdgr"
+        ],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": {
+          "components": 1,
+          "triangles": 44,
+          "nonManifoldEdges": 0,
+          "openEdges": 0,
+          "contactGroups": [
+            [
+              {
+                "x": 0,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 0
+              }
+            ]
+          ],
+          "selectionSignature": "[[\"0,1,0\",true,true,0,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"0,1,1\",true,true,0,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,0\",true,true,1,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"1,1,1\",true,true,1,1,1,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,0\",true,true,2,1,0,\"cube\",0,\"wood\",1,\"student\",false],[\"2,1,1\",true,true,2,1,1,\"cube\",0,\"wood\",1,\"student\",false]]"
+        },
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "volumeRepresentationKey": "",
+        "volumeRepresentationFromKey": "",
+        "volumeRepresentationVisitedKeys": [],
+        "volumeRepresentationReason": "",
+        "volumeRepresentationInvariantChecked": false,
+        "volumeRepresentationEvidenceChecked": false,
+        "volumeRepresentationConnectionSaved": false,
+        "retrievalAnswer": "",
+        "retrievalResult": null,
+        "retrievalAttemptCount": 0,
+        "actionFeedback": "",
+        "earnedBadges": {
+          "first_measure": {
+            "earned": "2026-09-12T18:14:51.832Z"
+          }
+        },
+        "lastBadgeNotification": null,
+        "creationFocusAvailable": true
+      },
+      "focus": {
+        "view": {
+          "name": "orbit",
+          "azimuth": -0.2617993877991494,
+          "elevation": 1.5307963267948965,
+          "zoom": 1
+        },
+        "manual": false,
+        "transition": false,
+        "frame": true,
+        "pose": [
+          1.5,
+          4.2060788265550935,
+          1.2598957249869613
+        ]
+      },
+      "active": "<button type=\"button\">Orbit left</button>",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": {
+          "x": 1244.375,
+          "y": 118,
+          "w": 183.625,
+          "h": 73
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1219.6875,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 93.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Aim at the build area",
+          "box": {
+            "x": 817.046875,
+            "y": 662,
+            "w": 108.90625,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "Previous view",
+          "box": {
+            "x": 126.453125,
+            "y": 125,
+            "w": 103.671875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit & views",
+          "box": {
+            "x": 26,
+            "y": 181,
+            "w": 260,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit left",
+          "box": {
+            "x": 26,
+            "y": 231,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Orbit right",
+          "box": {
+            "x": 160,
+            "y": 231,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Tilt up",
+          "box": {
+            "x": 26,
+            "y": 283,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Tilt down",
+          "box": {
+            "x": 160,
+            "y": 283,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Closer",
+          "box": {
+            "x": 26,
+            "y": 335,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Farther",
+          "box": {
+            "x": 160,
+            "y": 335,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Front",
+          "box": {
+            "x": 26,
+            "y": 385,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Side",
+          "box": {
+            "x": 160,
+            "y": 385,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Top",
+          "box": {
+            "x": 26,
+            "y": 437,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Free view",
+          "box": {
+            "x": 160,
+            "y": 437,
+            "w": 126,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 1310.375,
+            "y": 133,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-print-return": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n📏\n📝\nEstimate\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 0 Y 4 Z 3\nS\n180°\nTARGETX 0 Y 1 Z 1\n🔇 SR OFF\nMatch\nFly\nUndo\n7\nHome\nClear\n✓\nReady to build\nB\nto place\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nSANDBOX MODE\nFree Build Studio\n−\n1\nBuild\n2\nSelect\n3\nPrint Lab\nSelect another build\nSend to Print Lab\n\nYour selection stays outlined as you look around.\n\nBuild faster\nBlock\nLine\nFloor\nWall\nOUTLINED SELECTION\nSelected creation\n6\nBlocks selected\n3×2×1\nBlock bounds\n\nShowcase and Print Lab use these blocks.\n\nFocus creation\nFront\nSide\nTop\nFree view\nShowcase creation\nExplore measurements\nClear selection\nEdit whole creation\nReusable building stamps\nPrint Lab block envelope\nFits profile\nWidth, depth, height: 15 × 10 × 5 mm.\nWidth\n15\nmm\nDepth\n10\nmm\nHeight\n5\nmm\n\n5 mm per block · Bed 220 × 220 × 250 mm\n\nInspect print fit\nAdjust print size\nOne joined piece\n\nThe selected shapes share surfaces. Print Lab will check the exported mesh and physical scale.\n\nBuilding with\nMaterial\nChange\n🪨 Stone\nShape\nChange\n⬜ Cube\n0° rotation\nMatch aimed block\nI\n\nAim at a block to reuse its material, shape, and rotation.\n\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options\nBack to building\nReturned to your complete workspace with selection, undo history, and print scale preserved. Check the revised model before printing.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 631,
+        "studentBlocks": 6,
+        "studentShapes": {
+          "cube": 6
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0.5,
+          "y": 4.2,
+          "z": 3.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build"
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": {
+          "count": 6,
+          "L": 3,
+          "W": 2,
+          "H": 1,
+          "minX": 0,
+          "minY": 1,
+          "minZ": 0,
+          "boundingVolume": 6,
+          "totalVolume": 6,
+          "hasFractions": false,
+          "shapeCounts": {
+            "cube": 6
+          },
+          "formattedVolume": "6",
+          "materialCounts": {
+            "gold": 6
+          },
+          "surfaceAreaExact": true,
+          "exposedSurfaceArea": 22,
+          "exposedFaces": {
+            "xFaces": 4,
+            "yFaces": 12,
+            "zFaces": 6,
+            "surfaceArea": 22
+          },
+          "isComplete": true,
+          "measurementLimit": 1500,
+          "blocks": [
+            {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 0,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 0
+            },
+            {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            }
+          ],
+          "occupiedVolume": 6,
+          "missingVolume": 0,
+          "fillPercent": 100,
+          "isSolidPrism": true,
+          "formattedOccupiedVolume": "6"
+        },
+        "measureHistory": [
+          {
+            "L": 3,
+            "W": 2,
+            "H": 1,
+            "vol": "6",
+            "occupiedVolume": 6,
+            "boundingVolume": 6,
+            "missingVolume": 0,
+            "hasFractions": false,
+            "surfaceArea": 22,
+            "blocks": 6,
+            "materialCount": 1,
+            "isSolidPrism": true,
+            "isComplete": true,
+            "estimateTargetKey": "gw-structure:0:1:0:3:2:1:6:6:1hgdgr",
+            "estimateStatus": "observation",
+            "prediction": null,
+            "percentError": null,
+            "strategy": "",
+            "reason": "",
+            "diagnosisCode": "",
+            "t": 1789236891131
+          }
+        ],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [
+          "gw-structure:0:1:0:3:2:1:6:6:1hgdgr"
+        ],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": {
+          "unitMm": 5,
+          "aiUse": "NONE",
+          "aiDisclosure": ""
+        },
+        "builderPrintCheck": {
+          "components": 1,
+          "triangles": 44,
+          "nonManifoldEdges": 0,
+          "openEdges": 0,
+          "contactGroups": [
+            [
+              {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 0,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 0
+              },
+              {
+                "x": 2,
+                "y": 1,
+                "z": 1
+              }
+            ]
+          ],
+          "selectionSignature": "[[\"0,1,0\",true,true,0,1,0,\"cube\",0,\"gold\",1,\"student\",false],[\"0,1,1\",true,true,0,1,1,\"cube\",0,\"gold\",1,\"student\",false],[\"1,1,0\",true,true,1,1,0,\"cube\",0,\"gold\",1,\"student\",false],[\"1,1,1\",true,true,1,1,1,\"cube\",0,\"gold\",1,\"student\",false],[\"2,1,0\",true,true,2,1,0,\"cube\",0,\"gold\",1,\"student\",false],[\"2,1,1\",true,true,2,1,1,\"cube\",0,\"gold\",1,\"student\",false]]"
+        },
+        "builderPanel": "build",
+        "sandboxDockCollapsed": false,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "volumeRepresentationKey": "",
+        "volumeRepresentationFromKey": "",
+        "volumeRepresentationVisitedKeys": [],
+        "volumeRepresentationReason": "",
+        "volumeRepresentationInvariantChecked": false,
+        "volumeRepresentationEvidenceChecked": false,
+        "volumeRepresentationConnectionSaved": false,
+        "retrievalAnswer": "",
+        "retrievalResult": null,
+        "retrievalAttemptCount": 0,
+        "actionFeedback": "",
+        "earnedBadges": {
+          "first_measure": {
+            "earned": "2026-09-12T18:14:51.832Z"
+          }
+        },
+        "lastBadgeNotification": null,
+        "creationFocusAvailable": false,
+        "historyRevision": 1,
+        "showcaseActive": false,
+        "showcaseSaving": false
+      },
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Free Build Sandbox — interactive 3D world. Build, select, and explore your creation.\" aria-describedby=\"geoworld-instructions\" tabindex=\"0\" class=\"gw-viewport\" style=\"flex: 1 1 0%; p",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": {
+          "x": 1082,
+          "y": 118,
+          "w": 346,
+          "h": 770
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1219.6875,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 93.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "Collapse Free Build Studio",
+          "box": {
+            "x": 1368,
+            "y": 133,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select and measure aimed build",
+          "box": {
+            "x": 1098,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Send selected build to Print Lab",
+          "box": {
+            "x": 1259,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Block",
+          "box": {
+            "x": 1098,
+            "y": 350.5,
+            "w": 74.75,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Line",
+          "box": {
+            "x": 1177.75,
+            "y": 350.5,
+            "w": 74.75,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Floor",
+          "box": {
+            "x": 1257.5,
+            "y": 350.5,
+            "w": 74.75,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Wall",
+          "box": {
+            "x": 1337.25,
+            "y": 350.5,
+            "w": 74.75,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Focus creation",
+          "box": {
+            "x": 1098,
+            "y": 616.984375,
+            "w": 314,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Front",
+          "box": {
+            "x": 1098,
+            "y": 672.984375,
+            "w": 74.75,
+            "h": 51.1875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Side",
+          "box": {
+            "x": 1177.75,
+            "y": 672.984375,
+            "w": 74.75,
+            "h": 51.1875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Top",
+          "box": {
+            "x": 1257.5,
+            "y": 672.984375,
+            "w": 74.75,
+            "h": 51.1875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Free view",
+          "box": {
+            "x": 1337.25,
+            "y": 672.984375,
+            "w": 74.75,
+            "h": 51.1875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Showcase creation",
+          "box": {
+            "x": 1098,
+            "y": 732.171875,
+            "w": 153,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Explore measurements",
+          "box": {
+            "x": 1259,
+            "y": 732.171875,
+            "w": 153,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear selection",
+          "box": {
+            "x": 1098,
+            "y": 784.171875,
+            "w": 83.3125,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Edit whole creation",
+          "box": {
+            "x": 1098,
+            "y": 844.171875,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "MoveDuplicateRotate 90°Mirror left / right (X)Mirror front / back (Z)Change material",
+          "box": {
+            "x": 1098,
+            "y": 969.546875,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "",
+          "box": {
+            "x": 1098,
+            "y": 1079.546875,
+            "w": 100,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "",
+          "box": {
+            "x": 1205,
+            "y": 1079.546875,
+            "w": 100,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "",
+          "box": {
+            "x": 1312,
+            "y": 1079.546875,
+            "w": 100,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Preview change",
+          "box": {
+            "x": 1098,
+            "y": 1135.546875,
+            "w": 153,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Reusable building stamps",
+          "box": {
+            "x": 1098,
+            "y": 904.171875,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "",
+          "box": {
+            "x": 1098,
+            "y": 1029.546875,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Save selection as stamp",
+          "box": {
+            "x": 1098,
+            "y": 1081.546875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Inspect print fit",
+          "box": {
+            "x": 1112,
+            "y": 1125.359375,
+            "w": 286,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Show print guide",
+          "box": {
+            "x": 1112,
+            "y": 1214.734375,
+            "w": 139,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Adjust print size",
+          "box": {
+            "x": 1112,
+            "y": 1181.359375,
+            "w": 286,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Use 5 millimeters per block",
+          "box": {
+            "x": 1125,
+            "y": 1276.359375,
+            "w": 82.65625,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Use 10 millimeters per block",
+          "box": {
+            "x": 1213.65625,
+            "y": 1276.359375,
+            "w": 82.671875,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Use 20 millimeters per block",
+          "box": {
+            "x": 1302.328125,
+            "y": 1276.359375,
+            "w": 82.65625,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "",
+          "box": {
+            "x": 1125,
+            "y": 1354.859375,
+            "w": 171.09375,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Apply scale",
+          "box": {
+            "x": 1303.09375,
+            "y": 1354.859375,
+            "w": 81.90625,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Change material. Current material: Stone",
+          "box": {
+            "x": 1098,
+            "y": 1391.234375,
+            "w": 153,
+            "h": 78.796875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Change shape. Current shape: Cube. Rotation: 0 degrees",
+          "box": {
+            "x": 1259,
+            "y": 1391.234375,
+            "w": 153,
+            "h": 78.796875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 1098,
+            "y": 1479.03125,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "💾 Save editable world",
+          "box": {
+            "x": 1098,
+            "y": 1589.03125,
+            "w": 153,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "📂 Open editable world",
+          "box": {
+            "x": 1259,
+            "y": 1589.03125,
+            "w": 153,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Workspace options",
+          "box": {
+            "x": 1098,
+            "y": 1658.21875,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Garden workshop",
+          "box": {
+            "x": 1098,
+            "y": 1704.21875,
+            "w": 153,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Open meadow",
+          "box": {
+            "x": 1259,
+            "y": 1704.21875,
+            "w": 153,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "📘 Choose guided lesson",
+          "box": {
+            "x": 1098,
+            "y": 1758.21875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "✨ Start a fresh sandbox",
+          "box": {
+            "x": 1259,
+            "y": 1758.21875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "reachable": false
+        },
+        {
+          "name": "Back to building",
+          "box": {
+            "x": 1098,
+            "y": 831,
+            "w": 314,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "lessonOptions": [
+      {
+        "value": "volumeExplorer",
+        "label": "Volume Explorer — Rectangular Prisms"
+      },
+      {
+        "value": "areaSurface",
+        "label": "Area & Surface Area"
+      },
+      {
+        "value": "buildChallenge",
+        "label": "Build Challenge — Design Your Dream Room"
+      },
+      {
+        "value": "realWorld",
+        "label": "Real-World Volume — Packing & Shipping"
+      },
+      {
+        "value": "compositeVolume",
+        "label": "Composite Volume — Breaking Apart & Combining"
+      },
+      {
+        "value": "fractionVolume",
+        "label": "Fractional Dimensions — Beyond Whole Numbers"
+      },
+      {
+        "value": "volumeEstimation",
+        "label": "Volume Estimation — Think Before You Count"
+      },
+      {
+        "value": "fractionBuilder",
+        "label": "Fraction Builder — Parts of a Whole"
+      },
+      {
+        "value": "base10Blocks",
+        "label": "Base 10 Place Value — Building Numbers in 3D"
+      },
+      {
+        "value": "fluencyMaze",
+        "label": "Volume Fluency Maze — Measure to Navigate"
+      },
+      {
+        "value": "geometryHarbor",
+        "label": "Geometry Harbor - An Area and Volume Expedition"
+      }
+    ],
+    "lesson": {
+      "title": "Geometry Harbor - An Area and Volume Expedition",
+      "activities": [
+        {
+          "id": "quay-practice",
+          "buildGoal": {
+            "metric": "blockCount",
+            "comparator": "eq",
+            "target": 6,
+            "unitCubesOnly": true
+          },
+          "title": "Arrival quay: build and revise",
+          "npcName": "1. Sora - Arrival Quay",
+          "position": [
+            -20,
+            2.2,
+            14
+          ],
+          "challenge": "On the sand practice pad, build a 3 by 2 by 1 cargo model from six unit cubes. Measure it, then reshape your cubes into a 6 by 1 by 1 row.",
+          "hint": "Aim down at a nearby floor tile. Use Place or B. Q cycles shapes; select the unit cube for this task. Use M to measure your own connected build.",
+          "successCriteria": [
+            "My first model contains exactly six unit cubes.",
+            "My revised model still contains six cubes.",
+            "I can name a dimension that changed and explain why the volume stayed the same."
+          ],
+          "reflection": "What changed when you rearranged the cargo, and what evidence shows that its volume did not change?"
+        },
+        {
+          "id": "garden-area",
+          "title": "Market gardens: measure growing space",
+          "npcName": "2. Ada - Garden Area",
+          "position": [
+            -17,
+            2.2,
+            -7
+          ],
+          "challenge": "Study the gold 6 by 4 garden model. Count rows, calculate the planting area, and explain how many plants fit at one plant per tile.",
+          "hint": "Count six tiles in one row and four rows. The planting surface is measured in square units even though we use blocks to model it.",
+          "successCriteria": [
+            "I identified the 6-unit and 4-unit edges.",
+            "I calculated 24 square units.",
+            "I explained why one plant per tile gives 24 plants."
+          ],
+          "reflection": "How do rows help you find the area without counting every tile individually?"
+        },
+        {
+          "id": "garden-perimeter",
+          "buildGoal": {
+            "metric": "footprintArea",
+            "comparator": "eq",
+            "target": 24,
+            "unitCubesOnly": true
+          },
+          "title": "Market gardens: redesign the boundary",
+          "npcName": "3. Rowan - Garden Design",
+          "position": [
+            -6,
+            2.2,
+            3
+          ],
+          "challenge": "Compare the gold 6 by 4 garden with the cyan 8 by 3 garden. On the 12 by 6 sand work pad, build 24 cubes in one layer, then revise to a 12 by 2 rectangle.",
+          "hint": "Area counts covered squares; perimeter counts outside unit edges. Walk around the boundary and include both pairs of opposite sides.",
+          "successCriteria": [
+            "I found area 24 for both reference gardens.",
+            "I compared perimeters 20 and 22.",
+            "My 12 by 2 revision has area 24 and perimeter 28.",
+            "I explained which arrangement needs less fencing."
+          ],
+          "reflection": "Why can equal planting areas need different amounts of fencing?"
+        },
+        {
+          "id": "reservoir-fill",
+          "buildGoal": {
+            "metric": "blockCount",
+            "comparator": "eq",
+            "target": 24,
+            "unitCubesOnly": true
+          },
+          "title": "Reservoir works: predict and fill",
+          "npcName": "4. Nia - Reservoir Works",
+          "position": [
+            15,
+            2.2,
+            -2
+          ],
+          "challenge": "Fill only the reservoir interior: x = 8 to 11, z = -7 to -5, and two layers above the cyan floor. Predict, fill one layer, then complete the second.",
+          "hint": "The interior is 4 by 3 by 2. Enter through the open front. Count your fill separately from the three protected stone walls.",
+          "successCriteria": [
+            "I predicted 12 cubes for one layer.",
+            "I placed two complete layers with no cubes outside the interior.",
+            "I checked that my fill contains 24 unit cubes."
+          ],
+          "reflection": "How did knowing the first layer help you predict the full capacity?"
+        },
+        {
+          "id": "reservoir-compare",
+          "title": "Reservoir works: compare capacities",
+          "npcName": "5. Ivo - Equal Capacity",
+          "position": [
+            16,
+            2.2,
+            4
+          ],
+          "challenge": "Measure the cyan 6 by 2 by 2 model and the gold 4 by 3 by 2 model separately. Explain their equal capacity using base area and layers.",
+          "hint": "The two models are separated by open space, so Measure should identify each one independently. Both bases contain 12 squares.",
+          "successCriteria": [
+            "I measured both models as 24 cubic units.",
+            "I found base area 12 and height 2 for each.",
+            "I explained how different dimensions can give equal volume."
+          ],
+          "reflection": "What changed between the two footprints, and how did that affect their capacity?"
+        },
+        {
+          "id": "makers-project",
+          "buildGoal": {
+            "metric": "occupiedVolume",
+            "comparator": "eq",
+            "target": 24,
+            "unitCubesOnly": true
+          },
+          "title": "Makers pavilion: design and explain",
+          "npcName": "6. Mira - Makers Pavilion",
+          "position": [
+            9,
+            2.2,
+            14
+          ],
+          "challenge": "On the 6 by 6 sand makers pad, design a connected room model using exactly 24 unit cubes. Measure it, revise its dimensions, and explain both versions.",
+          "hint": "Try 3 by 4 by 2, then 2 by 3 by 4. Use only your own model when preparing a Showcase or Print Lab project. The activity checklist is a self-review, not an automatic build grade.",
+          "successCriteria": [
+            "My model is connected and fits on the pad.",
+            "It contains exactly 24 unit cubes.",
+            "My revised design keeps volume 24.",
+            "I recorded dimensions and an explanation before preparing a shareable model."
+          ],
+          "reflection": "Which room would you choose for the harbor community, and what dimensions and measurements support your choice?"
+        }
+      ]
+    },
+    "activityButtons": [],
+    "failure-activity-evidence": {
+      "text": "Geometry World\nGeometry Harbor - An Area and Volume Expedition\n🧱 0 placed\n⭐ 0/6\n📝\nEstimate\n📋\nActivities\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 24 Y 4 Z 21\nS\n180°\nTARGETX 24 Y 1 Z 19\n🔇 SR OFF\nMatch\nFly\nUndo\n11\nHome\nClear\n✓\nReady to build\nB\nto place\nQUICK TOUR\nExplore the world\n🖱️ Click the 3D world to look around. Use WASD to move.\n1 / 4\nSkip tutorial\nNext →\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\n✨\nOpen Free Build\nCreate in a sandbox\nLayer explorer reset. Showing all layers.",
+      "world": {
+        "lessonTitle": "Geometry Harbor - An Area and Volume Expedition",
+        "totalBlocks": 2684,
+        "studentBlocks": 11,
+        "studentShapes": {
+          "cube": 11
+        },
+        "npcCount": 7,
+        "camera": {
+          "x": 24.5,
+          "y": 4.2,
+          "z": 21.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "learn",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build"
+        },
+        "drawPreview": {
+          "mode": "single",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "single",
+        "totalQ": 6,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "geometryHomeLesson": "geometryHarbor",
+        "activeLesson": "geometryHarbor",
+        "builderPanel": "build",
+        "hudPreset": "learning",
+        "hudPanel": "",
+        "sandboxDockCollapsed": false
+      },
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Geometry Harbor - An Area and Volume Expedition — interactive 3D world. 0 of 6 questions answered.\" aria-describedby=\"geoworld-instructions\" tabindex=\"0\" class=\"gw-viewport\" style=\"f",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": null,
+        ".gw-crosshair": {
+          "x": 709,
+          "y": 465.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 825
+        },
+        ".gwe-builder-dock": null
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 1123.859375,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open activity guide",
+          "box": {
+            "x": 1216.265625,
+            "y": 7,
+            "w": 89.828125,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 791.5,
+            "w": 104.890625,
+            "h": 15
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "reachable": true
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 527.265625,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 605.640625,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 666.640625,
+            "y": 720,
+            "w": 96.46875,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 766.109375,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 843.359375,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "reachable": false
+        },
+        {
+          "name": "Skip tutorial and proceed to lesson",
+          "box": {
+            "x": 725.671875,
+            "y": 695,
+            "w": 91.796875,
+            "h": 38
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next tutorial step",
+          "box": {
+            "x": 825.46875,
+            "y": 695,
+            "w": 65.53125,
+            "h": 38
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "reachable": true
+        },
+        {
+          "name": "✨Open Free BuildCreate in a sandbox",
+          "box": {
+            "x": 1270.8125,
+            "y": 118,
+            "w": 157.1875,
+            "h": 58
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-touch-wall-preview": {
+      "text": "Geometry World\nFree Build Sandbox\n📝\n⚙️\n▲\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nMatch\nFly\nUndo\n1\nHome\nClear\nSwipe on the right to look\nLook speed\n100%\n▲\n▼\n◀\n▶\nUp\nDown\nPlace\nBreak\nMeasure\nUndo\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n☝️\n⛶\nWall tool\n3 × 1 × 2 blocks · 6 cells\nPlace 6 blocks\nCancel\nBuild tools\nFree Build Sandbox opened. Aim at the ground and tap Place to add your first block.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 626,
+        "studentBlocks": 1,
+        "studentShapes": {
+          "cube": 1
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0.5,
+          "y": 3.2,
+          "z": 2.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": null,
+        "drawPreview": {
+          "mode": "wall",
+          "started": true,
+          "pinned": false,
+          "ok": true,
+          "count": 6,
+          "dimensions": {
+            "L": 3,
+            "W": 1,
+            "H": 2
+          },
+          "reason": "3 × 1 × 2 blocks · 6 cells"
+        },
+        "drawMode": "wall",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 1,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "drawWallHeight": 2
+      },
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Free Build Sandbox — interactive 3D world. Build, select, and explore your creation.\" aria-describedby=\"geoworld-instructions\" tabindex=\"0\" class=\"gw-viewport\" style=\"flex: 1 1 0%; p",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": {
+          "x": 45,
+          "y": 128,
+          "w": 300,
+          "h": 110.5
+        },
+        ".gw-crosshair": {
+          "x": 184,
+          "y": 437.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 376,
+          "h": 777
+        },
+        ".gwe-builder-dock": {
+          "x": 132.1875,
+          "y": 581,
+          "w": 125.625,
+          "h": 59
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 42,
+            "y": 11.03125,
+            "w": 95.71875,
+            "h": 14.9375
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 264,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 306,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 348,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 55.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 102.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 149.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 196.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 243.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 290.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 14,
+            "w": 56.78125,
+            "h": 32
+          },
+          "reachable": false
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 135.5,
+            "w": 56.78125,
+            "h": 30
+          },
+          "reachable": false
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 12,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 85.796875,
+            "y": 664,
+            "w": 70.8125,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 159.609375,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 233.40625,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 307.203125,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Touch look sensitivity",
+          "box": {
+            "x": 254,
+            "y": 158.5,
+            "w": 114,
+            "h": 16
+          },
+          "reachable": false
+        },
+        {
+          "name": "Jump or fly up",
+          "box": {
+            "x": 314,
+            "y": 336,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Fly down",
+          "box": {
+            "x": 314,
+            "y": 390,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Place block",
+          "box": {
+            "x": 314,
+            "y": 444,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Break block",
+          "box": {
+            "x": 314,
+            "y": 498,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Measure structure",
+          "box": {
+            "x": 314,
+            "y": 552,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last block action",
+          "box": {
+            "x": 314,
+            "y": 606,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Turn touch controls off",
+          "box": {
+            "x": 297,
+            "y": 68,
+            "w": 40,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 341,
+            "y": 68,
+            "w": 34,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Place 6 blocks",
+          "box": {
+            "x": 56,
+            "y": 185.5,
+            "w": 136,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Cancel",
+          "box": {
+            "x": 198,
+            "y": 185.5,
+            "w": 136,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 149.1875,
+            "y": 588,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-touch-wall-built": {
+      "text": "Geometry World\nFree Build Sandbox\n📝\n⚙️\n▲\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nMatch\nFly\nUndo\n2\nHome\nClear\nSwipe on the right to look\nLook speed\n100%\n▲\n▼\n◀\n▶\nUp\nDown\nPlace\nBreak\nMeasure\nUndo\nBuilt 6 blocks. Undo reverses this whole wall.\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n☝️\n⛶\nWall tool\nAim at a block face and set the start point.\nSet start\nBlock tool\nBuild tools\nBuilt 6 blocks. Undo reverses this whole wall.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 632,
+        "studentBlocks": 7,
+        "studentShapes": {
+          "cube": 7
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0.5,
+          "y": 3.2,
+          "z": 2.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": null,
+        "drawPreview": {
+          "mode": "wall",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "wall",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 7,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "drawWallHeight": 2,
+        "historyRevision": 1,
+        "actionFeedback": "Built 6 blocks. Undo reverses this whole wall."
+      },
+      "active": "<button type=\"button\" class=\"gw-focusable\" aria-label=\"Place block\" title=\"Place block\" data-gw-touch-action=\"place\" style=\"width: 52px; height: 52px; border-radius: 50%; background: rgba(34, 197, 94, 0.4); border: 2px solid rgba(34, 197, 9",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": {
+          "x": 45,
+          "y": 128,
+          "w": 300,
+          "h": 110.5
+        },
+        ".gw-crosshair": {
+          "x": 184,
+          "y": 437.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 376,
+          "h": 777
+        },
+        ".gwe-builder-dock": {
+          "x": 132.1875,
+          "y": 581,
+          "w": 125.625,
+          "h": 59
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 42,
+            "y": 11.03125,
+            "w": 95.71875,
+            "h": 14.9375
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 264,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 306,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 348,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 55.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 102.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 149.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 196.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 243.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 290.5,
+            "y": 723,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 14,
+            "w": 56.78125,
+            "h": 32
+          },
+          "reachable": false
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 135.5,
+            "w": 56.78125,
+            "h": 30
+          },
+          "reachable": false
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 12,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 85.796875,
+            "y": 664,
+            "w": 70.8125,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 159.609375,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 233.40625,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 307.203125,
+            "y": 664,
+            "w": 70.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Touch look sensitivity",
+          "box": {
+            "x": 254,
+            "y": 158.5,
+            "w": 114,
+            "h": 16
+          },
+          "reachable": false
+        },
+        {
+          "name": "Jump or fly up",
+          "box": {
+            "x": 314,
+            "y": 336,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Fly down",
+          "box": {
+            "x": 314,
+            "y": 390,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Place block",
+          "box": {
+            "x": 314,
+            "y": 444,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Break block",
+          "box": {
+            "x": 314,
+            "y": 498,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Measure structure",
+          "box": {
+            "x": 314,
+            "y": 552,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last block action",
+          "box": {
+            "x": 314,
+            "y": 606,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Turn touch controls off",
+          "box": {
+            "x": 297,
+            "y": 68,
+            "w": 40,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 341,
+            "y": 68,
+            "w": 34,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Set start",
+          "box": {
+            "x": 56,
+            "y": 185.5,
+            "w": 136,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Block tool",
+          "box": {
+            "x": 198,
+            "y": 185.5,
+            "w": 136,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 149.1875,
+            "y": 588,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "followup-touch-320": {
+      "text": "Geometry World\nFree Build Sandbox\n📝\n⚙️\n▲\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nMatch\nFly\nUndo\n2\nHome\nClear\nSwipe on the right to look\nLook speed\n100%\n▲\n▼\n◀\n▶\nUp\nDown\nPlace\nBreak\nMeasure\nUndo\nBuilt 6 blocks. Undo reverses this whole wall.\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n☝️\n⛶\nWall tool\nAim at a block face and set the start point.\nSet start\nBlock tool\nBuild tools\nBuilt 6 blocks. Undo reverses this whole wall.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 632,
+        "studentBlocks": 7,
+        "studentShapes": {
+          "cube": 7
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0.5,
+          "y": 3.2,
+          "z": 2.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": null,
+        "drawPreview": {
+          "mode": "wall",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "wall",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 7,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "drawWallHeight": 2,
+        "historyRevision": 1,
+        "actionFeedback": "Built 6 blocks. Undo reverses this whole wall."
+      },
+      "active": "<button type=\"button\" class=\"gw-focusable\" aria-label=\"Place block\" title=\"Place block\" data-gw-touch-action=\"place\" style=\"width: 52px; height: 52px; border-radius: 50%; background: rgba(34, 197, 94, 0.4); border: 2px solid rgba(34, 197, 9",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": {
+          "x": 14,
+          "y": 128,
+          "w": 292,
+          "h": 110.5
+        },
+        ".gw-crosshair": {
+          "x": 149,
+          "y": 365.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 306,
+          "h": 633
+        },
+        ".gwe-builder-dock": {
+          "x": 97.1875,
+          "y": 437,
+          "w": 125.625,
+          "h": 59
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 39,
+            "y": 12.90625,
+            "w": 88.359375,
+            "h": 13.796875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 194,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 236,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 278,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 23,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 69,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 115,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 161,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 207,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 253,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 14,
+            "w": 56.78125,
+            "h": 32
+          },
+          "reachable": false
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 135.5,
+            "w": 56.78125,
+            "h": 30
+          },
+          "reachable": false
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 12,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 71.796875,
+            "y": 520,
+            "w": 56.8125,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 131.609375,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 191.40625,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 251.203125,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Touch look sensitivity",
+          "box": {
+            "x": 184,
+            "y": 158.5,
+            "w": 114,
+            "h": 16
+          },
+          "reachable": false
+        },
+        {
+          "name": "Jump or fly up",
+          "box": {
+            "x": 244,
+            "y": 192,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": false
+        },
+        {
+          "name": "Fly down",
+          "box": {
+            "x": 244,
+            "y": 246,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Place block",
+          "box": {
+            "x": 244,
+            "y": 300,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Break block",
+          "box": {
+            "x": 244,
+            "y": 354,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Measure structure",
+          "box": {
+            "x": 244,
+            "y": 408,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last block action",
+          "box": {
+            "x": 244,
+            "y": 462,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Turn touch controls off",
+          "box": {
+            "x": 227,
+            "y": 68,
+            "w": 40,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 271,
+            "y": 68,
+            "w": 34,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Set start",
+          "box": {
+            "x": 25,
+            "y": 185.5,
+            "w": 132,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Block tool",
+          "box": {
+            "x": 163,
+            "y": 185.5,
+            "w": 132,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 114.1875,
+            "y": 444,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    },
+    "failure-touch-drawing": {
+      "text": "Geometry World\nFree Build Sandbox\n📝\n⚙️\n▲\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nMatch\nFly\nUndo\n2\nHome\nClear\nSwipe on the right to look\nLook speed\n100%\n▲\n▼\n◀\n▶\nUp\nDown\nPlace\nBreak\nMeasure\nUndo\nBuilt 6 blocks. Undo reverses this whole wall.\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n☝️\n⛶\nWall tool\nAim at a block face and set the start point.\nSet start\nBlock tool\nBuild tools\nBuilt 6 blocks. Undo reverses this whole wall.",
+      "world": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 632,
+        "studentBlocks": 7,
+        "studentShapes": {
+          "cube": 7
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0.5,
+          "y": 3.2,
+          "z": 2.5
+        },
+        "yaw": 0
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": null,
+        "drawPreview": {
+          "mode": "wall",
+          "started": false,
+          "pinned": false,
+          "ok": false,
+          "count": 0,
+          "dimensions": null,
+          "reason": "Aim at a block face and set the start point."
+        },
+        "drawMode": "wall",
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 7,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": true,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "",
+        "drawWallHeight": 2,
+        "historyRevision": 1,
+        "actionFeedback": "Built 6 blocks. Undo reverses this whole wall."
+      },
+      "active": "<button type=\"button\" class=\"gw-focusable\" aria-label=\"Place block\" title=\"Place block\" data-gw-touch-action=\"place\" style=\"width: 52px; height: 52px; border-radius: 50%; background: rgba(34, 197, 94, 0.4); border: 2px solid rgba(34, 197, 9",
+      "overflow": false,
+      "boxes": {
+        ".gwe-draw-hud": {
+          "x": 14,
+          "y": 128,
+          "w": 292,
+          "h": 110.5
+        },
+        ".gw-crosshair": {
+          "x": 149,
+          "y": 365.5,
+          "w": 22,
+          "h": 22
+        },
+        "#geoworld-fs-wrap canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 306,
+          "h": 633
+        },
+        ".gwe-builder-dock": {
+          "x": 97.1875,
+          "y": 437,
+          "w": 125.625,
+          "h": 59
+        }
+      },
+      "controls": [
+        {
+          "name": "Geometry World home",
+          "box": {
+            "x": 39,
+            "y": 12.90625,
+            "w": 88.359375,
+            "h": 13.796875
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open volume estimate drawer",
+          "box": {
+            "x": 194,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Open game settings and tools",
+          "box": {
+            "x": 236,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Hide the Geometry World game bar",
+          "box": {
+            "x": 278,
+            "y": 6,
+            "w": 36,
+            "h": 40
+          },
+          "reachable": true
+        },
+        {
+          "name": "Next shape. Shortcut Q",
+          "box": {
+            "x": 23,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Rotate selected shape. Current rotation 0 degrees",
+          "box": {
+            "x": 69,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Cube shape, 1 cubic unit, currently selected",
+          "box": {
+            "x": 115,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "box": {
+            "x": 161,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "box": {
+            "x": 207,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "box": {
+            "x": 253,
+            "y": 579,
+            "w": 44,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Position",
+          "box": {
+            "x": 19,
+            "y": 14,
+            "w": 56.78125,
+            "h": 32
+          },
+          "reachable": false
+        },
+        {
+          "name": "Toggle coordinate screen-reader announcements (key C)",
+          "box": {
+            "x": 19,
+            "y": 135.5,
+            "w": 56.78125,
+            "h": 30
+          },
+          "reachable": false
+        },
+        {
+          "name": "Match aimed block",
+          "box": {
+            "x": 12,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Toggle fly mode",
+          "box": {
+            "x": 71.796875,
+            "y": 520,
+            "w": 56.8125,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last action",
+          "box": {
+            "x": 131.609375,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Return to spawn point",
+          "box": {
+            "x": 191.40625,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Clear my placed blocks",
+          "box": {
+            "x": 251.203125,
+            "y": 520,
+            "w": 56.796875,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Touch look sensitivity",
+          "box": {
+            "x": 184,
+            "y": 158.5,
+            "w": 114,
+            "h": 16
+          },
+          "reachable": false
+        },
+        {
+          "name": "Jump or fly up",
+          "box": {
+            "x": 244,
+            "y": 192,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": false
+        },
+        {
+          "name": "Fly down",
+          "box": {
+            "x": 244,
+            "y": 246,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Place block",
+          "box": {
+            "x": 244,
+            "y": 300,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Break block",
+          "box": {
+            "x": 244,
+            "y": 354,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Measure structure",
+          "box": {
+            "x": 244,
+            "y": 408,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Undo last block action",
+          "box": {
+            "x": 244,
+            "y": 462,
+            "w": 64,
+            "h": 48
+          },
+          "reachable": true
+        },
+        {
+          "name": "Turn touch controls off",
+          "box": {
+            "x": 227,
+            "y": 68,
+            "w": 40,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Enter fullscreen for the Geometry World workspace",
+          "box": {
+            "x": 271,
+            "y": 68,
+            "w": 34,
+            "h": 34
+          },
+          "reachable": true
+        },
+        {
+          "name": "Set start",
+          "box": {
+            "x": 25,
+            "y": 185.5,
+            "w": 132,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Block tool",
+          "box": {
+            "x": 163,
+            "y": 185.5,
+            "w": 132,
+            "h": 44
+          },
+          "reachable": true
+        },
+        {
+          "name": "Expand Free Build Studio",
+          "box": {
+            "x": 114.1875,
+            "y": 444,
+            "w": 101.625,
+            "h": 44
+          },
+          "reachable": true
+        }
+      ]
+    }
+  },
+  "assertions": [
+    {
+      "name": "Front creation camera finishes its requested view",
+      "pass": true
+    },
+    {
+      "name": "Side creation camera finishes its requested view",
+      "pass": true
+    },
+    {
+      "name": "Top creation camera finishes its requested view",
+      "pass": true
+    },
+    {
+      "name": "Front Side and Top have distinct camera positions",
+      "pass": false,
+      "details": {
+        "Front": [
+          8.872676222589861,
+          2.800001738070361,
+          1.0000000000000004
+        ],
+        "Side": [
+          8.872676222589861,
+          2.800001738070361,
+          1.0000000000000004
+        ],
+        "Top": [
+          1.5,
+          2.8000017391836067,
+          8.37267622890339
+        ]
+      }
+    },
+    {
+      "name": "Orbit left changes selected-creation camera pose",
+      "pass": true,
+      "details": [
+        1.5,
+        4.2060788265550935,
+        1.2598957249869613
+      ]
+    },
+    {
+      "name": "Free view restores saved position exactly",
+      "pass": true,
+      "details": {
+        "original": [
+          0.5,
+          4.2,
+          3.5
+        ],
+        "restored": [
+          0.5,
+          4.2,
+          3.5
+        ]
+      }
+    },
+    {
+      "name": "Creation preview takes drawing ownership and cancels drawing mode",
+      "pass": true
+    },
+    {
+      "name": "Recolor changes all selected material IDs",
+      "pass": true
+    },
+    {
+      "name": "Revise in Geometry World returns all student blocks",
+      "pass": true
+    },
+    {
+      "name": "Print Lab return retains editable selection",
+      "pass": true
+    },
+    {
+      "name": "Touch entry native Place adds first block",
+      "pass": true
+    },
+    {
+      "name": "Touch two-point Wall builds six cells",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "failures": [
+    {
+      "name": "activity-evidence",
+      "error": "locator.click: Timeout 18000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Objectives|Activities/ }).first()\u001b[22m\n\n    at eval (<anonymous>:39:1232)\n    at async step (<anonymous>:28:61)\n    at async eval (<anonymous>:39:2)"
+    },
+    {
+      "name": "touch-drawing",
+      "error": "locator.click: Timeout 18000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('Position', { exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <summary>Position</summary>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <span class=\"gw-lesson-title\">Free Build Sandbox</span> from <header class=\"gw-toolbar\" aria-label=\"Geometry World building tools\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <span class=\"gw-lesson-title\">Free Build Sandbox</span> from <header class=\"gw-toolbar\" aria-label=\"Geometry World building tools\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    20 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <span class=\"gw-lesson-title\">Free Build Sandbox</span> from <header class=\"gw-toolbar\" aria-label=\"Geometry World building tools\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at eval (<anonymous>:41:1285)\n    at async step (<anonymous>:28:61)\n    at async eval (<anonymous>:41:2)"
+    }
+  ]
+}

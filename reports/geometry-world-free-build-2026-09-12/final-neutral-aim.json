@@ -1,0 +1,470 @@
+{
+  "checks": [
+    {
+      "label": "Native first B places one block before camera fixtures",
+      "pass": true
+    },
+    {
+      "label": "Native first B preserves the entry camera position",
+      "pass": true
+    },
+    {
+      "label": "Native Undo removes the first block",
+      "pass": true
+    },
+    {
+      "label": "Looking above ground shows neutral aim guidance instead of blocked state",
+      "pass": true,
+      "detail": {
+        "state": "aim",
+        "code": "no_target",
+        "color": "rgb(41, 71, 58)",
+        "background": "rgba(243, 238, 220, 0.98)",
+        "contrast": 8.788068754152091,
+        "width": 108.90625,
+        "height": 44,
+        "atCenter": true,
+        "text": "Look down at the nearby ground or a block face.\nAim at build area"
+      }
+    },
+    {
+      "label": "Aim has a reachable target at least44×44",
+      "pass": true
+    },
+    {
+      "label": "Neutral aim text has at least4.5:1 nominal contrast",
+      "pass": true
+    },
+    {
+      "label": "Aim points to a valid placement target",
+      "pass": true
+    },
+    {
+      "label": "Aim preserves camera position and world geometry",
+      "pass": true
+    },
+    {
+      "label": "Shape feedback and placement guidance are visually separated",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "x": 654.125,
+          "y": 781.8125,
+          "w": 131.75,
+          "h": 32.1875
+        },
+        "hint": {
+          "x": 611.859375,
+          "y": 736.8125,
+          "w": 216.28125,
+          "h": 37
+        },
+        "overlap": false
+      }
+    },
+    {
+      "label": "Compact desktop feedback leaves the actual crosshair clear",
+      "pass": true,
+      "detail": {
+        "stack": {
+          "x": 611.859375,
+          "y": 112,
+          "w": 216.28125,
+          "h": 77.1875
+        },
+        "crosshair": {
+          "x": 709,
+          "y": 290.5,
+          "w": 22,
+          "h": 22
+        },
+        "crosshairCenter": {
+          "x": 720,
+          "y": 301.5
+        },
+        "viewport": {
+          "x": 10,
+          "y": 63,
+          "w": 1420,
+          "h": 477
+        },
+        "canvas": {
+          "x": 11,
+          "y": 64,
+          "w": 1418,
+          "h": 475
+        },
+        "canvasCenter": {
+          "x": 720,
+          "y": 301.5
+        },
+        "overlapsCrosshair": false
+      }
+    },
+    {
+      "label": "Actual crosshair matches the rendered canvas center",
+      "pass": true
+    },
+    {
+      "label": "desktop hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 709,
+          "y": 263,
+          "w": 22,
+          "h": 22,
+          "cx": 720,
+          "cy": 274
+        },
+        "canvas": {
+          "x": 11,
+          "y": 9,
+          "w": 1418,
+          "h": 530,
+          "cx": 720,
+          "cy": 274
+        },
+        "viewport": {
+          "x": 10,
+          "y": 8,
+          "w": 1420,
+          "h": 532,
+          "cx": 720,
+          "cy": 274
+        }
+      }
+    },
+    {
+      "label": "390px hidden game bar exposes both recovery controls without overlap",
+      "pass": true,
+      "detail": {
+        "home": {
+          "x": 290.359375,
+          "y": 56,
+          "w": 91.640625,
+          "h": 44,
+          "atCenter": true
+        },
+        "bar": {
+          "x": 137.8046875,
+          "y": 8,
+          "w": 114.390625,
+          "h": 44,
+          "atCenter": true
+        },
+        "overlap": false,
+        "overflow": false
+      }
+    },
+    {
+      "label": "390px hidden game bar gives both recovery controls 44px targets",
+      "pass": true
+    },
+    {
+      "label": "390px hidden game bar has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "Narrow World home opens the welcome screen",
+      "pass": true
+    },
+    {
+      "label": "Continue returns from World home with the game bar still hidden",
+      "pass": true
+    },
+    {
+      "label": "390px hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "cx": 195,
+          "cy": 422
+        },
+        "canvas": {
+          "x": 7,
+          "y": 7,
+          "w": 376,
+          "h": 830,
+          "cx": 195,
+          "cy": 422
+        },
+        "viewport": {
+          "x": 6,
+          "y": 6,
+          "w": 378,
+          "h": 832,
+          "cx": 195,
+          "cy": 422
+        }
+      }
+    },
+    {
+      "label": "320px hidden game bar exposes both recovery controls without overlap",
+      "pass": true,
+      "detail": {
+        "home": {
+          "x": 220.359375,
+          "y": 56,
+          "w": 91.640625,
+          "h": 44,
+          "atCenter": true
+        },
+        "bar": {
+          "x": 102.8046875,
+          "y": 8,
+          "w": 114.390625,
+          "h": 44,
+          "atCenter": true
+        },
+        "overlap": false,
+        "overflow": false
+      }
+    },
+    {
+      "label": "320px hidden game bar gives both recovery controls 44px targets",
+      "pass": true
+    },
+    {
+      "label": "320px hidden game bar has no document overflow",
+      "pass": true
+    },
+    {
+      "label": "320px expanded Position keeps recovery controls reachable",
+      "pass": true,
+      "detail": {
+        "positionOpen": true,
+        "home": true,
+        "bar": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "320px hidden game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "cx": 160,
+          "cy": 350
+        },
+        "canvas": {
+          "x": 7,
+          "y": 7,
+          "w": 306,
+          "h": 686,
+          "cx": 160,
+          "cy": 350
+        },
+        "viewport": {
+          "x": 6,
+          "y": 6,
+          "w": 308,
+          "h": 688,
+          "cx": 160,
+          "cy": 350
+        }
+      }
+    },
+    {
+      "label": "390px shown game bar aligns crosshair with the canvas",
+      "pass": true,
+      "detail": {
+        "crosshair": {
+          "x": 184,
+          "y": 437.5,
+          "w": 22,
+          "h": 22,
+          "cx": 195,
+          "cy": 448.5
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 376,
+          "h": 777,
+          "cx": 195,
+          "cy": 448.5
+        },
+        "viewport": {
+          "x": 6,
+          "y": 59,
+          "w": 378,
+          "h": 779,
+          "cx": 195,
+          "cy": 448.5
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "feedback": {
+    "feedback": {
+      "x": 654.125,
+      "y": 781.8125,
+      "w": 131.75,
+      "h": 32.1875
+    },
+    "hint": {
+      "x": 611.859375,
+      "y": 736.8125,
+      "w": 216.28125,
+      "h": 37
+    },
+    "overlap": false
+  },
+  "compactLayout": {
+    "stack": {
+      "x": 611.859375,
+      "y": 112,
+      "w": 216.28125,
+      "h": 77.1875
+    },
+    "crosshair": {
+      "x": 709,
+      "y": 290.5,
+      "w": 22,
+      "h": 22
+    },
+    "crosshairCenter": {
+      "x": 720,
+      "y": 301.5
+    },
+    "viewport": {
+      "x": 10,
+      "y": 63,
+      "w": 1420,
+      "h": 477
+    },
+    "canvas": {
+      "x": 11,
+      "y": 64,
+      "w": 1418,
+      "h": 475
+    },
+    "canvasCenter": {
+      "x": 720,
+      "y": 301.5
+    },
+    "overlapsCrosshair": false
+  },
+  "alignmentLayouts": [
+    {
+      "name": "desktop hidden game bar",
+      "crosshair": {
+        "x": 709,
+        "y": 263,
+        "w": 22,
+        "h": 22,
+        "cx": 720,
+        "cy": 274
+      },
+      "canvas": {
+        "x": 11,
+        "y": 9,
+        "w": 1418,
+        "h": 530,
+        "cx": 720,
+        "cy": 274
+      },
+      "viewport": {
+        "x": 10,
+        "y": 8,
+        "w": 1420,
+        "h": 532,
+        "cx": 720,
+        "cy": 274
+      }
+    },
+    {
+      "name": "390px hidden game bar",
+      "crosshair": {
+        "x": 184,
+        "y": 411,
+        "w": 22,
+        "h": 22,
+        "cx": 195,
+        "cy": 422
+      },
+      "canvas": {
+        "x": 7,
+        "y": 7,
+        "w": 376,
+        "h": 830,
+        "cx": 195,
+        "cy": 422
+      },
+      "viewport": {
+        "x": 6,
+        "y": 6,
+        "w": 378,
+        "h": 832,
+        "cx": 195,
+        "cy": 422
+      }
+    },
+    {
+      "name": "320px hidden game bar",
+      "crosshair": {
+        "x": 149,
+        "y": 339,
+        "w": 22,
+        "h": 22,
+        "cx": 160,
+        "cy": 350
+      },
+      "canvas": {
+        "x": 7,
+        "y": 7,
+        "w": 306,
+        "h": 686,
+        "cx": 160,
+        "cy": 350
+      },
+      "viewport": {
+        "x": 6,
+        "y": 6,
+        "w": 308,
+        "h": 688,
+        "cx": 160,
+        "cy": 350
+      }
+    },
+    {
+      "name": "390px shown game bar",
+      "crosshair": {
+        "x": 184,
+        "y": 437.5,
+        "w": 22,
+        "h": 22,
+        "cx": 195,
+        "cy": 448.5
+      },
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "w": 376,
+        "h": 777,
+        "cx": 195,
+        "cy": 448.5
+      },
+      "viewport": {
+        "x": 6,
+        "y": 59,
+        "w": 378,
+        "h": 779,
+        "cx": 195,
+        "cy": 448.5
+      }
+    }
+  ],
+  "pass": true
+}

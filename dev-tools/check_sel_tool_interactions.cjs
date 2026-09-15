@@ -270,10 +270,19 @@ async function auditTool(page, scenario, tool) {
       hasExportButton: !!exportButton
     };
   });
+  // The two summary pills are deliberately hidden below 720px so the phone
+  // header stays usable (sel_hub_module.js `isCompact`). What a student must
+  // see at EVERY width is the disclosure itself — the saved-work sentence —
+  // and a way to export. Asserting the pills on a 390px viewport failed five
+  // tools for behaving as designed, and a standing false red teaches everyone
+  // to ignore the gate.
+  const compactViewport = !!(scenario && scenario.viewport && scenario.viewport.width < 720);
+  const pillsExpected = !compactViewport;
+  const corePass = saveCues.hasStandardShell && saveCues.hasSavedWorkCue && saveCues.hasExportButton;
   checks.push({
     id: 'tool-save-consistency-cues',
-    pass: saveCues.hasStandardShell && saveCues.hasPrivateCheckpoint && saveCues.hasSharePacketEligible && saveCues.hasSavedWorkCue && saveCues.hasExportButton,
-    details: saveCues
+    pass: corePass && (!pillsExpected || (saveCues.hasPrivateCheckpoint && saveCues.hasSharePacketEligible)),
+    details: Object.assign({ compactViewport: compactViewport, pillsExpected: pillsExpected }, saveCues)
   });
 
   await page.keyboard.press('Tab');

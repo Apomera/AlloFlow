@@ -58,7 +58,7 @@ window.StemLab = window.StemLab || {
 
   // ── Epidemic Lab Audio System ──
   var _epAC = null;
-  function getEpAC() { if (!_epAC) { try { _epAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_epAC && _epAC.state === 'suspended') { try { _epAC.resume(); } catch(e) {} } return _epAC; }
+  function getEpAC() { if (!_epAC) { try { _epAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_epAC && _epAC.state === 'suspended') { try { _epAC.resume(); } catch(e) {} } return _epAC; }
   function epTone(f, d, t, v) { var ac = getEpAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxInfectionSpread() { epTone(200, 0.12, 'sawtooth', 0.05); setTimeout(function() { epTone(250, 0.1, 'sawtooth', 0.04); }, 60); }
   function sfxVaccinate() { epTone(523, 0.06, 'sine', 0.06); setTimeout(function() { epTone(659, 0.06, 'sine', 0.06); }, 50); setTimeout(function() { epTone(784, 0.08, 'sine', 0.07); }, 100); }

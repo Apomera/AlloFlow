@@ -3930,6 +3930,135 @@ async function _builderFetchExportImage(url, options = {}) {
   }
 }
 
+// --- Send to my Drive (Class Mailbox v24 delivery) ---------------------------
+// The teacher's own Apps Script (the Class Mailbox) accepts {a:'deliver'} and
+// {a:'deliverform'} from v24 and files the result in THEIR Drive. Everything
+// below is a thin client: read the saved mailbox config, POST text/plain JSON
+// (the one shape Apps Script answers without a CORS preflight), hand back the
+// link. No student data moves; this is a teacher's finished document going into
+// the teacher's own Drive. Kept at module scope so the pure parts are testable
+// without mounting the view (tests slice between the markers).
+// __ALLO_DRIVE_DELIVERY_BEGIN__
+const ALLO_DRIVE_MB_URL_KEY = 'alloflow_session_mailbox_url';
+const ALLO_DRIVE_MB_ADMIN_KEY = 'alloflow_session_mailbox_admin';
+const ALLO_DRIVE_DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+function _alloReadMailboxConfig(storage) {
+  try {
+    const store = storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    if (!store) return null;
+    const url = String(store.getItem(ALLO_DRIVE_MB_URL_KEY) || '').trim();
+    const admin = String(store.getItem(ALLO_DRIVE_MB_ADMIN_KEY) || '').trim();
+    // Both the personal (/macros/s/…/exec) and Workspace (/a/macros/<domain>/s/…/exec) shapes.
+    if (!/^https:\/\/script\.google\.com\/[^\s]*\/exec(?:\?[^\s]*)?$/.test(url) || !admin) return null;
+    return { url, admin };
+  } catch (_) { return null; }
+}
+
+const ALLO_DRIVE_ERROR_TEXT = {
+  'not-admin': 'The saved admin token was refused. Reconnect the mailbox from the Live class setup.',
+  'bad-action': 'This mailbox predates v24. Paste the current script and deploy a new version.',
+  'forms-scope': 'Google Forms is not enabled on this mailbox yet. Add the Forms scope described in the mailbox README, then try again.',
+  'drive-error': 'Drive refused the file.',
+  'too-large': 'The file is too large to send through the mailbox (25 MB limit).',
+  'bad-mime': 'That file type cannot be sent.',
+  'bad-request': 'Nothing to send.',
+};
+
+async function _alloMailboxDeliverCall(config, payload, fetchImpl) {
+  const doFetch = fetchImpl || (typeof fetch === 'function' ? fetch : null);
+  if (!doFetch) throw new Error('This browser cannot reach the mailbox.');
+  const res = await doFetch(config.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ ...payload, admin: config.admin }),
+  });
+  let data = null;
+  try { data = await res.json(); } catch (_) { data = null; }
+  if (!data || typeof data !== 'object') throw new Error('The mailbox did not answer. Redeploy it from the Live class setup.');
+  if (!data.ok) {
+    const code = String(data.e || 'error');
+    const base = ALLO_DRIVE_ERROR_TEXT[code] || ('Mailbox error: ' + code);
+    throw new Error(code === 'drive-error' && data.d ? base + ' ' + String(data.d) : base);
+  }
+  return data;
+}
+
+function _alloBlobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Could not read the exported file.'));
+      reader.onload = () => {
+        const s = String(reader.result || '');
+        resolve(s.slice(s.indexOf(',') + 1));
+      };
+      reader.readAsDataURL(blob);
+    } catch (err) { reject(err); }
+  });
+}
+
+// Quiz resource -> Google Form items. Only the shapes Forms can hold: single
+// choice, multi-select, short text. Everything else becomes a paragraph prompt,
+// so the teacher still gets the question, just without auto-grading.
+function _alloQuizToFormItems(quizData) {
+  const questions = Array.isArray(quizData && quizData.questions) ? quizData.questions : [];
+  const text = (v) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+  const items = [];
+  questions.forEach((q) => {
+    if (!q || typeof q !== 'object') return;
+    const prompt = text(q.question || q.prompt || q.text);
+    if (!prompt) return;
+    const type = String(q.type || 'mcq');
+    const options = (Array.isArray(q.options) ? q.options : [])
+      .map((o) => text(o && typeof o === 'object' ? (o.text || o.label || o.value) : o))
+      .filter(Boolean);
+    const explanation = text(q.explanation);
+    if ((type === 'mcq' || type === 'multiple-choice' || type === 'multi-select') && options.length >= 2) {
+      const raw = q.correctAnswers !== undefined ? q.correctAnswers : q.correctAnswer;
+      const list = Array.isArray(raw) ? raw : [raw];
+      const answer = list
+        .map((a) => (typeof a === 'number' ? a : options.indexOf(text(a))))
+        .filter((i) => i >= 0 && i < options.length);
+      items.push({
+        type: type === 'multi-select' ? 'checkbox' : 'mc',
+        prompt, options,
+        answer: answer.length ? answer : undefined,
+        help: explanation || undefined,
+        points: 1,
+      });
+      return;
+    }
+    if (type === 'short-answer' || type === 'fill-blank' || type === 'numeric-response') {
+      const expected = text(q.correctAnswer || q.expectedAnswer || q.expectedFill || q.correctValue
+        || (Array.isArray(q.correctAnswers) ? q.correctAnswers.join(' / ') : ''));
+      items.push({ type: 'short', prompt, answer: expected || undefined, help: explanation || undefined, points: 1 });
+      return;
+    }
+    items.push({ type: 'paragraph', prompt, help: explanation || undefined, points: 0 });
+  });
+  return items;
+}
+
+function _alloFormQuizzesFromHistory(history) {
+  return (Array.isArray(history) ? history : [])
+    .filter((item) => item && item.type === 'quiz' && item.data && Array.isArray(item.data.questions) && item.data.questions.length > 0)
+    .map((item) => ({ key: String(item.id), title: String(item.title || item.meta || 'Quiz').slice(0, 120), item }));
+}
+// __ALLO_DRIVE_DELIVERY_END__
+try {
+  if (typeof window !== 'undefined') {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.DriveDelivery = Object.freeze({
+      readMailboxConfig: _alloReadMailboxConfig,
+      deliverCall: _alloMailboxDeliverCall,
+      blobToBase64: _alloBlobToBase64,
+      quizToFormItems: _alloQuizToFormItems,
+      formQuizzesFromHistory: _alloFormQuizzesFromHistory,
+    });
+  }
+} catch (_) {}
+
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS, FONT_OPTIONS, STYLE_SEEDS, _ensureDiffLib,
@@ -7985,7 +8114,10 @@ function ExportPreviewView(props) {
     finally { finishAlternativeExport(); }
   }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
 
-  const runOfficeExport = React.useCallback(async (format) => {
+  // `sink` (optional) receives the built { blob, fileName, message } instead of
+  // triggering a download: "Send to my Drive" reuses the exact accessible DOCX
+  // the Word button builds, so the Google Doc is never a second, lesser export.
+  const runOfficeExport = React.useCallback(async (format, sink) => {
     if (altExportBusy) return;
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return;
@@ -8007,13 +8139,72 @@ function ExportPreviewView(props) {
       const clean = getCleanBuilderDocument({ forExport: true });
       if (!clean) throw new Error('The editable preview is not ready.');
       const result = await api.build({ html: clean.html, title: clean.title, format });
-      downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
-      addToast && addToast(result.message, 'success');
+      if (typeof sink === 'function') {
+        await sink(result);
+      } else {
+        downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
+        addToast && addToast(result.message, 'success');
+      }
     } catch (error) {
       addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error');
     } finally { finishAlternativeExport(); }
   }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
 
+  // Send to my Drive. The Google Doc is the same accessible DOCX the Word
+  // button builds, posted to the teacher's Class Mailbox, which files it in
+  // their own Drive and converts it. Without a connected mailbox the group
+  // offers to open that setup instead of failing quietly.
+  const [driveDeliveryBusy, setDriveDeliveryBusy] = React.useState('');
+  const [driveDeliveryLink, setDriveDeliveryLink] = React.useState(null);
+  const [selectedFormQuizKey, setSelectedFormQuizKey] = React.useState('');
+  const mailboxConfig = React.useMemo(() => _alloReadMailboxConfig(), [driveDeliveryBusy, driveDeliveryLink, altExportBusy]);
+  const formQuizzes = React.useMemo(() => _alloFormQuizzesFromHistory(history), [history]);
+  const openMailboxSetup = React.useCallback(() => {
+    if (typeof window !== 'undefined' && typeof window.__alloOpenMailboxSetup === 'function') {
+      try { window.__alloOpenMailboxSetup(); return; } catch (_) {}
+    }
+    addToast && addToast('Open Student QR → Live class without accounts → Connect mailbox, then come back here.', 'info');
+  }, [addToast]);
+  const sendDocToDrive = React.useCallback(async () => {
+    const config = _alloReadMailboxConfig();
+    if (!config) { openMailboxSetup(); return; }
+    setDriveDeliveryBusy('doc');
+    setDriveDeliveryLink(null);
+    try {
+      await runOfficeExport('docx', async (result) => {
+        try {
+          const b64 = await _alloBlobToBase64(result.blob);
+          const name = String(result.fileName || 'AlloFlow document.docx');
+          const reply = await _alloMailboxDeliverCall(config, { a: 'deliver', name, mime: ALLO_DRIVE_DOCX_MIME, b64, convert: 'doc' });
+          setDriveDeliveryLink({ url: reply.url, label: 'the Google Doc' });
+          addToast && addToast('Sent to your Drive as a Google Doc.', 'success');
+        } catch (error) {
+          addToast && addToast(error?.message || 'Could not send to Drive.', 'error');
+        }
+      });
+    } finally {
+      setDriveDeliveryBusy('');
+    }
+  }, [runOfficeExport, addToast, openMailboxSetup]);
+  const sendQuizToForm = React.useCallback(async () => {
+    const config = _alloReadMailboxConfig();
+    if (!config) { openMailboxSetup(); return; }
+    const chosen = formQuizzes.find((q) => q.key === selectedFormQuizKey) || formQuizzes[0];
+    if (!chosen) { addToast && addToast('Generate a quiz first.', 'info'); return; }
+    const items = _alloQuizToFormItems(chosen.item.data);
+    if (!items.length) { addToast && addToast('This quiz has no questions a Google Form can hold.', 'info'); return; }
+    setDriveDeliveryBusy('form');
+    setDriveDeliveryLink(null);
+    try {
+      const reply = await _alloMailboxDeliverCall(config, { a: 'deliverform', title: chosen.title, items, quiz: true });
+      setDriveDeliveryLink({ url: reply.editUrl || reply.url, label: 'the Google Form' });
+      addToast && addToast('Google Form created in your Drive.', 'success');
+    } catch (error) {
+      addToast && addToast(error?.message || 'Could not create the Form.', 'error');
+    } finally {
+      setDriveDeliveryBusy('');
+    }
+  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup]);
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
     if (preflight.errors) { addToast && addToast('Export stopped: fix the blocking preflight issues first.', 'error'); return; }
@@ -8275,6 +8466,16 @@ function ExportPreviewView(props) {
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Google Drive</div>
+                        {mailboxConfig ? <>
+                          <button type="button" data-help-key="doc_builder_send_to_drive" disabled={!!altExportBusy || !!driveDeliveryBusy} onClick={sendDocToDrive} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50">{driveDeliveryBusy === 'doc' ? 'Sending to Drive…' : 'Google Doc (send to my Drive)'}</button>
+                          {formQuizzes.length > 0 && <>
+                            {formQuizzes.length > 1 && <select aria-label="Quiz to send as a Google Form" value={selectedFormQuizKey || formQuizzes[0].key} onChange={(event) => setSelectedFormQuizKey(event.target.value)} disabled={!!altExportBusy || !!driveDeliveryBusy} className="w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] text-slate-700 bg-white">{formQuizzes.map((quiz) => <option key={quiz.key} value={quiz.key}>{quiz.title}</option>)}</select>}
+                            <button type="button" data-help-key="doc_builder_send_quiz_to_form" disabled={!!altExportBusy || !!driveDeliveryBusy} onClick={sendQuizToForm} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50">{driveDeliveryBusy === 'form' ? 'Creating the Form…' : 'Google Form (quiz, send to my Drive)'}</button>
+                          </>}
+                          {driveDeliveryLink && <a href={driveDeliveryLink.url} target="_blank" rel="noopener noreferrer" className="block px-2 py-1 text-[11px] font-semibold text-emerald-800 underline">Open {driveDeliveryLink.label} in Drive ↗</a>}
+                          <p className="px-2 pb-1 text-[10px] text-slate-500">Files land in your Drive under AlloFlow Class Mailbox / Delivered documents.</p>
+                        </> : <button type="button" data-help-key="doc_builder_connect_mailbox" onClick={openMailboxSetup} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 rounded-lg">Connect your Class Mailbox to send documents to your Drive →</button>}
                         {qtiAssessments.length > 0 && <>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Assessment packages</div>
                           {qtiAssessments.length > 1 && <select aria-label="Quiz to export as QTI" value={selectedQtiKey} onChange={(event) => setSelectedQtiKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">

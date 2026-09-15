@@ -1,0 +1,117 @@
+{
+  "checks": [
+    "Inspection preserves current measurements and records, follows remaining solid through pouring and rinsing, isolates the selected vessel, distinguishes dry and wet technique, and visualizes actual current mass even when a saved record is stale.",
+    "Desktop and phone accessibility/layout scans, native-select keyboard navigation, forced colors, preserved progress on remount, zero residue, rounding for a small sample, malformed sources, and unchanged live chemistry pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "no-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "no-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded-boat",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "loaded-boat",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-residue",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-residue",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-receiver",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "dry-receiver",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-stale-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rinsed-stale-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "wet-boat",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "wet-boat",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rounding-small-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "rounding-small-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

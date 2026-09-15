@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "kind": "source-only-article-boundary-oracle",
+  "sourceSha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+  "parentOracle": {
+    "path": "reports/mcp-calibration-2026-09-12-round2/spanish-source-oracle.json",
+    "sha256": "b1d85fe12f208eb234e69f9cc5702938593d21ca4cad3bbaea5c37bfb8c7ccd5"
+  },
+  "note": "Use these article-local anchors for within-article checks. Parent oracle page-tail anchors intentionally retain page context; for Article29 that context includes preceding Article28 and must only be checked in document reading order, not entirely within Article29. This narrows the assertion wording without changing immutable source facts.",
+  "anchors": [
+    {
+      "articleNumber": 10,
+      "sourcePages": [
+        3,
+        4
+      ],
+      "leftArticleAnchor": "Artículo 10 Toda persona tiene derecho, en condiciones de plena igualdad, a ser oída públicamente y con justicia por un tribunal independiente e imparcial, para la",
+      "rightArticleAnchor": "determinación de sus derechos y obligaciones o para el examen de cualquier acusación contra ella en materia penal.",
+      "assertion": "Both article-local anchors occur once, in this order, within the same source article after page-boundary reconstruction."
+    },
+    {
+      "articleNumber": 14,
+      "sourcePages": [
+        4,
+        5
+      ],
+      "leftArticleAnchor": "Artículo 14 1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a disfrutar de él, en cualquier país.",
+      "rightArticleAnchor": "2. Este derecho no podr á ser invocado contra una acción judicial realmente originada por delitos comunes o por actos opuestos a los propósitos y principios de las Naciones Unidas.",
+      "assertion": "Both article-local anchors occur once, in this order, within the same source article after page-boundary reconstruction."
+    },
+    {
+      "articleNumber": 29,
+      "sourcePages": [
+        8,
+        9
+      ],
+      "leftArticleAnchor": "Artículo 29",
+      "rightArticleAnchor": "1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en ella puede desarrollar libre y plenamente su personalidad. 2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda persona es",
+      "assertion": "Both article-local anchors occur once, in this order, within the same source article after page-boundary reconstruction."
+    }
+  ],
+  "humanAdjudication": null,
+  "thresholdChanges": false
+}

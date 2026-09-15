@@ -1,0 +1,1375 @@
+{
+  "title": "Kitchen Lab skills evidence",
+  "version": 4,
+  "exportedAt": "2026-09-13T01:06:13.662Z",
+  "scope": "Simulated decisions and reasoning; not certification of physical kitchen competence. Written responses require human review.",
+  "skills": [
+    {
+      "id": "prep",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "shared-board"
+      ],
+      "status": "Demonstrated independently"
+    },
+    {
+      "id": "knife",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "stew"
+      ],
+      "status": "Demonstrated independently"
+    },
+    {
+      "id": "heat",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "hot-pan"
+      ],
+      "status": "Demonstrated independently"
+    },
+    {
+      "id": "probe",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "ready"
+      ],
+      "status": "Demonstrated independently"
+    },
+    {
+      "id": "measure",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "standard",
+        "four"
+      ],
+      "status": "Demonstrated independently"
+    },
+    {
+      "id": "chill",
+      "recorded": true,
+      "independent": true,
+      "scenarios": [
+        "picnic"
+      ],
+      "status": "Demonstrated independently"
+    }
+  ],
+  "bestDemonstrations": [
+    {
+      "mission": "measure",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Scale a recipe",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Multiply each original quantity by three.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 300 mL.",
+          "values": {
+            "ml": 300
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 450 mL.",
+          "values": {
+            "ml": 450
+          }
+        },
+        {
+          "action": "check",
+          "accepted": true,
+          "observation": "You measured 450 mL at eye level for six servings.",
+          "values": {
+            "ml": 450
+          }
+        }
+      ]
+    },
+    {
+      "mission": "prep",
+      "scenario": "shared-board",
+      "scenarioLabel": "One board, two jobs",
+      "title": "Set up a safe workspace",
+      "plan": "I will use the evidence in this shared-board challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Hands washed",
+          "met": true
+        },
+        {
+          "label": "Equipment ready",
+          "met": true
+        },
+        {
+          "label": "Vegetables prepared",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "It prevents raw juices reaching ready-to-eat food.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "board",
+          "accepted": true,
+          "observation": "Equipment washed and rinsed. Sanitize according to the product label, then wash hands before food preparation.",
+          "values": {
+            "cleaned": true,
+            "clean": false,
+            "washed": false
+          }
+        },
+        {
+          "action": "sanitize",
+          "accepted": true,
+          "observation": "Food-contact sanitizing instructions completed, including any required rinse or drying. Wash hands before food preparation.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": false
+          }
+        },
+        {
+          "action": "wash",
+          "accepted": true,
+          "observation": "Soap-and-water handwashing modeled for at least 20 seconds.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": true
+          }
+        },
+        {
+          "action": "prepare",
+          "accepted": true,
+          "observation": "The vegetables are prepared on clean equipment with washed hands.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": true
+          }
+        }
+      ]
+    },
+    {
+      "mission": "knife",
+      "scenario": "stew",
+      "scenarioLabel": "Prepare a slow-cooked stew",
+      "title": "Make an even vegetable cut",
+      "plan": "I will use the evidence in this stew challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Board secured",
+          "met": true
+        },
+        {
+          "label": "Fingers protected",
+          "met": true
+        },
+        {
+          "label": "Requested cut made",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "They cook at a more similar rate.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "secure",
+          "accepted": true,
+          "observation": "The board is stable on its nonslip mat.",
+          "values": {
+            "secure": true
+          }
+        },
+        {
+          "action": "claw",
+          "accepted": true,
+          "observation": "Fingertips are tucked back from the cutting path.",
+          "values": {
+            "secure": true,
+            "claw": true
+          }
+        },
+        {
+          "action": "largeDice",
+          "accepted": true,
+          "observation": "Your board is stable and the carrot pieces are evenly sized.",
+          "values": {
+            "secure": true,
+            "claw": true,
+            "cut": "large"
+          }
+        }
+      ]
+    },
+    {
+      "mission": "heat",
+      "scenario": "hot-pan",
+      "scenarioLabel": "Take over a hot pan",
+      "title": "Brown without burning",
+      "plan": "I will use the evidence in this hot-pan challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Dry surface",
+          "met": true
+        },
+        {
+          "label": "Space in the pan",
+          "met": true
+        },
+        {
+          "label": "Golden browning",
+          "met": true
+        },
+        {
+          "label": "Plated with heat off",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Trapped moisture keeps the surface wet.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "medium",
+          "accepted": true,
+          "observation": "Heat set to medium.",
+          "values": {
+            "heat": "medium",
+            "dry": true,
+            "spread": true,
+            "brown": 2,
+            "seconds": 30
+          }
+        },
+        {
+          "action": "advance",
+          "accepted": true,
+          "observation": "Golden browning. Decide whether to keep cooking or plate.",
+          "values": {
+            "heat": "medium",
+            "dry": true,
+            "spread": true,
+            "brown": 3,
+            "seconds": 60
+          }
+        },
+        {
+          "action": "plate",
+          "accepted": true,
+          "observation": "The mushrooms are golden, and the burner is off.",
+          "values": {
+            "heat": null,
+            "dry": true,
+            "spread": true,
+            "brown": 3,
+            "seconds": 60
+          }
+        }
+      ]
+    },
+    {
+      "mission": "probe",
+      "scenario": "ready",
+      "scenarioLabel": "Is more cooking needed?",
+      "title": "Check before you serve",
+      "plan": "I will use the evidence in this ready challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Probe positioned",
+          "met": true
+        },
+        {
+          "label": "Fresh safe internal reading",
+          "met": true
+        },
+        {
+          "label": "Serving decision verified",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The correctly placed probe reads at least 165°F (74°C).",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "thick",
+          "accepted": true,
+          "observation": "Probe positioned in the thickest part, away from bone.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": null
+          }
+        },
+        {
+          "action": "read",
+          "accepted": true,
+          "observation": "Thermometer: 165°F. Internal reading recorded.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": 165
+          }
+        },
+        {
+          "action": "serve",
+          "accepted": true,
+          "observation": "You verified the internal temperature before serving.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": 165
+          }
+        }
+      ]
+    },
+    {
+      "mission": "measure",
+      "scenario": "four",
+      "scenarioLabel": "Sauce for four",
+      "title": "Scale a recipe",
+      "plan": "I will use the evidence in this four challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Multiply each original quantity by two.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 300 mL.",
+          "values": {
+            "ml": 300
+          }
+        },
+        {
+          "action": "check",
+          "accepted": true,
+          "observation": "You measured 300 mL at eye level for four servings.",
+          "values": {
+            "ml": 300
+          }
+        }
+      ]
+    },
+    {
+      "mission": "chill",
+      "scenario": "picnic",
+      "scenarioLabel": "After a hot picnic",
+      "title": "Store leftovers safely",
+      "plan": "I will use the evidence in this picnic challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Unsafe leftovers discarded",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 1,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The time limit drops to 1 hour.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "discard",
+          "accepted": true,
+          "observation": "You discarded leftovers that exceeded the hot-weather time limit.",
+          "values": {
+            "late": true,
+            "discarded": true
+          }
+        }
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "mission": "prep",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Set up a safe workspace",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Hands washed",
+          "met": true
+        },
+        {
+          "label": "Equipment ready",
+          "met": true
+        },
+        {
+          "label": "Vegetables prepared",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 1,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "It prevents raw juices reaching ready-to-eat food.",
+      "reflection": "With one board I would wash and sanitize it and clean the utensils between raw poultry and vegetables.",
+      "status": "Completed with support",
+      "actions": [
+        {
+          "action": "prepare",
+          "accepted": false,
+          "observation": "Prepare only after washing hands and choosing clean equipment.",
+          "values": {}
+        },
+        {
+          "action": "wash",
+          "accepted": true,
+          "observation": "Soap-and-water handwashing modeled for at least 20 seconds.",
+          "values": {
+            "washed": true
+          }
+        },
+        {
+          "action": "board",
+          "accepted": true,
+          "observation": "A clean board and clean utensils are ready for the vegetables.",
+          "values": {
+            "washed": true,
+            "clean": true
+          }
+        },
+        {
+          "action": "prepare",
+          "accepted": true,
+          "observation": "The vegetables are prepared on clean equipment with washed hands.",
+          "values": {
+            "washed": true,
+            "clean": true
+          }
+        }
+      ]
+    },
+    {
+      "mission": "probe",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Check before you serve",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Probe positioned",
+          "met": true
+        },
+        {
+          "label": "Fresh safe internal reading",
+          "met": true
+        },
+        {
+          "label": "Serving decision verified",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 9,
+      "corrections": 1,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The correctly placed probe reads at least 165°F (74°C).",
+      "reflection": "",
+      "status": "Completed with support",
+      "actions": [
+        {
+          "action": "surface",
+          "accepted": true,
+          "observation": "The surface is hotter than the center. This will not verify the internal temperature.",
+          "values": {
+            "probe": "surface",
+            "reading": null
+          }
+        },
+        {
+          "action": "read",
+          "accepted": true,
+          "observation": "Thermometer: 180°F. Surface reading only; reposition to check the center.",
+          "values": {
+            "probe": "surface",
+            "reading": 180
+          }
+        },
+        {
+          "action": "serve",
+          "accepted": false,
+          "observation": "Do not serve yet. Verify at least 165°F (74°C) with a fresh reading in the thickest part, away from bone.",
+          "values": {
+            "probe": "surface",
+            "reading": 180
+          }
+        },
+        {
+          "action": "thick",
+          "accepted": true,
+          "observation": "Probe positioned in the thickest part, away from bone.",
+          "values": {
+            "probe": "thick",
+            "reading": null
+          }
+        },
+        {
+          "action": "cook",
+          "accepted": true,
+          "observation": "The internal temperature changed. Take a fresh reading.",
+          "values": {
+            "probe": "thick",
+            "reading": null,
+            "temp": 155
+          }
+        },
+        {
+          "action": "cook",
+          "accepted": true,
+          "observation": "The internal temperature changed. Take a fresh reading.",
+          "values": {
+            "probe": "thick",
+            "reading": null,
+            "temp": 160
+          }
+        },
+        {
+          "action": "cook",
+          "accepted": true,
+          "observation": "The internal temperature changed. Take a fresh reading.",
+          "values": {
+            "probe": "thick",
+            "reading": null,
+            "temp": 165
+          }
+        },
+        {
+          "action": "read",
+          "accepted": true,
+          "observation": "Thermometer: 165°F. Internal reading recorded.",
+          "values": {
+            "probe": "thick",
+            "reading": 165,
+            "temp": 165
+          }
+        },
+        {
+          "action": "serve",
+          "accepted": true,
+          "observation": "You verified the internal temperature before serving.",
+          "values": {
+            "probe": "thick",
+            "reading": 165,
+            "temp": 165
+          }
+        }
+      ]
+    },
+    {
+      "mission": "heat",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Brown without burning",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Dry surface",
+          "met": true
+        },
+        {
+          "label": "Space in the pan",
+          "met": true
+        },
+        {
+          "label": "Golden browning",
+          "met": true
+        },
+        {
+          "label": "Plated with heat off",
+          "met": true
+        }
+      ],
+      "mode": "practice",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 7,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Trapped moisture keeps the surface wet.",
+      "reflection": "",
+      "status": "Practice completed with coaching",
+      "actions": [
+        {
+          "action": "dry",
+          "accepted": true,
+          "observation": "Surface moisture removed.",
+          "values": {
+            "dry": true
+          }
+        },
+        {
+          "action": "spread",
+          "accepted": true,
+          "observation": "There is space between the mushrooms.",
+          "values": {
+            "dry": true,
+            "spread": true
+          }
+        },
+        {
+          "action": "medium",
+          "accepted": true,
+          "observation": "Heat set to medium.",
+          "values": {
+            "dry": true,
+            "spread": true,
+            "heat": "medium"
+          }
+        },
+        {
+          "action": "advance",
+          "accepted": true,
+          "observation": "Browning is developing.",
+          "values": {
+            "dry": true,
+            "spread": true,
+            "heat": "medium",
+            "seconds": 30,
+            "brown": 1
+          }
+        },
+        {
+          "action": "advance",
+          "accepted": true,
+          "observation": "Browning is developing.",
+          "values": {
+            "dry": true,
+            "spread": true,
+            "heat": "medium",
+            "seconds": 60,
+            "brown": 2
+          }
+        },
+        {
+          "action": "advance",
+          "accepted": true,
+          "observation": "Golden browning. Decide whether to keep cooking or plate.",
+          "values": {
+            "dry": true,
+            "spread": true,
+            "heat": "medium",
+            "seconds": 90,
+            "brown": 3
+          }
+        },
+        {
+          "action": "plate",
+          "accepted": true,
+          "observation": "The mushrooms are golden, and the burner is off.",
+          "values": {
+            "dry": true,
+            "spread": true,
+            "heat": null,
+            "seconds": 90,
+            "brown": 3
+          }
+        }
+      ]
+    },
+    {
+      "mission": "measure",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Scale a recipe",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Multiply each original quantity by three.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 300 mL.",
+          "values": {
+            "ml": 300
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 450 mL.",
+          "values": {
+            "ml": 450
+          }
+        },
+        {
+          "action": "check",
+          "accepted": true,
+          "observation": "You measured 450 mL at eye level for six servings.",
+          "values": {
+            "ml": 450
+          }
+        }
+      ]
+    },
+    {
+      "mission": "knife",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Make an even vegetable cut",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Board secured",
+          "met": true
+        },
+        {
+          "label": "Fingers protected",
+          "met": true
+        },
+        {
+          "label": "Requested cut made",
+          "met": true
+        }
+      ],
+      "mode": "practice",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "They cook at a more similar rate.",
+      "reflection": "",
+      "status": "Practice completed with coaching",
+      "actions": [
+        {
+          "action": "secure",
+          "accepted": true,
+          "observation": "The board is stable on its nonslip mat.",
+          "values": {
+            "secure": true
+          }
+        },
+        {
+          "action": "claw",
+          "accepted": true,
+          "observation": "Fingertips are tucked back from the cutting path.",
+          "values": {
+            "secure": true,
+            "claw": true
+          }
+        },
+        {
+          "action": "dice",
+          "accepted": true,
+          "observation": "Your board is stable and the carrot pieces are evenly sized.",
+          "values": {
+            "secure": true,
+            "claw": true,
+            "cut": "even"
+          }
+        }
+      ]
+    },
+    {
+      "mission": "chill",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Store leftovers safely",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Shallow containers",
+          "met": true
+        },
+        {
+          "label": "Food and date labeled",
+          "met": true
+        },
+        {
+          "label": "Refrigerated in time",
+          "met": true
+        }
+      ],
+      "mode": "practice",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The time limit drops to 1 hour.",
+      "reflection": "",
+      "status": "Practice completed with coaching",
+      "actions": [
+        {
+          "action": "shallow",
+          "accepted": true,
+          "observation": "Food divided into shallow containers for faster cooling.",
+          "values": {
+            "shallow": true
+          }
+        },
+        {
+          "action": "label",
+          "accepted": true,
+          "observation": "Food and preparation date labeled.",
+          "values": {
+            "shallow": true,
+            "label": true
+          }
+        },
+        {
+          "action": "chill",
+          "accepted": true,
+          "observation": "The leftovers are labeled and refrigerated promptly in shallow containers.",
+          "values": {
+            "shallow": true,
+            "label": true,
+            "chilled": true
+          }
+        }
+      ]
+    },
+    {
+      "mission": "prep",
+      "scenario": "shared-board",
+      "scenarioLabel": "One board, two jobs",
+      "title": "Set up a safe workspace",
+      "plan": "I will use the evidence in this shared-board challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Hands washed",
+          "met": true
+        },
+        {
+          "label": "Equipment ready",
+          "met": true
+        },
+        {
+          "label": "Vegetables prepared",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "It prevents raw juices reaching ready-to-eat food.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "board",
+          "accepted": true,
+          "observation": "Equipment washed and rinsed. Sanitize according to the product label, then wash hands before food preparation.",
+          "values": {
+            "cleaned": true,
+            "clean": false,
+            "washed": false
+          }
+        },
+        {
+          "action": "sanitize",
+          "accepted": true,
+          "observation": "Food-contact sanitizing instructions completed, including any required rinse or drying. Wash hands before food preparation.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": false
+          }
+        },
+        {
+          "action": "wash",
+          "accepted": true,
+          "observation": "Soap-and-water handwashing modeled for at least 20 seconds.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": true
+          }
+        },
+        {
+          "action": "prepare",
+          "accepted": true,
+          "observation": "The vegetables are prepared on clean equipment with washed hands.",
+          "values": {
+            "cleaned": true,
+            "clean": true,
+            "washed": true
+          }
+        }
+      ]
+    },
+    {
+      "mission": "knife",
+      "scenario": "stew",
+      "scenarioLabel": "Prepare a slow-cooked stew",
+      "title": "Make an even vegetable cut",
+      "plan": "I will use the evidence in this stew challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Board secured",
+          "met": true
+        },
+        {
+          "label": "Fingers protected",
+          "met": true
+        },
+        {
+          "label": "Requested cut made",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "They cook at a more similar rate.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "secure",
+          "accepted": true,
+          "observation": "The board is stable on its nonslip mat.",
+          "values": {
+            "secure": true
+          }
+        },
+        {
+          "action": "claw",
+          "accepted": true,
+          "observation": "Fingertips are tucked back from the cutting path.",
+          "values": {
+            "secure": true,
+            "claw": true
+          }
+        },
+        {
+          "action": "largeDice",
+          "accepted": true,
+          "observation": "Your board is stable and the carrot pieces are evenly sized.",
+          "values": {
+            "secure": true,
+            "claw": true,
+            "cut": "large"
+          }
+        }
+      ]
+    },
+    {
+      "mission": "heat",
+      "scenario": "hot-pan",
+      "scenarioLabel": "Take over a hot pan",
+      "title": "Brown without burning",
+      "plan": "I will use the evidence in this hot-pan challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Dry surface",
+          "met": true
+        },
+        {
+          "label": "Space in the pan",
+          "met": true
+        },
+        {
+          "label": "Golden browning",
+          "met": true
+        },
+        {
+          "label": "Plated with heat off",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Trapped moisture keeps the surface wet.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "medium",
+          "accepted": true,
+          "observation": "Heat set to medium.",
+          "values": {
+            "heat": "medium",
+            "dry": true,
+            "spread": true,
+            "brown": 2,
+            "seconds": 30
+          }
+        },
+        {
+          "action": "advance",
+          "accepted": true,
+          "observation": "Golden browning. Decide whether to keep cooking or plate.",
+          "values": {
+            "heat": "medium",
+            "dry": true,
+            "spread": true,
+            "brown": 3,
+            "seconds": 60
+          }
+        },
+        {
+          "action": "plate",
+          "accepted": true,
+          "observation": "The mushrooms are golden, and the burner is off.",
+          "values": {
+            "heat": null,
+            "dry": true,
+            "spread": true,
+            "brown": 3,
+            "seconds": 60
+          }
+        }
+      ]
+    },
+    {
+      "mission": "probe",
+      "scenario": "ready",
+      "scenarioLabel": "Is more cooking needed?",
+      "title": "Check before you serve",
+      "plan": "I will use the evidence in this ready challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Probe positioned",
+          "met": true
+        },
+        {
+          "label": "Fresh safe internal reading",
+          "met": true
+        },
+        {
+          "label": "Serving decision verified",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The correctly placed probe reads at least 165°F (74°C).",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "thick",
+          "accepted": true,
+          "observation": "Probe positioned in the thickest part, away from bone.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": null
+          }
+        },
+        {
+          "action": "read",
+          "accepted": true,
+          "observation": "Thermometer: 165°F. Internal reading recorded.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": 165
+          }
+        },
+        {
+          "action": "serve",
+          "accepted": true,
+          "observation": "You verified the internal temperature before serving.",
+          "values": {
+            "temp": 165,
+            "probe": "thick",
+            "reading": 165
+          }
+        }
+      ]
+    },
+    {
+      "mission": "measure",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Scale a recipe",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": false
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": false,
+      "submitted": false,
+      "actionCount": 1,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": false,
+      "answer": null,
+      "reflection": "",
+      "status": "In progress",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        }
+      ]
+    },
+    {
+      "mission": "measure",
+      "scenario": "four",
+      "scenarioLabel": "Sauce for four",
+      "title": "Scale a recipe",
+      "plan": "I will use the evidence in this four challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 3,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "Multiply each original quantity by two.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 300 mL.",
+          "values": {
+            "ml": 300
+          }
+        },
+        {
+          "action": "check",
+          "accepted": true,
+          "observation": "You measured 300 mL at eye level for four servings.",
+          "values": {
+            "ml": 300
+          }
+        }
+      ]
+    },
+    {
+      "mission": "chill",
+      "scenario": "picnic",
+      "scenarioLabel": "After a hot picnic",
+      "title": "Store leftovers safely",
+      "plan": "I will use the evidence in this picnic challenge before deciding.",
+      "criteria": [
+        {
+          "label": "Unsafe leftovers discarded",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 1,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": true,
+      "answer": "The time limit drops to 1 hour.",
+      "reflection": "",
+      "status": "Completed independently",
+      "actions": [
+        {
+          "action": "discard",
+          "accepted": true,
+          "observation": "You discarded leftovers that exceeded the hot-weather time limit.",
+          "values": {
+            "late": true,
+            "discarded": true
+          }
+        }
+      ]
+    }
+  ],
+  "rehearsals": []
+}

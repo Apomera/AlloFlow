@@ -1,0 +1,191 @@
+{
+  "storyThumbnailKeyboard": true,
+  "storyHasTextEditor": 0,
+  "visiblePrintText": "We can wait while a friend has a turn. I can ask for help.\n\nMy turn comes next. I can enjoy playing with a friend.",
+  "printAncestry": [
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "ss-story-print-pages",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "ss-py",
+      "class": "ss-story-viewer",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "ss-stories-workspace",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "ss-workspace",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "ss-studio-panel",
+      "class": "ss-body",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "ss-main-modal",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "root",
+      "class": "",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        4000,
+        320,
+        400
+      ]
+    },
+    {
+      "tag": "BODY",
+      "id": "",
+      "class": "",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "4400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        0,
+        320,
+        4400
+      ]
+    },
+    {
+      "tag": "HTML",
+      "id": "",
+      "class": "",
+      "display": "block",
+      "position": "static",
+      "overflow": "visible",
+      "height": "4400px",
+      "maxHeight": "none",
+      "breakAfter": "auto",
+      "rect": [
+        0,
+        0,
+        320,
+        4400
+      ]
+    }
+  ],
+  "printedPageCount": 5,
+  "failedReplacement": {
+    "priorStoryVisible": 1,
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ],
+      [
+        "toasts.story_generation_failedThe response did not include any story text.",
+        "error"
+      ]
+    ]
+  }
+}

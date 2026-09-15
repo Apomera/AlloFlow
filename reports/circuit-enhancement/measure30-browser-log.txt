@@ -1,0 +1,27 @@
+{
+  "scenarios": [
+    "Last-cycle bandwidth gain/phase, fitted-sine overlay, visible interval markers, and unchanged circuit/history/cursor",
+    "Custom exact times, reversed-bound diagnosis, short-window fit guard, cursor assignment, presets, and retained visibility settings",
+    "Slew distortion visible against a fitted sine; increasing slew reduces the measured residual",
+    "Separate interval CSV includes SI statistics and sine-fit metadata",
+    "Desktop and phone accessibility/containment, custom controls, and saved measurement preferences",
+    "Non-sine reference guidance and a current-source sine comparison with A/A units",
+    "DC-source interval fallback and failed-run suppression with undo recovery",
+    "A flat output suppresses roundoff-derived gain and phase"
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

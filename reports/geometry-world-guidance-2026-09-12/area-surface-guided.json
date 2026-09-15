@@ -1,0 +1,349 @@
+{
+  "title": "Area & Surface Area",
+  "description": "Follow three model studies from one layer to full volume, compare the surface areas of equal-volume prisms, then build your own layered model.",
+  "spawnPoint": [
+    5,
+    2.6,
+    -1
+  ],
+  "objectives": [
+    "Connect the blue prism’s base area to its 72 cubic units",
+    "Compare equal volumes built with different base areas and heights",
+    "Explain all four layers of the striped 100-unit prism",
+    "Compare the full surface areas of the two 72-unit prisms",
+    "Build and explain a layered 24-unit model on the sand work pad"
+  ],
+  "ground": {
+    "xMin": -4,
+    "xMax": 20,
+    "zMin": -4,
+    "zMax": 20,
+    "y": 0,
+    "type": "grass"
+  },
+  "structures": [
+    {
+      "type": "fill",
+      "x1": 0,
+      "y1": 0,
+      "z1": 0,
+      "x2": 8,
+      "y2": 0,
+      "z2": 8,
+      "block": "stone",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 2,
+      "x2": 7,
+      "y2": 3,
+      "z2": 5,
+      "block": "diamond"
+    },
+    {
+      "type": "fill",
+      "x1": 12,
+      "y1": 1,
+      "z1": 2,
+      "x2": 14,
+      "y2": 8,
+      "z2": 4,
+      "block": "gold"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 10,
+      "x2": 6,
+      "y2": 1,
+      "z2": 14,
+      "block": "sand"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 2,
+      "z1": 10,
+      "x2": 6,
+      "y2": 2,
+      "z2": 14,
+      "block": "wood"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 3,
+      "z1": 10,
+      "x2": 6,
+      "y2": 3,
+      "z2": 14,
+      "block": "sand"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 4,
+      "z1": 10,
+      "x2": 6,
+      "y2": 4,
+      "z2": 14,
+      "block": "wood"
+    },
+    {
+      "type": "fill",
+      "block": "stone",
+      "x1": 8,
+      "x2": 14,
+      "y1": 0,
+      "y2": 0,
+      "z1": 7,
+      "z2": 8,
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "block": "stone",
+      "x1": 8,
+      "x2": 9,
+      "y1": 0,
+      "y2": 0,
+      "z1": 8,
+      "z2": 18,
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "block": "sand",
+      "x1": 10,
+      "x2": 17,
+      "y1": 0,
+      "y2": 0,
+      "z1": 11,
+      "z2": 18,
+      "measurementLayer": "ground"
+    }
+  ],
+  "npcs": [
+    {
+      "position": [
+        4,
+        1,
+        0
+      ],
+      "name": "Area Guide",
+      "color": 8141549,
+      "dialogue": "Start with one layer: its area counts square units. Stack identical layers to find volume in cubic units. The blue and gold models are teaching models; use the sand pad beyond the striped prism for your own build. The activity guide offers hints and a place to review your reasoning.",
+      "question": null
+    },
+    {
+      "position": [
+        8,
+        1,
+        4
+      ],
+      "name": "Flat Prism Quiz",
+      "color": 2450411,
+      "dialogue": "The blue prism beside me is 6 blocks long, 4 wide and 3 high. Its base has 24 square units. Predict the total, then use Measure on the model to compare your reasoning with its occupied volume.",
+      "question": {
+        "text": "What is the base area? (6 × 4)",
+        "choices": [
+          "24 square units",
+          "10 square units",
+          "18 square units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "Base area = 24. How many layers tall?",
+            "choices": [
+              "3 layers",
+              "4 layers",
+              "6 layers"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "24 × 3 = ?",
+            "choices": [
+              "72 cubic units",
+              "48 cubic units",
+              "27 cubic units"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        11,
+        1,
+        3
+      ],
+      "name": "Tall Prism Quiz",
+      "color": 16096779,
+      "dialogue": "This gold prism is 3 by 3 by 8. It holds the same 72 cubic units as the blue prism across the aisle. A smaller base needs more layers. Does equal volume also guarantee equal surface area? The activity guide includes a face-by-face comparison.",
+      "question": {
+        "text": "What is 3 × 3 × 8?",
+        "choices": [
+          "72 cubic units",
+          "64 cubic units",
+          "48 cubic units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "Blue = 72, Gold = 72. Same or different volume?",
+            "choices": [
+              "Same volume! Different shape.",
+              "Gold is bigger",
+              "Blue is bigger"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        7,
+        1,
+        12
+      ],
+      "name": "Layer Counter",
+      "color": 1483594,
+      "dialogue": "Each striped layer is 5 by 5 blocks. Two sand layers and two wood layers make four layers in all. Measure treats the touching colors as one model: 100 cubic units. The color breakdown is 50 sand and 50 wood; it does not mean there are only two layers.",
+      "question": {
+        "text": "Area of one layer? (5 × 5)",
+        "choices": [
+          "25 square units",
+          "10 square units",
+          "20 square units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "How many layers are stacked?",
+            "choices": [
+              "4 layers",
+              "5 layers",
+              "3 layers"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "25 × 4 = ?",
+            "choices": [
+              "100 cubic units",
+              "125 cubic units",
+              "80 cubic units"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        18,
+        1,
+        13
+      ],
+      "name": "Layer Design Coach",
+      "question": null,
+      "dialogue": "Use this empty sand work pad for a 24-cubic-unit prism. One option is a 4 by 3 base with 2 layers. Try a second arrangement, such as 3 by 2 with 4 layers, leaving a gap between your models. Use full cubes and Measure to check each build. Review the evidence in your activity journal; this build is not automatically scored."
+    }
+  ],
+  "estimatedMinutes": 30,
+  "activities": [
+    {
+      "id": "area-base-to-volume",
+      "title": "One layer becomes a solid",
+      "npcName": "Flat Prism Quiz",
+      "position": [
+        9,
+        2.6,
+        5
+      ],
+      "challenge": "Examine the blue prism. Predict how many cubes are in one layer and how many are in all three layers, then use Measure on the model to compare your prediction.",
+      "hint": "The base is 6 by 4, so one layer covers 24 square units. There are 3 identical layers: 24 × 3. Measure selects the whole connected model, not just its top layer.",
+      "successCriteria": [
+        "I distinguish a base area of 24 square units from a volume of 72 cubic units.",
+        "I can explain why multiplying by 3 counts every layer once."
+      ],
+      "reflection": "Why does area use square units while the complete model uses cubic units?"
+    },
+    {
+      "id": "area-equal-volume",
+      "title": "Same volume, different silhouette",
+      "npcName": "Tall Prism Quiz",
+      "position": [
+        10,
+        2.6,
+        4
+      ],
+      "challenge": "Compare the tall gold prism with the lower blue prism across the aisle. Predict which contains more cubes, then measure each model and explain the result.",
+      "hint": "Gold has 9 square units in each of 8 layers. Blue has 24 in each of 3 layers. Both products are 72 even though their heights and footprints differ.",
+      "successCriteria": [
+        "I measured 72 cubic units in each model.",
+        "I can explain how a smaller base and a greater height can preserve volume."
+      ],
+      "reflection": "Which model would fit better on a narrow shelf, and what other dimension would you need to check?"
+    },
+    {
+      "id": "area-striped-layers",
+      "title": "Read the striped layers",
+      "npcName": "Layer Counter",
+      "position": [
+        9,
+        2.6,
+        13
+      ],
+      "challenge": "Walk around the striped prism and count its four layers. Predict its occupied volume and how many cubes use each material before measuring.",
+      "hint": "Each layer contains 5 × 5 = 25 cubes. Two sand layers contribute 50 cubes and two wood layers contribute another 50. Touching colors are measured together.",
+      "successCriteria": [
+        "I explain 25 × 4 = 100 cubic units.",
+        "I distinguish four physical layers from two material types, with 50 cubes of each."
+      ],
+      "reflection": "If you added a fifth layer, what would change about the volume and the model’s height?"
+    },
+    {
+      "id": "area-surface-comparison",
+      "title": "Count every outside face",
+      "npcName": "Tall Prism Quiz",
+      "position": [
+        10,
+        2.6,
+        1
+      ],
+      "challenge": "Compare the full exposed surface areas of the blue and gold prisms. Include all six sides, including the underside, as if each model were lifted off the ground. Measure each model to check your totals.",
+      "hint": "A rectangular prism has three pairs of faces. Blue: 2 × (6×4 + 6×3 + 4×3) = 108 square units. Gold: 2 × (3×3 + 3×8 + 3×8) = 114. The separate ground is not part of either measured model.",
+      "successCriteria": [
+        "I counted all six sides and found 108 square units for blue and 114 for gold.",
+        "I explain why two 72-unit volumes can need different amounts of covering material."
+      ],
+      "reflection": "Which model needs less wrapping, and how much less? Would the answer change if the underside did not need covering?"
+    },
+    {
+      "id": "area-layer-design",
+      "title": "Make your own layered prism",
+      "npcName": "Layer Design Coach",
+      "position": [
+        19,
+        2.6,
+        15
+      ],
+      "challenge": "Build a 24-cubic-unit prism from full cubes on the empty sand pad. Explain its base area and number of layers. If you want another challenge, build a different 24-unit prism beside it with an empty gap.",
+      "hint": "Try a 4 by 3 base and 2 layers: 12 × 2 = 24. A 3 by 2 base with 4 layers also works. Keep separate examples apart so Measure can select each connected build independently.",
+      "successCriteria": [
+        "My own connected build measures 24 cubic units.",
+        "I recorded its base area, height and an explanation of why their product is 24."
+      ],
+      "reflection": "What did changing the base and height do to your model’s silhouette? Review your evidence here; this build is a self-review activity, not an automatically scored task."
+    }
+  ]
+}

@@ -1,0 +1,1351 @@
+[
+  {
+    "name": "teacher-desktop",
+    "errors": [],
+    "text": "ADVENTURE MODE\n\nChoose how your story works\n\nThe Water Cycle\n\nSetup summary: Standard Adventure Mode · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nLearning profiles\n\nChoose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.\n\nGuided Story\n12 decisions · 3 choices · peaceful exploration\nEvidence Debate\n12 decisions · write or dictate · compare evidence\nSystems Challenge\n20 decisions · 4 choices · resource tradeoffs\nSocial Practice\n12 decisions · 4 choices · perspectives and repair\nEssential setup\nInteraction Mode\nStandard Adventure Mode\nDebate Mode (Structured Argument)\nSystems / Collective (Sim Mode)\nAdventure Language\nEnglish Only\nSpanish\nSpanish · with translation\nStory language follows this control; the translation language follows Universal Settings.\nStudent responses\nChoose from suggestions\nWrite or dictate\nEpisode format\nSet-length episode\nOpen-ended\nEpisode length\nShort · 6 decisions\nStandard · 12 decisions\nLong · 20 decisions\nChoices per decision\n2\n3\n4\n5\n6\n\nLength counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.\n\nInclude a final challenge\nLearning supports Auto-read: OFF · Microphone practice: OFF\nStory & game rules Enable Chance Mode: OFF\nVisuals Art Style: Auto (default)\nStory guidance No custom instructions\nSaving & permissions Cloud images: OFF",
+    "scrollAreas": [],
+    "height": 1516,
+    "width": 1200,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 304,
+        "height": 60,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 476,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 476,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 584,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 584,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Set-length episode",
+        "disabled": false,
+        "top": 940,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Open-ended",
+        "disabled": false,
+        "top": 940,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 1014,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 1014,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 1094,
+        "height": 20,
+        "value": "on"
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "teacher-phone",
+    "errors": [],
+    "text": "ADVENTURE MODE\n\nChoose how your story works\n\nThe Water Cycle\n\nSetup summary: Standard Adventure Mode · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nLearning profiles\n\nChoose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.\n\nGuided Story\n12 decisions · 3 choices · peaceful exploration\nEvidence Debate\n12 decisions · write or dictate · compare evidence\nSystems Challenge\n20 decisions · 4 choices · resource tradeoffs\nSocial Practice\n12 decisions · 4 choices · perspectives and repair\nEssential setup\nInteraction Mode\nStandard Adventure Mode\nDebate Mode (Structured Argument)\nSystems / Collective (Sim Mode)\nAdventure Language\nEnglish Only\nSpanish\nSpanish · with translation\nStory language follows this control; the translation language follows Universal Settings.\nStudent responses\nChoose from suggestions\nWrite or dictate\nEpisode format\nSet-length episode\nOpen-ended\nEpisode length\nShort · 6 decisions\nStandard · 12 decisions\nLong · 20 decisions\nChoices per decision\n2\n3\n4\n5\n6\n\nLength counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.\n\nInclude a final challenge\nLearning supports\nAuto-read: OFF · Microphone practice: OFF\nStory & game rules\nEnable Chance Mode: OFF\nVisuals\nArt Style: Auto (default)\nStory guidance\nNo custom instructions\nSaving & permissions\nCloud images: OFF",
+    "scrollAreas": [],
+    "height": 2173,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 288,
+        "height": 60,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 496,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 604,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 712,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 820,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 1030,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 1115,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 1245,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Set-length episode",
+        "disabled": false,
+        "top": 1342,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Open-ended",
+        "disabled": false,
+        "top": 1402,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 1476,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 1561,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 1680,
+        "height": 20,
+        "value": "on"
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "student-locked-phone",
+    "errors": [],
+    "text": "ADVENTURE MODE\n\nYour adventure is ready\n\nThe Water Cycle\n\nSetup summary: Standard Adventure Mode · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nYour teacher has fixed this setup. You can review the settings and start your adventure.\n\nView teacher settings",
+    "scrollAreas": [],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 288,
+        "height": 60,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "social-setup",
+    "errors": [],
+    "text": "ADVENTURE MODE\n\nChoose how your story works\n\nThe Water Cycle\n\nSetup summary: Social Practice · Resolving disagreements · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nLearning profiles\n\nChoose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.\n\nGuided Story\n12 decisions · 3 choices · peaceful exploration\nEvidence Debate\n12 decisions · write or dictate · compare evidence\nSystems Challenge\n20 decisions · 4 choices · resource tradeoffs\nSocial Practice\n12 decisions · 4 choices · perspectives and repair\nEssential setup\nInteraction Mode\nStandard Adventure Mode\nDebate Mode (Structured Argument)\nSystems / Collective (Sim Mode)\nAdventure Language\nEnglish Only\nSpanish\nSpanish · with translation\nStory language follows this control; the translation language follows Universal Settings.\nStudent responses\nChoose from suggestions\nWrite or dictate\nEpisode format\nSet-length episode\nOpen-ended\nEpisode length\nShort · 6 decisions\nStandard · 12 decisions\nLong · 20 decisions\nChoices per decision\n2\n3\n4\n5\n6\n\nLength counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.\n\nInclude a final challenge\nSocial skill to practise\nLearning supports Auto-read: OFF · Microphone practice: OFF\nStory & game rules Enable Chance Mode: OFF\nVisuals Art Style: Auto (default)\nStory guidance No custom instructions\nSaving & permissions Cloud images: OFF",
+    "scrollAreas": [],
+    "height": 1585,
+    "width": 1200,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Start Adventure",
+        "disabled": false,
+        "top": 304,
+        "height": 60,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+        "disabled": false,
+        "top": 476,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+        "disabled": false,
+        "top": 476,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+        "disabled": false,
+        "top": 584,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+        "disabled": false,
+        "top": 584,
+        "height": 96,
+        "value": ""
+      },
+      {
+        "tag": "SELECT",
+        "label": "Interaction Mode",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Adventure Language",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "English"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Student responses",
+        "disabled": false,
+        "top": 798,
+        "height": 44,
+        "value": "choice"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Set-length episode",
+        "disabled": false,
+        "top": 940,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Open-ended",
+        "disabled": false,
+        "top": 940,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Episode length",
+        "disabled": false,
+        "top": 1014,
+        "height": 44,
+        "value": "12"
+      },
+      {
+        "tag": "SELECT",
+        "label": "Choices per decision",
+        "disabled": false,
+        "top": 1014,
+        "height": 44,
+        "value": "4"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Include a final challenge",
+        "disabled": false,
+        "top": 1094,
+        "height": 20,
+        "value": "on"
+      },
+      {
+        "tag": "INPUT",
+        "label": "Social skill to practise",
+        "disabled": false,
+        "top": 1152,
+        "height": 44,
+        "value": "Resolving disagreements"
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "active-desktop",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [],
+    "height": 900,
+    "width": 1200,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 359,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": false,
+        "top": 679,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 687,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 679,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 687,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 747,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 755,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "active-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 965
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 243,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": false,
+        "top": 703,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 711,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 826,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 834,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 950,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 958,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "active-short-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 458,
+        "scrollHeight": 965
+      }
+    ],
+    "height": 667,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 243,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": false,
+        "top": 703,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 711,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 826,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 834,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 950,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 958,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "active-phone-dark",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 965
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 243,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": false,
+        "top": 703,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 711,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 826,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 834,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 950,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 958,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "written-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nWrite a response ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nYour next action\n\nDescribe what you want to do and why.\n\nEnter to send · Shift + Enter for a new line.\n\nDictate\nSend action\n💡 Give me a clue\nOne clue per scene. You still decide what happens.",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 1031
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Write a response ↓",
+        "disabled": false,
+        "top": 243,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Your next action",
+        "disabled": false,
+        "top": 772,
+        "height": 130,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Dictate",
+        "disabled": false,
+        "top": 941,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Send action",
+        "disabled": true,
+        "top": 993,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "💡 Give me a clue",
+        "disabled": false,
+        "top": 1062,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "debate-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n0/100\nOpponent\nYou\n\nRead the scene, then choose or write what happens next.\n\nStart over\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nWrite a response ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nYour argument\n\nState your claim and connect it to evidence from the scene.\n\nEnter to send · Shift + Enter for a new line.\n\nDictate\nSend argument\n💡 Give me a clue\nOne clue per scene. You still decide what happens.",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": "region",
+        "label": "Adventure controls",
+        "class": "rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] overflow-y-auto overscroll-contain ",
+        "height": 374,
+        "scrollHeight": 421
+      },
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 508,
+        "scrollHeight": 1031
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 368,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Write a response ↓",
+        "disabled": false,
+        "top": 426,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "label": "Your argument",
+        "disabled": false,
+        "top": 955,
+        "height": 130,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Dictate",
+        "disabled": false,
+        "top": 1124,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Send argument",
+        "disabled": true,
+        "top": 1176,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "💡 Give me a clue",
+        "disabled": false,
+        "top": 1245,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "systems-desktop",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\n🏛️\nSystem Simulation\nLvl 2\n35/150 XP\nStability\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n💧\nWater supply\n75%\n💰\nBudget\n900credits\n\nRead the scene, then choose or write what happens next.\n\nStart over\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": "region",
+        "label": "Adventure controls",
+        "class": "rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] overflow-y-auto overscroll-contain ",
+        "height": 374,
+        "scrollHeight": 386
+      },
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 508,
+        "scrollHeight": 607
+      }
+    ],
+    "height": 900,
+    "width": 1200,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 80,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Edit Options Manually",
+        "disabled": false,
+        "top": 329,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Start new adventure",
+        "disabled": false,
+        "top": 329,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 441,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": false,
+        "top": 761,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 769,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 761,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 769,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 829,
+        "height": 52,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 837,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "ending-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nChapter complete\n\nEpisode recap\n\nLook back at your decisions, then take one useful idea into your next adventure.\n\nDecisions completed\n3\nStory level reached\n2\nConcepts to revisit (2)\n\nTake one idea with you\n\nWhich decision changed the story most? What evidence from the lesson supported it?\n\nContinue the story\nExport Storybook PDF\nEpisode progress\n3 completed · Episode ended\nReview your journey above and choose what to do next.",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 1153
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Continue the story",
+        "disabled": false,
+        "top": 668,
+        "height": 46,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Export Storybook PDF",
+        "disabled": false,
+        "top": 726,
+        "height": 46,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "recovery-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nAdventure Interrupted\n\nThe storyteller lost connection or generated an invalid response.\n\nRetry Action",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 772
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Go to choices ↓",
+        "disabled": false,
+        "top": 260,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Retry adventure turn",
+        "disabled": false,
+        "top": 820,
+        "height": 46,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "loading-phone",
+    "errors": [],
+    "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\n\nPreparing the next scene\n\nConsidering your decision…\n\nYour decision\n\nCompare water measurements at both sites\nCURRENT SCENE\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+    "scrollAreas": [
+      {
+        "tag": "DIV",
+        "role": null,
+        "label": null,
+        "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+        "height": 691,
+        "scrollHeight": 1123
+      }
+    ],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Open story summary",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Open reading view",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 76,
+        "height": 50,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "1Compare water measurements at both sites",
+        "disabled": true,
+        "top": 861,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Compare water measurements at both sites",
+        "disabled": false,
+        "top": 869,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "2Plant trees beside the river and explain the tradeoff",
+        "disabled": true,
+        "top": 984,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Plant trees beside the river and explain the tradeoff",
+        "disabled": false,
+        "top": 992,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "3Ask the farmer for observations from last summer",
+        "disabled": true,
+        "top": 1108,
+        "height": 108,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Listen: Ask the farmer for observations from last summer",
+        "disabled": false,
+        "top": 1116,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  },
+  {
+    "name": "immersive-phone",
+    "errors": [],
+    "text": "No Scene Image\n\nLvl 2\n💰\n20\nMake a Choice\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nJourney notebook\nRecorded decisions: 3\n+",
+    "scrollAreas": [],
+    "height": 900,
+    "width": 375,
+    "overflow": false,
+    "controls": [
+      {
+        "tag": "BUTTON",
+        "label": "Read each scene automatically",
+        "disabled": false,
+        "top": 17,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Hide UI",
+        "disabled": false,
+        "top": 17,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Exit Immersive Mode",
+        "disabled": false,
+        "top": 17,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Inventory",
+        "disabled": false,
+        "top": 107,
+        "height": 44,
+        "value": ""
+      },
+      {
+        "tag": "BUTTON",
+        "label": "Make a Choice",
+        "disabled": false,
+        "top": 399,
+        "height": 44,
+        "value": ""
+      }
+    ],
+    "violations": []
+  }
+]

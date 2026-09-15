@@ -1,0 +1,10 @@
+{
+  "sourceSyntax": true,
+  "sourcePublicMatch": true,
+  "equipmentLiteralReferences": 444,
+  "equipmentEnglishKeys": 432,
+  "newEnglishKeys": 13,
+  "fallbacksMatchCatalog": true,
+  "translationsPending": true,
+  "finalTareLabel": "Tare deduction"
+}

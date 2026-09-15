@@ -1,0 +1,69 @@
+{
+  "name": "ending-phone",
+  "errors": [],
+  "text": "Adventure Mode\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n\nExplore the topic. Earn XP to increase the challenge.\n\nRestart\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nNo Scene Image\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nChapter complete\n\nEpisode recap\n\nLook back at your decisions, then take one useful idea into your next adventure.\n\nDecisions completed\n3\nStory level reached\n2\nConcepts to revisit (2)\n\nTake one idea with you\n\nWhich decision changed the story most? What evidence from the lesson supported it?\n\nStart New Story (Sequel)\nExport Storybook PDF\nEpisode progress\n3 completed · Episode ended\nReset to start a new journey.",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar",
+      "height": 527,
+      "scrollHeight": 1279
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "View Narrative Ledger (AI Memory)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Enter Immersive Mode",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Turn on Auto-Read (DM Voice)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start new adventure",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start New Story (Sequel)",
+      "disabled": false,
+      "top": 1419,
+      "height": 46,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Export Storybook PDF",
+      "disabled": false,
+      "top": 1477,
+      "height": 46,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

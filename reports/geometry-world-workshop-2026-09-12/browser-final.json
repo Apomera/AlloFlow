@@ -1,0 +1,34 @@
+{
+  "assertions": [
+    {
+      "name": "All architecture thumbnails render from final geometry faces",
+      "pass": true
+    },
+    {
+      "name": "Unselected starter badges have readable high-contrast colors",
+      "pass": true,
+      "details": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "name": "Existing refresh loop automatically checkpoints new blocks",
+      "pass": true
+    },
+    {
+      "name": "Page exit flush includes the latest unsaved block",
+      "pass": true
+    },
+    {
+      "name": "Reopened projects show the correct block count without restarting the tutorial",
+      "pass": true
+    },
+    {
+      "name": "Reload and reopen retain the latest shape, material, and rotation",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Fresh final source: thumbnail rendering, high contrast, autosave lifecycle, and project framing"
+}

@@ -1432,6 +1432,33 @@ var _alloOcrBlockLayout = function (text, pageH) {
 // a 0- or 1-<h1> document is returned byte-for-byte unchanged. Matches the operands-in-a-var
 // idiom so the pre-commit integrity check never mistakes a 2-space `return {` for the
 // factory export block. Headings never nest, so the non-greedy block match is safe.
+// Vision-reported figure box (2026-09-14). The image inventory asks the model for each figure's
+// [left, top, right, bottom] as page fractions. A vector chart has no image XObject, so the only
+// crop path left was a blind band by 'top/middle/bottom', whose 24x24 near-uniform gate rejected
+// sparse line and bar charts on white as solid fills and shipped text placeholders instead
+// (NCES tables pilot, observation 7). Accepts an array or an {x0,y0,x1,y1}/{left,top,right,bottom}
+// object, tolerates 0-100 percentages, and returns null unless the box is sane: inside the page,
+// at least 5% wide and 4% tall, and covering 2% to 95% of it. Pure.
+var _alloImageBbox = function (img) {
+  var raw = img && (img.bbox || img.boundingBox || img.box);
+  if (!raw) return null;
+  var vals = Array.isArray(raw) ? raw.slice(0, 4)
+    : [raw.x0 != null ? raw.x0 : raw.left, raw.y0 != null ? raw.y0 : raw.top, raw.x1 != null ? raw.x1 : raw.right, raw.y1 != null ? raw.y1 : raw.bottom];
+  if (vals.length !== 4) return null;
+  var nums = vals.map(function (v) { return typeof v === 'string' ? parseFloat(v) : v; });
+  if (nums.some(function (v) { return typeof v !== 'number' || !isFinite(v); })) return null;
+  if (nums.some(function (v) { return v > 1.5; })) nums = nums.map(function (v) { return v / 100; }); // percentages (a value just over 1 is a rounding slip, not a percent)
+  var x0 = Math.min(nums[0], nums[2]), x1 = Math.max(nums[0], nums[2]);
+  var y0 = Math.min(nums[1], nums[3]), y1 = Math.max(nums[1], nums[3]);
+  if (x0 < -0.01 || y0 < -0.01 || x1 > 1.01 || y1 > 1.01) return null;
+  x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(1, x1); y1 = Math.min(1, y1);
+  var w = x1 - x0, h = y1 - y0;
+  if (w < 0.05 || h < 0.04) return null;
+  var area = w * h;
+  if (area < 0.02 || area > 0.95) return null;
+  return { x0: x0, y0: y0, x1: x1, y1: y1 };
+};
+
 var _alloEnsureSingleH1 = function (html) {
   var s = String(html || '');
   if ((s.match(/<h1[\s>]/gi) || []).length <= 1) return s;
@@ -11186,6 +11213,81 @@ var createDocPipeline = function(deps) {
       chunks.push(html.slice(i, cut));
       i = cut;
     }
+    return chunks;
+  };
+
+  // ── Audit sections (2026-09-13, NCES tables pilot) ──
+  // The output audit used to slice the document at a fixed stride and only nudge each END to the
+  // next '>'. Every section after the first therefore STARTED mid-element (mid-attribute when a
+  // toolbar handler was long), and the audit prompt hands that half-element to a text-only
+  // auditor as if it were markup: on the pilot a white "Replace" label, cut away from its
+  // coloured button, was read as white-on-white and reported as a critical contrast failure.
+  // Sections now start AND end just after a closing block-level tag (at container depth 0, so a
+  // table, list, figure or definition list is never cut), and the overlap is made of whole
+  // blocks: the next section begins on the last block boundary inside the previous section's
+  // final `overlap` characters, so a violation spanning the cut is still seen whole by one
+  // auditor. Script and style bodies are skipped as raw text ('<' inside JS is not a tag).
+  // Fallbacks, in order: any depth-0 tag end in the latter half; grow to the next block end
+  // (up to 2×, as the fix-pass splitter does) to finish a giant container; an early boundary;
+  // the legacy cut after the next '>' within 200 chars; a raw cut. A text run larger than the
+  // budget (one huge <p>) still cuts raw, as before.
+  const _AUDIT_BLOCK_CLOSE = /^(?:p|div|section|article|aside|header|footer|nav|main|h[1-6]|ul|ol|dl|li|table|figure|figcaption|blockquote|pre|details|form|fieldset|script|style)$/i;
+  const splitHtmlForAudit = (html, size, overlap) => {
+    html = String(html || '');
+    size = Math.max(1000, Number(size) || 16000);
+    overlap = Math.max(0, Math.min(Number(overlap) || 0, Math.floor(size / 2)));
+    if (html.length <= size) return [html];
+    const CONTAINER = /^(?:table|ul|ol|figure|dl)$/i;
+    const RAW = /^(?:script|style)$/i;
+    const tagRe = /<(\/?)([a-zA-Z][\w-]*)\b[^>]*>/g;
+    const lower = html.toLowerCase();
+    const blockEnds = [], tagEnds = [];
+    let depth = 0, m;
+    while ((m = tagRe.exec(html))) {
+      const closing = m[1] === '/', name = m[2];
+      if (!closing && RAW.test(name)) {
+        const closeAt = lower.indexOf('</' + name.toLowerCase(), tagRe.lastIndex);
+        if (closeAt === -1) break;
+        const gt = html.indexOf('>', closeAt);
+        const after = gt === -1 ? html.length : gt + 1;
+        tagRe.lastIndex = after;
+        if (depth === 0) { tagEnds.push(after); blockEnds.push(after); }
+        continue;
+      }
+      if (CONTAINER.test(name)) { if (closing) { if (depth > 0) depth--; } else depth++; }
+      if (depth === 0) {
+        const after = m.index + m[0].length;
+        tagEnds.push(after);
+        if (closing && _AUDIT_BLOCK_CLOSE.test(name)) blockEnds.push(after);
+      }
+    }
+    // Largest value in (min, max]; smallest value in [min, max). Both arrays are ascending.
+    const lastWithin = (arr, min, max) => { let lo = 0, hi = arr.length - 1, best = -1; while (lo <= hi) { const mid = (lo + hi) >> 1; if (arr[mid] <= max) { if (arr[mid] > min) best = arr[mid]; lo = mid + 1; } else hi = mid - 1; } return best; };
+    const firstWithin = (arr, min, max) => { let lo = 0, hi = arr.length - 1, best = -1; while (lo <= hi) { const mid = (lo + hi) >> 1; if (arr[mid] >= min) { if (arr[mid] < max) best = arr[mid]; hi = mid - 1; } else lo = mid + 1; } return best; };
+    const chunks = [];
+    let start = 0;
+    while (start < html.length) {
+      if (html.length - start <= size) { chunks.push(html.slice(start)); break; }
+      const target = start + size;
+      // Same preference order as splitHtmlOnTagBoundary (H-6): a block boundary in the latter
+      // half; else grow (up to 2×) to finish a container whole; else an early boundary beats an
+      // unsafe cut; else the legacy cut after the next '>'; else raw.
+      let end = lastWithin(blockEnds, start + size * 0.5, target);
+      if (end === -1) end = lastWithin(tagEnds, start + size * 0.5, target);
+      if (end === -1) end = firstWithin(blockEnds, target, start + size * 2 + 1);
+      if (end === -1) end = lastWithin(blockEnds, start + size * 0.1, target); // early, but not a sliver
+      if (end === -1) end = lastWithin(tagEnds, start + size * 0.1, target);
+      if (end === -1) { const gt = html.indexOf('>', target); end = (gt !== -1 && gt - target < 200) ? gt + 1 : target; }
+      chunks.push(html.slice(start, end));
+      if (end >= html.length) break;
+      let next = firstWithin(blockEnds, end - overlap, end);
+      if (next === -1) next = firstWithin(tagEnds, end - overlap, end);
+      if (next === -1 || next <= start) next = end;
+      else { const ws = /^\s+/.exec(html.slice(next, end)); if (ws && next + ws[0].length < end) next += ws[0].length; } // start on the tag, not the newline before it
+      start = next;
+    }
+    // A final section that only repeats the previous one's tail adds nothing but a "requested section".
+    if (chunks.length > 1 && chunks[chunks.length - 2].endsWith(chunks[chunks.length - 1])) chunks.pop();
     return chunks;
   };
 
@@ -21380,23 +21482,12 @@ Return ONLY JSON:
         _auditMemoPut(_shortKey, _shortPrompt, parsed); // cache only exact, full-coverage evidence
         return parsed;
       }
-      // For long documents, chunk into overlapping sections and audit each
-      // Ensure chunks don't split mid-HTML-tag by adjusting boundaries to nearest '>'
-      const chunks = [];
-      for (let i = 0; i < _auditHtmlForModel.length; i += CHUNK_SIZE - OVERLAP) {
-        let end = Math.min(i + CHUNK_SIZE, _auditHtmlForModel.length);
-        // If we're not at the end, find the nearest '>' to avoid splitting tags
-        if (end < _auditHtmlForModel.length) {
-          const closeTag = _auditHtmlForModel.indexOf('>', end);
-          if (closeTag !== -1 && closeTag - end < 200) end = closeTag + 1;
-        }
-        chunks.push(_auditHtmlForModel.substring(i, end));
-      }
-      // M3 (2026-07-03): a small remainder can emit a final chunk that lies ENTIRELY within the previous
-      // chunk's OVERLAP tail (e.g. a 1-char chunk) — it adds no new content but counts as a "requested
-      // section", so if it throttles the audit falsely reads "N-1/N sections" (or NULLs the score via
-      // _coverageTooLow) and the fix loop's coverage ratio drops below 0.8. Drop a fully-redundant tail.
-      if (chunks.length > 1 && chunks[chunks.length - 1].length <= OVERLAP) chunks.pop();
+      // For long documents, split into overlapping sections that start and end on block-element
+      // boundaries (splitHtmlForAudit, 2026-09-13) and audit each. The fixed-stride slicer this
+      // replaces began every later section mid-element, which a text-only auditor misreads.
+      // M3 (2026-07-03) still holds: a final section that only repeats the previous one's tail is
+      // dropped inside the splitter, so a throttled no-op section can never read as "N-1/N".
+      const chunks = splitHtmlForAudit(_auditHtmlForModel, CHUNK_SIZE, OVERLAP);
       // Always include the <head> section in chunk 0 for global checks (lang, title)
       // Audit chunks in parallel. Match batchSize to the global Gemini concurrency gate
       // (_GEMINI_MAX_CONCURRENT = 3) so a batch never enqueues MORE calls than the gate can run — the
@@ -26957,7 +27048,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
       } else try {
         const imgResult = await _awaitImageWork(_alloWithPayloadPhase('image-inventory', () => callGeminiVision(
-          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
+          `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position) and its bounding box: "bbox" is [left, top, right, bottom] as fractions of the page width and height measured from the top-left corner (for example [0.08, 0.34, 0.92, 0.62]); omit bbox if you are not sure\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "bbox": [0.08, 0.34, 0.92, 0.62], "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
           _base64, _mimeType, { signal: _imageSignal }
         )));
         if (imgResult) {
@@ -27215,21 +27306,33 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                     _throwIfImageCancelled();
                     if (!extractedImages[img.idx].generatedSrc) {
                       const pos = (img.position || 'top').toLowerCase();
-                      let y = 0, h = canvas.height * 0.2;
-                      if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
+                      // Prefer the box the image inventory reported: it is model-confirmed geometry,
+                      // so the crop is judged with the non-strict gate (distinct-colour escape),
+                      // which keeps a sparse line or bar chart on white. The blind band by
+                      // position stays as the last resort with its strict gate.
+                      const _box = _alloImageBbox(img);
+                      let x = 0, y = 0, w = canvas.width, h = canvas.height * 0.2;
+                      if (_box) {
+                        const _pad = 0.01;
+                        x = Math.max(0, Math.floor((_box.x0 - _pad) * canvas.width));
+                        y = Math.max(0, Math.floor((_box.y0 - _pad) * canvas.height));
+                        w = Math.min(canvas.width - x, Math.ceil((_box.x1 - _box.x0 + 2 * _pad) * canvas.width));
+                        h = Math.min(canvas.height - y, Math.ceil((_box.y1 - _box.y0 + 2 * _pad) * canvas.height));
+                      } else if (pos.includes('bottom')) { y = canvas.height * 0.7; h = canvas.height * 0.3; }
                       else if (pos.includes('middle')) { y = canvas.height * 0.3; h = canvas.height * 0.35; }
                       const crop = document.createElement('canvas'); crop.setAttribute('aria-hidden', 'true');
-                      crop.width = canvas.width; crop.height = h;
-                      crop.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
-                      // The fallback is a blind position-guess (no XObject geometry), so it
+                      crop.width = w; crop.height = h;
+                      crop.getContext('2d').drawImage(canvas, x, y, w, h, 0, 0, w, h);
+                      // The band fallback is a blind position-guess (no XObject geometry), so it
                       // is the most likely to land on a solid fill / wrong band — the prime
                       // source of the "all blue" block and misplaced crops. Only keep it if
                       // it actually captured a varied (image-like) region.
-                      if (_cropIsNearUniform(crop)) {
-                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (${pos}) — degrading to text placeholder`);
+                      if (_cropIsNearUniform(crop, !_box)) {
+                        warnLog(`[PDF Fix] Skipped near-uniform fallback crop on page ${pg} (${_box ? 'vision box' : pos}) — degrading to text placeholder`);
                       } else {
                         extractedImages[img.idx].generatedSrc = crop.toDataURL('image/jpeg', 0.85);
-                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${pos})`);
+                        if (_box) extractedImages[img.idx].cropData = { page: pg, x: x, y: y, w: w, h: h, canvasW: canvas.width, canvasH: canvas.height };
+                        warnLog(`[PDF Fix] Fallback crop for image on page ${pg} (${_box ? 'vision box ' + Math.round(w) + 'x' + Math.round(h) + ' at (' + x + ',' + y + ')' : pos})`);
                       }
                     }
                   }
@@ -29194,7 +29297,7 @@ Extract ALL content as a JSON array of content blocks. Each block must be one of
 
 BLOCK TYPES:
 - {"type":"banner","title":"Document Title","subtitle":"optional subtitle"} — the document's main title
-- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled)
+- {"type":"h1","text":"Title","id":"slug-id"} — ONE per document only (WCAG 2.4.2: page titled). If you emitted a banner with a title, do NOT repeat that title as an h1 block: the banner is the h1
 - {"type":"h2","text":"Section Title","id":"slug-id"} — major sections. Headings MUST NOT skip levels (no h1→h3)
 - {"type":"h3","text":"Subsection Title","id":"slug-id"} — subsections under h2
 - {"type":"p","text":"Full paragraph text with <strong>bold</strong> and <em>italic</em> and <a href='url'>descriptive link text</a>"}

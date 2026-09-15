@@ -1,0 +1,26 @@
+{
+  "verifiedAt": "2026-09-13T01:27:53.848Z",
+  "feature": "Four-case explanations for individual mechanism design maps",
+  "testsPassed": 447,
+  "testFiles": 19,
+  "newExplanationTests": 30,
+  "accessibilityAudits": 42,
+  "explanationAudits": 21,
+  "existingMapAudits": 21,
+  "pageErrors": 0,
+  "consoleErrors": 0,
+  "mobileWidths": [
+    390,
+    320
+  ],
+  "mobileOverflow": false,
+  "visualReview": [
+    "map-explanation-desktop.png",
+    "map-explanation-dark.png",
+    "map-explanation-320.png"
+  ],
+  "sha256": "79887a84de3e071d14a4f0c877c674c2f96844352992c58fb324dbe228aea923",
+  "sourceMirrorIdentical": true,
+  "previewMatchesSource": true,
+  "validationScope": "Isolated local React and Three.js host; no deployed full-application check."
+}

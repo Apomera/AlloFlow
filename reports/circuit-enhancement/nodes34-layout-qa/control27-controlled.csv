@@ -1,0 +1,7 @@
+component,type,terminal_a,terminal_b,value,unit,closed,voltage_a_minus_b_V,current_a_to_b_A,power_absorbed_W,voltage_known,current_known,initial_value,initial_unit,stored_energy_J,analysis,time_s,source_waveform,source_amplitude,source_frequency_Hz,source_phase_deg,pulse_width_percent,pulse_edge_percent,initial_switch_closed,switch_timing_enabled,switch_schedule_s,time_side,switch_events,diode_model,diode_Is_A,diode_emission,diode_thermal_voltage_V,nonlinear_iterations,controlled_source_kind,control_positive,control_negative,sense_source_id,control_gain,control_value,control_unit,opamp_model,opamp_lower_V,opamp_upper_V,opamp_region,opamp_unlimited_output_V,opamp_headroom_V,opamp_regions_checked,opamp_timing_enabled,opamp_gbw_Hz,opamp_slew_V_per_us,opamp_starting_output_V,opamp_timing_active,opamp_local_slope_V_per_s,opamp_step_slope_V_per_s
+V1,voltage,A,0,5,V,,5,-0.005,-0.025,true,true,0,,0,dc_equilibrium,,dc,5,10,0,50,2,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,
+V2,voltage,A,B,0,V,,0,0.005,0,true,true,0,,0,dc_equilibrium,,dc,5,10,0,50,2,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,
+R3,resistor,B,0,1000,Ω,,5,0.005,0.025,true,true,0,,0,dc_equilibrium,,,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,
+F4,cccs,0,C,2,A/A,,-10,0.01,-0.1,true,true,0,,0,dc_equilibrium,,,,,,,,,,,,,,,,,0,cccs,,,2,2,0.005,A,,,,,,,,,,,,,,
+R5,resistor,C,0,1000,Ω,,10,0.01,0.1,true,true,0,,0,dc_equilibrium,,,,,,,,,,,,,,,,,0,,,,,,,,,,,,,,,,,,,,,
+H6,ccvs,D,0,1000,Ω,,5,0,0,true,true,0,,0,dc_equilibrium,,,,,,,,,,,,,,,,,0,ccvs,,,2,1000,0.005,A,,,,,,,,,,,,,,

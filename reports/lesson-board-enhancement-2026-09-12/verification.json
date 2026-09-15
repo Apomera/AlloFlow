@@ -1,0 +1,104 @@
+{
+  "passed": true,
+  "provider": "No AI or external calls. Authored fixture played through production controls.",
+  "results": [
+    {
+      "width": 1280,
+      "passed": true,
+      "scans": [
+        {
+          "label": "map and project planner",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "retry feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "dark ordering activity",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed journal and independent practice",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadDraft": true,
+      "keyboardOrder": true,
+      "independentPracticeNoWrites": true
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "scans": [
+        {
+          "label": "map and project planner",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "retry feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "dark ordering activity",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed journal and independent practice",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadDraft": true,
+      "keyboardOrder": true,
+      "independentPracticeNoWrites": true
+    },
+    {
+      "width": 320,
+      "passed": true,
+      "scans": [
+        {
+          "label": "map and project planner",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "retry feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "dark ordering activity",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed journal and independent practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadDraft": true,
+      "keyboardOrder": true,
+      "independentPracticeNoWrites": true
+    }
+  ],
+  "errors": []
+}

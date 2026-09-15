@@ -1,0 +1,16 @@
+{
+  "unit": {
+    "passed": 1389,
+    "failed": 0,
+    "pending": 0,
+    "files": 77
+  },
+  "browser": {
+    "passed": 32,
+    "failed": [],
+    "errors": [],
+    "failures": []
+  },
+  "syntaxAndDesktopParity": true,
+  "diffCheckPassed": true
+}

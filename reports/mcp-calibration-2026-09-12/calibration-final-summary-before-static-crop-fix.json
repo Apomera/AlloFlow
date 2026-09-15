@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-09-12T22:44:22.223Z",
+  "command": "npm run verify:mcp-calibration -- --reporter=json --outputFile=reports/mcp-calibration-2026-09-12/calibration-final.json",
+  "files": 13,
+  "passed": 112,
+  "failed": 0,
+  "skipped": 0,
+  "strictNoSkipValidation": true,
+  "selectedTests": [
+    "tests/aifix_chunk_boundary_whitespace.test.js",
+    "tests/doc_pipeline_focus_wrap_browser.test.js",
+    "tests/doc_pipeline_inherited_contrast.test.js",
+    "tests/doc_pipeline_placeholder_audit_payload.test.js",
+    "tests/mcp_agent_bridge_e2e.test.js",
+    "tests/mcp_agent_bridge_restart_e2e.test.js",
+    "tests/mcp_http_transport.test.js",
+    "tests/mcp_keyless_workflow.test.js",
+    "tests/mcp_refinement_expert_annotations.test.js",
+    "tests/mcp_refinement_study_analysis.test.js",
+    "tests/mcp_refinement_study_protocol.test.js",
+    "tests/mcp_refinement_study_runner.test.js",
+    "tests/remediation_visibility_selector_recovery.test.js"
+  ],
+  "sourceSha256": "7b6391a04185b9f0da51430fd5041d97ec6623d8aef443182c5f97695fe24a2a",
+  "generatedSha256": "8162fe99a2417c855555e5b6e650fbb494a14f9477920f43692972d3144bbc23",
+  "evidenceClass": "Automated fixture, protocol, recovery, browser, and source regression evidence; no live provider calls or human quality calibration.",
+  "priorGreenEvidence": "calibration-final-summary-before-continuation-fix.json"
+}

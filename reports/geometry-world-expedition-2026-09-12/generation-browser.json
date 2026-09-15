@@ -1,0 +1,93 @@
+{
+  "checks": [
+    {
+      "pass": true,
+      "label": "Native Home key selects Quick depth"
+    },
+    {
+      "pass": true,
+      "label": "Quick depth announces student time"
+    },
+    {
+      "pass": true,
+      "label": "Native End key selects Expedition depth"
+    },
+    {
+      "pass": true,
+      "label": "Expedition announces its five activities"
+    },
+    {
+      "pass": true,
+      "label": "Native arrow key selects Guided depth"
+    },
+    {
+      "pass": true,
+      "label": "Depth slider is visible and reachable at 1440x1000"
+    },
+    {
+      "pass": true,
+      "label": "Depth slider is visible and reachable at 390x844"
+    },
+    {
+      "pass": true,
+      "label": "Depth slider is visible and reachable at 320x700"
+    },
+    {
+      "pass": true,
+      "label": "Depth slider is visible and reachable at 844x390"
+    },
+    {
+      "pass": true,
+      "label": "Depth cannot change during generation"
+    },
+    {
+      "pass": true,
+      "label": "Cancel restores generation controls"
+    },
+    {
+      "pass": true,
+      "label": "Cancel preserves the current world"
+    },
+    {
+      "pass": true,
+      "label": "An old canceled response cannot advance the replacement request"
+    },
+    {
+      "pass": true,
+      "label": "Planning keeps the world unchanged"
+    },
+    {
+      "pass": true,
+      "label": "Wrong mathematical answer triggers a repair request"
+    },
+    {
+      "pass": true,
+      "label": "An invalid mathematical draft is never loaded"
+    },
+    {
+      "pass": true,
+      "label": "Guided depth includes the final mathematics and route review"
+    },
+    {
+      "pass": true,
+      "label": "Completed generation loads all four linked activities"
+    },
+    {
+      "pass": true,
+      "label": "Saved lesson retains its full activity trail"
+    },
+    {
+      "pass": true,
+      "label": "All generation stages use the existing callGemini provider contract"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "generation-depth-1440.png",
+    "generation-depth-390.png",
+    "generation-complete.png"
+  ],
+  "source": "83a12edfd8a012957e808b9adf86c83fe90430c5456efeb282f7f5e48a0b5cfa",
+  "pass": true
+}

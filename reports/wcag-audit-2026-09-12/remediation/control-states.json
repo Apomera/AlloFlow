@@ -1,0 +1,92 @@
+{
+  "startedAt": "2026-09-13T03:41:31.888Z",
+  "browser": "148.0.7778.96",
+  "axe": "4.12.1",
+  "origin": "http://127.0.0.1:63578",
+  "method": "Local existing compiled shell and local canonical lazy modules; third-party requests blocked; fresh browser context; no authenticated or generated-content workflows",
+  "states": [
+    {
+      "id": "studioNextBtn",
+      "state": "default",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    },
+    {
+      "id": "studioNextBtn",
+      "state": "hover",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(67, 56, 202)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 7.9031114800249425,
+      "passed": true
+    },
+    {
+      "id": "studioNextBtn",
+      "state": "focus",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(129, 140, 248) solid 2px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    },
+    {
+      "id": "startBtn",
+      "state": "default",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    },
+    {
+      "id": "startBtn",
+      "state": "hover",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(67, 56, 202)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 7.9031114800249425,
+      "passed": true
+    },
+    {
+      "id": "startBtn",
+      "state": "focus",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(129, 140, 248) solid 2px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    },
+    {
+      "id": "demoPlanBtn",
+      "state": "default",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    },
+    {
+      "id": "demoPlanBtn",
+      "state": "hover",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(67, 56, 202)",
+      "outline": "rgb(255, 255, 255) none 3px",
+      "contrast": 7.9031114800249425,
+      "passed": true
+    },
+    {
+      "id": "demoPlanBtn",
+      "state": "focus",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(79, 70, 229)",
+      "outline": "rgb(129, 140, 248) solid 2px",
+      "contrast": 6.287528596095884,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-09-13T03:41:32.642Z"
+}

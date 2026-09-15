@@ -70,7 +70,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
 // -- Plate Tectonics Plugin (extracted from stem_tool_science.js) --
   // Audio system
   var _tectAC = null;
-  function getTectAC() { if (!_tectAC) { try { _tectAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_tectAC && _tectAC.state === 'suspended') { try { _tectAC.resume(); } catch(e) {} } return _tectAC; }
+  function getTectAC() { if (!_tectAC) { try { _tectAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_tectAC && _tectAC.state === 'suspended') { try { _tectAC.resume(); } catch(e) {} } return _tectAC; }
   function tectTone(f,d,tp,v) { var ac = getTectAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
 
   var _noiseBuffer = null;

@@ -1,0 +1,37 @@
+{
+  "enhancement": "Optional fixed outlines show each load at its starting position. Run reveals and focuses the 3D scene on short screens.",
+  "tests": {
+    "uniquePassed": 491,
+    "files": 5,
+    "added": 19,
+    "finalUiPassed": 232,
+    "geometryPassed": 259
+  },
+  "browser": {
+    "light": {
+      "directory": "pass27-light-verified",
+      "desktopScenarios": 9,
+      "checks": 18,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "directory": "pass27-dark-verified",
+      "desktopScenarios": 9,
+      "checks": 18,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "directory": "pass27-contrast-verified",
+      "desktopScenarios": 9,
+      "checks": 18,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "sourceSHA256": "9deb62b76194a4c9d9fc940f69d4f905206b42cf88fcd052c7e2bc24836a970c",
+  "sourceMirrorParity": true,
+  "syntaxChecks": true,
+  "published": false
+}

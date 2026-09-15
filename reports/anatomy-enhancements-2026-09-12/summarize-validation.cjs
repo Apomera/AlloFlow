@@ -1,0 +1,7 @@
+const fs=require('node:fs');const crypto=require('node:crypto');const path=require('node:path');
+const suites=new Map();const runs=[];
+for(const name of ['test-results.json','final-focused-tests.json']){const report=JSON.parse(fs.readFileSync(path.join(__dirname,name),'utf8'));runs.push({file:name,passed:report.numPassedTests,failed:report.numFailedTests});for(const suite of report.testResults)suites.set(suite.name,suite);}
+const assertions=[...suites.values()].flatMap(suite=>suite.assertionResults);const failures=assertions.filter(test=>test.status!=='passed');
+const canonical=fs.readFileSync('stem_lab/stem_tool_anatomy.js','utf8'),mirror=fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_anatomy.js','utf8');require('@babel/parser').parse(canonical,{sourceType:'script'});
+const summary={runs,latestResults:{files:suites.size,passed:assertions.length-failures.length,failed:failures.length},sourceSha256:crypto.createHash('sha256').update(canonical).digest('hex'),mirrorMatches:canonical===mirror,newTranslationsPerLanguage:Object.keys(JSON.parse(fs.readFileSync('dev-tools/i18n/handtl_anatomy_enhancements_20260912.json','utf8')).french).length,failures:failures.map(test=>test.fullName)};
+fs.writeFileSync(path.join(__dirname,'validation-summary.json'),JSON.stringify(summary,null,2)+'\n');console.log(JSON.stringify(summary,null,2));if(failures.length||!summary.mirrorMatches)process.exitCode=1;

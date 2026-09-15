@@ -1,0 +1,11 @@
+{
+  "syntax": "pass",
+  "source": "stem_lab/stem_tool_anatomy.js",
+  "sha256": "aaa29472cca2c7f72a7b0a0989a6504db21d22d2481bca4cffd43fa5297d948f",
+  "mirrorIdentical": true,
+  "localizedStrings": 112,
+  "validatedPacks": 6,
+  "connections": 10,
+  "questions": 10,
+  "memoryAids": 17
+}

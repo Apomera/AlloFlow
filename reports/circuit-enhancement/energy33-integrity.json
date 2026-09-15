@@ -1,0 +1,23 @@
+{
+  "previousSha256": "2849a14ac10c7994515f1e2626343e5e814fb050c5d25c7b5a907dc566cec0c4",
+  "sourceSha256": "ee5088d7c916a5f494e99c2704dd5355ff4fd4ae5703365ba43bc3ed6bc0ea3a",
+  "sourcePublicIdentical": true,
+  "solverAndScopeMathematicsPreserved": true,
+  "unrelatedWorkspacesPreserved": true,
+  "regression": {
+    "tests": 396,
+    "files": 20
+  },
+  "finalFocused": {
+    "tests": 29,
+    "files": 3
+  },
+  "newEnergyTests": 19,
+  "catalogExamples": 30,
+  "denseViewCases": 8,
+  "axeWidths": [
+    1280,
+    390,
+    320
+  ]
+}

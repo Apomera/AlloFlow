@@ -1,0 +1,88 @@
+{
+  "verifiedAt": "2026-09-12T20:11:29.591Z",
+  "enhancement": "Optional grid import capacity, unlimited comparison, and 3D shortfall inspection",
+  "modelVersion": 5,
+  "unitTests": {
+    "passed": 305,
+    "failed": 0,
+    "files": 14,
+    "newGridLimitTests": 30,
+    "report": "grid-limit-vitest-results.json",
+    "afterPhonePolish": {
+      "passed": 30,
+      "failed": 0,
+      "report": "grid-limit-final-vitest-results.json"
+    }
+  },
+  "browserWorkflows": [
+    {
+      "workflow": "grid-limit",
+      "report": "grid-limit-browser-results.json",
+      "accessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "supply-gaps",
+      "report": "supply-gaps-browser-results.json",
+      "accessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "microgrid",
+      "report": "microgrid-browser-results.json",
+      "accessibilityAudits": 13,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "hybrid",
+      "report": "hybrid-browser-results.json",
+      "accessibilityAudits": 15,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    }
+  ],
+  "automatedAccessibilityAudits": 70,
+  "visualReview": [
+    "Desktop grid connection review",
+    "Outage capacity step chart",
+    "Selected battery 3D scene",
+    "320px grid comparison and setup controls"
+  ],
+  "validationScope": "Real Renewables tool in an isolated local React/Three.js browser host; not a deployed full-application test.",
+  "integrity": {
+    "checkedAt": "2026-09-12T20:07:14.641Z",
+    "sourceSha256": "211d9c1c2fdbc9b705a0b5feebd85ec2b6aa59c3ab47471c2e8ce80417418eb2",
+    "mirrorByteIdentical": true,
+    "sourceAndMirrorSyntax": true,
+    "scopedDiffWhitespace": true,
+    "previewSourceByteIdentical": true,
+    "previewUrl": "http://127.0.0.1:8790/"
+  }
+}

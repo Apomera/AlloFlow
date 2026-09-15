@@ -1,0 +1,58 @@
+
+describe('Applied challenge start, resume and feedback editing',()=>{
+  it('keeps the optional suggested question collapsed and offers a direct writing shortcut',async()=>{
+    const value=baseData();value.workspace={};await renderChallenge({data:value,focus:true});
+    expect(host.querySelector('#aps-question-suggestion').open).toBe(false);
+    expect(host.querySelector('#applied-workspace-workingQuestion').value).toBe('');
+    await clickButton('Start writing');expect(document.activeElement.id).toBe('applied-workspace-workingQuestion');
+    expect(latest.data.workspace).toEqual({});
+    host.querySelector('#aps-question-suggestion').open=true;await clickButton('Use this question');
+    expect(latest.data.workspace.questionAccepted).toBe(true);expect(host.querySelector('#aps-question-suggestion').open).toBe(false);
+  });
+  it('returns to the saved step and preserves the review view across remounts',async()=>{
+    const value=baseData();value.workspace.response='My draft';const key='allo-applied-focus:'+JSON.stringify(['session','challenge-1']);
+    sessionStorage.setItem(key,JSON.stringify({phase:'response',focus:true,review:false}));
+    await renderChallenge({data:value,focus:true});await clickButton('Continue in Build');
+    expect(document.activeElement.id).toBe('applied-workspace-response');
+    await clickButton('5. Reflect');await clickButton('Review my response');
+    expect(JSON.parse(sessionStorage.getItem(key)).review).toBe(true);
+    await act(async()=>root.unmount());root=null;host.remove();
+    await renderChallenge({data:value,focus:true});expect(host.querySelector('#aps-review-heading')).toBeTruthy();
+    await clickButton('Go to my review');expect(document.activeElement.id).toBe('aps-review-heading');
+  });
+  it('isolates review preferences by profile and excludes teacher preview',async()=>{
+    const key='allo-applied-focus:'+JSON.stringify(['profile-a','challenge-1']);sessionStorage.setItem(key,JSON.stringify({phase:'response',focus:true,review:true}));
+    await renderChallenge({focus:true,profile:'profile-b'});expect(host.querySelector('#aps-review-heading')).toBeNull();expect(host.querySelector('#applied-workspace-workingQuestion')).toBeTruthy();
+    await act(async()=>root.unmount());root=null;host.remove();
+    await renderChallenge({focus:true,profile:'profile-a',preview:true});expect(host.querySelector('#aps-review-heading')).toBeNull();
+    await clickButton('3. Build');expect(JSON.parse(sessionStorage.getItem(key))).toMatchObject({phase:'response',review:true});
+  });
+  it('recovers from malformed view preferences without changing writing',async()=>{
+    sessionStorage.setItem('allo-applied-focus:'+JSON.stringify(['session','challenge-1']),'{bad json');
+    await renderChallenge({focus:true});expect(host.querySelector('#applied-workspace-workingQuestion')).toBeTruthy();expect(latest.data.workspace.workingQuestion).toBe(baseData().workspace.workingQuestion);
+  });
+  it('keeps the AI next step beside the learner draft without copying it into the response',async()=>{
+    const H=window.AlloModules.AppliedChallenge._testing;const value=H.normalizeAppliedChallengeData(baseData());
+    value.workspace.response='My original response';value.feedback.nextStep='Compare the evidence for your second option.';
+    value.feedback.resourceId='challenge-1';value.feedback.gradeLevel='8th Grade';
+    value.feedback.contextFingerprint=H.appliedChallengeHashText(H.appliedChallengeRequestFingerprint(value,'feedback',{resourceId:'challenge-1',gradeLevel:'8th Grade'}));
+    await renderChallenge({data:value});await clickButton('Edit my response with this feedback');
+    expect(document.activeElement.id).toBe('applied-workspace-response');expect(latest.data.workspace.response).toBe('My original response');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]').textContent).toContain('Next step to consider');
+    await typeInto(host.querySelector('#applied-workspace-response'),'My own revised comparison');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]').textContent).toContain('Next step from earlier feedback');
+    await clickButton('Return to feedback');expect(document.activeElement.id).toBe('aps-feedback-heading');expect(latest.data.workspace.response).toBe('My own revised comparison');
+  });
+  it('focuses the linked-work explanation when revising an artifact response',async()=>{
+    const value=baseData();value.workspace={...value.workspace,response:'',artifactUrl:'https://example.org/model',artifactDescription:'My own model explanation.'};
+    await renderChallenge({data:value});await clickButton('Edit my response with this feedback');
+    const input=host.querySelector('#applied-artifact-description');expect(document.activeElement).toBe(input);expect(input.closest('details').open).toBe(true);
+    expect(latest.data.workspace.response).toBe('');expect(input.value).toBe('My own model explanation.');
+    await clickButton('Hide this guidance');expect(host.querySelector('[aria-label="Feedback beside my draft"]')).toBeNull();
+  });
+  it('does not carry revision guidance into a different resource',async()=>{
+    await renderChallenge();await clickButton('Edit my response with this feedback');
+    await replaceChallenge('another-challenge',baseData());await clickButton('3. Build');
+    expect(host.querySelector('[aria-label="Feedback beside my draft"]')).toBeNull();
+  });
+});

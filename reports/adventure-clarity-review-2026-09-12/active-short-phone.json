@@ -1,0 +1,117 @@
+{
+  "name": "active-short-phone",
+  "errors": [],
+  "text": "Adventure Mode\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n\nExplore the topic. Earn XP to increase the challenge.\n\nRestart\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nNo Scene Image\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": "region",
+      "label": "Adventure controls",
+      "class": "rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] p-3 sm:p-4 flex flex-col shadow-[var(--av-shadow)] shrink-0 gap-3 relative max-h-[42vh] [@media(max-height:740px)]:max-h-[28vh] overflow-y-auto overscroll-contain ",
+      "height": 183,
+      "scrollHeight": 261
+    },
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar",
+      "height": 166,
+      "scrollHeight": 720
+    },
+    {
+      "tag": "DIV",
+      "role": "region",
+      "label": "Available actions",
+      "class": "p-4 bg-[var(--av-surface)] border-t border-[var(--av-line)] shrink-0 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto overscroll-contain",
+      "height": 299,
+      "scrollHeight": 436
+    }
+  ],
+  "height": 667,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "View Narrative Ledger (AI Memory)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Enter Immersive Mode",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Turn on Auto-Read (DM Voice)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start new adventure",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "1Compare water measurements at both sites",
+      "disabled": false,
+      "top": 430,
+      "height": 108,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Compare water measurements at both sites",
+      "disabled": false,
+      "top": 438,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "2Plant trees beside the river and explain the tradeoff",
+      "disabled": false,
+      "top": 554,
+      "height": 108,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Plant trees beside the river and explain the tradeoff",
+      "disabled": false,
+      "top": 562,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "3Ask the farmer for observations from last summer",
+      "disabled": false,
+      "top": 677,
+      "height": 108,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Ask the farmer for observations from last summer",
+      "disabled": false,
+      "top": 685,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

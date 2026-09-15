@@ -1,0 +1,134 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_integration.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > defaults missing or invalid settings to the identical backward Euler trajectory
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > stamps capacitor history using previous current as well as voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > stamps inductor history using previous voltage as well as current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is undefined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RC startup with bounded error at every accepted timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > defaults missing or invalid settings to the identical backward Euler trajectory 788ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > stamps capacitor history using previous current as well as voltage 12ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > stamps inductor history using previous voltage as well as current 1ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is null 2ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is undefined 1ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is NaN 1ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is Infinity 1ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RC startup with bounded error at every accepted timestamp 11ms
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RL startup including negative initial current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > retains lossless LC energy after the startup interval and follows the analytical phase
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RL startup including negative initial current 8ms
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > keeps physical RLC damping and underdamped step overshoot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > retains known floating response without assigning a ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > bootstraps parallel capacitor currents without inventing initial readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > keeps zero-state degenerate circuits finite even when initial complementary values are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > bounds expensive calculations and returns no partial trace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ × tests/circuit_network_integration.test.js > trapezoidal network integration > retains lossless LC energy after the startup interval and follows the analytical phase 100ms
+   → expected 0.015087395348409638 to be less than 0.015
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > keeps physical RLC damping and underdamped step overshoot 17ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > retains known floating response without assigning a ground 8ms
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > bootstraps parallel capacitor currents without inventing initial readings 14ms
+ × tests/circuit_network_integration.test.js > trapezoidal network integration > keeps zero-state degenerate circuits finite even when initial complementary values are unknown 6ms
+   → expected false to be true // Object.is equality
+ ✓ tests/circuit_network_integration.test.js > trapezoidal network integration > bounds expensive calculations and returns no partial trace 68ms
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > carries switch states continuously, restarts with backward Euler, then resumes trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > restarts at finite pulse corners without integrating across them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > continues to reject incompatible switch constraints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > exports requested and actual methods, constraints, and restart reasons without changing old column positions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > carries switch states continuously, restarts with backward Euler, then resumes trapezoidal 10ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > restarts at finite pulse corners without integrating across them 20ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > continues to reject incompatible switch constraints 2ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > exports requested and actual methods, constraints, and restart reasons without changing old column positions 117ms
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > invalidates a held sample when its integration method changes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > retains backward Euler for timed op-amps while RLC states use trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > leaves op-amp-only runs identical under either RLC preference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > invalidates a held sample when its integration method changes 18ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > retains backward Euler for timed op-amps while RLC states use trapezoidal 54ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > leaves op-amp-only runs identical under either RLC preference 47ms
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > labels algebraic traces correctly when no storage is present
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > renders a named method selector, accuracy limits, and the LC energy investigation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > labels algebraic traces correctly when no storage is present 61ms
+ ✓ tests/circuit_network_integration.test.js > integration events and provenance > renders a named method selector, accuracy limits, and the LC energy investigation 35ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/circuit_network_integration.test.js > trapezoidal network integration > retains lossless LC energy after the startup interval and follows the analytical phase
+AssertionError: expected 0.015087395348409638 to be less than 0.015
+ ❯ tests/circuit_network_integration.test.js:18:456
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/circuit_network_integration.test.js > trapezoidal network integration > keeps zero-state degenerate circuits finite even when initial complementary values are unknown
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/circuit_network_integration.test.js:22:406
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 22 passed (24)
+   Start at  22:02:32
+   Duration  2.46s (transform 39ms, setup 29ms, import 59ms, tests 1.41s, environment 748ms)
+

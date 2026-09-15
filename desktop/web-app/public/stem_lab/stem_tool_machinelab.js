@@ -4337,7 +4337,7 @@ window.StemLab = window.StemLab || {
     var ctx = null, noiseBuf = null, bedOn = null;
     function ac() {
       if (ctx) return ctx;
-      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; }
+      try { ctx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) { ctx = null; }
       return ctx;
     }
     function noise() {
@@ -10676,7 +10676,7 @@ window.StemLab = window.StemLab || {
               key: 'copy',
               onClick: function () {
                 try {
-                  navigator.clipboard.writeText(asText).then(function () {
+                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(asText).then(function () {
                     addToast('📋 ' + __alloT('stem.machinelab.rec_copied', 'Work record copied.'));
                   }).catch(function () {
                     addToast(__alloT('stem.machinelab.rec_copyfail', 'Could not copy. Select the text and copy it by hand.'));

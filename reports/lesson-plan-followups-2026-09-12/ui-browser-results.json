@@ -1,0 +1,34 @@
+{
+  "results": [
+    {
+      "viewport": "desktop",
+      "navigationRecovery": "passed",
+      "refreshRecovery": "passed",
+      "actorIsolation": "passed",
+      "saveClearsDraft": "passed",
+      "settingsRetainedAfterSave": "passed",
+      "researchChoicePreserved": "passed",
+      "discardClearsDraft": "passed",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    },
+    {
+      "viewport": "small-phone",
+      "navigationRecovery": "passed",
+      "refreshRecovery": "passed",
+      "actorIsolation": "passed",
+      "saveClearsDraft": "passed",
+      "settingsRetainedAfterSave": "passed",
+      "researchChoicePreserved": "passed",
+      "discardClearsDraft": "passed",
+      "horizontalOverflow": false,
+      "axeViolations": []
+    },
+    {
+      "freshDefaultDiscard": "passed",
+      "unavailableStorageNotice": "passed",
+      "unrecoverableRefreshGuard": "passed"
+    }
+  ],
+  "pageErrors": []
+}

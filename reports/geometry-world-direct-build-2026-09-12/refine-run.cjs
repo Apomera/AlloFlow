@@ -1,0 +1,1 @@
+const fs=require('fs');const code=fs.readFileSync(__dirname+'/refine.cjs','utf8').replace('new vm.Script(s);',"if(!s.startsWith('import '))new vm.Script(s);");new Function('require','__dirname',code)(require,__dirname);

@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-09-12T20:28:13.911Z",
+  "unit": {
+    "files": 25,
+    "passed": 492
+  },
+  "browser": {
+    "files": 16,
+    "passed": 232
+  },
+  "testsPassed": 724
+}

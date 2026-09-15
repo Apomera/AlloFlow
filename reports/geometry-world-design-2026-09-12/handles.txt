@@ -1,0 +1,43 @@
+  function workshopDragOffset(axis,dx,dy,screenAxis) {
+    var length=screenAxis.x*screenAxis.x+screenAxis.y*screenAxis.y;
+    if(['x','y','z'].indexOf(axis)===-1 || !Number.isFinite(length) || length<4)return null;
+    var steps=Math.max(-128,Math.min(128,Math.round((dx*screenAxis.x+dy*screenAxis.y)/length))),offset={x:0,y:0,z:0};offset[axis]=steps;return offset;
+  }
+  // A projected overlay provides large, keyboard-accessible handles without
+  // modifying the selected meshes. All drags still use the atomic preview path.
+  function installWorkshopTransform(engine,canvas,onPreview,onExit) {
+    var THREE=window.THREE,snapshot=selectionEditSnapshot(engine);
+    if(!THREE || !snapshot.ok || !canvas)return function(){};
+    var bounds=new THREE.Box3();snapshot.blocks.forEach(function(b){bounds.expandByPoint(new THREE.Vector3(b.x,b.y,b.z));bounds.expandByPoint(new THREE.Vector3(b.x+1,b.y+1,b.z+1));});
+    var center=bounds.getCenter(new THREE.Vector3()),root=document.createElement('div'),svg=document.createElementNS('http://www.w3.org/2000/svg','svg'),axes={},drag=null,frame=0,disposed=false;
+    root.className='gwe-transform-handles';root.setAttribute('role','group');root.setAttribute('aria-label','Move selected blocks on the grid');root.appendChild(svg);document.body.appendChild(root);
+    var oldCursor=canvas.style.cursor,oldTouch=canvas.style.touchAction;canvas.style.cursor='default';canvas.style.touchAction='none';
+    engine.releaseInput && engine.releaseInput();try{if(document.pointerLockElement)document.exitPointerLock();}catch(_){}
+    engine._entryAnim=null;engine._viewPresetAnim=null;if(engine._creationFocus){engine._creationFocus.manual=true;engine._creationFocus.transition=null;}engine.flyMode=true;engine.velocity && engine.velocity.set(0,0,0);
+    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
+    function stop(e){e.preventDefault();e.stopImmediatePropagation();}
+    function project(p,rect){var q=p.clone().project(engine.camera);return {x:rect.left+(q.x+1)*rect.width/2,y:rect.top+(1-q.y)*rect.height/2,z:q.z};}
+    function preview(axis,steps){var offset={x:0,y:0,z:0};offset[axis]=steps;onPreview(previewSelectionEdit(engine,'move',offset),offset);}
+    function release(){if(drag && drag.button.hasPointerCapture && drag.button.hasPointerCapture(drag.id))drag.button.releasePointerCapture(drag.id);drag=null;}
+    ['x','y','z'].forEach(function(axis){
+      var button=document.createElement('button'),line=document.createElementNS('http://www.w3.org/2000/svg','line');button.type='button';button.textContent=axis.toUpperCase()+' ↗';button.dataset.axis=axis;button.setAttribute('aria-label','Drag '+axis.toUpperCase()+' axis; arrow keys move one block');button.title='Drag to preview a grid move. Arrow keys move one block; Shift moves five.';
+      line.dataset.axis=axis;svg.appendChild(line);root.appendChild(button);axes[axis]={button:button,line:line,vector:{x:0,y:0}};
+      button.addEventListener('pointerdown',function(e){if(e.button!==0||!allowed())return;stop(e);button.focus();drag={axis:axis,id:e.pointerId,x:e.clientX,y:e.clientY,vector:Object.assign({},axes[axis].vector),button:button,last:null};button.setPointerCapture(e.pointerId);});
+      button.addEventListener('pointermove',function(e){if(!drag||drag.id!==e.pointerId)return;stop(e);if(!allowed()){release();onPreview(null);return;}var offset=workshopDragOffset(axis,e.clientX-drag.x,e.clientY-drag.y,drag.vector);if(!offset){onPreview({ok:false,reason:'This axis points toward the camera. Orbit the camera or use the arrow keys.'});return;}if(offset[axis]!==drag.last){drag.last=offset[axis];if(offset[axis]===0)onPreview(null);else onPreview(previewSelectionEdit(engine,'move',offset),offset);}});
+      button.addEventListener('pointerup',function(e){if(drag&&drag.id===e.pointerId){stop(e);release();}});
+      button.addEventListener('pointercancel',function(){release();onPreview(null);});
+      button.addEventListener('keydown',function(e){if(!allowed())return;var step=['ArrowRight','ArrowUp'].indexOf(e.key)!==-1?1:['ArrowLeft','ArrowDown'].indexOf(e.key)!==-1?-1:0;if(step){stop(e);preview(axis,step*(e.shiftKey?5:1));}else if(e.key==='Enter'||e.key===' '){stop(e);preview(axis,1);}});
+      button.addEventListener('click',function(e){stop(e);if(e.detail===0 && allowed())preview(axis,1);});
+    });
+    var rotate=document.createElement('button');rotate.type='button';rotate.className='gwe-transform-rotate';rotate.textContent='↻ 90°';rotate.setAttribute('aria-label','Preview rotation of selected blocks by 90 degrees');root.appendChild(rotate);rotate.addEventListener('click',function(e){stop(e);if(allowed())onPreview(previewSelectionEdit(engine,'rotate',{}));});
+    function draw(){
+      if(disposed)return;var rect=canvas.getBoundingClientRect();engine.camera.updateMatrixWorld(true);var p=project(center,rect),visible=allowed() && p.z>=-1&&p.z<=1 && p.x>=rect.left&&p.x<=rect.right&&p.y>=rect.top&&p.y<=rect.bottom;
+      root.hidden=!visible;svg.setAttribute('width',String(window.innerWidth));svg.setAttribute('height',String(window.innerHeight));
+      if(visible){Object.keys(axes).forEach(function(axis){var a=axes[axis],point=center.clone();point[axis]+=1;var q=project(point,rect),dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy);a.vector={x:dx,y:dy};if(len<2){dx=axis==='x'?1:axis==='z'?-1:0;dy=axis==='y'?-1:.6;len=Math.hypot(dx,dy);}var x=Math.max(rect.left+26,Math.min(rect.right-26,p.x+dx/len*88)),y=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+dy/len*88));a.button.style.left=x+'px';a.button.style.top=y+'px';a.line.setAttribute('x1',p.x);a.line.setAttribute('y1',p.y);a.line.setAttribute('x2',x);a.line.setAttribute('y2',y);});rotate.style.left=Math.max(rect.left+38,Math.min(rect.right-38,p.x))+'px';rotate.style.top=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+60))+'px';}
+      frame=window.requestAnimationFrame(draw);
+    }
+    function key(e){if(e.key==='Escape'){stop(e);release();onPreview(null);onExit();}}
+    function block(e){if(allowed())stop(e);}
+    var events=['pointerdown','mousedown','click','dblclick','contextmenu','touchstart'];events.forEach(function(k){canvas.addEventListener(k,block,{capture:true,passive:false});});window.addEventListener('keydown',key,true);draw();
+    return function(){disposed=true;window.cancelAnimationFrame(frame);release();root.remove();events.forEach(function(k){canvas.removeEventListener(k,block,true);});window.removeEventListener('keydown',key,true);canvas.style.cursor=oldCursor;canvas.style.touchAction=oldTouch;};
+  }

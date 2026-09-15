@@ -1,0 +1,90 @@
+{
+  "editorFocus": {
+    "pass": true
+  },
+  "rejectEmptyStoryText": {
+    "pass": true
+  },
+  "emptyCancelPreservesText": {
+    "pass": true
+  },
+  "cancelPreservesText": {
+    "pass": true
+  },
+  "cancelRestoresFocus": {
+    "pass": true
+  },
+  "saveEditsStory": {
+    "pass": true
+  },
+  "saveRestoresFocus": {
+    "pass": true
+  },
+  "narrationUsesEditedText": {
+    "pass": true,
+    "detail": [
+      "I can ask for a turn.\nMy teacher can help me wait.",
+      "I can ask for a turn.\nMy teacher can help me wait."
+    ]
+  },
+  "editedStoryPrintText": {
+    "pass": true
+  },
+  "editedStoryTwoPrintedPages": {
+    "pass": true
+  },
+  "noBrowserErrors": {
+    "pass": true,
+    "detail": []
+  },
+  "noWorkflowOverflow": {
+    "pass": true,
+    "detail": [
+      {
+        "label": "story-empty-edit-error",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-empty-edit-error",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-empty-edit-error",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 320,
+        "overflow": 0
+      }
+    ]
+  }
+}

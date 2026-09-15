@@ -1,0 +1,18 @@
+{
+  "final": {
+    "pages": 2,
+    "oneStoryPagePerSheet": true,
+    "pageTexts": [
+      "We can wait while a friend has a turn. I can ask for help.",
+      "My turn comes next. I can enjoy playing with a friend."
+    ]
+  },
+  "print-host-check": {
+    "pages": 2,
+    "oneStoryPagePerSheet": true,
+    "pageTexts": [
+      "We can wait while a friend has a turn. I can ask for help.",
+      "My turn comes next. I can enjoy playing with a friend."
+    ]
+  }
+}

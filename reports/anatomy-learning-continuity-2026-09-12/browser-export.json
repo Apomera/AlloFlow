@@ -1,0 +1,45 @@
+{
+  "schema": "alloflow-anatomy-study",
+  "version": 1,
+  "exportedAt": "2026-09-12T18:14:54.855Z",
+  "records": [
+    {
+      "id": "diaphragm",
+      "viewed": false,
+      "confidence": null,
+      "ratedAt": null,
+      "note": "",
+      "recall": {
+        "attempts": 5,
+        "correct": 3
+      }
+    }
+  ],
+  "learningNotes": [
+    {
+      "id": "exercise",
+      "explanation": "My exercise explanation connects the structural change to its downstream effect.",
+      "transferExplanation": "My exercise comparison distinguishes the changed condition from the shared mechanism."
+    },
+    {
+      "id": "meal",
+      "explanation": "My meal explanation connects the structural change to its downstream effect.",
+      "transferExplanation": "My meal comparison distinguishes the changed condition from the shared mechanism."
+    },
+    {
+      "id": "wound",
+      "explanation": "My wound explanation connects the structural change to its downstream effect.",
+      "transferExplanation": "My wound comparison distinguishes the changed condition from the shared mechanism."
+    },
+    {
+      "id": "fluid",
+      "explanation": "My fluid explanation connects the structural change to its downstream effect.",
+      "transferExplanation": "My fluid comparison distinguishes the changed condition from the shared mechanism."
+    },
+    {
+      "id": "homeostasis",
+      "explanation": "My feedback explanation",
+      "transferExplanation": ""
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "kind": "confirmed-before-style-guard",
+  "coverage": {
+    "status": "matched",
+    "reviewRequired": false,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 2,
+    "outputTokens": 2,
+    "matchedTokens": 2,
+    "missingTokens": 0,
+    "tokenRecall": 1,
+    "missingPassages": [],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "unknown",
+      "pagesExamined": null,
+      "emptyPageCandidates": null,
+      "pageErrorCount": null,
+      "lowConfidencePageCount": null,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank."
+  },
+  "listMarkers": [],
+  "display": "block"
+}

@@ -1,0 +1,290 @@
+{
+  "schema": 1,
+  "kind": "alloflow-round2-calibration-selection",
+  "createdAt": "2026-09-13T01:17:41.368066+00:00",
+  "evidenceClass": "Source metadata and run recommendations only; no provider execution, human labels, or effectiveness verdict.",
+  "sourceInspector": {
+    "library": "pypdf",
+    "version": "6.16.1"
+  },
+  "corpusManifest": {
+    "path": "mcp-testing/corpus/MANIFEST.json",
+    "sha256": "d975ff64ec57c3645c56ce915b169a78872eeba7e12f72c1f618b4459c416d3a"
+  },
+  "documents": [
+    {
+      "corpusId": "irs-f1040",
+      "path": "mcp-testing/corpus/forms/irs-f1040.pdf",
+      "bytes": 220237,
+      "sha256": "3d31c226df0d189ced80e039d01cf0f8820c1019681a0f0ca6264de277b7e982",
+      "manifestHashMatches": true,
+      "provenanceUrl": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
+      "rightsFromManifest": "US Government work (public domain)",
+      "manifestBand": "forms",
+      "pages": 2,
+      "sourceLang": "en-US",
+      "pageTextCharacters": [
+        5524,
+        4889
+      ],
+      "pageImageCounts": [
+        0,
+        0
+      ],
+      "fieldDictionaryEntriesIncludingGroups": 229,
+      "terminalFieldEntries": 199,
+      "widgetAnnotationsPerPage": [
+        128,
+        71
+      ],
+      "terminalFieldTypes": {
+        "/Btn": 73,
+        "/Tx": 126
+      }
+    },
+    {
+      "corpusId": "irs-f1040-1954-scan",
+      "path": "mcp-testing/corpus/scanned/irs-f1040-1954-scan.pdf",
+      "bytes": 502650,
+      "sha256": "5f610bb8dc37598d1d296da4ef46914e1aea618db45747b594f603a0e4c187dc",
+      "manifestHashMatches": true,
+      "provenanceUrl": "https://www.irs.gov/pub/irs-prior/f1040--1954.pdf",
+      "rightsFromManifest": "US Government work (public domain)",
+      "manifestBand": "scanned",
+      "pages": 4,
+      "sourceLang": null,
+      "pageTextCharacters": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "pageImageCounts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "fieldDictionaryEntriesIncludingGroups": 0,
+      "terminalFieldEntries": 0,
+      "widgetAnnotationsPerPage": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "terminalFieldTypes": {}
+    },
+    {
+      "corpusId": "irs-f1040-1913-scan",
+      "path": "mcp-testing/corpus/scanned/irs-f1040-1913-scan.pdf",
+      "bytes": 129985,
+      "sha256": "7bb00943803f5cecc34782145cd75dfd8feaa07a1c4daadeab2689f0980f810b",
+      "manifestHashMatches": true,
+      "provenanceUrl": "https://www.irs.gov/pub/irs-prior/f1040--1913.pdf",
+      "rightsFromManifest": "US Government work (public domain)",
+      "manifestBand": "scanned",
+      "pages": 4,
+      "sourceLang": null,
+      "pageTextCharacters": [
+        2320,
+        2813,
+        3044,
+        7713
+      ],
+      "pageImageCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "fieldDictionaryEntriesIncludingGroups": 0,
+      "terminalFieldEntries": 0,
+      "widgetAnnotationsPerPage": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "terminalFieldTypes": {}
+    },
+    {
+      "corpusId": "ohchr-udhr-spanish",
+      "path": "mcp-testing/corpus/born-digital/ohchr-udhr-spanish.pdf",
+      "bytes": 186317,
+      "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+      "manifestHashMatches": true,
+      "provenanceUrl": "https://www.ohchr.org/sites/default/files/UDHR/Documents/UDHR_Translations/spn.pdf",
+      "rightsFromManifest": "UN OHCHR; UDHR text is public domain; local test use only",
+      "manifestBand": "born-digital",
+      "pages": 9,
+      "sourceLang": null,
+      "pageTextCharacters": [
+        1798,
+        1504,
+        1078,
+        1230,
+        1413,
+        1392,
+        1484,
+        1496,
+        972
+      ],
+      "pageImageCounts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "fieldDictionaryEntriesIncludingGroups": 0,
+      "terminalFieldEntries": 0,
+      "widgetAnnotationsPerPage": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "terminalFieldTypes": {},
+      "articleNumbersInSource": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "sourceBoundaryChecks": [
+        {
+          "pages": [
+            3,
+            4
+          ],
+          "leftEnd": "públicamente y con justicia por un tribunal independiente e imparcial, para la",
+          "rightStart": "determinación de sus derechos y obligaciones o para el examen de cualquier "
+        },
+        {
+          "pages": [
+            8,
+            9
+          ],
+          "leftEnd": "Artículo 29",
+          "rightStart": "1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en "
+        }
+      ]
+    }
+  ],
+  "recommendedWholeLiveRun": {
+    "corpusId": "ohchr-udhr-spanish",
+    "scope": "All 9 source pages, one canonical gated-loop client-model run. Do not extract a partial document or call this a paired effectiveness experiment.",
+    "classification": "development_exposed; descriptive/infrastructure calibration only for client-model execution",
+    "reason": "Adds non-English content and several source clauses crossing page boundaries; small enough to inspect all output and strong exact source checkpoints are available. Native-form and image-only source classifications can be checked offline/keylessly this pass.",
+    "existingOptionContract": {
+      "targetScore": 95,
+      "fixPasses": 2,
+      "polishPasses": 0,
+      "taggedPdf": true,
+      "autoContinue": true,
+      "autoContinueRounds": 3,
+      "visionMode": "direct",
+      "ocrLanguage": "",
+      "modelRetryBudget": 6,
+      "maxRunMinutes": 30
+    },
+    "objectiveAssertions": [
+      "Source/output/evidence hashes and actually loaded build remain bound; record actual request/response model path.",
+      "Source has Article headings 1 through 30 exactly once in order; final output must retain that sequence without loss or duplication.",
+      "Preserve the Spanish title, accents, preamble, numbered clauses, and page3/4 Article10 and page8/9 Article29 boundary content. Do not translate or set dir=rtl.",
+      "Final document language should reflect Spanish (source catalog Lang is absent).",
+      "Report complete vs partial audit chunk coverage truthfully; assert source/output hash alignment for the final verdict.",
+      "Every accepted continuation preserves source content; rejected/withheld work cannot be silently described as accepted or fully audited.",
+      "Run real keyboard/reflow checks on final HTML and actual PDF validators on the produced PDF; retain manual/incomplete findings."
+    ]
+  },
+  "targetedKeylessChecks": [
+    {
+      "documents": [
+        "irs-f1040",
+        "irs-f1040-1954-scan",
+        "irs-f1040-1913-scan"
+      ],
+      "tool": "extract_document_text",
+      "objectiveAssertions": [
+        "Native 2025 form produces non-empty text with Form1040/2025 and instructions from both pages.",
+        "1954 scan has zero native text on all4pages and one image per page; empty text must be distinguishable from extraction failure, and must not be represented as successful OCR.",
+        "1913 file is a negative classification control: name/band says scan, but all4pages contain substantial text and no page images."
+      ]
+    },
+    {
+      "tools": [
+        "detect_form_fields",
+        "apply_form_fields",
+        "check_document_structure"
+      ],
+      "scope": "Existing HTML form fixtures only; these tools do not inspect native PDF AcroForm fields.",
+      "fixture": "tests/fixtures/document-at/worksheet-controls.html",
+      "objectiveAssertions": [
+        "Existing source text input, select, checkbox, reset button, labels, and fieldset legend remain available; no duplicate conversion of existing controls.",
+        "For separately selected genuine blank candidates, pass only explicit accepted IDs and verify associated labels and keyboard operation after conversion."
+      ],
+      "supplementalNativeFormOracle": {
+        "fixture": "mcp-testing/corpus/forms/irs-f1040.pdf",
+        "terminalWidgets": 199,
+        "textFields": 126,
+        "buttonFields": 73,
+        "test": "tests/doc_pipeline_form_field_fidelity.test.js",
+        "caution": "If any later whole form remediation drops fillability, its structural-fidelity note must disclose that loss. Do not equate229 field dictionaries with199 terminal widgets."
+      }
+    }
+  ],
+  "coverageGaps": [
+    "No RTL-language source PDF exists in the inspected corpus manifest. Spanish is LTR.",
+    "Keyless scan classification does not test OCR transcription accuracy; a later scanned whole run still needs page-image comparison.",
+    "This shortlist does not independently calibrate complex semantic data tables such as NIST CSF32p; reserve that larger case for a subsequent bounded run.",
+    "No human observation labels were added; tests/fixtures/pdf_calibration/manifest.json remains an empty human corpus."
+  ],
+  "syntheticRtlSupplement": [
+    "tests/rtl_lang_detection.test.js",
+    "tests/rtl_module_upgrade.test.js",
+    "tests/reading_order_lang.test.js",
+    "tests/doc_pipeline_ocr_lang.test.js"
+  ],
+  "protocolNotes": [
+    "Keep existing production thresholds.",
+    "Keep live client-model and synthetic/keyless fixture evidence classified separately from prospective confirmatory effectiveness evidence.",
+    "Do not modify pinned development-pilot manifest or relabel exposed corpus documents held-out."
+  ]
+}

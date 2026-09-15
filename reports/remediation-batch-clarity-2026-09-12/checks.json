@@ -1,0 +1,35 @@
+{
+  "status": "passed",
+  "scope": "Focused remediation workspace and lifecycle regressions; local compiled-modal browser harness",
+  "unit": {
+    "passed": 123,
+    "failed": 0,
+    "total": 123
+  },
+  "browser": {
+    "startTime": "2026-09-12T19:12:59.595Z",
+    "duration": 56246.202999999994,
+    "expected": 18,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "moduleParity": true,
+  "hashes": [
+    {
+      "file": "view_pdf_audit_module.js",
+      "sha256": "aba25de387c4361914062fb71a14360286315dfc69a198d35c7649942883883e"
+    },
+    {
+      "file": "desktop/web-app/public/view_pdf_audit_module.js",
+      "sha256": "aba25de387c4361914062fb71a14360286315dfc69a198d35c7649942883883e"
+    }
+  ],
+  "pipelineIntegrity": "passed",
+  "scopedDiffWhitespace": "passed",
+  "visualReview": [
+    "queue-1280-light.png",
+    "queue-320-dark.png",
+    "queue-320-contrast.png"
+  ]
+}

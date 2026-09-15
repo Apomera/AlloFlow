@@ -1,0 +1,50 @@
+{
+  "baselineSHA256": "e4c09b8fb190f59a926752a208615976b94a1f9999ca127a24ecec26586c740d",
+  "sourceSHA256": "f592e083aa02a0f8260f74626d03a8c804eb692ce1b001c059d2e943a966be2f",
+  "mirrorIdentical": true,
+  "existingFunctions": 257,
+  "unchangedFunctions": 235,
+  "changedFunctions": [
+    "circuitNetworkNonlinear",
+    "circuitNetworkDesign",
+    "circuitNetworkValue",
+    "solveNetworkCircuit",
+    "circuitNetworkCSV",
+    "circuitNetworkTransientCSV",
+    "circuitNetworkNodeInspection",
+    "circuitNetworkSampleReadings",
+    "circuitNetworkLayout",
+    "circuitNetworkRoutes",
+    "circuitNetworkOrbitGeometry",
+    "circuitNetworkOrbitScene",
+    "CircuitNetworkOrbitSignal",
+    "CircuitNetworkOrbitBoard",
+    "CircuitNetworkDiagram",
+    "CircuitNetworkBoardDock",
+    "CircuitNetworkNodeInspector",
+    "CircuitNetworkMeasurementPanel",
+    "CircuitNetworkHarmonicPanel",
+    "CircuitNetworkCrossingPanel",
+    "CircuitNetworkScope",
+    "CircuitNetworkWorkbench"
+  ],
+  "addedFunctions": [
+    "circuitNetworkBJTModel",
+    "circuitNetworkTerminals",
+    "circuitNetworkTerminalCurrent",
+    "circuitNetworkBJTVoltageLabel",
+    "circuitNetworkBJTCurrentLabel",
+    "circuitNetworkBJTLaw",
+    "circuitNetworkBipolarNonlinear",
+    "circuitNetworkBJTColumns",
+    "CircuitNetworkBJTReadout",
+    "CircuitNetworkBJTEditor"
+  ],
+  "removedFunctions": [],
+  "routingRefinement": {
+    "previousSHA256": "8cf6d789868f5643ac920ce5bffe32f054e5dff7e5b0e4c68757093d664dc197",
+    "changedFunctions": [
+      "circuitNetworkRoutes"
+    ]
+  }
+}

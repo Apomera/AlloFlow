@@ -1,0 +1,90 @@
+{
+  "facts": {
+    "initialProgress": {
+      "started": 1,
+      "total": 10,
+      "percentage": 10
+    },
+    "clearedQuestion": "Which watering plan should the garden team try first, and what evidence would change your recommendation?",
+    "unlinkedVerifiedRow": {
+      "id": "ledger-1",
+      "claim": "Unrelated claim",
+      "evidence": "No selected lesson fact",
+      "status": "verified",
+      "tradeoff": ""
+    },
+    "ratingAfterCriterionReplacement": {
+      "criterion-0": {
+        "rating": "met",
+        "note": "Old criterion evidence"
+      }
+    },
+    "compactPhases": [
+      "workingQuestion",
+      "possibilities",
+      "evidence",
+      "tradeoffs",
+      "response",
+      "transferReflection"
+    ],
+    "standardPhases": [
+      "workingQuestion",
+      "stakeholders",
+      "possibilities",
+      "evidence",
+      "assumptions",
+      "tradeoffs",
+      "response",
+      "testReflection",
+      "revision",
+      "transferReflection"
+    ],
+    "extendedPhases": [
+      "workingQuestion",
+      "stakeholders",
+      "possibilities",
+      "evidence",
+      "assumptions",
+      "tradeoffs",
+      "response",
+      "testReflection",
+      "revision",
+      "transferReflection"
+    ],
+    "browserQuestionAfterClear": "Which watering plan should the garden team try first, and what evidence would change your recommendation?"
+  },
+  "previewResults": [
+    {
+      "width": 1024,
+      "documentWidth": 1024,
+      "valuePreserved": true,
+      "promptVisible": true,
+      "axe": [],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "valuePreserved": true,
+      "promptVisible": true,
+      "axe": [],
+      "errors": []
+    },
+    {
+      "width": 320,
+      "documentWidth": 320,
+      "valuePreserved": true,
+      "promptVisible": true,
+      "axe": [],
+      "errors": []
+    }
+  ],
+  "hashes": {
+    "applied_challenge_source.jsx": "10523b79ae1cde62909f9120d13b07f1aa3eab58f484dc00ab43ff7d4a3090bd",
+    "applied_challenge_module.js": "a4c406f8bcb8e9332596222ac3c2f6f87cbf9fee73ad62c58883019da6403187",
+    "desktop/web-app/public/applied_challenge_module.js": "a4c406f8bcb8e9332596222ac3c2f6f87cbf9fee73ad62c58883019da6403187",
+    "generate_dispatcher_source.jsx": "4aca8f89a06142ee35f35e1924ec5de1dbf21e836f1302eb0cdaa8e69dfd14f0",
+    "studio_response_module.js": "d49e747361eeff84128dc89b0d396d3fdd2c53f225c92e78b9930f66afd1468c",
+    "doc_pipeline_source.jsx": "97b6299340bfb4426388dd57e7b2068dffaf17dfaae68585fc39e15935fb88e6"
+  }
+}

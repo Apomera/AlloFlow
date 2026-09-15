@@ -1,0 +1,124 @@
+{
+  "name": "social-setup",
+  "errors": [],
+  "text": "ADVENTURE MODE\n\nChoose how your story works\n\nThe Water Cycle\n\nSetup summary: Social Practice · Resolving disagreements · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nLearning profiles\n\nChoose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.\n\nGuided Story\n12 decisions · 3 choices · peaceful exploration\nEvidence Debate\n12 decisions · write or dictate · compare evidence\nSystems Challenge\n20 decisions · 4 choices · resource tradeoffs\nSocial Practice\n12 decisions · 4 choices · perspectives and repair\nEssential setup\nInteraction Mode\nStandard Adventure Mode\nDebate Mode (Structured Argument)\nSystems / Collective (Sim Mode)\nAdventure Language\nEnglish Only\nSpanish\nSpanish · with translation\nStory language follows this control; the translation language follows Universal Settings.\nStudent responses\nChoose from suggestions\nWrite or dictate\nEpisode format\nSet-length episode\nOpen-ended\nEpisode length\nShort · 6 decisions\nStandard · 12 decisions\nLong · 20 decisions\nChoices per decision\n2\n3\n4\n5\n6\n\nLength counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.\n\nInclude a final challenge\nSocial skill to practise\nLearning supports Auto-read: OFF · Microphone practice: OFF\nStory & game rules Enable Chance Mode: OFF\nVisuals Art Style: Auto (default)\nStory guidance No custom instructions\nSaving & permissions Cloud images: OFF",
+  "scrollAreas": [],
+  "height": 1585,
+  "width": 1200,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Start Adventure",
+      "disabled": false,
+      "top": 304,
+      "height": 60,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Guided Story12 decisions · 3 choices · peaceful exploration",
+      "disabled": false,
+      "top": 476,
+      "height": 96,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Evidence Debate12 decisions · write or dictate · compare evidence",
+      "disabled": false,
+      "top": 476,
+      "height": 96,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Systems Challenge20 decisions · 4 choices · resource tradeoffs",
+      "disabled": false,
+      "top": 584,
+      "height": 96,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Social Practice12 decisions · 4 choices · perspectives and repair",
+      "disabled": false,
+      "top": 584,
+      "height": 96,
+      "value": ""
+    },
+    {
+      "tag": "SELECT",
+      "label": "Interaction Mode",
+      "disabled": false,
+      "top": 798,
+      "height": 44,
+      "value": "choice"
+    },
+    {
+      "tag": "SELECT",
+      "label": "Adventure Language",
+      "disabled": false,
+      "top": 798,
+      "height": 44,
+      "value": "English"
+    },
+    {
+      "tag": "SELECT",
+      "label": "Student responses",
+      "disabled": false,
+      "top": 798,
+      "height": 44,
+      "value": "choice"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Set-length episode",
+      "disabled": false,
+      "top": 940,
+      "height": 20,
+      "value": "on"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Open-ended",
+      "disabled": false,
+      "top": 940,
+      "height": 20,
+      "value": "on"
+    },
+    {
+      "tag": "SELECT",
+      "label": "Episode length",
+      "disabled": false,
+      "top": 1014,
+      "height": 44,
+      "value": "12"
+    },
+    {
+      "tag": "SELECT",
+      "label": "Choices per decision",
+      "disabled": false,
+      "top": 1014,
+      "height": 44,
+      "value": "4"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Include a final challenge",
+      "disabled": false,
+      "top": 1094,
+      "height": 20,
+      "value": "on"
+    },
+    {
+      "tag": "INPUT",
+      "label": "Social skill to practise",
+      "disabled": false,
+      "top": 1152,
+      "height": 44,
+      "value": "Resolving disagreements"
+    }
+  ],
+  "violations": []
+}

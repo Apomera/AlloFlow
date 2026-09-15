@@ -1,0 +1,91 @@
+{
+  "generatedAtUtc": "2026-09-12T22:13:58.189738+00:00",
+  "provenance": "Saved from observed completed tool output; no tests or browser probes rerun to create this report.",
+  "source": {
+    "path": "doc_pipeline_source.jsx",
+    "sha256": "a172002f5a47a9d3e7f0dab97c5a068e30c2fc9ca249d219b742cadf407698b1",
+    "contrastClosureSha256": "df97915a467c0733ba5b08cede331c47a0537378b82c4ca263d082048da7ae3b",
+    "hashCapturedAt": "report save after final source freeze"
+  },
+  "focusedTests": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/doc_pipeline_inherited_contrast.test.js tests/skip_link_cell_bullets.test.js --maxWorkers=1",
+    "exitCode": 0,
+    "testCount": 34,
+    "passed": 34,
+    "failed": 0,
+    "testFiles": 2,
+    "observedOutput": "Test Files 2 passed (2)\nTests 34 passed (34)\nStart at 18:11:16\nDuration 2.35s (transform 42ms, setup 52ms, import 65ms, tests 198ms, environment 1.61s)",
+    "cases": [
+      "Three generated image-control colors retain passing white foregrounds",
+      "Named, RGB, and hex colors through distant transparent ancestors",
+      "Failing foreground repaired against nearest inherited surface",
+      "Nearest light surface overrides distant dark ancestor",
+      "Already damaged image controls recover and remain stable on repeated repair",
+      "Unquoted style attributes preserve source text",
+      "Unresolved gradients defer to rendered checks",
+      "Closed siblings and handler strings do not become ancestor backgrounds",
+      "Absent DOMParser and thrown parse both return unchanged HTML with fixCount 0",
+      "Chromium backgroundImage initial recognized as a solid surface",
+      "Class-styled and element-styled CSS backgrounds protected while unrelated repairs remain active",
+      "Unknown external stylesheets defer to rendered checks",
+      "Existing skip-link, script preservation, table-list and wiring regression coverage"
+    ]
+  },
+  "chromiumProbe": {
+    "observedCommand": "PowerShell here-string containing the saved contrast-final-browser-probe.cjs script piped to node",
+    "reproduceCommand": "node reports/mcp-calibration-2026-09-12/contrast-final-browser-probe.cjs",
+    "exitCode": 0,
+    "caseCount": 6,
+    "minimumRequiredContrast": 4.5,
+    "measurement": "Chromium getComputedStyle foreground and parent control background; WCAG sRGB relative luminance ratio rounded to two decimals.",
+    "results": [
+      {
+        "text": "Replace",
+        "input": "#ffffff",
+        "background": "#475569",
+        "color": "rgb(255, 255, 255)",
+        "ratio": 7.58
+      },
+      {
+        "text": "Upload image",
+        "input": "#ffffff",
+        "background": "#1d4ed8",
+        "color": "rgb(255, 255, 255)",
+        "ratio": 6.7
+      },
+      {
+        "text": "Pick extracted",
+        "input": "#ffffff",
+        "background": "#7c3aed",
+        "color": "rgb(255, 255, 255)",
+        "ratio": 5.7
+      },
+      {
+        "text": "Replace",
+        "input": "#737373",
+        "background": "#475569",
+        "color": "rgb(202, 202, 202)",
+        "ratio": 4.62
+      },
+      {
+        "text": "Upload image",
+        "input": "#737373",
+        "background": "#1d4ed8",
+        "color": "rgb(217, 217, 217)",
+        "ratio": 4.75
+      },
+      {
+        "text": "Pick extracted",
+        "input": "#737373",
+        "background": "#7c3aed",
+        "color": "rgb(232, 232, 232)",
+        "ratio": 4.65
+      }
+    ]
+  },
+  "fullSourceParse": {
+    "command": "node -e \"const fs=require('fs');require('@babel/parser').parse(fs.readFileSync('doc_pipeline_source.jsx','utf8'),{sourceType:'script',plugins:['jsx']});console.log('Full source Babel parse passed')\"",
+    "exitCode": 0,
+    "observedOutput": "Full source Babel parse passed"
+  }
+}

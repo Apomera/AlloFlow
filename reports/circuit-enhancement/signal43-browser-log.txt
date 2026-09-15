@@ -1,0 +1,168 @@
+{
+  "scenarios": [
+    "An open expanded workspace moves its single signal instrument between sidebar and timeline at the responsive breakpoint without recreating the renderer",
+    "All four signals match solver samples; signed inductor power, exact extrema, fixed scale/path while seeking, component-specific energy availability, keyboard/click navigation, shared playback pause, held preservation and modal persistence",
+    "Signal cursor and actual 3D switch lever preserve the distinct before/after snapshots at an identical elapsed time",
+    "Ambiguous ideal-source current remains undetermined with no invented line, point, or extrema"
+  ],
+  "examples": [],
+  "axe": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "page": 1280,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 1280,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "page": 1280,
+        "dialog": 1246,
+        "scroll": 1246
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "page": 390,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "page": 390,
+        "dialog": 372,
+        "scroll": 372
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "page": 320,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "page": 320,
+        "dialog": 302,
+        "scroll": 302
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 844,
+        "page": 844,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 844,
+        "page": 844,
+        "dialog": 826,
+        "scroll": 826
+      }
+    }
+  ],
+  "resources": [],
+  "pixels": [
+    {
+      "name": "signal43-inductor-power",
+      "lit": 303673,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-switch-event",
+      "lit": 314376,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-inline-1280",
+      "lit": 98523,
+      "canvasPixels": 355120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-expanded-1280",
+      "lit": 148480,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-inline-390",
+      "lit": 26861,
+      "canvasPixels": 69120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-expanded-390",
+      "lit": 35728,
+      "canvasPixels": 95771.71875,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-inline-320",
+      "lit": 18546,
+      "canvasPixels": 50140,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "signal43-expanded-320",
+      "lit": 24672,
+      "canvasPixels": 63480,
+      "captures": 1,
+      "viewportCapture": true
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 12
+}

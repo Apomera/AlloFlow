@@ -1,0 +1,392 @@
+{
+  "passed": true,
+  "scope": "Production board UI, authored activities, and reused generated sample pictures. No AI requests.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "teacher detects revealing visual coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "balanced text choices and separate question clue",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world before exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world after first construction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "finale correction feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed written finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "communication-tool finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world construction contributions",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive practice correction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed adaptive route",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive sequence by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "second route and finale preserved",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "worldComparison": true,
+      "constructionIncomeVerified": true,
+      "adaptivePractice": true,
+      "practiceReload": true,
+      "missedActivityReturns": true,
+      "nextRouteCoverage": true,
+      "reviewedVisualActivities": 3,
+      "visualBalanceRepair": true,
+      "finaleCorrection": true,
+      "finaleReload": true,
+      "finaleExport": true,
+      "oralFinale": true,
+      "gameScoresUnchanged": true,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "teacher detects revealing visual coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "balanced text choices and separate question clue",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world before exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world after first construction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "finale correction feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed written finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "communication-tool finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world construction contributions",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive practice correction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed adaptive route",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive sequence by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "second route and finale preserved",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "worldComparison": true,
+      "constructionIncomeVerified": true,
+      "adaptivePractice": true,
+      "practiceReload": true,
+      "missedActivityReturns": true,
+      "nextRouteCoverage": true,
+      "reviewedVisualActivities": 3,
+      "visualBalanceRepair": true,
+      "finaleCorrection": true,
+      "finaleReload": true,
+      "finaleExport": true,
+      "oralFinale": true,
+      "gameScoresUnchanged": true,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "teacher detects revealing visual coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "balanced text choices and separate question clue",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world before exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world after first construction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "finale correction feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed written finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "communication-tool finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "world construction contributions",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive practice correction",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed adaptive route",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "adaptive sequence by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "second route and finale preserved",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "worldComparison": true,
+      "constructionIncomeVerified": true,
+      "adaptivePractice": true,
+      "practiceReload": true,
+      "missedActivityReturns": true,
+      "nextRouteCoverage": true,
+      "reviewedVisualActivities": 3,
+      "visualBalanceRepair": true,
+      "finaleCorrection": true,
+      "finaleReload": true,
+      "finaleExport": true,
+      "oralFinale": true,
+      "gameScoresUnchanged": true,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    }
+  ],
+  "errors": []
+}

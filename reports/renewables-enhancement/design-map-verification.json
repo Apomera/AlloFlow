@@ -1,0 +1,58 @@
+{
+  "verifiedAt": "2026-09-13T00:32:07.254Z",
+  "enhancement": "Two-input design maps with up to 49 recorded combinations, delivery targets, exact 3D replay, and reproducible exports",
+  "mapVersion": 1,
+  "mechanismVersion": 1,
+  "unitTests": {
+    "passed": 417,
+    "failed": 0,
+    "files": 18,
+    "newMapTests": 30,
+    "report": "design-map-vitest-results.json"
+  },
+  "browserWorkflows": [
+    {
+      "workflow": "design-map",
+      "report": "design-map-browser-results.json",
+      "automatedAccessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "experiments",
+      "report": "experiments-browser-results.json",
+      "automatedAccessibilityAudits": 15,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    }
+  ],
+  "automatedAccessibilityAudits": 36,
+  "visualReview": [
+    "Desktop map controls and analytical PV matrix",
+    "Complete 49-trial matrix",
+    "Battery capacity/power map and energy accounting",
+    "320px input controls and selected trial"
+  ],
+  "scope": "Real Renewables tool in an isolated local React/Three.js browser host; not a deployed full-application test.",
+  "integrity": {
+    "checkedAt": "2026-09-13T00:28:18.738Z",
+    "sourceSha256": "8f4b150581c1d1ea415a319fd8c34dab77213b1e5a4b84a61f6e585cb02a0551",
+    "sourceMirrorByteIdentical": true,
+    "sourceMirrorAndBrowserSyntax": true,
+    "scopedDiffWhitespace": true,
+    "previewSourceByteIdentical": true,
+    "previewUrl": "http://127.0.0.1:8790/"
+  }
+}

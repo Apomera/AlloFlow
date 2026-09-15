@@ -33592,6 +33592,19 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         if (soundEnabled) sfxClick();
         announceToSR('Switched to ' + next.id + ' tab');
       }
+      // Twenty-three tabs is a wall for a seventh grader on a phone. The nine a student reaches
+      // for show; the rest sit behind one toggle, which opens itself when the current tab is
+      // one of them. The keyboard ring covers the visible tabs.
+      var CORE_TAB_IDS = ['checkin', 'wheel', 'checkin_flow', 'pulse', 'breathe', 'body', 'plans', 'toolbox', 'history'];
+      var extraTabs = tabs.filter(function(t) { return CORE_TAB_IDS.indexOf(t.id) < 0; });
+      var showMoreTabs = !!d.showMoreTabs || extraTabs.some(function(t) { return t.id === activeTab; });
+      var visibleTabs = showMoreTabs ? tabs : tabs.filter(function(t) { return CORE_TAB_IDS.indexOf(t.id) >= 0; });
+      var moreTabsToggle = h('button', {
+        key: '__more', type: 'button',
+        'aria-expanded': showMoreTabs ? 'true' : 'false',
+        onClick: function() { upd('showMoreTabs', !showMoreTabs); announceToSR(showMoreTabs ? 'Showing the main tabs' : 'Showing all ' + tabs.length + ' tabs'); },
+        style: { padding: '7px 12px', borderRadius: 8, border: '1px dashed ' + (hc ? '#ffff00' : _zoBd('#475569')), cursor: 'pointer', background: 'transparent', color: hc ? _zoFg('#ffff00') : _zoFg('#cbd5e1'), fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0 }
+      }, showMoreTabs ? '\u25BE Fewer tabs' : '\u25B8 More (' + extraTabs.length + ')');
 
       var tabBar = h('div', {
         style: { display: 'flex', alignItems: 'stretch', gap: 2, padding: '10px 12px', borderBottom: hc ? '2px solid #ffff00' : '1px solid #334155', background: hc ? '#000000' : undefined, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
@@ -33600,7 +33613,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           role: 'tablist', 'aria-label': 'Zones of Regulation tabs',
           style: { display: 'flex', gap: 2, minWidth: 'max-content' }
         },
-          tabs.map(function(tab) {
+          visibleTabs.map(function(tab) {
             var isActive = activeTab === tab.id;
             return h('button', {
               'aria-label': tab.label,
@@ -33613,15 +33626,15 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               tabIndex: isActive ? 0 : -1,
               onClick: function() { selectZonesTab(tab.id); },
               onKeyDown: function(e) {
-                var currentIndex = tabs.indexOf(tab);
+                var currentIndex = visibleTabs.indexOf(tab);
                 var nextIndex = currentIndex;
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % tabs.length;
-                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % visibleTabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length;
                 else if (e.key === 'Home') nextIndex = 0;
-                else if (e.key === 'End') nextIndex = tabs.length - 1;
+                else if (e.key === 'End') nextIndex = visibleTabs.length - 1;
                 else return;
                 e.preventDefault();
-                var nextTab = tabs[nextIndex];
+                var nextTab = visibleTabs[nextIndex];
                 selectZonesTab(nextTab.id);
                 setTimeout(function() {
                   var target = document.querySelector('[data-zones-tab="' + nextTab.id + '"]');
@@ -33636,7 +33649,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0
               }
             }, tab.label);
-          })
+          }).concat([moreTabsToggle])
         ),
         h('button', {
           'aria-label': 'Sound effects',
@@ -34048,7 +34061,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
           // v3: Post-save re-check offer \u2014 shows briefly after save (90-second window).
           // Closes the loop: did the strategy help? A re-check captures that.
-          (lastSaveTs && (Date.now() - lastSaveTs) < 90000 && lastSaveZone && lastSaveZone !== 'green' && !reCheckAt) && h('div', {
+          (lastSaveTs > 0 && (Date.now() - lastSaveTs) < 90000 && lastSaveZone && lastSaveZone !== 'green' && !reCheckAt) && h('div', {
             role: 'region', 'aria-label': 'Post check-in re-check offer',
             style: { marginTop: 16, padding: 14, borderRadius: 14, background: 'rgba(124,58,237,0.10)', borderTop: '1px solid #7c3aed', borderRight: '1px solid #7c3aed', borderBottom: '1px solid #7c3aed', borderLeft: '4px solid #7c3aed' }
           },

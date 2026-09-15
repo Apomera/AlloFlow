@@ -53,7 +53,7 @@ function __alloAST(k, fb) {
   var _audioCtx = null;
   function getAudioCtx() {
     if (!_audioCtx) {
-      try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* silent */ }
+      try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) { /* silent */ }
     }
     return _audioCtx;
   }
@@ -3676,7 +3676,7 @@ function __alloAST(k, fb) {
         upd({ shareCode: code, shareCodeBuildSignature: getArchBuildSignature(exportBlocks), showShare: true });
         // Copy to clipboard
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(code).then(function () {
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(code).then(function () {
             if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Share code copied to clipboard!', 'success');
           }).catch(function () {
             if (ctx.addToast) ctx.addToast('\uD83D\uDCE4 Share code generated. Copy it from the Share panel.', 'info');

@@ -1,0 +1,483 @@
+{
+  "checks": [
+    {
+      "label": "ready 320×700 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 158.5,
+          "right": 123.890625,
+          "bottom": 214.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 242,
+          "w": 146,
+          "h": 62,
+          "right": 158,
+          "bottom": 304
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 361
+        },
+        "gap": 27.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "ready 320×700 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "ready 320×700 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "ready 320×700 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    },
+    {
+      "label": "ready 390×844 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 158.5,
+          "right": 123.890625,
+          "bottom": 214.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 314,
+          "w": 200.078125,
+          "h": 37,
+          "right": 212.078125,
+          "bottom": 351
+        },
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "right": 206,
+          "bottom": 433
+        },
+        "gap": 99.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "ready 390×844 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "ready 390×844 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "ready 390×844 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    },
+    {
+      "label": "ready 320×568 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 115.890625,
+          "h": 96,
+          "right": 123.890625,
+          "bottom": 152
+        },
+        "hint": {
+          "x": 12,
+          "y": 176,
+          "w": 146,
+          "h": 62,
+          "right": 158,
+          "bottom": 238
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 273,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 295
+        },
+        "gap": 24,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "ready 320×568 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "ready 320×568 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "ready 320×568 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    },
+    {
+      "label": "aim 320×700 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 136.5,
+          "right": 109.609375,
+          "bottom": 192.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 242,
+          "w": 146,
+          "h": 128.78125,
+          "right": 158,
+          "bottom": 370.78125
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 339,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 361
+        },
+        "gap": 49.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "aim 320×700 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "aim 320×700 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "aim 320×700 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    },
+    {
+      "label": "aim 390×844 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 136.5,
+          "right": 109.609375,
+          "bottom": 192.5
+        },
+        "hint": {
+          "x": 12,
+          "y": 314,
+          "w": 216,
+          "h": 103.78125,
+          "right": 228,
+          "bottom": 417.78125
+        },
+        "crosshair": {
+          "x": 184,
+          "y": 411,
+          "w": 22,
+          "h": 22,
+          "right": 206,
+          "bottom": 433
+        },
+        "gap": 121.5,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "aim 390×844 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "aim 390×844 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "aim 390×844 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    },
+    {
+      "label": "aim 320×568 keeps Position and placement guidance separate",
+      "pass": true,
+      "detail": {
+        "panel": {
+          "x": 8,
+          "y": 56,
+          "w": 101.609375,
+          "h": 96,
+          "right": 109.609375,
+          "bottom": 152
+        },
+        "hint": {
+          "x": 12,
+          "y": 176,
+          "w": 146,
+          "h": 128.78125,
+          "right": 158,
+          "bottom": 304.78125
+        },
+        "crosshair": {
+          "x": 149,
+          "y": 273,
+          "w": 22,
+          "h": 22,
+          "right": 171,
+          "bottom": 295
+        },
+        "gap": 24,
+        "panelHintOverlap": false,
+        "crosshairCenterCovered": false,
+        "recoveryReachable": true,
+        "overflow": false
+      }
+    },
+    {
+      "label": "aim 320×568 leaves the crosshair center clear",
+      "pass": true
+    },
+    {
+      "label": "aim 320×568 keeps both recovery controls reachable without document overflow",
+      "pass": true
+    },
+    {
+      "label": "aim 320×568 exposes the screen-reader toggle through panel scrolling",
+      "pass": true
+    }
+  ],
+  "layouts": [
+    {
+      "label": "ready 320×700",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 115.890625,
+        "h": 158.5,
+        "right": 123.890625,
+        "bottom": 214.5
+      },
+      "hint": {
+        "x": 12,
+        "y": 242,
+        "w": 146,
+        "h": 62,
+        "right": 158,
+        "bottom": 304
+      },
+      "crosshair": {
+        "x": 149,
+        "y": 339,
+        "w": 22,
+        "h": 22,
+        "right": 171,
+        "bottom": 361
+      },
+      "gap": 27.5,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    },
+    {
+      "label": "ready 390×844",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 115.890625,
+        "h": 158.5,
+        "right": 123.890625,
+        "bottom": 214.5
+      },
+      "hint": {
+        "x": 12,
+        "y": 314,
+        "w": 200.078125,
+        "h": 37,
+        "right": 212.078125,
+        "bottom": 351
+      },
+      "crosshair": {
+        "x": 184,
+        "y": 411,
+        "w": 22,
+        "h": 22,
+        "right": 206,
+        "bottom": 433
+      },
+      "gap": 99.5,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    },
+    {
+      "label": "ready 320×568",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 115.890625,
+        "h": 96,
+        "right": 123.890625,
+        "bottom": 152
+      },
+      "hint": {
+        "x": 12,
+        "y": 176,
+        "w": 146,
+        "h": 62,
+        "right": 158,
+        "bottom": 238
+      },
+      "crosshair": {
+        "x": 149,
+        "y": 273,
+        "w": 22,
+        "h": 22,
+        "right": 171,
+        "bottom": 295
+      },
+      "gap": 24,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    },
+    {
+      "label": "aim 320×700",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 101.609375,
+        "h": 136.5,
+        "right": 109.609375,
+        "bottom": 192.5
+      },
+      "hint": {
+        "x": 12,
+        "y": 242,
+        "w": 146,
+        "h": 128.78125,
+        "right": 158,
+        "bottom": 370.78125
+      },
+      "crosshair": {
+        "x": 149,
+        "y": 339,
+        "w": 22,
+        "h": 22,
+        "right": 171,
+        "bottom": 361
+      },
+      "gap": 49.5,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    },
+    {
+      "label": "aim 390×844",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 101.609375,
+        "h": 136.5,
+        "right": 109.609375,
+        "bottom": 192.5
+      },
+      "hint": {
+        "x": 12,
+        "y": 314,
+        "w": 216,
+        "h": 103.78125,
+        "right": 228,
+        "bottom": 417.78125
+      },
+      "crosshair": {
+        "x": 184,
+        "y": 411,
+        "w": 22,
+        "h": 22,
+        "right": 206,
+        "bottom": 433
+      },
+      "gap": 121.5,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    },
+    {
+      "label": "aim 320×568",
+      "panel": {
+        "x": 8,
+        "y": 56,
+        "w": 101.609375,
+        "h": 96,
+        "right": 109.609375,
+        "bottom": 152
+      },
+      "hint": {
+        "x": 12,
+        "y": 176,
+        "w": 146,
+        "h": 128.78125,
+        "right": 158,
+        "bottom": 304.78125
+      },
+      "crosshair": {
+        "x": 149,
+        "y": 273,
+        "w": 22,
+        "h": 22,
+        "right": 171,
+        "bottom": 295
+      },
+      "gap": 24,
+      "panelHintOverlap": false,
+      "crosshairCenterCovered": false,
+      "recoveryReachable": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "pass": true
+}

@@ -1,0 +1,1760 @@
+{
+  "assertions": [
+    {
+      "name": "Activity guide 390 has no horizontal overflow",
+      "pass": true,
+      "details": {
+        "innerWidth": 390,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "body": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844,
+          "right": 390,
+          "bottom": 844,
+          "scrollWidth": 390,
+          "clientWidth": 390
+        },
+        "guide": {
+          "x": 8,
+          "y": 8,
+          "w": 374,
+          "h": 828,
+          "right": 382,
+          "bottom": 836,
+          "scrollWidth": 372,
+          "clientWidth": 372
+        },
+        "backdrop": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844,
+          "right": 390,
+          "bottom": 844,
+          "scrollWidth": 390,
+          "clientWidth": 390
+        },
+        "workspace": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844,
+          "right": 390,
+          "bottom": 844,
+          "scrollWidth": 390,
+          "clientWidth": 390
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 376,
+          "h": 777,
+          "right": 383,
+          "bottom": 837,
+          "scrollWidth": 376,
+          "clientWidth": 376
+        },
+        "overflowing": [
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 353,
+              "y": 785,
+              "w": 44,
+              "h": 44,
+              "right": 397,
+              "bottom": 829,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-key",
+            "id": "",
+            "rect": {
+              "x": 388.390625,
+              "y": 788,
+              "w": 4.609375,
+              "h": 9,
+              "right": 393,
+              "bottom": 797,
+              "scrollWidth": 5,
+              "clientWidth": 5
+            }
+          },
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 401,
+              "y": 785,
+              "w": 44,
+              "h": 44,
+              "right": 445,
+              "bottom": 829,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 410.5,
+              "y": 788.5,
+              "w": 25,
+              "h": 25,
+              "right": 435.5,
+              "bottom": 813.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 413.625,
+              "y": 808.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 432.375,
+              "bottom": 812.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 790.0625,
+              "w": 20.3125,
+              "h": 10.9375,
+              "right": 433.15625,
+              "bottom": 801,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 795.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 423,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 423,
+              "y": 795.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 433.15625,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 790.0625,
+              "w": 20.3125,
+              "h": 21.875,
+              "right": 433.15625,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 797.875,
+              "w": 20.3125,
+              "h": 11.71875,
+              "right": 433.15625,
+              "bottom": 809.59375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-name",
+            "id": "",
+            "rect": {
+              "x": 411.15625,
+              "y": 814.5,
+              "w": 23.671875,
+              "h": 11,
+              "right": 434.828125,
+              "bottom": 825.5,
+              "scrollWidth": 24,
+              "clientWidth": 24
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-key",
+            "id": "",
+            "rect": {
+              "x": 436.390625,
+              "y": 788,
+              "w": 4.609375,
+              "h": 9,
+              "right": 441,
+              "bottom": 797,
+              "scrollWidth": 5,
+              "clientWidth": 5
+            }
+          },
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 449,
+              "y": 785,
+              "w": 44,
+              "h": 44,
+              "right": 493,
+              "bottom": 829,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 458.5,
+              "y": 788.5,
+              "w": 25,
+              "h": 25,
+              "right": 483.5,
+              "bottom": 813.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 461.625,
+              "y": 808.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 480.375,
+              "bottom": 812.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 460.84375,
+              "y": 790.0625,
+              "w": 20.3125,
+              "h": 10.9375,
+              "right": 481.15625,
+              "bottom": 801,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 460.84375,
+              "y": 795.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 471,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 471,
+              "y": 795.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 481.15625,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 460.84375,
+              "y": 790.0625,
+              "w": 20.3125,
+              "h": 21.875,
+              "right": 481.15625,
+              "bottom": 811.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 462.40625,
+              "y": 798.65625,
+              "w": 16.40625,
+              "h": 8.59375,
+              "right": 478.8125,
+              "bottom": 807.25,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-name",
+            "id": "",
+            "rect": {
+              "x": 464.296875,
+              "y": 814.5,
+              "w": 13.390625,
+              "h": 11,
+              "right": 477.6875,
+              "bottom": 825.5,
+              "scrollWidth": 13,
+              "clientWidth": 13
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-key",
+            "id": "",
+            "rect": {
+              "x": 484.390625,
+              "y": 788,
+              "w": 4.609375,
+              "h": 9,
+              "right": 489,
+              "bottom": 797,
+              "scrollWidth": 5,
+              "clientWidth": 5
+            }
+          },
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 497,
+              "y": 785,
+              "w": 44,
+              "h": 44,
+              "right": 541,
+              "bottom": 829,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 506.5,
+              "y": 788.5,
+              "w": 25,
+              "h": 25,
+              "right": 531.5,
+              "bottom": 813.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 509.625,
+              "y": 808.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 528.375,
+              "bottom": 812.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Activity evidence cards fit guide at390",
+      "pass": true
+    },
+    {
+      "name": "Activity portfolio button is hit-test reachable at390",
+      "pass": true
+    },
+    {
+      "name": "Activity guide 320 has no horizontal overflow",
+      "pass": true,
+      "details": {
+        "innerWidth": 320,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "body": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700,
+          "right": 320,
+          "bottom": 700,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        "guide": {
+          "x": 8,
+          "y": 8,
+          "w": 304,
+          "h": 684,
+          "right": 312,
+          "bottom": 692,
+          "scrollWidth": 302,
+          "clientWidth": 302
+        },
+        "backdrop": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700,
+          "right": 320,
+          "bottom": 700,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        "workspace": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700,
+          "right": 320,
+          "bottom": 700,
+          "scrollWidth": 320,
+          "clientWidth": 320
+        },
+        "canvas": {
+          "x": 7,
+          "y": 60,
+          "w": 306,
+          "h": 633,
+          "right": 313,
+          "bottom": 693,
+          "scrollWidth": 306,
+          "clientWidth": 306
+        },
+        "overflowing": [
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 305,
+              "y": 641,
+              "w": 44,
+              "h": 44,
+              "right": 349,
+              "bottom": 685,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 314.5,
+              "y": 644.5,
+              "w": 25,
+              "h": 25,
+              "right": 339.5,
+              "bottom": 669.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 317.625,
+              "y": 664.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 336.375,
+              "bottom": 668.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 316.84375,
+              "y": 646.0625,
+              "w": 20.3125,
+              "h": 10.9375,
+              "right": 337.15625,
+              "bottom": 657,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 316.84375,
+              "y": 651.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 327,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 327,
+              "y": 651.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 337.15625,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 316.84375,
+              "y": 646.0625,
+              "w": 20.3125,
+              "h": 21.875,
+              "right": 337.15625,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 318.40625,
+              "y": 654.65625,
+              "w": 16.40625,
+              "h": 8.59375,
+              "right": 334.8125,
+              "bottom": 663.25,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-name",
+            "id": "",
+            "rect": {
+              "x": 314.921875,
+              "y": 670.5,
+              "w": 24.140625,
+              "h": 11,
+              "right": 339.0625,
+              "bottom": 681.5,
+              "scrollWidth": 24,
+              "clientWidth": 24
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-key",
+            "id": "",
+            "rect": {
+              "x": 340.390625,
+              "y": 644,
+              "w": 4.609375,
+              "h": 9,
+              "right": 345,
+              "bottom": 653,
+              "scrollWidth": 5,
+              "clientWidth": 5
+            }
+          },
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 353,
+              "y": 641,
+              "w": 44,
+              "h": 44,
+              "right": 397,
+              "bottom": 685,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 362.5,
+              "y": 644.5,
+              "w": 25,
+              "h": 25,
+              "right": 387.5,
+              "bottom": 669.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 365.625,
+              "y": 664.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 384.375,
+              "bottom": 668.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 364.84375,
+              "y": 646.0625,
+              "w": 20.3125,
+              "h": 10.9375,
+              "right": 385.15625,
+              "bottom": 657,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 364.84375,
+              "y": 651.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 375,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 375,
+              "y": 651.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 385.15625,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 364.84375,
+              "y": 646.0625,
+              "w": 20.3125,
+              "h": 21.875,
+              "right": 385.15625,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 367.1875,
+              "y": 649.96875,
+              "w": 15.625,
+              "h": 8.59375,
+              "right": 382.8125,
+              "bottom": 658.5625,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-name",
+            "id": "",
+            "rect": {
+              "x": 360.859375,
+              "y": 670.5,
+              "w": 28.28125,
+              "h": 11,
+              "right": 389.140625,
+              "bottom": 681.5,
+              "scrollWidth": 28,
+              "clientWidth": 28
+            }
+          },
+          {
+            "tag": "SPAN",
+            "class": "gw-material-key",
+            "id": "",
+            "rect": {
+              "x": 388.390625,
+              "y": 644,
+              "w": 4.609375,
+              "h": 9,
+              "right": 393,
+              "bottom": 653,
+              "scrollWidth": 5,
+              "clientWidth": 5
+            }
+          },
+          {
+            "tag": "DIV",
+            "class": "gw-focusable gw-hotbar-item",
+            "id": "",
+            "rect": {
+              "x": 401,
+              "y": 641,
+              "w": 44,
+              "h": 44,
+              "right": 445,
+              "bottom": 685,
+              "scrollWidth": 42,
+              "clientWidth": 42
+            }
+          },
+          {
+            "tag": "svg",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 410.5,
+              "y": 644.5,
+              "w": 25,
+              "h": 25,
+              "right": 435.5,
+              "bottom": 669.5,
+              "scrollWidth": 25,
+              "clientWidth": 25
+            }
+          },
+          {
+            "tag": "ellipse",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 413.625,
+              "y": 664.03125,
+              "w": 18.75,
+              "h": 4.6875,
+              "right": 432.375,
+              "bottom": 668.71875,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 646.0625,
+              "w": 20.3125,
+              "h": 10.9375,
+              "right": 433.15625,
+              "bottom": 657,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          },
+          {
+            "tag": "path",
+            "class": {},
+            "id": "",
+            "rect": {
+              "x": 412.84375,
+              "y": 651.53125,
+              "w": 10.15625,
+              "h": 16.40625,
+              "right": 423,
+              "bottom": 667.9375,
+              "scrollWidth": 0,
+              "clientWidth": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Activity evidence cards fit guide at320",
+      "pass": true
+    },
+    {
+      "name": "Activity portfolio button is hit-test reachable at320",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Native Print guide camera controls with ordinary motion; local actual React and Three",
+  "layouts": {
+    "320": {
+      "innerWidth": 320,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "body": {
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 700,
+        "right": 320,
+        "bottom": 700,
+        "scrollWidth": 320,
+        "clientWidth": 320
+      },
+      "guide": {
+        "x": 8,
+        "y": 8,
+        "w": 304,
+        "h": 684,
+        "right": 312,
+        "bottom": 692,
+        "scrollWidth": 302,
+        "clientWidth": 302
+      },
+      "backdrop": {
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 700,
+        "right": 320,
+        "bottom": 700,
+        "scrollWidth": 320,
+        "clientWidth": 320
+      },
+      "workspace": {
+        "x": 0,
+        "y": 0,
+        "w": 320,
+        "h": 700,
+        "right": 320,
+        "bottom": 700,
+        "scrollWidth": 320,
+        "clientWidth": 320
+      },
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "w": 306,
+        "h": 633,
+        "right": 313,
+        "bottom": 693,
+        "scrollWidth": 306,
+        "clientWidth": 306
+      },
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 305,
+            "y": 641,
+            "w": 44,
+            "h": 44,
+            "right": 349,
+            "bottom": 685,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 314.5,
+            "y": 644.5,
+            "w": 25,
+            "h": 25,
+            "right": 339.5,
+            "bottom": 669.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 317.625,
+            "y": 664.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 336.375,
+            "bottom": 668.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 316.84375,
+            "y": 646.0625,
+            "w": 20.3125,
+            "h": 10.9375,
+            "right": 337.15625,
+            "bottom": 657,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 316.84375,
+            "y": 651.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 327,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 327,
+            "y": 651.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 337.15625,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 316.84375,
+            "y": 646.0625,
+            "w": 20.3125,
+            "h": 21.875,
+            "right": 337.15625,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 318.40625,
+            "y": 654.65625,
+            "w": 16.40625,
+            "h": 8.59375,
+            "right": 334.8125,
+            "bottom": 663.25,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-name",
+          "id": "",
+          "rect": {
+            "x": 314.921875,
+            "y": 670.5,
+            "w": 24.140625,
+            "h": 11,
+            "right": 339.0625,
+            "bottom": 681.5,
+            "scrollWidth": 24,
+            "clientWidth": 24
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-key",
+          "id": "",
+          "rect": {
+            "x": 340.390625,
+            "y": 644,
+            "w": 4.609375,
+            "h": 9,
+            "right": 345,
+            "bottom": 653,
+            "scrollWidth": 5,
+            "clientWidth": 5
+          }
+        },
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 353,
+            "y": 641,
+            "w": 44,
+            "h": 44,
+            "right": 397,
+            "bottom": 685,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 362.5,
+            "y": 644.5,
+            "w": 25,
+            "h": 25,
+            "right": 387.5,
+            "bottom": 669.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 365.625,
+            "y": 664.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 384.375,
+            "bottom": 668.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 364.84375,
+            "y": 646.0625,
+            "w": 20.3125,
+            "h": 10.9375,
+            "right": 385.15625,
+            "bottom": 657,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 364.84375,
+            "y": 651.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 375,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 375,
+            "y": 651.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 385.15625,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 364.84375,
+            "y": 646.0625,
+            "w": 20.3125,
+            "h": 21.875,
+            "right": 385.15625,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 367.1875,
+            "y": 649.96875,
+            "w": 15.625,
+            "h": 8.59375,
+            "right": 382.8125,
+            "bottom": 658.5625,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-name",
+          "id": "",
+          "rect": {
+            "x": 360.859375,
+            "y": 670.5,
+            "w": 28.28125,
+            "h": 11,
+            "right": 389.140625,
+            "bottom": 681.5,
+            "scrollWidth": 28,
+            "clientWidth": 28
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-key",
+          "id": "",
+          "rect": {
+            "x": 388.390625,
+            "y": 644,
+            "w": 4.609375,
+            "h": 9,
+            "right": 393,
+            "bottom": 653,
+            "scrollWidth": 5,
+            "clientWidth": 5
+          }
+        },
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 401,
+            "y": 641,
+            "w": 44,
+            "h": 44,
+            "right": 445,
+            "bottom": 685,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 410.5,
+            "y": 644.5,
+            "w": 25,
+            "h": 25,
+            "right": 435.5,
+            "bottom": 669.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 413.625,
+            "y": 664.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 432.375,
+            "bottom": 668.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 646.0625,
+            "w": 20.3125,
+            "h": 10.9375,
+            "right": 433.15625,
+            "bottom": 657,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 651.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 423,
+            "bottom": 667.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        }
+      ]
+    },
+    "390": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "body": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "right": 390,
+        "bottom": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "guide": {
+        "x": 8,
+        "y": 8,
+        "w": 374,
+        "h": 828,
+        "right": 382,
+        "bottom": 836,
+        "scrollWidth": 372,
+        "clientWidth": 372
+      },
+      "backdrop": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "right": 390,
+        "bottom": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "workspace": {
+        "x": 0,
+        "y": 0,
+        "w": 390,
+        "h": 844,
+        "right": 390,
+        "bottom": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "canvas": {
+        "x": 7,
+        "y": 60,
+        "w": 376,
+        "h": 777,
+        "right": 383,
+        "bottom": 837,
+        "scrollWidth": 376,
+        "clientWidth": 376
+      },
+      "overflowing": [
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 353,
+            "y": 785,
+            "w": 44,
+            "h": 44,
+            "right": 397,
+            "bottom": 829,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-key",
+          "id": "",
+          "rect": {
+            "x": 388.390625,
+            "y": 788,
+            "w": 4.609375,
+            "h": 9,
+            "right": 393,
+            "bottom": 797,
+            "scrollWidth": 5,
+            "clientWidth": 5
+          }
+        },
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 401,
+            "y": 785,
+            "w": 44,
+            "h": 44,
+            "right": 445,
+            "bottom": 829,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 410.5,
+            "y": 788.5,
+            "w": 25,
+            "h": 25,
+            "right": 435.5,
+            "bottom": 813.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 413.625,
+            "y": 808.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 432.375,
+            "bottom": 812.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 790.0625,
+            "w": 20.3125,
+            "h": 10.9375,
+            "right": 433.15625,
+            "bottom": 801,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 795.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 423,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 423,
+            "y": 795.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 433.15625,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 790.0625,
+            "w": 20.3125,
+            "h": 21.875,
+            "right": 433.15625,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 412.84375,
+            "y": 797.875,
+            "w": 20.3125,
+            "h": 11.71875,
+            "right": 433.15625,
+            "bottom": 809.59375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-name",
+          "id": "",
+          "rect": {
+            "x": 411.15625,
+            "y": 814.5,
+            "w": 23.671875,
+            "h": 11,
+            "right": 434.828125,
+            "bottom": 825.5,
+            "scrollWidth": 24,
+            "clientWidth": 24
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-key",
+          "id": "",
+          "rect": {
+            "x": 436.390625,
+            "y": 788,
+            "w": 4.609375,
+            "h": 9,
+            "right": 441,
+            "bottom": 797,
+            "scrollWidth": 5,
+            "clientWidth": 5
+          }
+        },
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 449,
+            "y": 785,
+            "w": 44,
+            "h": 44,
+            "right": 493,
+            "bottom": 829,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 458.5,
+            "y": 788.5,
+            "w": 25,
+            "h": 25,
+            "right": 483.5,
+            "bottom": 813.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 461.625,
+            "y": 808.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 480.375,
+            "bottom": 812.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 460.84375,
+            "y": 790.0625,
+            "w": 20.3125,
+            "h": 10.9375,
+            "right": 481.15625,
+            "bottom": 801,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 460.84375,
+            "y": 795.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 471,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 471,
+            "y": 795.53125,
+            "w": 10.15625,
+            "h": 16.40625,
+            "right": 481.15625,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 460.84375,
+            "y": 790.0625,
+            "w": 20.3125,
+            "h": 21.875,
+            "right": 481.15625,
+            "bottom": 811.9375,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "path",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 462.40625,
+            "y": 798.65625,
+            "w": 16.40625,
+            "h": 8.59375,
+            "right": 478.8125,
+            "bottom": 807.25,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-name",
+          "id": "",
+          "rect": {
+            "x": 464.296875,
+            "y": 814.5,
+            "w": 13.390625,
+            "h": 11,
+            "right": 477.6875,
+            "bottom": 825.5,
+            "scrollWidth": 13,
+            "clientWidth": 13
+          }
+        },
+        {
+          "tag": "SPAN",
+          "class": "gw-material-key",
+          "id": "",
+          "rect": {
+            "x": 484.390625,
+            "y": 788,
+            "w": 4.609375,
+            "h": 9,
+            "right": 489,
+            "bottom": 797,
+            "scrollWidth": 5,
+            "clientWidth": 5
+          }
+        },
+        {
+          "tag": "DIV",
+          "class": "gw-focusable gw-hotbar-item",
+          "id": "",
+          "rect": {
+            "x": 497,
+            "y": 785,
+            "w": 44,
+            "h": 44,
+            "right": 541,
+            "bottom": 829,
+            "scrollWidth": 42,
+            "clientWidth": 42
+          }
+        },
+        {
+          "tag": "svg",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 506.5,
+            "y": 788.5,
+            "w": 25,
+            "h": 25,
+            "right": 531.5,
+            "bottom": 813.5,
+            "scrollWidth": 25,
+            "clientWidth": 25
+          }
+        },
+        {
+          "tag": "ellipse",
+          "class": {},
+          "id": "",
+          "rect": {
+            "x": 509.625,
+            "y": 808.03125,
+            "w": 18.75,
+            "h": 4.6875,
+            "right": 528.375,
+            "bottom": 812.71875,
+            "scrollWidth": 0,
+            "clientWidth": 0
+          }
+        }
+      ]
+    }
+  }
+}

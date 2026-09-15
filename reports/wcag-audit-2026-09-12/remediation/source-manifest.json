@@ -1,0 +1,57 @@
+{
+  "recordedAt": "2026-09-13T03:37:20.392Z",
+  "files": [
+    {
+      "file": "view_header_source.jsx",
+      "sha256": "3dd7d40261e01a88b9c285ac335831e5876e959707ee5967db951def288b81f5"
+    },
+    {
+      "file": "view_header_module.js",
+      "sha256": "bc242f4f13f103dec033efca624d03d57d948901b5d7cda642c8e2be04e0735b"
+    },
+    {
+      "file": "view_udl_guide_button_source.jsx",
+      "sha256": "99bea89fb9b2b0fa21b211afb30c9930cfcfa470923709e5cf53f6663cef2e69"
+    },
+    {
+      "file": "view_udl_guide_button_module.js",
+      "sha256": "cc9662af38aa120843572b6e1fe32a318645405aa3d494d739de265cd04f29a5"
+    },
+    {
+      "file": "quickstart_source.jsx",
+      "sha256": "df1a33fbd6e07a8d5be0f45424092ca9801bf2496258ccd902fa185f4d4f5891"
+    },
+    {
+      "file": "quickstart_module.js",
+      "sha256": "6cc19e115c35fc2176655df74323cffffc373caddc68785194b124e73ae11293"
+    },
+    {
+      "file": "video_studio/video_studio.html",
+      "sha256": "ede011605e69d5cbfedc90e7cd5fb4327e5135eb501aec59e57d9fae67bf965c"
+    },
+    {
+      "file": "desktop/web-app/public/catalog.html",
+      "sha256": "19f5b6b955db53a44f6b8cd766e50ab20241df2d23bdf1dffa73033c13492ffa"
+    },
+    {
+      "file": "desktop/web-app/public/view_header_module.js",
+      "sha256": "bc242f4f13f103dec033efca624d03d57d948901b5d7cda642c8e2be04e0735b"
+    },
+    {
+      "file": "desktop/web-app/public/view_udl_guide_button_module.js",
+      "sha256": "cc9662af38aa120843572b6e1fe32a318645405aa3d494d739de265cd04f29a5"
+    },
+    {
+      "file": "desktop/web-app/public/video_studio/video_studio.html",
+      "sha256": "ede011605e69d5cbfedc90e7cd5fb4327e5135eb501aec59e57d9fae67bf965c"
+    },
+    {
+      "file": "release.json",
+      "sha256": "b0c172770c6199ba1f2eebe369a3c6943ddc8e864a36da741b516091a6c1d663"
+    },
+    {
+      "file": "app/static/css/main.bba82ce3.css",
+      "sha256": "5480cb3c507cdc4e5e9a87d1196f2e6827c0e5c6bba5293de54d77f64d6a8ab8"
+    }
+  ]
+}

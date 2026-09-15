@@ -1,0 +1,74 @@
+{
+  "quizBefore": "🧪 Anatomy Quiz\n⭐ Score 0 - Question 1/10\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nSystem ID\n\nQuestions match the anterior diagram.\n\nWhich body system contains this structure?\n\nThyroid Gland\n\n1\nEndocrine\n2\nMuscular\n3\nOrgan Systems\n4\nNervous\n💡\nDID YOU KNOW?\n\nYour liver performs over 500 different jobs, including making bile, filtering toxins, and storing vitamins!\n\nNext →\n🧠 MNEMONICS (2)\n▼",
+  "quizAfter": "🧪 Anatomy Quiz\n⭐ Score 0 - Question 1/10\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nSystem ID\n\nQuestions match the anterior diagram.\n\nWhich body system contains this structure?\n\nThyroid Gland\n\n✗\nEndocrine\n2\nMuscular\n✓\nOrgan Systems\n4\nNervous\n\n❌ The answer was: Organ Systems\n\nYou chose the Endocrine. The Thyroid Gland belongs to the Organ Systems because of what it does:\n\nThe Thyroid Gland: Butterfly-shaped, anterior neck at C5–T1. Produces T3/T4 (metabolism, growth, development) and calcitonin (lowers blood calcium). Requires iodine.\n\n⚠ Clinical: Hypothyroidism (Hashimoto): fatigue, weight gain, cold intolerance. Hyperthyroidism (Graves): weight loss, tremor, exophthalmos.\n\nNext Question →\n💡\nDID YOU KNOW?\n\nYour liver performs over 500 different jobs, including making bile, filtering toxins, and storing vitamins!\n\nNext →\n🧠 MNEMONICS (2)\n▼",
+  "quizState": {
+    "_bodyView3d": false,
+    "_activeTab": "quiz",
+    "system": "organs",
+    "complexity": 3,
+    "view": "anterior",
+    "quizIdx": 90,
+    "_quizQuestion": {
+      "context": "organs|anterior|3|g68|lungs,liver,stomach,sm_intestine,lg_intestine,pancreas,gallbladder,bladder,diaphragm,thyroid",
+      "index": 90,
+      "poolIds": [
+        "lungs",
+        "liver",
+        "stomach",
+        "sm_intestine",
+        "lg_intestine",
+        "pancreas",
+        "gallbladder",
+        "bladder",
+        "diaphragm",
+        "thyroid"
+      ]
+    },
+    "_systemsExplored": {
+      "organs": true
+    },
+    "_viewsUsed": {
+      "anterior": true
+    },
+    "quizFeedback": {
+      "chosen": "endocrine",
+      "correct": false,
+      "questionKey": "organs|anterior|3|g68|lungs,liver,stomach,sm_intestine,lg_intestine,pancreas,gallbladder,bladder,diaphragm,thyroid|90"
+    },
+    "_quizAttempts": 1,
+    "_streak": 0,
+    "_structureConfidence": {
+      "thyroid": "practice"
+    },
+    "_confidenceAt": {
+      "thyroid": 1789230487822
+    }
+  },
+  "levelK5WithGrade8": "← Previous\n1 / 5\nNext →\n\nSKELETAL / ANTERIOR\n\nSkull (Cranium)\n🔊 Hear it\nShow on atlas\nCompare\n← Structures\n\nFUNCTION🔊\n\nProtects the brain. 22 bones form the cranial vault (frontal, parietal×2, temporal×2, occipital, sphenoid, ethmoid) and facial skeleton (14 bones).\n\n🧠 MYTH BUSTER🔊\n\nMany people think: “The skull is one solid bone.”\n\nActually: The skull is 22 bones joined by seams called sutures. In babies the bones are separate so the head can pass through the birth canal and the brain can grow.\n\n⚠ CLINICAL SIGNIFICANCE🔊\n\nFractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and molding during birth.\n\nDETAIL\n\nHouses meninges, brain, and cranial nerve foramina. Fontanelles close during infancy and early childhood; major cranial sutures normally remain into adulthood and fuse much later, if at all.\n\nRelationship map\n\nSee how this structure sits inside a wider body-system network.\n\nExplore all links\nSELECTED STRUCTURE\nSkull (Cranium)\n→\nBELONGS TO\n🦴 Skeletal\nSYSTEM PROCESS\n🦴 Lever System for Movement\n→\nPARTNER SYSTEM\n💪 Muscular\nSYSTEM PROCESS\n🦴 Bone Marrow Blood Cell Production\n→\nPARTNER SYSTEM\n❤️ Circulatory\n\nSystem-context links can involve this structure directly or through the larger skeletal system.\n\nHow well do you know this?\n\nChoose after reviewing\n! Need practice\n~ Learning\nOK Got it\n✍ In your own words: Skull (Cranium)\n\nExplain what the Skull (Cranium) does as if to a friend. Your note shows up again on its flashcard.\n\n0 / 280\nNo note saved for this structure",
+  "grade5Skull": "← Previous\n1 / 5\nNext →\n\nSKELETAL / ANTERIOR\n\nSkull (Cranium)\n🔊 Hear it\n\nThe skull is made of 22 bones fused together. It protects the brain and gives your face its shape.\n\nShow on atlas\nCompare\n← Structures\nMore detail (grown-up words)\n\n🧠 MYTH BUSTER🔊\n\nMany people think: “Your skull is one big bone.”\n\nActually: Your skull is many bones joined together like puzzle pieces.\n\n💚 STAYING HEALTHY🔊\n\nYour skull is a strong helmet of bone that wraps around your brain and keeps it safe. It is made of many bones that grow together as you get bigger. Wearing a helmet when you bike or skate helps protect your skull, and a doctor can check it to make sure it is healthy.\n\nDETAIL\n\nHouses meninges, brain, and cranial nerve foramina. Fontanelles close during infancy and early childhood; major cranial sutures normally remain into adulthood and fuse much later, if at all.\n\nRelationship map\n\nSee how this structure sits inside a wider body-system network.\n\nExplore all links\nSELECTED STRUCTURE\nSkull (Cranium)\n→\nBELONGS TO\n🦴 Skeletal\nSYSTEM PROCESS\n🦴 Lever System for Movement\n→\nPARTNER SYSTEM\n💪 Muscular\nSYSTEM PROCESS\n🦴 Bone Marrow Blood Cell Production\n→\nPARTNER SYSTEM\n❤️ Circulatory\n\nSystem-context links can involve this structure directly or through the larger skeletal system.\n\nHow well do you know this?\n\nChoose after reviewing\n! Need practice\n~ Learning\nOK Got it\n✍ In your own words: Skull (Cranium)\n\nExplain what the Skull (Cranium) does as if to a friend. Your note shows up again on its flashcard.\n\n0 / 280\nNo note saved for this structure",
+  "blueprintDiagnostics": {
+    "anatomy-3dCanvas": "true",
+    "anatomy-3dStyle": "blueprint",
+    "anatomy-3dState": "ready-model",
+    "anatomy-3dInput": "orbit",
+    "anatomyBodyMarkersVisible": "true",
+    "anatomyLighting": "default",
+    "anatomyCameraAngle": "front",
+    "anatomyCameraPreset": "body",
+    "anatomySurfaceAsset": "bundled",
+    "anatomySurfaceVertices": "13380"
+  },
+  "blueprint": {},
+  "surface": {
+    "anatomy-3dCanvas": "true",
+    "anatomy-3dStyle": "realistic",
+    "anatomy-3dState": "ready-model",
+    "anatomy-3dInput": "orbit",
+    "anatomyBodyMarkersVisible": "false",
+    "anatomyLighting": "soft",
+    "anatomyCameraAngle": "front",
+    "anatomyCameraPreset": "body",
+    "anatomySurfaceAsset": "bundled",
+    "anatomySurfaceVertices": "13380"
+  }
+}

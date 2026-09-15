@@ -18183,7 +18183,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             return;
           }
           try {
-            var writeResult = navigator.clipboard.writeText(csv);
+            var writeResult = (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(csv);
             if (writeResult && typeof writeResult.then === 'function') {
               writeResult.then(function() {
                 addToast('CSV copied to clipboard');

@@ -1,0 +1,1 @@
+const fs=require('fs');const p=__dirname+'/pass6-browser.cjs';let s=fs.readFileSync(p,'utf8');s=s.replace("page.getByLabel('Add the reference to',{exact:true})","page.getByRole('combobox',{name:'Add the reference to',exact:true})");fs.writeFileSync(p,s);

@@ -1,0 +1,35 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "explorer": {
+        "x": 93,
+        "y": 730.59375,
+        "width": 1094,
+        "height": 284.5
+      },
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "explorer": {
+        "x": 17,
+        "y": 594.5,
+        "width": 286,
+        "height": 432.625
+      },
+      "overflow": false
+    }
+  ],
+  "assertions": [
+    "Individual pair values and net totals match actual adjacent crops",
+    "Selection isolates one pair without modifying time, funds, or planting",
+    "Inspection returns focus to the explorer with its selected pair intact",
+    "Keyboard selection, saved-state restoration, removed neighbors, and isolated crops",
+    "All eight adjacent beds included and distant crops excluded",
+    "Reduced motion is still; enabled motion changes frames; context and lifecycle remain balanced",
+    "Desktop, phone, larger text, and maximized layouts remain usable"
+  ],
+  "errors": [],
+  "accessibility": []
+}

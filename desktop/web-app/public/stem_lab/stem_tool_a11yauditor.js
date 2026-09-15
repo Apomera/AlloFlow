@@ -28,7 +28,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
 
   // ── Audio (auto-injected) ──
   var _a11yauAC = null;
-  function getA11yauAC() { if (!_a11yauAC) { try { _a11yauAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_a11yauAC && _a11yauAC.state === "suspended") { try { _a11yauAC.resume(); } catch(e) {} } return _a11yauAC; }
+  function getA11yauAC() { if (!_a11yauAC) { try { _a11yauAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_a11yauAC && _a11yauAC.state === "suspended") { try { _a11yauAC.resume(); } catch(e) {} } return _a11yauAC; }
   function a11yauTone(f,d,tp,v) { var ac = getA11yauAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxA11yauClick() { a11yauTone(600, 0.03, "sine", 0.04); }
 
@@ -735,7 +735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             socialRewrite && h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-2' },
               h('h4', { className: 'text-xs font-bold text-emerald-700' }, t('stem.a11yauditor.accessible_version', '\u2728 Accessible Version')),
               h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, socialRewrite),
-              h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { navigator.clipboard.writeText(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
+              h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
                 className: 'px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-[0.6875rem] font-bold hover:bg-emerald-200'
               }, t('stem.a11yauditor.copy_to_clipboard', '\uD83D\uDCCB Copy to Clipboard'))
             ),
@@ -1167,7 +1167,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, complaintResult)
               ),
               h('div', { className: 'flex gap-2' },
-                h('button', { onClick: function() { navigator.clipboard.writeText(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, t('stem.a11yauditor.copy_to_clipboard_2', '\uD83D\uDCCB Copy to Clipboard')),
+                h('button', { onClick: function() { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(complaintResult); if (addToast) addToast('Copied to clipboard!', 'success'); }, className: 'flex-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200' }, t('stem.a11yauditor.copy_to_clipboard_2', '\uD83D\uDCCB Copy to Clipboard')),
                 h('button', { 'aria-label': t('stem.a11yauditor.reset_complaint', 'Reset complaint'), onClick: function() { upd('complaintResult', null); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200' }, t('stem.a11yauditor.new_letter', '\uD83D\uDD04 New Letter'))
               )
             )

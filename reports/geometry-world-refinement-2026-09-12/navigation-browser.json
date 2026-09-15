@@ -1,0 +1,398 @@
+{
+  "scope": "Current local production sources in the real React/Three browser host; no live AI requests",
+  "checks": [
+    {
+      "label": "Harbor preview advertises all six connected activities",
+      "pass": true,
+      "detail": "6 activities\n45 min\nExpedition\n19 question steps"
+    },
+    {
+      "label": "Harbor preview explains estimated student time",
+      "pass": true,
+      "detail": "6 activities\n45 min\nExpedition\n19 question steps"
+    },
+    {
+      "label": "Harbor preview counts primary and follow-up question steps",
+      "pass": true,
+      "detail": "6 activities\n45 min\nExpedition\n19 question steps"
+    },
+    {
+      "label": "Lesson facts use a readable semantic list",
+      "pass": true
+    },
+    {
+      "label": "The route overview is one accessible native SVG image",
+      "pass": true
+    },
+    {
+      "label": "Route overview has an accessible name, title, and description",
+      "pass": true
+    },
+    {
+      "label": "Route overview shows all six activity markers",
+      "pass": true
+    },
+    {
+      "label": "Route overview depicts the actual authored structure footprints",
+      "pass": true
+    },
+    {
+      "label": "Map coordinates and structure outlines have valid finite bounds",
+      "pass": true,
+      "detail": {
+        "viewBox": [
+          0,
+          0,
+          320,
+          200
+        ],
+        "finite": true,
+        "invalid": false
+      }
+    },
+    {
+      "label": "Static route preview introduces no misleading interactive controls",
+      "pass": true
+    },
+    {
+      "label": "Home preview has no horizontal overflow at 1440x1000",
+      "pass": true
+    },
+    {
+      "label": "Home preview fits its own scrolling surface at 1440",
+      "pass": true
+    },
+    {
+      "label": "Route overview remains readable at 1440",
+      "pass": true,
+      "detail": {
+        "x": 738.9375,
+        "y": 476.84375,
+        "width": 317.0625,
+        "height": 198.90625
+      }
+    },
+    {
+      "label": "Start lesson remains reachable at 1440",
+      "pass": true,
+      "detail": {
+        "width": 131.078125,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Home preview has no horizontal overflow at 390x844",
+      "pass": true
+    },
+    {
+      "label": "Home preview fits its own scrolling surface at 390",
+      "pass": true
+    },
+    {
+      "label": "Route overview remains readable at 390",
+      "pass": true,
+      "detail": {
+        "x": 48,
+        "y": 624.375,
+        "width": 294,
+        "height": 184.5
+      }
+    },
+    {
+      "label": "Start lesson remains reachable at 390",
+      "pass": true,
+      "detail": {
+        "width": 332,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Home preview has no horizontal overflow at 320x700",
+      "pass": true
+    },
+    {
+      "label": "Home preview fits its own scrolling surface at 320",
+      "pass": true
+    },
+    {
+      "label": "Route overview remains readable at 320",
+      "pass": true,
+      "detail": {
+        "x": 48,
+        "y": 495.71875,
+        "width": 224,
+        "height": 140.75
+      }
+    },
+    {
+      "label": "Start lesson remains reachable at 320",
+      "pass": true,
+      "detail": {
+        "width": 262,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Home preview has no horizontal overflow at 844x390",
+      "pass": true
+    },
+    {
+      "label": "Home preview fits its own scrolling surface at 844",
+      "pass": true
+    },
+    {
+      "label": "Route overview remains readable at 844",
+      "pass": true,
+      "detail": {
+        "x": 487.09375,
+        "y": 9.0625,
+        "width": 300.90625,
+        "height": 188.8125
+      }
+    },
+    {
+      "label": "Start lesson remains reachable at 844",
+      "pass": true,
+      "detail": {
+        "width": 131.078125,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Previewing the route and resizing never moves the player or changes work",
+      "pass": true
+    },
+    {
+      "label": "Changing the preview retains focus on the native lesson selector",
+      "pass": true
+    },
+    {
+      "label": "Older lessons display clean fallback preview metadata",
+      "pass": true
+    },
+    {
+      "label": "Switching preview choices preserves the current scene and question state",
+      "pass": true
+    },
+    {
+      "label": "First activity disables Previous and enables Next",
+      "pass": true
+    },
+    {
+      "label": "Journal starts with the first activity heading",
+      "pass": true
+    },
+    {
+      "label": "Keyboard Next opens the following activity and focuses its heading",
+      "pass": true
+    },
+    {
+      "label": "Middle activity enables both directions",
+      "pass": true
+    },
+    {
+      "label": "Navigation does not copy notes or auto-review the next activity",
+      "pass": true
+    },
+    {
+      "label": "Next changes only journal selection, preserving player pose, construction, and scores",
+      "pass": true
+    },
+    {
+      "label": "Previous restores the first activity and its existing journal work",
+      "pass": true
+    },
+    {
+      "label": "Next reaches activity 2 in lesson order",
+      "pass": true
+    },
+    {
+      "label": "Next reaches activity 3 in lesson order",
+      "pass": true
+    },
+    {
+      "label": "Next reaches activity 4 in lesson order",
+      "pass": true
+    },
+    {
+      "label": "Next reaches activity 5 in lesson order",
+      "pass": true
+    },
+    {
+      "label": "Next reaches activity 6 in lesson order",
+      "pass": true
+    },
+    {
+      "label": "Last activity disables Next and enables Previous",
+      "pass": true
+    },
+    {
+      "label": "Browsing the entire activity trail never teleports or changes mathematical scores",
+      "pass": true
+    },
+    {
+      "label": "The native activity selector remains available for direct navigation",
+      "pass": true
+    },
+    {
+      "label": "Journal navigation fits without horizontal overflow at 390x844",
+      "pass": true
+    },
+    {
+      "label": "Previous is a reachable 44px control at 390",
+      "pass": true,
+      "detail": {
+        "width": 143.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next is a reachable 44px control at 390",
+      "pass": true,
+      "detail": {
+        "width": 143.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Direct activity selection is reachable at 390",
+      "pass": true,
+      "detail": {
+        "width": 340,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next remains operable at 390",
+      "pass": true
+    },
+    {
+      "label": "Previous remains operable at 390",
+      "pass": true
+    },
+    {
+      "label": "Journal navigation fits without horizontal overflow at 320x700",
+      "pass": true
+    },
+    {
+      "label": "Previous is a reachable 44px control at 320",
+      "pass": true,
+      "detail": {
+        "width": 114.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next is a reachable 44px control at 320",
+      "pass": true,
+      "detail": {
+        "width": 114.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Direct activity selection is reachable at 320",
+      "pass": true,
+      "detail": {
+        "width": 270,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next remains operable at 320",
+      "pass": true
+    },
+    {
+      "label": "Previous remains operable at 320",
+      "pass": true
+    },
+    {
+      "label": "Journal navigation fits without horizontal overflow at 844x390",
+      "pass": true
+    },
+    {
+      "label": "Previous is a reachable 44px control at 844",
+      "pass": true,
+      "detail": {
+        "width": 258.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next is a reachable 44px control at 844",
+      "pass": true,
+      "detail": {
+        "width": 258.90625,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Direct activity selection is reachable at 844",
+      "pass": true,
+      "detail": {
+        "width": 570,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "label": "Next remains operable at 844",
+      "pass": true
+    },
+    {
+      "label": "Previous remains operable at 844",
+      "pass": true
+    },
+    {
+      "label": "Responsive journal navigation preserves the complete scene state",
+      "pass": true
+    },
+    {
+      "label": "Question-free exploration is distinguished from scored question steps",
+      "pass": true,
+      "detail": "Self-paced exploration"
+    },
+    {
+      "label": "Touch Next selects the second activity",
+      "pass": true
+    },
+    {
+      "label": "Touch Previous returns to the first activity",
+      "pass": true
+    },
+    {
+      "label": "Touch journal navigation does not move the player or change scores",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "harbor-preview-1440x1000.png",
+    "harbor-preview-390x844.png",
+    "harbor-preview-320x700.png",
+    "harbor-preview-844x390.png",
+    "journal-navigation-390x844.png",
+    "journal-navigation-320x700.png",
+    "journal-navigation-844x390.png",
+    "garden-preview.png",
+    "journal-navigation-touch-390.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "49fb496e9c26861061552b9200bb3a5341b9ee99bd23e32933f0db33b3d6ce83",
+    "stem_tool_geometryworld_builder.js": "f7c5d1b62cb3fb77ab310dea98d1abf3b7017cf78fbac51d3f2cf0158c32d5c7"
+  },
+  "pass": true
+}

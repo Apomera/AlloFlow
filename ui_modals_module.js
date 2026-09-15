@@ -482,7 +482,38 @@ const LiveAdvancedQuizResponse = React.memo(({
     const isPermutation = candidateOrder.length === items.length && candidateOrder.every(value => Number.isInteger(value) && value >= 0 && value < items.length) && new Set(candidateOrder).size === items.length;
     const presentedOrder = isPermutation ? candidateOrder : items.map((_, index) => index);
     const displayedItems = presentedOrder.map(index => items[index]);
-    const wrongIndex = Number.isInteger(question?.intentionallyWrongIndex) && question.intentionallyWrongIndex >= 0 && question.intentionallyWrongIndex < displayedItems.length ? question.intentionallyWrongIndex : null;
+    // Same rule as the quiz card and the teacher-side aggregators
+    // (sequenceSenseTruth): a displayed position is misplaced when removing
+    // it leaves the rest in canonical order, so a swap accepts either half.
+    const misplacedPositions = [];
+    if (!presentedOrder.every((value, index) => value === index)) {
+      presentedOrder.forEach((_, skip) => {
+        let previous = -1;
+        const sorted = presentedOrder.every((value, index) => {
+          if (index === skip) return true;
+          const ok = value >= previous;
+          previous = value;
+          return ok;
+        });
+        if (sorted) misplacedPositions.push(skip);
+      });
+      if (!misplacedPositions.length) {
+        const authored = question?.intentionallyWrongIndex;
+        if (Number.isInteger(authored) && authored >= 0 && authored < items.length) misplacedPositions.push(authored);else presentedOrder.forEach((_, index) => misplacedPositions.push(index));
+      }
+    }
+    const orderIsCorrect = misplacedPositions.length === 0;
+    const orderAnswer = Array.isArray(draft.orderAnswer) && draft.orderAnswer.length === items.length ? draft.orderAnswer : presentedOrder;
+    const moveItem = (position, delta) => {
+      const target = position + delta;
+      if (target < 0 || target >= orderAnswer.length) return;
+      const next = orderAnswer.slice();
+      next[position] = orderAnswer[target];
+      next[target] = orderAnswer[position];
+      patchDraft({
+        orderAnswer: next
+      });
+    };
     const principleOptions = boundedLiveQuizStrings(question?.principleOptions, 12);
     const principles = principleOptions.length >= 2 ? principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
     const chooseVerification = answer => patchDraft({
@@ -493,14 +524,18 @@ const LiveAdvancedQuizResponse = React.memo(({
       clickedIdx: index,
       sequenceStep: 3
     });
+    const finishArrange = () => patchDraft({
+      orderAnswer: orderAnswer.slice(),
+      sequenceStep: 4
+    });
     const submitPrinciple = principleAnswer => {
-      const actualOrderIsCorrect = wrongIndex === null;
-      const step1Correct = draft.verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
-      const step2Correct = draft.verifyAnswer === 'yes' ? step1Correct : draft.clickedIdx === wrongIndex;
+      const step1Correct = draft.verifyAnswer === 'yes' ? orderIsCorrect : !orderIsCorrect;
+      const step2Correct = draft.verifyAnswer === 'yes' ? step1Correct : misplacedPositions.includes(draft.clickedIdx);
+      const arrangeCorrect = orderAnswer.every((value, index) => value === index);
       const expectedPrinciple = boundedLiveQuizText(question?.orderingPrinciple || '', 200);
       const step3Correct = expectedPrinciple ? principleAnswer === expectedPrinciple : null;
-      const gradableSteps = expectedPrinciple ? 3 : 2;
-      const rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+      const gradableSteps = expectedPrinciple ? 4 : 3;
+      const rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (arrangeCorrect ? 1 : 0) + (step3Correct ? 1 : 0);
       const status = rawScore === gradableSteps ? 'correct' : rawScore > 0 ? 'partially-correct' : 'incorrect';
       patchDraft({
         principleAnswer
@@ -508,6 +543,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       sendAnswer({
         verifyAnswer: draft.verifyAnswer,
         clickedIdx: draft.clickedIdx,
+        orderAnswer: orderAnswer.slice(),
         principleAnswer,
         score: rawScore,
         status
@@ -544,7 +580,39 @@ const LiveAdvancedQuizResponse = React.memo(({
       className: submitButtonClass
     }, "No, something is misplaced"))), draft.sequenceStep === 2 && /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-sm font-bold text-white"
-    }, "Select the misplaced item above."), draft.sequenceStep === 3 && /*#__PURE__*/React.createElement("fieldset", {
+    }, "Select a misplaced item above."), draft.sequenceStep === 3 && /*#__PURE__*/React.createElement("fieldset", {
+      className: "mt-4"
+    }, /*#__PURE__*/React.createElement("legend", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "Put the items in the correct order. If they are already right, leave them."), /*#__PURE__*/React.createElement("ol", {
+      className: "space-y-2",
+      "aria-label": "Your order",
+      "data-live-sequence-arrange": "true"
+    }, orderAnswer.map((canonicalIndex, position) => /*#__PURE__*/React.createElement("li", {
+      key: canonicalIndex,
+      className: "flex items-center gap-2 rounded-2xl border border-white/30 bg-white px-3 py-2 text-slate-900"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "w-6 text-xs font-black"
+    }, position + 1, "."), /*#__PURE__*/React.createElement("span", {
+      className: "min-w-0 flex-1 text-sm font-bold"
+    }, items[canonicalIndex]), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled || position === 0,
+      "aria-label": `Move up: ${items[canonicalIndex]}`,
+      onClick: () => moveItem(position, -1),
+      className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
+    }, "▲"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled || position === orderAnswer.length - 1,
+      "aria-label": `Move down: ${items[canonicalIndex]}`,
+      onClick: () => moveItem(position, 1),
+      className: "rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"
+    }, "▼")))), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled,
+      onClick: finishArrange,
+      className: `${submitButtonClass} mt-3`
+    }, "Done arranging")), draft.sequenceStep === 4 && /*#__PURE__*/React.createElement("fieldset", {
       className: "mt-4"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "mb-2 text-sm font-black text-white"
@@ -723,7 +791,15 @@ const StudentQuizOverlay = React.memo(({
         const assignedColor = existingGroupIndex >= 0 ? teamOptions[existingGroupIndex % teamOptions.length] : teamOptions[Math.floor(Math.random() * teamOptions.length)];
         const joinTeam = async () => {
           try {
-            const effectiveAppId = targetAppId || appId;
+            // `appId` is a host-only binding (not injected into this module);
+            // the old `|| appId` fallback was a ReferenceError. The host always
+            // passes targetAppId (it defaults to the runtime app id), so a
+            // missing one is a wiring bug: refuse rather than write elsewhere.
+            const effectiveAppId = String(targetAppId || '').trim();
+            if (!effectiveAppId) {
+              console.warn('[StudentQuizOverlay] joinTeam: no targetAppId');
+              return;
+            }
             const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
             await updateDoc(sessionRef, {
               [`quizState.teams.${user.uid}`]: assignedColor
@@ -749,7 +825,8 @@ const StudentQuizOverlay = React.memo(({
       }
     }
     if (sentViaP2P) return 'peer';
-    const effectiveAppId = targetAppId || appId;
+    const effectiveAppId = String(targetAppId || '').trim();
+    if (!effectiveAppId) throw new Error('Quiz response could not be recorded: no session app id.');
     const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
     await updateDoc(sessionRef, {
       [`quizState.responseReceipts.${user.uid}`]: {
@@ -1517,6 +1594,12 @@ const RoleSelectionModal = React.memo(({
     const value = t(key);
     return value && value !== key ? value : fallback;
   };
+  // One line under every role card, not just Parent (2026-09-13: three cards had none and the
+  // fourth made the others look unfinished). slate-600, because slate-500 falls under 4.5:1 on
+  // the cards' hover tints (4.26:1 on indigo-50).
+  const roleDescription = (key, fallback) => /*#__PURE__*/React.createElement("span", {
+    className: "text-xs leading-snug text-slate-600 text-center max-w-[13rem]"
+  }, roleCopy(key, fallback));
   const usesGlobalVoiceAccess = typeof onStartVoiceAccess === 'function';
   const micStatusText = usesGlobalVoiceAccess ? micStatus === 'granted' ? roleCopy('roles.voice_access_active', 'Voice Access started') : micStatus === 'denied' ? roleCopy('roles.voice_access_denied', 'Voice Access could not start') : micStatus === 'requesting' ? roleCopy('roles.voice_access_starting', 'Starting Voice Access...') : roleCopy('roles.voice_access_enable', 'Enable Voice Access') : micStatus === 'granted' ? roleCopy('roles.mic_ready', 'Microphone Ready') : micStatus === 'unsupported' ? roleCopy('roles.voice_not_supported', 'Voice features are not supported in this browser.') : micStatus === 'denied' ? roleCopy('roles.mic_denied', 'Access Denied (Check Browser Settings)') : micStatus === 'requesting' ? roleCopy('roles.mic_requesting', 'Requesting Access...') : roleCopy('roles.mic_enable', 'Enable Microphone Access');
   return /*#__PURE__*/React.createElement("div", {
@@ -1558,7 +1641,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
-  }, roleCopy('roles.student', 'Student'))), /*#__PURE__*/React.createElement("button", {
+  }, roleCopy('roles.student', 'Student')), roleDescription('roles.student_description', 'Join your class and learn with a private codename.'), lastTimeBadge('student')), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('teacher', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
@@ -1568,7 +1651,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
-  }, roleCopy('roles.teacher', 'Teacher')), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
+  }, roleCopy('roles.teacher', 'Teacher')), roleDescription('roles.teacher_description', 'Build accessible lessons and adapt materials for your class.'), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('parent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
@@ -1578,9 +1661,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
-  }, roleCopy('roles.parent', 'Parent')), /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]"
-  }, t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
+  }, roleCopy('roles.parent', 'Parent')), roleDescription('parent_mode.role_description', 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('independent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
@@ -1590,7 +1671,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-cyan-700"
-  }, roleCopy('roles.independent', 'Independent Learner')), lastTimeBadge('independent'))), /*#__PURE__*/React.createElement("div", {
+  }, roleCopy('roles.independent', 'Independent Learner')), roleDescription('roles.independent_description', 'Study at your own pace with progress tracking and no class to join.'), lastTimeBadge('independent'))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2"

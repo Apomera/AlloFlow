@@ -1077,7 +1077,7 @@ window.SelHub = window.SelHub || {
             });
           }
           text += '\n\uD83C\uDFC5 Badges: ' + badgeCount + '/' + Object.keys(BADGES).length + '\n';
-          navigator.clipboard.writeText(text).then(function() {
+          window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
             if (addToast) addToast('\uD83D\uDCCB Strengths profile copied to clipboard!', 'success');
           }).catch(function() {});
           upd({ exported: true });
@@ -2198,7 +2198,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { display: 'flex', gap: 8 } },
                     h('button', { 'aria-label': 'Copy Question', onClick: function() {
                       var text = ASK_FRIEND_TEMPLATES[askFriendIdx % ASK_FRIEND_TEMPLATES.length];
-                      navigator.clipboard.writeText(text).then(function() {
+                      window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
                         if (addToast) addToast('\uD83D\uDCCB Question copied! Share it with someone you trust.', 'success');
                       }).catch(function() {});
                     }, style: { padding: '6px 14px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDCCB Copy Question'),

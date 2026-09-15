@@ -1,0 +1,1697 @@
+{
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "solarPv",
+  "settings": {
+    "irradiance": 1000,
+    "area": 20,
+    "efficiency": 20,
+    "incidence": 0
+  },
+  "phase": 0,
+  "result": {
+    "version": 1,
+    "id": "solarPv",
+    "settings": {
+      "irradiance": 1000,
+      "area": 20,
+      "efficiency": 20,
+      "incidence": 0
+    },
+    "power": 3.84,
+    "available": 20,
+    "loss": 16.16,
+    "status": "Generating",
+    "stages": [
+      {
+        "label": "Light intercepted",
+        "value": 20,
+        "unit": "kW"
+      },
+      {
+        "label": "DC electricity",
+        "value": 4,
+        "unit": "kW"
+      },
+      {
+        "label": "AC electricity",
+        "value": 3.84,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0.192
+    }
+  },
+  "note": "",
+  "assumptions": "Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.",
+  "scenarioAssumptions": null,
+  "formula": "P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000",
+  "source": "https://www.energy.gov/cmei/systems/how-does-solar-work",
+  "operatingScenario": null,
+  "comparison": null,
+  "experiments": [
+    {
+      "result": {
+        "version": 1,
+        "id": "solarPv",
+        "profileId": "steady",
+        "profileName": "Steady conditions",
+        "phase": 0,
+        "duration": null,
+        "baseSettings": {
+          "irradiance": 1000,
+          "area": 20,
+          "efficiency": 20,
+          "incidence": 0
+        },
+        "config": {
+          "key": "area",
+          "label": "Panel area",
+          "unit": "m²",
+          "low": 10,
+          "high": 50,
+          "count": 5,
+          "metric": "power",
+          "target": 5,
+          "error": ""
+        },
+        "metric": "power",
+        "unit": "kW",
+        "metricLabel": "Electrical output",
+        "reference": {
+          "value": 3.84,
+          "input": 20,
+          "remainder": 16.16,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Generating"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 10,
+            "settings": {
+              "irradiance": 1000,
+              "area": 10,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 1.92,
+              "input": 10,
+              "remainder": 8.08,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -1.92,
+            "percent": -50,
+            "meetsTarget": false
+          },
+          {
+            "index": 1,
+            "value": 20,
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 3.84,
+              "input": 20,
+              "remainder": 16.16,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": false
+          },
+          {
+            "index": 2,
+            "value": 30,
+            "settings": {
+              "irradiance": 1000,
+              "area": 30,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 5.76,
+              "input": 30,
+              "remainder": 24.240000000000002,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 1.92,
+            "percent": 50,
+            "meetsTarget": true
+          },
+          {
+            "index": 3,
+            "value": 40,
+            "settings": {
+              "irradiance": 1000,
+              "area": 40,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 7.68,
+              "input": 40,
+              "remainder": 32.32,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 3.84,
+            "percent": 100,
+            "meetsTarget": true
+          },
+          {
+            "index": 4,
+            "value": 50,
+            "settings": {
+              "irradiance": 1000,
+              "area": 50,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 9.6,
+              "input": 50,
+              "remainder": 40.4,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 5.76,
+            "percent": 150,
+            "meetsTarget": true
+          }
+        ],
+        "peak": 9.6,
+        "least": 1.92,
+        "highest": [
+          4
+        ],
+        "targetMatches": [
+          2,
+          3,
+          4
+        ],
+        "prediction": "Doubling area should double output at the same angle."
+      },
+      "conclusion": "30 square metres is the lowest sampled area meeting 5 kW."
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "wind",
+        "profileId": "gust",
+        "profileName": "Strong wind and shutdown",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "speed": 8,
+          "radius": 40,
+          "cp": 40,
+          "rating": 3000
+        },
+        "config": {
+          "key": "radius",
+          "label": "Rotor radius",
+          "unit": "m",
+          "low": 10,
+          "high": 80,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 2044.1940118156947,
+          "input": 42739.96497492216,
+          "remainder": 40695.77096310646,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 27,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 10,
+            "settings": {
+              "speed": 8,
+              "radius": 10,
+              "cp": 40,
+              "rating": 3000
+            },
+            "result": {
+              "value": 315.1346518994007,
+              "input": 2671.247810932635,
+              "remainder": 2356.113159033233,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 27,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -1729.059359916294,
+            "percent": -84.58391668902837,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 30,
+            "settings": {
+              "speed": 8,
+              "radius": 30,
+              "cp": 40,
+              "rating": 3000
+            },
+            "result": {
+              "value": 1692.3001799923395,
+              "input": 24041.2302983937,
+              "remainder": 22348.93011840136,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 27,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -351.8938318233552,
+            "percent": -17.214306948820184,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 45,
+            "settings": {
+              "speed": 8,
+              "radius": 45,
+              "cp": 40,
+              "rating": 3000
+            },
+            "result": {
+              "value": 2190.0428325733988,
+              "input": 54092.76817138581,
+              "remainder": 51902.72533881243,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 27,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 145.84882075770406,
+            "percent": 7.1347836807406635,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 65,
+            "settings": {
+              "speed": 8,
+              "radius": 65,
+              "cp": 40,
+              "rating": 3000
+            },
+            "result": {
+              "value": 2697.232905907325,
+              "input": 112860.22001190376,
+              "remainder": 110162.98710599644,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 27,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 653.0388940916303,
+            "percent": 31.94603302411535,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 80,
+            "settings": {
+              "speed": 8,
+              "radius": 80,
+              "cp": 40,
+              "rating": 3000
+            },
+            "result": {
+              "value": 3065.9008246107173,
+              "input": 170959.85989968863,
+              "remainder": 167893.95907507793,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 27,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1021.7068127950226,
+            "percent": 49.98091212915363,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 3065.9008246107173,
+        "least": 315.1346518994007,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "hydro",
+        "profileId": "dry",
+        "profileName": "Falling river flow",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "head": 30,
+          "flow": 5,
+          "efficiency": 90
+        },
+        "config": {
+          "key": "head",
+          "label": "Water head",
+          "unit": "m",
+          "low": 5,
+          "high": 150,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 1598.0490000000023,
+          "input": 1775.6099999999954,
+          "remainder": 177.56099999999995,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 5,
+            "settings": {
+              "head": 5,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "result": {
+              "value": 266.3414999999998,
+              "input": 295.93499999999983,
+              "remainder": 29.593499999999985,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -1331.7075000000025,
+            "percent": -83.33333333333339,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 40,
+            "settings": {
+              "head": 40,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "result": {
+              "value": 2130.7319999999986,
+              "input": 2367.4799999999987,
+              "remainder": 236.74799999999988,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 532.6829999999964,
+            "percent": 33.33333333333306,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 80,
+            "settings": {
+              "head": 80,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "result": {
+              "value": 4261.463999999997,
+              "input": 4734.959999999997,
+              "remainder": 473.49599999999975,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 2663.414999999995,
+            "percent": 166.66666666666612,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 115,
+            "settings": {
+              "head": 115,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "result": {
+              "value": 6125.854499999983,
+              "input": 6806.504999999994,
+              "remainder": 680.6505000000014,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 4527.80549999998,
+            "percent": 283.3333333333317,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 150,
+            "settings": {
+              "head": 150,
+              "flow": 5,
+              "efficiency": 90
+            },
+            "result": {
+              "value": 7990.245000000009,
+              "input": 8878.049999999988,
+              "remainder": 887.804999999998,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 6392.196000000007,
+            "percent": 399.9999999999999,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 7990.245000000009,
+        "least": 266.3414999999998,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "geothermal",
+        "profileId": "interruption",
+        "profileName": "Fluid-flow interruption",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "hot": 180,
+          "returnTemp": 70,
+          "flow": 40,
+          "utilization": 40
+        },
+        "config": {
+          "key": "hot",
+          "label": "Produced fluid temperature",
+          "unit": "°C",
+          "low": 75,
+          "high": 300,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 3774.591194968548,
+          "input": 27587.999999999978,
+          "remainder": 23813.40880503146,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 75,
+            "settings": {
+              "hot": 75,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "result": {
+              "value": 72.03791469194313,
+              "input": 1253.9999999999993,
+              "remainder": 1181.962085308057,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -3702.5532802766047,
+            "percent": -98.09150419287874,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 130,
+            "settings": {
+              "hot": 130,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "result": {
+              "value": 1567.6944065484306,
+              "input": 15048.000000000024,
+              "remainder": 13480.305593451581,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -2206.8967884201174,
+            "percent": -58.46717364682738,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 190,
+            "settings": {
+              "hot": 190,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "result": {
+              "value": 4288.753103746094,
+              "input": 30096.000000000047,
+              "remainder": 25807.24689625388,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 514.1619087775462,
+            "percent": 13.621658140434212,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 245,
+            "settings": {
+              "hot": 245,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "result": {
+              "value": 7454.057705297681,
+              "input": 43889.99999999997,
+              "remainder": 36435.94229470231,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 3679.4665103291336,
+            "percent": 97.47986789228425,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 300,
+            "settings": {
+              "hot": 300,
+              "returnTemp": 70,
+              "flow": 40,
+              "utilization": 40
+            },
+            "result": {
+              "value": 11070.819157288657,
+              "input": 57684.00000000005,
+              "remainder": 46613.18084271139,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 7296.227962320109,
+            "percent": 193.2984947362202,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 11070.819157288657,
+        "least": 72.03791469194313,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "solarThermal",
+        "profileId": "clouds",
+        "profileName": "Clouds over the mirror field",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "dni": 900,
+          "area": 10000,
+          "optical": 65,
+          "cycle": 35
+        },
+        "config": {
+          "key": "area",
+          "label": "Mirror aperture area",
+          "unit": "m²",
+          "low": 1000,
+          "high": 30000,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 2866.4999999999973,
+          "input": 12600,
+          "remainder": 9733.499999999998,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 1000,
+            "settings": {
+              "dni": 900,
+              "area": 1000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "result": {
+              "value": 286.6500000000001,
+              "input": 1260,
+              "remainder": 973.349999999999,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -2579.849999999997,
+            "percent": -89.99999999999999,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 8000,
+            "settings": {
+              "dni": 900,
+              "area": 8000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "result": {
+              "value": 2293.2000000000007,
+              "input": 10080,
+              "remainder": 7786.799999999992,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -573.2999999999965,
+            "percent": -19.999999999999897,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 16000,
+            "settings": {
+              "dni": 900,
+              "area": 16000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "result": {
+              "value": 4586.4000000000015,
+              "input": 20160,
+              "remainder": 15573.599999999984,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1719.9000000000042,
+            "percent": 60.0000000000002,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 23000,
+            "settings": {
+              "dni": 900,
+              "area": 23000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "result": {
+              "value": 6592.95000000001,
+              "input": 28980,
+              "remainder": 22387.050000000047,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 3726.4500000000126,
+            "percent": 130.00000000000057,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 30000,
+            "settings": {
+              "dni": 900,
+              "area": 30000,
+              "optical": 65,
+              "cycle": 35
+            },
+            "result": {
+              "value": 8599.500000000007,
+              "input": 37800,
+              "remainder": 29200.50000000001,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 5733.00000000001,
+            "percent": 200.00000000000057,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 8599.500000000007,
+        "least": 286.6500000000001,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "wave",
+        "profileId": "swell",
+        "profileName": "Building and easing swell",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "height": 2,
+          "period": 8,
+          "width": 8,
+          "efficiency": 30
+        },
+        "config": {
+          "key": "height",
+          "label": "Significant wave height",
+          "unit": "m",
+          "low": 0,
+          "high": 6,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 109.90425792844798,
+          "input": 366.3475264281599,
+          "remainder": 256.443268499712,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 0,
+            "settings": {
+              "height": 0,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "result": {
+              "value": 0,
+              "input": 0,
+              "remainder": 0,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -109.90425792844798,
+            "percent": -100,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 1.5,
+            "settings": {
+              "height": 1.5,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "result": {
+              "value": 61.82114508475203,
+              "input": 206.07048361583998,
+              "remainder": 144.24933853108803,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -48.08311284369594,
+            "percent": -43.74999999999996,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 3,
+            "settings": {
+              "height": 3,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "result": {
+              "value": 247.28458033900813,
+              "input": 824.2819344633599,
+              "remainder": 576.9973541243521,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 137.38032241056015,
+            "percent": 125.00000000000016,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 4.5,
+            "settings": {
+              "height": 4.5,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "result": {
+              "value": 424.4921134467183,
+              "input": 1414.9737114890602,
+              "remainder": 990.4815980423433,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 40,
+              "status": "Full scenario"
+            },
+            "delta": 314.5878555182703,
+            "percent": 286.2380961828426,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 6,
+            "settings": {
+              "height": 6,
+              "period": 8,
+              "width": 8,
+              "efficiency": 30
+            },
+            "result": {
+              "value": 536.9338898293405,
+              "input": 1789.779632764469,
+              "remainder": 1252.8457429351304,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 59,
+              "status": "Full scenario"
+            },
+            "delta": 427.0296319008925,
+            "percent": 388.5469407189899,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 536.9338898293405,
+        "least": 0,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "tidal",
+        "profileId": "reversal",
+        "profileName": "Current reversal and slack water",
+        "phase": 360,
+        "duration": 720,
+        "baseSettings": {
+          "speed": 2,
+          "radius": 5,
+          "cp": 40,
+          "rating": 1000
+        },
+        "config": {
+          "key": "radius",
+          "label": "Underwater rotor radius",
+          "unit": "m",
+          "low": 2,
+          "high": 12,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 347.7850405272899,
+          "input": 966.069557020251,
+          "remainder": 618.2845164929602,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 2,
+            "settings": {
+              "speed": 2,
+              "radius": 2,
+              "cp": 40,
+              "rating": 1000
+            },
+            "result": {
+              "value": 55.64560648436643,
+              "input": 154.57112912324,
+              "remainder": 98.92552263887357,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -292.1394340429234,
+            "percent": -83.99999999999997,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 5,
+            "settings": {
+              "speed": 2,
+              "radius": 5,
+              "cp": 40,
+              "rating": 1000
+            },
+            "result": {
+              "value": 347.7850405272899,
+              "input": 966.069557020251,
+              "remainder": 618.2845164929602,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 7,
+            "settings": {
+              "speed": 2,
+              "radius": 7,
+              "cp": 40,
+              "rating": 1000
+            },
+            "result": {
+              "value": 681.6586794334885,
+              "input": 1893.4963317596887,
+              "remainder": 1211.8376523262011,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 333.8736389061986,
+            "percent": 96.0000000000001,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 10,
+            "settings": {
+              "speed": 2,
+              "radius": 10,
+              "cp": 40,
+              "rating": 1000
+            },
+            "result": {
+              "value": 1391.1401621091595,
+              "input": 3864.278228081004,
+              "remainder": 2473.1380659718407,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1043.3551215818698,
+            "percent": 300.00000000000006,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 12,
+            "settings": {
+              "speed": 2,
+              "radius": 12,
+              "cp": 40,
+              "rating": 1000
+            },
+            "result": {
+              "value": 2003.2418334371878,
+              "input": 5564.560648436636,
+              "remainder": 3561.31881499945,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1655.456792909898,
+            "percent": 475.99999999999943,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 2003.2418334371878,
+        "least": 55.64560648436643,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "biomass",
+        "profileId": "feed",
+        "profileName": "Fuel-feed interruption",
+        "phase": 60,
+        "duration": 120,
+        "baseSettings": {
+          "feed": 500,
+          "heating": 12,
+          "boiler": 80,
+          "cycle": 25
+        },
+        "config": {
+          "key": "feed",
+          "label": "Fuel feed rate",
+          "unit": "kg/h",
+          "low": 0,
+          "high": 2000,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 499.9999999999993,
+          "input": 2500.0000000000027,
+          "remainder": 1999.9999999999973,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 0,
+            "settings": {
+              "feed": 0,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "result": {
+              "value": 0,
+              "input": 0,
+              "remainder": 0,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -499.9999999999993,
+            "percent": -100,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 500,
+            "settings": {
+              "feed": 500,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "result": {
+              "value": 499.9999999999993,
+              "input": 2500.0000000000027,
+              "remainder": 1999.9999999999973,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 1000,
+            "settings": {
+              "feed": 1000,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "result": {
+              "value": 999.9999999999986,
+              "input": 5000.0000000000055,
+              "remainder": 3999.9999999999945,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 499.9999999999993,
+            "percent": 100,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 1500,
+            "settings": {
+              "feed": 1500,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "result": {
+              "value": 1500.0000000000014,
+              "input": 7499.99999999999,
+              "remainder": 6000.0000000000055,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1000.000000000002,
+            "percent": 200.00000000000068,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 2000,
+            "settings": {
+              "feed": 2000,
+              "heating": 12,
+              "boiler": 80,
+              "cycle": 25
+            },
+            "result": {
+              "value": 1999.9999999999973,
+              "input": 10000.000000000011,
+              "remainder": 7999.999999999989,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 1499.999999999998,
+            "percent": 300,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 1999.9999999999973,
+        "least": 0,
+        "highest": [
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    },
+    {
+      "result": {
+        "version": 1,
+        "id": "storage",
+        "profileId": "evening",
+        "profileName": "Charge, wait, then meet demand",
+        "phase": 120,
+        "duration": 240,
+        "baseSettings": {
+          "capacity": 100,
+          "power": 50,
+          "roundtrip": 88,
+          "initial": 0
+        },
+        "config": {
+          "key": "capacity",
+          "label": "Battery energy capacity",
+          "unit": "kWh",
+          "low": 10,
+          "high": 500,
+          "count": 5,
+          "metric": "energy",
+          "target": null,
+          "error": ""
+        },
+        "metric": "energy",
+        "unit": "kWh",
+        "metricLabel": "Electricity over the full sequence",
+        "reference": {
+          "value": 44.00000000000001,
+          "input": 50.000000000000036,
+          "remainder": 6.000000000000011,
+          "requested": 112.5,
+          "unserved": 68.50000000000001,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Full scenario"
+        },
+        "rows": [
+          {
+            "index": 0,
+            "value": 10,
+            "settings": {
+              "capacity": 10,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "result": {
+              "value": 9.380831519646867,
+              "input": 10.660035817780521,
+              "remainder": 1.2792042981336607,
+              "requested": 112.5,
+              "unserved": 103.11916848035315,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": -34.61916848035314,
+            "percent": -78.67992836443894,
+            "meetsTarget": null
+          },
+          {
+            "index": 1,
+            "value": 130,
+            "settings": {
+              "capacity": 130,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "result": {
+              "value": 44.00000000000001,
+              "input": 50.000000000000036,
+              "remainder": 6.000000000000011,
+              "requested": 112.5,
+              "unserved": 68.50000000000001,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          },
+          {
+            "index": 2,
+            "value": 260,
+            "settings": {
+              "capacity": 260,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "result": {
+              "value": 44.00000000000001,
+              "input": 50.000000000000036,
+              "remainder": 6.000000000000011,
+              "requested": 112.5,
+              "unserved": 68.50000000000001,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          },
+          {
+            "index": 3,
+            "value": 380,
+            "settings": {
+              "capacity": 380,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "result": {
+              "value": 44.00000000000001,
+              "input": 50.000000000000036,
+              "remainder": 6.000000000000011,
+              "requested": 112.5,
+              "unserved": 68.50000000000001,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          },
+          {
+            "index": 4,
+            "value": 500,
+            "settings": {
+              "capacity": 500,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "result": {
+              "value": 44.00000000000001,
+              "input": 50.000000000000036,
+              "remainder": 6.000000000000011,
+              "requested": 112.5,
+              "unserved": 68.50000000000001,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Full scenario"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": null
+          }
+        ],
+        "peak": 44.00000000000001,
+        "least": 9.380831519646867,
+        "highest": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "targetMatches": [],
+        "prediction": ""
+      },
+      "conclusion": ""
+    }
+  ],
+  "designMaps": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": []
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": []
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": []
+    }
+  ]
+}

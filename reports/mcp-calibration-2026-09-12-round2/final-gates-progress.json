@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "name": "mcp-calibration-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/mcp_agent_bridge_e2e.test.js tests/mcp_agent_bridge_restart_e2e.test.js tests/mcp_agent_bridge_terminal_modes_e2e.test.js tests/mcp_keyless_workflow.test.js tests/mcp_http_transport.test.js tests/mcp_refinement_study_runner.test.js tests/mcp_refinement_study_protocol.test.js tests/mcp_refinement_study_analysis.test.js tests/mcp_refinement_expert_annotations.test.js tests/remediation_visibility_selector_recovery.test.js tests/doc_pipeline_inherited_contrast.test.js tests/doc_pipeline_placeholder_audit_payload.test.js tests/aifix_chunk_boundary_whitespace.test.js tests/doc_pipeline_focus_wrap_browser.test.js tests/static_crop_cleanup.test.js tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js --maxWorkers=1 --testTimeout=360000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\mcp-calibration-final.json",
+      "exitCode": 0,
+      "elapsedMs": 291362
+    },
+    {
+      "name": "mcp-inventory-final",
+      "command": "node dev-tools/mcp_capability_inventory.cjs --assert-parity",
+      "exitCode": 0,
+      "elapsedMs": 11682
+    },
+    {
+      "name": "mcp-parity-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/mcp_remediation_stdio_smoke.test.js --maxWorkers=1 --testTimeout=70000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\mcp-parity-final.json",
+      "exitCode": 1,
+      "elapsedMs": 158707
+    }
+  ]
+}

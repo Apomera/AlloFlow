@@ -1,0 +1,11 @@
+{
+  "recordedAt": "2026-09-13T03:08:25.816Z",
+  "platform": "win32",
+  "release": "10.0.26200",
+  "version": "Windows 11 Home",
+  "arch": "arm64",
+  "node": "v24.11.1",
+  "vitest": "4.1.5",
+  "playwright": "1.60.0",
+  "axe": "4.12.1"
+}

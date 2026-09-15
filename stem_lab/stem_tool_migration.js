@@ -126,7 +126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Audio + WCAG (auto-injected) ──
   var _migrAC = null;
-  function getMigrAC() { if (!_migrAC) { try { _migrAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_migrAC && _migrAC.state==="suspended") { try { _migrAC.resume(); } catch(e) {} } return _migrAC; }
+  function getMigrAC() { if (!_migrAC) { try { _migrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_migrAC && _migrAC.state==="suspended") { try { _migrAC.resume(); } catch(e) {} } return _migrAC; }
   function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
   function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }

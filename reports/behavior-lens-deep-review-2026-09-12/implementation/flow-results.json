@@ -1,0 +1,512 @@
+{
+  "errors": [],
+  "ai": {
+    "selected": "Falcon",
+    "summary": "FALCON CURRENT SUMMARY",
+    "oldSummaryVisible": false
+  },
+  "recordingFocus": {
+    "label": "Reset all counts and timer",
+    "dialog": "Frequency Counter — Eagle"
+  },
+  "recoveredCounter": "◇\nEAGLE\nFrequency Counter\nDiscard draft\nSave\n1\n0.0 / min\n+1\n-1\n+ Add\n▶ Start\n↺ Reset\n0:00\nElapsed",
+  "savedRecording": {
+    "saved": {
+      "id": "1a9252c2-4a18-446b-b41e-00771ad12729",
+      "method": "frequency",
+      "timestamp": "2026-09-13T01:48:23.266Z",
+      "duration": 0,
+      "data": {
+        "count": 1,
+        "rate": 0,
+        "counters": [
+          {
+            "label": "Unlabeled",
+            "count": 1,
+            "rate": 0
+          }
+        ]
+      }
+    },
+    "draftKeys": []
+  },
+  "abcEditor": [
+    {
+      "label": "Quick-fill description of what happened",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "label": "Setting or location",
+      "value": "",
+      "type": "text"
+    },
+    {
+      "label": "Include neighboring students’ names in the setting description",
+      "value": "on",
+      "type": "checkbox"
+    },
+    {
+      "label": null,
+      "value": "",
+      "type": "text"
+    },
+    {
+      "label": "Antecedent narrative",
+      "value": "Unfamiliar multi-step worksheet",
+      "type": "text"
+    },
+    {
+      "label": null,
+      "value": "behavior-asks-for-another-explanation-8566a3",
+      "type": "select-one"
+    },
+    {
+      "label": "Behavior narrative",
+      "value": "Asks for another explanation",
+      "type": "text"
+    },
+    {
+      "label": "Consequence narrative",
+      "value": "Adult rephrased the directions",
+      "type": "text"
+    },
+    {
+      "label": null,
+      "value": "2026-09-12T08:03",
+      "type": "datetime-local"
+    },
+    {
+      "label": "Behavior intensity rating 1 to 5",
+      "value": "",
+      "type": "select-one"
+    },
+    {
+      "label": "Duration in seconds",
+      "value": "",
+      "type": "number"
+    },
+    {
+      "label": "Additional notes",
+      "value": "",
+      "type": "textarea"
+    }
+  ],
+  "editedEntry": {
+    "id": "audit-eagle-3",
+    "timestamp": "2026-09-12T12:03:00.000Z",
+    "occurredAt": "2026-09-12T12:03:00.000Z",
+    "recordedAt": "2026-09-12T12:03:00.000Z",
+    "timezoneOffset": 240,
+    "localDate": "2026-09-12",
+    "antecedent": "Unfamiliar multi-step worksheet",
+    "antecedentId": "antecedent-ff932a9e",
+    "behavior": "Asks for another explanation",
+    "behaviorId": "behavior-asks-for-another-explanation-8566a3",
+    "consequence": "Adult rephrased the directions",
+    "consequenceId": "consequence-3091e31e",
+    "setting": "",
+    "intensity": null,
+    "duration": null,
+    "phase": "Baseline",
+    "notes": "Browser edit keeps metadata",
+    "observer": "",
+    "source": "unknown",
+    "observationSessionId": null,
+    "student": null,
+    "function": null,
+    "tags": [
+      "preserve"
+    ],
+    "metadata": {
+      "audit": true
+    }
+  },
+  "panels": [
+    {
+      "id": "abc",
+      "heading": "Observe–Describe–Respond Logging(ABC Data Collection)"
+    },
+    {
+      "id": "datasheet",
+      "heading": "Data Sheet Generator"
+    },
+    {
+      "id": "sessiontracker",
+      "heading": ""
+    },
+    {
+      "id": "ioacalc",
+      "heading": ""
+    },
+    {
+      "id": "taskanalysis",
+      "heading": ""
+    },
+    {
+      "id": "dtt",
+      "heading": ""
+    },
+    {
+      "id": "prefassess",
+      "heading": ""
+    },
+    {
+      "id": "latency",
+      "heading": ""
+    },
+    {
+      "id": "nlabc",
+      "heading": ""
+    },
+    {
+      "id": "batchimport",
+      "heading": ""
+    },
+    {
+      "id": "voiceabc",
+      "heading": ""
+    },
+    {
+      "id": "opdef",
+      "heading": ""
+    },
+    {
+      "id": "overview",
+      "heading": "Behavior Overview"
+    },
+    {
+      "id": "hypothesis",
+      "heading": "Hypothesis Diagram"
+    },
+    {
+      "id": "triangulation",
+      "heading": "Data Triangulation"
+    },
+    {
+      "id": "impact",
+      "heading": "Impact Calculator"
+    },
+    {
+      "id": "qualitycheck",
+      "heading": "Data Quality Check"
+    },
+    {
+      "id": "trends",
+      "heading": "Trend Dashboard"
+    },
+    {
+      "id": "predict",
+      "heading": "Predictive Insights"
+    },
+    {
+      "id": "alloBotChat",
+      "heading": "Ask AlloBot"
+    },
+    {
+      "id": "bcbahandoff",
+      "heading": ""
+    },
+    {
+      "id": "abagraph",
+      "heading": ""
+    },
+    {
+      "id": "scdmanager",
+      "heading": ""
+    },
+    {
+      "id": "scatterplot",
+      "heading": ""
+    },
+    {
+      "id": "socialvalidity",
+      "heading": ""
+    },
+    {
+      "id": "cumrecord",
+      "heading": ""
+    },
+    {
+      "id": "condprob",
+      "heading": ""
+    },
+    {
+      "id": "caseload",
+      "heading": ""
+    },
+    {
+      "id": "compare",
+      "heading": ""
+    },
+    {
+      "id": "effectsize",
+      "heading": ""
+    },
+    {
+      "id": "progressmonitor",
+      "heading": ""
+    },
+    {
+      "id": "competingpathways",
+      "heading": ""
+    },
+    {
+      "id": "cantdowontdo",
+      "heading": ""
+    },
+    {
+      "id": "heatmap",
+      "heading": "Behavior Timeline Heatmap"
+    },
+    {
+      "id": "goals",
+      "heading": "SMART Goal Builder"
+    },
+    {
+      "id": "contract",
+      "heading": "Student–Teacher Agreement(Behavior Contract)"
+    },
+    {
+      "id": "fidelity",
+      "heading": "Fidelity Checklist"
+    },
+    {
+      "id": "feasibility",
+      "heading": "Feasibility Check"
+    },
+    {
+      "id": "gas",
+      "heading": "GAS Rubric"
+    },
+    {
+      "id": "pocket",
+      "heading": "Pocket BIP"
+    },
+    {
+      "id": "intervention",
+      "heading": "Intervention Plan"
+    },
+    {
+      "id": "progress",
+      "heading": "Progress Narrative"
+    },
+    {
+      "id": "iepprep",
+      "heading": "IEP Meeting Prep"
+    },
+    {
+      "id": "riskscreen",
+      "heading": ""
+    },
+    {
+      "id": "bipgen",
+      "heading": ""
+    },
+    {
+      "id": "drstrategy",
+      "heading": ""
+    },
+    {
+      "id": "fcttemplate",
+      "heading": ""
+    },
+    {
+      "id": "maintenance",
+      "heading": ""
+    },
+    {
+      "id": "treatintegrity",
+      "heading": ""
+    },
+    {
+      "id": "iepgoals",
+      "heading": ""
+    },
+    {
+      "id": "mtss",
+      "heading": ""
+    },
+    {
+      "id": "progressreport",
+      "heading": ""
+    },
+    {
+      "id": "token",
+      "heading": "Positive Behavior Tracker(Token Board)"
+    },
+    {
+      "id": "cycle",
+      "heading": "Emotional Regulation Cycle(Escalation Cycle)"
+    },
+    {
+      "id": "reinforcer",
+      "heading": "Preference & Motivation Finder(Reinforcer Assessment)"
+    },
+    {
+      "id": "traffic",
+      "heading": "Traffic Light"
+    },
+    {
+      "id": "selfcheck",
+      "heading": "Student Self-Check"
+    },
+    {
+      "id": "gamify",
+      "heading": "My Progress Quest"
+    },
+    {
+      "id": "deescalate",
+      "heading": "Calming & Co-Regulation Toolkit(De-escalation Toolkit)"
+    },
+    {
+      "id": "replacebehavior",
+      "heading": "Self-Regulation Strategy Builder(Replacement Behavior Planner)"
+    },
+    {
+      "id": "reinforcement",
+      "heading": "Motivation & Preferences Survey(Reinforcement Inventory)"
+    },
+    {
+      "id": "replacementbehavior",
+      "heading": ""
+    },
+    {
+      "id": "audit",
+      "heading": "Environment Audit"
+    },
+    {
+      "id": "cultural",
+      "heading": "Cultural Context Reflection"
+    },
+    {
+      "id": "reframe",
+      "heading": "Strength-Based Reframe"
+    },
+    {
+      "id": "biascheck",
+      "heading": "Equity & Self-Awareness Check(Bias Reflection Monitor)"
+    },
+    {
+      "id": "restorative",
+      "heading": "Restorative Conversation Guide"
+    },
+    {
+      "id": "homenote",
+      "heading": "Home Note"
+    },
+    {
+      "id": "snapshot",
+      "heading": "Student Snapshot Exchange"
+    },
+    {
+      "id": "consent",
+      "heading": "FERPA Consent Manager"
+    },
+    {
+      "id": "homelog",
+      "heading": "Home Behavior Log"
+    },
+    {
+      "id": "familyvoice",
+      "heading": "Family Voice"
+    },
+    {
+      "id": "commlog",
+      "heading": "Communication Log"
+    },
+    {
+      "id": "hotspot",
+      "heading": "Routine Hotspot Matrix"
+    },
+    {
+      "id": "crisis",
+      "heading": "Crisis Plan"
+    },
+    {
+      "id": "relmap",
+      "heading": "Relationship Map"
+    },
+    {
+      "id": "antecedentmod",
+      "heading": "Proactive Environment Planner(Antecedent Modification Planner)"
+    },
+    {
+      "id": "export",
+      "heading": "Export Reports"
+    },
+    {
+      "id": "record",
+      "heading": "Record Review"
+    },
+    {
+      "id": "abaguide",
+      "heading": "ABA Quick Guide"
+    },
+    {
+      "id": "counseling",
+      "heading": "Supportive Conversation Practice(Counseling Simulation)"
+    },
+    {
+      "id": "sandbox",
+      "heading": "Practice Sandbox"
+    },
+    {
+      "id": "glossary",
+      "heading": "ABA Concept Glossary"
+    },
+    {
+      "id": "fbaworkflow",
+      "heading": "FBA Workflow Guide"
+    },
+    {
+      "id": "teamnotes",
+      "heading": "Team Notes"
+    },
+    {
+      "id": "sessionnotes",
+      "heading": "Session Notes"
+    },
+    {
+      "id": "pdpath",
+      "heading": ""
+    },
+    {
+      "id": "abaquiz",
+      "heading": ""
+    },
+    {
+      "id": "functionquiz",
+      "heading": ""
+    },
+    {
+      "id": "practicum",
+      "heading": ""
+    },
+    {
+      "id": "casestudy",
+      "heading": ""
+    },
+    {
+      "id": "obscoach",
+      "heading": ""
+    },
+    {
+      "id": "sharing",
+      "heading": ""
+    },
+    {
+      "id": "printreport",
+      "heading": ""
+    },
+    {
+      "id": "mipractice",
+      "heading": ""
+    },
+    {
+      "id": "skilltracker",
+      "heading": "Skill Tracker & Mentorship"
+    }
+  ],
+  "success": true
+}

@@ -1,0 +1,9 @@
+{
+  "id": "INV-03",
+  "source": "Intermediate remediation browser-label-check.json inspected before the final loaded-mobile rerun; retained here as a compact observation",
+  "state": "teacher-workspace-320",
+  "rule": "scrollable-region-focusable",
+  "element": "div role=tabpanel aria-labelledby=workspace-tab-create; id beginning workspace-sidebar-pa",
+  "context": "Quick Start open over loading workspace",
+  "status": "Not reproduced in final onboarding scan or loaded desktop/mobile scans; no persistent product failure established"
+}

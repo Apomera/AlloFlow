@@ -1,0 +1,100 @@
+{
+  "passed": true,
+  "scope": "Production components in local browsers with authored fixtures. No real AI provider or learner pilot.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "full assessment coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved report and targeted practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher classroom roles",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "learner role privacy",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "coverageBeyond100": true,
+      "download": true,
+      "practiceDoesNotWrite": true,
+      "reportRecovery": true,
+      "nestedEscape": true,
+      "rolePrivacy": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "full assessment coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved report and targeted practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher classroom roles",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "learner role privacy",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "coverageBeyond100": true,
+      "download": true,
+      "practiceDoesNotWrite": true,
+      "reportRecovery": true,
+      "nestedEscape": true,
+      "rolePrivacy": true
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "full assessment coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved report and targeted practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher classroom roles",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "learner role privacy",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "coverageBeyond100": true,
+      "download": true,
+      "practiceDoesNotWrite": true,
+      "reportRecovery": true,
+      "nestedEscape": true,
+      "rolePrivacy": true
+    }
+  ],
+  "errors": []
+}

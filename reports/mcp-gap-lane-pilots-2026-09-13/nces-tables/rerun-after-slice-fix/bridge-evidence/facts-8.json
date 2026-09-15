@@ -1,0 +1,65 @@
+[
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-9",
+  "section": 4,
+  "of": 6,
+  "htmlChars": 16000,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [
+   {
+    "alt": "Figure 4. Line chart with markers titled Enrollment in elementary and secondary schools, by school type: Selected years, fall 2010 through fall 2021. The vertical axis is Enrollment, in millions, from 0.0 to 50.0 and the horizontal axis is Year from Fall 2010 to Fall 2021. A solid dark green line with square markers labelled Traditional public stays near 47 million from 2010 through 2019 (47.4 million in 2010) and drops to about 45.4 million in 2020 and 2021. A dashed dark green line with triangle markers labelled Private, plotted for odd years 2011 through 2019, stays near 4.5 to 4.7 million. A pale green line with diamond markers labelled Public charter rises steadily from about 1.8 million in 2010 to about 3.7 million in 2021. Notes explain that traditional public and public charter enrollments include prekindergarten while private school enrollment covers kindergarten through grade 12 only. Source: NCES Common Core of Data Public Elementary/Secondary School Universe Survey 2010-11 through 2021-22 and Private School Universe Survey 2011-12 through 2019-20, Digest of Education Statistics 2021 table 205.20 and Digest 2022 table 216.20.",
+    "hasAlt": true,
+    "inFigure": true,
+    "figcaption": "Figure 4. Line chart with markers titled Enrollment in elementary and secondary ",
+    "src": "__ALLOFLOW_DATAURL_FINAL_3__"
+   }
+  ],
+  "tables": [],
+  "linkCount": 0,
+  "links": [],
+  "badLinks": [],
+  "lists": {
+   "ul": 0,
+   "ol": 0,
+   "li": 0,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [
+   {
+    "type": "file",
+    "id": null,
+    "labelled": true
+   },
+   {
+    "type": "file",
+    "id": null,
+    "labelled": true
+   }
+  ],
+  "buttons": [],
+  "inlineColors": [
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155",
+   "color:#ffffff !important",
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569"
+  ],
+  "langSpans": 0,
+  "textHead": "lowly from about 15 million to an all-time high of about 15.4 million in 2021. Footnote 1 says grades 9 through 12 include students reported as enrolled in grade 13; notes explain that totals cover the 50 states and the District of Columbia",
+  "textChars": 5016
+ }
+]

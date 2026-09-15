@@ -1,0 +1,23 @@
+{
+  "assertions": [
+    {
+      "name": "Final shallow roof forms one closed printable mesh",
+      "pass": true,
+      "details": {
+        "ok": true,
+        "parts": 1,
+        "open": 0,
+        "nonManifold": 0
+      }
+    },
+    {
+      "name": "Back to building exits direct manipulation",
+      "pass": true
+    },
+    {
+      "name": "Final roof renders in the live world",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

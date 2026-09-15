@@ -2831,10 +2831,76 @@ function rebuildTrackMeshes(){
   const braceStart = new THREE.Vector3(), braceEnd = new THREE.Vector3(), braceMid = new THREE.Vector3();
   const braceDir = new THREE.Vector3(), braceQuat = new THREE.Quaternion();
   const supportYAxis = new THREE.Vector3(0, 1, 0);
+  /* A column may not stand in another part of the ride. Where the track passes
+     under itself (a figure-8, a helix, an out-and-back crossing) the upper leg's
+     column dropped straight through the lower leg, and the rider of the lower
+     leg went through it. A lower sample inside the envelope blocks the column;
+     the span then tries a column beside the spine on a cantilevered cap, and if
+     that is blocked too it goes without one. Braces get the same test. */
+  const ENVELOPE = 2.3;                 // spine to the outside of a column, plus a rider's arms
+  const sampleStride = 3;
+  const otherStretch = (j, sI) => { const d = Math.abs(t.s[j] - sI); return d > 8 && d < t.L - 8; };
+  const columnClears = (x, z, top, sI) => {
+    for(let j = 0; j < M; j += sampleStride){
+      if(!otherStretch(j, sI)) continue;
+      const p = t.pos[j];
+      if(p.y > top + 0.5) continue;       // that track is above the column's top
+      if(Math.hypot(p.x - x, p.z - z) < ENVELOPE) return false;
+    }
+    return true;
+  };
+  const memberClears = (a, b, sI) => {  // a slanted or horizontal member vs. a 2.2 m rider envelope
+    const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z, ab2 = abx * abx + aby * aby + abz * abz || 1;
+    for(let j = 0; j < M; j += sampleStride){
+      if(!otherStretch(j, sI)) continue;
+      const p = t.pos[j];
+      for(const lift of [0, 1.1, 2.2]){
+        const py = p.y + lift;
+        const u = Math.max(0, Math.min(1, ((p.x - a.x) * abx + (py - a.y) * aby + (p.z - a.z) * abz) / ab2));
+        const qx = a.x + abx * u - p.x, qy = a.y + aby * u - py, qz = a.z + abz * u - p.z;
+        if(qx * qx + qy * qy + qz * qz < 1.5 * 1.5) return false;
+      }
+    }
+    return true;
+  };
+  const OUTRIGGER = 3.4;
+  const capRise = new THREE.Vector3(0, 2.2, 0), sideFlat = new THREE.Vector3(), sideLong = new THREE.Vector3(), headingFlat = new THREE.Vector3();
+  const plantFoot = base => {
+    m4.identity().setPosition(base.x, 0.13, base.z); foot.setMatrixAt(footUsed, m4);
+    m4.identity().setPosition(base.x, 0.30, base.z); plate.setMatrixAt(footUsed, m4);
+    m4.identity().setPosition(base.x, -0.008, base.z); contact.setMatrixAt(footUsed++, m4);
+    for(const dx of [-0.28, 0.28]) for(const dz of [-0.28, 0.28]){
+      m4.identity().setPosition(base.x + dx, 0.38, base.z + dz);
+      bolts.setMatrixAt(boltUsed++, m4);
+    }
+  };
   for(let i = 0; i < M; i += supEvery){
     const frame = coasterSupportFrame(t.pos[i], t.up[i], t.side[i]);
     if(!frame) continue;
-    const { attach, feet, height } = frame;
+    const { attach, height } = frame;
+    let { feet } = frame;
+    if(!columnClears(attach.x, attach.z, attach.y, t.s[i])){
+      sideFlat.set(t.side[i].x, 0, t.side[i].z);
+      if(sideFlat.lengthSq() < 1e-6) continue;
+      sideFlat.normalize();
+      for(const sign of [1, -1]){
+        const cx = attach.x + sideFlat.x * OUTRIGGER * sign, cz = attach.z + sideFlat.z * OUTRIGGER * sign;
+        if(!columnClears(cx, cz, attach.y, t.s[i]) || !memberClears(attach, { x: cx, y: attach.y, z: cz }, t.s[i])) continue;
+        m4.makeScale(1, height, 1).setPosition(cx, 0.34 + height / 2, cz);
+        sup.setMatrixAt(used, m4);
+        // the cap becomes a level outrigger from under the spine to the column top
+        sideLong.copy(sideFlat).multiplyScalar((OUTRIGGER + 1.2) / 2.45);
+        headingFlat.set(t.T[i].x, 0, t.T[i].z).normalize();
+        m4.makeBasis(sideLong, capRise, headingFlat)
+          .setPosition(attach.x + sideFlat.x * OUTRIGGER * sign * 0.5, attach.y, attach.z + sideFlat.z * OUTRIGGER * sign * 0.5);
+        cap.setMatrixAt(used++, m4);
+        plantFoot({ x: cx, y: 0.34, z: cz });
+        if(height > 3) for(const y of [0.65, attach.y - 0.6]){ m4.identity().setPosition(cx, y, cz); collars.setMatrixAt(collarUsed++, m4); }
+        break;
+      }
+      continue;
+    }
+    feet = feet.filter((base, k) => k === 0 || memberClears(base, attach, t.s[i]));
     m4.makeScale(1, height, 1).setPosition(attach.x, 0.34 + height / 2, attach.z);
     sup.setMatrixAt(used, m4);
     m4.makeBasis(t.side[i], t.up[i], t.T[i]).setPosition(attach.x, attach.y, attach.z);
@@ -2905,8 +2971,41 @@ function rebuildTrackMeshes(){
     courseArrows.setMatrixAt(arrowUsed++, m4);
   }
   courseArrows.count = arrowUsed; courseArrows.instanceMatrix.needsUpdate = true; trackGroup.add(courseArrows);
-  /* station beside sample 0, aligned with the track heading */
-  station.position.copy(t.pos[0]).addScaledVector(t.side[0], 2.6);
+  /* station beside sample 0, aligned with the track heading. The platform is a
+     straight 12 m box; when the track bends into that box (a return leg sweeping
+     in from the side) its gate posts stood in the train's path and the rider went
+     through them. So the station takes the nearest place, out to the side and
+     then forward along the heading, where no track sample within its length
+     crosses its footprint; a sample counts only at platform height, since the
+     canopy is above a rider's head and the track may pass over it. */
+  const sideH = new THREE.Vector3(t.side[0].x, 0, t.side[0].z);
+  if(sideH.lengthSq() < 1e-6) sideH.copy(t.side[0]); else sideH.normalize();
+  const headH = new THREE.Vector3(t.T[0].x, 0, t.T[0].z);
+  if(headH.lengthSq() < 1e-6) headH.copy(t.T[0]); else headH.normalize();
+  const near = [];
+  for(let i = 0; i < M; i += 2){
+    const dx = t.pos[i].x - t.pos[0].x, dy = t.pos[i].y - t.pos[0].y, dz = t.pos[i].z - t.pos[0].z;
+    if(dy > 5.5 || dy < -3 || dx * dx + dz * dz > 30 * 30) continue;
+    near.push({ along: dx * headH.x + dz * headH.z, toward: dx * sideH.x + dz * sideH.z });
+  }
+  const stationHits = (offset, shift) => {
+    let n = 0;
+    for(const p of near){
+      const lz = offset - p.toward;                       // + toward the track, 2.6 at sample 0
+      if(Math.abs(p.along - shift) > 6.9 || lz >= 2.55 || lz <= -3.8) continue;
+      n++;
+    }
+    return n;
+  };
+  let stationOffset = 2.6, stationShift = 0, fewest = Infinity;
+  outer: for(let shift = 0; shift <= 5; shift += 1){
+    for(let offset = 2.6; offset <= 9.1; offset += 0.5){
+      const n = stationHits(offset, shift);
+      if(n < fewest){ fewest = n; stationOffset = offset; stationShift = shift; }
+      if(!n) break outer;
+    }
+  }
+  station.position.copy(t.pos[0]).addScaledVector(sideH, stationOffset).addScaledVector(headH, stationShift);
   station.position.y = Math.max(t.pos[0].y - 0.9, 0.55);
   station.rotation.y = Math.atan2(-t.T[0].z, t.T[0].x);
   updateStationFoundation();
@@ -5571,7 +5670,7 @@ function renderExperimentComparisonBoard(){
     if(!value){ if(status) status.textContent = 'Write a conclusion first.'; return; }
     const done = message => { if(status) status.textContent = message; };
     if(navigator.clipboard && navigator.clipboard.writeText){
-      try{ await navigator.clipboard.writeText(value); done('Conclusion copied.'); return; }catch(_e){}
+      try{ await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(value); done('Conclusion copied.'); return; }catch(_e){}
     }
     const pasted = await clabPrompt('Copy your conclusion:', value, { title: 'Copy experiment conclusion', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Conclusion copy is unavailable.');
     if(pasted !== null) done('Conclusion ready to paste.');
@@ -5782,7 +5881,7 @@ function bindClassroomRubric(){
     if(!target || !target.matches('[data-clab-copy-rubric]')) return;
     const value = guidedRubricSummaryText(guidedRubricSummary());
     if(navigator.clipboard && navigator.clipboard.writeText){
-      try{ await navigator.clipboard.writeText(value); if(status) status.textContent = 'Student summary copied.'; return; }catch(_e){}
+      try{ await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(value); if(status) status.textContent = 'Student summary copied.'; return; }catch(_e){}
     }
     const pasted = await clabPrompt('Copy student progress summary:', value, { title: 'Copy student summary', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Summary copy is unavailable.');
     if(pasted !== null && status) status.textContent = 'Summary ready to paste.';
@@ -6884,7 +6983,7 @@ async function copyGuidedNotebook(){
   const value = guidedNotebookText();
   const done = () => banner('Experiment log copied - ready to hand in or paste into a lab report.', 'pass', 3000);
   if(navigator.clipboard && navigator.clipboard.writeText){
-    try{ await navigator.clipboard.writeText(value); done(); return; }catch(_e){}
+    try{ await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(value); done(); return; }catch(_e){}
   }
   const pasted = await clabPrompt('Copy your experiment log:', value, { title: 'Copy experiment notebook', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Notebook export is unavailable.');
   if(pasted !== null) done();
@@ -8028,7 +8127,7 @@ function showDesignRecovery(){
   btn.addEventListener('click', async () => {
     const done = () => banner('Recovered save copied. Keep it somewhere safe before editing.', 'pass', 3200);
     if(navigator.clipboard && navigator.clipboard.writeText){
-      try { await navigator.clipboard.writeText(designRecovery.raw); done(); return; } catch(_e) {}
+      try { await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(designRecovery.raw); done(); return; } catch(_e) {}
     }
     const value = await clabPrompt('Copy the recovered save:', designRecovery.raw, { title: 'Copy recovered save', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Recovered-save copy is unavailable.');
     if(value !== null) done();
@@ -8039,7 +8138,7 @@ __clabGet('clab-btnExport').addEventListener('click', async () => {
   const s = exportDesign();
   const done = () => banner('Design copied — paste it anywhere to share.', 'pass', 2800);
   if(navigator.clipboard && navigator.clipboard.writeText){
-    try { await navigator.clipboard.writeText(s); done(); return; } catch(_e) {}
+    try { await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(s); done(); return; } catch(_e) {}
   }
   const value = await clabPrompt('Copy your design:', s, { title: 'Copy coaster design', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Design copy is unavailable.');
   if(value !== null) done();
@@ -8056,7 +8155,7 @@ __clabGet('clab-btnPacketExport').addEventListener('click', async () => {
   const s = exportLabPacket();
   const done = () => banner('Lab packet copied — it includes your design and notebook.', 'pass', 3200);
   if(navigator.clipboard && navigator.clipboard.writeText){
-    try { await navigator.clipboard.writeText(s); done(); return; } catch(_e) {}
+    try { await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(s); done(); return; } catch(_e) {}
   }
   const value = await clabPrompt('Copy your Coaster Lab packet:', s, { title: 'Copy lab packet', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Lab-packet copy is unavailable.');
   if(value !== null) done();
@@ -8730,7 +8829,7 @@ function capturePhoto(tele, key){
     }
     // pose the riders for this exact instant: a synchronous fastRun never runs
     // the render loop, so without this the crowd would be photographed stale
-    updateRiders();
+    updateRiders(true);
     const iB = mk.idx;
     // Frame the MIDDLE of the train, close enough that riders read — a trackside
     // camera, the way a real park shoots it.
@@ -9791,7 +9890,7 @@ __clabGet('clab-btnSummary').addEventListener('click', async () => {
   const s = lines.join('\n');
   const done = () => banner('Summary copied — paste it anywhere.', 'pass', 2600);
   if(navigator.clipboard && navigator.clipboard.writeText){
-    try { await navigator.clipboard.writeText(s); done(); return; } catch(_e) {}
+    try { await (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(s); done(); return; } catch(_e) {}
   }
   const value = await clabPrompt('Copy your summary:', s, { title: 'Copy ride summary', confirmText: 'Done', cancelText: 'Cancel', multiline: true }, 'Summary copy is unavailable.');
   if(value !== null) done();
@@ -9862,6 +9961,44 @@ function updateFx(dt){
 /* ---------------- render loop ---------------- */
 const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _u = new THREE.Vector3(), scenicAim = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _side = new THREE.Vector3(), _chase = new THREE.Vector3(), cameraShakeSide = new THREE.Vector3();
+/* The chase and scenic cameras hang 13 to 28 m off the train; under a lift hill
+   or beside a helix that puts a column, a tree or the station between them and
+   the train, and the view cut through it. Once every other frame the wanted
+   position is checked along the line from the train, and pulled in to just short
+   of the first solid thing. Track tubes are skipped: thin, and the costliest to
+   test. */
+const cameraOcclusion = new THREE.Raycaster(), _occlDir = new THREE.Vector3(), _occlFrom = new THREE.Vector3();
+const _occlRight = new THREE.Vector3(), _occlUp = new THREE.Vector3(), _occlAim = new THREE.Vector3(), _occlRay = new THREE.Vector3();
+cameraOcclusion.params.Line = { threshold: 0 };
+cameraOcclusion.params.Points = { threshold: 0 };
+let occlusionFrame = 0, occlusionDistance = Infinity;
+function pullCameraClear(from, wanted, minimum){
+  _occlFrom.copy(from);
+  _occlDir.subVectors(wanted, _occlFrom);
+  const len = _occlDir.length();
+  if(len < 1e-3) return;
+  _occlDir.multiplyScalar(1 / len);
+  if(occlusionFrame++ % 3 === 0){
+    // Five rays, not one: a column a metre beside the line of sight still fills
+    // the frame when the camera ends up next to it, so the bundle spans the
+    // camera's own width at the far end.
+    _occlRight.crossVectors(_occlDir, capRiseAxis).normalize();
+    _occlUp.crossVectors(_occlRight, _occlDir).normalize();
+    occlusionDistance = Infinity;
+    for(const [r, u] of [[0, 0], [1.4, 0], [-1.4, 0], [0, 1.4], [0, -1.4]]){
+      _occlAim.copy(wanted).addScaledVector(_occlRight, r).addScaledVector(_occlUp, u);
+      _occlRay.subVectors(_occlAim, _occlFrom);
+      const rayLen = _occlRay.length();
+      cameraOcclusion.set(_occlFrom, _occlRay.multiplyScalar(1 / rayLen));
+      cameraOcclusion.far = rayLen;
+      const hit = cameraOcclusion.intersectObjects([supportGroup, station, treeGroup], true)
+        .find(h => h.object.visible && !h.object.isLine && !h.object.isSprite);
+      if(hit) occlusionDistance = Math.min(occlusionDistance, hit.distance * len / rayLen);
+    }
+  }
+  if(occlusionDistance < len) wanted.copy(_occlFrom).addScaledVector(_occlDir, Math.max(minimum, occlusionDistance - 0.7));
+}
+const capRiseAxis = new THREE.Vector3(0, 1, 0);
 
 function placeTrain(){
   for(let c = 0; c < TRAIN_CARS; c++){
@@ -10015,7 +10152,9 @@ function updateTrainPresentation(){
 function updateHeadlightVisuals(){
   if(!headlightBeam || !trainHeadlight) return;
   const enabled = !fxLite;
-  headlightBeam.visible = enabled;
+  // The cone is drawn for every camera but the one on the nose: from 0.2 m off
+  // its narrow end the additive walls pile up into a pale oval in mid-view.
+  headlightBeam.visible = enabled && !(camMode === 'onboard' && !xrOn && activeSeat() === 0);
   trainHeadlight.visible = enabled;
   if(!enabled) return;
   const baseOpacity = visualTheme === 'neon' ? 0.14 : visualTheme === 'dusk' ? 0.11
@@ -10085,9 +10224,17 @@ function syncRestraintStyle(){
    row-by-row model is visible in the 3-D view and not only in the report: the
    back row's arms fly up over a lopsided crest while the front row is already
    being pressed back down into the seat. */
-function updateRiders(){
+function eyeCar(){ return xrOn ? 0 : camMode === 'onboard' ? activeSeat() : -1; }
+function updateRiders(everyone){
   const show = !fxLite;
-  for(const r of allRiders) if(r.visible !== show) r.visible = show;
+  // The riders whose seat the onboard camera borrows are not drawn: the camera
+  // sits between their shoulders, and in airtime their arms swung up straight
+  // through the lens as two flat slabs. A trackside photo wants everyone.
+  const hidden = everyone ? -1 : eyeCar();
+  for(let c = 0; c < riderCars.length; c++){
+    const want = show && c !== hidden;
+    for(const r of riderCars[c]) if(r.g.visible !== want) r.g.visible = want;
+  }
   if(!show || !riderCars.length) return;
   // Posed whenever the train is actually moving through the track — which keeps
   // the pose held during a Ride & Solve freeze and while scrubbing the telemetry
@@ -10193,7 +10340,9 @@ function placeCamera(){
     // back of it — the cars are 2 m long in a 2.6 m gap.
     const camSeat = activeSeat();
     frameAt(sim.S + (camSeat ? -0.2 : 1.4) - camSeat * CAR_GAP, _p, _t, _u);
-    camera.position.copy(_p).addScaledVector(_u, camSeat ? 1.78 : 1.25).addScaledVector(_t, 0.2);
+    // 1.93 m is where a seated rider's eyes are (car origin 0.55 + head 1.38);
+    // that rider is not drawn while the camera borrows their seat — see updateRiders.
+    camera.position.copy(_p).addScaledVector(_u, camSeat ? 1.93 : 1.25).addScaledVector(_t, 0.2);
     if(sim.running && !sim.paused && !reducedMotion()){
       const live = trackAt(sim.S), force = Math.abs(live.upY + sim.v * sim.v * live.kUp / G0 - 1);
       const shake = Math.min(0.12, Math.abs(sim.v) * 0.0018 + force * 0.012);
@@ -10207,6 +10356,7 @@ function placeCamera(){
     frameAt(sim.S - 2, _p, _t, _u);
     const th = Math.atan2(_t.x, _t.z);
     _chase.set(_p.x - Math.sin(th) * 13, _p.y + 5.5, _p.z - Math.cos(th) * 13);
+    pullCameraClear(_occlFrom.set(_p.x, _p.y + 1, _p.z), _chase, 4);
     camera.position.lerp(_chase, 0.09);
     camera.up.set(0, 1, 0);
     camera.lookAt(_p.x, _p.y + 1, _p.z);
@@ -10218,6 +10368,7 @@ function placeCamera(){
     const sideSign = shot % 2 ? 1 : -1;
     const distance = 18 + Math.min(10, Math.abs(sim.v) * 0.25);
     _chase.copy(_p).addScaledVector(_side, sideSign * distance).addScaledVector(_u, 9).addScaledVector(_t, -5);
+    pullCameraClear(scenicAim.copy(_p).addScaledVector(_u, 1.2), _chase, 6);
     camera.position.lerp(_chase, reducedMotion() ? 1 : 0.055);
     camera.up.set(0, 1, 0);
     scenicAim.copy(_p).addScaledVector(_u, 1.2);
@@ -10651,6 +10802,45 @@ rootEl._lab = {
     }
     return out;
   },
+  /* Onboard-camera clearance (dev tool): put the rider's eye at arc length s in
+     the chosen seat, cast short rays out from it, and report the nearest thing
+     that is not the train. Anything inside `reach` is something the rider would
+     pass through. */
+  cameraClearance: (s, seat = 0, reach = 0.6, includeTrain = false) => {
+    const prev = { S: sim.S, cam: camMode, seat: rideSeat, running: sim.running, paused: sim.paused };
+    sim.S = s; camMode = 'onboard'; rideSeat = seat; sim.running = false;
+    placeTrain(); placeCamera(); camera.updateMatrixWorld(true); scene.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(); ray.far = reach;
+    const targets = [trackGroup, supportGroup, station, forecourt, treeGroup, atmosphereGroup];
+    if(includeTrain) targets.push(trainGroup);
+    const dirs = { forward: new THREE.Vector3(0, 0, -1), back: new THREE.Vector3(0, 0, 1), left: new THREE.Vector3(-1, 0, 0), right: new THREE.Vector3(1, 0, 0), up: new THREE.Vector3(0, 1, 0), down: new THREE.Vector3(0, -1, 0) };
+    const hits = [];
+    for(const [dir, local] of Object.entries(dirs)){
+      const world = local.clone().transformDirection(camera.matrixWorld);
+      ray.set(camera.position, world);
+      const h = ray.intersectObjects(targets, true).filter(x => x.object.visible)[0];
+      if(h){
+        let o = h.object, name = o.name; while(!name && o.parent){ o = o.parent; name = o.name; }
+        hits.push({ dir, distance: +h.distance.toFixed(2), name: name || h.object.type, geometry: h.object.geometry && h.object.geometry.type, point: h.point.toArray().map(v => +v.toFixed(2)) });
+      }
+    }
+    sim.S = prev.S; camMode = prev.cam; rideSeat = prev.seat; sim.running = prev.running; sim.paused = prev.paused;
+    placeTrain(); placeCamera();
+    return { s: +s.toFixed(1), L: track ? +track.L.toFixed(1) : 0, hits };
+  },
+  loadTemplate: name => { if(!TEMPLATES[name]) return false; design = normalizeDesign(TEMPLATES[name]()); fullRebuild(); return true; },
+  loadDesignObject: raw => { design = normalizeDesign(raw); selIdx = -1; fullRebuild(); return safetyFindings.map(f => f.kind); },
+  thirdPersonClearance: (s, mode = 'chase') => {
+    const prev = { S: sim.S, cam: camMode };
+    sim.S = s; camMode = mode; placeTrain();
+    occlusionFrame = 0;
+    for(let i = 0; i < 90; i++) placeCamera();
+    frameAt(sim.S - 2, _p, _t, _u);
+    const out = { s: +s.toFixed(1), distance: +camera.position.distanceTo(_p).toFixed(2), pulled: occlusionDistance !== Infinity };
+    sim.S = prev.S; camMode = prev.cam; placeTrain(); placeCamera();
+    return out;
+  },
+  riderVisibility: (everyone = false) => { updateRiders(!!everyone); return { hiddenCar: everyone ? -1 : eyeCar(), visible: allRiders.map(g => g.visible) }; },
   /* park the train at arc length s for deterministic screenshots */
   place: (s, v) => { sim.S = s; if(v != null) sim.v = v; placeTrain(); updateHUD(); },
   setCam: mode => { camMode = mode; },

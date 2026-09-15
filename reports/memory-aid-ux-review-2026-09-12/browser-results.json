@@ -1,0 +1,35 @@
+[
+  {
+    "width": 1280,
+    "scrollWidth": 1280,
+    "height": 900,
+    "cueTop": 505.25,
+    "errors": [],
+    "studyNavigation": true,
+    "personalizationSaved": true,
+    "unsupportedRecall": true
+  },
+  {
+    "width": 390,
+    "scrollWidth": 390,
+    "height": 1034,
+    "cueTop": 569,
+    "errors": [],
+    "studyNavigation": true,
+    "personalizationSaved": true,
+    "unsupportedRecall": true
+  },
+  {
+    "width": 320,
+    "scrollWidth": 320,
+    "height": 1203,
+    "cueTop": 676.75,
+    "errors": [],
+    "studyNavigation": true,
+    "personalizationSaved": true,
+    "unsupportedRecall": true
+  },
+  {
+    "teacherEditing": true
+  }
+]

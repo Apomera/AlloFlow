@@ -1,0 +1,274 @@
+{
+  "skeletal": [
+    [
+      "skull",
+      "The skull protects the brain and supports the face. Most of its 22 bones meet at strong seams called sutures; the lower jaw moves at a joint.",
+      "Which bony structure surrounds the brain and includes the movable lower jaw?",
+      "7-2-the-skull"
+    ],
+    [
+      "vertebral",
+      "The vertebral column supports the trunk and protects the spinal cord. Adult anatomy usually includes 24 separate vertebrae, plus the sacrum and coccyx formed from fused segments.",
+      "Which column of bones surrounds the spinal cord and supports the trunk?",
+      "7-3-the-vertebral-column"
+    ],
+    [
+      "ribs",
+      "The ribs form a protective cage around the heart and lungs. Their joints and costal cartilages allow movement as the chest changes volume during breathing.",
+      "Which curved bones form the protective cage around the heart and lungs?",
+      "7-4-the-thoracic-cage"
+    ],
+    [
+      "femur",
+      "The femur is the thigh bone, extending from the hip to the knee. It transmits loads and provides attachment sites for muscles that move the hip and knee.",
+      "Which long bone connects the hip to the knee?",
+      "8-4-bones-of-the-lower-limb"
+    ],
+    [
+      "pelvis",
+      "The bony pelvis transfers loads from the spine to the lower limbs. It also surrounds and protects organs in the pelvic cavity.",
+      "Which bony ring transfers loads from the spine to the lower limbs?",
+      "8-3-the-pelvic-girdle-and-pelvis"
+    ]
+  ],
+  "muscular": [
+    [
+      "diaphragm_m",
+      "The diaphragm separates the chest and abdomen. Its contraction increases chest volume during inhalation; relaxation and elastic recoil contribute to quiet exhalation.",
+      "Which dome-shaped muscle separates the chest and abdomen and helps draw air in?",
+      "22-3-the-process-of-breathing"
+    ],
+    [
+      "deltoid",
+      "The deltoid covers the shoulder. Its middle fibers help raise the arm to the side, while its front and back fibers contribute to different shoulder movements.",
+      "Which muscle covers the shoulder and helps raise the arm to the side?",
+      "11-5-muscles-of-the-pectoral-girdle-and-upper-limbs"
+    ],
+    [
+      "rectus_ab",
+      "The rectus abdominis runs along the front of the abdomen. It flexes the trunk and works with other abdominal muscles to support the trunk and compress abdominal contents.",
+      "Which paired muscle on the front of the abdomen helps bend the trunk forward?",
+      "11-4-axial-muscles-of-the-abdominal-wall-and-thorax"
+    ],
+    [
+      "quads",
+      "The quadriceps group on the front of the thigh extends the knee. One member, rectus femoris, also crosses the hip and contributes to hip flexion.",
+      "Which muscle group on the front of the thigh straightens the knee?",
+      "11-6-appendicular-muscles-of-the-pelvic-girdle-and-lower-limbs"
+    ],
+    [
+      "gastrocnemius",
+      "The gastrocnemius crosses the knee and ankle. It helps point the foot downward and flex the knee; its force reaches the heel through the Achilles tendon.",
+      "Which superficial calf muscle crosses both the knee and ankle and joins the Achilles tendon?",
+      "11-6-appendicular-muscles-of-the-pelvic-girdle-and-lower-limbs"
+    ]
+  ],
+  "circulatory": [
+    [
+      "heart",
+      "The heart has four chambers. Its right side pumps blood through the lungs, and its left side pumps blood through the systemic circulation.",
+      "Which four-chambered organ pumps blood through the pulmonary and systemic circuits?",
+      "19-1-heart-anatomy"
+    ],
+    [
+      "aorta",
+      "The aorta carries blood from the left ventricle into the systemic circulation. Its branches supply the heart itself, head, limbs, and trunk.",
+      "Which major artery receives blood directly from the left ventricle?",
+      "19-1-heart-anatomy"
+    ],
+    [
+      "coronary",
+      "The coronary arteries supply the heart muscle. A severe, sustained reduction in this supply can damage the muscle; the blood inside the chambers does not replace its arterial supply.",
+      "Which arteries supply the heart muscle itself?",
+      "19-1-heart-anatomy"
+    ],
+    [
+      "carotid",
+      "The common carotid arteries travel through the neck and divide into internal and external branches. Internal branches help supply the brain; external branches supply much of the face and scalp.",
+      "Which paired arteries in the neck divide into internal and external branches?",
+      "20-5-circulatory-pathways"
+    ]
+  ],
+  "nervous": [
+    [
+      "brain",
+      "The brain includes the cerebrum, cerebellum, and brainstem. Interconnected networks support perception, thought, movement, and regulation of body functions.",
+      "Which whole organ contains the cerebrum, cerebellum, and brainstem?",
+      "13-2-the-central-nervous-system"
+    ],
+    [
+      "cerebral_cortex",
+      "The cerebral cortex is the outer gray matter of the cerebrum. Its connected regions contribute to sensation, voluntary movement, language, and thought.",
+      "Which outer layer of the cerebrum contains gray matter involved in sensation and voluntary movement?",
+      "13-2-the-central-nervous-system"
+    ],
+    [
+      "spinal_cord",
+      "The spinal cord carries signals between the brain and body. Local spinal circuits can also coordinate reflexes without waiting for a conscious decision.",
+      "Which nervous-system structure runs inside the vertebral column and contains local reflex circuits?",
+      "13-2-the-central-nervous-system"
+    ],
+    [
+      "vagus",
+      "The vagus nerve connects the brainstem with many organs in the chest and abdomen. It carries sensory information inward and parasympathetic signals that influence functions such as heart rate and digestion.",
+      "Which cranial nerve travels from the brainstem to many chest and abdominal organs?",
+      "13-4-the-peripheral-nervous-system"
+    ]
+  ],
+  "lymphatic": [
+    [
+      "thymus",
+      "The thymus supports T-cell maturation and selection, including mechanisms that limit reactions against the body's own tissues. It becomes smaller and contains more fatty tissue with age.",
+      "Which lymphoid organ is a major site of T-cell maturation?",
+      "21-1-anatomy-of-the-lymphatic-and-immune-systems"
+    ],
+    [
+      "spleen",
+      "The spleen filters blood, removes aging or damaged red blood cells, and supports immune responses to material carried in the blood. Lymph nodes filter lymph instead.",
+      "Which organ filters blood and removes aging red blood cells?",
+      "21-1-anatomy-of-the-lymphatic-and-immune-systems"
+    ],
+    [
+      "cervical_ln",
+      "Cervical lymph nodes filter lymph draining from regions of the head and neck. They can enlarge during an immune response, but enlargement has more than one possible cause.",
+      "Which small structures in the neck filter lymph draining from nearby tissues?",
+      "21-1-anatomy-of-the-lymphatic-and-immune-systems"
+    ],
+    [
+      "bone_marrow",
+      "Red bone marrow contains blood-forming stem cells. They give rise to blood-cell lineages; platelets are fragments released from large cells called megakaryocytes.",
+      "Which tissue inside certain bones contains stem cells that produce blood-cell lineages?",
+      "18-2-production-of-the-formed-elements"
+    ]
+  ],
+  "organs": [
+    [
+      "lungs",
+      "The lungs contain branching airways and many alveoli. Oxygen and carbon dioxide diffuse across the thin barrier between alveolar air and surrounding capillary blood.",
+      "Which paired chest organs contain the airways and alveoli used for gas exchange?",
+      "22-2-the-lungs"
+    ],
+    [
+      "liver",
+      "The liver makes bile, processes nutrients, stores glycogen, and makes many blood proteins. Bile helps disperse dietary fat into small droplets; digestive enzymes break fat molecules down.",
+      "Which organ makes bile and stores glucose in the form of glycogen?",
+      "23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"
+    ],
+    [
+      "stomach",
+      "The stomach mixes food with gastric juice to form chyme. Acid helps unfold proteins and activate pepsin, while controlled emptying delivers chyme to the small intestine.",
+      "Which muscular organ mixes food with gastric juice before releasing chyme to the small intestine?",
+      "23-4-the-stomach"
+    ],
+    [
+      "kidneys",
+      "The kidneys contain nephrons that filter fluid from blood and modify it by reabsorption and secretion. Blood cells normally remain in vessels; most filtered water and useful substances return to the blood.",
+      "Which paired organs use nephrons to form filtrate and modify it into urine?",
+      "25-4-microscopic-anatomy-of-the-kidney"
+    ]
+  ],
+  "integumentary": [
+    [
+      "epidermis",
+      "The epidermis is the outer skin layer and has no blood vessels. Its barrier reduces water loss and entry of harmful substances; renewal varies with body site, age, and other conditions.",
+      "Which outer skin layer forms a barrier and contains no blood vessels?",
+      "5-1-layers-of-the-skin"
+    ],
+    [
+      "dermis",
+      "The dermis lies beneath the epidermis. Its connective tissue provides strength and elasticity, and it contains blood vessels, nerves, and many skin appendages.",
+      "Which connective-tissue skin layer lies beneath the epidermis and contains blood vessels?",
+      "5-1-layers-of-the-skin"
+    ],
+    [
+      "hair_follicle",
+      "A hair follicle surrounds the growing hair root. A small smooth muscle attached to it can pull the hair upright, contributing to goosebumps.",
+      "Which structure surrounds a growing hair root and connects to a small goosebump-producing muscle?",
+      "5-2-accessory-structures-of-the-skin"
+    ],
+    [
+      "melanocytes",
+      "Melanocytes make melanin and transfer it to nearby skin cells. Melanin contributes to skin color and absorbs some ultraviolet radiation, but does not prevent all UV damage.",
+      "Which pigment-producing cells make melanin and pass it to neighboring skin cells?",
+      "5-1-layers-of-the-skin"
+    ]
+  ],
+  "respiratory": [
+    [
+      "nasal_cavity",
+      "The nasal cavity helps warm, humidify, and filter incoming air. Its conchae increase the air's contact with the moist lining.",
+      "Which space inside the nose warms and humidifies incoming air?",
+      "22-1-organs-and-structures-of-the-respiratory-system"
+    ],
+    [
+      "larynx",
+      "The larynx connects the pharynx and trachea. Air moving between appropriately positioned vocal folds can make them vibrate to produce voice; coordinated closure helps protect the airway during swallowing.",
+      "Which voice-producing structure lies between the pharynx and trachea?",
+      "22-1-organs-and-structures-of-the-respiratory-system"
+    ],
+    [
+      "bronchi",
+      "The main bronchi carry air from the trachea into the lungs. Their branches lead to smaller airways and eventually to regions where gas exchange occurs.",
+      "Which two main airway branches carry air from the trachea into the lungs?",
+      "22-1-organs-and-structures-of-the-respiratory-system"
+    ],
+    [
+      "alveoli",
+      "Alveoli are small air spaces closely associated with capillaries. A thin exchange barrier and large combined surface support diffusion of oxygen and carbon dioxide.",
+      "Which tiny air spaces provide a thin surface for exchange with nearby capillary blood?",
+      "22-4-gas-exchange"
+    ]
+  ],
+  "endocrine": [
+    [
+      "pituitary",
+      "The pituitary lies below the hypothalamus. Its anterior lobe makes several hormones; its posterior lobe releases hormones made in the hypothalamus. It influences many endocrine functions, but does not control every gland.",
+      "Which gland below the hypothalamus has anterior and posterior lobes with different hormone roles?",
+      "17-3-the-pituitary-gland-and-hypothalamus"
+    ],
+    [
+      "thyroid",
+      "The thyroid lies at the front of the neck near the trachea. Thyroid hormones influence energy use, growth, and development rather than acting as an on-off switch for metabolism.",
+      "Which butterfly-shaped neck gland produces hormones that influence metabolic rate?",
+      "17-4-the-thyroid-gland"
+    ],
+    [
+      "adrenal_endo",
+      "The adrenal cortex makes steroid hormones, including cortisol and aldosterone. The inner medulla makes catecholamines such as adrenaline. This marker represents the whole adrenal gland.",
+      "Which glands above the kidneys have a steroid-producing cortex and an adrenaline-producing medulla?",
+      "17-6-the-adrenal-glands"
+    ],
+    [
+      "islets",
+      "Pancreatic islets contain several hormone-producing cell types. Beta cells release insulin and alpha cells release glucagon; these hormones help regulate blood glucose through different effects on target tissues.",
+      "Which endocrine cell clusters in the pancreas contain insulin-producing beta cells?",
+      "17-9-the-endocrine-pancreas"
+    ]
+  ],
+  "reproductive": [
+    [
+      "testes_repro",
+      "The testes contain seminiferous tubules where sperm develop. Other cells make testosterone. Their scrotal location helps maintain a temperature suitable for sperm production.",
+      "Which organs contain sperm-producing seminiferous tubules and cells that make testosterone?",
+      "27-1-anatomy-and-physiology-of-the-testicular-reproductive-system"
+    ],
+    [
+      "uterus",
+      "The uterus has a muscular wall and an inner lining called the endometrium. Implantation normally occurs in this lining; during a menstrual cycle without pregnancy, much of its functional layer is shed.",
+      "Which muscular organ contains the endometrium where implantation normally occurs?",
+      "27-2-anatomy-and-physiology-of-the-ovarian-reproductive-system"
+    ],
+    [
+      "ovaries_repro",
+      "The ovaries contain follicles with immature oocytes and produce hormones such as estrogen and progesterone. Ovulation usually releases one oocyte in an ovulatory cycle, but cycle patterns vary.",
+      "Which paired organs contain oocyte-bearing follicles and produce estrogen and progesterone?",
+      "27-2-anatomy-and-physiology-of-the-ovarian-reproductive-system"
+    ],
+    [
+      "placenta",
+      "The placenta supports exchange between maternal and fetal circulations. Their blood normally remains in separate spaces while gases, nutrients, and wastes cross a tissue barrier; the placenta is not an absolute barrier to all substances.",
+      "Which temporary organ supports exchange between maternal and fetal circulations during pregnancy?",
+      "28-2-embryonic-development"
+    ]
+  ]
+}

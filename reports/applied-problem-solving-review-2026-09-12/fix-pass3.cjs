@@ -1,0 +1,14 @@
+const fs=require('fs'),path=require('path');const root=path.resolve(__dirname,'../..');
+const read=f=>fs.readFileSync(path.join(root,f),'utf8').replace(/\r\n/g,'\n');
+let source=read('applied_challenge_source.jsx');
+const disclosure="          <p className='mt-3 text-sm text-slate-700'>{appliedChallengeCoverageText(data.feedback.coverage, t)}</p>\n";
+if(!source.includes(disclosure))throw Error('Disclosure missing');source=source.replace(disclosure,'');
+const feedbackStart=source.indexOf('  const renderFeedback =');
+source=source.slice(0,feedbackStart)+source.slice(feedbackStart).replace("          <dl className='mt-3 grid gap-3 text-sm md:grid-cols-2'>",disclosure+"          <dl className='mt-3 grid gap-3 text-sm md:grid-cols-2'>");
+source=source.replace('  }, [qualityScope]);','  }, [qualityScope, qualityAi]);');
+fs.writeFileSync(path.join(root,'applied_challenge_source.jsx'),source);
+let doc=read('doc_pipeline_source.jsx').replace("typeof challengeApi?.coverageText === 'function' ? challengeApi.coverageText(fb.coverage, t)","typeof _acModule?.coverageText === 'function' ? _acModule.coverageText(fb.coverage, t)");
+fs.writeFileSync(path.join(root,'doc_pipeline_source.jsx'),doc);
+let test=read('tests/applied_challenge_pass3.test.js').replace('shared.responseFromData(resource)','shared.responseFromData(resource.type,resource.data)');
+fs.writeFileSync(path.join(root,'tests/applied_challenge_pass3.test.js'),test);
+console.log('Corrected feedback disclosure placement, export helper and submission test signature.');

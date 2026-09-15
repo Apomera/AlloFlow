@@ -44,7 +44,7 @@ window.StemLab = window.StemLab || {
   var _audioCtx = null;
   function getAudioCtx() {
     if (!_audioCtx) {
-      try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { /* silent */ }
+      try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) { /* silent */ }
     }
     return _audioCtx;
   }

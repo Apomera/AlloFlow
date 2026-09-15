@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "label": "areaSurface native Home Learn flow keeps host state, world and visible mode consistent",
+      "pass": true,
+      "detail": {
+        "activeLesson": "areaSurface",
+        "worldTitle": "Area & Surface Area",
+        "sandbox": false,
+        "mode": "lesson",
+        "sandboxDock": false
+      }
+    },
+    {
+      "label": "areaSurface Free Build control is an action that opens a dialog",
+      "pass": true
+    },
+    {
+      "label": "areaSurface opening Free Build options keeps the current lesson intact",
+      "pass": true
+    },
+    {
+      "label": "areaSurface cancelling Free Build retains lesson mode",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume native Home Learn flow keeps host state, world and visible mode consistent",
+      "pass": true,
+      "detail": {
+        "activeLesson": "compositeVolume",
+        "worldTitle": "Composite Volume — Breaking Apart & Combining",
+        "sandbox": false,
+        "mode": "lesson",
+        "sandboxDock": false
+      }
+    },
+    {
+      "label": "compositeVolume Free Build control is an action that opens a dialog",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume opening Free Build options keeps the current lesson intact",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume cancelling Free Build retains lesson mode",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "area-surface-final.png",
+    "composite-volume-final.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "e927b2c34dab5c0816cee289a91774a98d8ff88389f4ee83b2dbc16c0cea2444",
+    "stem_tool_geometryworld_builder.js": "47327ddd192e4da45840ce52dc1f009f1514112031ad563294f78cb3d57225a9"
+  },
+  "pass": true
+}

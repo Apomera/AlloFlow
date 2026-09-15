@@ -1,0 +1,717 @@
+{
+  "method": "Initial diagnostic classification by retained error content; categories are mutually exclusive and are not product defect counts",
+  "counts": {
+    "Source or DOM contract assertion": 16,
+    "Contrast/mixed rendered diagnostics": 16,
+    "Opaque runner error": 34,
+    "Cascading axe-busy error": 24,
+    "Focus/baseline rendered diagnostics": 4,
+    "Keyboard-scroll rendered diagnostics": 3
+  },
+  "entries": [
+    {
+      "file": "tests/allobot_targets_smil_a11y.test.js",
+      "test": "AlloBot target, speech, and SMIL accessibility maps every public and ambient animation to an authored class and keyframe",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 26.84180000000015,
+      "firstMessage": "AssertionError: expected '// @section SPEECH_BUBBLE — Allobot s…' to contain 'const anims = [\\'wave\\', \\'backflip\\'…'"
+    },
+    {
+      "file": "tests/allobot_targets_smil_a11y.test.js",
+      "test": "AlloBot target, speech, and SMIL accessibility connects the antenna to the shell and keeps its lamp states layered",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 16.793500000000222,
+      "firstMessage": "AssertionError: expected '// @section SPEECH_BUBBLE — Allobot s…' to contain 'data-allobot-antenna-layer=\"signal-wa…'"
+    },
+    {
+      "file": "tests/analysis_formatting_toolbar_a11y.test.js",
+      "test": "analysis editor formatting toolbar accessibility keeps every formatting action an explicit non-submit button",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 9.572599999999511,
+      "firstMessage": "AssertionError: bold control should be present: expected 'className: \"flex items-center gap-1 p…' to contain 'type: \"button\"'"
+    },
+    {
+      "file": "tests/analysis_formatting_toolbar_a11y.test.js",
+      "test": "analysis editor formatting toolbar accessibility gives icon-only actions localized accessible names with English fallbacks",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 2.7211999999999534,
+      "firstMessage": "AssertionError: bold icon control should be present: expected 'className: \"flex items-center gap-1 p…' to contain '\"aria-label\": t(\\'formatting.bold\\') …'"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser chemistry lab stoich passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 2545.1402,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab titrate passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1218.9000000000233,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab challenge passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1187.8546999999962,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab incidents passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1118.2350000000151,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab equipment passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1126.5431999999855,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab molarity passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1200.9921000000031,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab buffers passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1247.9115999999922,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser molecule lab dark theme passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1938.2235999999975,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/export_preview_dialogs_a11y.test.js",
+      "test": "Document Builder dialog accessibility uses one main focus trap that includes the editable iframe",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 25.586000000000013,
+      "firstMessage": "AssertionError: expected '// Read the host document, including …' to contain 'textarea:not([disabled]), iframe, [ta…'"
+    },
+    {
+      "file": "tests/export_preview_dialogs_a11y.test.js",
+      "test": "Document Builder dialog accessibility stacks settings and preview regions at narrow widths",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 21.586099999999988,
+      "firstMessage": "AssertionError: expected '// Read the host document, including …' to contain 'w-full lg:w-72'"
+    },
+    {
+      "file": "tests/foundational_math_wcag_browser.test.js",
+      "test": "Foundational math tools WCAG regression in a real browser number line contrast passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 2062.0070000000123,
+      "firstMessage": "AssertionError: ["
+    },
+    {
+      "file": "tests/foundational_math_wcag_browser.test.js",
+      "test": "Foundational math tools WCAG regression in a real browser multiplication table dark passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 1763.3109000000113,
+      "firstMessage": "AssertionError: ["
+    },
+    {
+      "file": "tests/foundational_math_wcag_browser.test.js",
+      "test": "Foundational math tools WCAG regression in a real browser unit converter contrast passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 2227.4036000000197,
+      "firstMessage": "AssertionError: ["
+    },
+    {
+      "file": "tests/funcgrapher_a11y.test.js",
+      "test": "Function Grapher chart and inquiry semantics names the graph and both inquiry textareas",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 9.750900000000001,
+      "firstMessage": "AssertionError: expected '// ══════════════════════════════════…' to contain 'stem.funcgrapher.hypothesis_input'"
+    },
+    {
+      "file": "tests/geometry_data_wcag_browser.test.js",
+      "test": "Geometry and data tools WCAG regression in a real browser geometry world ready workspace passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20016.815499999997,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/geometry_data_wcag_browser.test.js",
+      "test": "Geometry and data tools WCAG regression in a real browser geometry world lesson intro passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20623.781300000002,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/geometry_data_wcag_browser.test.js",
+      "test": "Geometry and data tools WCAG regression in a real browser probability spinner experiment passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 22735.629299999986,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser beehive overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20694.328100000002,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser cell explorer overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 11868.797299999998,
+      "firstMessage": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser ecosystem overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20016.237699999998,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser epidemic simulator overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20295.291400000016,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser evolution Capstone evidence notebook passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20061.758100000006,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser evolution linked Capstone field mission passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20010.996199999994,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser microbiology overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20214.939199999993,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser migration lab overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20746.795299999998,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser organism identification overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20257.7874,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser Punnett lab overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20280.790500000003,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser stewardship hub overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20002.728500000027,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser tree lab overview passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20132.267099999997,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "test": "Life-science tools WCAG regression in a real browser anatomy lab dark theme passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20009.24060000002,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface shielding — neutron through lead has no axe violations",
+      "category": "Opaque runner error",
+      "durationMs": 126050.149,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface criticality supercritical has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 799.257500000007,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface binding reaction open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 658.226399999985,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface weighting — alpha to lung has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 694.0040000000154,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface weighting — whole body has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 752.8934999999474,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface biohalf — caesium has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 707.1860999999917,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface biohalf — plutonium has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 781.5690999999642,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface annual dose estimated has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 784.5375999999815,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface dose ladder row open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 569.6356000000378,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface detector — no counts yet has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 501.01840000000084,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface detector — detected, precise has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 470.7697000000044,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface detector — below detection limit has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 448.49359999998705,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface detector — background only, negative net has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 572.1679000000004,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface accident open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 1292.4403000000166,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface reactor design open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 1376.380300000019,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface station blackout start has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 936.7032999999938,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface waste card open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 624.85699999996,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface topic index filtered has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 505.5288999999757,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface index collapsed has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 698.594700000016,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface index collapsed, on a route has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 556.7858000000124,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface index open, on a route has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 290.5149000000092,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface topic index empty result has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 858.9910999999847,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface evidence challenge feedback has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 512.6945000000414,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface evidence challenge complete has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 175.44589999999152,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "test": "nuclearLab — axe audit of every reachable surface chart data tables open has no axe violations",
+      "category": "Cascading axe-busy error",
+      "durationMs": 714.8727999999537,
+      "firstMessage": "Error: Axe is already running. Use `await axe.run()` to wait for the previous run to finish before starting a new run."
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser wave free mode passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20601.6506,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser heat conduction mode passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 26780.3759,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser heat convection mode passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20724.362599999993,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser heat radiation mode passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20204.232100000023,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism electro tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 31077.1354,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism motor tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20012.223200000008,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism induce tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20395.67809999999,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism materials tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20032.837900000013,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism crane tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 21395.743400000036,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "test": "Physical science tools WCAG regression in a real browser magnetism maze tab passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "category": "Opaque runner error",
+      "durationMs": 20033.587600000028,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser practiceJourneys exposes an operable WCAG surface in standard colors",
+      "category": "Focus/baseline rendered diagnostics",
+      "durationMs": 8912.460300000035,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser howlTracker exposes an operable WCAG surface in Windows forced colors",
+      "category": "Opaque runner error",
+      "durationMs": 45003.297699999996,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser identitySupport exposes an operable WCAG surface in Windows forced colors",
+      "category": "Opaque runner error",
+      "durationMs": 45219.71439999994,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser journal exposes an operable WCAG surface in Windows forced colors",
+      "category": "Opaque runner error",
+      "durationMs": 45925.72649999987,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser practiceJourneys exposes an operable WCAG surface in Windows forced colors",
+      "category": "Focus/baseline rendered diagnostics",
+      "durationMs": 3861.3288000000175,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "test": "All registered SEL tools in a real browser practiceJourneys exposes an operable WCAG surface in standard colors at 760x320 short landscape",
+      "category": "Focus/baseline rendered diagnostics",
+      "durationMs": 2505.277999999933,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/solar_system_canvas_alternatives_a11y.test.js",
+      "test": "Solar System canvas alternatives classifies every canvas creation site as named or explicitly decorative",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 56.221700000000055,
+      "firstMessage": "AssertionError: expected [ Array(1) ] to deeply equal []"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Molecule command deck dark theme exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 3572.3468999999895,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Anatomy workspace dark theme exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 8990.341199999995,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Cell Explorer overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 6625.583899999969,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser AlloBot Sage overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Opaque runner error",
+      "durationMs": 30215.66280000005,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser App Lab overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Opaque runner error",
+      "durationMs": 30190.712700000033,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Aquaculture Lab overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Opaque runner error",
+      "durationMs": 30028.407700000098,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Aquarium overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Opaque runner error",
+      "durationMs": 30010.501400000066,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Arc City overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Opaque runner error",
+      "durationMs": 30295.550799999968,
+      "firstMessage": "Error: STACK_TRACE_ERROR"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Architecture Studio overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Keyboard-scroll rendered diagnostics",
+      "durationMs": 15500.497100000037,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Circuit Builder overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Keyboard-scroll rendered diagnostics",
+      "durationMs": 4716.287299999967,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Fire Ecology overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Keyboard-scroll rendered diagnostics",
+      "durationMs": 3832.7726000000257,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Raptor Hunt overview exposes visible, unobscured sequential keyboard focus in standard colors",
+      "category": "Contrast/mixed rendered diagnostics",
+      "durationMs": 5141.080799999996,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "test": "Representative STEM keyboard focus visibility in a real browser Geometry Sandbox sculpt exposes visible, unobscured sequential keyboard focus in standard colors at 760x320 short landscape",
+      "category": "Focus/baseline rendered diagnostics",
+      "durationMs": 1236.250100000063,
+      "firstMessage": "AssertionError: {"
+    },
+    {
+      "file": "tests/stem_probability_accessibility.test.js",
+      "test": "Probability Lab accessibility names the informative probability visuals",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 18.734300000000076,
+      "firstMessage": "AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to contain 'role: \"img\", \\'aria-label\\': \\'d6 sho…'"
+    },
+    {
+      "file": "tests/student_accessibility_contracts.test.js",
+      "test": "student-facing accessibility contracts pins canonical student-module URLs by content while dev loaders stay local",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 147.4203,
+      "firstMessage": "AssertionError: expected '// @mode react\\n// Canvas source for …' to contain 'student_interaction_module.js?v=af265…'"
+    },
+    {
+      "file": "tests/ui_modals_runtime_a11y.test.js",
+      "test": "Shared UI modals rendered accessibility keeps the selected answer local and writes only a bounded receipt when P2P fails",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 29.197799999999916,
+      "firstMessage": "AssertionError: expected '\\n  [data-allo-ui-modal]:is(button, i…' to contain 'quiz.status.result_incorrect'"
+    },
+    {
+      "file": "tests/ui_modals_runtime_a11y.test.js",
+      "test": "Shared UI modals rendered accessibility contains live-quiz focus, permits Escape, restores focus, and offers re-entry",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 7.052199999999857,
+      "firstMessage": "AssertionError: expected 'Minimize' to contain 'Alpha'"
+    },
+    {
+      "file": "tests/view_renderers_wcag_a11y.test.js",
+      "test": "View Renderers WCAG safeguards replaces every suppressed native outline with a visible focus indicator",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 7.4698000000000775,
+      "firstMessage": "AssertionError: expected false to be true // Object.is equality"
+    },
+    {
+      "file": "tests/view_sidebar_panels_wcag_a11y.test.js",
+      "test": "Sidebar Panels WCAG 2.2 controls exposes the selected state of visual mode controls",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 19.144900000000007,
+      "firstMessage": "AssertionError: expected '// view_sidebar_panels_source.jsx — a…' to contain 'aria-pressed={factionResourceMode ===…'"
+    },
+    {
+      "file": "tests/view_sidebar_panels_wcag_a11y.test.js",
+      "test": "Sidebar Panels WCAG 2.2 controls groups related choices with programmatic labels",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 12.498900000000049,
+      "firstMessage": "AssertionError: expected '// view_sidebar_panels_source.jsx — a…' to contain 'role=\"group\" aria-labelledby=\"adventu…'"
+    },
+    {
+      "file": "tests/watercycle_controls_a11y.test.js",
+      "test": "Water Cycle control accessibility uses the shared tooltip hook for auxiliary controls",
+      "category": "Source or DOM contract assertion",
+      "durationMs": 596.3778999999995,
+      "firstMessage": "AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' not to contain 'title:'"
+    }
+  ],
+  "isolatedRetest": [
+    {
+      "file": "chemistry_particle_wcag_browser.test.js",
+      "test": "Chemistry and particle tools WCAG regression in a real browser titration lab titrate passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "status": "failed",
+      "message": "AssertionError: expected [ { id: 'color-contrast', …(2) } ] to deeply equal []"
+    },
+    {
+      "file": "foundational_math_wcag_browser.test.js",
+      "test": "Foundational math tools WCAG regression in a real browser number line contrast passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "status": "failed",
+      "message": "AssertionError: ["
+    },
+    {
+      "file": "geometry_data_wcag_browser.test.js",
+      "test": "Geometry and data tools WCAG regression in a real browser geometry world ready workspace passes WCAG A/AA, 320px reflow, and text-spacing checks",
+      "status": "passed"
+    },
+    {
+      "file": "ui_modals_runtime_a11y.test.js",
+      "test": "Shared UI modals rendered accessibility contains live-quiz focus, permits Escape, restores focus, and offers re-entry",
+      "status": "failed",
+      "message": "AssertionError: expected 'Minimize' to contain 'Alpha'"
+    }
+  ]
+}

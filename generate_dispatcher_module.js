@@ -445,6 +445,38 @@ function capMissingPacingEvidence(dimension) {
   return dimension;
 }
 
+// Review lists must be STRINGS before they reach the report (and the review cache). The
+// accessibility prompt says each student-impact entry "pairs a student profile with what they
+// would encounter", and on 2026-09-13 the model took that literally and returned
+// {profile, encounter} objects; the report rendered them as <li> children and React threw
+// "Objects are not valid as a React child", which the error boundary turned into a blank
+// Curriculum Audit. An object entry is flattened to one sentence (lead field, then the rest);
+// anything else non-textual is dropped rather than rendered.
+const AUDIT_REVIEW_LEAD_KEYS = ['profile', 'student', 'learner', 'who', 'word', 'term', 'claim', 'label', 'title'];
+const AUDIT_REVIEW_BODY_KEYS = ['encounter', 'experience', 'impact', 'text', 'description', 'detail', 'fix', 'suggestion', 'action', 'recommendation', 'correction', 'gap', 'issue', 'finding', 'reason', 'note'];
+function auditReviewText(entry) {
+  if (typeof entry === 'string') return entry.trim();
+  if (typeof entry === 'number' || typeof entry === 'boolean') return String(entry);
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return '';
+  const take = (keys) => keys.map((k) => entry[k]).filter((v) => typeof v === 'string' && v.trim()).map((v) => v.trim());
+  const known = new Set(AUDIT_REVIEW_LEAD_KEYS.concat(AUDIT_REVIEW_BODY_KEYS));
+  const rest = Object.keys(entry).filter((k) => !known.has(k) && typeof entry[k] === 'string' && entry[k].trim()).map((k) => entry[k].trim());
+  // Unknown keys only stand in when no known body key carried text: a model-invented field name
+  // ({callout: '…'}) is kept, but metadata beside a real sentence ({severity: 'high', fix: '…'}) is not.
+  const bodies = take(AUDIT_REVIEW_BODY_KEYS);
+  const parts = take(AUDIT_REVIEW_LEAD_KEYS).concat(bodies.length ? bodies : rest);
+  if (!parts.length) return '';
+  if (parts.length === 1) return parts[0];
+  const head = parts[0], tail = parts.slice(1).join(' ');
+  // "A student using a screen reader" + "would hear…" reads as one sentence; a capitalised
+  // continuation gets a colon instead.
+  return /^[a-z]/.test(tail) ? head + ' ' + tail : head + ': ' + tail;
+}
+function auditReviewList(value, max) {
+  if (!Array.isArray(value)) return [];
+  return value.map(auditReviewText).filter(Boolean).slice(0, max);
+}
+
 function applyAuditReviewStatus(dimension, review) {
   if (!dimension || !review || dimension.notApplicable || dimension.notEvaluated || dimension.computeFailed) return dimension;
   const reviewedStatus = normalizeAuditStatus(review.status, null);
@@ -3906,7 +3938,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           config: _itemConfig,
           instructionalText: _baseInstructionalText
       };
-      setHistory(prev => [...prev, tempItem]);
+      // A re-level pass REPLACES the draft it is correcting instead of appending a
+      // second adapted text; the draft it replaces travels on the new item
+      // (relevelFrom) so the view can offer Undo.
+      setHistory(prev => configOverride.relevelReplaceId
+          ? prev.map(item => item.id === configOverride.relevelReplaceId ? tempItem : item)
+          : [...prev, tempItem]);
       if (switchView || !generatedContent) {
           setGeneratedContent(tempItem);
           setActiveView('simplified');
@@ -3983,6 +4020,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               : `Rewrite the following text for ${effectiveGrade} level in ${effectiveLanguage}.`;
           const targetTransform = await runCitationGuardedTransform(chunks[i], async (protectedSegment, isRetry) => callGemini(`
               ${chunkIntro}
+              ${configOverride.relevelDirective ? String(configOverride.relevelDirective) : ''}
               ${complexityGuide}
               ${lengthInstruction}
               ${formatInstruction}
@@ -4207,6 +4245,133 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               }
               setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
           }
+      }
+      // --- Automatic level check (judge once, re-level only on agreement) ------
+      // Runs right after the adaptation, before the teacher sees it, so the
+      // triangulated verdict (local Flesch-Kincaid + ONE model review, merged
+      // from the two-call Check Level) is on the resource from its first render.
+      // When BOTH signals agree the text missed the target, one re-level pass
+      // runs through this same guarded pipeline (citations conserved) and the
+      // draft it replaces travels on the new item for Undo. Disagreement is
+      // shown, never acted on: FK cannot see concept density and the model
+      // cannot see sentence statistics, so a single signal never rewrites a
+      // teacher's text. Off switches (localStorage): alloflow_auto_level_check
+      // and alloflow_auto_relevel = 'off'. Non-English output has no FK, so it
+      // gets the review but never an automatic rewrite.
+      try {
+          const _autoPref = (key) => { try { return localStorage.getItem(key) !== 'off'; } catch (_) { return true; } };
+          const _autoCheckOn = isTeacherMode && !configOverride.skipAutoLevelCheck && _autoPref('alloflow_auto_level_check');
+          if (_autoCheckOn && typeof fullTargetText === 'string' && fullTargetText.trim().length >= 80) {
+              setGenerationStatus(t('status_steps.checking_level') || 'Checking reading level…');
+              const _bilingualOut = /---\s*(ENGLISH )?TRANSLATION\s*---/i.test(fullTargetText);
+              const _fkStats = finalAdaptedItem.localStats || null;
+              const _fkGrade = _fkStats ? Number(_fkStats.gradeLevel !== undefined ? _fkStats.gradeLevel : _fkStats.score) : NaN;
+              const _target = _instructionalContextModule && typeof _instructionalContextModule.getComplexityTarget === 'function'
+                  ? _instructionalContextModule.getComplexityTarget(effectiveGrade) : null;
+              const _fkStatus = Number.isFinite(_fkGrade) && _instructionalContextModule && typeof _instructionalContextModule.complexityStatus === 'function'
+                  ? _instructionalContextModule.complexityStatus(_fkGrade, effectiveGrade) : 'unavailable';
+              const _judgePrompt = `
+                You are a senior literacy reviewer. Judge how well this adapted text fits its target reader.
+                Target Level: ${effectiveGrade}
+                Text Language: ${effectiveLanguage}
+                ${_bilingualOut ? 'The text contains a translation section; judge the FIRST language section only.' : ''}
+                Task:
+                1. Estimate the actual grade-level equivalent (e.g., "4th Grade", "6th-7th Grade").
+                2. State alignment with the target: "Aligned", "Too Complex" or "Too Simple".
+                3. Score three dimensions from -5 (much too simple for the target) to +5 (much too complex), 0 = aligned, each with a one-sentence reason.
+                Return ONLY JSON:
+                {
+                  "estimatedLevel": "...",
+                  "alignment": "Aligned | Too Complex | Too Simple",
+                  "feedback": "one or two sentences on sentence structure and vocabulary load",
+                  "confirmedLevel": "same as estimatedLevel",
+                  "rubric": {
+                    "vocabulary": { "score": 0, "reason": "..." },
+                    "sentenceStructure": { "score": 0, "reason": "..." },
+                    "conceptDensity": { "score": 0, "reason": "..." }
+                  },
+                  "nuanceSummary": "one sentence on the degree of complexity"
+                }
+                Text: "${fullTargetText.substring(0, 3000)}"
+              `;
+              let _judge = null;
+              try {
+                  const _judgeRaw = await callGemini(_judgePrompt, true);
+                  _judge = safeJsonParse(_judgeRaw);
+                  if (!_judge) { try { _judge = JSON.parse(cleanJson(_judgeRaw)); } catch (_) { _judge = null; } }
+              } catch (_) { _judge = null; }
+              if (_judge && typeof _judge === 'object') {
+                  const _rubric = _judge.rubric && typeof _judge.rubric === 'object' ? _judge.rubric : {};
+                  const _dimKeys = ['vocabulary', 'sentenceStructure', 'conceptDensity'];
+                  const _scores = _dimKeys.map(k => Number(_rubric[k] && _rubric[k].score)).filter(Number.isFinite);
+                  const _mean = _scores.length ? _scores.reduce((a, b) => a + b, 0) / _scores.length : NaN;
+                  const _alignment = String(_judge.alignment || '').toLowerCase();
+                  const _judgeStatus = Number.isFinite(_mean)
+                      ? (_mean > 1 ? 'above-target' : _mean < -1 ? 'below-target' : 'within-target')
+                      : (/complex/.test(_alignment) ? 'above-target' : /simple/.test(_alignment) ? 'below-target' : /align/.test(_alignment) ? 'within-target' : 'unavailable');
+                  const _agree = _fkStatus === _judgeStatus && (_fkStatus === 'above-target' || _fkStatus === 'below-target');
+                  let _note = '';
+                  if (_fkStatus === 'within-target' && _judgeStatus === 'above-target') _note = 'Sentences measure on target but the ideas are dense: add scaffolds (background, examples, glossary) rather than shortening sentences.';
+                  else if (_fkStatus === 'above-target' && _judgeStatus === 'within-target') _note = 'Ideas fit the target but sentences run long: split sentences and simplify wording.';
+                  else if (_fkStatus === 'within-target' && _judgeStatus === 'below-target') _note = 'Sentences measure on target but the ideas are thin for this level: add precision, not length.';
+                  else if (_fkStatus === 'below-target' && _judgeStatus === 'within-target') _note = 'Ideas fit the target but the sentences are simpler than needed: allow longer, more varied sentences.';
+                  const _triangulation = {
+                      fk: _fkStatus,
+                      fkGrade: Number.isFinite(_fkGrade) ? _fkGrade : null,
+                      fkRange: _target ? _target.fkLabel : '',
+                      judge: _judgeStatus,
+                      judgeMean: Number.isFinite(_mean) ? Number(_mean.toFixed(2)) : null,
+                      agree: _agree,
+                      note: _note,
+                      action: _agree ? (_fkStatus === 'above-target' ? 'relevel-simpler' : 'relevel-harder') : 'none'
+                  };
+                  const _levelCheck = {
+                      ..._judge,
+                      measurementStatus: _fkStats ? 'measured' : 'not-evaluated',
+                      ...(_fkStats ? { localStats: _fkStats } : {}),
+                      auto: true,
+                      checkedAt: new Date().toISOString(),
+                      triangulation: _triangulation
+                  };
+                  finalAdaptedItem = { ...finalAdaptedItem, levelCheck: _levelCheck };
+                  if (configOverride.relevelFrom && typeof configOverride.relevelFrom === 'object') {
+                      finalAdaptedItem.relevel = {
+                          ...configOverride.relevelFrom,
+                          measuredAfter: Number.isFinite(_fkGrade) ? _fkGrade : null,
+                          judgeAfter: _judgeStatus
+                      };
+                  }
+                  const _shouldRelevel = _agree && !configOverride.relevelPass && Number.isFinite(_fkGrade) && _autoPref('alloflow_auto_relevel');
+                  if (_shouldRelevel) {
+                      const _simpler = _triangulation.action === 'relevel-simpler';
+                      const _dims = _dimKeys.map(k => `${k} ${Number(_rubric[k] && _rubric[k].score) || 0}`).join(', ');
+                      const _directive = `RE-LEVEL PASS (automatic): a previous adaptation of this text measured Flesch-Kincaid grade ${_fkGrade.toFixed(1)} against a target of ${effectiveGrade}${_target ? ` (target range ${_target.fkLabel})` : ''}, and an independent review scored it ${_dims} on a -5..+5 scale where 0 is aligned. ${_simpler
+                          ? `Make it clearly SIMPLER: shorter sentences${_target && _target.averageSentenceLengthMax ? ` (average at most ${_target.averageSentenceLengthMax} words)` : ''}, common everyday words, one idea per sentence, and a plain-words definition for any unavoidable technical term. Keep every key idea.`
+                          : 'Make it clearly MORE DEMANDING: longer and more varied sentences, precise academic vocabulary, and denser ideas, without inventing new content.'} Keep the same structure, headings, and citations.`;
+                      setGenerationStatus(t('status_steps.releveling') || 'Re-leveling to target…');
+                      const _relevelled = await handleGenerate('simplified', langOverride, keepLoading, textOverride, {
+                          ...configOverride,
+                          relevelPass: 1,
+                          relevelDirective: _directive,
+                          relevelReplaceId: newId,
+                          relevelFrom: {
+                              fromText: fullTargetText,
+                              fromLocalStats: _fkStats,
+                              fromInstructionalText: finalAdaptedItem.instructionalText || null,
+                              fromLevelCheck: _levelCheck,
+                              measuredBefore: _fkGrade,
+                              targetGrade: effectiveGrade,
+                              direction: _simpler ? 'simpler' : 'harder'
+                          }
+                      }, switchView, deps);
+                      if (_relevelled) return _relevelled;
+                  }
+                  if (switchView || (generatedContent && generatedContent.id === newId)) setGeneratedContent(finalAdaptedItem);
+                  setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
+              }
+          }
+      } catch (_autoErr) {
+          try { console.warn('[AutoLevelCheck] skipped:', _autoErr && _autoErr.message); } catch (_) {}
       }
       addToast(`${getDefaultTitle(type)} generated!`, "success");
       if (switchView) flyToElement('ui-tool-simplified');
@@ -4612,6 +4777,22 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // than random plausibly-wrong options. This catches predictable errors and gives
         // teachers diagnostic data they couldn't get from random-distractor MCQs.
         const _useMisconceptionDistractors = (_quizMode === 'pre-check' || _quizMode === 'formative') && _mcqCount > 0;
+        // The other direction of the success-criteria loop: when a lesson plan
+        // already exists (plan first, quiz second), its criteria become the
+        // concept labels the new items must carry, so the two stay joined
+        // whichever was generated first.
+        const _criteriaDirective = (function () {
+            try {
+                const plan = (Array.isArray(history) ? history : []).slice().reverse()
+                    .find(h => h && h.type === 'lesson-plan' && h.data && Array.isArray(h.data.successCriteria) && h.data.successCriteria.length > 0);
+                if (!plan) return '';
+                const lines = plan.data.successCriteria.slice(0, 8)
+                    .map(c => `  - conceptLabel "${String(c.id || '').replace(/"/g, '')}": ${String(c.statement || '').replace(/\s+/g, ' ').trim()}`)
+                    .filter(l => l.indexOf('""') === -1);
+                if (!lines.length) return '';
+                return `SUCCESS CRITERIA TO COVER (from the current lesson plan): give at least one item per criterion and use the criterion id EXACTLY as each item's "conceptLabel":\n${lines.join('\n')}`;
+            } catch (_) { return ''; }
+        })();
         const _sourceGroundingInstruction = (function () {
             if (_quizMode === 'pre-check') {
                 return `SOURCE-GROUNDED READINESS RULES:
@@ -4689,6 +4870,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${standardsPromptString ? `Target standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
           ${_sourceGroundingInstruction}
+          ${_criteriaDirective}
           Generate exactly ${_resolvedItemCount} assessed items using this exact item-type recipe:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
@@ -4723,6 +4905,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
           ${_sourceGroundingInstruction}
+          ${_criteriaDirective}
           Include the following item types:
           ${_itemTypeInstructions}
           ${_reflectionInstruction}
@@ -4737,7 +4920,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
-          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see (with one item intentionally moved out of position). Provide "intentionallyWrongIndex" — the position in presentedOrder where the misplaced item appears (or null if you want the displayed order to actually be correct). Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click the misplaced item if any, (3) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
+          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see. Either swap two ADJACENT items or move ONE item to a different position; never scramble more than that. Provide "intentionallyWrongIndex" — the position in presentedOrder where the moved item appears; for an adjacent swap use either swapped position (the grader accepts both). Use null if you want the displayed order to actually be correct. Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click a misplaced item if any, (3) arrange the items into the correct order, (4) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
           ${_relationMismatchCount > 0 ? 'For each Relation Mismatch Question: provide a "pairs" array of 4-5 {left, right} objects where ONE pair is intentionally WRONG. Provide "wrongPairIndex" pointing to that pair. Provide "correctPartnerForWrong" — the right column value that SHOULD have been paired with the wrong-pair\'s left item. Provide "candidatePartners" — an array of 4 strings that includes correctPartnerForWrong and 3 distractors. Choose content where genuine left-right relationships exist (term-definition, cause-effect, person-contribution, etc.) and the wrong pair encodes a believable confusion (not an obvious nonsense match).' : ''}
           ${_answerEvidenceCount > 0 ? 'For each Answer + Evidence Question: provide answerOptions (exactly 4), correctAnswer (matching one answer option), evidencePrompt, evidenceOptions (exactly 4), and correctEvidence (matching one evidence option). The evidence must genuinely justify the correct answer; plausible distractors should reflect common reasoning errors.' : ''}
           ${_numericResponseCount > 0 ? 'For each Numeric Response: provide correctValue as a number, tolerance as a non-negative number (0 for exact answers), unit as the preferred unit or an empty string, and acceptableUnits as common equivalent spellings for that SAME unit. Ask only questions with one unambiguous numeric result.' : ''}
@@ -6039,9 +6222,9 @@ ${_itemsBlock}`;
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, vocabFit.status),
-                     corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
-                     missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
-                     recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
+                     corrections: auditReviewList(review.corrections, 12),
+                     missedTier2: auditReviewList(review.missedTier2, 8),
+                     recommendations: auditReviewList(review.recommendations, 6),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
                  };
                  content.comprehensive.vocabulary.llmReview = reviewShape;
@@ -6085,7 +6268,7 @@ ${_itemsBlock}`;
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, engagement.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
+                     formatGaps: auditReviewList(review.formatGaps, 5),
                      dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
                  };
                  // If LLM estimated DOK distribution as fallback, attach it to engagement directly
@@ -6121,14 +6304,14 @@ ${_itemsBlock}`;
                  const auditCitationNote = citationSummary.markers > 0
                      ? '\n- Inline source citations: ' + citationSummary.markers + ' superscript citation link(s) across ' + citationSummary.artifactsWithMarkers + ' artifact(s); ' + citationSummary.artifactsWithReferences + ' of those already end with a Source Text References section. These citations are an INTENTIONAL, educator-enabled feature (Keep Citations) that models evidence-based writing. They have been removed from the excerpt and from passage-length counts. Do NOT recommend removing, relocating, or simplifying them, and do not describe them as clutter or as a screen-reader burden.'
                      : '';
-                 const prompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words (measured per paragraph or structured field; inline citation markers excluded)\n- Grade band: ${dimGradeBand}${auditCitationNote}\n\nSource text excerpt (first 3000 chars; citation markers and reference lists removed):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const prompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words (measured per paragraph or structured field; inline citation markers excluded)\n- Grade band: ${dimGradeBand}${auditCitationNote}\n\nSource text excerpt (first 3000 chars; citation markers and reference lists removed):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry is ONE STRING (a full sentence, not an object) that names a student profile and what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix is ONE STRING: a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields; every array holds plain strings.`;
                  const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned". Do not call this a WCAG conformance assessment.', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, accessibility.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
-                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
+                     studentImpacts: auditReviewList(review.studentImpacts, 5),
+                     fixes: auditReviewList(review.fixes, 6),
                  };
                  content.comprehensive.accessibility.llmReview = reviewShape;
                  applyAuditReviewStatus(content.comprehensive.accessibility, reviewShape);
@@ -6207,8 +6390,8 @@ ${_itemsBlock}`;
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, accuracy.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
-                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
+                     claimsToVerify: auditReviewList(review.claimsToVerify, 6),
+                     fixes: auditReviewList(review.fixes, 5),
                  };
                  content.comprehensive.accuracy.llmReview = reviewShape;
                  applyAuditReviewStatus(content.comprehensive.accuracy, reviewShape);
@@ -6232,8 +6415,8 @@ ${_itemsBlock}`;
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, differentiation.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     priorityAdditions: Array.isArray(review.priorityAdditions) ? review.priorityAdditions.slice(0, 5) : [],
-                     qualityFlags: Array.isArray(review.qualityFlags) ? review.qualityFlags.slice(0, 4) : [],
+                     priorityAdditions: auditReviewList(review.priorityAdditions, 5),
+                     qualityFlags: auditReviewList(review.qualityFlags, 4),
                  };
                  content.comprehensive.differentiation.llmReview = reviewShape;
                  applyAuditReviewStatus(content.comprehensive.differentiation, reviewShape);
@@ -6254,7 +6437,7 @@ ${_itemsBlock}`;
                  const reviewShape = {
                      status: normalizeAuditStatus(review.status, cognitiveLoad.status),
                      narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     specificAdjustments: Array.isArray(review.specificAdjustments) ? review.specificAdjustments.slice(0, 5) : [],
+                     specificAdjustments: auditReviewList(review.specificAdjustments, 5),
                  };
                  content.comprehensive.cognitiveLoad.llmReview = reviewShape;
                  applyAuditReviewStatus(content.comprehensive.cognitiveLoad, reviewShape);
@@ -6286,9 +6469,9 @@ ${_itemsBlock}`;
                      content.comprehensive.culturalResponsiveness = {
                          status: normalizeAuditStatus(review.status, 'Partially Aligned'),
                          narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                         strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 5) : [],
-                         gaps: Array.isArray(review.gaps) ? review.gaps.slice(0, 5) : [],
-                         additions: Array.isArray(review.additions) ? review.additions.slice(0, 5) : [],
+                         strengths: auditReviewList(review.strengths, 5),
+                         gaps: auditReviewList(review.gaps, 5),
+                         additions: auditReviewList(review.additions, 5),
                          notes: 'LLM-graded representation review. Inherently judgment-laden — treat findings as a starting point for teacher reflection, not a verdict.',
                      };
                  }
@@ -6576,6 +6759,45 @@ ${modeListForAuto}
                       "answer": "Answer",
                       "steps": [{ "explanation": "Step explanation", "latex": "" }],
                       "realWorld": "Short real-world connection"
+                    }
+                  ],
+                  "graphData": null
+                }
+              `;
+          } else if (mode === 'Spiral Review' || mode === 'Difficulty Ladder') {
+              // Two presets over the same problem-set contract. Spiral Review mixes
+              // several skills (cumulative practice, no two adjacent problems on the
+              // same skill); Difficulty Ladder climbs ONE skill from entry-level to
+              // stretch. Each problem carries `skill` and `difficulty` so the view
+              // and the printable can label them. Same JSON shape as a problem set,
+              // so every downstream consumer (view, export, Form export) already works.
+              const isSpiral = mode === 'Spiral Review';
+              prompt = `
+                You are an expert Math Curriculum Designer building a ${isSpiral ? 'spiral review (mixed, cumulative practice)' : 'difficulty ladder (one skill, easy to hard)'} for ${effectiveGrade}.
+                ${languageDirective ? '- ' + languageDirective + ' Keep mathematical expressions in standard notation.' : ''}
+                ${isSpiral ? 'Skills to mix' : 'Skill to climb'}: "${problemToSolve}"
+                ${mathContextPrompt}
+                Instruction: Create EXACTLY the number of problems the teacher specified above; if no count is given, create ${isSpiral ? 10 : 8}.
+                ${isSpiral
+                    ? '- Rotate through EVERY listed skill so each appears at least twice; never place two problems on the same skill next to each other. Mix difficulty ("easy", "medium", "hard") roughly evenly. Label each problem with the exact skill name from the list in "skill".'
+                    : '- Order the problems strictly from easiest to hardest: start with a one-step entry problem, then add steps, then add a twist (missing information, a word problem, a non-integer), and end with one stretch problem. Set "difficulty" to "easy", "medium", "hard" or "stretch" for each, and set "skill" to the skill name.'}
+                - Vary numbers and contexts; no two problems may be near-duplicates.
+                Context Usage: Frame word problems using characters, settings, or themes from the Source Context when it helps; otherwise use everyday situations.
+                ${standardsDirective}
+                ${emojiDirective ? emojiDirective + ' Keep all mathematical notation, expressions and numeric answers free of emoji.' : ''}
+                ${dokDirective}
+                Output Format:
+                Return ONLY JSON in the following format:
+                {
+                  "title": "${isSpiral ? 'Spiral Review' : 'Difficulty Ladder'}: ${problemToSolve.substring(0, 30)}...",
+                  "problems": [
+                    {
+                      "question": "Problem text...",
+                      "answer": "Answer",
+                      "skill": "skill name",
+                      "difficulty": "easy | medium | hard | stretch",
+                      "steps": [{ "explanation": "...", "latex": "..." }],
+                      "realWorld": "1-2 sentence real-life connection naming a specific career or everyday situation. Do NOT restate the problem."
                     }
                   ],
                   "graphData": null
@@ -7104,6 +7326,18 @@ Return ONLY JSON:
          const historySource = configOverride.historyOverride || history;
          const contextTrace = [], inventoryTrace = [];
          const context = getLessonContext(historySource, { trace: segment => contextTrace.push(segment) });
+         // Unit Path context: when this plan is being generated for a node the
+         // teacher activated from the path, tell the model where the lesson sits
+         // and stamp the plan as that node afterwards (see normalisation below).
+         const _pendingUnitPathNode = (() => {
+             try {
+                 const p = typeof window !== 'undefined' ? window.__alloPendingUnitPathNode : null;
+                 return p && typeof p === 'object' && p.nodeId ? p : null;
+             } catch (_) { return null; }
+         })();
+         const _unitPathBlock = _pendingUnitPathNode
+             ? `\n--- UNIT PATH CONTEXT ---\nThis lesson is node ${_pendingUnitPathNode.index || '?'} of ${_pendingUnitPathNode.count || '?'} on the unit path "${String(_pendingUnitPathNode.title || 'unit').replace(/\s+/g, ' ').slice(0, 200)}". Node: "${String(_pendingUnitPathNode.label || '').replace(/\s+/g, ' ').slice(0, 300)}". Keep the through-line: build on the prior lesson and set up the next node; do not restart the unit.\n---------------------------\n`
+             : '';
          const assetManifest = configOverride.assetManifest || getAssetManifest(historySource, { trace: item => inventoryTrace.push(item) });
          let inventoryTraced = !configOverride.assetManifest;
          if (configOverride.assetManifest) {
@@ -7121,7 +7355,7 @@ Return ONLY JSON:
          } else if (isParentMode) {
              prompt = buildParentGuidePrompt(context, effectiveLanguage, effCustomInstructions);
          } else {
-             prompt = buildLessonPlanPrompt(context, assetManifest, effectiveLanguage, effCustomInstructions);
+             prompt = buildLessonPlanPrompt(context + _unitPathBlock, assetManifest, effectiveLanguage, effCustomInstructions);
          }
          if (usesLocalTextBackend) {
              prompt = `
@@ -7139,6 +7373,7 @@ Return ONLY JSON:
                 {
                   "essentialQuestion": "One clear essential question",
                   "objectives": ["Objective 1", "Objective 2", "Objective 3"],
+                  "successCriteria": [{ "id": "exact quiz concept label, or short-slug", "statement": "I can ...", "source": "quiz" }],
                   "hook": "Brief opening hook",
                   "directInstruction": "Concise teacher explanation",
                   "guidedPractice": "Supported practice activity",
@@ -7171,6 +7406,30 @@ Return ONLY JSON:
          }
          if (!content) content = {};
          if (!content.objectives || !Array.isArray(content.objectives)) content.objectives = [];
+         // Success criteria keyed by the exit ticket's concept labels (the quiz is
+         // generated before the plan). Normalised so every quiz concept has a
+         // criterion and no id exists that results could never match.
+         {
+             const _utils = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure) || {};
+             const _latestQuiz = (Array.isArray(historySource) ? historySource : []).slice().reverse()
+                 .find(h => h && h.type === 'quiz' && h.data && Array.isArray(h.data.questions) && h.data.questions.length > 0);
+             const _concepts = _latestQuiz && typeof _utils.getQuizConceptLabels === 'function' ? _utils.getQuizConceptLabels(_latestQuiz) : [];
+             content.successCriteria = typeof _utils.normalizeSuccessCriteria === 'function'
+                 ? _utils.normalizeSuccessCriteria(content.successCriteria, { concepts: _concepts, objectives: content.objectives })
+                 : (Array.isArray(content.successCriteria) ? content.successCriteria : []);
+             if (_latestQuiz) content.successCriteriaQuizId = _latestQuiz.id;
+         }
+         if (_pendingUnitPathNode) {
+             content.unitPath = {
+                 graphId: String(_pendingUnitPathNode.graphId || ''),
+                 nodeId: String(_pendingUnitPathNode.nodeId),
+                 label: String(_pendingUnitPathNode.label || '').slice(0, 400),
+                 title: String(_pendingUnitPathNode.title || '').slice(0, 300),
+                 index: Number.isFinite(Number(_pendingUnitPathNode.index)) ? Number(_pendingUnitPathNode.index) : null,
+                 count: Number.isFinite(Number(_pendingUnitPathNode.count)) ? Number(_pendingUnitPathNode.count) : null
+             };
+             try { delete window.__alloPendingUnitPathNode; } catch (_) {}
+         }
          if (!content.extensions || !Array.isArray(content.extensions)) content.extensions = [];
          const stringFields = ['essentialQuestion', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
          stringFields.forEach(field => {

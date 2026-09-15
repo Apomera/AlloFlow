@@ -1,0 +1,197 @@
+{
+  "errors": [],
+  "cases": [
+    "case_1",
+    "case_2",
+    "case_3",
+    "case_4",
+    "case_5",
+    "case_6",
+    "case_7",
+    "case_8"
+  ],
+  "screens": [
+    {
+      "name": "desktop-diabetes-explanation",
+      "width": 1280,
+      "scrollWidth": 1280
+    },
+    {
+      "name": "phone-390-reasoning",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-390-explanation",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-320-reasoning",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "phone-320-explanation",
+      "width": 320,
+      "scrollWidth": 320
+    },
+    {
+      "name": "phone-french-explanation",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-spanish_latin_america-explanation",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-arabic-explanation",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-arabic-dark-explanation",
+      "width": 390,
+      "scrollWidth": 390
+    },
+    {
+      "name": "phone-arabic-dark-hint",
+      "width": 390,
+      "scrollWidth": 390
+    }
+  ],
+  "axe": [
+    {
+      "name": "case_1-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_1-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_2-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_2-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_3-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_3-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_4-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_4-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_5-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_5-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_6-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_6-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_7-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_7-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_8-hint",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "case_8-reviewed",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390-reasoning",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-reasoning",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "french-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "spanish_latin_america-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-dark-explanation",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-dark-hint",
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "languages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ]
+}

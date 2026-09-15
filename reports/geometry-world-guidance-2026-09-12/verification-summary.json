@@ -1,0 +1,28 @@
+{
+  "testFiles": 61,
+  "passedTests": 1106,
+  "failedTests": 0,
+  "targetedTests": 98,
+  "completedBrowserChecks": 104,
+  "browser": {
+    "guided-presets-browser.json": 35,
+    "guided-presets-final.json": 8,
+    "guide-browser.json": 7,
+    "tracking-browser.json": 45,
+    "tracking-touch-browser.json": 9
+  },
+  "sources": {
+    "stem_tool_geometryworld.js": "b8a97d39dc340ebb79305eef7abd5f9802a3bcd6ace3031f51bf814ec5fe176c",
+    "stem_tool_geometryworld_builder.js": "47327ddd192e4da45840ce52dc1f009f1514112031ad563294f78cb3d57225a9"
+  },
+  "desktopMirrorsMatch": true,
+  "initialRun": {
+    "passed": 1081,
+    "failed": 7
+  },
+  "limitations": [
+    "Initial combined tracking harness timed out starting a second touch page; isolated native-touch retry passed.",
+    "Guide screenshot harness timed out on its optional night-settings selector; night appearance remains visually unverified."
+  ],
+  "deployment": "Local changes; not committed or deployed."
+}

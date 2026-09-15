@@ -1,0 +1,161 @@
+{
+  "errors": [],
+  "states": [
+    {
+      "name": "desktop-explore",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 631,
+      "targetHeight": 1029,
+      "pageHeight": 2018,
+      "visibleControls": 93
+    },
+    {
+      "name": "desktop-thyroid-quiz",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 584,
+      "targetHeight": 640,
+      "pageHeight": 1847,
+      "visibleControls": 81
+    },
+    {
+      "name": "phone-390-explore",
+      "width": 390,
+      "overflow": false,
+      "targetY": 358,
+      "targetHeight": 186,
+      "pageHeight": 3585,
+      "visibleControls": 51
+    },
+    {
+      "name": "phone-390-cards",
+      "width": 390,
+      "overflow": false,
+      "targetY": 453,
+      "targetHeight": 232,
+      "pageHeight": 2396,
+      "visibleControls": 38
+    },
+    {
+      "name": "phone-390-quiz",
+      "width": 390,
+      "overflow": false,
+      "targetY": 358,
+      "targetHeight": 446,
+      "pageHeight": 2178,
+      "visibleControls": 34
+    },
+    {
+      "name": "phone-320-explore",
+      "width": 320,
+      "overflow": false,
+      "targetY": 358,
+      "targetHeight": 206,
+      "pageHeight": 3677,
+      "visibleControls": 51
+    },
+    {
+      "name": "phone-320-cards",
+      "width": 320,
+      "overflow": false,
+      "targetY": 453,
+      "targetHeight": 234,
+      "pageHeight": 2317,
+      "visibleControls": 38
+    },
+    {
+      "name": "phone-320-quiz",
+      "width": 320,
+      "overflow": false,
+      "targetY": 358,
+      "targetHeight": 513,
+      "pageHeight": 2164,
+      "visibleControls": 34
+    },
+    {
+      "name": "desktop-feedback",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 618,
+      "targetHeight": 1205,
+      "pageHeight": 2648,
+      "visibleControls": 87
+    },
+    {
+      "name": "phone-320-feedback",
+      "width": 320,
+      "overflow": false,
+      "targetY": 408,
+      "targetHeight": 1379,
+      "pageHeight": 3761,
+      "visibleControls": 42
+    },
+    {
+      "name": "desktop-blueprint",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1139,
+      "targetHeight": 564,
+      "pageHeight": 2361,
+      "visibleControls": 88
+    },
+    {
+      "name": "phone-dark-feedback",
+      "width": 390,
+      "overflow": false,
+      "targetY": 408,
+      "targetHeight": 1256,
+      "pageHeight": 3684,
+      "visibleControls": 42
+    },
+    {
+      "name": "phone-french-feedback",
+      "width": 390,
+      "overflow": false,
+      "targetY": 408,
+      "targetHeight": 1295,
+      "pageHeight": 3723,
+      "visibleControls": 42
+    },
+    {
+      "name": "phone-spanish_latin_america-feedback",
+      "width": 390,
+      "overflow": false,
+      "targetY": 408,
+      "targetHeight": 1315,
+      "pageHeight": 3743,
+      "visibleControls": 42
+    },
+    {
+      "name": "phone-arabic-feedback",
+      "width": 390,
+      "overflow": false,
+      "targetY": 408,
+      "targetHeight": 1197,
+      "pageHeight": 3625,
+      "visibleControls": 42
+    }
+  ],
+  "thyroidCorrect": true,
+  "axe": {
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "count": 1
+      },
+      {
+        "id": "color-contrast",
+        "count": 23
+      }
+    ]
+  },
+  "blueprintReady": true,
+  "surfaceReady": true,
+  "localized": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ]
+}

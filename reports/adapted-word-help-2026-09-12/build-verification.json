@@ -1,0 +1,20 @@
+{
+  "modules": {
+    "view_simplified_module.js": {
+      "hash": "bd163a6e",
+      "mirrorMatches": true,
+      "canonicalPinMatches": true
+    },
+    "content_engine_module.js": {
+      "hash": "4178e453",
+      "mirrorMatches": true,
+      "canonicalPinMatches": true
+    },
+    "app_styles_module.js": {
+      "hash": "053564b3",
+      "mirrorMatches": true,
+      "canonicalPinMatches": true
+    }
+  },
+  "catalogMirrorMatches": true
+}

@@ -1,0 +1,31 @@
+const fs = require('fs');
+const root = process.cwd();
+const file = root + '/applied_challenge_source.jsx';
+let src = fs.readFileSync(file, 'utf8');
+const marker = 'function AppliedChallengeView(props) {';
+if (!src.includes(marker) || src.includes('function AppliedChallengeSourceSearch(')) throw Error('Unexpected source');
+const block = fs.readFileSync(__dirname + '/source-search-fragment.jsx', 'utf8');
+src = src.replace(marker, block + '\n' + marker);
+const insert = '  const connectLessonFact = factId => {';
+src = src.replace(insert, `  const addOutsideReference = result => {
+    if (isTeacherMode || learnerReadOnly || props.previewMode || !resourceActive) return;
+    const current = latestDataRef.current;
+    if (current.evidenceLedger.length >= 12 || current.evidenceLedger.some(row => row.evidence.includes(result.url))) return;
+    const id = 'ledger-' + Date.now().toString(36) + '-' + String(++ledgerIdCounterRef.current);
+    const reference = appliedChallengeOutsideReference(result, t);
+    if (!reference) return;
+    updateEvidenceLedger(rows => rows.length >= 12 || rows.some(row => row.evidence.includes(result.url)) ? rows : rows.concat({ id, claim: '', evidence: reference, tradeoff: '', status: 'needs-check' }));
+    setLedgerExpanded(true); setReviewOpen(false); setFocusMode(true); setHintPhase('possibilities');
+    setFocusRequest({ phase: 'possibilities', elementId: 'aps-ledger-claim-' + id });
+  };
+
+` + insert);
+const old = "{details(tx('applied_challenge.more.reasoning', 'Evidence, assumptions, and tradeoffs'), <>{field('evidence')}{field('assumptions')}{field('tradeoffs')}</>)}</>}";
+if (!src.includes(old)) throw Error('Explore insertion point missing');
+src = src.replace(old, old.replace('</>}', `<AppliedChallengeSourceSearch key={recoveryScope} t={t} searchWeb={props.searchWeb === undefined ? (typeof window !== 'undefined' ? window.WebSearchProvider : null) : props.searchWeb} disabled={!allowRuntimeAi || learnerReadOnly || isTeacherMode || !!props.previewMode || isProcessing} rows={data.evidenceLedger} onAddReference={data.plan.visualMode !== 'none' ? addOutsideReference : null} /></>}`));
+fs.writeFileSync(file, src);
+const builder = root + '/_build_applied_challenge_module.js';
+let build = fs.readFileSync(builder, 'utf8');
+build = build.replace("  '  _testing: {',", "  '  _testing: {',\n  '    normalizeAppliedChallengeSearchResults: normalizeAppliedChallengeSearchResults,',\n  '    appliedChallengeOutsideReference: appliedChallengeOutsideReference,',\n  '    AppliedChallengeSourceSearch: AppliedChallengeSourceSearch,',");
+fs.writeFileSync(builder, build);
+console.log('Added optional outside-source search to Explore.');

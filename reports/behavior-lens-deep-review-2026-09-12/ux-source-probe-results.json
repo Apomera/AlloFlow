@@ -1,0 +1,214 @@
+{
+  "ABCModal": {
+    "repeatedLabels": {
+      "Toggle value": [
+        {
+          "visibleText": "Demand/task presented",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Transition",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Denied access",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Unstructured time",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Peer interaction",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Left alone",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Change in routine",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Sensory input",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Other",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Physical contact toward others",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Vocal/verbal outburst",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Elopement",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Difficulty following directions",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Self-directed physical behavior",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Damage to materials/property",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Withdrawal",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Emotional escalation",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Other",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Verbal redirect",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Given break",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Relocated to calm space",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Peer attention",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Adult attention",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Task removed",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Planned ignoring (extinction)",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Reinforcement given",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Other",
+          "pressed": null,
+          "expanded": null
+        }
+      ]
+    },
+    "dialogCount": 1,
+    "customNarrativeReview": {
+      "antecedent": {
+        "storedValue": "A difficult fractions worksheet was introduced",
+        "presentInRenderedTextOrControl": false
+      },
+      "behavior": {
+        "storedValue": "Student covered ears and moved away",
+        "presentInRenderedTextOrControl": false
+      },
+      "consequence": {
+        "storedValue": "Teacher provided a quieter work area",
+        "presentInRenderedTextOrControl": false
+      }
+    }
+  },
+  "ToolSelectionWizard": {
+    "repeatedLabels": {
+      "Select": [
+        {
+          "visibleText": "❓Figure out WHY a behavior happens→",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "🛠️Create a plan or intervention→",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "📈Track or analyze data→",
+          "pressed": null,
+          "expanded": null
+        }
+      ]
+    },
+    "dialogCount": 0
+  },
+  "LiveObsOverlay": {
+    "repeatedLabels": {},
+    "dialogCount": 1
+  },
+  "FrequencyCounter": {
+    "repeatedLabels": {},
+    "dialogCount": 1
+  },
+  "IntervalGrid": {
+    "repeatedLabels": {
+      "Toggle mode": [
+        {
+          "visibleText": "Partial Interval",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Whole Interval",
+          "pressed": null,
+          "expanded": null
+        },
+        {
+          "visibleText": "Momentary",
+          "pressed": null,
+          "expanded": null
+        }
+      ]
+    },
+    "dialogCount": 1
+  },
+  "ChoiceBoard": {
+    "repeatedLabels": {},
+    "dialogCount": 1
+  }
+}

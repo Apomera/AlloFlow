@@ -780,6 +780,74 @@
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
         },
+        // One AudioContext for the whole lab. WebKit (Safari, every iPad) refuses a fifth live AudioContext with
+        // QuotaExceededError, and a context a tool creates and never closes stays live for the rest of the session,
+        // so a student who visited four sound-making tools lost sound in every later one: the creation threw
+        // inside try/catch and the click went silent. Chrome imposes no cap but keeps every leaked context's audio
+        // thread running (Universe made a fresh one per beep). Tools that close their own context keep it; the
+        // rest share this one. Its close() is a no-op so no tool can silence the others; a suspended context is
+        // resumed on request, since the caller is about to play.
+        audioContext: function () {
+          var Ctor = window.AudioContext || window.webkitAudioContext;
+          var shared = window.StemLab._sharedAudioContext;
+          if (shared && shared.state !== 'closed') {
+            if (shared.state === 'suspended') { try { shared.resume(); } catch (resumeError) {} }
+            return shared;
+          }
+          shared = new Ctor(); // throws exactly what a tool's own `new` would when Web Audio is missing
+          try { shared.close = function () { return Promise.resolve(); }; } catch (guardError) {}
+          window.StemLab._sharedAudioContext = shared;
+          return shared;
+        },
+        // Clipboard, the house way. Gemini Canvas refuses navigator.clipboard by permissions policy, so a tool
+        // that calls it directly fails on every click there while passing every test on a normal origin. Same
+        // contract as navigator.clipboard.writeText (resolves on success, rejects once every path has failed),
+        // so a tool's then / catch / await handlers keep their meaning. Order: the shell's alloCopyText (it
+        // carries the execCommand fallback Canvas needs), then the Clipboard API, then execCommand on a hidden
+        // textarea, handing focus back to the button afterwards. Call it inside the click: execCommand needs
+        // the gesture's transient activation, so build the text first and never await a fetch in between.
+        writeClipboard: function (text) {
+          var value = text == null ? '' : String(text);
+          function viaExec() {
+            var focused = document.activeElement, area = null, ok = false;
+            try {
+              area = document.createElement('textarea');
+              area.value = value; area.setAttribute('readonly', ''); area.setAttribute('aria-hidden', 'true');
+              area.style.cssText = 'position:fixed;left:-9999px;top:0';
+              document.body.appendChild(area); area.focus(); area.select();
+              ok = !!(document.execCommand && document.execCommand('copy'));
+            } catch (execError) { ok = false; }
+            try { if (area && area.parentNode) area.parentNode.removeChild(area); } catch (removeError) {}
+            try { if (focused && focused !== document.body && typeof focused.focus === 'function') focused.focus(); } catch (focusError) {}
+            return ok;
+          }
+          function settle(ok) { return ok ? undefined : Promise.reject(new Error('Copy is not available here. Select the text and press Ctrl+C.')); }
+          try {
+            if (typeof window.alloCopyText === 'function') {
+              return Promise.resolve(window.alloCopyText(value)).then(function (ok) { return settle(ok !== false); }, function () { return settle(viaExec()); });
+            }
+            if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+              return Promise.resolve(navigator.clipboard.writeText(value)).then(function () { return undefined; }, function () { return settle(viaExec()); });
+            }
+          } catch (routeError) {}
+          return Promise.resolve().then(function () { return settle(viaExec()); });
+        },
+        // renderer.dispose() frees GPU objects but leaves the WebGL CONTEXT alive until the canvas is garbage
+        // collected. Chromium caps concurrent contexts at about 16 and the lab has some twenty 3D tools, so a
+        // student moving through a few of them gets an earlier tool's context evicted, and that tool paints black
+        // on return. Call this right after dispose(): it loses the context on the next tick, but only if the canvas
+        // has left the document. A scene rebuilt on the same, still-attached canvas keeps its context, which a
+        // forceContextLoss inside a rebuilding effect would otherwise blank (measured on Particle Lab, 2026-09-05).
+        releaseGl: function (renderer) {
+          try {
+            var canvas = renderer && renderer.domElement;
+            if (!canvas || typeof renderer.forceContextLoss !== 'function') return;
+            window.setTimeout(function () {
+              if (canvas.isConnected) return;
+              try { renderer.forceContextLoss(); } catch (lossError) {}
+            }, 0);
+          } catch (releaseError) {}
+        },
         // Shared 3D viewer shell — see makeBayViewer usage in stem_tool_autorepair
         // and stem_tool_firstresponse. Lives here, beside ensureThree, because the
         // host always loads before any tool and needs no loader-order change.
@@ -8087,11 +8155,17 @@
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             // _deferSafe wrap: stemCelebrate sets parent confetti/celebration state.
             celebrate: typeof stemCelebrate === 'function' ? _deferSafe(stemCelebrate) : function() {},
-            callGemini: typeof callGemini === 'function' ? callGemini : null,
-            ai: ai || null,
-            generateText: (ai && typeof ai.generateText === 'function')
-              ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
-              : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
+            // A blocked callGemini (QR student, or in-app student with AI hidden,
+            // 2026-09-14) is a function that only throws; hand tools null so their
+            // AI affordances hide instead of failing on click, and withhold the raw
+            // client with it.
+            callGemini: typeof callGemini === 'function' && !callGemini._alloQrBlocked ? callGemini : null,
+            ai: (typeof callGemini === 'function' && callGemini._alloQrBlocked) ? null : (ai || null),
+            generateText: (typeof callGemini === 'function' && callGemini._alloQrBlocked)
+              ? null
+              : (ai && typeof ai.generateText === 'function')
+                ? function(prompt, options) { return ai.generateText(prompt, options || {}); }
+                : (typeof callGemini === 'function' ? function(prompt, options) { return callGemini(prompt, !!(options && options.jsonMode)); } : null),
             storageDB: storageDB || null,
             // Guarded AI-hint entry point + its enabled flag. getHint self-gates
             // (off → zero traffic), enforces try-again/cap/reveal-check, and shows

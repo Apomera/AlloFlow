@@ -7329,7 +7329,7 @@ var UPSTANDER_MENTOR_QUOTES = [
     { id: 'umq40', mentor: 'Bryan Stevenson', quote: 'Just mercy is something we believe in, not something we do until we are tired.', useWhen: 'When you want to stop.', followup: 'Mercy is a discipline.' }
   ];
 var QUOTES_FROM_THE_MOVEMENT = [
-    { id: 'qfm1', quote: 'Be the change you wish to see in the world.', author: 'Mahatma Gandhi', context: 'Active responsibility' },
+    { id: 'qfm1', quote: 'If we could change ourselves, the tendencies in the world would also change.', author: 'Mahatma Gandhi, Indian Opinion (1913)', context: 'Active responsibility. The popular version of this line — \'be the change you wish to see in the world\' — is a later paraphrase that Gandhi never actually said or wrote.' },
     { id: 'qfm2', quote: 'Injustice anywhere is a threat to justice everywhere.', author: 'Martin Luther King Jr.', context: 'Solidarity' },
     { id: 'qfm3', quote: 'I refuse to accept the view that mankind is so tragically bound to the starless midnight of racism and war that the bright daybreak of peace and brotherhood can never become a reality.', author: 'Martin Luther King Jr.', context: 'Hope' },
     { id: 'qfm4', quote: 'There is no such thing as a single-issue struggle because we do not live single-issue lives.', author: 'Audre Lorde', context: 'Intersectionality' },

@@ -4554,7 +4554,7 @@
               controls.dispose();
               if (resizeObserver) resizeObserver.disconnect();
               clearGroup(magnetGroup); clearGroup(lineGroup); clearGroup(vectorGroup); clearGroup(sliceGroup); clearGroup(probeGroup);
-              renderer.dispose();
+              renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               cv._mag3dInit = false;
               cv._mag3dUpdate = null;
               cv._mag3dCleanup = null;
@@ -5634,7 +5634,7 @@
               if (disposed) return; disposed = true;
               cv.removeEventListener('pointerdown', onPointerDown); cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('webglcontextlost', onContextLost);
               controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              clearDynamic(); renderer.dispose(); cv._electro3dInit = false; cv._electro3dUpdate = null; cv._electro3dCleanup = null;
+              clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._electro3dInit = false; cv._electro3dUpdate = null; cv._electro3dCleanup = null;
             }
             cv.addEventListener('pointerdown', onPointerDown); cv.addEventListener('pointerup', onPointerUp); cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
             if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
@@ -6743,7 +6743,7 @@
             function cleanup() {
               if (disposed) return; disposed = true;
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              clearDynamic(); renderer.dispose(); cv._charge3dInit = false; cv._charge3dUpdate = null; cv._charge3dCleanup = null;
+              clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._charge3dInit = false; cv._charge3dUpdate = null; cv._charge3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
             if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
@@ -7356,7 +7356,7 @@
             function cleanup() {
               if (disposed) return; disposed = true;
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              clearDynamic(); renderer.dispose(); cv._motor3dInit = false; cv._motor3dUpdate = null; cv._motor3dCleanup = null;
+              clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._motor3dInit = false; cv._motor3dUpdate = null; cv._motor3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
             if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });
@@ -7912,7 +7912,7 @@
               cv.removeEventListener('pointerup', onPointerUp); cv.removeEventListener('pointercancel', onPointerUp);
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene);
               window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              clearDynamic(); renderer.dispose();
+              clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
               _induction3DRunToken++; if (_induction3DRAF) window.cancelAnimationFrame(_induction3DRAF); _induction3DRAF = null;
               cv._induction3dInit = false; cv._induction3dUpdate = null; cv._induction3dCleanup = null;
             }
@@ -9471,7 +9471,7 @@
             function cleanup() {
               if (disposed) return; disposed = true;
               cv.removeEventListener('webglcontextlost', onContextLost); controls.removeEventListener('change', renderScene); window.removeEventListener('resize', renderScene); controls.dispose(); if (resizeObserver) resizeObserver.disconnect();
-              if (animationFrame) window.cancelAnimationFrame(animationFrame); animationFrame = 0; clearDynamic(); renderer.dispose(); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
+              if (animationFrame) window.cancelAnimationFrame(animationFrame); animationFrame = 0; clearDynamic(); renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); cv._earth3dInit = false; cv._earth3dUpdate = null; cv._earth3dCleanup = null;
             }
             cv.addEventListener('webglcontextlost', onContextLost); controls.addEventListener('change', renderScene);
             if (typeof ResizeObserver !== 'undefined') { resizeObserver = new ResizeObserver(renderScene); resizeObserver.observe(cv); } else window.addEventListener('resize', renderScene, { passive: true });

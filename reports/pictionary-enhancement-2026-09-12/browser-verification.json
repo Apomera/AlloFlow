@@ -1,0 +1,375 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "theme": "dark",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "enlarged text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "scans": [
+        {
+          "label": "concept source and challenge setup",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "glossary reference",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "drawing tools, restored clear, and mode switching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "missed AI guess with revision",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "pending request controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "complete set and late skipped request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "review without AI",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "session expiration ignores pending request",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors and reduced motion",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "enlarged text",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "realCanvasPixels": true,
+      "pointerShapes": true,
+      "dotDrawing": true,
+      "clearUndoRestores": true,
+      "modeSwitchPreservesDrawing": true,
+      "keyboardUndoRedo": true,
+      "glossaryReference": true,
+      "revisions": true,
+      "lateResponsesIgnored": true,
+      "privateRequestPayloads": true,
+      "noExtraTokenCharge": true,
+      "selfReview": true
+    }
+  ],
+  "errors": [],
+  "provider": "Deterministic local fixtures; no external AI requests."
+}

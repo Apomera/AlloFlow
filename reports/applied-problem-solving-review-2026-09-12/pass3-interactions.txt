@@ -1,0 +1,59 @@
+
+describe('Applied challenge recovery and task review interactions', () => {
+  it('restores deleted evidence and checks in order without losing later edits', async () => {
+    const value=baseData();value.workspace.response='My recommendation';
+    value.evidenceLedger=[{id:'r1',claim:'First claim',evidence:'First evidence'},{id:'r2',claim:'Second claim'}];
+    value.validationCycles=[{id:'c1',source:'self',plan:{testQuestion:'Original check?'},observation:{evidence:'My observation'},decision:{action:'revise',reasoning:'My reasoning'}}];
+    await renderChallenge({data:value});
+    await clickButton('Remove evidence row 1');expect(document.activeElement.id).toBe('aps-undo');
+    await typeInto(host.querySelector('[aria-label="Evidence row 1 claim, option, or position"]'),'Later edit to second claim');
+    await clickButton('Remove check 1');
+    await clickButton('Undo last change');expect(latest.data.validationCycles[0]).toMatchObject({id:'c1',observation:{evidence:'My observation'},decision:{reasoning:'My reasoning'}});
+    await clickButton('Undo last change');expect(latest.data.evidenceLedger.map(row=>row.claim)).toEqual(['First claim','Later edit to second claim']);
+    expect(document.activeElement.id).toBe('aps-ledger-claim-r1');
+    expect(JSON.stringify(latest.data)).not.toContain('recoveryEntries');
+  });
+  it('restores a replaced custom question but protects newer writing', async () => {
+    const value=baseData();value.workspace.workingQuestion='My custom question?';value.workspace.questionAccepted=true;
+    await renderChallenge({data:value});await clickButton('Replace with suggested question');
+    await clickButton('Undo last change');expect(latest.data.workspace.workingQuestion).toBe('My custom question?');
+    expect(document.activeElement.id).toBe('applied-workspace-workingQuestion');
+    await clickButton('Replace with suggested question');await typeInto(host.querySelector('#applied-workspace-workingQuestion'),'A newer question?');
+    await clickButton('Undo last change');expect(latest.data.workspace.workingQuestion).toBe('A newer question?');
+    expect(host.textContent).toContain('Your question has changed again.');expect(host.textContent).toContain('My custom question?');
+  });
+  it('clears recovery on resource switches and does not overwrite full ledgers', async () => {
+    const value=baseData();value.evidenceLedger=[{id:'old',claim:'Old claim'}];await renderChallenge({data:value});await clickButton('Remove evidence row 1');
+    const full={...latest.data,evidenceLedger:Array.from({length:12},(_,i)=>({id:'new'+i,claim:'Claim '+i}))};await replaceChallenge('challenge-1',full);
+    await clickButton('Undo last change');expect(latest.data.evidenceLedger).toHaveLength(12);expect(host.textContent).toContain('There is no room');
+    await replaceChallenge('other-resource',baseData());expect([...host.querySelectorAll('button')].some(b=>b.textContent==='Undo last change')).toBe(false);
+  });
+  it('caps session recovery at ten changes', async () => {
+    const value=baseData();value.evidenceLedger=Array.from({length:12},(_,i)=>({id:'r'+i,claim:'Claim '+i}));await renderChallenge({data:value});
+    for(let i=0;i<11;i++)await clickButton('Remove evidence row 1');
+    expect(host.textContent).toContain('10 recent changes available');
+    for(let i=0;i<10;i++)await clickButton('Undo last change');
+    expect(latest.data.evidenceLedger).toHaveLength(11);expect(latest.data.evidenceLedger.some(row=>row.id==='r0')).toBe(false);
+  });
+  it('saves complete feedback coverage and includes late evidence in the actual request', async () => {
+    const value=baseData();value.workspace.response='My own response';value.evidenceLedger=Array.from({length:12},(_,i)=>({id:'r'+i,claim:'Claim '+i,evidence:'EVIDENCE-'+i}));
+    const callGemini=vi.fn(async()=>JSON.stringify({strength:'Complete review',status:'developing'}));await renderChallenge({data:value,callGemini});
+    await clickButton('Get strengths-first AI feedback');expect(callGemini.mock.calls[0][0]).toContain('EVIDENCE-11');
+    expect(latest.data.feedback.coverage).toMatchObject({evidenceRows:12,shortenedFields:0});expect(host.textContent).toContain('12 evidence rows');
+  });
+  const qualityReply=()=>({checks:Object.fromEntries(['lessonUse','alternatives','feasibility'].map(key=>[key,{status:'revise',reason:'Inspect the task wording.',nextStep:'Make the criterion more specific.'}]))});
+  it('lets teachers review task quality without touching student work or verifying source facts', async () => {
+    const value=baseData();value.workspace.response='PRIVATE-LEARNER';value.sourceExcerpt='Gravity moves water downhill.';
+    const callGemini=vi.fn(async()=>JSON.stringify(qualityReply()));await renderChallenge({teacher:true,data:value,callGemini});
+    await clickButton('Get AI task review');expect(callGemini).toHaveBeenCalledTimes(1);expect(callGemini.mock.calls[0][0]).not.toContain('PRIVATE-LEARNER');
+    expect(latest.data.qualityReview.checks.lessonUse.status).toBe('revise');expect(latest.data.workspace.response).toBe('PRIVATE-LEARNER');expect(latest.data.brief.factVerified).not.toBe(true);
+    await replaceChallenge('challenge-1',{...latest.data,plan:{availableTime:'10 minutes'}});expect(host.textContent).toContain('This review is for an earlier task.');
+  });
+  it('rejects quality reviews for changed tasks, resource switches and invalid AI output', async () => {
+    let resolveReview;const callGemini=vi.fn(()=>new Promise(resolve=>{resolveReview=resolve;}));await renderChallenge({teacher:true,callGemini});
+    await clickButton('Get AI task review');await replaceChallenge('challenge-1',{...latest.data,plan:{availableTime:'5 minutes'}});
+    await act(async()=>resolveReview(JSON.stringify(qualityReply())));expect(latest.data.qualityReview).toBeUndefined();expect(host.textContent).toContain('The task changed during review.');
+    await clickButton('Get AI task review');await replaceChallenge('new-task',baseData());await act(async()=>resolveReview(JSON.stringify(qualityReply())));expect(latest.data.qualityReview).toBeUndefined();
+    await clickButton('Get AI task review');await act(async()=>resolveReview('nonsense'));expect(latest.data.qualityReview).toBeUndefined();expect(host.textContent).toContain('could not be completed');
+  });
+});

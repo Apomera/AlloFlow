@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "failedRetryRecovered": true,
+  "variantsAccessible": true,
+  "undoRestored": true,
+  "twoStopRecall": true,
+  "allMissedSelfCheckCompletes": true,
+  "focusedReviewIsolated": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "assertions": [
+    {
+      "name": "Phone review controls do not cover the proposed structure",
+      "pass": true,
+      "details": {
+        "panelBottom": 318.4375,
+        "modelTop": 384.7950476732046,
+        "modelBottom": 526.507216440252,
+        "buttons": [
+          {
+            "width": 86,
+            "height": 48
+          },
+          {
+            "width": 86,
+            "height": 48
+          },
+          {
+            "width": 86,
+            "height": 48
+          }
+        ],
+        "scenery": false
+      }
+    },
+    {
+      "name": "Compact review retains 44px touch actions",
+      "pass": true,
+      "details": [
+        {
+          "width": 86,
+          "height": 48
+        },
+        {
+          "width": 86,
+          "height": 48
+        },
+        {
+          "width": 86,
+          "height": 48
+        }
+      ]
+    },
+    {
+      "name": "Scenery stays hidden during compact review",
+      "pass": true
+    },
+    {
+      "name": "Cancel restores scenery and clears the proposed geometry",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

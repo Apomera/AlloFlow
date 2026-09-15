@@ -1,0 +1,68 @@
+{
+  "date": "2026-09-12",
+  "scope": "Mailbox image serialization and local transport regressions; Google services mocked, no live Google deployment tested.",
+  "passed": 196,
+  "failed": 4,
+  "total": 200,
+  "imageRegressionCasesPassed": 10,
+  "baseline": {
+    "originalPicture": null,
+    "patchedPicturePreserved": true
+  },
+  "suites": [
+    {
+      "file": "class_mailbox.test.js",
+      "passed": 45,
+      "failures": [
+        "ANTI wiring pins keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks"
+      ]
+    },
+    {
+      "file": "firestore_sync.test.js",
+      "passed": 32,
+      "failures": [
+        "sanitizeHistoryForCloud — artwork budget drops regenerable Memory Aid art before uploaded originals while preserving metadata and nested fields",
+        "sanitizeHistoryForCloud — artwork budget finds type/artifactType Memory Aids in nested envelopes and strips visualImage/imageUrl only from their cards"
+      ]
+    },
+    {
+      "file": "memory_aid_export_lockstep.test.js",
+      "passed": 16,
+      "failures": [
+        "Memory Aid host wiring and help documents both studio tiles in help mode"
+      ]
+    },
+    {
+      "file": "self_contained_pack.test.js",
+      "passed": 10,
+      "failures": []
+    },
+    {
+      "file": "session_transport.test.js",
+      "passed": 45,
+      "failures": []
+    },
+    {
+      "file": "studio_read_aloud.test.js",
+      "passed": 17,
+      "failures": []
+    },
+    {
+      "file": "studio_response_boundary.test.js",
+      "passed": 13,
+      "failures": []
+    },
+    {
+      "file": "symbol_studio_live_aac_integration.test.js",
+      "passed": 12,
+      "failures": []
+    },
+    {
+      "file": "symbol_studio_portable_aac_export.test.js",
+      "passed": 6,
+      "failures": []
+    }
+  ],
+  "existingFailures": "Word Cloud hook dependency assertion; two Firestore Memory Aid artwork metadata assertions; Memory Aid help tile assertion. These exercise files unchanged by this fix.",
+  "release": "Root and desktop public LiveAac modules rebuilt. App publication and normal committed-module CDN cache-bust remain release steps; mailbox Code.gs unchanged."
+}

@@ -1,0 +1,129 @@
+{
+  "checks": [
+    "Inspection controls preserve all practice state, follow the real technique transitions, frame the filler as it moves, distinguish eye alignment from meniscus setting, and show valid delivery versus blowout.",
+    "Desktop and phone accessibility/layout checks, native-select keyboard interaction, forced-colors inspection, detail shortcut, restart, remount defaults, corrupted state, and Escape focus return pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "empty-receiver",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-receiver",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-filler",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-filler",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-meniscus",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-meniscus",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-before-contact",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-before-contact",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-at-wall",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-at-wall",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-delivered",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "receiver-delivered",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-retained",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "follow-retained",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-receiver",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-receiver",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-tip",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "blown-tip",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-source",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "corrupt-source",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

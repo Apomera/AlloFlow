@@ -2528,8 +2528,8 @@ window.SelHub = window.SelHub || {
                   text += '\n=== END RETROSPECTIVE ===\n';
 
                   // Copy to clipboard
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text).then(function() {
+                  if (window.SelHub && window.SelHub.copyText) {
+                    window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
                       addToast('Retrospective copied to clipboard!', 'success');
                       tryAwardBadge('retro_exporter');
                     }).catch(function() {

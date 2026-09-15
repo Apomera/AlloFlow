@@ -1,0 +1,49 @@
+{
+  "mockedAI": true,
+  "externalProviderCalls": false,
+  "results": [
+    {
+      "width": 1280,
+      "realHttpStorage": true,
+      "aiScenes": true,
+      "typedDialogue": true,
+      "answerRecap": true,
+      "closeResume": true,
+      "reloadResume": true,
+      "transcriptPreserved": true,
+      "horizontalOverflow": false,
+      "savedTurn": 3,
+      "conversationEntries": 5,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "realHttpStorage": true,
+      "aiScenes": true,
+      "typedDialogue": true,
+      "answerRecap": true,
+      "closeResume": true,
+      "reloadResume": true,
+      "transcriptPreserved": true,
+      "horizontalOverflow": false,
+      "savedTurn": 3,
+      "conversationEntries": 5,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "realHttpStorage": true,
+      "aiScenes": true,
+      "typedDialogue": true,
+      "answerRecap": true,
+      "closeResume": true,
+      "reloadResume": true,
+      "transcriptPreserved": true,
+      "horizontalOverflow": false,
+      "savedTurn": 3,
+      "conversationEntries": 5,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

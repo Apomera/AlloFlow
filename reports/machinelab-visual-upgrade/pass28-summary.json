@@ -1,0 +1,43 @@
+{
+  "enhancement": "Fixed open start markers and moving solid markers connect matching points on each load. Contrasting rims keep moving markers visible.",
+  "tests": {
+    "uniquePassed": 502,
+    "files": 5,
+    "added": 11,
+    "finalGeometryPassed": 270
+  },
+  "browser": {
+    "light": {
+      "errors": [],
+      "overflow": false,
+      "desktopScenarios": 9,
+      "checks": 18,
+      "finalMarkerRim": true,
+      "finalRimScenarios": [
+        "ramp-1150",
+        "screw-1150",
+        "ramp-320",
+        "screw-320"
+      ]
+    },
+    "dark": {
+      "errors": [],
+      "overflow": false,
+      "desktopScenarios": 9,
+      "checks": 18,
+      "finalMarkerRim": true
+    },
+    "contrast": {
+      "errors": [],
+      "overflow": false,
+      "desktopScenarios": 9,
+      "checks": 18,
+      "finalMarkerRim": true
+    }
+  },
+  "sourceMirrorParity": true,
+  "syntaxChecks": true,
+  "sourceSHA256": "d75e03d5be1a29d599c2be6694d4082c8ea04a4744b78bf6d584e56b45f6a15e",
+  "pending": null,
+  "published": false
+}

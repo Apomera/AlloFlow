@@ -1,0 +1,41 @@
+{
+  "unitTests": {
+    "passed": 1467,
+    "failed": 0,
+    "pending": 0,
+    "files": 85,
+    "method": "Full Geometry World run with final targeted rerun replacing affected suite results.",
+    "reports": [
+      "regressions.json",
+      "final-tests.json"
+    ]
+  },
+  "browser": {
+    "passed": 17,
+    "failed": 0,
+    "pageOrShaderErrors": [],
+    "report": "browser.json"
+  },
+  "source": [
+    {
+      "file": "stem_tool_geometryworld.js",
+      "syntax": true,
+      "desktopIdentical": true,
+      "sha256": "a00e297e90a9fd4386622eec40d1f71fa324f91d71f44d1cae973341b64850c0"
+    },
+    {
+      "file": "stem_tool_geometryworld_builder.js",
+      "syntax": true,
+      "desktopIdentical": true,
+      "sha256": "777c464c3aaceae61742183cde9bbd59bfeee9e449dc025f8a69bf79bcb9e57a"
+    }
+  ],
+  "scopedDiffWhitespaceCheck": true,
+  "deployed": false,
+  "visualReview": [
+    "04-pattern-review.jpg",
+    "07-phone-material-review.jpg",
+    "09-harbor-arcade-overview.jpg",
+    "10-arcade-landmark.jpg"
+  ]
+}

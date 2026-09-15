@@ -162,7 +162,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function fieldInvestigationSummaryText()');
     expect(source).toContain('function copyFieldInvestigationSummary()');
     expect(source).toContain('function downloadFieldInvestigationSummary()');
-    expect(source).toContain('navigator.clipboard.writeText(summary)');
+    expect(source).toContain('(window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(summary)');
     expect(source).toContain('new Blob([summary]');
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_copy_dino_lab_investigation_summary_to_clipboar', 'Copy Dino Lab investigation summary to clipboard')`);
     expect(source).toContain(`'aria-label': __alloT('stem.dinolab.a11y_download_dino_lab_investigation_summary', 'Download Dino Lab investigation summary')`);

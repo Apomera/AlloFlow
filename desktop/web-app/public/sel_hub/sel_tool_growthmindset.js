@@ -675,7 +675,7 @@ window.SelHub = window.SelHub || {
         { id: 'reframe',  icon: '\uD83D\uDD04', label: 'Reframe It' },
         { id: 'stories',  icon: '\uD83C\uDF1F', label: 'Yet Stories' },
         { id: 'map',      icon: '\uD83D\uDDFA\uFE0F', label: 'My Growth Map' },
-        { id: 'coach',    icon: '\uD83E\uDD16', label: 'AI Coach' },
+        { id: 'coach',    icon: '\uD83E\uDD16', label: callGemini ? 'AI Coach' : 'AI Coach (off)' },
         { id: 'letter',   icon: '\u2709\uFE0F', label: 'Future Me' },
         { id: 'educator', icon: '\uD83C\uDFEB', label: 'Educator Lens' },
       ];
@@ -1167,6 +1167,16 @@ window.SelHub = window.SelHub || {
             window.SelHub.giveCoachConsent();
             upd('_consentRefresh', Date.now());
           }, ctx.activeSessionCode);
+        } else if (!callGemini) {
+          // No AI provider here (PPS students use the app without Gemini). Say so, and hand the
+          // student the tab that does the same work by hand.
+          coachContent = h('div', { 'data-gm-coach-off': 'true', style: { padding: '20px', maxWidth: '600px', margin: '0 auto', textAlign: 'center' } },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '8px' } }, '\uD83E\uDD16'),
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: EMERALD_DARK, margin: '0 0 6px' } }, 'The AI coach is off here'),
+            h('p', { style: { fontSize: '13px', color: _gmC('#475569'), margin: '0 0 14px', lineHeight: 1.6 } }, 'This copy of AlloFlow has no AI provider, so there is no one on the other end of the chat. Reframe It does the same work by hand: name the fixed thought, then make it specific and workable.'),
+            h('button', { type: 'button', onClick: function() { upd('activeTab', 'reframe'); },
+              style: { minHeight: 44, padding: '10px 18px', borderRadius: '10px', border: 'none', background: EMERALD_DARK, color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer' } }, 'Open Reframe It')
+          );
         } else {
         coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },

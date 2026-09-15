@@ -1,0 +1,217 @@
+{
+  "height": 9083,
+  "sections": [
+    {
+      "tag": "NAV",
+      "id": "",
+      "data": {
+        "communitySkipLinks": "true"
+      },
+      "top": 100,
+      "height": 0,
+      "text": "Skip to next garden task\nSkip to crew huddle\nSkip to accessible garden map"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityCoach": "true"
+      },
+      "top": 100,
+      "height": 104,
+      "text": "YOUR GARDEN MISSION\nChoose an open plot to start planting\n0/16\nPlots planted\n0\nHarvest ready\n50.00\nDollars left"
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-experiment-bench",
+      "data": {
+        "communityExperimentBench": "true"
+      },
+      "top": 216,
+      "height": 215,
+      "text": "PLAN · PREDICT · COMPARE\nThe experiment bench\n\nWould a different layout help your crops? Test two versions of the same garden and follow the evid"
+    },
+    {
+      "tag": "NAV",
+      "id": "community-journey-nav",
+      "data": {
+        "communityJourneyNav": "true"
+      },
+      "top": 443,
+      "height": 298,
+      "text": "CURRENT TASK\nSTAGE 1\nNEXT: PLAN & PLANT\nPlan & plant\n\nPlant at least four crop positions. All workspace sections are available.\n\nJOURNEY PROGRESS"
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-focus-guide",
+      "data": {
+        "communityFocusGuide": "true"
+      },
+      "top": 753,
+      "height": 98,
+      "text": "🎯\nSTAGE 1 · FOCUS MODE\nShape one testable garden neighborhood\n\nReduce the long garden workspace to the panels that matter most for plan & plant."
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-facilitator-lens",
+      "data": {
+        "communityFacilitatorLens": "true"
+      },
+      "top": 863,
+      "height": 94,
+      "text": "🧑‍🏫\nFACILITATOR LENS\nTeach the investigation without leaving the simulation\n\nStage-aware timing, prompts, look-fors, misconceptions, and UDL mo"
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-crew-huddle",
+      "data": {
+        "communityCrewHuddle": "true"
+      },
+      "top": 968,
+      "height": 870,
+      "text": "🧩\n🔎\n📊\n🤝\nGARDEN CREW HUDDLE\nFour roles, one shared investigation\n\nChoose how you will contribute. Each role gets a different mission while the"
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-learning-compass",
+      "data": {
+        "communityLearningCompass": "true"
+      },
+      "top": 1850,
+      "height": 412,
+      "text": "🧭\nLEARNING COMPASS\nDesign, test, and explain a garden relationship\n\nI can use simulation evidence to explain why a planting choice may help, con"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communitySeasonDeck": "true",
+        "focusStages": "observe"
+      },
+      "top": 2274,
+      "height": 343,
+      "text": "🌱\nGARDEN CONDITIONS\nSpring - Day 1\nYear 1 • Planning season\n0/16 plots active\nDAY PROGRESS\n1 OF 30\n💧\nFresh rain, lengthening light, and cool-se"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityStarterPlans": "true",
+        "focusStages": "design"
+      },
+      "top": 2629,
+      "height": 268,
+      "text": "QUICK START\nChoose a garden story\n\nStart with a purposeful layout, then inspect, revise, and make it your own.\n\nOptional\n🌽\nCOMPANION SYNERGY\nThr"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communitySeedShelf": "true",
+        "focusStages": "design"
+      },
+      "top": 2909,
+      "height": 607,
+      "text": "PLANNING PALETTE\nSeed Shelf\n\nChoose a crop first, or choose an open plot and use the in-garden Planting Dock.\n\n34 choices\n🌿 All\n🥕 Food crops\n🐝"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "data": {},
+      "top": 3528,
+      "height": 96,
+      "text": "♻️ Sustainable Gardening Tips\n♻️\nTry regenerative plants (comfrey, buckwheat, clover, yarrow) — they heal soil, attract beneficials, and build lo"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityPlantingDock": "true",
+        "plantingDockSurface": "simulation"
+      },
+      "top": 3636,
+      "height": 145,
+      "text": "PLANT INSIDE THE GARDEN\nPlanting Dock\n\nChoose an open plot first, or select a crop from the Seed Shelf.\n\n1 PLOT\n→\n2 PLANT\n→\n3 REVIEW\n→\n4 OBSERVE\n"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "data": {},
+      "top": 3793,
+      "height": 580,
+      "text": "⛶ Maximize"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityVisualKey": "true",
+        "focusStages": "design observe transfer"
+      },
+      "top": 4385,
+      "height": 128,
+      "text": "VISUAL GUIDE\nHow to read the garden map\nColor + label for every status\nReady to harvest\nMature and healthy\nThriving or allied\nHealthy companion s"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityPlotNavigator": "true",
+        "focusStages": "design observe explain transfer"
+      },
+      "top": 4525,
+      "height": 1489,
+      "text": "Garden plot navigator\n\nChoose an empty plot to open its in-garden plant tray. Choose a planted plot to inspect it.\n\n0 planted\n0 ready\n↗ Relations"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "data": {},
+      "top": 6026,
+      "height": 258,
+      "text": "🎯 Garden Challenges (optional)\n🐝\nPollinator Rescue\nBeginner · LS2.A: Interdependent Relationships\n⚗️\nThe Nitrogen Crisis\nIntermediate · LS2.B: "
+    },
+    {
+      "tag": "SECTION",
+      "id": "community-plan-readiness",
+      "data": {
+        "communityActions": "true",
+        "communityPlanReadiness": "true",
+        "focusStages": "design"
+      },
+      "top": 6296,
+      "height": 333,
+      "text": "BEFORE THE SEASON\nGarden Blueprint Check\n\nUse these signals as guidance, not requirements.\n\n0%\nSTART PLANTING\n🪴\n0/4\nPlant 4 plots\nEnough plants "
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityStewardshipDashboard": "true",
+        "focusStages": "observe"
+      },
+      "top": 6641,
+      "height": 2059,
+      "text": "WHOLE-GARDEN SYSTEMS\nStewardship Dashboard\n\nBalance soil, spending, and living pest control as one connected system.\n\nLive conditions\n🧪 Soil Che"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "data": {},
+      "top": 8712,
+      "height": 34,
+      "text": "📅 Year 1 • Spring • Day 1"
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "data": {
+        "communityGardenPassport": "true",
+        "focusStages": "explore"
+      },
+      "top": 8758,
+      "height": 425,
+      "text": "LONG-TERM PROGRESS\nGarden Passport\n\nCollect stamps by growing, observing, and caring across seasons.\n\n0/12\nSTAMPS EARNED\nShow all 12\nPASSPORT PRO"
+    }
+  ]
+}

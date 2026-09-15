@@ -3207,7 +3207,7 @@
               var text = assoc ? assoc.text : faceFor(claim, audience, compHasSynthetic(comp));
               try {
                 if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(text).then(function () { announce(__alloT('stem.lumen.sr_finding_copied_the_provenance_level_travels_with', 'Finding copied — the provenance level travels with it.')); },
+                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function () { announce(__alloT('stem.lumen.sr_finding_copied_the_provenance_level_travels_with', 'Finding copied — the provenance level travels with it.')); },
                     function () { announce(__alloT('stem.lumen.sr_copy_failed_select_the_sentence_and_copy_manually', 'Copy failed — select the sentence and copy manually.')); });
                 } else { announce(__alloT('stem.lumen.sr_copy_is_not_available_here_select_the_sentence_an', 'Copy is not available here — select the sentence and copy manually.')); }
               } catch (eC) { announce(__alloT('stem.lumen.sr_copy_failed_select_the_sentence_and_copy_manually', 'Copy failed — select the sentence and copy manually.')); }

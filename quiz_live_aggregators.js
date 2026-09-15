@@ -1898,7 +1898,47 @@
   }
 
   window.AlloModules = window.AlloModules || {};
+  // Success-criteria rollup: class results per concept label. Reads the same
+  // allResponses map the item analysis reads (uid -> questionIndex -> response)
+  // and grades each response with gradeResponseForItem, so a criterion is "met"
+  // exactly when the item analysis would count the answer correct. The label
+  // comes from the response (stamped at submit time) or the question. Returns
+  // counts only: no names, no uids, nothing a plan strip should not show.
+  function aggregateSuccessCriteria(quizState, generatedContent, roster) {
+    var allResponses = (quizState && quizState.allResponses) || {};
+    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var rosterObj = roster && typeof roster === 'object' ? roster : null;
+    var byConcept = {};
+    var respondents = {};
+    Object.keys(allResponses).forEach(function (uid) {
+      if (rosterObj && !Object.prototype.hasOwnProperty.call(rosterObj, uid)) return;
+      var perQuestion = allResponses[uid];
+      if (!perQuestion || typeof perQuestion !== 'object') return;
+      Object.keys(perQuestion).forEach(function (key) {
+        var idx = Number(key);
+        if (!Number.isInteger(idx) || idx < 0) return;
+        var question = questions[idx];
+        var response = perQuestion[key];
+        if (!question || !response || typeof response !== 'object') return;
+        var stamped = response.conceptLabel != null ? String(response.conceptLabel) : '';
+        var label = (stamped.trim() || String(question.conceptLabel || '')).replace(/\s+/g, ' ').trim();
+        if (!label) return;
+        var grade = gradeResponseForItem(response, question);
+        var status = grade && grade.status;
+        if (status !== 'correct' && status !== 'incorrect' && status !== 'partially-correct') return;
+        var bucket = byConcept[label] || (byConcept[label] = { met: 0, partial: 0, total: 0, questionIdxs: [] });
+        bucket.total += 1;
+        if (status === 'correct') bucket.met += 1;
+        else if (status === 'partially-correct') bucket.partial += 1;
+        if (bucket.questionIdxs.indexOf(idx) === -1) bucket.questionIdxs.push(idx);
+        respondents[uid] = true;
+      });
+    });
+    return { byConcept: byConcept, respondents: Object.keys(respondents).length, questionCount: questions.length };
+  }
+
   window.AlloModules.QuizLiveAggregators = {
+    aggregateSuccessCriteria: aggregateSuccessCriteria,
     aggregateGradebook: aggregateGradebook,
     aggregatePreLessonGap: aggregatePreLessonGap,
     aggregateLiveHeatmap: aggregateLiveHeatmap,

@@ -1,0 +1,13 @@
+{
+  "scope": "Historical continuation candidate: reproduce unsupported crop control after static cleanup",
+  "verifiedAt": "2026-09-12T22:52:07.846Z",
+  "cropButtons": 1,
+  "scripts": 0,
+  "callback": "undefined",
+  "notifier": "undefined",
+  "pageCache": "undefined",
+  "domChanged": false,
+  "alerts": 0,
+  "dialogs": 0,
+  "errors": []
+}

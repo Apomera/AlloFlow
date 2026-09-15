@@ -1,0 +1,40 @@
+{
+  "status": "completed-with-broader-validation-caveat",
+  "unitPassed": 459,
+  "supplementalPassed": 58,
+  "modalBrowserPassed": 13,
+  "initialBrowser": {
+    "startTime": "2026-09-12T18:19:16.073Z",
+    "duration": 857016.58,
+    "expected": 217,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "isolatedPdfSuite": {
+    "startTime": "2026-09-12T18:34:22.202Z",
+    "duration": 39918.759000000005,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "targetedPdfCases": {
+    "startTime": "2026-09-12T18:38:04.818Z",
+    "duration": 36631.686,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "build": {
+    "pipelineIntegrityExitCode": 0,
+    "whitespaceExitCode": 0,
+    "desktopMirrorsMatch": true
+  },
+  "notes": [
+    "The initial maintained command failed: one PDF-render subprocess error and one serially skipped test.",
+    "An isolated PDF-suite run hit a different 2500 ms browser locator evaluation timeout before reaching the PDF case.",
+    "Both original PDF cases passed when selected directly. No clean full-suite run is claimed; the precise cause of the intermittent failures was not established."
+  ]
+}

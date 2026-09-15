@@ -1,0 +1,361 @@
+{
+  "editorFocus": {
+    "pass": true
+  },
+  "rejectEmptyStoryText": {
+    "pass": true
+  },
+  "emptyCancelPreservesText": {
+    "pass": true
+  },
+  "cancelPreservesText": {
+    "pass": true
+  },
+  "cancelRestoresFocus": {
+    "pass": true
+  },
+  "saveEditsStory": {
+    "pass": true
+  },
+  "saveRestoresFocus": {
+    "pass": true
+  },
+  "narrationUsesEditedText": {
+    "pass": true,
+    "detail": [
+      "I can ask for a turn.\nMy teacher can help me wait.",
+      "I can ask for a turn.\nMy teacher can help me wait."
+    ]
+  },
+  "editedStoryPrintText": {
+    "pass": true
+  },
+  "editedStoryTwoPrintedPages": {
+    "pass": true
+  },
+  "tokenKeyboardSpace": {
+    "pass": true
+  },
+  "tokenKeyboardEnter": {
+    "pass": true
+  },
+  "generatedImage-Calming Corner": {
+    "pass": true
+  },
+  "generatedImage-Sensory Needs": {
+    "pass": true
+  },
+  "generatedImage-Ask Me": {
+    "pass": true
+  },
+  "generatedImage-Body Check": {
+    "pass": true
+  },
+  "generatedImage-Transition": {
+    "pass": true
+  },
+  "fourWorkflowsSavedToIndexedDB": {
+    "pass": true
+  },
+  "boardReload": {
+    "pass": true
+  },
+  "boardImagesReload": {
+    "pass": true
+  },
+  "sequenceReload": {
+    "pass": true
+  },
+  "sequenceLayoutReload": {
+    "pass": true
+  },
+  "storyCurrentPageReload": {
+    "pass": true
+  },
+  "storyReload": {
+    "pass": true
+  },
+  "storyImagesReload": {
+    "pass": true
+  },
+  "customStoryNameReload": {
+    "pass": true
+  },
+  "quickboardReload": {
+    "pass": true
+  },
+  "quickboardImageReload": {
+    "pass": true
+  },
+  "allQuickBoardModesPersisted": {
+    "pass": true
+  },
+  "transientQuickBoardResponsesNotPersisted": {
+    "pass": true
+  },
+  "choiceCountReload": {
+    "pass": true
+  },
+  "hiddenChoiceRestored": {
+    "pass": true
+  },
+  "tokenDesignRestored": {
+    "pass": true
+  },
+  "tokenProgressReset": {
+    "pass": true
+  },
+  "restored-Calming Corner": {
+    "pass": true
+  },
+  "restored-Sensory Needs": {
+    "pass": true
+  },
+  "restored-Ask Me": {
+    "pass": true
+  },
+  "restored-Body Check": {
+    "pass": true
+  },
+  "painResponseReset": {
+    "pass": true
+  },
+  "restored-Transition": {
+    "pass": true
+  },
+  "transitionProgressReset": {
+    "pass": true
+  },
+  "quickBoardModeReload": {
+    "pass": true
+  },
+  "learnerBDefaults": {
+    "pass": true
+  },
+  "learnerBBoardEmpty": {
+    "pass": true
+  },
+  "learnerBSequenceEmpty": {
+    "pass": true
+  },
+  "learnerBStoryEmpty": {
+    "pass": true
+  },
+  "learnerARestored": {
+    "pass": true
+  },
+  "learnerAImageRestored": {
+    "pass": true
+  },
+  "learnerABoardRestored": {
+    "pass": true
+  },
+  "learnerASequenceRestored": {
+    "pass": true
+  },
+  "learnerAStoryRestored": {
+    "pass": true
+  },
+  "learnerBRestored": {
+    "pass": true
+  },
+  "freshLearnerDefaults": {
+    "pass": true
+  },
+  "profileControlsAvailableDuringHydration": {
+    "pass": true
+  },
+  "tabControlsAvailableDuringHydration": {
+    "pass": true
+  },
+  "hydrationProtectsEditingUntilReady": {
+    "pass": true
+  },
+  "failedSaveStatusVisible": {
+    "pass": true,
+    "detail": [
+      "",
+      "Draft could not be saved. Current edits stay in this session."
+    ]
+  },
+  "failedTransactionPreservesPriorDraft": {
+    "pass": true
+  },
+  "failedSaveRetry": {
+    "pass": true
+  },
+  "retrySurvivesReload": {
+    "pass": true
+  },
+  "failedRecoveryAllowsSessionEditing": {
+    "pass": true
+  },
+  "recoveryOffersExplicitChoice": {
+    "pass": true
+  },
+  "recoveryKeepCurrent": {
+    "pass": true
+  },
+  "recoveryRestoreSaved": {
+    "pass": true
+  },
+  "closeFlushesRecentEdit": {
+    "pass": true
+  },
+  "immediateReloadPreservesEdit": {
+    "pass": true,
+    "detail": {
+      "beforeUnloadWarning": true
+    }
+  },
+  "savedEditSurvivesReload": {
+    "pass": true
+  },
+  "corruptReplacementCancelPreservesStoredRecord": {
+    "pass": true
+  },
+  "corruptReplacementSurvivesReload": {
+    "pass": true
+  },
+  "clearOnlyActiveQuickBoard": {
+    "pass": true
+  },
+  "clearPreservesOtherLearner": {
+    "pass": true
+  },
+  "clearPreservesSavedGalleries": {
+    "pass": true
+  },
+  "clearedDraftStaysCleared": {
+    "pass": true
+  },
+  "noBrowserErrors": {
+    "pass": true,
+    "detail": []
+  },
+  "noWorkflowOverflow": {
+    "pass": true,
+    "detail": [
+      {
+        "label": "story-empty-edit-error",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-empty-edit-error",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-empty-edit-error",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-text-editor",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "story-edited",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "quickboard-draft",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "quickboard-draft",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "quickboard-draft",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "draft-save-error",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "draft-save-error",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "draft-save-error",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "draft-recovery-choice",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "draft-recovery-choice",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "draft-recovery-choice",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "unreadable-draft-recovery",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "unreadable-draft-recovery",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "unreadable-draft-recovery",
+        "width": 320,
+        "overflow": 0
+      },
+      {
+        "label": "cleared-quickboard-draft",
+        "width": 1440,
+        "overflow": 0
+      },
+      {
+        "label": "cleared-quickboard-draft",
+        "width": 390,
+        "overflow": 0
+      },
+      {
+        "label": "cleared-quickboard-draft",
+        "width": 320,
+        "overflow": 0
+      }
+    ]
+  }
+}

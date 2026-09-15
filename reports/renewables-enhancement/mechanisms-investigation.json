@@ -1,0 +1,414 @@
+{
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "storage",
+  "settings": {
+    "capacity": 100,
+    "power": 50,
+    "roundtrip": 88,
+    "initial": 0
+  },
+  "phase": 120,
+  "result": {
+    "version": 1,
+    "id": "storage",
+    "settings": {
+      "capacity": 100,
+      "power": 50,
+      "roundtrip": 88,
+      "initial": 0
+    },
+    "power": 0,
+    "available": 0,
+    "loss": 5.999999999999993,
+    "status": "Cycle complete",
+    "stages": [
+      {
+        "label": "Charging input now",
+        "value": 0,
+        "unit": "kW"
+      },
+      {
+        "label": "Discharging output now",
+        "value": 0,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "minute": 120,
+      "initial": 0,
+      "stored": 0,
+      "charge": 50,
+      "delivered": 44.00000000000001,
+      "loss": 5.999999999999993,
+      "soc": 0,
+      "eta": 0.938083151964686,
+      "charging": false
+    }
+  },
+  "note": "Charging accepted 50 kWh; 44 kWh returned; 6 kWh lost.",
+  "assumptions": "Deterministic two-hour cycle, with energy integrated exactly within each phase. No degradation, thermal behavior, self-discharge, reserve dispatch, or chemistry-specific voltage model. Storage shifts energy; it is not a primary renewable source.",
+  "scenarioAssumptions": null,
+  "formula": "η = √(round-trip efficiency); stored = initial + accepted charge × η − delivered energy / η",
+  "source": "https://www.eia.gov/energyexplained/electricity/energy-storage-for-electricity-generation.php",
+  "operatingScenario": null,
+  "comparison": {
+    "first": {
+      "profileId": "steady",
+      "profileName": "Two-hour cycle",
+      "phase": 60,
+      "baseSettings": {
+        "capacity": 100,
+        "power": 50,
+        "roundtrip": 88,
+        "initial": 0
+      },
+      "run": {
+        "version": 1,
+        "id": "storage",
+        "settings": {
+          "capacity": 100,
+          "power": 50,
+          "roundtrip": 88,
+          "initial": 0
+        },
+        "power": 50,
+        "available": 0,
+        "loss": 3.0958424017657027,
+        "status": "Discharging",
+        "stages": [
+          {
+            "label": "Charging input now",
+            "value": 0,
+            "unit": "kW"
+          },
+          {
+            "label": "Discharging output now",
+            "value": 50,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "minute": 60,
+          "initial": 0,
+          "stored": 46.9041575982343,
+          "charge": 50,
+          "delivered": 0,
+          "loss": 3.0958424017657027,
+          "soc": 46.9041575982343,
+          "eta": 0.938083151964686,
+          "charging": false
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "second": {
+      "profileId": "steady",
+      "profileName": "Two-hour cycle",
+      "phase": 120,
+      "baseSettings": {
+        "capacity": 100,
+        "power": 50,
+        "roundtrip": 88,
+        "initial": 0
+      },
+      "run": {
+        "version": 1,
+        "id": "storage",
+        "settings": {
+          "capacity": 100,
+          "power": 50,
+          "roundtrip": 88,
+          "initial": 0
+        },
+        "power": 0,
+        "available": 0,
+        "loss": 5.999999999999993,
+        "status": "Cycle complete",
+        "stages": [
+          {
+            "label": "Charging input now",
+            "value": 0,
+            "unit": "kW"
+          },
+          {
+            "label": "Discharging output now",
+            "value": 0,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "minute": 120,
+          "initial": 0,
+          "stored": 0,
+          "charge": 50,
+          "delivered": 44.00000000000001,
+          "loss": 5.999999999999993,
+          "soc": 0,
+          "eta": 0.938083151964686,
+          "charging": false
+        }
+      },
+      "energy": null,
+      "totals": null
+    },
+    "changes": [],
+    "context": [
+      "Selected minute changed: 60 → 120"
+    ],
+    "comparable": false,
+    "controlled": false,
+    "powerDelta": -50,
+    "powerPercent": -100,
+    "energyDelta": null
+  },
+  "experiments": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": [
+        {
+          "name": "",
+          "note": "",
+          "profileId": "steady",
+          "phase": 1,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "power": 3.84,
+            "available": 20,
+            "loss": 16.16,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 20,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 4,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 3.84,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "",
+          "note": "At 60 degrees the direct-beam power is half.",
+          "profileId": "steady",
+          "phase": 1,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 60
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 60
+            },
+            "power": 1.9200000000000004,
+            "available": 10.000000000000002,
+            "loss": 8.080000000000002,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 10.000000000000002,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 2.0000000000000004,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 1.9200000000000004,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": []
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": [
+        {
+          "name": "",
+          "note": "",
+          "profileId": "steady",
+          "phase": 60,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 50,
+            "available": 0,
+            "loss": 3.0958424017657027,
+            "status": "Discharging",
+            "stages": [
+              {
+                "label": "Charging input now",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output now",
+                "value": 50,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 60,
+              "initial": 0,
+              "stored": 46.9041575982343,
+              "charge": 50,
+              "delivered": 0,
+              "loss": 3.0958424017657027,
+              "soc": 46.9041575982343,
+              "eta": 0.938083151964686,
+              "charging": false
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "",
+          "note": "Charging accepted 50 kWh; 44 kWh returned; 6 kWh lost.",
+          "profileId": "steady",
+          "phase": 120,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 0,
+            "available": 0,
+            "loss": 5.999999999999993,
+            "status": "Cycle complete",
+            "stages": [
+              {
+                "label": "Charging input now",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output now",
+                "value": 0,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 120,
+              "initial": 0,
+              "stored": 0,
+              "charge": 50,
+              "delivered": 44.00000000000001,
+              "loss": 5.999999999999993,
+              "soc": 0,
+              "eta": 0.938083151964686,
+              "charging": false
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        }
+      ]
+    }
+  ]
+}

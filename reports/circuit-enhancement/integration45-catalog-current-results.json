@@ -1,0 +1,362 @@
+[
+  {
+    "id": "bridge",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "shared",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "sources",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "current",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "rc-charge",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 109,
+    "trapRejected": 4
+  },
+  {
+    "id": "rl-start",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 110,
+    "trapRejected": 5
+  },
+  {
+    "id": "rlc-ring",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 206,
+    "trapRejected": 4
+  },
+  {
+    "id": "bridge-settle",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 108,
+    "trapRejected": 3
+  },
+  {
+    "id": "lc-energy",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 372,
+    "trapRejected": 3
+  },
+  {
+    "id": "sine-filter",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 409,
+    "trapRejected": 3
+  },
+  {
+    "id": "pulse-smooth",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 440,
+    "trapRejected": 21
+  },
+  {
+    "id": "triangle-current",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 430,
+    "trapRejected": 15
+  },
+  {
+    "id": "switch-hold",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 112,
+    "trapRejected": 4
+  },
+  {
+    "id": "switch-discharge",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 112,
+    "trapRejected": 5
+  },
+  {
+    "id": "switch-flyback",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 104,
+    "trapRejected": 2
+  },
+  {
+    "id": "diode-half-wave",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "diode-bridge",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 256,
+    "trapRejected": 0
+  },
+  {
+    "id": "diode-filter",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 463,
+    "trapRejected": 18
+  },
+  {
+    "id": "diode-flyback",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 100,
+    "trapRejected": 0
+  },
+  {
+    "id": "zener-regulator",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "zener-line",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "zener-limiter",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "diode-resistance",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "diode-resistance-sweep",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 256,
+    "trapRejected": 0
+  },
+  {
+    "id": "zener-resistance",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "controlled-amplifier",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "controlled-current",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "controlled-sense",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 0,
+    "trapRejected": 0
+  },
+  {
+    "id": "controlled-feedback",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "opamp-buffer",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "opamp-inverting",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "opamp-clipping",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "opamp-filter",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 405,
+    "trapRejected": 3
+  },
+  {
+    "id": "opamp-bandwidth",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 2051,
+    "trapRejected": 15
+  },
+  {
+    "id": "opamp-gain-bandwidth",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 2216,
+    "trapRejected": 15
+  },
+  {
+    "id": "opamp-slew",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 589,
+    "trapRejected": 40
+  },
+  {
+    "id": "opamp-startup",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 146,
+    "trapRejected": 2
+  },
+  {
+    "id": "harmonic-triangle",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "harmonic-clipping",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 384,
+    "trapRejected": 0
+  },
+  {
+    "id": "harmonic-smoothing",
+    "defaultUnchanged": true,
+    "oldOK": true,
+    "beOK": true,
+    "trapOK": true,
+    "trapSteps": 457,
+    "trapRejected": 20
+  }
+]

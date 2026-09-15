@@ -50,7 +50,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio System (auto-injected) ──
   var _phyAC = null;
-  function getPhyAC() { if (!_phyAC) { try { _phyAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_phyAC && _phyAC.state === "suspended") { try { _phyAC.resume(); } catch(e) {} } return _phyAC; }
+  function getPhyAC() { if (!_phyAC) { try { _phyAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_phyAC && _phyAC.state === "suspended") { try { _phyAC.resume(); } catch(e) {} } return _phyAC; }
   function phyTone(f,d,tp,v) { var ac = getPhyAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxPhyLaunch() { phyTone(200,0.15,"sine",0.07); }
   function sfxPhyCollide() { phyTone(150,0.1,"sawtooth",0.08); }
@@ -2351,7 +2351,7 @@ const d = labToolData.physics;
             return new Promise(function (resolve) {
               try {
                 if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-                  navigator.clipboard.writeText(text).then(function () { resolve(true); }, function () { resolve(physCopyFallback(text)); });
+                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function () { resolve(true); }, function () { resolve(physCopyFallback(text)); });
                   return;
                 }
               } catch (e) {}

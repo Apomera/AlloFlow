@@ -1,0 +1,186 @@
+{
+  "passed": true,
+  "scope": "Production components with authored board fixtures. No external AI generation or learner pilot.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "construction comparison and remembered map steps",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "remembered goal in location list after reload",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "construction sequence in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "expedition completed through planned construction and focused exploration",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "goalReload": true,
+      "planningDoesNotMove": true,
+      "estimates": [
+        {
+          "goal": "bridge",
+          "location": "heater",
+          "balance": [
+            2,
+            1
+          ]
+        },
+        {
+          "goal": "bridge",
+          "location": "river",
+          "balance": [
+            4,
+            2
+          ]
+        },
+        {
+          "goal": "research",
+          "location": "cloud",
+          "balance": [
+            4,
+            1
+          ]
+        }
+      ],
+      "expeditionComplete": true,
+      "final": {
+        "visited": 8,
+        "built": 2
+      }
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "construction comparison and remembered map steps",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "remembered goal in location list after reload",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "construction sequence in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "expedition completed through planned construction and focused exploration",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "goalReload": true,
+      "planningDoesNotMove": true,
+      "estimates": [
+        {
+          "goal": "bridge",
+          "location": "heater",
+          "balance": [
+            2,
+            1
+          ]
+        },
+        {
+          "goal": "bridge",
+          "location": "river",
+          "balance": [
+            4,
+            2
+          ]
+        },
+        {
+          "goal": "research",
+          "location": "cloud",
+          "balance": [
+            4,
+            1
+          ]
+        }
+      ],
+      "expeditionComplete": true,
+      "final": {
+        "visited": 8,
+        "built": 2
+      }
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "construction comparison and remembered map steps",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "remembered goal in location list after reload",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "construction sequence in focused play",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "expedition completed through planned construction and focused exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced-colors comparison and planned steps",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "goalReload": true,
+      "planningDoesNotMove": true,
+      "estimates": [
+        {
+          "goal": "bridge",
+          "location": "heater",
+          "balance": [
+            2,
+            1
+          ]
+        },
+        {
+          "goal": "bridge",
+          "location": "river",
+          "balance": [
+            4,
+            2
+          ]
+        },
+        {
+          "goal": "research",
+          "location": "cloud",
+          "balance": [
+            4,
+            1
+          ]
+        }
+      ],
+      "expeditionComplete": true,
+      "final": {
+        "visited": 8,
+        "built": 2
+      }
+    }
+  ],
+  "errors": []
+}

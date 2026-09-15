@@ -1,0 +1,14 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+function edit(file,changes){const raw=fs.readFileSync(file,'utf8'),eol=raw.includes('\r\n')?'\r\n':'\n';let s=raw.replace(/\r\n/g,'\n');for(const [a,b]of changes){assert.equal(s.split(a).length,2,a.slice(0,100));s=s.replace(a,b);}new Function(s);const data=Buffer.from(s.replace(/\n/g,eol)),fd=fs.openSync(file,'r+');try{fs.writeSync(fd,data);fs.ftruncateSync(fd,data.length);}finally{fs.closeSync(fd);}}
+const fragment=fs.readFileSync(__dirname+'/garden-courtyard.fragment.js','utf8').replace(/\r\n/g,'\n');
+edit('stem_lab/stem_tool_geometryworld.js',[
+ ['          engine.disposeLandscape = disposeLandscape;',fragment+'\n          engine.disposeLandscape = disposeLandscape;'],
+ ["coastal ? 'coastal' : 'meadow'].join(':');","coastal ? 'coastal' : 'meadow', engine._currentLesson && engine._currentLesson.sandbox && engine._currentLesson.builderGarden !== false ? 'courtyard' : 'open'].join(':');"],
+ ['              coast.visible = previousVisibility;','              addBuilderCourtyard(coast,x0,x1,z0,z1,finite(ground.y,0)+0.78,saver);\n              coast.visible = previousVisibility;'],
+ ['            group.userData.gwLandscapeDetail = { tier:', '            addBuilderCourtyard(group,x0,x1,z0,z1,finite(ground.y,0)+0.78,saver);\n            group.userData.gwLandscapeDetail = { tier:']
+]);
+edit('stem_lab/stem_tool_geometryworld_builder.js',[
+ ["      function homeStartSandbox(){if(startSandboxMode(ctx))patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false});}","      function homeStartSandbox(){if(startSandboxMode(ctx))patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false});}\n      function changeBuilderGarden(enabled){var live=window[ENGINE_KEY];if(!live || !live._currentLesson || !live._currentLesson.sandbox)return;live._currentLesson=Object.assign({},live._currentLesson,{builderGarden:enabled});if(live.refreshLandscape)live.refreshLandscape(live._currentLesson.ground);patchGeometryState(ctx,{builderGardenEnabled:enabled});announce(ctx,enabled?'Garden workshop scenery shown.':'Open meadow scenery shown.','info');}"],
+ ["            h('summary', null, 'Workspace options'),","            h('summary', null, 'Workspace options'),\n            h('div',{className:'gwe-builder-actions','aria-label':'Free Build environment'},\n              h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden!==false),onClick:function(){changeBuilderGarden(true);}},'Garden workshop'),\n              h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden===false),onClick:function(){changeBuilderGarden(false);}},'Open meadow')),"]
+]);
+console.log('Added merged garden workshop scenery with a reversible open-meadow option.');

@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-09-12T18:05:53.804Z",
+  "modelVersion": 3,
+  "unitTests": {
+    "passed": 221,
+    "files": 11,
+    "newHybridTests": 24,
+    "postPresetAdjustmentHybridTestsPassed": 24
+  },
+  "browserWorkflows": [
+    {
+      "name": "hybrid",
+      "accessibilityAudits": 15
+    },
+    {
+      "name": "design",
+      "accessibilityAudits": 14
+    },
+    {
+      "name": "resilience",
+      "accessibilityAudits": 14
+    },
+    {
+      "name": "microgrid",
+      "accessibilityAudits": 13
+    }
+  ],
+  "accessibilityAudits": 56,
+  "sourceSha256": "b7bb7871ccc35e7bd0d9ec8562a28bad67c6af826f39e9c1c0cbb338a4c09b95",
+  "sourceMirrorMatches": true,
+  "scope": "Real tool in isolated local React/Three.js host; not full-application deployment testing"
+}

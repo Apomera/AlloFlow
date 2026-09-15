@@ -1,0 +1,206 @@
+{
+  "errors": [],
+  "states": [
+    {
+      "name": "desktop-shared-organ",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 631,
+      "targetHeight": 1294,
+      "pageHeight": 2264
+    },
+    {
+      "name": "desktop-quadriceps-mechanism",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 2187,
+      "targetHeight": 736,
+      "pageHeight": 3529
+    },
+    {
+      "name": "desktop-exercise-reflection",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1018,
+      "targetHeight": 653,
+      "pageHeight": 4712
+    },
+    {
+      "name": "desktop-meal-reflection",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1018,
+      "targetHeight": 653,
+      "pageHeight": 4753
+    },
+    {
+      "name": "desktop-wound-reflection",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1018,
+      "targetHeight": 653,
+      "pageHeight": 4694
+    },
+    {
+      "name": "desktop-fluid-reflection",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1018,
+      "targetHeight": 653,
+      "pageHeight": 4694
+    },
+    {
+      "name": "desktop-study-reflections",
+      "width": 1280,
+      "overflow": false,
+      "targetY": 1121,
+      "targetHeight": 1142,
+      "pageHeight": 4023
+    },
+    {
+      "name": "phone-390-prediction",
+      "width": 390,
+      "overflow": false,
+      "targetY": 858,
+      "targetHeight": 275,
+      "pageHeight": 6050
+    },
+    {
+      "name": "phone-390-reflection",
+      "width": 390,
+      "overflow": false,
+      "targetY": 1578,
+      "targetHeight": 757,
+      "pageHeight": 7372
+    },
+    {
+      "name": "phone-320-prediction",
+      "width": 320,
+      "overflow": false,
+      "targetY": 913,
+      "targetHeight": 316,
+      "pageHeight": 6393
+    },
+    {
+      "name": "phone-320-reflection",
+      "width": 320,
+      "overflow": false,
+      "targetY": 1709,
+      "targetHeight": 800,
+      "pageHeight": 7810
+    },
+    {
+      "name": "phone-french-reflection",
+      "width": 390,
+      "overflow": false,
+      "targetY": 1639,
+      "targetHeight": 757,
+      "pageHeight": 7448
+    },
+    {
+      "name": "phone-spanish_latin_america-reflection",
+      "width": 390,
+      "overflow": false,
+      "targetY": 1639,
+      "targetHeight": 757,
+      "pageHeight": 7432
+    },
+    {
+      "name": "phone-arabic-reflection",
+      "width": 390,
+      "overflow": false,
+      "targetY": 1538,
+      "targetHeight": 633,
+      "pageHeight": 7192
+    },
+    {
+      "name": "phone-arabic-dark-reflection",
+      "width": 390,
+      "overflow": false,
+      "targetY": 1538,
+      "targetHeight": 633,
+      "pageHeight": 7192
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "exercise",
+      "prediction": "less",
+      "correct": 1,
+      "keyboard": true,
+      "saved": {
+        "prediction": "less",
+        "explanation": "My exercise explanation connects the structural change to its downstream effect.",
+        "transfer": 1,
+        "transferExplanation": "My exercise comparison distinguishes the changed condition from the shared mechanism.",
+        "selfReview": true
+      }
+    },
+    {
+      "id": "meal",
+      "prediction": "less",
+      "correct": 2,
+      "keyboard": true,
+      "saved": {
+        "prediction": "less",
+        "explanation": "My meal explanation connects the structural change to its downstream effect.",
+        "transfer": 2,
+        "transferExplanation": "My meal comparison distinguishes the changed condition from the shared mechanism.",
+        "selfReview": true
+      }
+    },
+    {
+      "id": "wound",
+      "prediction": "more",
+      "correct": 0,
+      "keyboard": true,
+      "saved": {
+        "prediction": "more",
+        "explanation": "My wound explanation connects the structural change to its downstream effect.",
+        "transfer": 0,
+        "transferExplanation": "My wound comparison distinguishes the changed condition from the shared mechanism.",
+        "selfReview": true
+      }
+    },
+    {
+      "id": "fluid",
+      "prediction": "more",
+      "correct": 1,
+      "keyboard": true,
+      "saved": {
+        "prediction": "more",
+        "explanation": "My fluid explanation connects the structural change to its downstream effect.",
+        "transfer": 1,
+        "transferExplanation": "My fluid comparison distinguishes the changed condition from the shared mechanism.",
+        "selfReview": true
+      }
+    }
+  ],
+  "translations": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "sharedContext": true,
+  "export": true,
+  "reimportStable": true,
+  "resumeImportedWriting": true,
+  "axe": {
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "count": 3
+      },
+      {
+        "id": "color-contrast",
+        "count": 85
+      }
+    ]
+  },
+  "darkFields": {
+    "color": "rgb(226, 232, 240)",
+    "background": "rgb(30, 41, 59)",
+    "fontSize": "16px"
+  }
+}

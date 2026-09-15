@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,60 @@
+{
+  "verifiedAt": "2026-09-12T23:48:47.948Z",
+  "enhancement": "Improvement and worsening periods with linked A/B chart and exact-moment 3D inspection",
+  "periodVersion": 1,
+  "comparisonVersion": 1,
+  "microgridVersion": 5,
+  "unitTests": {
+    "passed": 387,
+    "failed": 0,
+    "files": 17,
+    "newPeriodTests": 27,
+    "report": "grid-periods-vitest-results.json"
+  },
+  "browserWorkflows": [
+    {
+      "workflow": "grid-periods",
+      "report": "grid-periods-browser-results.json",
+      "automatedAccessibilityAudits": 24,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "grid-pair",
+      "report": "grid-pair-browser-results.json",
+      "automatedAccessibilityAudits": 22,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    }
+  ],
+  "automatedAccessibilityAudits": 46,
+  "syntheticStressPeriodCount": 31,
+  "visualReview": [
+    "Desktop period map and controls",
+    "Selected period chart outline",
+    "A/B energy and boundary-storage ledger",
+    "320px period selection and inspection controls"
+  ],
+  "scope": "Real Renewables tool in an isolated local React/Three.js browser host; not a deployed full-application test.",
+  "integrity": {
+    "checkedAt": "2026-09-12T23:46:49.238Z",
+    "sourceSha256": "e94b234329ea22a7586bd1d4cd70fbc707ef02d16f7b187c7ca00710c0529012",
+    "sourceMirrorByteIdentical": true,
+    "sourceMirrorAndBrowserSyntax": true,
+    "scopedDiffWhitespace": true,
+    "previewSourceByteIdentical": true,
+    "previewUrl": "http://127.0.0.1:8790/"
+  }
+}

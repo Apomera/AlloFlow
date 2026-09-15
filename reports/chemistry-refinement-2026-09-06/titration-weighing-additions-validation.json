@@ -1,0 +1,21 @@
+{
+  "passedTests": 85,
+  "passedSuites": 8,
+  "browserScans": 56,
+  "normalModeContrastScans": 54,
+  "forcedColorStructuralScans": 2,
+  "forcedColorContrast": "Visually reviewed; axe rule omitted in forced colors due to dequelabs/axe-core#3978.",
+  "browserPageErrors": 0,
+  "horizontalOverflowCases": 0,
+  "browserReports": [
+    "titration-weighing-additions-browser-results.json",
+    "titration-weighing-target-browser-results.json"
+  ],
+  "unitReport": "titration-weighing-additions-tests.json",
+  "sourceReport": "titration-weighing-additions-source-checks.json",
+  "visualReview": [
+    "comparison desktop 1200",
+    "comparison phone 320",
+    "forced-colors phone 320"
+  ]
+}

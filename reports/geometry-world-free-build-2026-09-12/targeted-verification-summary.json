@@ -1,0 +1,162 @@
+{
+  "scope": "Latest result for each targeted test file run during this refinement pass; earlier results superseded only by a rerun of the same file. This is not a full repository suite run.",
+  "files": [
+    {
+      "file": "geometry_world_aim_at_build_area.test.js",
+      "report": "aim-and-crosshair-tests.json",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_builder_navigation.test.js",
+      "report": "final-refinement-tests.json",
+      "status": "passed",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_building_preview.test.js",
+      "report": "preview-tests.json",
+      "status": "passed",
+      "passed": 43,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_crosshair_viewport.test.js",
+      "report": "aim-and-crosshair-tests.json",
+      "status": "passed",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_discoverability.test.js",
+      "report": "discoverability-final-tests.json",
+      "status": "passed",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_display_controls.test.js",
+      "report": "final-alignment-tests.json",
+      "status": "passed",
+      "passed": 27,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_empty_guidance.test.js",
+      "report": "core-refinement-tests.json",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_free_build_guidance.test.js",
+      "report": "final-alignment-tests.json",
+      "status": "passed",
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_home_chooser.test.js",
+      "report": "core-refinement-tests.json",
+      "status": "passed",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_import_transaction.test.js",
+      "report": "core-refinement-tests.json",
+      "status": "passed",
+      "passed": 17,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_keyboard_access.test.js",
+      "report": "final-alignment-tests.json",
+      "status": "passed",
+      "passed": 63,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_match_block.test.js",
+      "report": "preview-tests.json",
+      "status": "passed",
+      "passed": 64,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_placement_transaction.test.js",
+      "report": "preview-tests.json",
+      "status": "passed",
+      "passed": 24,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_pointer_lock.test.js",
+      "report": "final-alignment-tests.json",
+      "status": "passed",
+      "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_preview_materials.test.js",
+      "report": "preview-tests.json",
+      "status": "passed",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_printlab_bridge.test.js",
+      "report": "core-refinement-tests.json",
+      "status": "passed",
+      "passed": 29,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_selected_inspector.test.js",
+      "report": "dock-tests.json",
+      "status": "passed",
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_shape_controls.test.js",
+      "report": "final-refinement-tests.json",
+      "status": "passed",
+      "passed": 18,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "geometry_world_visual_pipeline.test.js",
+      "report": "final-alignment-tests.json",
+      "status": "passed",
+      "passed": 55,
+      "failed": 0,
+      "pending": 0
+    }
+  ],
+  "totalFiles": 19,
+  "passed": 433,
+  "failed": 0,
+  "pending": 0,
+  "success": true
+}

@@ -1,0 +1,423 @@
+[alloflow-remediation-mcp] ready (stdio + http; tools: remediation_capabilities, remediation_verify_key, remediation_selftest, generate_resource_pack, export_accessible_office, export_alt_format, fix_contrast, generate_conformance_report, describe_images, transcribe_media, translate_accessible_html, redact_document, extract_document_text, detect_form_fields, apply_form_fields, simplify_accessible_html, audit_two_engines, check_document_structure, remediation_setup, pdf_audit, audit_html, pdf_validate_ua, pdf_remediate, pdf_remediate_start, pdf_batch_remediate_start, pdf_batch_audit_start, pdf_remediate_from_scoreboard_start, remediation_job_status, remediation_job_result, remediation_job_diagnostics, remediation_job_cancel, pdf_remediate_agent_start, remediation_agent_requests, remediation_agent_respond, remediation_agent_cancel, document_narration_preflight, document_narration_voices, remediation_agent_runs, document_narrate_start, remediation_agent_resume, remediation_agent_respond_batch)
+[alloflow-remediation-mcp] http transport listening on http://127.0.0.1:8771/mcp (bearer token required)
+[alloflow-remediation-mcp] stdin closed; HTTP transport keeps the server alive
+[alloflow-remediation-mcp] [arun-d3ae8f73] agent-bridge run started: nces-condition-of-education.pdf — the client model answers all pipeline calls
+[alloflow-remediation-mcp] [arun-d3ae8f73] remediate: nces-condition-of-education.pdf (2077 KB, target 95)
+[alloflow-remediation-mcp] [arun-d3ae8f73] rendered 5/5 page(s) to JPEG (1874 KB)
+[alloflow-remediation-mcp] model transport: agent bridge — the MCP client's model answers pipeline calls (no Gemini key, no Gemini egress)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipelineModule] Pipeline factory registered
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PdfValidator] Loaded — window.AlloModules.PdfValidator.validateExportedPdfBytes(bytes)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: audit — opening accessibility audit
+[alloflow-remediation-mcp] [arun-d3ae8f73] [GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PDF Audit] Large document (~2077KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PDF Audit/slices] page range 19-23 of 54 bounds the slices
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][-/e-]  — callGeminiVision #1 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][-/e-]  — callGeminiVision #1 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] vision slice pages 23-23: attached 1 rendered page(s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][-/e-]  — callGeminiVision #2 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][-/e-]  — callGeminiVision #2 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] vision slice pages 19-22: attached 4 rendered page(s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-1 (vision) in 113s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-2 (vision) in 113s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][-/e-]  — callGeminiVision #1 done (113087ms, 2360 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][-/e-]  — callGeminiVision #2 done (113074ms, 2941 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PDF Audit/slices] merged 2/2 slices for a 54-page document
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PDF Audit] Auditor self-score 0 replaced by deduction-grounded 74 (0C/0S/1M/0m, 12 passes)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p10: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p11: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p12: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p13: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p14: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p15: multi-column layout detected (8 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p16: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p20: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p21: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p23: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p24: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p25: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p26: multi-column layout detected (5 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p27: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p28: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p31: multi-column layout detected (5 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p32: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p33: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p34: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p35: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p37: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p38: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p39: multi-column layout detected (8 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p40: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p41: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p42: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p43: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p45: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p46: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p47: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p48: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p49: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p51: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p53: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] 66 hyperlink annotation(s) in the source — the output is expected to carry them
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] content-stream spacing repair: removed 430 spurious space(s) across 51 page(s) — characters untouched
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [PDF Audit] Baseline deterministic: axe 100 (0 violations), EqualAccess 94 (0 fails) — using the more conservative
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: audit — before-score 74
+[alloflow-remediation-mcp] [arun-d3ae8f73] [GeminiGate] Pacing skipped: host transport profile (agent-bridge) declares no provider quota to protect.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Init][z9gv1c/e1] +0.0s — Pipeline starting {file: [document.pdf], batch: true, hasAudit: true, pageCount: 54, base64KB: 2077}
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [fixAndVerifyPdf] Starting — batch: true base64: true audit: true file: [document.pdf]
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [fixAndVerifyPdf] auditResult.pageCount=54, fullPageCount=54, effective pageCount=5 (range 19-23), auditResult keys: [score, _scoreUnavailableReason, _sliceCoverage, _partialAudit, _aiPanelMeanScore, _consolidatedDeductions, scores, scoreSD, scoreRange, scoreSEM, ci95, icc, cronbachAlpha, auditorCou
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 1][z9gv1c/e1] +0.0s — Starting...
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Reading document content...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting PDF text layer deterministically...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p10: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p11: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p12: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p13: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p14: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p15: multi-column layout detected (8 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p16: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p20: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p21: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p23: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p24: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p25: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p26: multi-column layout detected (5 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p27: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p28: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p31: multi-column layout detected (5 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p32: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p33: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p34: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p35: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p37: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p38: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p39: multi-column layout detected (8 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p40: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p41: multi-column layout detected (3 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p42: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p43: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p45: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p46: multi-column layout detected (6 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p47: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p48: multi-column layout detected (7 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p49: multi-column layout detected (4 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p51: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] p53: multi-column layout detected (2 columns) — reading order repaired column-by-column
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] 66 hyperlink annotation(s) in the source — the output is expected to carry them
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Det] content-stream spacing repair: removed 430 spurious space(s) across 51 page(s) — characters untouched
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracted pages 19-23 (15,859 chars)  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Det] PDF text layer range pages 19-23 → 15859 chars / 5 pages
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Det] Using deterministic extraction (15859 chars), skipping OCR
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Extracted 15859 chars from 5 pages in 3 chunk(s) (~3172 chars/page)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +1.7s — callGeminiVision #1 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +1.7s — callGeminiVision #1 transport start after 9ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-3 (vision) in 64s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +65.4s — callGeminiVision #1 done (63740ms, 5272 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Found 4 meaningful images
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting 4 images from PDF pages...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images from page 20...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Skipped near-uniform fallback crop on page 20 (middle) — degrading to text placeholder
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images from page 21...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Fallback crop for image on page 21 (middle)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images from page 22...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Fallback crop for image on page 22 (top)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 1: Step 1/4 📄 Reading Document (5 of 54 pages) — Extracting images from page 23...  (typically ~10-20s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Skipped near-uniform fallback crop on page 23 (top) — degrading to text placeholder
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 1][z9gv1c/e1] +66.4s — Complete (66.4s) — 15859 chars extracted
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 2][z9gv1c/e1] +66.4s — Starting...
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 2: Step 2/4 🏗️ Building Accessible Version (5 of 54 pages) — Analyzing document structure...  (typically ~15-30s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 2: Step 2/4 🏗️ Building Accessible Version (5 of 54 pages) — Extracting color scheme...  (typically ~15-30s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Style][z9gv1c/e1] +66.4s — Extracting original document colors (Match Original / auto)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +66.4s — callGeminiVision #2 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +66.4s — callGeminiVision #2 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-4 (vision) in 33s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +99.2s — callGeminiVision #2 done (32794ms, 314 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Extracted doc style: {headingColor: #5c7c8d, accentColor: #1c7c45, bgColor: #ffffff, headerBg: #ffffff, headerText: #6b6b6b}
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 2: Step 2/4 🏗️ Building Accessible Version (5 of 54 pages) — Extracting document structure...  (typically ~15-30s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +99.2s — callGeminiVision #3 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +99.2s — callGeminiVision #3 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-5 (vision) in 180s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +279.3s — callGeminiVision #3 done (180142ms, 19929 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] JSON pipeline: 53 blocks rendered (no legend repairs)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Images] generatedSrc null for img 1 — extraction + Imagen both failed. Rendering as upload placeholder.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Images] generatedSrc null for img 4 — extraction + Imagen both failed. Rendering as upload placeholder.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Images][z9gv1c/e1] +279.4s — Deferred 2 image(s) as placeholder tokens — real data URLs restored at end of pipeline
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Final HTML: 89802 chars from 15859 chars extracted text
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Grammar][z9gv1c/e1] +279.4s — Skipping grammar check — text was extracted deterministically (no OCR artifacts)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 2][z9gv1c/e1] +279.4s — Complete (213.1s) — 89802 chars HTML generated
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 3][z9gv1c/e1] +279.4s — Starting...
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (5 of 54 pages) — Running baseline axe-core audit...  (typically ~10-15s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 3: Step 3/4 🔍 Auditing Accessibility (5 of 54 pages) — Running baseline AI verification...  (typically ~10-15s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Audit][z9gv1c/e1] +280.7s — output audit launched (trigger: primary-baseline-verification)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +280.7s — callGemini #1 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +280.7s — callGemini #2 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +280.7s — callGemini #3 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +280.7s — callGemini #1 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +280.7s — callGemini #2 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +280.7s — callGemini #3 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-6 (text) in 194s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-7 (text) in 194s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-8 (text) in 194s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +474.3s — callGemini #1 done (193581ms, 1903 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +474.3s — callGemini #2 done (193585ms, 2211 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +474.3s — callGemini #3 done (193586ms, 1902 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +474.3s — callGemini #4 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +474.3s — callGemini #5 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +474.3s — callGemini #6 queued (19KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +474.3s — callGemini #4 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +474.3s — callGemini #5 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +474.3s — callGemini #6 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-9 (text) in 62s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-10 (text) in 62s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-11 (text) in 62s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +536.4s — callGemini #4 done (62148ms, 1276 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +536.4s — callGemini #5 done (62151ms, 1755 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +536.4s — callGemini #6 done (62153ms, 1483 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] issue locators: 1/3 resolved to an exact text anchor
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] Chunked: 6/6 sections returned, 3 unique issues, 47 passes (13 structural), raw deductions 37, pass factor 1.00, score 63
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] re-attached 11 source hyperlink(s) that extraction had flattened to plain text
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Applied 12 deterministic accessibility fixes
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: toast: 🔧 Auto-fixed 12 accessibility issues
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Adjusting color contrast for readability...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 3 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Deterministic contrast fix: 3 patterns fixed
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Running deterministic WCAG fixes...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 3][z9gv1c/e1] +539.3s — Complete (259.9s) — AI: 63/100, axe: 2 violations, Equal Access: 3 failures
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 4][z9gv1c/e1] +539.3s — Starting...
+[alloflow-remediation-mcp] [arun-d3ae8f73] [Auto-fix] Starting three-engine fix loop: 8 engine findings (3 AI, 2 axe, 3 Equal Access), score 63, target 95
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Improving accessibility — pass 1 of 2 (3 AI, 2 axe, 3 EA)...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] $4 routing: 1/15 violation(s) element-routed, 0/6 chunk(s) skipped
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] splitting 78085 chars into 6 chunks (parallel)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #7 queued (14KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #8 queued (23KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #9 queued (17KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #10 queued (15KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #11 queued (24KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +539.4s — callGemini #12 queued (6KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +539.4s — callGemini #7 transport start after 8ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +539.4s — callGemini #8 transport start after 6ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +539.4s — callGemini #9 transport start after 6ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-12 (text) in 196s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-13 (text) in 196s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-14 (text) in 196s
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +735.7s — callGemini #10 transport start after 196308ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +735.7s — callGemini #7 done (196341ms, 9886 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +735.9s — callGemini #11 transport start after 196489ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +735.9s — callGemini #8 done (196496ms, 19549 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] rejected chunk candidate for chunk 2: form-state-changed; preserving the input
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] chunk 2 rejected (in=19511/1092, out=19531/1092) — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +735.9s — callGemini #12 transport start after 196526ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +735.9s — callGemini #9 done (196532ms, 13748 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-15 (text) in 93s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-16 (text) in 93s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-17 (text) in 93s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +829.2s — callGemini #10 done (289839ms, 11446 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +829.3s — callGemini #11 done (289917ms, 20601 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] rejected chunk candidate for chunk 5: form-state-changed; preserving the input
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] chunk 5 rejected (in=20563/1349, out=20583/1349) — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +829.4s — callGemini #12 done (289950ms, 9 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-1] chunk 6 reported UNCHANGED — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [List Fix] Fixed 0 list-structure issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 0 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Verifying improvements — checking pass 1 results...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Audit][z9gv1c/e1] +829.8s — output audit launched (trigger: fix-pass-reverify)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +830.0s — callGemini #13 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +830.0s — callGemini #14 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +830.0s — callGemini #15 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +830.0s — callGemini #13 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +830.0s — callGemini #14 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +830.0s — callGemini #15 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-18 (text) in 454s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-19 (text) in 454s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-20 (text) in 454s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1284.1s — callGemini #13 done (454090ms, 1831 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1284.1s — callGemini #14 done (454107ms, 1226 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1284.1s — callGemini #15 done (454120ms, 1217 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1284.1s — callGemini #16 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1284.2s — callGemini #17 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1284.2s — callGemini #18 queued (7KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1284.2s — callGemini #16 transport start after 2ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1284.2s — callGemini #17 transport start after 7ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1284.2s — callGemini #18 transport start after 7ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-21 (text) in 252s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-22 (text) in 252s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-23 (text) in 252s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1535.8s — callGemini #16 done (251616ms, 1233 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1535.8s — callGemini #17 done (251620ms, 1220 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1535.8s — callGemini #18 done (251624ms, 1109 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] issue locators: 0/2 resolved to an exact text anchor
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] Chunked: 6/6 sections returned, 2 unique issues, 43 passes (13 structural), raw deductions 15, pass factor 1.00, score 85
+[alloflow-remediation-mcp] [arun-d3ae8f73] [Auto-fix] Pass 1: 3 of 6 fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.
+[alloflow-remediation-mcp] [arun-d3ae8f73] [Auto-fix] Pass 1: AI 85/100, axe 2 violations, Equal Access 3 failures + 7 review findings
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Improving accessibility — pass 2 of 2 (2 AI, 2 axe, 3 EA)...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-2] splitting 78085 chars into 6 chunks (parallel)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #19 queued (13KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #20 queued (23KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #21 queued (17KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #22 queued (15KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #23 queued (24KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1536.2s — callGemini #24 queued (6KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1536.2s — callGemini #19 transport start after 4ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1536.2s — callGemini #20 transport start after 3ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1536.2s — callGemini #21 transport start after 3ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-24 (text) in 49s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-25 (text) in 49s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-26 (text) in 49s
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1585.7s — callGemini #22 transport start after 49459ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1585.7s — callGemini #19 done (49467ms, 9892 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1585.8s — callGemini #23 transport start after 49589ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1585.8s — callGemini #20 done (49593ms, 19507 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1585.8s — callGemini #24 transport start after 49625ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1585.8s — callGemini #21 done (49628ms, 9 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-2] chunk 3 reported UNCHANGED — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-27 (text) in 3s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-28 (text) in 3s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-29 (text) in 3s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1588.8s — callGemini #22 done (52581ms, 9 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-2] chunk 4 reported UNCHANGED — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1588.8s — callGemini #23 done (52587ms, 20578 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1588.8s — callGemini #24 done (52622ms, 9 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [aiFixChunked:pdf-pass-2] chunk 6 reported UNCHANGED — keeping original
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [List Fix] Fixed 0 list-structure issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 2 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console:   Deterministic: fixed 2 contrast issues
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: fix — step 4: Step 4/4 🔧 Fixing Remaining Issues (5 of 54 pages) — Verifying improvements — checking pass 2 results...  (typically ~15-30s per pass)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Audit][z9gv1c/e1] +1589.1s — output audit launched (trigger: fix-pass-reverify)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1589.2s — callGemini #25 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1589.2s — callGemini #26 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1589.2s — callGemini #27 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1589.2s — callGemini #25 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1589.2s — callGemini #26 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1589.2s — callGemini #27 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-30 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-31 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-32 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1614.7s — callGemini #25 done (25527ms, 1480 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1614.7s — callGemini #26 done (25528ms, 1149 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1614.7s — callGemini #27 done (25529ms, 1217 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1614.7s — callGemini #28 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1614.8s — callGemini #29 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1614.8s — callGemini #30 queued (7KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1614.8s — callGemini #28 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1614.8s — callGemini #29 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1614.8s — callGemini #30 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-33 (text) in 13s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-34 (text) in 13s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-35 (text) in 13s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1627.9s — callGemini #28 done (13191ms, 1233 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1627.9s — callGemini #29 done (13192ms, 1143 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1627.9s — callGemini #30 done (13192ms, 1109 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] issue locators: 0/0 resolved to an exact text anchor
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] Chunked: 6/6 sections returned, 0 unique issues, 44 passes (14 structural), raw deductions 0, pass factor 1.00, score 100
+[alloflow-remediation-mcp] [arun-d3ae8f73] [Auto-fix] Pass 2: 3 of 6 fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.
+[alloflow-remediation-mcp] [arun-d3ae8f73] [Auto-fix] Pass 2: AI 100/100, axe 0 violations, Equal Access 1 failures + 7 review findings
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Diff][z9gv1c/e1] +1628.0s — Semantic diff: 66 original sentences preserved, 69 intentional additions (alt text, labels), 0 artifacts detected
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Verify][z9gv1c/e1] +1628.1s — Ground-truth: 8/15 sentences (53% match), 69 intentional additions preserved
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 0 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 0 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] [WCAG Sanitizer] Applied 25 fixes (level: AA, minFont: 12px)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Cleanup][z9gv1c/e1] +1628.1s — Final WCAG sanitization: fixed 25 issues
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Audit][z9gv1c/e1] +1628.1s — output audit launched (trigger: primary-final-audit)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1628.2s — callGemini #31 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1628.2s — callGemini #32 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1628.2s — callGemini #33 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1628.2s — callGemini #31 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1628.2s — callGemini #32 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1628.2s — callGemini #33 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-36 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-37 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-38 (text) in 25s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1653.3s — callGemini #31 done (25150ms, 1480 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1653.3s — callGemini #32 done (25151ms, 1149 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1653.3s — callGemini #33 done (25153ms, 1231 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1653.3s — callGemini #34 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1653.3s — callGemini #35 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1653.3s — callGemini #36 queued (8KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1653.3s — callGemini #34 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1653.3s — callGemini #35 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1653.3s — callGemini #36 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-39 (text) in 12s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-40 (text) in 12s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-41 (text) in 12s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1665.5s — callGemini #34 done (12175ms, 1392 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1665.5s — callGemini #35 done (12178ms, 1129 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1665.5s — callGemini #36 done (12179ms, 1109 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] Chunked: 6/6 sections returned, 1 unique issues, 45 passes (14 structural), raw deductions 15, pass factor 1.00, score 85
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Final AI semantic audit: AI layer score 85, 1 remaining issues, 45 passes
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Contrast Fix] Fixed 0 color-contrast issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [List Fix] Fixed 0 list-structure issues deterministically
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_2__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: Loading the image 'http://127.0.0.1/__ALLOFLOW_DATAURL_FINAL_3__' violates the following Content Security Policy directive: "img-src data: blob:". The action has been blocked.
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Final headline (weakest-layer): min(AI 85, deterministic 76 [axe 100, EqualAccess 76, using the more conservative]) = 76
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Note: the fix loop reached its AI target (100 >= 95) but a deterministic engine governs the headline at 76 — the displayed score is the weakest verified layer, not the loop's stop score.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Integrity] Final text: 20384 chars / source: 15853 chars (100% coverage, method=pdfjs+normalized)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Integrity] VALUE-FIDELITY — 16 source numeric value(s) not found unchanged in the output (sample withheld from the log — FERPA). A remediation should never change numbers — review the Diff to confirm scores, dates, and percentages are intact.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [AltQuality] 2/2 image description(s) flagged (0 high): "Figure 3. Line chart titled Enrollment i" [too-long]; "Figure 4. Line chart with markers titled" [too-long]
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +1669.5s — callGeminiVision #4 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +1669.5s — callGeminiVision #4 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-42 (vision) in 75s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +1744.4s — callGeminiVision #4 done (74896ms, 180 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [AltSpotCheck] 1/1 sampled image description(s) match their image (of 2 candidates).
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Images][z9gv1c/e1] +1744.5s — Restored 2/2 image data URL(s) from placeholder tokens
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +1744.8s — callGeminiVision #5 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +1744.8s — callGeminiVision #5 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-43 (vision) in 64s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +1810.2s — callGeminiVision #5 done (65413ms, 741 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision→][z9gv1c/e1] +1810.2s — callGeminiVision #6 queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][Vision-start][z9gv1c/e1] +1810.2s — callGeminiVision #6 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-44 (vision) in 28s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Vision←][z9gv1c/e1] +1838.3s — callGeminiVision #6 done (28102ms, 721 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] STEM image intelligence: 2 image(s) classified (0 equation(s), 2 chart(s)) in 2 Vision call(s)
+[alloflow-remediation-mcp] [arun-d3ae8f73] progress: toast: ⚠️ 2 images failed to reinsert — review in the fidelity panel.
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Audit][z9gv1c/e1] +1838.4s — output audit launched (trigger: post-mutation-reaudit (html changed after final audit))
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1838.4s — callGemini #37 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1838.4s — callGemini #38 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1838.4s — callGemini #39 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1838.4s — callGemini #37 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1838.4s — callGemini #38 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1838.4s — callGemini #39 transport start after 0ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-45 (text) in 16s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-46 (text) in 16s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-47 (text) in 16s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1854.6s — callGemini #37 done (16267ms, 1480 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1854.6s — callGemini #38 done (16269ms, 1135 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1854.7s — callGemini #39 done (16270ms, 1330 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1854.7s — callGemini #40 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1854.7s — callGemini #41 queued (21KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API→][z9gv1c/e1] +1854.7s — callGemini #42 queued (10KB prompt)
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1854.7s — callGemini #40 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1854.7s — callGemini #41 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] [DocPipe][API-start][z9gv1c/e1] +1854.7s — callGemini #42 transport start after 1ms queued
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-48 (text) in 21s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-49 (text) in 21s
+[alloflow-remediation-mcp] [arun-d3ae8f73] client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-50 (text) in 21s
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1875.8s — callGemini #40 done (21161ms, 1418 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1875.8s — callGemini #41 done (21161ms, 1129 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][API←][z9gv1c/e1] +1875.8s — callGemini #42 done (21162ms, 1109 bytes response)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] issue locators: 0/1 resolved to an exact text anchor
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [Output Audit] Chunked: 6/6 sections returned, 1 unique issues, 47 passes (16 structural), raw deductions 5, pass factor 1.00, score 95
+[alloflow-remediation-mcp] [arun-d3ae8f73] [PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 95, deterministic 76) = 76 (was 76)
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Step 4][z9gv1c/e1] +1883.4s — Complete (1344.1s) — 2 fix passes, final headline score: 76/100
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Payload][z9gv1c/e1] +1883.4s — uploaded 9.58MB across 50 call(s) — vision:transform 2.71MB/1, vision:image-inventory 2.71MB/1, vision:style 2.71MB/1, text:auto-fix loop 0.61MB/36, vision:other 0.57MB/2, vision:auto-fix loop 0.15MB/3, text:audit (axe + AI) 0.12MB/6
+[alloflow-remediation-mcp] [arun-d3ae8f73] console: [DocPipe][Done][z9gv1c/e1] +1883.4s — Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 1883s, apiCalls: 42, visionCalls: 6, totalApiTime: 5435s, retries: 0}
+[alloflow-remediation-mcp] [arun-d3ae8f73] completed: verdict review

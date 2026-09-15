@@ -476,19 +476,138 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
 
   it('lets a slider drag settle before committing the scene-rebuilding value', async () => {
     // Every input tick on these sliders used to change a scene-effect dependency, so a drag was a rebuild per tick.
-    const slider = host.querySelector('input[aria-label="Container edge length and volume"]');
-    await act(async () => { setValue(slider, '9'); setValue(slider, '13'); setValue(slider, '16'); await settle(); });
+    const slider = host.querySelector('input[aria-label="Particle collision diameter"]');
+    await act(async () => { setValue(slider, '0.42'); setValue(slider, '0.6'); setValue(slider, '0.78'); await settle(); });
     // The thumb and its readout follow at once...
-    expect(slider.value).toBe('16');
-    expect(Array.from(host.querySelectorAll('output')).some((node) => node.textContent === '16 u')).toBe(true);
+    expect(slider.value).toBe('0.78');
+    expect(Array.from(host.querySelectorAll('output')).some((node) => node.textContent === '0.78 u')).toBe(true);
     // ...but nothing has been committed or persisted yet.
-    expect(persisted().boxSize).toBeUndefined();
+    expect(persisted().particleDiameter).toBeUndefined();
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 260)); });
-    expect(persisted().boxSize).toBe(16);
+    expect(persisted().particleDiameter).toBe(0.78);
     // An external change (a preset) still drives the draft, so the thumb never shows a stale value.
-    const gas = Array.from(host.querySelectorAll('button[aria-pressed]')).find((button) => /Solid/.test(button.textContent));
-    await act(async () => { gas.click(); await new Promise((resolve) => setTimeout(resolve, 260)); });
-    expect(slider.value).toBe(String(persisted().boxSize));
+    const solid = Array.from(host.querySelectorAll('button[aria-pressed]')).find((button) => /Solid/.test(button.textContent));
+    await act(async () => { solid.click(); await new Promise((resolve) => setTimeout(resolve, 260)); });
+    expect(slider.value).toBe(String(persisted().particleDiameter));
+  });
+
+  it('moves the container live, offers a heat bath, and turns it on for the Compression investigation', async () => {
+    // The container slider used to re-seed the chamber; now it is a piston, so it needs no draft and saves once the drag settles.
+    const slider = host.querySelector('input[aria-label="Container edge length and volume"]');
+    await act(async () => { setValue(slider, '9'); setValue(slider, '14'); await settle(); });
+    expect(slider.value).toBe('14');
+    expect(Array.from(host.querySelectorAll('output')).some((node) => node.textContent === '14 u')).toBe(true);
+    expect(persisted().boxSize).toBeUndefined();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 320)); });
+    expect(persisted().boxSize).toBe(14);
+    const bath = buttonByText(host, '♨ Heat bath off');
+    expect(bath).toBeDefined();
+    await act(async () => { bath.click(); await settle(); });
+    expect(buttonByText(host, '♨ Heat bath on').getAttribute('aria-pressed')).toBe('true');
+    expect(persisted().thermostat).toBe(true);
+    const adiabatic = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Squeeze Without a Bath'));
+    await act(async () => { adiabatic.click(); await settle(); });
+    expect(persisted().thermostat).toBe(false);
+    const compression = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Compression'));
+    await act(async () => { compression.click(); await settle(); });
+    expect(persisted().thermostat).toBe(true);
+    expect(buttonByText(host, '♨ Heat bath on')).toBeDefined();
+  });
+
+  it('counts wall hits apart from particle hits and checks PV over NT across a trial pair', () => {
+    const pure = window.__alloParticleLabPure;
+    const settings = { preset: 'gas', boxSize: 12, particleDiameter: 0.58, attraction: 0, gravity: 0, massRatioB: 1, membrane: false, permeability: 0, membraneSelectivity: 'both' };
+    const atWall = [{ x: 5.7, y: 0, z: 0, vx: 3, vy: 0, vz: 0, type: 0, freeFlights: [] }];
+    expect(pure.advanceParticles(atWall, settings, 1 / 60)).toMatchObject({ collisions: 1, wallCollisions: 1 });
+    const overlapping = [{ x: 0, y: 0, z: 0, vx: 1, vy: 0, vz: 0, type: 0, freeFlights: [] }, { x: 0.4, y: 0, z: 0, vx: -1, vy: 0, vz: 0, type: 0, freeFlights: [] }];
+    expect(pure.advanceParticles(overlapping, settings, 1 / 60)).toMatchObject({ collisions: 1, wallCollisions: 0 });
+    expect(pure.gasLawRatio(1, 10, 50, 300)).toBeCloseTo(66.667, 2);
+    expect(pure.gasLawRatio(0, 10, 50, 300)).toBeNull(); // no settled gauge, no ratio
+    // Boyle: halve the volume at fixed N and T and the pressure doubles, so the ratio holds.
+    const boyle = pure.gasLawAgreement({ pressure: 1.0, boxSize: 12, count: 64, temperature: 300 }, { pressure: 2.1, boxSize: 12 / Math.cbrt(2), count: 64, temperature: 300 });
+    expect(boyle.label).toContain('held constant');
+    expect(boyle.spread).toBeLessThan(0.15);
+    const drifted = pure.gasLawAgreement({ pressure: 1.0, boxSize: 12, count: 64, temperature: 300 }, { pressure: 1.0, boxSize: 12, count: 64, temperature: 500 });
+    expect(drifted.label).toContain('moved');
+    expect(pure.gasLawAgreement({ pressure: 0, boxSize: 12, count: 64, temperature: 300 }, { pressure: 1, boxSize: 12, count: 64, temperature: 300 }).spread).toBeNull();
+    const cells = Array.from(host.querySelectorAll('.rounded-xl.bg-slate-100 .text-\\[10px\\]')).map((el) => el.textContent);
+    expect(cells).toEqual(expect.arrayContaining(['Wall hits', 'All collisions', 'PV / NT']));
+  });
+
+  it('holds pressure by handing the container to the gauge, and treats the volume change as a response in a fair test', async () => {
+    const pure = window.__alloParticleLabPure;
+    const base = { preset: 'gas', temperatureSetpoint: 200, temperature: 200, pressure: 1, count: 72, boxSize: 9, attraction: 0, gravity: 0 };
+    const warmer = { ...base, temperatureSetpoint: 400, temperature: 400, boxSize: 12 };
+    expect(pure.compareTrials(base, warmer).fair).toBe(false); // by hand: two variables moved
+    expect(pure.compareTrials({ ...base, holdPressure: true }, { ...warmer, holdPressure: true })).toMatchObject({ fair: true, changed: ['temperature'] });
+    // The controller: samples are weighted by the simulated time they cover, so the spiky first sample after Run barely
+    // moves the target, a low frame rate (many short samples) still reaches it, and each move is capped.
+    const holdState = { target: 0, window: 0, weighted: 0, smoothed: 0 };
+    expect(pure.holdPressureStep(holdState, 3.6, 0.02, 9)).toEqual({ targetReady: false, nextBox: null }); // the spike
+    expect(holdState.window).toBeCloseTo(0.02, 5);
+    for (let i = 0; i < 5; i += 1) pure.holdPressureStep(holdState, 1.0, 0.4, 9);
+    expect(holdState.target).toBeCloseTo((3.6 * 0.02 + 1.0 * 2.0) / 2.02, 5); // 1.026: the spike weighs 1 percent
+    const slowFrames = { target: 0, window: 0, weighted: 0, smoothed: 0 };
+    let ready = false;
+    for (let i = 0; i < 60 && !ready; i += 1) ready = pure.holdPressureStep(slowFrames, 1.0, 0.05, 9).targetReady; // 50 ms samples at a crawl
+    expect(ready).toBe(true);
+    expect(slowFrames.target).toBeCloseTo(1.0, 5);
+    holdState.smoothed = 2.2; // gauge reads double: the gas warmed
+    const grow = pure.holdPressureStep(holdState, 2.2, 0.4, 9);
+    expect(grow.nextBox).toBeGreaterThan(9);
+    expect(grow.nextBox).toBeLessThanOrEqual(9.3);
+    holdState.smoothed = 0.55;
+    expect(pure.holdPressureStep(holdState, 0.55, 0.4, 9).nextBox).toBeLessThan(9);
+    expect(pure.holdPressureStep({ target: 1, samples: [], smoothed: 1 }, 1, 0.4, 9).nextBox).toBeNull(); // at balance the walls rest
+    const hold = buttonByText(host, '⇔ Hold pressure off');
+    expect(hold).toBeDefined();
+    const slider = host.querySelector('input[aria-label="Container edge length and volume"]');
+    expect(slider.getAttribute('aria-disabled')).toBeNull();
+    await act(async () => { hold.click(); await settle(); });
+    expect(buttonByText(host, '⇔ Hold pressure on').getAttribute('aria-pressed')).toBe('true');
+    expect(persisted().holdPressure).toBe(true);
+    expect(slider.getAttribute('aria-disabled')).toBe('true');
+    expect(host.textContent).toContain('Sampling the gauge');
+    await act(async () => { setValue(slider, '15'); await new Promise((resolve) => setTimeout(resolve, 320)); });
+    expect(slider.value).toBe('11'); // the slider is off duty while the hold owns the container
+    expect(persisted().boxSize).toBeUndefined();
+    const charles = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Warm at Fixed Pressure'));
+    await act(async () => { charles.click(); await settle(); });
+    expect(persisted()).toMatchObject({ holdPressure: true, thermostat: true, boxSize: 9, temperature: 200 });
+    await act(async () => { buttonByText(host, '⇔ Hold pressure on').click(); await settle(); });
+    expect(persisted().holdPressure).toBe(false);
+    expect(slider.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('overlays the Maxwell-Boltzmann prediction and describes the chamber on demand', async () => {
+    const pure = window.__alloParticleLabPure;
+    // The prediction integrates to one over a wide enough range and peaks at the most probable speed sqrt(2a).
+    const bins = pure.maxwellBoltzmannBins(300, 1, 40, 10);
+    expect(Math.abs(bins.reduce((sum, value) => sum + value, 0) - 1)).toBeLessThan(0.01);
+    const a = 300 / 120, peakBin = bins.indexOf(Math.max(...bins));
+    expect(Math.abs((peakBin + 0.5) * (10 / 40) - Math.sqrt(2 * a))).toBeLessThan(0.3);
+    expect(pure.histogramDistance([0.5, 0.5], [0.5, 0.5])).toBe(0);
+    expect(pure.histogramDistance([1, 0], [0, 1])).toBe(1);
+    // The heat bath scales toward the setpoint and stays still when it is reached.
+    expect(pure.thermostatScale(150, 300, 0.02)).toBeGreaterThan(1);
+    expect(pure.thermostatScale(600, 300, 0.02)).toBeLessThan(1);
+    expect(pure.thermostatScale(300, 300, 0.02)).toBe(1);
+    // A wall moving inward at 1 unit per second returns a 3 unit per second particle at 5: work done on the gas.
+    const settings = { preset: 'gas', boxSize: 12, particleDiameter: 0.58, attraction: 0, gravity: 0, massRatioB: 1, membrane: false, permeability: 0, membraneSelectivity: 'both', wallVelocity: -1 };
+    const squeezed = [{ x: 5.7, y: 0, z: 0, vx: 3, vy: 0, vz: 0, type: 0, freeFlights: [] }];
+    pure.advanceParticles(squeezed, settings, 1 / 60);
+    expect(squeezed[0].vx).toBeCloseTo(-5, 5);
+    // The chart carries the prediction and its agreement label; the description reads the same numbers aloud.
+    const chart = host.querySelector('svg[aria-label^="Histogram of current particle speeds"]');
+    expect(chart.getAttribute('aria-label')).toContain('Maxwell-Boltzmann');
+    expect(chart.querySelector('path[stroke-dasharray]')).not.toBeNull();
+    const describe = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Describe the chamber'));
+    await act(async () => { describe.click(); await settle(); });
+    const description = host.querySelector('#particle-chamber-description');
+    expect(description).not.toBeNull();
+    expect(description.textContent).toMatch(/Gas chamber with \d+ particles in \d+ cubic model units, paused/);
+    expect(description.textContent).toContain('Pressure');
+    expect(description.textContent).toContain('The speed histogram: few particles: the histogram is noisy'); // no physics under jsdom, so the histogram is empty
   });
 
 
@@ -500,6 +619,19 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
       const seeded = pure.makeParticles(count, preset, temperature, 2048, massB);
       expect(Math.abs(pure.metrics(seeded, 0, 11, 1, massB).temperature - temperature)).toBeLessThanOrEqual(1);
     }
+    // The seed respects the container: in a 7-unit box (and the classic 11) every particle starts inside the walls,
+    // so the first step counts no spurious wall hits. It used to scatter gas across a fixed 10-unit cube.
+    for (const box of [7, 11, 18]) {
+      for (const preset of ['gas', 'liquid', 'solid', 'diffusion', 'osmosis']) {
+        const inside = pure.makeParticles(120, preset, 300, 9, 1, box);
+        const limit = box / 2 - 0.29;
+        expect(inside.every((p) => Math.abs(p.x) <= limit && Math.abs(p.y) <= limit && Math.abs(p.z) <= limit), preset + ' in box ' + box).toBe(true);
+        pure.advanceParticles(inside, { preset, boxSize: box, particleDiameter: 0.58, attraction: 0, gravity: 0, massRatioB: 1, membrane: false, permeability: 0, membraneSelectivity: 'both' }, 1 / 120);
+        expect(inside.reduce((sum, p) => sum + (p.wallHits || 0), 0), preset + ' first-step wall hits in box ' + box).toBe(0); // nothing starts outside the walls
+      }
+    }
+    const [leftA, rightB] = [pure.makeParticles(80, 'diffusion', 300, 9, 1, 9).filter((p) => !p.type), pure.makeParticles(80, 'diffusion', 300, 9, 1, 9).filter((p) => p.type)];
+    expect(leftA.every((p) => p.x < 0) && rightB.every((p) => p.x > 0)).toBe(true); // A left of the divider, B right
     const settings = { preset: 'gas', boxSize: 12, particleDiameter: 0.58, attraction: 0, gravity: 0, massRatioB: 1, membrane: false, permeability: 0, membraneSelectivity: 'both' };
     // The pump: A enters through the left wall heading inward, B through the right, both settling until a wall hit.
     const pumpedA = pure.makePumpedParticles(8, settings, 300, 5, 0), pumpedB = pure.makePumpedParticles(8, settings, 300, 5, 1);
@@ -575,6 +707,45 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(host.textContent).toContain('share one mean kinetic energy');
   });
 
+  it('falls back to the flat 2D chamber when the engine cannot load, and Retry asks the loader again', async () => {
+    // Under jsdom the shared loader never settles; here it rejects, which is what a school network filter produces.
+    resetStemLab();
+    const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+    let attempts = 0;
+    window.StemLab.ensureThree = () => { attempts += 1; return Promise.reject(new Error('blocked')); };
+    const Component = () => {
+      const [toolData, setToolData] = React.useState({ particleLab3d: {} });
+      const ctx = makeCtx({ toolData, setToolData });
+      return config.render(ctx);
+    };
+    const localHost = document.createElement('div');
+    document.body.appendChild(localHost);
+    const localRoot = ReactDOMClient.createRoot(localHost);
+    try {
+      await act(async () => { localRoot.render(React.createElement(Component)); await settle(); });
+      // Attribute selectors, not #id: jsdom resolves #id through the document's FIRST element with that id, which
+      // belongs to the suite's own mounted instance, so a scoped #particle-stage lookup on this second mount is null.
+      const notice = localHost.querySelector('[id="particle-fallback-notice"]');
+      expect(notice).not.toBeNull();
+      expect(notice.getAttribute('role')).toBe('alert');
+      expect(notice.textContent).toContain('flat 2D chamber');
+      expect(localHost.querySelector('[id="particle-stage-overlay"]')).toBeNull(); // no dead overlay over a live chamber
+      expect(localHost.querySelector('section[id="particle-stage"]').getAttribute('aria-busy')).toBe('false');
+      const canvas = localHost.querySelector('canvas[role="application"]');
+      expect(canvas.getAttribute('tabindex')).toBe('0');
+      expect(canvas.getAttribute('aria-roledescription')).toBe('Interactive flat 2D particle chamber');
+      expect(attempts).toBe(1);
+      const retry = Array.from(notice.querySelectorAll('button')).find((button) => button.textContent === 'Retry');
+      await act(async () => { retry.click(); await settle(); });
+      expect(attempts).toBe(2); // the loader is asked again; it rejects again here, so the fallback stays up
+      expect(localHost.querySelector('[id="particle-fallback-notice"]')).not.toBeNull();
+    } finally {
+      act(() => localRoot.unmount());
+      localHost.remove();
+      resetStemLab();
+    }
+  });
+
   it('keeps audio cues off and says so when the browser has no AudioContext', async () => {
     // jsdom has no Web Audio; a real browser starts the context from this gesture. Either way the control must
     // never latch on without sound, and the reason must be announced.
@@ -611,6 +782,89 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     expect(persisted().attraction).toBeUndefined(); // the host has not been asked to save yet
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 320)); });
     expect(persisted().attraction).toBe(1.2);     // one save, carrying only the final value
+  });
+
+  it('lists common student ideas, loads the matching protocol on request, and withholds the model answer until there is evidence', async () => {
+    const ideas = window.__alloParticleLabPure.commonIdeas;
+    expect(ideas.length).toBeGreaterThanOrEqual(7);
+    const card = host.querySelector('#particle-common-ideas');
+    expect(card).not.toBeNull();
+    expect(card.open).toBe(false);
+    expect(card.querySelectorAll('li').length).toBe(ideas.length);
+    for (const idea of ideas) {
+      expect(card.textContent).toContain(idea.idea);
+      // Every idea points at an existing protocol, and the answer is never in the DOM before the chamber has run.
+      expect(Array.from(host.querySelectorAll('button')).some((button) => button.textContent.includes(idea.protocol === 'thermal' ? 'Heat at Fixed Volume' : idea.protocol === 'boyle' ? 'Compression' : idea.protocol === 'avogadro' ? 'Add Particles' : 'Diffusion Race'))).toBe(true);
+      expect(host.textContent).not.toContain(idea.shows);
+    }
+    const cold = ideas.find((idea) => idea.id === 'stop');
+    const button = host.querySelector('button[aria-label="Test this idea: ' + cold.idea + '"]');
+    expect(button).not.toBeNull();
+    await act(async () => { button.click(); await settle(); });
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    expect(button.textContent).toContain('Testing now');
+    expect(card.open).toBe(true);
+    expect(persisted().activeIdea).toBe('stop');
+    expect(persisted().activeProtocol).toBe('thermal');
+    expect(persisted().temperature).toBe(40);
+    expect(Array.from(host.querySelectorAll('output')).some((node) => node.textContent === '40 K')).toBe(true);
+    const verdict = host.querySelector('#particle-idea-verdict');
+    expect(verdict.textContent).toMatch(/Write your prediction, then run the chamber/);
+    expect(host.textContent).not.toContain(cold.shows);
+    // The Predict step names the idea and the readout to watch, so the prediction is about something specific.
+    expect(host.textContent).toContain('You are testing the idea: \u201C' + cold.idea + '\u201D');
+    expect(host.textContent).toContain('predict what ' + cold.watch + ' will do');
+    // Choosing a protocol by hand drops the idea: the card must not claim a test that is no longer set up.
+    const compression = Array.from(host.querySelectorAll('button')).find((b) => b.textContent.includes('Compression') && b.getAttribute('aria-pressed') !== null);
+    await act(async () => { compression.click(); await settle(); });
+    expect(persisted().activeIdea).toBe('');
+    expect(host.querySelector('#particle-idea-verdict')).toBeNull();
+    expect(host.querySelector('button[aria-label="Test this idea: ' + cold.idea + '"]').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('reveals what the model shows only after the chamber has produced evidence, and carries the idea into the lab report', async () => {
+    const heavy = window.__alloParticleLabPure.commonIdeas.find((idea) => idea.id === 'heavy');
+    resetStemLab();
+    const announcements = [];
+    const config = loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+    // jsdom has no 2D canvas, so the flat fallback (the only chamber that can run here) would bail out before its
+    // first physics step. A no-op drawing context lets it run and publish real samples, which is the evidence gate.
+    window.StemLab.ensureThree = () => Promise.reject(new Error('blocked'));
+    const noop = new Proxy(function () {}, { get: (target, key) => (key === Symbol.toPrimitive ? () => 0 : (key === 'width' ? 10 : noop)), apply: () => noop, set: () => true });
+    const realGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind) { return kind === '2d' ? noop : null; };
+    const Component = () => {
+      const [toolData, setToolData] = React.useState({ particleLab3d: {} });
+      const ctx = makeCtx({ toolData, setToolData, announceToSR: (message) => announcements.push(message) });
+      return config.render(ctx);
+    };
+    const localHost = document.createElement('div');
+    document.body.appendChild(localHost);
+    const localRoot = ReactDOMClient.createRoot(localHost);
+    try {
+      await act(async () => { localRoot.render(React.createElement(Component)); await settle(); });
+      expect(localHost.textContent).not.toContain(heavy.shows);
+      const button = localHost.querySelector('button[aria-label="Test this idea: ' + heavy.idea + '"]');
+      await act(async () => { button.click(); await settle(); });
+      expect(announcements.some((message) => message.includes('Testing the idea: ' + heavy.idea) && message.includes('Diffusion Race'))).toBe(true);
+      expect(localHost.querySelector('[id="particle-idea-verdict"]').textContent).toMatch(/run the chamber/);
+      expect(localHost.textContent).not.toContain(heavy.shows);
+      const run = Array.from(localHost.querySelectorAll('button')).find((b) => b.textContent === '▶ Run');
+      expect(run, 'run button').toBeDefined();
+      await act(async () => { run.click(); await new Promise((resolve) => setTimeout(resolve, 900)); });
+      const verdict = localHost.querySelector('[id="particle-idea-verdict"]');
+      expect(verdict.getAttribute('role')).toBe('note');
+      expect(verdict.textContent).toContain('What the model shows: ' + heavy.shows);
+      // The mass ratio the idea needs was applied, so the two species really differ.
+      const mass = localHost.querySelector('input[type="range"][aria-label="Particle B mass relative to particle A"]');
+      expect(mass, 'mass ratio slider (transport presets only)').not.toBeNull();
+      expect(Number(mass.value)).toBe(2.5);
+    } finally {
+      HTMLCanvasElement.prototype.getContext = realGetContext;
+      act(() => localRoot.unmount());
+      localHost.remove();
+      resetStemLab();
+    }
   });
 
 });

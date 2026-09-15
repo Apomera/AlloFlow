@@ -1,0 +1,267 @@
+{
+  "scope": "Current local production with native React/Three UI and real WebGL; no external AI calls",
+  "checks": [
+    {
+      "pass": true,
+      "label": "Activity tracking starts on a live WebGL world"
+    },
+    {
+      "pass": true,
+      "label": "A fresh lesson has no implicitly pinned activity"
+    },
+    {
+      "pass": true,
+      "label": "Track control is a reachable 44px button",
+      "detail": {
+        "width": 134.546875,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Explicit tracking pins the selected activity metadata",
+      "detail": {
+        "id": "garden-perimeter-2",
+        "lessonKey": "lesson-xy8u8h",
+        "npcName": "3. Rowan - Garden Design",
+        "title": "Market gardens: redesign the boundary",
+        "index": 2,
+        "count": 6
+      }
+    },
+    {
+      "pass": true,
+      "label": "Tracking never teleports, builds, changes scores, or reviews work"
+    },
+    {
+      "pass": true,
+      "label": "Tracking is persisted in the corresponding lesson journal"
+    },
+    {
+      "pass": true,
+      "label": "Tracked compass remains decorative without an automatic live region"
+    },
+    {
+      "pass": true,
+      "label": "Pinning visibly changes the real compass canvas"
+    },
+    {
+      "pass": true,
+      "label": "Exactly the tracked mentor receives the visible in-world label treatment",
+      "detail": {
+        "state": {
+          "kind": "question",
+          "tracked": true,
+          "contrast": false
+        },
+        "sprite": "AAF5EF4C-7AFA-4616-B8B8-737DB542590F",
+        "texture": "B83C2037-9BEE-4C8C-89D7-3B9A1452F117",
+        "inScene": true,
+        "visible": true,
+        "trackedCount": 1,
+        "previous": {
+          "sprite": "AAF5EF4C-7AFA-4616-B8B8-737DB542590F",
+          "texture": "B83C2037-9BEE-4C8C-89D7-3B9A1452F117"
+        }
+      }
+    },
+    {
+      "pass": true,
+      "label": "Tracking reuses the existing label sprite and texture"
+    },
+    {
+      "pass": true,
+      "label": "The currently tracked activity has a disabled pressed Track control"
+    },
+    {
+      "pass": true,
+      "label": "Journal tracking banner identifies the pinned activity"
+    },
+    {
+      "pass": true,
+      "label": "Route overview marks exactly one explicitly tracked stop"
+    },
+    {
+      "pass": true,
+      "label": "Browsing another activity never retargets the pin"
+    },
+    {
+      "pass": true,
+      "label": "Another activity can be explicitly chosen for tracking"
+    },
+    {
+      "pass": true,
+      "label": "Closing the journal preserves the chosen tracked mentor"
+    },
+    {
+      "pass": true,
+      "label": "Reopening the journal restores tracking independently of the browsed card"
+    },
+    {
+      "pass": true,
+      "label": "Locate announces the tracked mentor straight ahead with distance",
+      "detail": "Tracked activity: Market gardens: redesign the boundary. 3. Rowan - Garden Design is 8 steps straight ahead."
+    },
+    {
+      "pass": true,
+      "label": "Locate announces the tracked mentor to your right with distance",
+      "detail": "Tracked activity: Market gardens: redesign the boundary. 3. Rowan - Garden Design is 8 steps to your right."
+    },
+    {
+      "pass": true,
+      "label": "Locate announces the tracked mentor behind you with distance",
+      "detail": "Tracked activity: Market gardens: redesign the boundary. 3. Rowan - Garden Design is 8 steps behind you."
+    },
+    {
+      "pass": true,
+      "label": "Locate announces the tracked mentor to your left with distance",
+      "detail": "Tracked activity: Market gardens: redesign the boundary. 3. Rowan - Garden Design is 8 steps to your left."
+    },
+    {
+      "pass": true,
+      "label": "Stop tracking clears the active waypoint"
+    },
+    {
+      "pass": true,
+      "label": "Stopping keeps the journal open and returns focus to Track"
+    },
+    {
+      "pass": true,
+      "label": "Stopping does not move the player or alter learning scores"
+    },
+    {
+      "pass": true,
+      "label": "Stopping clears the persisted pin"
+    },
+    {
+      "pass": true,
+      "label": "Unpinning removes the tracked compass attribute"
+    },
+    {
+      "pass": true,
+      "label": "Unpinning restores the mentor label state"
+    },
+    {
+      "pass": true,
+      "label": "Previewing a different lesson leaves the current pin intact"
+    },
+    {
+      "pass": true,
+      "label": "Starting another lesson clears the previous world waypoint"
+    },
+    {
+      "pass": true,
+      "label": "The previous tracked label does not leak into the new scene"
+    },
+    {
+      "pass": true,
+      "label": "Returning to the same lesson restores its saved tracked activity"
+    },
+    {
+      "pass": true,
+      "label": "Tracking survives a real tool unmount and remount for the same lesson"
+    },
+    {
+      "pass": true,
+      "label": "Tracking journal has no horizontal overflow at 390x844"
+    },
+    {
+      "pass": true,
+      "label": "Stop tracking is reachable at 390",
+      "detail": {
+        "width": 314,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Track is reachable at 390",
+      "detail": {
+        "width": 312,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Pin/unpin preserves scene and scores at 390"
+    },
+    {
+      "pass": true,
+      "label": "Tracking journal has no horizontal overflow at 320x700"
+    },
+    {
+      "pass": true,
+      "label": "Stop tracking is reachable at 320",
+      "detail": {
+        "width": 244,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Track is reachable at 320",
+      "detail": {
+        "width": 242,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Pin/unpin preserves scene and scores at 320"
+    },
+    {
+      "pass": true,
+      "label": "Tracking journal has no horizontal overflow at 844x390"
+    },
+    {
+      "pass": true,
+      "label": "Stop tracking is reachable at 844",
+      "detail": {
+        "width": 111.71875,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Track is reachable at 844",
+      "detail": {
+        "width": 134.546875,
+        "height": 44,
+        "hit": true
+      }
+    },
+    {
+      "pass": true,
+      "label": "Pin/unpin preserves scene and scores at 844"
+    },
+    {
+      "pass": true,
+      "label": "A stopped pin stays cleared when the lesson is reopened"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "tracking-world-1440.png",
+    "tracked-guide-label.png",
+    "tracking-journal-390x844.png",
+    "tracking-world-390x844.png",
+    "tracking-journal-320x700.png",
+    "tracking-world-320x700.png",
+    "tracking-journal-844x390.png",
+    "tracking-world-844x390.png",
+    "tracking-failure.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "b8a97d39dc340ebb79305eef7abd5f9802a3bcd6ace3031f51bf814ec5fe176c",
+    "stem_tool_geometryworld_builder.js": "47327ddd192e4da45840ce52dc1f009f1514112031ad563294f78cb3d57225a9"
+  },
+  "failure": "locator.click: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Start this lesson', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"gwe-home-primary\">Start this lesson</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\n    at startPreview (<anonymous>:40:101)\n    at startHarbor (<anonymous>:41:74)\n    at async eval (<anonymous>:92:316)",
+  "pass": false
+}

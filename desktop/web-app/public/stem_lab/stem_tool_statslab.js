@@ -3455,7 +3455,7 @@ window.StemLab = window.StemLab || {
     var pe = plainEnglish(r);
     function copyAPA() {
       try {
-        navigator.clipboard.writeText(apa);
+        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(apa);
         upd('apaCopied', (d.apaCopied || 0) + 1);
         if (awardXP) awardXP(5, 'StatsLab — APA write-up copied', 'statsLab');
         if (addToast) addToast('✓ APA write-up copied to clipboard', 'success');
@@ -3521,7 +3521,7 @@ window.StemLab = window.StemLab || {
       lines.push('═══════════════════════════════════════════════════════════');
       var report = lines.join('\n');
       try {
-        navigator.clipboard.writeText(report);
+        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report);
         if (awardXP) awardXP(10, 'StatsLab — full report exported', 'statsLab');
         if (addToast) addToast('✓ Full report copied to clipboard (paste into Docs/Word)', 'success');
       } catch (e) {

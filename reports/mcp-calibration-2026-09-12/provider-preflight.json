@@ -1,0 +1,23 @@
+{
+  "state": "plan-only-no-explicit-credential",
+  "canExecute": false,
+  "providerClass": "live",
+  "evidenceClass": "partition_dependent",
+  "effectivenessEligible": false,
+  "eligibilityReason": "explicit_GEMINI_API_KEY_required",
+  "provider": "gemini-generateContent",
+  "endpoint": "https://generativelanguage.googleapis.com/v1beta/models",
+  "primaryModel": "gemini-3-flash-preview",
+  "fallbackModel": "gemini-2.5-flash-lite",
+  "modelSettingsRecorded": true,
+  "fallbackEnabled": true,
+  "actualModelTraceComplete": false,
+  "sampling": "provider-default",
+  "temperatureControlled": false,
+  "seedControlled": false,
+  "stochasticRepeatRecommended": true,
+  "explicitCredentialPresent": false,
+  "credentialSource": null,
+  "implicitKeyFilesProbed": false,
+  "networkProbePerformed": false
+}

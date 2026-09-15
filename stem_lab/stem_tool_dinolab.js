@@ -10419,7 +10419,7 @@ window.StemLab = window.StemLab || {
                 }
               });
             }
-            if (rendererRef.current && rendererRef.current.dispose) rendererRef.current.dispose();
+            if (rendererRef.current && rendererRef.current.dispose) rendererRef.current.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(rendererRef.current);
             sceneRef.current = null;
             cameraRef.current = null;
             rendererRef.current = null;
@@ -11115,7 +11115,7 @@ var evidenceRoute = [
           var summary = fieldInvestigationSummaryText();
           function finish(copied) { announceToSR(copied ? 'Investigation summary copied to the clipboard.' : 'Copy failed. The investigation summary remains visible in the share panel.'); }
           if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(summary).then(function () { finish(true); }).catch(function () { finish(fallbackCopyFieldInvestigationSummary(summary)); });
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(summary).then(function () { finish(true); }).catch(function () { finish(fallbackCopyFieldInvestigationSummary(summary)); });
           } else finish(fallbackCopyFieldInvestigationSummary(summary));
         }
         function downloadFieldInvestigationSummary() {

@@ -1519,6 +1519,12 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
       const value = t(key);
       return value && value !== key ? value : fallback;
   };
+  // One line under every role card, not just Parent (2026-09-13: three cards had none and the
+  // fourth made the others look unfinished). slate-600, because slate-500 falls under 4.5:1 on
+  // the cards' hover tints (4.26:1 on indigo-50).
+  const roleDescription = (key, fallback) => (
+    <span className="text-xs leading-snug text-slate-600 text-center max-w-[13rem]">{roleCopy(key, fallback)}</span>
+  );
   const usesGlobalVoiceAccess = typeof onStartVoiceAccess === 'function';
   const micStatusText = usesGlobalVoiceAccess
       ? micStatus === 'granted' ? roleCopy('roles.voice_access_active', 'Voice Access started') :
@@ -1563,6 +1569,8 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
                 <GraduationCap size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-teal-700">{roleCopy('roles.student', 'Student')}</span>
+            {roleDescription('roles.student_description', 'Join your class and learn with a private codename.')}
+            {lastTimeBadge('student')}
         </button>
         <button
             onClick={(event) => handleRoleClick('teacher', event)}
@@ -1573,6 +1581,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
                 <School size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-indigo-700">{roleCopy('roles.teacher', 'Teacher')}</span>
+            {roleDescription('roles.teacher_description', 'Build accessible lessons and adapt materials for your class.')}
             {lastTimeBadge('teacher')}
         </button>
         <button
@@ -1584,7 +1593,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
                 <Heart size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-orange-700">{roleCopy('roles.parent', 'Parent')}</span>
-            <span className="text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]">{t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'}</span>
+            {roleDescription('parent_mode.role_description', 'Support learning at home with family-friendly tools.')}
             {lastTimeBadge('parent')}
         </button>
         <button
@@ -1596,6 +1605,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
                 <UserCircle2 size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-cyan-700">{roleCopy('roles.independent', 'Independent Learner')}</span>
+            {roleDescription('roles.independent_description', 'Study at your own pace with progress tracking and no class to join.')}
             {lastTimeBadge('independent')}
         </button>
       </div>

@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "One System for the Week",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## One System for the Week\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nTwo of the Responsibility behaviors in the King HOWLs are about the boring, powerful stuff: arrive **prepared** for class, and complete assignments **thoughtfully** and on time. Nobody gets a standing ovation for having a charged laptop. But almost every bad week starts with a small thing that was not where it needed to be.\n\nHere is the trap. Most people try to fix a messy week with **willpower**. \"I will just remember.\" \"I will try harder.\" Willpower is real, but it runs out, and it runs out fastest on the days you need it most. A **system** does not run out. A system is a small set of steps you do the same way every time, so that your brain does not have to decide anything.\n\nA good system for middle school has three parts. A **capture** spot: one place where every assignment and due date goes the moment you hear it. Not your memory. Not three places. One. A **launch** check: one look at tomorrow before you leave school, so that whatever you need is in the bag tonight, not in your locker at 8:04. And a weekly **reset**: ten minutes once a week to look at the whole week ahead, notice the big things, and split them into pieces.\n\nHere is a fictional Crew example. Marcus is smart and disorganized. He writes assignments on his hand, on sticky notes, and sometimes nowhere. He arrives without his science notebook about twice a week. His Crew leader, Mr. Bell, does not tell him to try harder. He asks Marcus to pick one capture spot. Marcus picks the notes app on his laptop, because it is always open. For two weeks, every assignment goes there, and nowhere else. Then Mr. Bell asks him to add a launch check: last two minutes of the day, open the notes, look at tomorrow, pack the bag. By the third week, Marcus has his notebook every day. Nothing about his brain changed. His system did.\n\nCompleting work thoughtfully is the other half. Thoughtfully does not mean slowly. It means the work got the kind of attention it needed. A system helps here too, because when you split a big assignment into pieces during the weekly reset, you stop doing all of it at 11 p.m. on the night before. Work done at 11 p.m. is rarely thoughtful.\n\nOne more thing. A system is yours. The capture spot can be paper or a screen. The launch check can be a list or a photo of your locker. The weekly reset can be Sunday night or Monday during Crew. What matters is that it is one system, you use it the same way each time, and you fix it when it breaks instead of going back to willpower.\n\nThis week you build one. Not the perfect one. One you will actually use on Thursday.",
+      "data": "## One System for the Week\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nTwo of the Responsibility behaviors in the King **HOWLs** are about the boring, powerful stuff: arrive **prepared** for class, and complete assignments **thoughtfully** and on time. Nobody gets a standing ovation for having a charged laptop. But almost every bad week starts with a small thing that was not where it needed to be.\n\nHere is the trap. Most people try to fix a messy week with **willpower**. \"I will just remember.\" \"I will try harder.\" Willpower is real, but it runs out, and it runs out fastest on the days you need it most. A **system** does not run out. A system is a small set of steps you do the same way every time, so that your brain does not have to decide anything.\n\nA good system for middle school has three parts. A **capture** spot: one place where every assignment and due date goes the moment you hear it. Not your memory. Not three places. One. A **launch** check: one look at tomorrow before you leave school, so that whatever you need is in the bag tonight, not in your locker at 8:04. And a weekly **reset**: ten minutes once a week to look at the whole week ahead, notice the big things, and split them into pieces.\n\nHere is a fictional **Crew** example. Marcus is smart and disorganized. He writes assignments on his hand, on sticky notes, and sometimes nowhere. He arrives without his science notebook about twice a week. His Crew leader, Mr. Bell, does not tell him to try harder. He asks Marcus to pick one capture spot. Marcus picks the notes app on his laptop, because it is always open. For two weeks, every assignment goes there, and nowhere else. Then Mr. Bell asks him to add a launch check: last two minutes of the day, open the notes, look at tomorrow, pack the bag. By the third week, Marcus has his notebook every day. Nothing about his brain changed. His system did.\n\nCompleting work thoughtfully is the other half. Thoughtfully does not mean slowly. It means the work got the kind of attention it needed. A system helps here too, because when you split a big assignment into pieces during the weekly reset, you stop doing all of it at 11 p.m. on the night before. Work done at 11 p.m. is rarely thoughtful.\n\nOne more thing. A system is yours. The capture spot can be paper or a screen. The launch check can be a list or a photo of your locker. The weekly reset can be Sunday night or Monday during Crew. What matters is that it is one system, you use it the same way each time, and you fix it when it breaks instead of going back to willpower.\n\nThis week you build one. Not the perfect one. One you will actually use on Thursday.",
       "meta": "6th-8th Grade • Leveled reading • ~490 words"
     },
     {
@@ -105,9 +105,19 @@
           "term": "Habit",
           "def": "Something you do without deciding to, because you have done it the same way many times.",
           "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
         }
       ],
-      "meta": "6th-8th Grade • 10 terms • Tiered"
+      "meta": "6th-8th Grade • 12 terms • Tiered"
     },
     {
       "id": "cs-anchor",
@@ -351,6 +361,14 @@
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": [
         {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
           "question": "What if I like using several places?",
           "answer": "Several places means the assignment can be in the one you did not check. One capture spot is the whole point. You can copy it elsewhere later; it lands in one place first."
         },
@@ -371,7 +389,7 @@
           "answer": "The Responsibility HOWL includes arriving prepared and completing assignments thoughtfully and on time. A system is how those happen on the days you do not feel like it."
         }
       ],
-      "meta": "5 questions"
+      "meta": "7 questions"
     },
     {
       "id": "cs-memory",

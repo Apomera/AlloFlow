@@ -1,0 +1,42 @@
+{
+  "ready": {
+    "tool": true,
+    "three": true,
+    "orbit": true,
+    "orbitViewer": true,
+    "voxel": true
+  },
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "discovery-lever",
+    "discovery-pulley",
+    "discovery-windlass",
+    "discovery-ramp",
+    "discovery-wedge",
+    "discovery-screw",
+    "equal-lever",
+    "reverse-lever",
+    "vertical-ramp"
+  ],
+  "checks": [
+    "Keyboard setup/reveal/scrub: lever 390",
+    "Keyboard setup/reveal/scrub: pulley 390",
+    "Keyboard setup/reveal/scrub: windlass 390",
+    "Keyboard setup/reveal/scrub: ramp 390",
+    "Keyboard setup/reveal/scrub: wedge 390",
+    "Keyboard setup/reveal/scrub: screw 390",
+    "Keyboard setup/reveal/scrub: lever 320",
+    "Keyboard setup/reveal/scrub: pulley 320",
+    "Keyboard setup/reveal/scrub: windlass 320",
+    "Keyboard setup/reveal/scrub: ramp 320",
+    "Keyboard setup/reveal/scrub: wedge 320",
+    "Keyboard setup/reveal/scrub: screw 320",
+    "Short phone keeps focused slider visible",
+    "Starting outline remains visible during playback",
+    "Inspect stops playback and focuses the enabled slider",
+    "Reduced motion holds half stroke",
+    "Old timer cannot interrupt newer run",
+    "Next station starts at rest"
+  ]
+}

@@ -1,0 +1,21 @@
+      var _selectionEditMode=React.useState('move'), selectionEditMode=_selectionEditMode[0], setSelectionEditMode=_selectionEditMode[1];
+      var _selectionOffset=React.useState({x:'1',y:'0',z:'0'}), selectionOffset=_selectionOffset[0], setSelectionOffset=_selectionOffset[1];
+      var _selectionEditMaterial=React.useState('stone'), selectionEditMaterial=_selectionEditMaterial[0], setSelectionEditMaterial=_selectionEditMaterial[1];
+      var _selectionEditPreview=React.useState(null), selectionEditPreview=_selectionEditPreview[0], setSelectionEditPreview=_selectionEditPreview[1];
+      var _selectionEditNotice=React.useState(''), selectionEditNotice=_selectionEditNotice[0], setSelectionEditNotice=_selectionEditNotice[1];
+      var selectionPreviewOwner=React.useRef({kind:'selection-editor'});
+      var _stampLibrary=React.useState(function(){return readBuildStamps();}), stampLibrary=_stampLibrary[0], setStampLibrary=_stampLibrary[1];
+      var _stampName=React.useState(''), stampName=_stampName[0], setStampName=_stampName[1];
+      var _stampId=React.useState(''), stampId=_stampId[0], setStampId=_stampId[1];
+      var _stampOrigin=React.useState({x:'0',y:'1',z:'0'}), stampOrigin=_stampOrigin[0], setStampOrigin=_stampOrigin[1];
+      var _stampNotice=React.useState(''), stampNotice=_stampNotice[0], setStampNotice=_stampNotice[1];
+      React.useEffect(function(){
+        var plan=selectionEditPreview,owner=selectionPreviewOwner.current;
+        if(!plan || !plan.engine)return undefined;
+        if(plan.engine.showBuildBatchPreview && plan.additions)plan.engine.showBuildBatchPreview(plan,owner);
+        return function(){if(plan.engine.clearBuildBatchPreview)plan.engine.clearBuildBatchPreview(owner);};
+      },[selectionEditPreview]);
+      React.useEffect(function(){
+        if(!isSandbox || !data.worldActive || homeOpen || data.showcaseActive || data.showSandboxLauncher){setSelectionEditPreview(null);setSelectionEditNotice('');}
+      },[isSandbox,data.worldActive,homeOpen,data.showcaseActive,data.showSandboxLauncher]);
+

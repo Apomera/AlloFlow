@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "passedTests": 240,
+  "suites": 26,
+  "reports": [
+    "regressions.json",
+    "regressions-retry.json"
+  ],
+  "note": "The broader run passed 22 suites but four workers timed out at startup. Those four suites passed in a separate forks-pool retry. No assertion failures remained."
+}

@@ -1,0 +1,20 @@
+{
+  "name": "student-locked-phone",
+  "errors": [],
+  "text": "ADVENTURE MODE\n\nYour adventure is ready\n\nThe Water Cycle\n\nSetup summary: Standard Adventure Mode · 12 decisions · 4 suggested choices · English · Final challenge: ON\nStart Adventure\n\nYour teacher has fixed this setup. You can review the settings and start your adventure.\n\nView teacher settings",
+  "scrollAreas": [],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Start Adventure",
+      "disabled": false,
+      "top": 288,
+      "height": 60,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

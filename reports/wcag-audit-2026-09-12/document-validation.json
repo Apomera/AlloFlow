@@ -1,0 +1,191 @@
+{
+  "checkedAt": "2026-09-13T03:46:09.090Z",
+  "criterionRows": 55,
+  "counts": {
+    "Partially Supports": 53,
+    "Not Applicable": 2
+  },
+  "errors": [],
+  "artifacts": [
+    {
+      "file": "app-1280.png",
+      "sha256": "8970666b122fc700173977873a47791bbc722ff5a712ae0ef3b879d8d6aef4fb"
+    },
+    {
+      "file": "app-320-spacing.png",
+      "sha256": "c0410847fb2719b45d40ad9553d292ff6fd7ec138d59df46745bcc4652a1c762"
+    },
+    {
+      "file": "app-320.png",
+      "sha256": "637680be682aa4b67b9c0b6afd7db9bc59c5773d9daf5069f2aadf40578ca799"
+    },
+    {
+      "file": "backend-initial-1280.png",
+      "sha256": "c9b2ec9058065bc6286c6e52431c4ef245f6302fd30f9d9d60cdc3479d70f269"
+    },
+    {
+      "file": "browser-audit.json",
+      "sha256": "4c3f0371dcbe8f778f86d41dd0416f1f4b41dddaeba9cfd71365d7c07dc289e1"
+    },
+    {
+      "file": "browser-label-check.json",
+      "sha256": "94cb95aaa39a4831530d037cbc12e0b7062b10a385ae06dc5f3cb197738e0465"
+    },
+    {
+      "file": "browser-loaded-workspace.json",
+      "sha256": "0b178cb5b229c9f26161c30322e13392eb11f51a0dcdba2f8d3887398578de86"
+    },
+    {
+      "file": "browser-workflows-ready.json",
+      "sha256": "8820e7a5fdbaaa250359ed6142fbade69a6c15e120b4c71c274564c9bdb1ec8f"
+    },
+    {
+      "file": "browser-workflows.json",
+      "sha256": "c09bb51940262a1d3f4544049d6e8676ddef42b9f3945196214488668e5d741b"
+    },
+    {
+      "file": "catalog-1280.png",
+      "sha256": "32bc5b56d3cba207c3300324f880d7977392970e4870f82323ec627d317efad0"
+    },
+    {
+      "file": "catalog-320-spacing.png",
+      "sha256": "2983c38bab710070034a46182f56c251690ffa81dcc1857c2ebdb4063849bcce"
+    },
+    {
+      "file": "catalog-320.png",
+      "sha256": "1f4c91983862b6c50206f2d7b7249430b0a6b2b2b2a6cb0002977483296ef15d"
+    },
+    {
+      "file": "environment.json",
+      "sha256": "0a74c3afea9536422a58a20b7d6df7e9159b85b4fc6525c92c40ce56965fbc5d"
+    },
+    {
+      "file": "failed-regressions.json",
+      "sha256": "f33e1d80e405106965e25bfe90386d99fd1cb0a094c23d12cf7da14854a821c6"
+    },
+    {
+      "file": "fixture-method-inventory.json",
+      "sha256": "002771da4da776d16c89cf4791f34b1b78ad738e0ec0cb645be66be8a8d207b7"
+    },
+    {
+      "file": "full-platform-1280.png",
+      "sha256": "d3482dbd5a007138f7f3a1a5d6236c92934d8803f716d1d60d184073152fcd8a"
+    },
+    {
+      "file": "full-platform-320-spacing.png",
+      "sha256": "acba2fa1ca9baeceab67fae89643f3a29dd34be5f7815fd766a169d1f3650c04"
+    },
+    {
+      "file": "full-platform-320.png",
+      "sha256": "1d529eb1b1636c34005e13b1514d9b0297e11f45089c0d8a606f0ba22a0733e3"
+    },
+    {
+      "file": "full-platform-after-dialog.png",
+      "sha256": "6d2e09dff47b3125ce6fa0e326ad35f549d4e7d999839b37f51c303f49727cf2"
+    },
+    {
+      "file": "prepare-workflows-ready.cjs",
+      "sha256": "d7091b57d6f9eaf96235a88e6ef0f684ee6d8e9f688b14837c81f5d462578e9a"
+    },
+    {
+      "file": "prepare-workflows.cjs",
+      "sha256": "48022626d319241e0ad240ab6f750b36bc60117cbd48155343106de58eaf2834"
+    },
+    {
+      "file": "regression-manifest.json",
+      "sha256": "a422c467c1d2998933e43ffcd5267af3697f7c4fc4a0014bd9059cf2feac547e"
+    },
+    {
+      "file": "regression-triage.json",
+      "sha256": "e95064c36d4cfb5b23d1b0a9a792f7f0b2dcbf170f8dce427e079296402a41b3"
+    },
+    {
+      "file": "regressions.json",
+      "sha256": "2a838c29626468c553713d9aef01866900f35408bd39bb8eb4de1af07057d9ec"
+    },
+    {
+      "file": "run-browser.cjs",
+      "sha256": "24a3e9cc7edf39f788d0e2c83a094702eee7e0ed5ae326e4b1b916ca71052690"
+    },
+    {
+      "file": "run-label-check.cjs",
+      "sha256": "62830dd0b3d4ce2116f0cee51756ca49bfa7852b040302f55a04678b23b0a23d"
+    },
+    {
+      "file": "run-loaded-workspace.cjs",
+      "sha256": "b1fab4beaec89c3bdf200ec6de983fd72efe283816c923686e1ffee4967f14eb"
+    },
+    {
+      "file": "run-regressions.cjs",
+      "sha256": "498ca9f4f4b9f6e382e03c432a466d356f9347474ae470a041acad019984c61e"
+    },
+    {
+      "file": "run-static.cjs",
+      "sha256": "d1c5df080bb3cbba5c0350e8d664fe6faf620fe19a8133ea7963224f750d58ef"
+    },
+    {
+      "file": "run-workflows-ready.cjs",
+      "sha256": "112430d97cbb61ac6453fcc7425ccb9a4eea8372495819ca21530497434c8781"
+    },
+    {
+      "file": "run-workflows.cjs",
+      "sha256": "d55c13fe7bb00e2cfdc6a6225e138e133b75d5108aa289dc1588bc87be284885"
+    },
+    {
+      "file": "static-audit.json",
+      "sha256": "714cd1136b7415e9961670ea327e5bc2d73f0ff980b7be9dda77d98e7d9d1c69"
+    },
+    {
+      "file": "targeted-retest.json",
+      "sha256": "185cc9f4eb0c932172514a7bf1259a7113120e92ed015562e97150ebadb53d0b"
+    },
+    {
+      "file": "teacher-loaded-1280.png",
+      "sha256": "fc3cd40fcf580267c5c9c199b6ee8ab08ab809971593dcc1d09c8cfdacaa4399"
+    },
+    {
+      "file": "teacher-workspace-1280.png",
+      "sha256": "ff8f1f1c55b561d13575ff66b04f5280836b6a2a5755177ae191aff567a47077"
+    },
+    {
+      "file": "teacher-workspace-320-spacing.png",
+      "sha256": "622e6997ada24eee3ac4839e53b33ae1f8cfba6ab064e6e84bccc503c38746b2"
+    },
+    {
+      "file": "teacher-workspace-320.png",
+      "sha256": "9db0473ff8d882650116777b26f7c6db6458cc1e137620456fbdb1a9c6d71030"
+    },
+    {
+      "file": "teacher-workspace-after-dialog.png",
+      "sha256": "63926587aa933468328bcffce037acec3823070284a15d1bbeed7da188e28b59"
+    },
+    {
+      "file": "triage-results.cjs",
+      "sha256": "3754e94fba6464bc5a34e0bc8f1b9cae215ed2b8746a0562856f50c012576ae9"
+    },
+    {
+      "file": "update-documents.cjs",
+      "sha256": "f83528db12e5a51c93f3e17ccb0d82f2c54cf5fac3ee8c13a93800a810d7567b"
+    },
+    {
+      "file": "validate-documents.cjs",
+      "sha256": "6d2efcfd5de7eb83d85fef156c937309b7b1eac30ff7de7d4ff46d94e7bd99e5"
+    },
+    {
+      "file": "video-studio-1280.png",
+      "sha256": "556b5f5c1ed517456dee0dfe18f5fe84d317d33f7edf01bea974eb74a17c7c9a"
+    },
+    {
+      "file": "video-studio-320-spacing.png",
+      "sha256": "320305db866e3603588269d7b2b7916398145c75bacd75615f0a190511b5463a"
+    },
+    {
+      "file": "video-studio-320.png",
+      "sha256": "2a359a9ae3eeec97b864e5fccbc11faf348d521d2ef895cba22656aaf76fa907"
+    },
+    {
+      "file": "vitest.config.mjs",
+      "sha256": "c62f626d2f205c89def89f40cec86b4a01dad3819e67e6fb578dcbfbe1aef95a"
+    }
+  ]
+}

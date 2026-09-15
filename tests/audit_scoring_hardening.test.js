@@ -51,8 +51,11 @@ describe('M2 — a chunk reply without issues[] is a failure, not a clean audit'
 });
 
 describe('M3 — a fully-redundant tail chunk is dropped', () => {
-  it('pops a final chunk whose length <= OVERLAP', () => {
-    expect(src).toContain('if (chunks.length > 1 && chunks[chunks.length - 1].length <= OVERLAP) chunks.pop();');
+  it('drops a final section that only repeats the previous one (now inside splitHtmlForAudit)', () => {
+    // 2026-09-13: the audit splitter moved to block-boundary sections; the redundant-tail rule
+    // lives there, phrased as "the last section is a suffix of the one before it".
+    expect(src).toContain('const chunks = splitHtmlForAudit(_auditHtmlForModel, CHUNK_SIZE, OVERLAP);');
+    expect(src).toContain('if (chunks.length > 1 && chunks[chunks.length - 2].endsWith(chunks[chunks.length - 1])) chunks.pop();');
   });
   it('mirror: a 1-char tail chunk is redundant; a 5000-char one is not', () => {
     const OVERLAP = 800;

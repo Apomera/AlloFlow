@@ -1,0 +1,347 @@
+{
+  "title": "Composite Volume — Breaking Apart & Combining",
+  "description": "Follow a two-color T, a stepped pyramid and an open U to compare decomposition with empty-space reasoning. Finish by building a connected 50-unit design.",
+  "spawnPoint": [
+    10,
+    2.6,
+    10
+  ],
+  "objectives": [
+    "Decompose the two-color T into 48 and 20 cubic units",
+    "Explain the stepped pyramid as 36 + 16 + 4 cubic units",
+    "Distinguish the U’s 64 occupied cubic units from its 144-unit bounding box",
+    "Design and measure a connected composite shape with exactly 50 cubic units"
+  ],
+  "ground": {
+    "xMin": -2,
+    "xMax": 28,
+    "zMin": -2,
+    "zMax": 22,
+    "y": 0,
+    "type": "grass"
+  },
+  "structures": [
+    {
+      "type": "fill",
+      "x1": 0,
+      "y1": 0,
+      "z1": 0,
+      "x2": 26,
+      "y2": 0,
+      "z2": 20,
+      "block": "stone",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 2,
+      "x2": 9,
+      "y2": 3,
+      "z2": 3,
+      "block": "diamond"
+    },
+    {
+      "type": "fill",
+      "x1": 5,
+      "y1": 1,
+      "z1": 4,
+      "x2": 6,
+      "y2": 2,
+      "z2": 8,
+      "block": "gold"
+    },
+    {
+      "type": "fill",
+      "x1": 14,
+      "y1": 1,
+      "z1": 2,
+      "x2": 19,
+      "y2": 1,
+      "z2": 7,
+      "block": "gold"
+    },
+    {
+      "type": "fill",
+      "x1": 15,
+      "y1": 2,
+      "z1": 3,
+      "x2": 18,
+      "y2": 2,
+      "z2": 6,
+      "block": "gold"
+    },
+    {
+      "type": "fill",
+      "x1": 16,
+      "y1": 3,
+      "z1": 4,
+      "x2": 17,
+      "y2": 3,
+      "z2": 5,
+      "block": "gold"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 12,
+      "x2": 2,
+      "y2": 4,
+      "z2": 17,
+      "block": "wood"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 17,
+      "x2": 7,
+      "y2": 4,
+      "z2": 17,
+      "block": "wood"
+    },
+    {
+      "type": "fill",
+      "x1": 7,
+      "y1": 1,
+      "z1": 12,
+      "x2": 7,
+      "y2": 4,
+      "z2": 17,
+      "block": "wood"
+    },
+    {
+      "type": "fill",
+      "x1": 14,
+      "y1": 0,
+      "z1": 12,
+      "x2": 24,
+      "y2": 0,
+      "z2": 18,
+      "block": "sand",
+      "measurementLayer": "ground"
+    }
+  ],
+  "npcs": [
+    {
+      "position": [
+        5,
+        1,
+        1
+      ],
+      "name": "Decomposer",
+      "color": 8141549,
+      "dialogue": "The T has two touching parts with no overlap: a blue top bar, 8 long by 2 deep by 3 high, and a gold stem, 2 wide by 5 long by 2 high. Their colors help you see the split. Measure includes both connected parts together, so add their volumes.",
+      "question": null
+    },
+    {
+      "position": [
+        3,
+        1,
+        6
+      ],
+      "name": "T-Shape Quiz",
+      "color": 2450411,
+      "dialogue": "The blue top bar contains 8 × 2 × 3 = 48 cubes. The shorter gold stem contains 2 × 5 × 2 = 20. They touch without overlapping, so the complete T contains 68 cubic units. Measure either color to check the entire connected model.",
+      "question": {
+        "text": "Top bar is 8×2×3. Volume?",
+        "choices": [
+          "48 cubic units",
+          "24 cubic units",
+          "36 cubic units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "The stem is 2 wide, 5 long and 2 high. What is 2 × 5 × 2?",
+            "choices": [
+              "20 cubic units",
+              "10 cubic units",
+              "30 cubic units"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "Total T-shape = 48 + 20 = ?",
+            "choices": [
+              "68 cubic units",
+              "48 cubic units",
+              "96 cubic units"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        20,
+        1,
+        4
+      ],
+      "name": "Pyramid Guide",
+      "color": 16096779,
+      "dialogue": "This stepped pyramid has three one-block-high layers. Each footprint shrinks as you move upward: 6 by 6, then 4 by 4, then 2 by 2. Add the actual layers rather than filling its empty bounding box.",
+      "question": {
+        "text": "Bottom layer: 6×6×1. Volume?",
+        "choices": [
+          "36 cubic units",
+          "24 cubic units",
+          "12 cubic units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "Middle layer: 4×4×1 = ?",
+            "choices": [
+              "16 cubic units",
+              "12 cubic units",
+              "8 cubic units"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "Top layer: 2×2×1 = ?",
+            "choices": [
+              "4 cubic units",
+              "2 cubic units",
+              "8 cubic units"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "Total pyramid: 36 + 16 + 4 = ?",
+            "choices": [
+              "56 cubic units",
+              "36 cubic units",
+              "64 cubic units"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        4,
+        1,
+        11
+      ],
+      "name": "U-Shape Sage",
+      "color": 1483594,
+      "dialogue": "This open U occupies 64 cubic units. Its 6 by 6 by 4 bounding box holds 144, but the 4 by 5 by 4 opening leaves 80 empty. You can also add two 24-unit side walls and the 16-unit back section between them. Count the two back corners only once.",
+      "question": {
+        "text": "Is a U-shape’s volume more or less than the bounding box?",
+        "choices": [
+          "Less — the hollow part is empty",
+          "Same — the box counts all space",
+          "More — the U has extra corners"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "To find U-shape volume: bounding box minus hollow. Which is correct?",
+            "choices": [
+              "V = outer - inner",
+              "V = outer + inner",
+              "V = outer × inner"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        25,
+        1,
+        15
+      ],
+      "name": "Design Challenge",
+      "color": 14427686,
+      "dialogue": "Build a connected composite model with exactly 50 cubic units on the empty sand pad. Try a 5 by 3 base that is 2 layers high, then add a 5 by 2 section another 2 layers high on top: 30 + 20 = 50. Use Measure to check occupied volume. Review your own evidence in the activity guide; the build is not automatically scored.",
+      "question": {
+        "text": "Which does NOT equal 50?",
+        "choices": [
+          "6×4×2 = 48 ✗",
+          "5×5×2 = 50 ✓",
+          "10×5×1 = 50 ✓"
+        ],
+        "correct": 0
+      }
+    }
+  ],
+  "estimatedMinutes": 30,
+  "activities": [
+    {
+      "id": "composite-two-color-t",
+      "title": "Split the T without overlap",
+      "npcName": "T-Shape Quiz",
+      "position": [
+        3,
+        2.6,
+        9
+      ],
+      "challenge": "Identify the two colored parts of the T and calculate each volume. Predict the combined total, then measure the connected model and compare its material counts.",
+      "hint": "Blue: 8 × 2 × 3 = 48. Gold: 2 × 5 × 2 = 20. The shorter gold stem touches the bar without occupying any of its cells. Measure includes both colors in the same connected selection.",
+      "successCriteria": [
+        "I found 48 blue cubes and 20 gold cubes, totaling 68 cubic units.",
+        "I can explain why adding these parts neither misses nor double-counts any cells."
+      ],
+      "reflection": "Why would the T’s enclosing rectangular box contain more space than its actual blocks?"
+    },
+    {
+      "id": "composite-stepped-pyramid",
+      "title": "Add shrinking layers",
+      "npcName": "Pyramid Guide",
+      "position": [
+        22,
+        2.6,
+        5
+      ],
+      "challenge": "Study the pyramid from more than one side. Calculate the volume of each one-block-high layer, then use Measure to check your combined total.",
+      "hint": "The three layers contain 6 × 6 = 36, 4 × 4 = 16 and 2 × 2 = 4 cubes. Their sum is 56; a full 6 by 6 by 3 bounding box would contain 108.",
+      "successCriteria": [
+        "I can account for all 56 cubic units as 36 + 16 + 4.",
+        "I distinguish the occupied model from its larger 108-unit bounding box."
+      ],
+      "reflection": "If the next layer were one cube, what would the new volume be? Why would you add 1 instead of multiplying the old volume?"
+    },
+    {
+      "id": "composite-open-u",
+      "title": "Reason about the empty space",
+      "npcName": "U-Shape Sage",
+      "position": [
+        4,
+        2.6,
+        9
+      ],
+      "challenge": "Look into the open wooden U. Predict its occupied volume using subtraction, then check with Measure and a second method that adds separate wall sections.",
+      "hint": "Outer box: 6 × 6 × 4 = 144. Opening: 4 × 5 × 4 = 80. Occupied: 144 − 80 = 64. For addition, use two side walls of 24 plus only the 4 × 1 × 4 middle back section of 16; otherwise you count corners twice.",
+      "successCriteria": [
+        "I explain why the U contains 64 cubic units while its bounding box contains 144.",
+        "My addition and subtraction methods both give 64 and count each occupied cube once."
+      ],
+      "reflection": "What error would occur if you added three full 6-by-1-by-4 walls without accounting for their shared corners?"
+    },
+    {
+      "id": "composite-fifty-design",
+      "title": "Design a 50-unit step",
+      "npcName": "Design Challenge",
+      "position": [
+        25,
+        2.6,
+        18
+      ],
+      "challenge": "Build a connected composite shape from full cubes on the sand pad. Aim for exactly 50 cubic units, with at least two rectangular parts that create a step or recess. Measure your own build and record how you decomposed it.",
+      "hint": "One solution: a 5-by-3 base, 2 blocks high, gives 30 cubes. On its back two rows, add a 5-by-2 section another 2 blocks high, adding 20. The parts meet but do not overlap. Keep your build inside the sand pad and separate from other examples.",
+      "successCriteria": [
+        "My connected build has a step or recess and measures exactly 50 cubic units.",
+        "I recorded a decomposition whose non-overlapping parts add to 50."
+      ],
+      "reflection": "How many empty cubic units are inside your model’s bounding box? Use your measurements as evidence for this self-review; the build is not automatically scored."
+    }
+  ]
+}

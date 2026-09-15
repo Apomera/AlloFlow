@@ -1,0 +1,60 @@
+[
+  {
+    "integration": "backward-euler",
+    "transistorErrorV": 0.0019401328091985803,
+    "equivalentCurrentSourceErrorV": 0.0019401328092074621,
+    "transistorSteps": 128,
+    "equivalentSteps": 128,
+    "firstFrames": [
+      {
+        "time": 0,
+        "V": 5
+      },
+      {
+        "time": 0.000009789768118039298,
+        "method": "backward_euler_step_doubling",
+        "V": 4.991929404372359
+      },
+      {
+        "time": 0.000019579536236078595,
+        "method": "backward_euler_step_doubling",
+        "V": 4.9839370520209565
+      },
+      {
+        "time": 0.000029083295157256145,
+        "method": "backward_euler_step_doubling",
+        "V": 4.976251241251589
+      }
+    ],
+    "maxCollectorCurrentErrorA": 0
+  },
+  {
+    "integration": "trapezoidal",
+    "transistorErrorV": 0.00007773263996657676,
+    "equivalentCurrentSourceErrorV": 0.00007773263996835311,
+    "transistorSteps": 102,
+    "equivalentSteps": 102,
+    "firstFrames": [
+      {
+        "time": 0,
+        "V": 5
+      },
+      {
+        "time": 0.000009789768118039298,
+        "method": "backward_euler_step_doubling",
+        "V": 4.991929404372359
+      },
+      {
+        "time": 0.000019579536236078595,
+        "method": "backward_euler_step_doubling",
+        "V": 4.9839370520209565
+      },
+      {
+        "time": 0.000029083295157256145,
+        "method": "trapezoidal_step_doubling",
+        "V": 4.9762148919328375
+      }
+    ],
+    "maxCollectorCurrentErrorA": 0
+  }
+]

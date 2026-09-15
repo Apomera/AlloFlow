@@ -1,0 +1,23 @@
+{
+  "previousSha256": "3c9ef48c198d799d0c14be15580d6d19066176c3f7560d21da6bd30ceb29201e",
+  "sourceSha256": "32fc2eaceb20402cdc1b3374d8bd11d83731a1e6d6b81aac7f359f8670813e26",
+  "sourcePublicIdentical": true,
+  "solverAndScopeMathematicsPreserved": true,
+  "boardGeometryPreserved": true,
+  "unrelatedWorkspacesPreserved": true,
+  "newCutawayTests": 31,
+  "regression": {
+    "tests": 488,
+    "files": 23
+  },
+  "focused": {
+    "tests": 89,
+    "files": 4
+  },
+  "svgDeclarations": 17,
+  "axeWidths": [
+    1280,
+    390,
+    320
+  ]
+}

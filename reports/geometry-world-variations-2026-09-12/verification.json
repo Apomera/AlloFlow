@@ -1,0 +1,19 @@
+{
+  "unit": {
+    "passed": 509,
+    "failed": 0,
+    "pending": 0,
+    "files": 26,
+    "failedSuites": []
+  },
+  "browser": {
+    "passed": 19,
+    "failed": [],
+    "errors": [],
+    "failure": null
+  },
+  "source": {
+    "syntax": true,
+    "desktopParity": true
+  }
+}

@@ -920,6 +920,16 @@
     var isKaraokeOverlayActive = props.isKaraokeOverlayActive;
     var isAnalyzingPos = props.isAnalyzingPos;
     var isCheckingLevel = props.isCheckingLevel;
+    // Automatic level check preference (read by the generation dispatcher).
+    // Stored per browser, never on the resource; default ON for teachers.
+    var _autoLevelPref = React.useState(function () {
+      try { return localStorage.getItem('alloflow_auto_level_check') !== 'off'; } catch (_) { return true; }
+    });
+    var autoLevelCheckOn = _autoLevelPref[0];
+    var setAutoLevelCheckOn = function (next) {
+      _autoLevelPref[1](!!next);
+      try { localStorage.setItem('alloflow_auto_level_check', next ? 'on' : 'off'); } catch (_) {}
+    };
     var isCheckingAlignment = props.isCheckingAlignment;
     var isLineFocusMode = props.isLineFocusMode;
     var focusedParagraphIndex = props.focusedParagraphIndex;
@@ -2582,6 +2592,37 @@
              calls on Check Level. Shown as a plain measurement next to the target, with
              no regeneration and no claim beyond what the formula says. Suppressed when
              levelCheck is open so the two panels do not stack. */}
+            {/* Automatic re-level receipt. The dispatcher only rewrites when the
+                local measurement AND the model review agreed the draft missed
+                the target; the draft it replaced rides on the item so Undo is a
+                plain restore, not a regeneration. */}
+            {isTeacherMode && generatedContent.relevel && (() => {
+              const info = generatedContent.relevel || {};
+              const fmt = (v) => (Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '?');
+              const undoRelevel = () => {
+                const restored = { ...generatedContent, data: info.fromText };
+                delete restored.relevel;
+                delete restored.levelCheck;
+                if (info.fromLocalStats) restored.localStats = info.fromLocalStats; else delete restored.localStats;
+                if (info.fromInstructionalText) restored.instructionalText = info.fromInstructionalText;
+                if (info.fromLevelCheck) restored.levelCheck = info.fromLevelCheck;
+                setGeneratedContent(restored);
+                if (typeof setHistory === 'function') setHistory(prev => prev.map(item => item.id === restored.id ? restored : item));
+              };
+              return <div role="status" data-relevel="auto" className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900">
+                <span className="font-bold uppercase tracking-wider">{t('simplified.relevel_label') || 'Re-leveled automatically'}</span>
+                <span>{`Measured grade ${fmt(info.measuredBefore)} → ${fmt(info.measuredAfter)} (target ${info.targetGrade || ''}). The measurement and the review agreed the first draft was ${info.direction === 'simpler' ? 'too complex' : 'too simple'}.`}</span>
+                <button type="button" onClick={undoRelevel} className="ml-auto rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100">{t('simplified.relevel_undo') || 'Undo re-level'}</button>
+              </div>;
+            })()}
+            {/* Disagreement between the two signals is information, not an action:
+                say which lens says what and the fix that fits, and leave the text alone. */}
+            {isTeacherMode && generatedContent.levelCheck && generatedContent.levelCheck.triangulation && generatedContent.levelCheck.triangulation.note && !generatedContent.levelCheck.triangulation.agree && (
+              <div role="status" data-relevel="disagreement" className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                <span className="font-bold uppercase tracking-wider mr-2">{t('simplified.level_signals_disagree') || 'Two reads, one text'}</span>
+                <span>{generatedContent.levelCheck.triangulation.note}</span>
+              </div>
+            )}
             {isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
               const measured = simplifiedComplexityDisplay.measuredGrade;
               const targetGrade = simplifiedComplexityDisplay.targetGrade;
@@ -2603,6 +2644,10 @@
                 <span className="font-mono font-bold text-sm" title={`${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${stats.words || '—'}\n${t('analysis.readability.sentences') || 'Sentences'}: ${stats.sentences || '—'}\n${t('analysis.readability.syllables') || 'Syllables'}: ${stats.syllables || '—'}`}>{measured}</span>
                 {verdict && <span className="font-semibold">{verdict}</span>}
                 <span className="text-[11px] opacity-80">Flesch-Kincaid, measured on this passage.{rangeNote} Use Check Level for a fuller review.</span>
+                <label className="ml-auto flex items-center gap-1 text-[11px] font-semibold cursor-pointer" title="After each adapted text, run one model review alongside this measurement and re-level automatically only when both agree the target was missed.">
+                  <input type="checkbox" checked={!!autoLevelCheckOn} onChange={(e) => setAutoLevelCheckOn(e.target.checked)} className="h-3 w-3" />
+                  {t('simplified.auto_level_check') || 'Auto-check on generate'}
+                </label>
               </div>;
             })()}{isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && <div role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"><strong>Reading-level measurement needs refresh.</strong> The text changed after it was measured; use Check Level before relying on a complexity verdict.</div>}{isTeacherMode && generatedContent.levelCheck && <div className="mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"><div className="flex items-start gap-3"><div className="bg-indigo-100 p-2 rounded-full text-indigo-600 mt-1"><Search size={16} /></div><div className="flex-grow"><h4 className="font-bold text-indigo-900 text-sm flex items-center justify-between">{t('simplified.level_analysis_title')}<span className="text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full">{generatedContent.levelCheck.confirmedLevel || generatedContent.levelCheck.estimatedLevel}</span></h4>{generatedContent.levelCheck.rubric ? <div className="mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm"><p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('simplified.complexity_rubric_title')}</p>{Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
                   const percent = (data.score + 5) / 10 * 100;

@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "originalChars": 12386814,
+  "preparedChars": 237207,
+  "report": {
+    "total": 2,
+    "omitted": 0,
+    "resized": 1,
+    "tooLarge": 0,
+    "unsupported": 0
+  },
+  "chunks": 4,
+  "originalUnchanged": true,
+  "decodeRecovery": true,
+  "studentRetry": true,
+  "teacherRetry": true,
+  "independentImageReceipts": true,
+  "activityProgressPreserved": true,
+  "lateJoin": true,
+  "disconnectReconnect": true,
+  "duplicateAndOutOfOrderChunks": true,
+  "concurrentStudents": 3,
+  "omissionOnlyHasNoRetry": true,
+  "mixedFailuresHaveRetry": true,
+  "mobileNoOverflow": true,
+  "pageErrors": []
+}

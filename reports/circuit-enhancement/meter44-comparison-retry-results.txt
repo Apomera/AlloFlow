@@ -1,0 +1,118 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_sample_comparison.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > persists only identity and an exact cursor; resolves against a fresh identical calculation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > retains distinct before/after samples at the same timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > ignores selection, probes, view, camera, notes and current cursor
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a value edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a terminals edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a schedule edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a duration edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a reference after a initial edit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"version":2}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":-1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":100}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"time":0.00300000001}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":"during"}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > rejects a malformed or inexact cursor {"side":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > calculated sample hold > does not hold a copied frame, a DC solution, a failed run, or failed stale data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares null minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus null without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares undefined minus 1 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares NaN minus 2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares Infinity minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e+308 minus -1e+308 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -2 minus -5 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+············stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares -5 minus -2 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 0 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares 1e-14 minus 0 without fabricating values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > compares the same selected component and probe orientation in both frames without mutating them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > keeps internal floating voltage differences known while node-to-reference voltage is unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > signed sample comparisons > suppresses nonfinite, missing and failed readings even when stale values exist
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > renders side-aware comparison, signed bars and markers in both scopes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+········stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > hides stale comparison values and markers after edits and in DC mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_sample_comparison.test.js > held sample presentation > clips held markers to the visible full-scope window but retains the board overview
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  21:44:26
+   Duration  72.42s (transform 5.19s, setup 12.92s, import 594ms, tests 14.67s, environment 39.26s)
+

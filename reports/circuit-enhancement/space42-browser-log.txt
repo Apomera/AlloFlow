@@ -1,0 +1,133 @@
+{
+  "scenarios": [
+    "Compact preset selection, custom camera state, persistent disclosure, expanded native modality, larger scene, GPU cleanup, selected/probe/camera/held preservation, Escape isolation and focus restoration",
+    "Shared response playback and exact-sample stepping, bounded first/last navigation, held-reference preservation, and adjacent before/after switch states at one timestamp",
+    "Graphics-context retry inside expanded mode and a recoverable failed dialog opening; modal reopening stays available"
+  ],
+  "examples": [],
+  "axe": [
+    {
+      "width": 1280,
+      "mode": "inline",
+      "violations": []
+    },
+    {
+      "width": 1280,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "page": 1280,
+        "dialog": 1246,
+        "scroll": 1246
+      }
+    },
+    {
+      "width": 390,
+      "mode": "inline",
+      "violations": []
+    },
+    {
+      "width": 390,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "page": 390,
+        "dialog": 372,
+        "scroll": 372
+      }
+    },
+    {
+      "width": 320,
+      "mode": "inline",
+      "violations": []
+    },
+    {
+      "width": 320,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "page": 320,
+        "dialog": 302,
+        "scroll": 302
+      }
+    }
+  ],
+  "resources": [],
+  "pixels": [
+    {
+      "name": "space42-inline-desktop",
+      "lit": 98523,
+      "canvasPixels": 355120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-expanded-desktop",
+      "lit": 148480,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-inductor-detail",
+      "lit": 304057,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-switch-event",
+      "lit": 150533,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-inline-1280",
+      "lit": 98523,
+      "canvasPixels": 355120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-expanded-1280",
+      "lit": 148480,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-inline-390",
+      "lit": 32332,
+      "canvasPixels": 106560,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-expanded-390",
+      "lit": 46622,
+      "canvasPixels": 148780,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-inline-320",
+      "lit": 18672,
+      "canvasPixels": 80660,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "space42-expanded-320",
+      "lit": 29905,
+      "canvasPixels": 118680,
+      "captures": 1,
+      "viewportCapture": true
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 19
+}

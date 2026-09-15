@@ -1,0 +1,237 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Anatomy tool review</title><style>html{color:#171717;background:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}body{max-width:980px;margin:40px auto;padding:0 28px;line-height:1.65;font-size:16px}h1{font-size:32px;line-height:1.2;margin-bottom:28px}p{margin:18px 0}strong{font-weight:700}a{color:#175980;text-underline-offset:3px;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.5;margin:24px 0}th,td{border:1px solid #ccc;padding:10px 12px;text-align:left;vertical-align:top}th{background:#f1f1f1}tr:nth-child(even){background:#fafafa}img{display:block;max-width:100%;height:auto;margin:24px auto;border:1px solid #ddd}li{margin-bottom:12px}code{background:#f3f3f3;padding:1px 4px;overflow-wrap:anywhere}@media(max-width:600px){body{padding:0 16px;margin:24px auto}table{display:block;overflow-x:auto}h1{font-size:28px}}@media print{body{max-width:none;margin:0;padding:0;font-size:10pt}table{font-size:8pt}img{max-height:16cm}a{color:#222}tr,img{break-inside:avoid}}</style><body><main><h1>Anatomy tool review</h1>
+<p>The anatomy tool has a strong foundation: an accessible structure browser, several useful visual representations, guided tours, retrieval practice, review scheduling, explanatory scenarios, and portable study records. Its most valuable next step is a coordinated improvement to scientific content, assessment validity, and the learning journey. More modes would have less immediate value than making the existing modes accurate, coherent, and easier to use.</p>
+<p>The highest-priority defect is a quiz that can penalize correct anatomy knowledge. In a reproduced question about the thyroid gland, selecting <strong>Endocrine</strong> is marked wrong and <strong>Organ Systems</strong> is marked correct. Other confirmed problems include inaccurate elementary skull wording, misleading absolute claims in structure descriptions, an ambiguous learning-level control, and substantial remaining English-only content.</p>
+<p>This review addresses the current local implementation as of September 12, 2026, with the existing school-to-introductory-anatomy audience as its primary frame. Advanced clinical features receive a separate assessment. Recommendations are product judgments informed by the cited evidence; they are not findings from a learner study of this tool.</p>
+<p><strong>Recommended priorities.</strong> “First” means correct before expanding content or promoting the tool as a reliable anatomy assessment. Effort describes relative implementation scope, not a delivery estimate.</p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Opportunity</th>
+<th>Why it matters</th>
+<th>Relative effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First</td>
+<td>Separate scientific system membership from navigation categories</td>
+<td>Correct answers can currently be graded wrong and entered into the practice queue</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>First</td>
+<td>Correct the identified science statements and clinical examples</td>
+<td>Errors recur in descriptions, quizzes, speech, and study materials</td>
+<td>Small–medium</td>
+</tr>
+<tr>
+<td>First</td>
+<td>Give content a shared source and review record</td>
+<td>Parallel versions of the same concept currently contradict each other</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Make the learning-level control govern the experience it promises</td>
+<td>Selecting K–5 does not necessarily produce elementary explanations</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Bring the mobile explanation and recall task closer to the diagram and top of the page</td>
+<td>Important learning content still requires substantial scrolling</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Turn existing scenarios into short, guided learning sequences</td>
+<td>Learners need a clear purpose and next step among many available modes</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Separate confidence, exposure, and demonstrated learning</td>
+<td>Self-ratings and clicks should not imply verified mastery</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Make Homeostasis show a feedback response</td>
+<td>Its current controls mostly teach reference-range classification</td>
+<td>Medium–large</td>
+</tr>
+<tr>
+<td>Next</td>
+<td>Finish core localization and manual accessibility verification</td>
+<td>The current breadth of features exceeds the verified language and assistive-technology coverage</td>
+<td>Medium–large</td>
+</tr>
+<tr>
+<td>Later</td>
+<td>Expand spatial transfer, varied cases, body variation, and adaptive review</td>
+<td>These deepen an already substantial foundation once correctness is secure</td>
+<td>Medium–large</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What is already working.</strong> The current content inventory contains 128 structure records across ten navigation groups, ten guided tours, ten system connections, four pathways, eight clinical cases, and four Systems in Motion scenarios. The main interface exposes nine learning modes to a grade-5 profile and eleven to the sampled grade-8 profile. These counts describe this catalog, not the total number of anatomical structures or the only valid way to classify human organ systems.</p>
+<p>Several recommendations from the September 4 review have already been implemented. Quiz order and feedback are preserved across responses; hidden flashcard announcements avoid revealing the answer; review timestamps refresh with accepted evidence; separate card rounds resume by context; notes, exports, import previews, and phone study controls exist. There are also keyboard controls, text alternatives, orientation labels, reduced-motion handling, camera presets, model-source disclosures, and recovery paths. The review does not treat those capabilities as missing. <a href="../../docs/anatomy-improvement-review-2026-09-04.md">Existing review</a>, <a href="../../reports/anatomy-study-enhancement/README.md">study workspace implementation</a>.</p>
+<p><strong>Scientific accuracy: fix the category model and its answer keys.</strong> The “Organ Systems” group mixes lungs, digestive organs, urinary organs, diaphragm, thyroid, and adrenal glands. Meanwhile, Endocrine has separately named records such as pancreatic islets and another adrenal entry. Organ systems genuinely overlap; a useful introductory classification commonly distinguishes eleven systems, including digestive and urinary. The issue is not simply whether the interface has ten or eleven buttons. It is that its navigation grouping becomes scientific truth in the quiz. <a href="https://openstax.org/books/anatomy-and-physiology/pages/1-2-structural-organization-of-the-human-body?query=levels+of+organization+of+the+human+body">1</a></p>
+<p>The System ID question excludes distractors only when the same structure ID appears in another navigation group. It then takes the current group as the sole correct answer. A local browser reproduction used Organ Systems, anterior view, full detail, a grade-8 context, and an existing valid quiz index of 90. The resulting thyroid question offered Endocrine, Muscular, Organ Systems, and Nervous. Selecting Endocrine stored <code>correct: false</code>, explained that the thyroid belongs to “Organ Systems,” and marked the thyroid as needing practice. The index was seeded to reproduce the generated question directly; this was not the first question of a fresh round. At another valid thyroid question index, Endocrine was absent from the options altogether.</p>
+<p>Use canonical organ records with <code>systemMemberships</code>, an optional primary teaching system, and separate navigation collections. Give digestive and urinary anatomy clear homes. Preserve one identity for the thyroid, pancreas, gonads, and adrenal glands across contexts, with explicit parent/substructure relationships where appropriate. A question should name the relationship it assesses and accept every scientifically valid answer that it offers. Where a single-choice prompt is inherently ambiguous, rewrite it or use a multiple-response format. The same membership data should drive explanations and the relationship map.</p>
+<p>Acceptance criteria: thyroid → endocrine, kidneys → urinary, lungs → respiratory, and pancreas → digestive/endocrine all remain scientifically correct regardless of the route used to open them. No valid membership appears as an incorrect distractor. Correct responses must also preserve the learner’s evidence record. <a href="../../stem_lab/stem_tool_anatomy.js#L5542">Answer-key logic</a>, <a href="../../reports/anatomy-deep-review-2026-09-12/verified-findings.json">reproduced result</a>.</p>
+<p><img src="quiz-system-misclassification.png" alt="The current thyroid question marks Endocrine wrong and Organ Systems correct."></p>
+<p><strong>Scientific accuracy: make a focused correction pass.</strong> The following examples warrant correction or qualification. These are distinct from optional requests for greater detail.</p>
+<table>
+<thead>
+<tr>
+<th>Current content and location</th>
+<th>Assessment</th>
+<th>Recommended correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grades 3–5 skull description: “22 bones fused together” (<a href="../../stem_lab/stem_tool_anatomy.js#L3467">line 3467</a>)</td>
+<td>Incorrect simplification. It also conflicts with the same card’s puzzle-piece explanation and advanced suture note.</td>
+<td>Explain that most skull bones meet at strong seams called sutures and that the lower jaw moves. Do not imply that all 22 fuse into one bone. <a href="https://openstax.org/books/anatomy-and-physiology/pages/7-5-embryonic-development-of-the-axial-skeleton">2</a>, <a href="https://openstax.org/books/anatomy-and-physiology/pages/7-2-the-skull">3</a></td>
+</tr>
+<tr>
+<td>Fibula: “Non-weight-bearing” (<a href="../../stem_lab/stem_tool_anatomy.js#L3003">line 3003</a>)</td>
+<td>An absolute that contradicts measured load transmission.</td>
+<td>Say the tibia bears most of the load while the fibula contributes to load transmission and ankle stability. Do not replace this with a universal percentage: the experimental result varies with position and loading. <a href="https://pubmed.ncbi.nlm.nih.gov/6705357/">4</a></td>
+</tr>
+<tr>
+<td>Triceps: “Only elbow extensor” (<a href="../../stem_lab/stem_tool_anatomy.js#L3021">line 3021</a>)</td>
+<td>Incorrect exclusion of the anconeus contribution.</td>
+<td>“Primary elbow extensor; the anconeus assists.” The existence of assistance is the relevant teaching point, not a fixed force share. <a href="https://pubmed.ncbi.nlm.nih.gov/10653027/">5</a></td>
+</tr>
+<tr>
+<td>Sternum: site for bone marrow “biopsy” (<a href="../../stem_lab/stem_tool_anatomy.js#L2991">line 2991</a>)</td>
+<td>Conflates aspiration with core biopsy.</td>
+<td>Distinguish selected sternal aspiration from core biopsy; use iliac-crest sampling as the general example. A procedural reference explicitly contraindicates sternal biopsy. This is an educational-content correction, not a procedural lesson. <a href="https://www.ncbi.nlm.nih.gov/books/NBK559232/">6</a></td>
+</tr>
+<tr>
+<td>Deltoid: avoid IM injection in children under three (<a href="../../stem_lab/stem_tool_anatomy.js#L3018">line 3018</a>)</td>
+<td>Overbroad clinical rule.</td>
+<td>Remove the blanket age rule. If vaccination is the example, explain that site selection depends on age and muscle mass; CDC permits the deltoid for some toddlers with adequate muscle mass. Link the specific guidance. <a href="https://www.cdc.gov/vaccines/hcp/imz-best-practices/vaccine-administration.html">7</a></td>
+</tr>
+<tr>
+<td>Kidney fun fact equates repeated whole-blood filtering with 180 liters (<a href="../../stem_lab/stem_tool_anatomy.js#L3208">fact bank</a>)</td>
+<td>Blurs blood flow, glomerular filtrate, and final urine.</td>
+<td>Explain that an adult reference estimate is roughly 180 L of filtrate per day, most reabsorbed. Distinguish the three quantities visually. <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/25-6-tubular-reabsorption">8</a></td>
+</tr>
+<tr>
+<td>Mammary gland: screening “from age 40–50” (<a href="../../stem_lab/stem_tool_anatomy.js#L3190">line 3190</a>)</td>
+<td>Underspecified guideline content, rather than a stable anatomy fact.</td>
+<td>Remove the detached age range or identify the guideline, date, population, and jurisdiction. For example, the current USPSTF recommendation specifies biennial screening at ages 40–74 for its defined population; other guidelines differ. <a href="https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/breast-cancer-screening">9</a></td>
+</tr>
+<tr>
+<td>Altitude case includes breathlessness at rest and cough, but explains only lower oxygen pressure (<a href="../../stem_lab/stem_tool_anatomy.js#L3348">case bank</a>)</td>
+<td>The mechanism is relevant, but the presentation can suggest serious altitude illness and the explanation is incomplete.</td>
+<td>For a basic mechanism question, use uncomplicated exertional breathlessness. Alternatively, make recognition of concerning symptoms the objective and explain why pulmonary edema must be considered; do not diagnose it from the vignette alone. <a href="https://www.cdc.gov/yellow-book/hcp/environmental-hazards-risks/high-altitude-travel-and-altitude-illness.html">10</a></td>
+</tr>
+<tr>
+<td>Stair-climbing scenario begins with the biceps record and then describes force at the knee (<a href="../../stem_lab/stem_tool_anatomy.js#L3675">line 3675</a>)</td>
+<td>The displayed sequence does not maintain a coherent anatomical chain.</td>
+<td>Use quadriceps and its knee-extensor linkage, or explicitly label the biceps scene as a separate example of a general muscle mechanism.</td>
+</tr>
+</tbody>
+</table>
+<p>The fun-fact bank also needs a systematic evidence pass. Statements about bone versus steel, a cubic inch supporting a particular force, skin stretching to three times its size, a tennis-court alveolar area, and sperm being “10 times smaller” lack the measurement conditions needed to interpret them. These are flagged for sourcing and qualification, not all declared false. Define the quantity, population, units, and uncertainty. Replace unsupported superlatives with a measurable question or a bounded estimate. <a href="../../stem_lab/stem_tool_anatomy.js#L3208">Fact bank</a>.</p>
+<p><strong>Scientific accuracy: review concepts across every presentation.</strong> Structure functions, elementary explanations, myth cards, tour narration, clinical cases, and fact banks are separate data blocks. Fixing one string does not fix its siblings. The skull discrepancy is an example of this maintenance problem. Asset provenance is already documented for some models, but that does not establish the accuracy of the prose or every anatomical mapping.</p>
+<p>Create a concept-level content record containing the scientific claim, suitable elementary and advanced wording, source reference, qualifications, review date, and review status. Keep translations linked to the same record. Derive quiz explanations and speech from that record wherever possible. Give clinical recommendations a separate review lifecycle because they can change while core anatomy remains stable. Acceptance should require agreement across the visual card, narration, quiz feedback, tour, and exported study material for the corrected concepts.</p>
+<p><strong>Pedagogy: give each activity a clear learning objective.</strong> The tool can already support a strong progression: locate a structure, explain its function, connect it to another system, and predict the consequence of a change. Make that progression explicit in a short guided session. A learner could choose “How does climbing stairs increase breathing?” and complete a selected sequence of existing views, instead of first deciding among eleven modes.</p>
+<p>For younger learners, center naming, location, and a simple structure–function explanation. For middle school, emphasize evidence about interacting systems and groups of cells. For advanced learners, add spatial relations, mechanism, exceptions, and uncertainty in cases. NGSS MS-LS1-3 emphasizes evidence for interacting subsystems; it also bounds its assessment away from detailed mechanisms of one isolated system. A large clinical vocabulary therefore should not be treated as the defining middle-school achievement. <a href="https://www.nextgenscience.org/pe/ms-ls1-3-molecules-organisms-structures-and-processes">11</a></p>
+<p>Build on Systems in Motion rather than duplicating it. It already contains exercise, meal, stress, and skin-repair scenarios with mechanisms, perturbations, intervention choices, feedback, and synthesis. Add a prediction before revealing the perturbation, require an explanation using an observed change, and end with a related but unfamiliar situation. These additions turn viewing and selecting into a more complete reasoning task. Acceptance: each recommended session ends with a response that requires something beyond repeating the structure’s name. <a href="../../stem_lab/stem_tool_anatomy.js#L3675">Scenario implementation</a>.</p>
+<p><strong>Pedagogy: assess explanation and transfer alongside recognition.</strong> Quiz, Cards, Spotter, and the recap activities provide useful retrieval practice. Some prompts, however, are generated by masking names in descriptions and selecting distractors from the visible pool. Random alternatives can be obviously unrelated; masking can leave awkward text; and the surrounding selected system can cue a System ID answer even after its scientific mapping is corrected. These are assessment-design risks, not evidence that every generated question is invalid.</p>
+<p>Author a smaller set of deliberate misconception-based items for foundational concepts. Include location from a changed view, a short functional explanation, comparison of related structures, and prediction after a perturbation. Give distractor-specific feedback: explain why an artery is defined by direction of flow, for example, rather than simply returning the correct name. Keep speech and text response options available, with a clear teacher or learner rubric when automatic scoring would be unreliable.</p>
+<p>Retrieval research supports retaining and strengthening recall activities, including conceptual questions, but it does not validate this tool’s item bank. The IES practice guide also supports explanatory questions and connecting visual and verbal representations. Evaluate the actual revised items with learners. <a href="https://pubmed.ncbi.nlm.nih.gov/21252317/">12</a>, <a href="https://ies.ed.gov/ncee/wwc/practiceguide/1">13</a></p>
+<p><strong>Pedagogy: distinguish confidence from demonstrated learning.</strong> The implementation deliberately keeps “Got it” as a self-rating. Correct Quiz or Spotter answers lift an unrated or practice structure to Learning, and misses mark it for practice. That is a useful distinction. However, the surrounding “Mastery map,” “Body Master,” and “Memory Master” vocabulary can imply more evidence than self-ratings or viewing actions provide. Clinical case controls already say Reviewed, so changing them from “solved” is not an outstanding UI fix. <a href="../../stem_lab/stem_tool_anatomy.js#L5944">Confidence logic</a>, <a href="../../stem_lab/stem_tool_anatomy.js#L877">badges</a>.</p>
+<p>Present three separate signals: explored, learner confidence, and recent demonstrated recall. Add explanation evidence only when an explanation was actually assessed. Record the activity, item version, timestamp, whether help or reveal was used, and response outcome. Let a delayed successful answer strengthen the evidence without silently converting a self-rating into a validated mastery claim. Any threshold for “secure” learning should be an explicit product rule tested with learners, not presented as a scientifically established number of correct answers.</p>
+<p>The existing two-day Learning and seven-day Got it review policy is a reasonable simple starting rule. Spacing evidence supports distributed review, while showing that useful intervals depend on the retention goal. It does not establish a universally optimal 2/7-day schedule. Improve scheduling only after the evidence model is trustworthy, with an option to review for an upcoming class or assessment. <a href="https://pubmed.ncbi.nlm.nih.gov/19076480/">14</a></p>
+<p><strong>Pedagogy: make Homeostasis demonstrate regulation.</strong> The current workspace accurately describes itself as an adult reference-range dashboard and includes a non-diagnostic limitation. Its sliders independently change temperature, arterial pH, and fasting glucose, and the interface counts how many are outside a reference. It also includes observations, a hypothesis prompt, and a negative-feedback recap. Those are real strengths. Nevertheless, learners are mainly changing the measured outputs themselves; they do not watch a regulatory loop respond over time. <a href="../../stem_lab/stem_tool_anatomy.js#L15174">Implementation</a>.</p>
+<p>Add one clearly bounded feedback model first, such as temperature regulation. Let the learner change an external condition, predict the direction of change, observe sensor/control/effector responses, and compare an intact loop with a disabled response. Show a time graph and a text-equivalent event sequence. Keep the existing reference dashboard as a complementary activity. Include the distinction between a changing set point and a disturbance around a set point. <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/1-5-homeostasis">15</a></p>
+<p>Revise the prompt asking which reference range is “narrowest”: raw widths in Celsius, pH, and mg/dL are not directly comparable, and pH is logarithmic. Ask what each variable regulates and what the dashboard leaves out. Preserve the current caution that counting out-of-range measurements does not diagnose a person or rank clinical severity.</p>
+<p><strong>Pedagogy and engagement: teach spatial understanding across representations.</strong> Blueprint, Surface, Clinical Atlas, 2D atlas, and tissue/functional-unit bridges serve different purposes. Their distinctions should stay visible at the point of choice. The loaded Surface is a generic external body model; it deliberately hides whole-body teaching pins because its proportions and pose differ from the procedural body. That is an appropriate limitation, not a defect to undo by placing unregistered pins on the mesh. <a href="../../reports/anatomy-free-body/README.md">Model documentation</a>.</p>
+<p>Use short orientation tasks: identify patient right, rotate to another view, locate the same structure, and describe what lies anterior or posterior to it. For Imaging, ask learners to predict which structures a plane intersects, then compare the slice with the model and a text description. Keep schematic and clinical-looking representations labeled, and progressively reduce supporting labels after practice. A randomized anatomy study found that spatial ability and model color coding affected performance; greater visual realism should therefore be evaluated against the intended task, rather than assumed to improve learning. <a href="https://pubmed.ncbi.nlm.nih.gov/37188811/">16</a></p>
+<p>Imaging and Procedure already disclose synthetic, educational limits. Their further development should prioritize correspondence between the model, explanation, and scored task. A clinical-looking rendering or numerical simulator score is not evidence of clinical training validity. Expert review of regional landmarks and task objectives remains necessary before making stronger claims.</p>
+<p><strong>UI/UX: reduce the distance between a question, the diagram, and its explanation.</strong> Measurements below come from the isolated tool with the app’s compiled stylesheet. They exclude the complete application shell. Phone Explore used a selected Fibula at full detail with clinical cases open; Quiz and Cards used that context. Values are document positions, not a universal measurement for every state.</p>
+<table>
+<thead>
+<tr>
+<th>Sample</th>
+<th>Measured result</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desktop, 1280 × 1000, fresh grade-5 Explore</td>
+<td>Main workspace starts at about 814 px; the page is about 2,082 px high</td>
+<td>Onboarding, mode choice, systems, and controls occupy most of the initial viewport</td>
+</tr>
+<tr>
+<td>Phone, 390 × 844, selected structure in Explore</td>
+<td>Detail begins at about 1,802 px; page height about 3,792 px</td>
+<td>The figure and full explanation are substantially separated</td>
+</tr>
+<tr>
+<td>Phone, 320 × 844, selected structure in Explore</td>
+<td>Detail begins at about 1,753 px; no horizontal page overflow</td>
+<td>Narrow-screen fit is good, but scrolling remains substantial</td>
+</tr>
+<tr>
+<td>Phone, 390 × 844, Quiz</td>
+<td>Study panel starts at 500 px</td>
+<td>Compact controls help, but the task can move higher</td>
+</tr>
+<tr>
+<td>Phone, 390 × 844, Cards</td>
+<td>Panel starts at 500 px; recall card at about 749 px</td>
+<td>The learner reaches most of the first screen before the recall card begins</td>
+</tr>
+</tbody>
+</table>
+<p>The existing Read structure/View atlas controls and focus movement are valuable. Preserve them. Add a compact selection summary adjacent to the diagram, with function and one meaningful action; open the full explanation in a focused reading view. Keep the selected organ name visible when switching between reading and the atlas. In Cards, place the prompt and reveal action ahead of secondary round/deck information. Make an active study session use a compact mode chooser so all eleven tabs need not occupy the phone header.</p>
+<p>Proposed acceptance targets, to be validated rather than treated as standards: at 390 × 844, the primary question and its first action should appear in the initial viewport; opening a structure should make its short explanation immediately visible; returning to the atlas should preserve selection and orientation. Maintain no horizontal overflow at 320 px, reliable focus return, and compatibility with zoom. <a href="../../reports/anatomy-deep-review-2026-09-12/browser-evidence.json">Browser measurements</a>, <a href="../../reports/anatomy-deep-review-2026-09-12/phone-explore.png">phone Explore capture</a>.</p>
+<p><strong>UI/UX: resolve the learning-level mismatch.</strong> Structure density depends on the local complexity value, while explanation language depends on the profile grade. In the browser, a grade-8 context with K–5 selected displayed advanced skull wording; a grade-5 context at the same setting displayed the simplified wording. The control therefore changes the visible structure set without consistently changing the reading experience its label suggests. <a href="../../stem_lab/stem_tool_anatomy.js#L4160">Level filters</a>, <a href="../../reports/anatomy-deep-review-2026-09-12/verified-findings.json">verified examples</a>.</p>
+<p>Separate “Structure detail: Essentials / Expanded / Full” from “Explanation: Plain language / Standard / Advanced,” or make one learning-level selection consistently control both. Let the profile supply defaults and the learner’s explicit choice override them. Larger text is already available; readable language and larger typography are different needs. Avoid assuming an older learner always wants dense clinical terminology or a younger learner cannot explore a more detailed diagram.</p>
+<p><strong>UI/UX and equity: finish localization of the learning experience.</strong> A static inventory found 1,285 distinct literal anatomy translation keys used through <code>t</code> or <code>__alloT</code>. Of those, 679 were absent in each sampled French, Latin American Spanish, and Arabic catalog. These counts exclude dynamic keys and hardcoded English and do not represent the percentage of text translated. Earlier translated study controls remain present; the remaining gap is broader than those controls. <a href="../../reports/anatomy-deep-review-2026-09-12/source-evidence.json">Source evidence</a>.</p>
+<p>Prioritize instructions, core structure explanations, feedback, model limitations, and speech. Then translate clinical examples, facts, and scenario detail. Move hardcoded content into the same reviewed concept records, preserve placeholders and units, and validate anatomy terminology with proficient speakers. Test an entire short learning sequence in each target language, including RTL reading order and hidden-answer announcements; isolated label coverage cannot establish a usable lesson.</p>
+<p><strong>UI/UX and accessibility: continue beyond automated scans.</strong> The sampled desktop Explore scan reported no violations, with incomplete checks affecting one ARIA node and 44 color-contrast nodes. This is not evidence of complete WCAG conformance. The source includes small 11–12 px explanatory text in many places, while the Larger text option offers relief. Phone Explore had 42 visible controls below 44 px in at least one dimension; that is a usability observation, not 42 WCAG failures. WCAG 2.2’s minimum target criterion uses 24 CSS pixels with exceptions and spacing provisions; 44 px is a stronger ergonomic target for primary touch controls. <a href="https://www.w3.org/TR/WCAG22/">17</a></p>
+<p>Test complete tasks with keyboard and screen readers: identify a structure, reveal a card without premature speech, answer a quiz, inspect feedback, change view, and resume a study record. Check enlarged text, 200%/400% zoom, high contrast, reduced motion, and touch. Assess meaningful equivalence of the text alternative: a coarse positional cue may support access without assessing exactly the same visual skill. Where a task uses dragging, verify a usable single-pointer alternative as well as keyboard controls. <a href="https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html">18</a></p>
+<p><strong>Engagement: reward curiosity, explanation, and improvement.</strong> Badges currently include viewing structures and mnemonics, asking three AI questions, switching views, and answering a Spotter question in under three seconds. These can encourage exploration, but clicks, service availability, and input speed are imperfect proxies for learning. Keep exploration achievements honestly named and offer an untimed practice emphasis. The existing Spotter measures elapsed response time; this review did not establish a hard countdown or a timing-related WCAG failure.</p>
+<p>Add achievements for revising an explanation after feedback, returning successfully after a delay, or explaining a system connection. Make rewards attainable through equivalent text and non-AI activities. For a learner who prefers speed challenges, let that be an optional goal separate from knowledge progress. CAST’s UDL guidance supports choice, appropriate challenge, feedback, and options for expression; this does not require removing challenge or making every learner use the same interaction. <a href="https://udlguidelines.cast.org/">19</a></p>
+<p>Keep curiosity tied to anatomy: “Why does this bone have that shape?”, “What changes if this surface thickens?”, and “Where would this signal go next?” can introduce existing content. Daily-life contexts such as movement, eating, sleep, and temperature regulation can provide an entry before pathology. Add explicit discussion of ordinary anatomical variation and distinguish a representative model from a universal body. Reproductive and pelvic descriptions should distinguish organs, typical patterns, development, and individual variation without treating a visual toggle as a complete account of every body.</p>
+<p><strong>AI tutor: connect answers to the reviewed lesson.</strong> The current prompt passes the selected system, optional structure name, grade guidance, and the latest question. It does not include the full displayed explanation, reviewed references, or earlier conversation messages, although the interface stores a conversation. This can weaken both grounding and follow-up questions. The tool’s actual provider responses were not evaluated in this review. <a href="../../stem_lab/stem_tool_anatomy.js#L9307">Prompt construction</a>.</p>
+<p>Pass the relevant reviewed concept record, a bounded conversation history, and the active learning objective. Offer “Give me a hint,” “Explain that word,” and “Check my reasoning.” Keep hints from exposing an unrevealed assessment answer. Attribute supported factual explanations to the supplied source and indicate when the source does not answer the question. Provide a useful authored fallback when AI is unavailable. Acceptance should include follow-up references, vocabulary questions, common misconceptions, unsupported questions, and consistency with the visible card.</p>
+<p><strong>Implementation sequence and evaluation.</strong> A first release should correct taxonomy and the verified content examples, establish the shared claim records for those concepts, and add meaningful scientific answer-key checks. A second release should align levels, simplify the mobile study flow, and provide one short guided session using existing activities. A third release can deepen the Homeostasis model, broaden transfer questions, complete priority translations, and refine learning evidence.</p>
+<p>For a practical pilot, compare the present and revised short lesson with representative learners and educators. Measure time to first meaningful response, completion without navigation help, delayed recall, explanation quality, correction of the identified misconceptions, and success when the view or example changes. Include learners using keyboard, speech, enlarged text, and RTL content. Use a small formative pilot to discover problems, and a separately designed study if claiming learning efficacy. Engagement should be measured alongside learning, rather than inferred from session length or clicks alone.</p>
+<p><strong>Validation and limits.</strong> The review inspected the current 15,520-line source, extracted its main content banks, checked selected catalogs, exercised all eleven main mode renderings, measured representative phone and desktop layouts, reproduced the thyroid grading defect, and verified the level/text mismatch. Blueprint and the bundled Surface both reached <code>ready-model</code> with their intended pin visibility. The initial broad harness lacked model-loader dependencies and showed a loading screen; that capture is superseded by the focused model run and is not a product defect.</p>
+<p>Ten existing focused suites completed: <strong>291 checks passed and one failed</strong>. The failure expects the exact source string <code>updMulti(selectionPatch(st.id))</code>; the current list calls <code>openBrowserStructure(st.id)</code>, which routes through <code>selectionPatch</code>. That failed static assertion needs modernization but does not independently demonstrate a broken comparison workflow. The tests are a useful regression baseline, not scientific peer review. <a href="../../reports/anatomy-deep-review-2026-09-12/test-results.txt">Test log</a>, <a href="../../tests/anatomy_lab_science.test.js#L629">test assertion</a>.</p>
+<p>The canonical anatomy source and desktop public mirror have identical SHA-256 hashes beginning <code>2b6e72e2b58b75cc</code>. An older root-level anatomy file differs; the reviewed build entry references the <code>stem_lab</code> file. This review makes no claim about deployed-build parity, real-device GPU performance, every clinical scenario, full atlas geometry, live AI quality, native-speaker approval, or complete assistive-technology conformance. Application code was not changed; the deliverables are the report and its evidence.</p>
+<p><strong>Sources.</strong> External sources were accessed September 12, 2026. Foundational research is identified by publication year; it supports design principles rather than validating this product. Local evidence is linked next to each finding.</p>
+<ol>
+<li>OpenStax. <em>Anatomy and Physiology</em>, “Structural Organization of the Human Body.” 2013. <a href="https://openstax.org/books/anatomy-and-physiology/pages/1-2-structural-organization-of-the-human-body?query=levels+of+organization+of+the+human+body">Organ-system classification and overlap</a>.</li>
+<li>OpenStax. <em>Anatomy and Physiology</em>, “Embryonic Development of the Axial Skeleton.” 2013. <a href="https://openstax.org/books/anatomy-and-physiology/pages/7-5-embryonic-development-of-the-axial-skeleton">Sutures after fontanelle closure</a>.</li>
+<li>OpenStax. <em>Anatomy and Physiology</em>, “The Skull.” 2013. <a href="https://openstax.org/books/anatomy-and-physiology/pages/7-2-the-skull">Bones, sutures, and mandible</a>.</li>
+<li>Takebe K, et al. “Role of the fibula in weight-bearing.” <em>Clinical Orthopaedics and Related Research</em>, 1984. <a href="https://pubmed.ncbi.nlm.nih.gov/6705357/">Original experiment</a>.</li>
+<li>Zhang LQ, Nuber GW. “Moment distribution among human elbow extensor muscles during isometric and submaximal extension.” <em>Journal of Biomechanics</em>, 2000. <a href="https://pubmed.ncbi.nlm.nih.gov/10653027/">Original experiment</a>.</li>
+<li>Rindy LJ, Chambers AR. “Bone Marrow Aspiration and Biopsy.” <em>StatPearls</em>, updated May 29, 2023. <a href="https://www.ncbi.nlm.nih.gov/books/NBK559232/">Procedural distinction</a>.</li>
+<li>CDC. “Vaccine Administration.” Current online best-practice guidance. <a href="https://www.cdc.gov/vaccines/hcp/imz-best-practices/vaccine-administration.html">Age and muscle-mass qualifications</a>.</li>
+<li>OpenStax. <em>Anatomy and Physiology 2e</em>, “Tubular Reabsorption.” 2022. <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/25-6-tubular-reabsorption">Filtrate and reabsorption</a>.</li>
+<li>USPSTF. “Breast Cancer: Screening.” Recommendation issued April 30, 2024; current online statement. <a href="https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/breast-cancer-screening">Population and schedule</a>.</li>
+<li>CDC. <em>Yellow Book</em>, “High-Altitude Travel and Altitude Illness.” Current online chapter. <a href="https://www.cdc.gov/yellow-book/hcp/environmental-hazards-risks/high-altitude-travel-and-altitude-illness.html">Altitude mechanisms and concerning presentations</a>.</li>
+<li>Next Generation Science Standards. “MS-LS1-3: From Molecules to Organisms.” <a href="https://www.nextgenscience.org/pe/ms-ls1-3-molecules-organisms-structures-and-processes">Performance expectation and assessment boundaries</a>.</li>
+<li>Karpicke JD, Blunt JR. “Retrieval practice produces more learning than elaborative studying with concept mapping.” <em>Science</em>, 2011. <a href="https://pubmed.ncbi.nlm.nih.gov/21252317/">Original research</a>.</li>
+<li>Pashler H, et al. <em>Organizing Instruction and Study to Improve Student Learning</em>. Institute of Education Sciences, 2007. <a href="https://ies.ed.gov/ncee/wwc/practiceguide/1">Practice guide and evidence ratings</a>.</li>
+<li>Cepeda NJ, et al. “Spacing effects in learning: a temporal ridgeline of optimal retention.” <em>Psychological Science</em>, 2008. <a href="https://pubmed.ncbi.nlm.nih.gov/19076480/">Original research</a>.</li>
+<li>OpenStax. <em>Anatomy and Physiology 2e</em>, “Homeostasis.” 2022. <a href="https://openstax.org/books/anatomy-and-physiology-2e/pages/1-5-homeostasis">Feedback-loop model</a>.</li>
+<li>Koh MY, Tan GJS, Mogali SR. “Spatial ability and 3D model colour-coding affect anatomy performance: a cross-sectional and randomized trial.” <em>Scientific Reports</em>, 2023. <a href="https://pubmed.ncbi.nlm.nih.gov/37188811/">Original research</a>.</li>
+<li>W3C. <em>Web Content Accessibility Guidelines 2.2</em>. Current Recommendation. <a href="https://www.w3.org/TR/WCAG22/">Accessibility requirements and exceptions</a>.</li>
+<li>W3C WAI. “Understanding Success Criterion 2.5.7: Dragging Movements.” Current guidance. <a href="https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html">Alternatives to dragging</a>.</li>
+<li>CAST. <em>Universal Design for Learning Guidelines 3.0</em>. 2024. <a href="https://udlguidelines.cast.org/">Choice, engagement, feedback, and expression</a>.</li>
+</ol>
+</main></body></html>

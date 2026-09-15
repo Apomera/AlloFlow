@@ -1,0 +1,20 @@
+{
+  "scope": "Accepted repair11; HTML audit12 differs only by anchor wrapping rule",
+  "checks": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "fileInputFocused": true
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "fileInputFocused": true
+    },
+    {
+      "width": 1000,
+      "scrollWidth": 1000,
+      "fileInputFocused": true
+    }
+  ]
+}

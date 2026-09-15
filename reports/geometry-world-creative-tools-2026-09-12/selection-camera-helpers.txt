@@ -1,0 +1,26 @@
+  function selectedCreationPresetFocus(engine) {
+    var snapshot=selectionEditSnapshot(engine),THREE=window.THREE;
+    if(!snapshot.ok || !THREE || !engine.camera)return null;
+    var box=creationGeometryBounds(engine,snapshot.blocks);if(box.isEmpty())return null;
+    var center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+    var fov=engine.camera.getEffectiveFOV?engine.camera.getEffectiveFOV():engine.camera.fov,aspect=Number(engine.camera.aspect),tanY=Math.tan(fov*Math.PI/360),tanX=tanY*aspect;
+    if(!isFinite(tanX) || tanX<=0 || !isFinite(tanY) || tanY<=0)return null;
+    var radius=Math.max(2,size.length()*(1+1/Math.min(tanX,tanY))/1.65);
+    return {x:center.x,y:center.y,z:center.z,radius:radius};
+  }
+  function selectedCreationView(ctx,preset) {
+    var engine=window[ENGINE_KEY];
+    if(!engine || engine._destroyed || engine._showcase)return false;
+    if(preset==='free')return engine.restoreCreationView?engine.restoreCreationView():engine.setViewPreset?engine.setViewPreset('free'):false;
+    var directions={front:{azimuth:Math.PI/2,elevation:0.12},side:{azimuth:0,elevation:0.12},top:{azimuth:0,elevation:Math.PI/2-0.04}};
+    if(!directions[preset])return false;
+    return focusSelectedBuild(ctx,Object.assign({name:preset,zoom:1},directions[preset]));
+  }
+  function orbitSelectedCreation(ctx,azimuthDelta,elevationDelta,zoomFactor) {
+    var engine=window[ENGINE_KEY];
+    if(!engine || engine._destroyed || engine._showcase)return false;
+    var state=engine._creationFocus,view=state && state.view || {azimuth:Math.atan2(1.25,1.55),elevation:Math.atan2(0.72,Math.sqrt(1.25*1.25+1.55*1.55)),zoom:1};
+    var next={name:'orbit',azimuth:view.azimuth+(Number(azimuthDelta)||0),elevation:Math.max(.10,Math.min(Math.PI/2-.04,view.elevation+(Number(elevationDelta)||0))),zoom:Math.max(1,Math.min(3,(view.zoom || 1)*(Number(zoomFactor)||1)))};
+    return focusSelectedBuild(ctx,next);
+  }
+

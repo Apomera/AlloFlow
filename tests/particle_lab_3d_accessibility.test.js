@@ -11,10 +11,12 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
 
   it('puts focus and interactive semantics on the actual canvas', () => {
-    expect(source).toContain("h('canvas', { ref: canvasRef, tabIndex: ready ? 0 : -1, role: 'application'");
-    expect(source).toContain("'aria-hidden': ready ? undefined : 'true'");
-    expect(source).toContain("'aria-busy': ready ? 'false' : 'true'");
-    expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
+    // chamberLive = the 3D scene is ready OR the flat 2D fallback is running; the canvas is only dead while loading.
+    expect(source).toContain("h('canvas', { ref: canvasRef, tabIndex: chamberLive ? 0 : -1, role: 'application'");
+    expect(source).toContain("'aria-hidden': chamberLive ? undefined : 'true'");
+    expect(source).toContain("'aria-busy': chamberLive ? 'false' : 'true'");
+    expect(source).toContain("'aria-roledescription': flatFallback ? 'Interactive flat 2D particle chamber' : 'Interactive 3D particle chamber'");
+    expect(source).toContain('var chamberLive = ready || flatFallback;');
     expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
     expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D P A 2 ? Escape ArrowLeft ArrowRight ArrowUp ArrowDown Plus -'");
     expect(source).toContain("['D', 'Show or hide the chamber readouts dock']");
@@ -303,14 +305,24 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).not.toContain('if (canvas.width !== w || canvas.height !== hh)');
   });
 
-  it('debounces the four scene-rebuilding sliders behind a draft value', () => {
-    // count, boxSize, particleDiameter and massRatioB are scene-effect dependencies, so every input tick during a drag
+  it('debounces the three scene-rebuilding sliders behind a draft value and moves the container live', () => {
+    // count, particleDiameter and massRatioB are scene-effect dependencies, so every input tick during a drag
     // tore the WebGL scene down and rebuilt it (11 ticks = 11 rebuilds). The slider and its readout follow a draft
-    // immediately; the committing state change waits REBUILD_DEBOUNCE_MS after the last tick.
+    // immediately; the committing state change waits REBUILD_DEBOUNCE_MS after the last tick. The container slider
+    // used to be the fourth; it is a live piston now and needs no draft.
     expect(source).toContain('var REBUILD_DEBOUNCE_MS = 180;');
     expect(source).toContain('function scheduleRebuild(apply) { window.clearTimeout(rebuildTimerRef.current);');
     expect(source).toContain('useEffect(function () { return function () { window.clearTimeout(rebuildTimerRef.current); }; }, []);');
-    for (const [setter, draft, sites] of [['setCount', 'countDraft', 2], ['setBoxSize', 'boxSizeDraft', 2], ['setParticleDiameter', 'particleDiameterDraft', 2], ['setMassRatioB', 'massRatioBDraft', 1]]) {
+    expect(source).not.toContain('boxSizeDraft');
+    expect(source.split("'aria-disabled': holdPressure ? 'true' : undefined, onChange: function (e) { if (holdPressure) { announce('The container is under pressure hold; turn the hold off to move the walls by hand.'); return; } var value = Number(e.target.value); setBoxSize(value); persistLater({ boxSize: value }); }").length - 1).toBe(2);
+    // Hold pressure: the container follows the gauge (P ~ 1/V, damped), Charles's law gets a protocol, and a trial pair
+    // recorded under the hold does not count the volume change as a second variable.
+    expect(source).toContain('function holdPressureStep(hold, pressure, sampleWindow, boxSize)');
+    expect(source.split('holdPressureStep(holdRef.current, m.pressure, metricElapsed,').length - 1).toBe(2); // the 3D loop and the flat 2D fallback share it
+    expect(source).toContain("id: 'charles'");
+    expect(source).toContain("if (first.holdPressure && second.holdPressure) changed = changed.filter(function (name) { return name !== 'volume'; });");
+    expect(source).toContain('#particle-lab-root input[aria-disabled="true"]'); // the held slider fades like an unavailable button
+    for (const [setter, draft, sites] of [['setCount', 'countDraft', 2], ['setParticleDiameter', 'particleDiameterDraft', 2], ['setMassRatioB', 'massRatioBDraft', 1]]) {
       const setDraft = 'set' + draft[0].toUpperCase() + draft.slice(1);
       expect(source.split(setDraft + '(value); scheduleRebuild(function () { ' + setter + '(value);').length - 1).toBe(sites);
       expect(source.split('value: ' + draft + ',').length - 1).toBe(sites);
@@ -319,7 +331,6 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     }
     // Readouts and value text follow the draft too, or the number would lag the thumb by the debounce.
     expect(source).toContain("h('output', { className: 'text-cyan-700' }, countDraft)");
-    expect(source).toContain("boxSizeDraft + ' u')");
     expect(source).toContain("'aria-valuetext': particleDiameterDraft.toFixed(2) + ' model units'");
     expect(source).toContain("'aria-valuetext': massRatioBDraft.toFixed(1) + ' times particle A mass'");
   });
@@ -388,6 +399,11 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
       expect(tool).toContain("'3D engine unavailable'");
       expect(tool).toContain('setLoadAttempt(function (a) { return a + 1; })');
       expect(tool).toContain('School network filters sometimes block CDNs');
+      // A failed load no longer leaves a dead canvas: the flat 2D chamber runs the same physics until Retry succeeds.
+      expect(tool).toContain('setFlatFallback(true); } });');
+      expect(tool).toContain('if (!flatFallback || ready || !canvasRef.current) return;');
+      expect(tool).toContain("id: 'particle-fallback-notice', role: 'alert'");
+      expect(tool).toContain("function retryEngine() { setFlatFallback(false); setLoadError(''); setLoadAttempt(function (a) { return a + 1; }); }");
       expect(tool).not.toContain('script.onload = loadOrbit');
       expect(tool).not.toContain('three.min.js');
     });
@@ -427,7 +443,30 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("['A', 'Audio cues: pressure tone, wall-hit clicks, pump whoosh']");
     expect(source).toContain('function energyDistribution(particles, massRatioB, binCount)');
     expect(source).toContain("'Paired histogram of kinetic energy per particle. Species A mean '");
-    expect(source).toContain('there is no thermostat'); // the model note says what a model unit is and what the sliders do
+    expect(source).toContain('unless the heat bath is on'); // the model note says what a model unit is and what the sliders do
+    // The container is a live piston: the walls do work while running, redistribute without work while paused, and
+    // the scene never rebuilds for it. Only the replay-exit effect still keys on the box.
+    expect(source).toContain("}, [ready, contextLost, preset, count, particleDiameter, massRatioB, resetKey, quality]);");
+    expect(source.split('}, [ready, contextLost, preset, count, boxSize, particleDiameter, massRatioB, resetKey, quality]);').length - 1).toBe(1);
+    expect(source).toContain('p[vel] = -Math.abs(p[vel]) + 2 * wallVelocity;');
+    expect(source).toContain('p[vel] = Math.abs(p[vel]) - 2 * wallVelocity;');
+    expect(source).toContain('chamberGroup.scale.setScalar(liveBoxSize / builtBox);');
+    expect(source).toContain('function thermostatScale(measured, setpoint, rate)');
+    expect(source).toContain('function maxwellBoltzmannBins(temperature, mass, binCount, maxSpeed)');
+    expect(source).toContain("'aria-label': 'Describe the chamber. Reads a summary of what is in the chamber right now.'");
+    // Wall hits are counted apart from particle hits (PhET's collision counter counts walls), published per sample,
+    // and rolled into a per-second rate; PV / NT is checked across a trial pair.
+    expect(source).toContain('return { collisions: collisions, wallCollisions: wallCollisions, impulse: impulse, events: events');
+    expect(source.split('wallHits: wallTotal, sampleSeconds: metricElapsed').length - 1).toBe(4); // stats + history, in both loops
+    // The history sample is built BEFORE setHistory: React runs a state updater later, after the loop has reset its
+    // counters, so a literal inside the updater recorded near-zero fragments of the NEXT sample (900 wall hits per
+    // second from a 1-step window; the timeline's "collisions in sample" had read that way all along).
+    expect(source.split('var historySample = { temperature: m.temperature').length - 1).toBe(2);
+    expect(source.split('setHistory(function (old) { return old.concat([historySample]).slice(-36); });').length - 1).toBe(2);
+    expect(source).not.toMatch(/setHistory\(function \(old\) \{ return old\.concat\(\[\{/);
+    expect(source).toContain('function gasLawRatio(pressure, boxSize, count, temperature)');
+    expect(source).toContain("id: 'particle-gas-law-check'");
+    expect(source).toContain("['Wall hits', wallRate + ' / s']");
   });
 
   it('keeps the deploy mirror byte-identical', () => {

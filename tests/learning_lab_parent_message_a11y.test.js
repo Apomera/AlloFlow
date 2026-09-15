@@ -75,7 +75,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
     expect(messages).toContain("typeof navigator === 'undefined' || !navigator.clipboard");
     expect(messages).toContain('Clipboard access is unavailable. The message is selected');
     expect(messages).toContain("focusById('learning-lab-message-body', true)");
-    expect(messages).toContain("Promise.resolve(navigator.clipboard.writeText(body)).then");
+    expect(messages).toContain("Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body)).then");
     expect(messages).toContain('.catch(function()');
   });
 

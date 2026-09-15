@@ -1,0 +1,15 @@
+My Pictionary learning portfolio
+
+Name: Sample learner
+
+Evaporation
+
+AI named the target after 2 guesses
+
+Liquid water changes into water vapor.
+
+First submitted clues: Drawing with 2 strokes. See the HTML portfolio for the drawing.
+
+Latest clues: Drawing with 3 strokes. See the HTML portfolio for the drawing.
+
+AI recognition is not a grade. This portfolio records selected clues and the learner’s own explanations.

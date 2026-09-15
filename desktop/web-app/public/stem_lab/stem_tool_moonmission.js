@@ -53,7 +53,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // radio chirps and the rover's drive sonification — asks for the audio context
     // here first, so one check silences all of them and none can be forgotten.
     if (_mmSoundOff) return null;
-    if (!_mmAC) { try { _mmAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+    if (!_mmAC) { try { _mmAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
     if (_mmAC && _mmAC.state === 'suspended') { try { _mmAC.resume(); } catch(e) {} }
     return _mmAC;
   }
@@ -6099,7 +6099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       } catch (_lrvDisposeErr) {}
                       if (document.pointerLockElement === canvasEl) document.exitPointerLock();
                       if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
-                      renderer.dispose();
+                      renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
                       if (evaPad) {
                         // Release anything still held, or a button removed mid-press leaves

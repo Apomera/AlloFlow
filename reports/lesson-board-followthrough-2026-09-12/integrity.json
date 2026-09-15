@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "scope": "Board module, board loader URLs, and board localization. Other concurrently edited modules are outside this check.",
+  "sha256": "0c263258c9c0ebff80149202998980440289be8706cff25fd8e98e301b1a0120",
+  "bytes": 228509,
+  "matchingHostEntries": 3,
+  "boardStrings": 373
+}

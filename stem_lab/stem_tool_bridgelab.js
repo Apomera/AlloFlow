@@ -885,7 +885,7 @@
       // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
       function getBridgeAC() {
         if (!_bridgeACRef.current) {
-          try { _bridgeACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+          try { _bridgeACRef.current = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {}
         }
         if (_bridgeACRef.current && _bridgeACRef.current.state === 'suspended') {
           try { _bridgeACRef.current.resume(); } catch(e) {}

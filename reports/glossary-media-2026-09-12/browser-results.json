@@ -1,0 +1,173 @@
+{
+  "results": [
+    {
+      "label": "GlossaryView-1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "GlossaryView-edit-1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortView-1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "images": [
+        {
+          "width": 96,
+          "height": 96
+        },
+        {
+          "width": 96,
+          "height": 96
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortGame-1280",
+      "width": 1280,
+      "pageWidth": 1280,
+      "images": [
+        {
+          "width": 128,
+          "height": 128
+        },
+        {
+          "width": 128,
+          "height": 128
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "GlossaryView-390",
+      "width": 390,
+      "pageWidth": 390,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "GlossaryView-edit-390",
+      "width": 390,
+      "pageWidth": 390,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortView-390",
+      "width": 390,
+      "pageWidth": 390,
+      "images": [
+        {
+          "width": 96,
+          "height": 96
+        },
+        {
+          "width": 96,
+          "height": 96
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortGame-390",
+      "width": 390,
+      "pageWidth": 390,
+      "images": [
+        {
+          "width": 128,
+          "height": 128
+        },
+        {
+          "width": 128,
+          "height": 128
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "GlossaryView-320",
+      "width": 320,
+      "pageWidth": 320,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "GlossaryView-edit-320",
+      "width": 320,
+      "pageWidth": 320,
+      "images": [
+        {
+          "width": 192,
+          "height": 192
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortView-320",
+      "width": 320,
+      "pageWidth": 320,
+      "images": [
+        {
+          "width": 96,
+          "height": 96
+        },
+        {
+          "width": 96,
+          "height": 96
+        }
+      ],
+      "clippedControls": []
+    },
+    {
+      "label": "ConceptSortGame-320",
+      "width": 320,
+      "pageWidth": 320,
+      "images": [
+        {
+          "width": 128,
+          "height": 128
+        },
+        {
+          "width": 128,
+          "height": 128
+        }
+      ],
+      "clippedControls": []
+    }
+  ],
+  "errors": []
+}

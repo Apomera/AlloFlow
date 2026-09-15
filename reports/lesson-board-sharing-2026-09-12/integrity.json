@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "checkedAt": "2026-09-12T23:53:08.019Z",
+  "modules": [
+    {
+      "file": "lesson_board_module.js",
+      "mirror": "desktop/web-app/public/lesson_board_module.js",
+      "sha256": "1f53dc08d21c8f5cc23bf55397e16b815716cb2b70d6ef2d4d29ffacf4524b3e",
+      "bytes": 393245,
+      "loaders": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "version": "1f53dc08d2",
+          "references": 1
+        },
+        {
+          "file": "desktop/web-app/src/AlloFlowANTI.txt",
+          "version": "1f53dc08d2",
+          "references": 1
+        },
+        {
+          "file": "desktop/web-app/src/App.jsx",
+          "version": "1f53dc08d2",
+          "references": 1
+        }
+      ]
+    },
+    {
+      "file": "view_quiz_module.js",
+      "mirror": "desktop/web-app/public/view_quiz_module.js",
+      "sha256": "564dc0dade9824b4579b841390a5b470fa67ef0235db60a7e7d2abc775486825",
+      "bytes": 483750,
+      "loaders": [
+        {
+          "file": "AlloFlowANTI.txt",
+          "version": "564dc0dade",
+          "references": 1
+        },
+        {
+          "file": "desktop/web-app/src/AlloFlowANTI.txt",
+          "url": "./view_quiz_module.js",
+          "localMirrorVerified": true
+        },
+        {
+          "file": "desktop/web-app/src/App.jsx",
+          "url": "./view_quiz_module.js",
+          "localMirrorVerified": true
+        }
+      ]
+    }
+  ],
+  "boardStringEntries": 733,
+  "boardStringsMatch": true
+}

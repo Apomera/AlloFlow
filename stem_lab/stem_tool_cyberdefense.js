@@ -25,7 +25,7 @@
   // Password lesson samples are intentionally ephemeral. Never place the
   // learner's sample in ctx.toolData, which may be persisted as progress.
   var _cyberPasswordSample = '';
-  function getCyberdAC() { if (!_cyberdAC) { try { _cyberdAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_cyberdAC && _cyberdAC.state === "suspended") { try { _cyberdAC.resume(); } catch(e) {} } return _cyberdAC; }
+  function getCyberdAC() { if (!_cyberdAC) { try { _cyberdAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_cyberdAC && _cyberdAC.state === "suspended") { try { _cyberdAC.resume(); } catch(e) {} } return _cyberdAC; }
   function cyberdTone(f,d,tp,v) { var ac = getCyberdAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCyberdClick() { if (window.__cyberWarMuted) return; cyberdTone(600, 0.03, "sine", 0.04); }
   // War Room outcome SFX — distinct tones for each resolution
@@ -5571,7 +5571,7 @@
                           'AlloFlow \u2022 Cyber Defense Lab';
                         try {
                           if (navigator.clipboard && navigator.clipboard.writeText) {
-                            navigator.clipboard.writeText(summary).then(function() {
+                            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(summary).then(function() {
                               if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Summary copied to clipboard', 'success');
                             }, function() {
                               if (ctx.addToast) ctx.addToast('Copy failed \u2014 check your browser permissions', 'info');
@@ -5842,7 +5842,7 @@
                             onClick: function() {
                               try {
                                 if (navigator.clipboard && navigator.clipboard.writeText) {
-                                  navigator.clipboard.writeText(warRoomCampaignId).then(function() {
+                                  (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(warRoomCampaignId).then(function() {
                                     if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Campaign #' + warRoomCampaignId + ' copied', 'success');
                                   }, function() { if (ctx.addToast) ctx.addToast('Copy failed', 'info'); });
                                 } else if (ctx.addToast) { ctx.addToast('Clipboard unavailable', 'info'); }

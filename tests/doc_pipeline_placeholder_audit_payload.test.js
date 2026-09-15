@@ -13,6 +13,9 @@ function closure(name) {
   return source.slice(start, end + 5);
 }
 const stripDataUrls = new Function(closure('_stripDataUrlsForAi') + '\nreturn _stripDataUrlsForAi;')();
+// The block-tag constant sits directly above the splitter, and the first closure end after it is
+// the splitter's own, so one slice carries both.
+const splitForAudit = new Function(closure('_AUDIT_BLOCK_CLOSE') + '\nreturn splitHtmlForAudit;')();
 const restoreDataUrls = new Function(closure('_restoreDataUrlsForAi') + '\nreturn _restoreDataUrlsForAi;')();
 const carryStart = source.indexOf("          let _carriedOut = '';");
 const carryEnd = source.indexOf('\n          {\n            const imgInfo = extractedImages[imgIdx]', carryStart);
@@ -38,6 +41,7 @@ async function captureAuditPrompts(html, expectedCalls) {
     _pipeLog: noop,
     AUDIT_CHUNK_SIZE: 16000,
     AUDIT_CHUNK_OVERLAP: 800,
+    splitHtmlForAudit: splitForAudit,
     AUDIT_RUBRIC_PROMPT: 'Audit contract',
     _neutralizePromptFence: (value) => value,
     _auditMemoKey: async (prompt) => prompt,

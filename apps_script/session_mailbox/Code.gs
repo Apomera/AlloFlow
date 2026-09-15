@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 23;
+var VERSION = 24;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -57,6 +57,38 @@ var MAX_SURVEY_FREETEXT_CHARS = 500;
 var SUPPORTED_ACTIVITY_TYPES = ['word_cloud', 'rating', 'question_board', 'availability', 'signup', 'survey'];
 var ASYNC_ACTIVITY_CACHE_SEC = 5 * 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
+// v24 delivery: what this deployment can put into the OWNER's Drive or read
+// for the owner. Advertised by {a:'hello'} like SUPPORTED_ACTIVITY_TYPES, so a
+// newer client can say "your mailbox needs redeploying" instead of failing.
+var SUPPORTED_DELIVERY = ['drive', 'doc', 'slides', 'sheet', 'form', 'fetchpage'];
+var DELIVERY_FOLDER_NAME = 'Delivered documents';
+var DELIVER_MAX_BYTES = 25 * 1024 * 1024;   // decoded upload ceiling (Apps Script POST limit is ~50MB)
+var DELIVER_MAX_TEXT_CHARS = 8 * 1024 * 1024;
+var FETCHPAGE_MAX_RAW_CHARS = 3 * 1024 * 1024;
+var FETCHPAGE_MAX_TEXT_CHARS = 200 * 1024;
+var FETCHPAGE_PER_MIN = 60;
+var MAX_FORM_ITEMS = 60;
+var MAX_FORM_CHOICES = 12;
+// Source MIME -> Google-native target when the teacher asks for conversion.
+var DELIVER_CONVERT_TARGETS = {
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'application/vnd.google-apps.document',
+  'text/html': 'application/vnd.google-apps.document',
+  'text/plain': 'application/vnd.google-apps.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'application/vnd.google-apps.presentation',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'application/vnd.google-apps.spreadsheet',
+  'text/csv': 'application/vnd.google-apps.spreadsheet'
+};
+var DELIVER_CONVERT_ALIASES = {
+  doc: 'application/vnd.google-apps.document',
+  slides: 'application/vnd.google-apps.presentation',
+  sheet: 'application/vnd.google-apps.spreadsheet'
+};
+var DELIVER_ALLOWED_MIMES = {
+  'application/pdf': 1, 'application/json': 1, 'text/html': 1, 'text/plain': 1, 'text/markdown': 1, 'text/csv': 1,
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 1,
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 1,
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 1
+};
 
 function doGet() {
   return out({ ok: true, v: VERSION, service: 'alloflow-class-mailbox', t: Date.now() });
@@ -112,7 +144,7 @@ function actorRateKey(code, actor, kind) {
 
 function handle(p) {
   var a = String(p.a || '');
-  if (a === 'hello') return out({ ok: true, v: VERSION, activities: SUPPORTED_ACTIVITY_TYPES.slice(), t: Date.now() });
+  if (a === 'hello') return out({ ok: true, v: VERSION, activities: SUPPORTED_ACTIVITY_TYPES.slice(), delivery: SUPPORTED_DELIVERY.slice(), t: Date.now() });
 
   var props = PropertiesService.getScriptProperties();
   if (a === 'claim') {
@@ -261,6 +293,15 @@ function handle(p) {
   if (a === 'delpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
     return delPack(cache, p);
+  }
+  // v24 delivery: the owner's tool writes into the owner's own Drive, reads a
+  // page for the owner, or builds a Google Form. Admin only: the deployment is
+  // reachable by anyone, so without this gate it would be an open upload box.
+  if (a === 'deliver' || a === 'deliverform' || a === 'fetchpage') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    if (a === 'deliver') return deliverDocument(p);
+    if (a === 'deliverform') return deliverForm(p);
+    return fetchPage(cache, p);
   }
   return out({ ok: false, e: 'bad-action' });
 }
@@ -2738,4 +2779,261 @@ function delPack(cache, p) {
   }
 
   return out({ ok: true });
+}
+// ---------------------------------------------------------------------------
+// v24: delivery into the OWNER's Drive, Google Forms, and page import.
+//
+// Every write lands in a "Delivered documents" subfolder of the mailbox folder.
+// Both folders are created by this script, which is what keeps them reachable
+// under the drive.file scope declared in appsscript.json: the script sees only
+// what it created and never searches the rest of the Drive. Nothing here is
+// served to students; the admin gate in handle() is what makes an
+// anyone-can-POST deployment safe to give a Drive scope at all.
+// ---------------------------------------------------------------------------
+
+function deliveryFolder() {
+  var parent = packFolder();
+  var it = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
+  return it.hasNext() ? it.next() : parent.createFolder(DELIVERY_FOLDER_NAME);
+}
+
+function safeFileName(value, fallback) {
+  var name = String(value || '').replace(/[\\\/:*?"<>|\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!name) name = fallback || 'AlloFlow document';
+  return name.slice(0, 120);
+}
+
+function decodeDeliveryBytes(p) {
+  if (typeof p.b64 === 'string' && p.b64) {
+    var b64 = p.b64.replace(/\s+/g, '');
+    if (b64.length > Math.ceil(DELIVER_MAX_BYTES / 3) * 4 + 4) return { e: 'too-large' };
+    try {
+      return { bytes: /[-_]/.test(b64) ? Utilities.base64DecodeWebSafe(b64) : Utilities.base64Decode(b64) };
+    } catch (err) { return { e: 'bad-request' }; }
+  }
+  if (typeof p.text === 'string' && p.text) {
+    if (p.text.length > DELIVER_MAX_TEXT_CHARS) return { e: 'too-large' };
+    return { bytes: Utilities.newBlob(p.text, 'text/plain', 'x').getBytes() };
+  }
+  return { e: 'bad-request' };
+}
+
+// Multipart upload through the Drive REST API so Drive performs the DOCX /
+// PPTX / HTML -> native conversion server-side (DriveApp.createFile cannot
+// convert). The bearer token carries only the scopes this script was granted,
+// i.e. drive.file, so the call can create files but not read the Drive.
+function driveCreateConverted(bytes, sourceMime, name, targetMime, folderId) {
+  var boundary = 'alloflow-' + Utilities.getUuid();
+  var meta = { name: name, mimeType: targetMime, parents: [folderId] };
+  var head = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'
+    + JSON.stringify(meta) + '\r\n--' + boundary + '\r\nContent-Type: ' + sourceMime + '\r\n\r\n';
+  var tail = '\r\n--' + boundary + '--\r\n';
+  var payload = Utilities.newBlob(head).getBytes().concat(bytes, Utilities.newBlob(tail).getBytes());
+  var res = UrlFetchApp.fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink', {
+    method: 'post',
+    contentType: 'multipart/related; boundary=' + boundary,
+    payload: payload,
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  });
+  var code = res.getResponseCode();
+  var body = {};
+  try { body = JSON.parse(res.getContentText() || '{}'); } catch (err) {}
+  if (code < 200 || code >= 300 || !body.id) {
+    var detail = (body.error && body.error.message) || ('HTTP ' + code);
+    return { e: 'drive-error', d: String(detail).slice(0, 200), status: code };
+  }
+  return { id: body.id, url: body.webViewLink || ('https://drive.google.com/open?id=' + body.id), mime: body.mimeType || targetMime };
+}
+
+function deliverDocument(p) {
+  var mime = String(p.mime || '').toLowerCase().split(';')[0].trim();
+  if (!DELIVER_ALLOWED_MIMES[mime]) return out({ ok: false, e: 'bad-mime' });
+  var convert = String(p.convert || 'auto');
+  var target = DELIVER_CONVERT_TARGETS[mime] || '';
+  if (convert === 'none') target = '';
+  else if (convert !== 'auto') {
+    var wanted = DELIVER_CONVERT_ALIASES[convert] || '';
+    if (!wanted || wanted !== target) return out({ ok: false, e: 'bad-convert' });
+  }
+  var decoded = decodeDeliveryBytes(p);
+  if (decoded.e) return out({ ok: false, e: decoded.e });
+  if (decoded.bytes.length > DELIVER_MAX_BYTES) return out({ ok: false, e: 'too-large' });
+  var name = safeFileName(p.name, 'AlloFlow document');
+  var folder;
+  try { folder = deliveryFolder(); } catch (err) {
+    return out({ ok: false, e: 'drive-error', d: String((err && err.message) || err).slice(0, 200) });
+  }
+  if (target) {
+    var made = driveCreateConverted(decoded.bytes, mime, name, target, folder.getId());
+    if (made.e) return out({ ok: false, e: made.e, d: made.d, status: made.status });
+    return out({ ok: true, id: made.id, url: made.url, name: name, mime: made.mime, converted: true, t: Date.now() });
+  }
+  try {
+    var file = folder.createFile(Utilities.newBlob(decoded.bytes, mime, name));
+    return out({ ok: true, id: file.getId(), url: file.getUrl(), name: name, mime: mime, converted: false, t: Date.now() });
+  } catch (err2) {
+    return out({ ok: false, e: 'drive-error', d: String((err2 && err2.message) || err2).slice(0, 200) });
+  }
+}
+
+function formChoiceText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, 200);
+}
+
+function deliverForm(p) {
+  var title = safeFileName(p.title, 'AlloFlow quiz');
+  var items = Array.isArray(p.items) ? p.items.slice(0, MAX_FORM_ITEMS) : [];
+  if (!items.length) return out({ ok: false, e: 'bad-request' });
+  var isQuiz = p.quiz !== false;
+  var form;
+  try {
+    form = FormApp.create(title);
+  } catch (err) {
+    // The shipped manifest does not grant the Forms scope; a teacher opts in
+    // by adding it (README). Say so instead of a generic server error.
+    return out({ ok: false, e: 'forms-scope', d: String((err && err.message) || err).slice(0, 200) });
+  }
+  var built = 0;
+  try {
+    if (typeof p.description === 'string' && p.description) form.setDescription(String(p.description).slice(0, 2000));
+    if (isQuiz) form.setIsQuiz(true);
+    try { form.setCollectEmail(false); } catch (e1) {}
+    try { form.setRequireLogin(false); } catch (e2) {}   // Workspace-only setter; students have no accounts
+    items.forEach(function (raw) {
+      var item = raw && typeof raw === 'object' ? raw : {};
+      var type = String(item.type || 'mc');
+      var prompt = String(item.prompt || item.question || '').trim().slice(0, 500);
+      if (!prompt) return;
+      var points = Math.max(0, Math.min(100, parseInt(item.points, 10) || (isQuiz ? 1 : 0)));
+      if (type === 'section') {
+        form.addSectionHeaderItem().setTitle(prompt).setHelpText(String(item.help || '').slice(0, 1000));
+        built++;
+        return;
+      }
+      if (type === 'mc' || type === 'checkbox') {
+        var options = (Array.isArray(item.options) ? item.options : []).map(formChoiceText).filter(Boolean).slice(0, MAX_FORM_CHOICES);
+        if (options.length < 2) return;
+        var answers = Array.isArray(item.answer) ? item.answer : [item.answer];
+        var correct = {};
+        answers.forEach(function (ans) {
+          if (typeof ans === 'number' && options[ans] !== undefined) correct[ans] = 1;
+          else if (typeof ans === 'string') {
+            var idx = options.indexOf(formChoiceText(ans));
+            if (idx >= 0) correct[idx] = 1;
+          }
+        });
+        var q = type === 'mc' ? form.addMultipleChoiceItem() : form.addCheckboxItem();
+        q.setTitle(prompt);
+        if (item.help) q.setHelpText(String(item.help).slice(0, 1000));
+        q.setChoices(options.map(function (text, i) { return q.createChoice(text, isQuiz && !!correct[i]); }));
+        if (isQuiz && points) q.setPoints(points);
+        if (item.required) q.setRequired(true);
+        built++;
+        return;
+      }
+      var t = type === 'paragraph' ? form.addParagraphTextItem() : form.addTextItem();
+      t.setTitle(prompt);
+      if (item.help) t.setHelpText(String(item.help).slice(0, 1000));
+      if (isQuiz && points) t.setPoints(points);
+      if (isQuiz && typeof item.answer === 'string' && item.answer) {
+        // Forms cannot auto-grade free text from a script; keep the expected
+        // answer as feedback so the teacher grades it in one glance.
+        t.setGeneralFeedback(FormApp.createFeedback().setText('Expected: ' + String(item.answer).slice(0, 500)).build());
+      }
+      if (item.required) t.setRequired(true);
+      built++;
+    });
+  } catch (err3) {
+    return out({ ok: false, e: 'form-error', d: String((err3 && err3.message) || err3).slice(0, 200), id: form.getId() });
+  }
+  try { DriveApp.getFileById(form.getId()).moveTo(deliveryFolder()); } catch (err4) { /* stays in My Drive root */ }
+  return out({ ok: true, id: form.getId(), editUrl: form.getEditUrl(), url: form.getPublishedUrl(), items: built, quiz: isQuiz, t: Date.now() });
+}
+
+function fetchPageBlockedHost(host) {
+  var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '');
+  if (!h || h === 'localhost' || /\.(local|internal|localhost)$/.test(h)) return true;
+  if (/^(127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)) return true;
+  if (h === '::1' || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe80:/.test(h)) return true;
+  return false;
+}
+
+function decodeHtmlEntities(s) {
+  var named = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', ndash: '\u2013', mdash: '\u2014',
+    hellip: '\u2026', lsquo: '\u2018', rsquo: '\u2019', ldquo: '\u201c', rdquo: '\u201d', copy: '\u00a9'
+  };
+  return String(s || '').replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, function (m, body) {
+    var b = body.toLowerCase();
+    if (b.charAt(0) === '#') {
+      var code = b.charAt(1) === 'x' ? parseInt(b.slice(2), 16) : parseInt(b.slice(1), 10);
+      return isFinite(code) && code > 0 && code < 0x110000 ? String.fromCodePoint(code) : m;
+    }
+    return named.hasOwnProperty(b) ? named[b] : m;
+  });
+}
+
+function htmlToPlainText(html) {
+  var s = String(html || '');
+  var title = '';
+  var tm = s.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  if (tm) title = decodeHtmlEntities(tm[1]).replace(/\s+/g, ' ').trim().slice(0, 300);
+  s = s.replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(script|style|noscript|svg|template|iframe)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<(nav|footer|aside)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li|h[1-6]|tr|blockquote|pre|section|article|dd|dt|figcaption)>/gi, '\n')
+    .replace(/<\/(td|th)>/gi, '\t')
+    .replace(/<[^>]+>/g, ' ');
+  s = decodeHtmlEntities(s)
+    .replace(/[ \t\u00a0]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { title: title, text: s };
+}
+
+// Read a page FOR the owner. UrlFetchApp runs from Google's servers, which is
+// why it succeeds where browser-side reader proxies get flagged as bots. Admin
+// only (gated in handle), private ranges refused, rate-limited, size-capped.
+function fetchPage(cache, p) {
+  var url = String(p.url || '').trim();
+  if (url.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(url)) return out({ ok: false, e: 'bad-url' });
+  var host = (url.match(/^https?:\/\/([^\/?#]+)/i) || [])[1] || '';
+  host = host.replace(/^[^@]*@/, '').replace(/:\d+$/, '');
+  if (fetchPageBlockedHost(host)) return out({ ok: false, e: 'blocked-url' });
+  if (!rateCheck(cache, 'r:fetchpage:t', FETCHPAGE_PER_MIN)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  var res;
+  try {
+    res = UrlFetchApp.fetch(url, {
+      method: 'get',
+      muteHttpExceptions: true,
+      followRedirects: true,
+      validateHttpsCertificates: true,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; AlloFlowClassMailbox/' + VERSION + '; +https://alloflow-cdn.pages.dev)',
+        'Accept': 'text/html,application/xhtml+xml;q=0.9,text/plain;q=0.8,*/*;q=0.5',
+        'Accept-Language': 'en-US,en;q=0.8'
+      }
+    });
+  } catch (err) {
+    return out({ ok: false, e: 'fetch-error', d: String((err && err.message) || err).slice(0, 200) });
+  }
+  var status = res.getResponseCode();
+  if (status < 200 || status >= 300) return out({ ok: false, e: 'fetch-error', status: status });
+  var headers = res.getHeaders() || {};
+  var contentType = String(headers['Content-Type'] || headers['content-type'] || '').toLowerCase();
+  var isHtml = /html|xml/.test(contentType);
+  var isText = /^text\//.test(contentType);
+  if (contentType && !isHtml && !isText) return out({ ok: false, e: 'bad-content-type', contentType: contentType.slice(0, 80) });
+  var raw = String(res.getContentText() || '');
+  var rawTruncated = raw.length > FETCHPAGE_MAX_RAW_CHARS;
+  if (rawTruncated) raw = raw.slice(0, FETCHPAGE_MAX_RAW_CHARS);
+  var parsed = (isHtml || /<\s*(html|body|p|div)[\s>]/i.test(raw)) ? htmlToPlainText(raw) : { title: '', text: raw.trim() };
+  var text = parsed.text;
+  var truncated = rawTruncated || text.length > FETCHPAGE_MAX_TEXT_CHARS;
+  if (text.length > FETCHPAGE_MAX_TEXT_CHARS) text = text.slice(0, FETCHPAGE_MAX_TEXT_CHARS);
+  if (!text) return out({ ok: false, e: 'empty-page', status: status });
+  return out({ ok: true, url: url, status: status, contentType: contentType.slice(0, 80), title: parsed.title, text: text, chars: text.length, truncated: truncated, t: Date.now() });
 }

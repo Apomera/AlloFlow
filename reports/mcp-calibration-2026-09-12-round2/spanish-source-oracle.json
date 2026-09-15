@@ -1,0 +1,421 @@
+{
+  "schema": 1,
+  "kind": "source-only-calibration-oracle",
+  "evidenceClass": "Mechanical source-text extraction and metadata, not human accessibility ground truth and not prior output.",
+  "createdAt": "2026-09-13T01:23:59.508819+00:00",
+  "source": {
+    "path": "mcp-testing/corpus/born-digital/ohchr-udhr-spanish.pdf",
+    "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+    "bytes": 186317,
+    "pages": 9,
+    "catalogLang": null,
+    "expectedDocumentLanguage": "es",
+    "languageBasis": "Directly extracted Spanish title/article prose, plus pinned development-pilot source language es."
+  },
+  "extraction": {
+    "library": "pypdf",
+    "version": "6.16.1",
+    "normalization": "Unicode NFC; collapse whitespace only; preserve punctuation, digits, accents and source extraction spacing.",
+    "knownLimit": "This text-layer oracle can contain source extraction spacing artifacts. It does not adjudicate visual reading order or OCR accuracy."
+  },
+  "expectedTitle": "Declaración Universal de Derechos Humanos",
+  "expectedArticleNumbers": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "expectedArticleCount": 30,
+  "articles": [
+    {
+      "number": 1,
+      "heading": "Artículo 1",
+      "sourceStartPage": 2,
+      "sourceEndPage": 2,
+      "sourceText": "Artículo 1  \nTodos los seres humanos nacen libres e iguales en dignidad y derechos y, \ndotados como están de razón y conciencia, deben comportarse fraternalmente \nlos unos con los otros.",
+      "normalizedText": "Artículo 1 Todos los seres humanos nacen libres e iguales en dignidad y derechos y, dotados como están de razón y conciencia, deben comportarse fraternalmente los unos con los otros.",
+      "normalizedSha256": "688e256182de46a00c6a6811d94ad9ddf814eb701b2e045b4d5173f61b60a228"
+    },
+    {
+      "number": 2,
+      "heading": "Artículo 2",
+      "sourceStartPage": 2,
+      "sourceEndPage": 2,
+      "sourceText": "Artículo 2  \nToda persona tiene los derechos y libertades proclamados en esta Declaración, \nsin distinción alguna de raza, color, sexo, idioma, religión, opinión política o de \ncualquier otra índole, origen nacional o social, posición económica, nacimiento o \ncualquier otra condición.  \nAdemás, no se hará distinción alguna fundada en la condición política, jurídica o \ninternacional del país o territorio de cuya jurisdicción dependa una persona, \ntanto si se trata de un país independiente, como de un territorio bajo \nadministración fiduciaria, no autónomo o sometido a cualquier otra limitación de \nsoberanía.",
+      "normalizedText": "Artículo 2 Toda persona tiene los derechos y libertades proclamados en esta Declaración, sin distinción alguna de raza, color, sexo, idioma, religión, opinión política o de cualquier otra índole, origen nacional o social, posición económica, nacimiento o cualquier otra condición. Además, no se hará distinción alguna fundada en la condición política, jurídica o internacional del país o territorio de cuya jurisdicción dependa una persona, tanto si se trata de un país independiente, como de un territorio bajo administración fiduciaria, no autónomo o sometido a cualquier otra limitación de soberanía.",
+      "normalizedSha256": "8b1fd8fb1ea7da084dea6d8de2021a2dde77ab1dcf6ebb52ecbd5347611bff45"
+    },
+    {
+      "number": 3,
+      "heading": "Artículo 3",
+      "sourceStartPage": 2,
+      "sourceEndPage": 2,
+      "sourceText": "Artículo 3  \nTodo individuo tiene derecho a la vida, a la libertad y a la seguridad de su \npersona.",
+      "normalizedText": "Artículo 3 Todo individuo tiene derecho a la vida, a la libertad y a la seguridad de su persona.",
+      "normalizedSha256": "514f5d100962fa6722e2ab23d1fefdfe60fd9af95e5bebc9e64d2173761c0140"
+    },
+    {
+      "number": 4,
+      "heading": "Artículo 4",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 4  \nNadie estará sometido a esclavitud ni a servidumbre; la esclavitud y la trata de \nesclavos están prohibidas en todas sus formas.",
+      "normalizedText": "Artículo 4 Nadie estará sometido a esclavitud ni a servidumbre; la esclavitud y la trata de esclavos están prohibidas en todas sus formas.",
+      "normalizedSha256": "5a5502aa383aa9bd0602700dc6bd610fc390418f2dde419f4516db96b3bb179d"
+    },
+    {
+      "number": 5,
+      "heading": "Artículo 5",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 5  \nNadie será sometido a torturas ni a penas o tratos crueles, inhumanos o \ndegradantes.",
+      "normalizedText": "Artículo 5 Nadie será sometido a torturas ni a penas o tratos crueles, inhumanos o degradantes.",
+      "normalizedSha256": "eaced00771b83866764cf5554a47b535293a1de26e09f154f7167f9453d7e004"
+    },
+    {
+      "number": 6,
+      "heading": "Artículo 6",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 6  \nTodo ser humano tiene derecho, en todas partes, al reconocimiento de su \npersonalidad jurídica.",
+      "normalizedText": "Artículo 6 Todo ser humano tiene derecho, en todas partes, al reconocimiento de su personalidad jurídica.",
+      "normalizedSha256": "0cc31c73e303049d9ab8c7aa2b49a7b63177d51a5f0dc457c32adb5c0b78a8ba"
+    },
+    {
+      "number": 7,
+      "heading": "Artículo 7",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 7  \nTodos son iguales ante la ley y tienen, sin distinción, derecho a igual protección \nde la ley. Todos tienen derecho a igual protección contra toda discriminación que \ninfrinja esta Declaración y contra toda provocación a tal discriminación.",
+      "normalizedText": "Artículo 7 Todos son iguales ante la ley y tienen, sin distinción, derecho a igual protección de la ley. Todos tienen derecho a igual protección contra toda discriminación que infrinja esta Declaración y contra toda provocación a tal discriminación.",
+      "normalizedSha256": "fb68fd071aa2bb5563ae06d8e276af667332ad7591dd32681bc757e735a1c4c2"
+    },
+    {
+      "number": 8,
+      "heading": "Artículo 8",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 8  \nToda persona tiene derecho a un recurso efectivo, ante los tribunales nacionales \ncompetentes, que la ampare contra actos que violen sus derechos \nfundamentales reconocidos por la constitución o por la ley.",
+      "normalizedText": "Artículo 8 Toda persona tiene derecho a un recurso efectivo, ante los tribunales nacionales competentes, que la ampare contra actos que violen sus derechos fundamentales reconocidos por la constitución o por la ley.",
+      "normalizedSha256": "e03181bfe8c6d799119f00577633cda9cf6053d7192c4e13bc66e9ec805263ab"
+    },
+    {
+      "number": 9,
+      "heading": "Artículo 9",
+      "sourceStartPage": 3,
+      "sourceEndPage": 3,
+      "sourceText": "Artículo 9  \nNadie podrá ser arbitrariamente detenido, preso ni desterrado.",
+      "normalizedText": "Artículo 9 Nadie podrá ser arbitrariamente detenido, preso ni desterrado.",
+      "normalizedSha256": "fa33be5fcc01ce3c091cb1ca1aa3e91ffef6de300c7f3d26077d5e11260fc1ed"
+    },
+    {
+      "number": 10,
+      "heading": "Artículo 10",
+      "sourceStartPage": 3,
+      "sourceEndPage": 4,
+      "sourceText": "Artículo 10  \nToda persona tiene derecho, en condiciones de plena igualdad, a ser oída \npúblicamente y con justicia por un tribunal independiente e imparcial, para la\n\f\ndeterminación de sus derechos y obligaciones o para el examen de cualquier \nacusación contra ella en materia penal.",
+      "normalizedText": "Artículo 10 Toda persona tiene derecho, en condiciones de plena igualdad, a ser oída públicamente y con justicia por un tribunal independiente e imparcial, para la determinación de sus derechos y obligaciones o para el examen de cualquier acusación contra ella en materia penal.",
+      "normalizedSha256": "dce360368338ec1962a426cdeb096f15c3f6ed4f8a0451845e3cb81d1808979e"
+    },
+    {
+      "number": 11,
+      "heading": "Artículo 11",
+      "sourceStartPage": 4,
+      "sourceEndPage": 4,
+      "sourceText": "Artículo 11  \n1. Toda persona acusada de delito tiene derecho a que se presuma su \ninocencia mientras no se pruebe su culpabilidad, conforme a la ley y en \njuicio público en el que se le hayan asegurado todas las garantías \nnecesarias para su defensa.  \n2. Nadie ser á condenado por actos u omisiones que en el momento de \ncometerse no fueron delictivos según el Derecho nacional o internacional. \nTampoco se impondrá pena más grave que la aplicable en el momento de \nla comisión del delito.",
+      "normalizedText": "Artículo 11 1. Toda persona acusada de delito tiene derecho a que se presuma su inocencia mientras no se pruebe su culpabilidad, conforme a la ley y en juicio público en el que se le hayan asegurado todas las garantías necesarias para su defensa. 2. Nadie ser á condenado por actos u omisiones que en el momento de cometerse no fueron delictivos según el Derecho nacional o internacional. Tampoco se impondrá pena más grave que la aplicable en el momento de la comisión del delito.",
+      "normalizedSha256": "d8bd5763dfbedaa201ab6d08d4c9ce16f5fbd5da98c1e2e8a3233e797aae0cb6"
+    },
+    {
+      "number": 12,
+      "heading": "Artículo 12",
+      "sourceStartPage": 4,
+      "sourceEndPage": 4,
+      "sourceText": "Artículo 12  \nNadie será objeto de injerencias arbitrarias en su vida privada, su familia, su \ndomicilio o su correspondencia, ni de ataques a su honra o a su reputación. \nToda persona tiene derecho a la protección de la ley contra tales injerencias o \nataques.",
+      "normalizedText": "Artículo 12 Nadie será objeto de injerencias arbitrarias en su vida privada, su familia, su domicilio o su correspondencia, ni de ataques a su honra o a su reputación. Toda persona tiene derecho a la protección de la ley contra tales injerencias o ataques.",
+      "normalizedSha256": "906c22cf5deacf1e93abf8c3da92ebb64366435623438aa47097948fc0307fce"
+    },
+    {
+      "number": 13,
+      "heading": "Artículo 13",
+      "sourceStartPage": 4,
+      "sourceEndPage": 4,
+      "sourceText": "Artículo 13  \n1. Toda persona tiene derecho a circular libremente y a elegir su residencia \nen el territorio de un Estado.  \n2. Toda persona tiene derec ho a salir de cualquier país, incluso el propio, y \na regresar a su país.",
+      "normalizedText": "Artículo 13 1. Toda persona tiene derecho a circular libremente y a elegir su residencia en el territorio de un Estado. 2. Toda persona tiene derec ho a salir de cualquier país, incluso el propio, y a regresar a su país.",
+      "normalizedSha256": "18d6a14f59d60bdd536a8a4a22110417470e93326ae234e756aafb805462873d"
+    },
+    {
+      "number": 14,
+      "heading": "Artículo 14",
+      "sourceStartPage": 4,
+      "sourceEndPage": 5,
+      "sourceText": "Artículo 14  \n1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a \ndisfrutar de él, en cualquier país.\n\f\n2. Este derecho no podr á ser invocado contra una acción judicial realmente \noriginada por delitos comunes o por actos opuestos a los propósitos y \nprincipios de las Naciones Unidas.",
+      "normalizedText": "Artículo 14 1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a disfrutar de él, en cualquier país. 2. Este derecho no podr á ser invocado contra una acción judicial realmente originada por delitos comunes o por actos opuestos a los propósitos y principios de las Naciones Unidas.",
+      "normalizedSha256": "e624f0e71471444a51eb8c38c8ef7a958d8cf73061e2844d84beca2e354c688d"
+    },
+    {
+      "number": 15,
+      "heading": "Artículo 15",
+      "sourceStartPage": 5,
+      "sourceEndPage": 5,
+      "sourceText": "Artículo 15  \n1. Toda persona tiene dere cho a una nacionalidad.  \n2. A nadie se privar á arbitrariamente de su nacionalidad ni del derecho a \ncambiar de nacionalidad.",
+      "normalizedText": "Artículo 15 1. Toda persona tiene dere cho a una nacionalidad. 2. A nadie se privar á arbitrariamente de su nacionalidad ni del derecho a cambiar de nacionalidad.",
+      "normalizedSha256": "c9a1420876d2cbd68ef8cbf9fb7129fd30ad5f6f26252cab70070c9ee5ff3bf5"
+    },
+    {
+      "number": 16,
+      "heading": "Artículo 16",
+      "sourceStartPage": 5,
+      "sourceEndPage": 5,
+      "sourceText": "Artículo 16  \n1. Los hombres y las mujeres, a partir de la edad n úbil, tienen derecho, sin \nrestricción alguna por motivos de raza, nacionalidad o religión, a casarse \ny fundar una familia; y disfrutarán de iguales derechos en cuanto al \nmatrimonio, durante el matrimonio y en caso de disolución del matrimonio.  \n2. S ólo mediante libre y pleno consentimiento de los futuros esposos podrá \ncontraerse el matrimonio.  \n3. La familia es el elemento natural  y fundamental de la sociedad y tiene \nderecho a la protección de la sociedad y del Estado.",
+      "normalizedText": "Artículo 16 1. Los hombres y las mujeres, a partir de la edad n úbil, tienen derecho, sin restricción alguna por motivos de raza, nacionalidad o religión, a casarse y fundar una familia; y disfrutarán de iguales derechos en cuanto al matrimonio, durante el matrimonio y en caso de disolución del matrimonio. 2. S ólo mediante libre y pleno consentimiento de los futuros esposos podrá contraerse el matrimonio. 3. La familia es el elemento natural y fundamental de la sociedad y tiene derecho a la protección de la sociedad y del Estado.",
+      "normalizedSha256": "d45f6a1203f257fcf1a51298ff5a45f143a01086885c6c380126b5ca9d03ad7f"
+    },
+    {
+      "number": 17,
+      "heading": "Artículo 17",
+      "sourceStartPage": 5,
+      "sourceEndPage": 5,
+      "sourceText": "Artículo 17  \n1. Toda persona tiene derecho a la propi edad, individual y colectivamente.  \n2. Nadie ser á privado arbitrariamente de su propiedad.",
+      "normalizedText": "Artículo 17 1. Toda persona tiene derecho a la propi edad, individual y colectivamente. 2. Nadie ser á privado arbitrariamente de su propiedad.",
+      "normalizedSha256": "ff37864be938121f4737b3246b63f5e25705bb35b973c04455a71cf713871552"
+    },
+    {
+      "number": 18,
+      "heading": "Artículo 18",
+      "sourceStartPage": 5,
+      "sourceEndPage": 5,
+      "sourceText": "Artículo 18  \nToda persona tiene derecho a la libertad de pensamiento, de conciencia y de \nreligión; este derecho incluye la libertad de cambiar de religión o de creencia, así \ncomo la libertad de manifestar su religión o su creencia, individual y \ncolectivamente, tanto en público como en privado, por la enseñanza, la práctica, \nel culto y la observancia.",
+      "normalizedText": "Artículo 18 Toda persona tiene derecho a la libertad de pensamiento, de conciencia y de religión; este derecho incluye la libertad de cambiar de religión o de creencia, así como la libertad de manifestar su religión o su creencia, individual y colectivamente, tanto en público como en privado, por la enseñanza, la práctica, el culto y la observancia.",
+      "normalizedSha256": "cd1f0e3c3ec39d7895839869ce787b75b0f33aee8cacd85d45a76d31109a4667"
+    },
+    {
+      "number": 19,
+      "heading": "Artículo 19",
+      "sourceStartPage": 6,
+      "sourceEndPage": 6,
+      "sourceText": "Artículo 19  \nTodo individuo tiene derecho a la libertad de opinión y de expresión; este \nderecho incluye el no ser molestado a causa de sus opiniones, el de investigar y \nrecibir informaciones y opiniones, y el de difundirlas, sin limitación de fronteras, \npor cualquier medio de expresión.",
+      "normalizedText": "Artículo 19 Todo individuo tiene derecho a la libertad de opinión y de expresión; este derecho incluye el no ser molestado a causa de sus opiniones, el de investigar y recibir informaciones y opiniones, y el de difundirlas, sin limitación de fronteras, por cualquier medio de expresión.",
+      "normalizedSha256": "2c888c17e18be53dd77a38b226691ffd3e6f8ce2b56862e002096dedd43de26a"
+    },
+    {
+      "number": 20,
+      "heading": "Artículo 20",
+      "sourceStartPage": 6,
+      "sourceEndPage": 6,
+      "sourceText": "Artículo 20  \n1. Toda persona tiene derec ho a la libertad de reunión y de asociación \npacíficas.  \n2. Nadie podr á ser obligado a pertenecer a una asociación.",
+      "normalizedText": "Artículo 20 1. Toda persona tiene derec ho a la libertad de reunión y de asociación pacíficas. 2. Nadie podr á ser obligado a pertenecer a una asociación.",
+      "normalizedSha256": "66d05e249e109e9717938dfb70751831eea991ee0aac3171d2446608b855e48d"
+    },
+    {
+      "number": 21,
+      "heading": "Artículo 21",
+      "sourceStartPage": 6,
+      "sourceEndPage": 6,
+      "sourceText": "Artículo 21  \n1. Toda persona tiene derecho a par ticipar en el gobierno de su país, \ndirectamente o por medio de representantes libremente escogidos.  \n2. Toda persona tiene el derecho de acceso, en condiciones de igualdad, a \nlas funciones públicas de su país.  \n3. La voluntad del pueblo es la  base de la autoridad del poder público; esta \nvoluntad se expresará mediante elecciones auténticas que habrán de \ncelebrarse periódicamente, por sufragio universal e igual y por voto \nsecreto u otro procedimiento equivalente que garantice la libertad del \nvoto.",
+      "normalizedText": "Artículo 21 1. Toda persona tiene derecho a par ticipar en el gobierno de su país, directamente o por medio de representantes libremente escogidos. 2. Toda persona tiene el derecho de acceso, en condiciones de igualdad, a las funciones públicas de su país. 3. La voluntad del pueblo es la base de la autoridad del poder público; esta voluntad se expresará mediante elecciones auténticas que habrán de celebrarse periódicamente, por sufragio universal e igual y por voto secreto u otro procedimiento equivalente que garantice la libertad del voto.",
+      "normalizedSha256": "9529ef381e6a9fdeadc82512146cfb9a307397c5281f84509ce3416c32fbdce9"
+    },
+    {
+      "number": 22,
+      "heading": "Artículo 22",
+      "sourceStartPage": 6,
+      "sourceEndPage": 6,
+      "sourceText": "Artículo 22  \nToda persona, como miembro de la sociedad, tiene derecho a la seguridad \nsocial, y a obtener, mediante el esfuerzo nacional y la cooperación internacional, \nhabida cuenta de la organización y los recursos de cada Estado, la satisfacción \nde los derechos económicos, sociales y culturales, indispensables a su dignidad \ny al libre desarrollo de su personalidad.",
+      "normalizedText": "Artículo 22 Toda persona, como miembro de la sociedad, tiene derecho a la seguridad social, y a obtener, mediante el esfuerzo nacional y la cooperación internacional, habida cuenta de la organización y los recursos de cada Estado, la satisfacción de los derechos económicos, sociales y culturales, indispensables a su dignidad y al libre desarrollo de su personalidad.",
+      "normalizedSha256": "0f7ee1a38c4750fea38f7405c5e7f3dcfbe9979cd0e597c77011eee15d294b36"
+    },
+    {
+      "number": 23,
+      "heading": "Artículo 23",
+      "sourceStartPage": 7,
+      "sourceEndPage": 7,
+      "sourceText": "Artículo 23  \n1. Toda persona tiene derecho al trabajo, a la libre elección de su trabajo, a \ncondiciones equitativas y satisfactorias de trabajo y a la protección contra \nel desempleo. \n2. Toda persona tiene derecho, sin discriminació n alguna, a igual salario por \ntrabajo igual.  \n3. Toda persona que trabaja tiene derecho a una remuneraci ón equitativa y \nsatisfactoria, que le asegure, así como a su familia, una existencia \nconforme a la dignidad humana y que será completada, en caso \nnecesario, por cualesquiera otros medios de protección social.  \n4. Toda persona tiene derecho a fundar sindicatos y a sindicarse para la \ndefensa de sus intereses.",
+      "normalizedText": "Artículo 23 1. Toda persona tiene derecho al trabajo, a la libre elección de su trabajo, a condiciones equitativas y satisfactorias de trabajo y a la protección contra el desempleo. 2. Toda persona tiene derecho, sin discriminació n alguna, a igual salario por trabajo igual. 3. Toda persona que trabaja tiene derecho a una remuneraci ón equitativa y satisfactoria, que le asegure, así como a su familia, una existencia conforme a la dignidad humana y que será completada, en caso necesario, por cualesquiera otros medios de protección social. 4. Toda persona tiene derecho a fundar sindicatos y a sindicarse para la defensa de sus intereses.",
+      "normalizedSha256": "e42bca579bc2ba16f212d1811b2ba73b9056eab7cbbd09fa29fcf17d37c4eb14"
+    },
+    {
+      "number": 24,
+      "heading": "Artículo 24",
+      "sourceStartPage": 7,
+      "sourceEndPage": 7,
+      "sourceText": "Artículo 24  \nToda persona tiene derecho al descanso, al disfrute del tiempo libre, a una \nlimitación razonable de la duración del trabajo y a vacaciones periódicas \npagadas.",
+      "normalizedText": "Artículo 24 Toda persona tiene derecho al descanso, al disfrute del tiempo libre, a una limitación razonable de la duración del trabajo y a vacaciones periódicas pagadas.",
+      "normalizedSha256": "37d5f215d17481f5f513fec9461eb39ee7d2b92ae209834b5e222c42ee6f9160"
+    },
+    {
+      "number": 25,
+      "heading": "Artículo 25",
+      "sourceStartPage": 7,
+      "sourceEndPage": 7,
+      "sourceText": "Artículo 25  \n1. Toda persona tiene derecho a un ni vel de vida adecuado que le asegure, \nasí como a su familia, la salud y el bienestar, y en especial la \nalimentación, el vestido, la vivienda, la asistencia médica y los servicios \nsociales necesarios; tiene asimismo derecho a los seguros en caso de \ndesempleo, enfermedad, invalidez, viudez, vejez y otros casos de pérdida \nde sus medios de subsistencia por circunstancias independientes de su \nvoluntad.  \n2. La maternidad y la infancia ti enen derecho a cuidados y asistencia \nespeciales. Todos los niños, nacidos de matrimonio o fuera de \nmatrimonio, tienen derecho a igual protección social.",
+      "normalizedText": "Artículo 25 1. Toda persona tiene derecho a un ni vel de vida adecuado que le asegure, así como a su familia, la salud y el bienestar, y en especial la alimentación, el vestido, la vivienda, la asistencia médica y los servicios sociales necesarios; tiene asimismo derecho a los seguros en caso de desempleo, enfermedad, invalidez, viudez, vejez y otros casos de pérdida de sus medios de subsistencia por circunstancias independientes de su voluntad. 2. La maternidad y la infancia ti enen derecho a cuidados y asistencia especiales. Todos los niños, nacidos de matrimonio o fuera de matrimonio, tienen derecho a igual protección social.",
+      "normalizedSha256": "20f64ba2f5333c8e5077ad1e89980e1700ff40f16e6996d6bb70055b31b00ef7"
+    },
+    {
+      "number": 26,
+      "heading": "Artículo 26",
+      "sourceStartPage": 8,
+      "sourceEndPage": 8,
+      "sourceText": "Artículo 26  \n1. Toda persona tiene derecho a la educaci ón. La educación debe ser \ngratuita, al menos en lo concerniente a la instrucción elemental y \nfundamental. La instrucción elemental será obligatoria. La instrucción \ntécnica y profesional habrá de ser generalizada; el acceso a los estudios \nsuperiores será igual para todos, en función de los méritos respectivos.  \n2. La educaci ón tendrá por objeto el pleno desarrollo de la personalidad \nhumana y el fortalecimiento del respeto a los derechos humanos y a las \nlibertades fundamentales; favorecerá la comprensión, la tolerancia y la \namistad entre todas las naciones y todos los grupos étnicos o religiosos; y \npromoverá el desarrollo de las actividades de las Naciones Unidas para el \nmantenimiento de la paz.  \n3. Los padres tendrá n derecho preferente a escoger el tipo de educación \nque habrá de darse a sus hijos.",
+      "normalizedText": "Artículo 26 1. Toda persona tiene derecho a la educaci ón. La educación debe ser gratuita, al menos en lo concerniente a la instrucción elemental y fundamental. La instrucción elemental será obligatoria. La instrucción técnica y profesional habrá de ser generalizada; el acceso a los estudios superiores será igual para todos, en función de los méritos respectivos. 2. La educaci ón tendrá por objeto el pleno desarrollo de la personalidad humana y el fortalecimiento del respeto a los derechos humanos y a las libertades fundamentales; favorecerá la comprensión, la tolerancia y la amistad entre todas las naciones y todos los grupos étnicos o religiosos; y promoverá el desarrollo de las actividades de las Naciones Unidas para el mantenimiento de la paz. 3. Los padres tendrá n derecho preferente a escoger el tipo de educación que habrá de darse a sus hijos.",
+      "normalizedSha256": "a9c8428103be1f33e6e91020b246966d578f1e659ec50a66c762ead774df004b"
+    },
+    {
+      "number": 27,
+      "heading": "Artículo 27",
+      "sourceStartPage": 8,
+      "sourceEndPage": 8,
+      "sourceText": "Artículo 27  \n1. Toda persona tiene derecho a tomar par te libremente en la vida cultural \nde la comunidad, a gozar de las artes y a participar en el progreso \ncientífico y en los beneficios que de él resulten.  \n2. Toda persona tiene derecho a la protecci ón de los intereses morales y \nmateriales que le correspondan por razón de las producciones científicas, \nliterarias o artísticas de que sea autora.",
+      "normalizedText": "Artículo 27 1. Toda persona tiene derecho a tomar par te libremente en la vida cultural de la comunidad, a gozar de las artes y a participar en el progreso científico y en los beneficios que de él resulten. 2. Toda persona tiene derecho a la protecci ón de los intereses morales y materiales que le correspondan por razón de las producciones científicas, literarias o artísticas de que sea autora.",
+      "normalizedSha256": "6d89acfe17290cf665f594582970e8e60ddde602d89cfb35b78ce3c0af278da2"
+    },
+    {
+      "number": 28,
+      "heading": "Artículo 28",
+      "sourceStartPage": 8,
+      "sourceEndPage": 8,
+      "sourceText": "Artículo 28  \nToda persona tiene derecho a que se establezca un orden social e internacional \nen el que los derechos y libertades proclamados en esta Declaración se hagan \nplenamente efectivos.",
+      "normalizedText": "Artículo 28 Toda persona tiene derecho a que se establezca un orden social e internacional en el que los derechos y libertades proclamados en esta Declaración se hagan plenamente efectivos.",
+      "normalizedSha256": "baebdad8505525c52d6acae62b50d20f5b4235deb81f44f3a44b6fbf33eba36c"
+    },
+    {
+      "number": 29,
+      "heading": "Artículo 29",
+      "sourceStartPage": 8,
+      "sourceEndPage": 9,
+      "sourceText": "Artículo 29\n\f\n1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en \nella puede desarrollar libre y plenamente su personalidad.  \n2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda \npersona estará solamente sujeta a las limitaciones establecidas por la ley \ncon el único fin de asegurar el reconocimiento y el respeto de los \nderechos y libertades de los demás, y de satisfacer las justas exigencias \nde la moral, del orden público y del bienestar general en una sociedad \ndemocrática.  \n3. Estos derechos y libertades no podrá n en ningún caso ser ejercidos en \noposición a los propósitos y principios de las Naciones Unidas.",
+      "normalizedText": "Artículo 29 1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en ella puede desarrollar libre y plenamente su personalidad. 2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda persona estará solamente sujeta a las limitaciones establecidas por la ley con el único fin de asegurar el reconocimiento y el respeto de los derechos y libertades de los demás, y de satisfacer las justas exigencias de la moral, del orden público y del bienestar general en una sociedad democrática. 3. Estos derechos y libertades no podrá n en ningún caso ser ejercidos en oposición a los propósitos y principios de las Naciones Unidas.",
+      "normalizedSha256": "dd55efdab27271d22fee3550c6e40bdfbe4836a56351e1a31549f1fcc3608c07"
+    },
+    {
+      "number": 30,
+      "heading": "Artículo 30",
+      "sourceStartPage": 9,
+      "sourceEndPage": 9,
+      "sourceText": "Artículo 30  \nNada en la presente Declaración podrá interpretarse en el sentido de que \nconfiere derecho alguno al Estado, a un grupo o a una persona, para emprender \ny desarrollar actividades o realizar actos tendientes a la supresión de cualquiera \nde los derechos y libertades proclamados en esta Declaración.",
+      "normalizedText": "Artículo 30 Nada en la presente Declaración podrá interpretarse en el sentido de que confiere derecho alguno al Estado, a un grupo o a una persona, para emprender y desarrollar actividades o realizar actos tendientes a la supresión de cualquiera de los derechos y libertades proclamados en esta Declaración.",
+      "normalizedSha256": "1d0b84ae5fc18730cd71700bcc32c5a112e3eb49ee144d0b108b68ed7aafcf85"
+    }
+  ],
+  "splitBoundaryAnchors": [
+    {
+      "pages": [
+        3,
+        4
+      ],
+      "articleNumber": 10,
+      "leftPageTail": "o ni desterrado. Artículo 10 Toda persona tiene derecho, en condiciones de plena igualdad, a ser oída públicamente y con justicia por un tribunal independiente e imparcial, para la",
+      "rightPageHead": "determinación de sus derechos y obligaciones o para el examen de cualquier acusación contra ella en materia penal. Artículo 11 1. Toda persona acusada de delito tiene derecho a que se presuma su inocencia mientras no se ",
+      "assertion": "Both anchors must survive once in source reading order within this article; whitespace/NFC normalization only. Review extraction spacing discrepancies instead of silently broadening match thresholds."
+    },
+    {
+      "pages": [
+        4,
+        5
+      ],
+      "articleNumber": 14,
+      "leftPageTail": "ualquier país, incluso el propio, y a regresar a su país. Artículo 14 1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a disfrutar de él, en cualquier país.",
+      "rightPageHead": "2. Este derecho no podr á ser invocado contra una acción judicial realmente originada por delitos comunes o por actos opuestos a los propósitos y principios de las Naciones Unidas. Artículo 15 1. Toda persona tiene dere ",
+      "assertion": "Both anchors must survive once in source reading order within this article; whitespace/NFC normalization only. Review extraction spacing discrepancies instead of silently broadening match thresholds."
+    },
+    {
+      "pages": [
+        8,
+        9
+      ],
+      "articleNumber": 29,
+      "leftPageTail": "ona tiene derecho a que se establezca un orden social e internacional en el que los derechos y libertades proclamados en esta Declaración se hagan plenamente efectivos. Artículo 29",
+      "rightPageHead": "1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en ella puede desarrollar libre y plenamente su personalidad. 2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda persona es",
+      "assertion": "Both anchors must survive once in source reading order within this article; whitespace/NFC normalization only. Review extraction spacing discrepancies instead of silently broadening match thresholds."
+    }
+  ],
+  "pageText": [
+    {
+      "page": 1,
+      "rawText": "Declaración Universal de Derechos Humanos \nAdoptada y proclamada por la Asamblea General en su resolución 217 A (III), de \n10 de diciembre de 1948  \nPreámbulo  \nConsiderando que la libertad, la justicia y la paz en el mundo tienen por base el \nreconocimiento de la dignidad intrínseca y de los derechos iguales e inalienables \nde todos los miembros de la familia humana,  \nConsiderando que el desconocimiento y el menosprecio de los derechos \nhumanos han originado actos de barbarie ultrajantes para la conciencia de la \nhumanidad; y que se ha proclamado, como la aspiración más elevada del \nhombre, el advenimiento de un mundo en que los seres humanos, liberados del \ntemor y de la miseria, disfruten de la libertad de palabra y de la libertad de \ncreencias,  \nConsiderando esencial que los derechos humanos sean protegidos por un \nrégimen de Derecho, a fin de que el hombre no se vea compelido al supremo \nrecurso de la rebelión contra la tiranía y la opresión,  \nConsiderando también esencial promover el desarrollo de relaciones amistosas \nentre las naciones,  \nConsiderando que los pueblos de las Naciones Unidas han reafirmado en la \nCarta su fe en los derechos fundamentales del hombre, en la dignidad y el valor \nde la persona humana y en la igualdad de derechos de hombres y mujeres; y se \nhan declarado resueltos a promover el progreso social y a elevar el nivel de vida \ndentro de un concepto más amplio de la libertad,  \nConsiderando que los Estados Miembros se han comprometido a asegurar, en \ncooperación con la Organización de las Naciones Unidas, el respeto universal y \nefectivo a los derechos y libertades fundamentales del hombre, y  \nConsiderando que una concepción común de estos derechos y libertades es de \nla mayor importancia para el pleno cumplimiento de dicho compromiso,",
+      "normalizedText": "Declaración Universal de Derechos Humanos Adoptada y proclamada por la Asamblea General en su resolución 217 A (III), de 10 de diciembre de 1948 Preámbulo Considerando que la libertad, la justicia y la paz en el mundo tienen por base el reconocimiento de la dignidad intrínseca y de los derechos iguales e inalienables de todos los miembros de la familia humana, Considerando que el desconocimiento y el menosprecio de los derechos humanos han originado actos de barbarie ultrajantes para la conciencia de la humanidad; y que se ha proclamado, como la aspiración más elevada del hombre, el advenimiento de un mundo en que los seres humanos, liberados del temor y de la miseria, disfruten de la libertad de palabra y de la libertad de creencias, Considerando esencial que los derechos humanos sean protegidos por un régimen de Derecho, a fin de que el hombre no se vea compelido al supremo recurso de la rebelión contra la tiranía y la opresión, Considerando también esencial promover el desarrollo de relaciones amistosas entre las naciones, Considerando que los pueblos de las Naciones Unidas han reafirmado en la Carta su fe en los derechos fundamentales del hombre, en la dignidad y el valor de la persona humana y en la igualdad de derechos de hombres y mujeres; y se han declarado resueltos a promover el progreso social y a elevar el nivel de vida dentro de un concepto más amplio de la libertad, Considerando que los Estados Miembros se han comprometido a asegurar, en cooperación con la Organización de las Naciones Unidas, el respeto universal y efectivo a los derechos y libertades fundamentales del hombre, y Considerando que una concepción común de estos derechos y libertades es de la mayor importancia para el pleno cumplimiento de dicho compromiso,",
+      "normalizedSha256": "77681bd1aa8633221c7e761b2d31f5524593893bffa2646b17432d7e5248302b"
+    },
+    {
+      "page": 2,
+      "rawText": "La Asamblea General  \nProclama la presente Declaración Universal de Derechos Humanos como ideal \ncomún por el que todos los pueblos y naciones deben esforzarse, a fin de que \ntanto los individuos como las instituciones, inspirándose constantemente en ella, \npromuevan, mediante la enseñanza y la educación, el respeto a estos derechos \ny libertades, y aseguren, por medidas progresivas de carácter nacional e \ninternacional, su reconocimiento y aplicación universales y efectivos, tanto entre \nlos pueblos de los Estados Miembros como entre los de los territorios colocados \nbajo su jurisdicción.  \nArtículo 1  \nTodos los seres humanos nacen libres e iguales en dignidad y derechos y, \ndotados como están de razón y conciencia, deben comportarse fraternalmente \nlos unos con los otros.  \nArtículo 2  \nToda persona tiene los derechos y libertades proclamados en esta Declaración, \nsin distinción alguna de raza, color, sexo, idioma, religión, opinión política o de \ncualquier otra índole, origen nacional o social, posición económica, nacimiento o \ncualquier otra condición.  \nAdemás, no se hará distinción alguna fundada en la condición política, jurídica o \ninternacional del país o territorio de cuya jurisdicción dependa una persona, \ntanto si se trata de un país independiente, como de un territorio bajo \nadministración fiduciaria, no autónomo o sometido a cualquier otra limitación de \nsoberanía.  \nArtículo 3  \nTodo individuo tiene derecho a la vida, a la libertad y a la seguridad de su \npersona.",
+      "normalizedText": "La Asamblea General Proclama la presente Declaración Universal de Derechos Humanos como ideal común por el que todos los pueblos y naciones deben esforzarse, a fin de que tanto los individuos como las instituciones, inspirándose constantemente en ella, promuevan, mediante la enseñanza y la educación, el respeto a estos derechos y libertades, y aseguren, por medidas progresivas de carácter nacional e internacional, su reconocimiento y aplicación universales y efectivos, tanto entre los pueblos de los Estados Miembros como entre los de los territorios colocados bajo su jurisdicción. Artículo 1 Todos los seres humanos nacen libres e iguales en dignidad y derechos y, dotados como están de razón y conciencia, deben comportarse fraternalmente los unos con los otros. Artículo 2 Toda persona tiene los derechos y libertades proclamados en esta Declaración, sin distinción alguna de raza, color, sexo, idioma, religión, opinión política o de cualquier otra índole, origen nacional o social, posición económica, nacimiento o cualquier otra condición. Además, no se hará distinción alguna fundada en la condición política, jurídica o internacional del país o territorio de cuya jurisdicción dependa una persona, tanto si se trata de un país independiente, como de un territorio bajo administración fiduciaria, no autónomo o sometido a cualquier otra limitación de soberanía. Artículo 3 Todo individuo tiene derecho a la vida, a la libertad y a la seguridad de su persona.",
+      "normalizedSha256": "ffb9be5edb658642f2a15f6dbbbf4fdaf4cdd5a1770fcb16e4eb4dcb05a1d966"
+    },
+    {
+      "page": 3,
+      "rawText": "Artículo 4  \nNadie estará sometido a esclavitud ni a servidumbre; la esclavitud y la trata de \nesclavos están prohibidas en todas sus formas.  \nArtículo 5  \nNadie será sometido a torturas ni a penas o tratos crueles, inhumanos o \ndegradantes.  \nArtículo 6  \nTodo ser humano tiene derecho, en todas partes, al reconocimiento de su \npersonalidad jurídica.  \nArtículo 7  \nTodos son iguales ante la ley y tienen, sin distinción, derecho a igual protección \nde la ley. Todos tienen derecho a igual protección contra toda discriminación que \ninfrinja esta Declaración y contra toda provocación a tal discriminación.  \nArtículo 8  \nToda persona tiene derecho a un recurso efectivo, ante los tribunales nacionales \ncompetentes, que la ampare contra actos que violen sus derechos \nfundamentales reconocidos por la constitución o por la ley.  \nArtículo 9  \nNadie podrá ser arbitrariamente detenido, preso ni desterrado.  \nArtículo 10  \nToda persona tiene derecho, en condiciones de plena igualdad, a ser oída \npúblicamente y con justicia por un tribunal independiente e imparcial, para la",
+      "normalizedText": "Artículo 4 Nadie estará sometido a esclavitud ni a servidumbre; la esclavitud y la trata de esclavos están prohibidas en todas sus formas. Artículo 5 Nadie será sometido a torturas ni a penas o tratos crueles, inhumanos o degradantes. Artículo 6 Todo ser humano tiene derecho, en todas partes, al reconocimiento de su personalidad jurídica. Artículo 7 Todos son iguales ante la ley y tienen, sin distinción, derecho a igual protección de la ley. Todos tienen derecho a igual protección contra toda discriminación que infrinja esta Declaración y contra toda provocación a tal discriminación. Artículo 8 Toda persona tiene derecho a un recurso efectivo, ante los tribunales nacionales competentes, que la ampare contra actos que violen sus derechos fundamentales reconocidos por la constitución o por la ley. Artículo 9 Nadie podrá ser arbitrariamente detenido, preso ni desterrado. Artículo 10 Toda persona tiene derecho, en condiciones de plena igualdad, a ser oída públicamente y con justicia por un tribunal independiente e imparcial, para la",
+      "normalizedSha256": "c4fde671180f784e3d4662e61122143556d35ddc87ea313733e41cfbed141244"
+    },
+    {
+      "page": 4,
+      "rawText": "determinación de sus derechos y obligaciones o para el examen de cualquier \nacusación contra ella en materia penal.  \nArtículo 11  \n1. Toda persona acusada de delito tiene derecho a que se presuma su \ninocencia mientras no se pruebe su culpabilidad, conforme a la ley y en \njuicio público en el que se le hayan asegurado todas las garantías \nnecesarias para su defensa.  \n2. Nadie ser á condenado por actos u omisiones que en el momento de \ncometerse no fueron delictivos según el Derecho nacional o internacional. \nTampoco se impondrá pena más grave que la aplicable en el momento de \nla comisión del delito.  \nArtículo 12  \nNadie será objeto de injerencias arbitrarias en su vida privada, su familia, su \ndomicilio o su correspondencia, ni de ataques a su honra o a su reputación. \nToda persona tiene derecho a la protección de la ley contra tales injerencias o \nataques.  \nArtículo 13  \n1. Toda persona tiene derecho a circular libremente y a elegir su residencia \nen el territorio de un Estado.  \n2. Toda persona tiene derec ho a salir de cualquier país, incluso el propio, y \na regresar a su país.  \nArtículo 14  \n1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a \ndisfrutar de él, en cualquier país.",
+      "normalizedText": "determinación de sus derechos y obligaciones o para el examen de cualquier acusación contra ella en materia penal. Artículo 11 1. Toda persona acusada de delito tiene derecho a que se presuma su inocencia mientras no se pruebe su culpabilidad, conforme a la ley y en juicio público en el que se le hayan asegurado todas las garantías necesarias para su defensa. 2. Nadie ser á condenado por actos u omisiones que en el momento de cometerse no fueron delictivos según el Derecho nacional o internacional. Tampoco se impondrá pena más grave que la aplicable en el momento de la comisión del delito. Artículo 12 Nadie será objeto de injerencias arbitrarias en su vida privada, su familia, su domicilio o su correspondencia, ni de ataques a su honra o a su reputación. Toda persona tiene derecho a la protección de la ley contra tales injerencias o ataques. Artículo 13 1. Toda persona tiene derecho a circular libremente y a elegir su residencia en el territorio de un Estado. 2. Toda persona tiene derec ho a salir de cualquier país, incluso el propio, y a regresar a su país. Artículo 14 1. En caso de persecuci ón, toda persona tiene derecho a buscar asilo, y a disfrutar de él, en cualquier país.",
+      "normalizedSha256": "4d868c25092f42568b90b891561f12374bd23acf79b24e6a509711940ecf8e5f"
+    },
+    {
+      "page": 5,
+      "rawText": "2. Este derecho no podr á ser invocado contra una acción judicial realmente \noriginada por delitos comunes o por actos opuestos a los propósitos y \nprincipios de las Naciones Unidas.  \nArtículo 15  \n1. Toda persona tiene dere cho a una nacionalidad.  \n2. A nadie se privar á arbitrariamente de su nacionalidad ni del derecho a \ncambiar de nacionalidad.  \nArtículo 16  \n1. Los hombres y las mujeres, a partir de la edad n úbil, tienen derecho, sin \nrestricción alguna por motivos de raza, nacionalidad o religión, a casarse \ny fundar una familia; y disfrutarán de iguales derechos en cuanto al \nmatrimonio, durante el matrimonio y en caso de disolución del matrimonio.  \n2. S ólo mediante libre y pleno consentimiento de los futuros esposos podrá \ncontraerse el matrimonio.  \n3. La familia es el elemento natural  y fundamental de la sociedad y tiene \nderecho a la protección de la sociedad y del Estado.  \nArtículo 17  \n1. Toda persona tiene derecho a la propi edad, individual y colectivamente.  \n2. Nadie ser á privado arbitrariamente de su propiedad.  \nArtículo 18  \nToda persona tiene derecho a la libertad de pensamiento, de conciencia y de \nreligión; este derecho incluye la libertad de cambiar de religión o de creencia, así \ncomo la libertad de manifestar su religión o su creencia, individual y \ncolectivamente, tanto en público como en privado, por la enseñanza, la práctica, \nel culto y la observancia.",
+      "normalizedText": "2. Este derecho no podr á ser invocado contra una acción judicial realmente originada por delitos comunes o por actos opuestos a los propósitos y principios de las Naciones Unidas. Artículo 15 1. Toda persona tiene dere cho a una nacionalidad. 2. A nadie se privar á arbitrariamente de su nacionalidad ni del derecho a cambiar de nacionalidad. Artículo 16 1. Los hombres y las mujeres, a partir de la edad n úbil, tienen derecho, sin restricción alguna por motivos de raza, nacionalidad o religión, a casarse y fundar una familia; y disfrutarán de iguales derechos en cuanto al matrimonio, durante el matrimonio y en caso de disolución del matrimonio. 2. S ólo mediante libre y pleno consentimiento de los futuros esposos podrá contraerse el matrimonio. 3. La familia es el elemento natural y fundamental de la sociedad y tiene derecho a la protección de la sociedad y del Estado. Artículo 17 1. Toda persona tiene derecho a la propi edad, individual y colectivamente. 2. Nadie ser á privado arbitrariamente de su propiedad. Artículo 18 Toda persona tiene derecho a la libertad de pensamiento, de conciencia y de religión; este derecho incluye la libertad de cambiar de religión o de creencia, así como la libertad de manifestar su religión o su creencia, individual y colectivamente, tanto en público como en privado, por la enseñanza, la práctica, el culto y la observancia.",
+      "normalizedSha256": "93acc8c4ad677abd1ab08536864a5d9c4de678a4dbdccaa5a2e9ec41c6ad0b52"
+    },
+    {
+      "page": 6,
+      "rawText": "Artículo 19  \nTodo individuo tiene derecho a la libertad de opinión y de expresión; este \nderecho incluye el no ser molestado a causa de sus opiniones, el de investigar y \nrecibir informaciones y opiniones, y el de difundirlas, sin limitación de fronteras, \npor cualquier medio de expresión.  \nArtículo 20  \n1. Toda persona tiene derec ho a la libertad de reunión y de asociación \npacíficas.  \n2. Nadie podr á ser obligado a pertenecer a una asociación.  \nArtículo 21  \n1. Toda persona tiene derecho a par ticipar en el gobierno de su país, \ndirectamente o por medio de representantes libremente escogidos.  \n2. Toda persona tiene el derecho de acceso, en condiciones de igualdad, a \nlas funciones públicas de su país.  \n3. La voluntad del pueblo es la  base de la autoridad del poder público; esta \nvoluntad se expresará mediante elecciones auténticas que habrán de \ncelebrarse periódicamente, por sufragio universal e igual y por voto \nsecreto u otro procedimiento equivalente que garantice la libertad del \nvoto.  \nArtículo 22  \nToda persona, como miembro de la sociedad, tiene derecho a la seguridad \nsocial, y a obtener, mediante el esfuerzo nacional y la cooperación internacional, \nhabida cuenta de la organización y los recursos de cada Estado, la satisfacción \nde los derechos económicos, sociales y culturales, indispensables a su dignidad \ny al libre desarrollo de su personalidad.",
+      "normalizedText": "Artículo 19 Todo individuo tiene derecho a la libertad de opinión y de expresión; este derecho incluye el no ser molestado a causa de sus opiniones, el de investigar y recibir informaciones y opiniones, y el de difundirlas, sin limitación de fronteras, por cualquier medio de expresión. Artículo 20 1. Toda persona tiene derec ho a la libertad de reunión y de asociación pacíficas. 2. Nadie podr á ser obligado a pertenecer a una asociación. Artículo 21 1. Toda persona tiene derecho a par ticipar en el gobierno de su país, directamente o por medio de representantes libremente escogidos. 2. Toda persona tiene el derecho de acceso, en condiciones de igualdad, a las funciones públicas de su país. 3. La voluntad del pueblo es la base de la autoridad del poder público; esta voluntad se expresará mediante elecciones auténticas que habrán de celebrarse periódicamente, por sufragio universal e igual y por voto secreto u otro procedimiento equivalente que garantice la libertad del voto. Artículo 22 Toda persona, como miembro de la sociedad, tiene derecho a la seguridad social, y a obtener, mediante el esfuerzo nacional y la cooperación internacional, habida cuenta de la organización y los recursos de cada Estado, la satisfacción de los derechos económicos, sociales y culturales, indispensables a su dignidad y al libre desarrollo de su personalidad.",
+      "normalizedSha256": "f1a248047a4ac48cc58eeec288f1ec7f253a5026dab2f775d145f798fd03804d"
+    },
+    {
+      "page": 7,
+      "rawText": "Artículo 23  \n1. Toda persona tiene derecho al trabajo, a la libre elección de su trabajo, a \ncondiciones equitativas y satisfactorias de trabajo y a la protección contra \nel desempleo. \n2. Toda persona tiene derecho, sin discriminació n alguna, a igual salario por \ntrabajo igual.  \n3. Toda persona que trabaja tiene derecho a una remuneraci ón equitativa y \nsatisfactoria, que le asegure, así como a su familia, una existencia \nconforme a la dignidad humana y que será completada, en caso \nnecesario, por cualesquiera otros medios de protección social.  \n4. Toda persona tiene derecho a fundar sindicatos y a sindicarse para la \ndefensa de sus intereses.  \nArtículo 24  \nToda persona tiene derecho al descanso, al disfrute del tiempo libre, a una \nlimitación razonable de la duración del trabajo y a vacaciones periódicas \npagadas.  \nArtículo 25  \n1. Toda persona tiene derecho a un ni vel de vida adecuado que le asegure, \nasí como a su familia, la salud y el bienestar, y en especial la \nalimentación, el vestido, la vivienda, la asistencia médica y los servicios \nsociales necesarios; tiene asimismo derecho a los seguros en caso de \ndesempleo, enfermedad, invalidez, viudez, vejez y otros casos de pérdida \nde sus medios de subsistencia por circunstancias independientes de su \nvoluntad.  \n2. La maternidad y la infancia ti enen derecho a cuidados y asistencia \nespeciales. Todos los niños, nacidos de matrimonio o fuera de \nmatrimonio, tienen derecho a igual protección social.",
+      "normalizedText": "Artículo 23 1. Toda persona tiene derecho al trabajo, a la libre elección de su trabajo, a condiciones equitativas y satisfactorias de trabajo y a la protección contra el desempleo. 2. Toda persona tiene derecho, sin discriminació n alguna, a igual salario por trabajo igual. 3. Toda persona que trabaja tiene derecho a una remuneraci ón equitativa y satisfactoria, que le asegure, así como a su familia, una existencia conforme a la dignidad humana y que será completada, en caso necesario, por cualesquiera otros medios de protección social. 4. Toda persona tiene derecho a fundar sindicatos y a sindicarse para la defensa de sus intereses. Artículo 24 Toda persona tiene derecho al descanso, al disfrute del tiempo libre, a una limitación razonable de la duración del trabajo y a vacaciones periódicas pagadas. Artículo 25 1. Toda persona tiene derecho a un ni vel de vida adecuado que le asegure, así como a su familia, la salud y el bienestar, y en especial la alimentación, el vestido, la vivienda, la asistencia médica y los servicios sociales necesarios; tiene asimismo derecho a los seguros en caso de desempleo, enfermedad, invalidez, viudez, vejez y otros casos de pérdida de sus medios de subsistencia por circunstancias independientes de su voluntad. 2. La maternidad y la infancia ti enen derecho a cuidados y asistencia especiales. Todos los niños, nacidos de matrimonio o fuera de matrimonio, tienen derecho a igual protección social.",
+      "normalizedSha256": "7827b964ecab74365ae5da341ea8355da746caffbfda4dc9dfe4ea3031922798"
+    },
+    {
+      "page": 8,
+      "rawText": "Artículo 26  \n1. Toda persona tiene derecho a la educaci ón. La educación debe ser \ngratuita, al menos en lo concerniente a la instrucción elemental y \nfundamental. La instrucción elemental será obligatoria. La instrucción \ntécnica y profesional habrá de ser generalizada; el acceso a los estudios \nsuperiores será igual para todos, en función de los méritos respectivos.  \n2. La educaci ón tendrá por objeto el pleno desarrollo de la personalidad \nhumana y el fortalecimiento del respeto a los derechos humanos y a las \nlibertades fundamentales; favorecerá la comprensión, la tolerancia y la \namistad entre todas las naciones y todos los grupos étnicos o religiosos; y \npromoverá el desarrollo de las actividades de las Naciones Unidas para el \nmantenimiento de la paz.  \n3. Los padres tendrá n derecho preferente a escoger el tipo de educación \nque habrá de darse a sus hijos.  \nArtículo 27  \n1. Toda persona tiene derecho a tomar par te libremente en la vida cultural \nde la comunidad, a gozar de las artes y a participar en el progreso \ncientífico y en los beneficios que de él resulten.  \n2. Toda persona tiene derecho a la protecci ón de los intereses morales y \nmateriales que le correspondan por razón de las producciones científicas, \nliterarias o artísticas de que sea autora.  \nArtículo 28  \nToda persona tiene derecho a que se establezca un orden social e internacional \nen el que los derechos y libertades proclamados en esta Declaración se hagan \nplenamente efectivos.  \nArtículo 29",
+      "normalizedText": "Artículo 26 1. Toda persona tiene derecho a la educaci ón. La educación debe ser gratuita, al menos en lo concerniente a la instrucción elemental y fundamental. La instrucción elemental será obligatoria. La instrucción técnica y profesional habrá de ser generalizada; el acceso a los estudios superiores será igual para todos, en función de los méritos respectivos. 2. La educaci ón tendrá por objeto el pleno desarrollo de la personalidad humana y el fortalecimiento del respeto a los derechos humanos y a las libertades fundamentales; favorecerá la comprensión, la tolerancia y la amistad entre todas las naciones y todos los grupos étnicos o religiosos; y promoverá el desarrollo de las actividades de las Naciones Unidas para el mantenimiento de la paz. 3. Los padres tendrá n derecho preferente a escoger el tipo de educación que habrá de darse a sus hijos. Artículo 27 1. Toda persona tiene derecho a tomar par te libremente en la vida cultural de la comunidad, a gozar de las artes y a participar en el progreso científico y en los beneficios que de él resulten. 2. Toda persona tiene derecho a la protecci ón de los intereses morales y materiales que le correspondan por razón de las producciones científicas, literarias o artísticas de que sea autora. Artículo 28 Toda persona tiene derecho a que se establezca un orden social e internacional en el que los derechos y libertades proclamados en esta Declaración se hagan plenamente efectivos. Artículo 29",
+      "normalizedSha256": "413f330b8b0d162511d09eec74520f3c72e3676a34acf05c3a426c002ce2721d"
+    },
+    {
+      "page": 9,
+      "rawText": "1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en \nella puede desarrollar libre y plenamente su personalidad.  \n2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda \npersona estará solamente sujeta a las limitaciones establecidas por la ley \ncon el único fin de asegurar el reconocimiento y el respeto de los \nderechos y libertades de los demás, y de satisfacer las justas exigencias \nde la moral, del orden público y del bienestar general en una sociedad \ndemocrática.  \n3. Estos derechos y libertades no podrá n en ningún caso ser ejercidos en \noposición a los propósitos y principios de las Naciones Unidas. \nArtículo 30  \nNada en la presente Declaración podrá interpretarse en el sentido de que \nconfiere derecho alguno al Estado, a un grupo o a una persona, para emprender \ny desarrollar actividades o realizar actos tendientes a la supresión de cualquiera \nde los derechos y libertades proclamados en esta Declaración.",
+      "normalizedText": "1. Toda persona tiene deberes respecto a la comunidad, puesto que s ólo en ella puede desarrollar libre y plenamente su personalidad. 2. En el ejercicio de sus derechos y en el disfrute de sus libertades, toda persona estará solamente sujeta a las limitaciones establecidas por la ley con el único fin de asegurar el reconocimiento y el respeto de los derechos y libertades de los demás, y de satisfacer las justas exigencias de la moral, del orden público y del bienestar general en una sociedad democrática. 3. Estos derechos y libertades no podrá n en ningún caso ser ejercidos en oposición a los propósitos y principios de las Naciones Unidas. Artículo 30 Nada en la presente Declaración podrá interpretarse en el sentido de que confiere derecho alguno al Estado, a un grupo o a una persona, para emprender y desarrollar actividades o realizar actos tendientes a la supresión de cualquiera de los derechos y libertades proclamados en esta Declaración.",
+      "normalizedSha256": "e4f05602194cde9fe9f2afaa664763dcd3f87fcffa50b1b8f80ac29f7b6de973"
+    }
+  ],
+  "assertionPolicy": {
+    "required": "Article numbers1-30 exactly once and in order, Spanish title/prose preservation, no missing or duplicated split-boundary clauses.",
+    "notRequired": "Byte-for-byte output HTML equality or copying text-layer line-wrap artifacts.",
+    "humanLabelFields": null,
+    "thresholdChanges": false
+  }
+}

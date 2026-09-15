@@ -1,0 +1,11 @@
+const fs=require('fs'),path=require('path');
+const dir=path.resolve('reports/mcp-calibration-2026-09-12');
+const read=n=>JSON.parse(fs.readFileSync(path.join(dir,n),'utf8').replace(/^\uFEFF/,''));
+const optional=n=>fs.existsSync(path.join(dir,n))?read(n):null;
+const summary={schema:1,verifiedAt:new Date().toISOString(),scope:'MCP engineering calibration, recovery, artifact review and regression fixes; not provider efficacy or human conformance certification',validation:{remediation:read('remediation-unit-final-summary.json'),mcp:read('calibration-final-summary.json')},build:read('combined-build-checks.json'),targetedReplay:read('continuation-assembly-replay.json'),renderedReview:{fullDocumentVisuallyReviewed:true,mobileScreenshotVisuallyReviewed:true,focusedControlScreenshotVisuallyReviewed:true,keyboardReflow:read('continuation-keyboard-reflow-checks.json')},staticCrop:{before:optional('static-crop-before.json'),after:optional('static-crop-replay.json'),renderedReview:optional('static-crop-rendered-review.json')},calibrationLimits:{scoringPolicyChanged:false,liveClientModelPilots:2,thirdLiveRunPerformed:false,geminiStudyExecuted:false,humanReviewPerformed:false,taggedPdfDelivered:false,pdfWithholdingReason:'active_content_scan_unavailable'}};
+fs.writeFileSync(path.join(dir,'checks.json'),JSON.stringify(summary,null,2)+'\n');
+const markdown=fs.readFileSync(path.join(dir,'README.md'),'utf8');
+const links=[...markdown.matchAll(/\]\(([^)]+)\)/g)].map(m=>m[1]).filter(p=>!p.includes('://'));
+const missing=links.filter(p=>!fs.existsSync(path.resolve(dir,p)));
+if(missing.length)throw Error('Missing report links: '+missing.join(', '));
+console.log(JSON.stringify({reportLinksVerified:links.length,missingLinks:missing,checksWritten:true}));

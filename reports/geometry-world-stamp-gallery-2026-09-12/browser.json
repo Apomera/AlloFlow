@@ -1,0 +1,148 @@
+{
+  "assertions": [
+    {
+      "name": "Two saved recipes have rendered shape thumbnails",
+      "pass": true,
+      "details": [
+        "ChooseGarden arch16 blocks5 wide · 1 deep · 4.5 high",
+        "✓ SelectedTimber steps for the garden workshop6 blocks3 wide · 1 deep · 2.5 high"
+      ]
+    },
+    {
+      "name": "Arch card shows true fractional height and count",
+      "pass": true
+    },
+    {
+      "name": "Stair card keeps its fractional height",
+      "pass": true
+    },
+    {
+      "name": "Saving stamps leaves world and history unchanged",
+      "pass": true
+    },
+    {
+      "name": "Card selection has an explicit selected state",
+      "pass": true
+    },
+    {
+      "name": "Stamp preview does not place blocks",
+      "pass": true
+    },
+    {
+      "name": "Picking another card clears the previous placement proposal",
+      "pass": true
+    },
+    {
+      "name": "Chosen visual stamp places its six editable blocks",
+      "pass": true
+    },
+    {
+      "name": "Stamp placement is one Undo",
+      "pass": true
+    },
+    {
+      "name": "Duplicate suggests the clear opposite side when the first side is blocked",
+      "pass": true
+    },
+    {
+      "name": "Suggested position needs explicit preview",
+      "pass": true
+    },
+    {
+      "name": "Full arch duplicate previews without changing the world",
+      "pass": true
+    },
+    {
+      "name": "Duplicate creates the complete arch as one operation",
+      "pass": true
+    },
+    {
+      "name": "One Undo restores the original two creations",
+      "pass": true
+    },
+    {
+      "name": "Redo restores the suggested copy",
+      "pass": true
+    },
+    {
+      "name": "Direction shortcut produces a reviewable preview",
+      "pass": true
+    },
+    {
+      "name": "Stamp gallery fits 390px without horizontal overflow",
+      "pass": true,
+      "details": {
+        "width": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "left": 21,
+            "right": 190.5,
+            "width": 169.5,
+            "height": 206.59375,
+            "hit": true
+          },
+          {
+            "left": 199.5,
+            "right": 369,
+            "width": 169.5,
+            "height": 206.59375,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Both stamp cards are reachable at 390px",
+      "pass": true
+    },
+    {
+      "name": "Duplicate shortcut remains usable at 390px",
+      "pass": true
+    },
+    {
+      "name": "Stamp gallery fits 320px without horizontal overflow",
+      "pass": true,
+      "details": {
+        "width": 320,
+        "scroll": 320,
+        "cards": [
+          {
+            "left": 21,
+            "right": 155.5,
+            "width": 134.5,
+            "height": 223.390625,
+            "hit": true
+          },
+          {
+            "left": 164.5,
+            "right": 299,
+            "width": 134.5,
+            "height": 223.390625,
+            "hit": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "Both stamp cards are reachable at 320px",
+      "pass": true
+    },
+    {
+      "name": "Duplicate shortcut remains usable at 320px",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Local React/Three WebGL harness; native stamp and duplicate controls with two explicit block fixtures",
+  "contrast": [
+    {
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(41, 79, 60)"
+    },
+    {
+      "color": "rgb(255, 255, 255)",
+      "background": "rgba(253, 251, 240, 0.93)"
+    }
+  ]
+}

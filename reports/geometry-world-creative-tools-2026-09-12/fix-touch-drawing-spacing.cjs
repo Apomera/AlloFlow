@@ -1,0 +1,7 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),file='stem_lab/stem_tool_geometryworld_builder.js';
+const raw=fs.readFileSync(file,'utf8'),eol=raw.includes('\r\n')?'\r\n':'\n';let source=raw.replace(/\r\n/g,'\n');
+const before='@media(max-width:800px) and (min-height:520px) and (orientation:portrait){#geoworld-fs-workspace[data-touch-active="false"]:has(>.gw-coordinate-hud[open]) .gwe-draw-hud{top:calc(50% - 108px)}}';
+const after='@media(max-width:800px) and (min-height:520px) and (orientation:portrait){#geoworld-fs-workspace:has(>.gw-coordinate-hud[open]) .gwe-draw-hud{top:calc(50% - 108px)}#geoworld-fs-workspace.gw-root[data-geometry-mode="sandbox"][data-touch-active="true"]>.gw-coordinate-hud{top:68px!important;bottom:auto!important;box-sizing:border-box;max-width:min(146px,calc(100% - 174px));max-height:calc(50% - 188px);overflow:auto;overscroll-behavior:contain}#geoworld-fs-workspace.gw-root[data-geometry-mode="sandbox"][data-touch-active="true"]>.gw-coordinate-hud>summary{min-height:44px!important;margin-bottom:0!important}#geoworld-fs-workspace[data-touch-active="true"]:has(.gwe-draw-hud) .gw-touch-look-panel{top:68px!important}}';
+assert.equal(source.split(before).length,2);source=source.replace(before,after);new Function(source);
+const bytes=Buffer.from(source.replace(/\n/g,eol)),fd=fs.openSync(file,'r+');try{fs.writeSync(fd,bytes);fs.ftruncateSync(fd,bytes.length);}finally{fs.closeSync(fd);}
+console.log('Touch Position and sensitivity controls now sit beside each other above the drawing preview.');

@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "implementedLocally": true,
+  "deployed": false,
+  "regression": {
+    "testFiles": 36,
+    "tests": 546,
+    "passed": 546,
+    "failed": 0,
+    "report": "regressions.json"
+  },
+  "browser": {
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "scans": 71,
+    "exportScans": 6,
+    "printChecks": "User-triggered invocation stub and print-media CSS; no physical print or saved PDF.",
+    "report": "browser-verification.json"
+  },
+  "classroom": {
+    "browsers": 4,
+    "scans": 26,
+    "supportChars": 27297,
+    "completedDocumentChars": 36335,
+    "report": "live/verification.json"
+  },
+  "limitations": [
+    "The board browser checks used authored activities and the generated sample pictures saved in the prior visual report.",
+    "No live image-provider requests were needed for this pass. The classroom text provider used a fixture.",
+    "The classroom test used the production adapter and a local Code.gs sandbox, not a deployed classroom.",
+    "Printing was checked through a user-triggered browser method stub and print-media styling. No physical printer or saved PDF was exercised.",
+    "No deployment or learner pilot was performed."
+  ]
+}

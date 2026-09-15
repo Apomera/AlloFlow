@@ -19,78 +19,14 @@ beforeAll(() => {
 const labels = (judgement) => judgement.notes.map((n) => n.label);
 const has = (judgement, text) => labels(judgement).some((l) => l.includes(text));
 
-// Drive a whole cook through the engine's own pan + doneness math, the way the
-// 500 ms tick does, and hand the judge the same snapshot nextStep() builds.
-// schedule: [{ until: simSec, level, add: ['itemId', ...] }] — items go in at
-// the start of their segment; `off: true` turns the burner to 0 with food in.
+// Drive a whole cook through the engine's own headless cook (simulateCook: the
+// same pan + doneness math the 500 ms tick runs, with the cockpit's add / stir /
+// mark / off mechanics) and hand the judge the snapshot nextStep() builds.
+// Schedules are segments: { level | off, add, stir | stirEvery, mark, until |
+// for | untilPanF | untilFoodF | untilWaterGone }; opts: { options, oil, food,
+// material, stopAtFoodF, fullState }.
 function cook(recipeId, schedule, opts = {}) {
-  const rec = E.RECIPES[recipeId];
-  const thermal = E.getRecipeThermal(rec, opts.material);
-  const mat = E.panMaterial(opts.material);
-  const seed = { recipeItemsInPan: [], recipeIngredientOrder: [], recipeItemAddTimes: {}, recipeItemAddPanF: {}, recipeBurnerLevel: 0 };
-  if (opts.oil) seed.recipeOil = opts.oil;
-  if (opts.food) seed.sandboxFood = opts.food;
-  if (opts.material) seed.klPanMaterial = opts.material;
-  if (opts.options) seed.recipeOptions = opts.options;
-  seed.recipeMarks = {};
-  const speed = rec.simSpeedMultiplier || 1;
-  const dt = 0.5 * speed; // one real 500 ms tick in sim seconds
-  const t0 = 1_000_000;
-  const s = Object.assign(E.defaultState(), seed);
-  const dnCfg = E.recipeDoneness(rec, s);
-  const mainItem = dnCfg.browningFrom || null;
-  let simSec = 0, now = t0, pan = 70, maxPan = 70, active = 0, heatRemovedAt = null;
-  const trace = [];
-  for (const seg of schedule) {
-    for (const id of seg.add || []) {
-      if (s.recipeItemsInPan.indexOf(id) === -1) {
-        s.recipeItemsInPan.push(id); s.recipeIngredientOrder.push(id);
-        s.recipeItemAddTimes[id] = now; s.recipeItemAddPanF[id] = Math.round(pan);
-        s.recipeLastStirSimSec = simSec; // addItem: being at the pan resets the unattended clock
-        // addItem: cold food pulls a stovetop pan down by the pan's thermal mass
-        if (id === (mainItem || id) && thermal.mode === 'pan') pan = Math.max(70, pan - mat.foodDropF);
-        // addItem: the main ingredient brings its surface water
-        if (id === mainItem && dnCfg.moisture) s.recipeMoisture = E.initialMoisture(rec, s);
-        // addItem: some ingredients cool the pan on their own (deglazing water)
-        const ing = E.recipeIngredients(rec, s).find((i) => i.id === id);
-        if (ing && ing.cools) pan = Math.max(70, pan - ing.cools);
-      }
-    }
-    // `mark: 'flip'` records the moment at the start of the segment (mirrors a step's record:)
-    if (seg.mark) s.recipeMarks[seg.mark] = { simSec, browning: s.recipeBrowning || 0, foodF: s.recipeFoodInternalF || 40, panF: pan, icon: '🔄' };
-    // `stir: n` stirs n times spread evenly through the segment (mirrors stirPan())
-    const stirEvery = seg.stir ? (seg.until - simSec) / seg.stir : Infinity;
-    let nextStirAt = simSec + stirEvery;
-    const level = seg.off ? 0 : seg.level;
-    if (level === 0 && s.recipeItemsInPan.length && !heatRemovedAt) heatRemovedAt = now;
-    s.recipeBurnerLevel = level; s.recipeHeatRemovedAt = heatRemovedAt;
-    while (simSec < seg.until - 1e-9) {
-      simSec += dt; now += 500;
-      pan = E.tickPanTemp(pan, level, dt, thermal);
-      maxPan = Math.max(maxPan, pan);
-      if (s.recipeItemsInPan.length) active += dt;
-      Object.assign(s, E.advanceDoneness(s, rec, pan, dt, now));
-      s.recipeSimElapsedSec = simSec;
-      if (simSec >= nextStirAt - 1e-9) {
-        nextStirAt += stirEvery;
-        s.recipeLastStirSimSec = simSec; s.recipeStirCount = (s.recipeStirCount || 0) + 1;
-        if (dnCfg.stir && dnCfg.stir.disturbs) s.recipeBrowning *= 0.8;
-      }
-      if (opts.stopAtFoodF && s.recipeFoodInternalF >= opts.stopAtFoodF) { seg.until = simSec; break; }
-    }
-    trace.push({ simSec: Math.round(simSec), pan: Math.round(pan), food: Math.round(s.recipeFoodInternalF), browning: +s.recipeBrowning.toFixed(1) });
-  }
-  const snapshot = {
-    maxPanTempF: maxPan, activeTimeSec: active, foodInternalF: s.recipeFoodInternalF,
-    itemAddTimes: s.recipeItemAddTimes, itemAddPanF: s.recipeItemAddPanF, ingredientOrder: s.recipeIngredientOrder,
-    heatRemovedAt, lastTickAt: now, stepsCompleted: rec.steps.length, elapsedSec: (now - t0) / 1000, panMaterial: s.klPanMaterial || 'stainless',
-    options: s.recipeOptions || {}, marks: s.recipeMarks || {},
-    doneness: { browning: s.recipeBrowning, foodPeakF: s.recipeFoodPeakF, secAboveOverF: s.recipeSecAboveOverF, setAt: s.recipeFoodSetAt, set: !!s.recipeFoodSetAt, simElapsedSec: simSec,
-      stirCount: s.recipeStirCount || 0, unattendedSec: s.recipeUnattendedSec || 0, smokeSec: s.recipeSmokeSec || 0, oil: E.oilFor(rec, s),
-      steamSec: s.recipeSteamSec || 0, moistureAtEnd: s.recipeMoisture || 0 }
-  };
-  const judgement = rec.judge(snapshot, Object.assign({}, s, opts.fullState || {}));
-  return { snapshot, judgement, trace, state: s, simSec, food: s.recipeFoodInternalF, browning: s.recipeBrowning };
+  return E.simulateCook(E.RECIPES[recipeId], schedule, opts);
 }
 
 describe('Kitchen Lab burner dial', () => {
@@ -113,7 +49,9 @@ describe('Kitchen Lab burner dial', () => {
       { id: 'pastaSauce',    text: '3-4',  dials: [3, 4],  min: 240, below: 320 }, // sauce range 240-320
       { id: 'pancakes',      text: '5-6',  dials: [5, 6],  min: 330, below: 381 }, // medium range 330-380
       { id: 'steak',         text: '8-9',  dials: [8, 9],  min: 420, below: 501 }, // sear range 420-500
-      { id: 'caramelisedOnions', text: '3-4', dials: [3, 4], min: 270, below: 331 } // medium-low 270-330
+      { id: 'caramelisedOnions', text: '3-4', dials: [3, 4], min: 270, below: 331 }, // medium-low 270-330
+      { id: 'friedEgg',      text: '2-3',  dials: [2, 3],  min: 250, below: 321 }, // medium-low 250-320
+      { id: 'rice',          text: '8-10', dials: [8, 10], min: 213, below: 501 }  // the pot is pinned at 212 whatever the dial; any asymptote past boiling reaches the 205-212 step
     ];
     for (const c of cases) {
       expect(E.RECIPES[c.id]).toBeTruthy();
@@ -185,7 +123,7 @@ describe('Kitchen Lab food model gives thick cuts a realistic clock', () => {
     expect(r.snapshot.itemAddPanF.oil).toBe(70);
     expect(r.snapshot.itemAddPanF.chicken).toBeGreaterThan(400);
     expect(source).toContain('newPanF[itemId] = Math.round(prior.recipePanTempF || 70);');
-    expect(source.match(/recipeItemAddPanF: \{\},/g)).toHaveLength(4);
+    expect(source.match(/recipeItemAddPanF: \{\},/g)).toHaveLength(5);   // 4 reset blocks + the headless cook's seed
   });
 });
 
@@ -352,10 +290,10 @@ describe('Kitchen Lab stir-fry judge', () => {
 });
 
 describe('Kitchen Lab pasta + pan sauce judge', () => {
-  const t0 = 1_000_000;
-  const pot = (over = {}) => Object.assign({ potWaterReserved: true, potStartedAt: t0, potPastaInAt: t0 + 60_000, potDrainedAt: t0 + 60_000 + 135_000 }, over); // 4× sim: 4 min heat, 9 min cook
-  const sauce = (level, fullState = pot()) => cook('pastaSauce', [
-    { until: 60, level, add: ['oil'] }, { until: 90, level, add: ['garlic'] }, { until: 600, level, add: ['tomatoes'] }, { until: 630, level, add: ['pasta'] }
+  // The pot as the judge reads it: pasta went into boiling water and had nine minutes in it before the drain
+  const pot = (over = {}) => Object.assign({ potWaterReserved: true, potStartedSimSec: 0, potPastaInSimSec: 400, potPastaInTempF: 212, potDrainedSimSec: 940, potPastaSec: 540, potPastaCook: 540 }, over);
+  const sauce = (level, fullState = pot(), tomatoesUntil = 600) => cook('pastaSauce', [
+    { until: 60, level, add: ['oil'] }, { until: 90, level, add: ['garlic'] }, { until: tomatoesUntil, level, add: ['tomatoes'] }, { until: tomatoesUntil + 30, level, add: ['pasta'] }
   ], { fullState });
 
   it('grades a gentle simmer with mellow garlic, saved water, boiling drop and al dente pasta an A', () => {
@@ -368,16 +306,29 @@ describe('Kitchen Lab pasta + pan sauce judge', () => {
     expect(j.grade).toBe('A');
   });
 
-  it('scorches the sauce and browns the garlic on contact at dial 7, never also calling it barely cooked', () => {
-    const { judgement: j } = sauce(7);
-    expect(has(j, 'Scorched sauce')).toBe(true);
+  it('browns the garlic on contact and smokes the oil at dial 7, but a sauce with water in it cannot scorch', () => {
+    const { judgement: j, state } = sauce(7);
     expect(has(j, 'Garlic browned on contact')).toBe(true);
+    expect(has(j, 'Oil past its smoke point')).toBe(true);
+    expect(has(j, 'Scorched sauce')).toBe(false);
     expect(has(j, 'barely cooked')).toBe(false);
+    expect(state.recipeMoisture).toBeGreaterThan(0);   // 300 units of tomato water, most of it still there after nine minutes
   });
 
-  it('reads pasta texture from how long it boiled before draining', () => {
-    expect(has(sauce(3, pot({ potDrainedAt: t0 + 60_000 + 60_000 })).judgement, 'Pasta underdone')).toBe(true);   // 4 sim-min
-    expect(has(sauce(3, pot({ potDrainedAt: t0 + 60_000 + 240_000 })).judgement, 'Pasta overcooked')).toBe(true); // 16 sim-min
+  it('scorches only once the sauce has boiled dry: dial 7 for twenty-seven minutes', () => {
+    const { judgement: j, state } = sauce(7, pot(), 1700);
+    expect(state.recipeMoisture).toBe(0);
+    expect(has(j, 'Scorched sauce')).toBe(true);
+    expect(has(j, 'Cooked dry')).toBe(false);   // the scorch note has said it
+  });
+
+  it('reads the sauce reduction and the pasta clock', () => {
+    expect(has(sauce(3).judgement, 'Reduced to cling')).toBe(true);
+    expect(has(sauce(1).judgement, 'Thin sauce')).toBe(true);     // dial 1 never simmers hard enough to reduce
+    expect(has(sauce(3, pot({ potPastaSec: 240, potPastaCook: 240 })).judgement, 'Pasta underdone')).toBe(true);
+    expect(has(sauce(3, pot({ potPastaSec: 960, potPastaCook: 960 })).judgement, 'Pasta overcooked')).toBe(true);
+    expect(has(sauce(3, pot({ potPastaInTempF: 150 })).judgement, 'Pasta in cold water')).toBe(true);
+    expect(has(sauce(3, pot({ potPastaInSimSec: null })).judgement, 'No pasta')).toBe(true);
   });
 });
 
@@ -570,7 +521,7 @@ describe('Kitchen Lab temperature trace covers the whole cook', () => {
     expect(source).toContain('if (hist.length > 240) { hist = hist.filter(function(_, i) { return i % 2 === 0; }); traceStep *= 2; }');
     expect(source).toContain("'data-kl-trace': compact ? 'live' : 'full',");
     expect(source).toContain("renderTempTrace(d.recipeTempHistory, { compact: true, marks: traceMarks(rec) })");
-    expect(source).toContain("renderTempTrace(d.recipeTempHistory, { marks: traceMarks(rec) })");
+    expect(source).toContain("renderTempTrace(d.recipeTempHistory, { marks: traceMarks(rec), cursorT:");
   });
 
   it('records the sim time of every ingredient and the heat-off moment for the trace marks', () => {
@@ -631,7 +582,7 @@ describe('Kitchen Lab pan material', () => {
     expect(source).toContain("if (getRecipeThermal(rec).mode === 'oven') return null;");
     expect(source).toContain("role: 'radio', 'aria-checked': on ? 'true' : 'false', 'data-kl-pan': m.id,");
     expect(source).toContain("disabled: locked || isPaused, onClick: function() { setKL({ klPanMaterial: m.id });");
-    expect(source).toContain("var thermal = getRecipeThermal(rec, prior.klPanMaterial);");
+    expect(source).toContain("var thermal = getRecipeThermal(rec, prior.klPanMaterial, prior);");
     expect(source).toContain("patch.recipePanTempF = Math.max(70, (prior.recipePanTempF || 70) - panMaterial(prior.klPanMaterial).foodDropF);");
   });
 });
@@ -690,9 +641,8 @@ describe('Kitchen Lab oil and smoke points', () => {
   });
 
   it('lets a sauce pan run olive oil past its smoke point and says so alongside the scorch, never "barely cooked"', () => {
-    const t0 = 1_000_000;
-    const pot = { potWaterReserved: true, potStartedAt: t0, potPastaInAt: t0 + 60_000, potDrainedAt: t0 + 60_000 + 135_000 };
-    const { judgement: j } = cook('pastaSauce', [{ until: 60, level: 7, add: ['oil'] }, { until: 90, level: 7, add: ['garlic'] }, { until: 600, level: 7, add: ['tomatoes'] }, { until: 630, level: 7, add: ['pasta'] }], { fullState: pot });
+    const pot = { potWaterReserved: true, potStartedSimSec: 0, potPastaInSimSec: 400, potPastaInTempF: 212, potDrainedSimSec: 940, potPastaSec: 540, potPastaCook: 540 };
+    const { judgement: j } = cook('pastaSauce', [{ until: 60, level: 7, add: ['oil'] }, { until: 90, level: 7, add: ['garlic'] }, { until: 1700, level: 7, add: ['tomatoes'] }, { until: 1730, level: 7, add: ['pasta'] }], { fullState: pot });
     expect(has(j, 'Oil past its smoke point')).toBe(true);
     expect(has(j, 'Scorched sauce')).toBe(true);
     expect(has(j, 'barely cooked')).toBe(false);
@@ -927,7 +877,7 @@ describe('Kitchen Lab catalog with ten recipes', () => {
   it('lists the three new recipes in the picker, competition pool and tournament pool', () => {
     const ids = E.RECIPE_CATALOG.map((r) => r.id);
     expect(ids).toContain('pancakes'); expect(ids).toContain('steak'); expect(ids).toContain('caramelisedOnions');
-    expect(ids).toHaveLength(10);
+    expect(ids).toHaveLength(12);
     for (const id of ids) expect(E.RECIPES[id], id).toBeTruthy();
   });
 
@@ -951,15 +901,15 @@ describe('Kitchen Lab catalog with ten recipes', () => {
 describe('Kitchen Lab cockpit labels follow the recipe', () => {
   it('judges the pan-temperature label against the current step’s own range', () => {
     expect(source).toContain("tempLabel = '✓ in range for this step'");
-    expect(source).toContain("s range (' + rangeStep.min + '°F+)'");
-    expect(source).toContain("for (var si = stepIdx; si >= 0; si--) { if (rec.steps[si].target && rec.steps[si].target.panTempF)");
+    expect(source).toContain("s range' + (showRange ? ' (' + rangeStep.min + '°F+)' : '')");   // demonstrate mode keeps the verdict, drops the numbers
+    expect(source).toContain("if (tg && tg.boil) { rangeStep = { min: Math.round(boilingPointF(d) - 7), max: Math.round(boilingPointF(d)) }; break; }");   // a boil step's range follows the altitude
   });
   it('names the action on flip and finish steps instead of a generic continue', () => {
     expect(E.RECIPES.pancakes.steps[3].actionLabel).toBe('🔄 Flip the pancake');
     expect(E.RECIPES.steak.steps[2].actionLabel).toBe('🔄 Flip the steak');
     expect(E.RECIPES.steak.steps[4].actionLabel).toBe('🔪 Slice + serve');
     expect(E.RECIPES.panSeared.steps[2].actionLabel).toBe('🔄 Flip the chicken');
-    expect(source).toContain("step.actionLabel ? step.actionLabel : __alloT('stem.kitchenlab.continue_to_next_step'");
+    expect(source).toContain("step.actionLabel ? step.actionLabel + (step.target && step.target.restSec && d.recipeHeatRemovedSimSec != null ? ' · rested ' + klClock(");
   });
 });
 
@@ -1107,7 +1057,7 @@ describe('Kitchen Lab competition constraints on the doneness state', () => {
 describe('Kitchen Lab achievements for the new mechanics', () => {
   const ach = (id) => E.ACHIEVEMENTS.find((a) => a.id === id);
   it('adds six badges and the picker counts them', () => {
-    expect(E.ACHIEVEMENTS).toHaveLength(26);
+    expect(E.ACHIEVEMENTS).toHaveLength(27);   // + Kitchen Detective
     expect(source).toContain("unlocked.length + ' / ' + ACHIEVEMENTS.length + ' unlocked'");
   });
   it('unlocks on the right evidence', () => {
@@ -1133,5 +1083,787 @@ describe('Kitchen Lab stale-cook guard', () => {
     expect(source).toContain("if (prior.recipeLastTickAt && now - prior.recipeLastTickAt > 60000) {");
     expect(source).toContain("return { recipePhase: 'paused', recipePausedAt: prior.recipeLastTickAt, recipeAutoPaused: true };");
     expect(source).toContain("recipePhase: 'cooking', recipePausedAt: null, recipeAutoPaused: false,");
+  });
+});
+
+describe('Kitchen Lab per-recipe history', () => {
+  it('folds each judgement into attempts, best, last and the first thing flagged', () => {
+    const j1 = { score: 65, grade: 'D', notes: [{ neg: false, label: '✓ Pan temp' }, { neg: true, label: '💧 Steamed before it browned' }, { neg: true, label: '⚠️ Not tossed enough' }] };
+    const j2 = { score: 92, grade: 'A', notes: [{ neg: false, label: '✓ Pan temp' }] };
+    const h1 = E.foldRecipeHistory({}, 'stirFry', j1, false);
+    expect(h1.stirFry).toMatchObject({ attempts: 1, bestScore: 65, bestGrade: 'D', lastScore: 65, lastGrade: 'D', lastIssue: 'Steamed before it browned', competitionRuns: 0 });
+    const h2 = E.foldRecipeHistory(h1, 'stirFry', j2, true);
+    expect(h2.stirFry).toMatchObject({ attempts: 2, bestScore: 92, bestGrade: 'A', lastScore: 92, lastGrade: 'A', lastIssue: null, competitionRuns: 1 });
+    const h3 = E.foldRecipeHistory(h2, 'stirFry', j1, false);
+    expect(h3.stirFry).toMatchObject({ attempts: 3, bestScore: 92, bestGrade: 'A', lastScore: 65, lastGrade: 'D' });
+    expect(h3.pancakes).toBeUndefined();
+  });
+  it('is recorded on both completion paths and shown on the picker card', () => {
+    expect(source.match(/recipeHistory: foldRecipeHistory\(prior\.recipeHistory, rec\.id, judgement, (true|false)\)/g)).toHaveLength(2);
+    expect(source).toContain("'data-kl-history': r.id,");
+  });
+});
+
+describe('Kitchen Lab cook report', () => {
+  const state = () => {
+    const rec = E.RECIPES.panSeared;
+    const j = rec.judge({ maxPanTempF: 438, activeTimeSec: 585, foodInternalF: 165, itemAddTimes: { oil: 1, chicken: 2 }, itemAddPanF: { chicken: 413 }, heatRemovedAt: 5, lastTickAt: 6, doneness: { browning: 13.2, foodPeakF: 165, secAboveOverF: 0, set: true, stirCount: 0, unattendedSec: 0, smokeSec: 0, oil: { oil: 'Refined avocado oil', smokeF: 520 }, steamSec: 0 }, options: { dry: 'patted' } });
+    return Object.assign(E.defaultState(), { recipeJudgement: j, recipeSimElapsedSec: 585, recipeActiveTimeSec: 525, recipeMaxPanTempF: 438, recipeFoodPeakF: 165, recipeBrowning: 13.2, recipeIngredientOrder: ['oil', 'chicken'], recipeItemAddSimSec: { oil: 60, chicken: 62 }, recipeItemAddPanF: { oil: 404, chicken: 413 }, recipeHeatRemovedSimSec: 585, recipeOptions: { dry: 'patted' }, recipeTempHistory: [{ t: 0, pan: 70, food: 40 }, { t: 300, pan: 438, food: 108 }, { t: 585, pan: 317, food: 165 }] });
+  };
+  it('writes set-up, timings, surface, additions, notes and the trace as plain text', () => {
+    const r = E.cookReport(E.RECIPES.panSeared, state(), 'F');
+    expect(r).toContain('Kitchen Lab cook report — Pan-Seared Chicken');
+    expect(r).toContain('Score 100 · Grade A');
+    expect(r).toContain('Set-up: Clad stainless · Refined avocado oil (smokes at 520°F) · Before it goes in: Patted dry');
+    expect(r).toContain('Cook time 9:45 · food in pan 8:45 · pan peak 438°F · food peak 165°F');
+    expect(r).toContain('Seasoned chicken breast at 1:02 (pan 413°F)');
+    expect(r).toContain('  + ✓ Deep golden crust');
+    expect(r).toContain('  5:00  438°F  108°F');
+    expect(r).toMatch(/simulation of decisions, not a record of a real cook/);
+  });
+  it('converts every temperature, including inside quoted judge notes, in °C mode', () => {
+    const r = E.cookReport(E.RECIPES.panSeared, state(), 'C');
+    expect(r).toContain('smokes at 271°C'); expect(r).toContain('pan peak 226°C'); expect(r).toContain('Internal 74°C');
+    expect(r).not.toContain('°F');
+  });
+  it('routes the copy button through alloCopyText with an execCommand fallback and a select-and-copy textarea', () => {
+    expect(source).toContain("if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(text)).then(function(ok) { done(ok !== false); }).catch(function() { done(legacyCopy(text)); }); return; }");
+    expect(source).toContain("d.klReportCopied === 'fail' ? h('div', { style: cardStyle() },");
+    expect(source).toContain("onCopy: function() { setKL({ klReportCopied: 'ok' }); },");
+    expect(source.split('\n').filter((l) => l.includes('navigator.clipboard.writeText'))).toHaveLength(3); // the report, the class set and the portfolio: one line each, last resort only
+  });
+});
+
+describe('Kitchen Lab fried egg', () => {
+  const egg = (opts, pullF) => cook('friedEgg', [
+    { until: 60, level: 3 }, { until: 62, level: 3, add: ['butter'] }, { until: 600, level: 3, add: ['egg'] }
+  ], { options: opts, stopAtFoodF: pullF });
+
+  it('offers eggs, yolk and lid as choices, and the lid speeds the food by half again', () => {
+    const ids = E.RECIPES.friedEgg.options.map((o) => o.id);
+    expect(ids).toEqual(['eggs', 'yolk', 'lid']);
+    expect(E.optionFactor(E.RECIPES.friedEgg, { lid: 'lid' }, 'foodKFactor')).toBe(1.5);
+    expect(E.optionFactor(E.RECIPES.friedEgg, {}, 'foodKFactor')).toBe(1);
+    const noLid = egg({}, 170), lid = egg({ lid: 'lid' }, 170);
+    expect(lid.simSec).toBeLessThan(noLid.simSec * 0.8);
+    expect(noLid.simSec - 62).toBeGreaterThan(150); // firm yolk takes a few minutes on medium-low
+  });
+
+  it('fails a soft yolk from a regular egg on safety, and allows it from a pasteurised one', () => {
+    const regular = egg({ eggs: 'regular', yolk: 'runny' }, 150);
+    expect(has(regular.judgement, 'FOOD SAFETY: soft yolk from a regular egg')).toBe(true);
+    expect(regular.judgement.score).toBeLessThanOrEqual(49);
+    const pasteurised = egg({ eggs: 'pasteurised', yolk: 'runny' }, 150);
+    expect(has(pasteurised.judgement, 'Yolk on target: Runny')).toBe(true);
+    expect(has(pasteurised.judgement, 'FOOD SAFETY')).toBe(false);
+    expect(pasteurised.judgement.grade).toBe('A');
+  });
+
+  it('grades a firm yolk from regular eggs an A, and names under and over', () => {
+    expect(egg({ yolk: 'firm' }, 170).judgement.grade).toBe('A');
+    expect(has(egg({ yolk: 'firm' }, 161).judgement, 'Yolk under your target')).toBe(true);
+    expect(has(egg({ eggs: 'pasteurised', yolk: 'jammy' }, 172).judgement, 'Yolk past your target')).toBe(true);
+  });
+
+  it('shows the yolk temperature and band on the visual', () => {
+    const h = (tag, props, ...children) => ({ tag, props, children: children.flat().filter(Boolean) });
+    const tree = JSON.stringify(E.RECIPES.friedEgg.renderVisual(h, { panTemp: 282, itemsInPan: ['butter', 'egg'], activeTime: 60, foodTemp: 155, browning: 0.1, options: { lid: 'lid' } }));
+    expect(tree).toContain('Yolk: 155°F · runny→jammy');
+    expect(tree).toContain('rgba(148,163,184,0.22)'); // the lid
+  });
+});
+
+describe('Kitchen Lab Knife Lab try-it', () => {
+  it('scales time-to-centre with thickness squared', () => {
+    const t = [0.125, 0.25, 0.5, 0.75].map((sz) => E.cookThroughSec(sz, 350, 195));
+    expect(t[1] / t[0]).toBeCloseTo(4, 5);
+    expect(t[2] / t[1]).toBeCloseTo(4, 5);
+    expect(t[3] / t[2]).toBeCloseTo(2.25, 5);
+    expect(E.cookThroughSec(0.5, 190, 195)).toBe(Infinity); // pan below the target never gets there
+    expect(source).toContain("'data-kl-cut-times': rows.map(function(r) { return Math.round(r.sec); }).join(',')");
+    expect(source).toContain("onChange: function(e) { setKL({ knifePanTempF: parseInt(e.target.value, 10) }); }");
+  });
+});
+
+describe('Kitchen Lab Maillard try-it', () => {
+  it('halves the time to golden every 40°F and never browns below the threshold', () => {
+    expect(E.minutesToBrowning(280, 4)).toBe(Infinity);
+    expect(E.minutesToBrowning(320, 4)).toBeCloseTo(20, 5);
+    expect(E.minutesToBrowning(360, 4)).toBeCloseTo(10, 5);
+    expect(E.minutesToBrowning(400, 4)).toBeCloseTo(5, 5);
+    expect(E.minutesToBrowning(440, 4)).toBeCloseTo(2.5, 5);
+    expect(source).toContain("'data-kl-maillard-food': f.id, onClick: function() { setKL({ maillardFood: f.id }); }");
+    expect(source).toContain("'data-kl-golden-min': here === Infinity ? 'never' : Math.round(here * 10) / 10");
+  });
+});
+
+describe('Kitchen Lab rice: a pot of water', () => {
+  // Rice and water into the cold pot, high until it boils, then the dial at `simmer` for simmerSec, then off for `rest`.
+  // The boil time depends on the pan material and the dial, so it is measured first.
+  function riceCook(opts, simmer = 2, rest = 600, simmerSec = 1080, boilLevel = 9) {
+    const boil = cook('rice', [{ until: 3, level: 0, add: ['rice'] }, { untilPanF: 205, level: boilLevel }], { options: opts });
+    const tBoil = boil.simSec;
+    return Object.assign(cook('rice', [
+      { until: 3, level: 0, add: ['rice'] }, { until: tBoil, level: boilLevel },
+      { until: tBoil + simmerSec, level: simmer }, { until: tBoil + simmerSec + rest, off: true }
+    ], { options: opts }), { tBoil });
+  }
+
+  it('pins the vessel at 212°F while there is water in it, however high the dial', () => {
+    const r = riceCook({});
+    expect(r.tBoil).toBeGreaterThan(240);           // two cups take minutes to boil, not the dry pan's seconds
+    expect(r.tBoil).toBeLessThan(480);
+    expect(r.snapshot.maxPanTempF).toBeLessThanOrEqual(212);
+    expect(r.trace[1].pan).toBe(205);
+    // the same pot without its water is a pan: thermal scale 1
+    const st = Object.assign(E.defaultState(), { recipeItemsInPan: ['rice'], recipeMoisture: 0 });
+    expect(E.vesselWaterScale(E.RECIPES.rice, Object.assign({}, st, { recipeBurnerLevel: 5, recipeAbsorbed: 120 }))).toBe(1);   // dry pot on a live burner: a pan again
+    expect(E.vesselWaterScale(E.RECIPES.rice, Object.assign({}, st, { recipeBurnerLevel: 0, recipeAbsorbed: 120 }))).toBe(0.02); // off heat, the hot grain keeps the pot warm
+    expect(E.vesselWaterScale(E.RECIPES.rice, Object.assign({}, st, { recipeMoisture: 50 }))).toBe(0.015);
+    expect(E.boilCap(E.RECIPES.rice, Object.assign({}, st, { recipeMoisture: 50 }), 380)).toBe(212);
+    expect(E.boilCap(E.RECIPES.rice, st, 380)).toBe(380);
+    expect(E.boilCap(E.RECIPES.scrambledEggs, { recipeItemsInPan: ['eggs'], recipeMoisture: 50 }, 380)).toBe(380); // dry-pan recipes never pin
+  });
+
+  it('loses water by the dial, not the pan, and a lid keeps most of it', () => {
+    const boilOff = (level, lid) => { const r = riceCook({ lid }, level, 0, 600); return 200 - r.snapshot.doneness.moistureAtEnd - r.snapshot.doneness.absorbed; };
+    const low = boilOff(2, 'lid'), high = boilOff(9, 'lid'), openLow = boilOff(2, 'none');
+    expect(high / low).toBeGreaterThan(5);           // a rolling boil sends water up several times faster, at the same 212°F
+    expect(openLow / low).toBeCloseTo(1 / 0.3, 0);   // the lid's evapFactor
+  });
+
+  it('two to one, lid on, low flame, ten-minute rest: fluffy and separate (A)', () => {
+    const r = riceCook({});
+    const j = r.judgement;
+    expect(has(j, 'Cooked through')).toBe(true);
+    expect(has(j, 'Water all gone into the grain')).toBe(true);
+    expect(has(j, 'Never past boiling')).toBe(true);
+    expect(has(j, 'Dropped to a simmer')).toBe(true);
+    expect(has(j, 'Rested 10 min')).toBe(true);
+    expect(has(j, 'Separate grains')).toBe(true);
+    expect(j.grade).toBe('A');
+    expect(r.snapshot.doneness.absorbed).toBeGreaterThanOrEqual(150);
+  });
+
+  it('no lid: three times the steam, the pot runs dry and the grain is left firm', () => {
+    const r = riceCook({ lid: 'none' });
+    expect(r.snapshot.doneness.moistureAtEnd).toBe(0);
+    expect(r.snapshot.doneness.absorbed).toBeLessThan(150);
+    expect(has(r.judgement, 'A touch firm')).toBe(true);
+    expect(has(r.judgement, 'Water all gone into the grain')).toBe(false);   // some of it went up as steam; the firm note says so
+    expect(r.judgement.notes.some((n) => n.detail.includes('A lid would have kept it in the pot'))).toBe(true);
+    expect(r.judgement.grade).not.toBe('A');
+  });
+
+  it('three to one: the grain is full long before the water is gone (gummy)', () => {
+    const r = riceCook({ ratio: 'three' });
+    expect(r.snapshot.doneness.absorbed).toBeCloseTo(180, 0);   // a full grain stops drinking
+    expect(has(r.judgement, 'Gummy, sitting in water')).toBe(true);
+    expect(r.judgement.verdict).toContain('porridge');
+  });
+
+  it('simmering on 5 instead of 2 boils the water off early, then the dry pot scorches', () => {
+    const r = riceCook({}, 5);
+    expect(has(r.judgement, 'Boiled hard for')).toBe(true);
+    expect(r.snapshot.maxPanTempF).toBeGreaterThan(300);       // once dry, the pot climbed toward the dial's asymptote
+    expect(has(r.judgement, 'Scorched bottom') || has(r.judgement, 'Burnt bottom')).toBe(true);
+    expect(r.judgement.score).toBeLessThan(70);
+  });
+
+  it('left on 9 with the lid on: crunchy and burnt, an F', () => {
+    const r = riceCook({}, 9);
+    expect(has(r.judgement, 'Crunchy centres')).toBe(true);
+    expect(has(r.judgement, 'Burnt bottom')).toBe(true);
+    expect(r.judgement.grade).toBe('F');
+  });
+
+  it('serving straight off the heat costs the rest, and unrinsed rice clumps', () => {
+    const noRest = riceCook({}, 2, 0);
+    expect(has(noRest.judgement, 'No rest')).toBe(true);
+    expect(noRest.judgement.grade).toBe('B');
+    expect(has(riceCook({ rinse: 'unrinsed' }).judgement, 'Clumped')).toBe(true);
+  });
+
+  it('the rice stays in the pot off heat and keeps drinking while it is hot', () => {
+    const atOff = riceCook({}, 2, 0), rested = riceCook({}, 2, 600);
+    expect(rested.snapshot.doneness.absorbed).toBeGreaterThan(atOff.snapshot.doneness.absorbed);
+    expect(rested.food).toBeGreaterThan(150);   // a covered pot cools slowly; the grain tracks it rather than drifting to room temperature
+  });
+
+  it('the pot has its own sound, the dial has its own step, and the report lists the water', () => {
+    expect(E.klBoilLevel(212, true, 9, 100).caption).toContain('rolling boil');
+    expect(E.klBoilLevel(212, true, 2, 100).caption).toContain('bare simmer');
+    expect(E.klBoilLevel(212, true, 0, 100).caption).toContain('off the heat');
+    expect(E.klBoilLevel(120, true, 9, 100).caption).toContain('cold water');
+    expect(E.klBoilLevel(330, true, 5, 0).caption).toContain('toasting');
+    expect(E.klBoilLevel(120, false, 0, 0).tier).toBe('quiet');
+    expect(E.RECIPES.rice.steps.find((st) => st.completeWhen === 'burnerInRange').target.burnerLevel).toEqual({ min: 1, max: 3 });
+    expect(source).toContain("} else if (auto === 'burnerInRange' && step.target.burnerLevel) {");
+    expect(source).toContain("var newTemp = boilCap(rec, prior, tickPanTemp(prior.recipePanTempF || 70, prior.recipeBurnerLevel || 0, dtSec, thermal));");
+    const r = riceCook({});
+    const report = E.cookReport(E.RECIPES.rice, Object.assign(E.defaultState(), r.state, { recipeJudgement: r.judgement, recipeMaxPanTempF: r.snapshot.maxPanTempF, recipeHeatRemovedSimSec: r.snapshot.heatRemovedSimSec }), 'F');
+    expect(report).toContain('Water: 0 of 200 left');
+    expect(report).toContain('(needs 150)');
+  });
+
+  it('an auto-advance check from a stale render cannot skip a step, and re-lighting the burner restarts the rest clock', () => {
+    // arrow keys stepping the dial 1, 2, 3 schedule three checks; each must advance only the step it saw
+    expect(source).toContain("if (fromStep != null && (prior.recipeCurrentStep || 0) !== fromStep) return {};");
+    const auto = source.slice(source.indexOf('function maybeAutoAdvance() {'), source.indexOf('function renderRecipe() {'));
+    expect(auto.match(/nextStep\(stepNow\);/g)).toHaveLength(7);
+    expect(auto).not.toContain('nextStep();');
+    // setBurner: heat back on clears the heat-removed stamp
+    expect(source).toContain("if (level > 0 && prior.recipeHeatRemovedAt) {");
+    expect(source).toContain("patch.recipeHeatRemovedAt = null;");
+    // in the engine driver the same rule gives a re-lit pot no rest credit
+    const relit = cook('rice', [{ until: 3, level: 0, add: ['rice'] }, { until: 360, level: 9 }, { until: 1400, level: 2 }, { until: 1500, off: true }, { until: 1600, level: 2 }, { until: 1660, off: true }], { options: {} });
+    expect(relit.snapshot.heatRemovedSimSec).toBeCloseTo(1600, -1);   // the tick is 3 sim-seconds
+    expect(has(relit.judgement, 'No rest')).toBe(true);
+  });
+
+  it('draws the pot: water level, rice layer, lid, and a readout', () => {
+    const h = (tag, props, ...children) => ({ tag, props, children: children.flat().filter(Boolean) });
+    const tree = JSON.stringify(E.RECIPES.rice.renderVisual(h, { panTemp: 212, itemsInPan: ['rice'], burnerLevel: 2, moisture: 120, absorbed: 75, browning: 0, options: {} }));
+    expect(tree).toContain('Water 60% · rice 50% hydrated · 212°F');
+    expect(tree).toContain('"data-kl-rice":"50,120"');
+    expect(tree).toContain('#94a3b8'); // the lid (default on)
+    const dry = JSON.stringify(E.RECIPES.rice.renderVisual(h, { panTemp: 340, itemsInPan: ['rice'], burnerLevel: 5, moisture: 0, absorbed: 120, browning: 0.6, options: { lid: 'none' } }));
+    expect(dry).toContain('#6b3f14'); // scorch band
+    expect(dry).not.toContain('#94a3b8');
+  });
+});
+
+describe('Kitchen Lab experiment bench', () => {
+  const benchIds = () => Object.keys(E.TEXTBOOK_COOKS);
+
+  it('cooks every recipe on the bench to an A by the book, with its default choices', () => {
+    for (const id of benchIds()) {
+      const rec = E.RECIPES[id];
+      const r = E.runBench(rec, 'dial', '0').result;
+      expect(r.judgement.grade, id + ': ' + r.judgement.verdict + ' | ' + r.judgement.notes.filter((n) => n.neg).map((n) => n.label).join(', ')).toBe('A');
+      expect(r.history.length).toBeGreaterThan(10);
+      expect(r.history.length).toBeLessThanOrEqual(301);
+    }
+    expect(benchIds()).toContain('pastaSauce');
+    expect(benchIds()).not.toContain('freeCook');
+    expect(benchIds()).toHaveLength(12);
+  });
+
+  it('offers the pan, the dial, the fat, each recipe choice, attention and the pull point where they apply', () => {
+    const ids = (rec) => E.benchVariables(rec).map((v) => v.id);
+    expect(ids(E.RECIPES.steak)).toEqual(['pan', 'dial', 'oil', 'opt:dry', 'opt:target', 'pull']);   // poking a steak is a mistake, not a variable
+    expect(ids(E.RECIPES.scrambledEggs)).toEqual(['pan', 'dial', 'stir', 'pull']);
+    expect(ids(E.RECIPES.sheetPan)).toEqual(['dial', 'x:door']);                                    // an oven has no pan and no fat choice, but it has a door
+    expect(ids(E.RECIPES.pastaSauce)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'stir', 'alt', 'x:water', 'x:drop', 'x:pastaTime']);   // the pot's actions are the recipe's own variables
+    expect(ids(E.RECIPES.rice)).toEqual(['pan', 'dial', 'opt:ratio', 'opt:lid', 'opt:rinse', 'alt']);   // cooked in water: the altitude matters
+    for (const id of benchIds()) for (const v of E.benchVariables(E.RECIPES[id])) {
+      expect(v.choices.some((c) => c.id === v.textbook), id + ' ' + v.id + ' names its textbook choice').toBe(true);
+      expect(v.choices.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('changes exactly one thing per side', () => {
+    expect(E.benchSetup(E.RECIPES.steak, 'pan', 'castIron')).toMatchObject({ material: 'castIron', dialOffset: 0, options: {}, pullOffsetF: 0 });
+    expect(E.benchSetup(E.RECIPES.steak, 'opt:target', 'well')).toMatchObject({ material: 'stainless', options: { target: 'well' } });
+    const hot = E.applyBenchSetup(E.TEXTBOOK_COOKS.stirFry, E.benchSetup(E.RECIPES.stirFry, 'dial', '+2'));
+    expect(hot.filter((g) => !g.off).every((g) => g.level === 10)).toBe(true);   // clamped at the top of the dial
+    const low = E.applyBenchSetup(E.TEXTBOOK_COOKS.scrambledEggs, E.benchSetup(E.RECIPES.scrambledEggs, 'dial', '-2'));
+    expect(low[0].level).toBe(1);
+    const late = E.applyBenchSetup(E.TEXTBOOK_COOKS.steak, E.benchSetup(E.RECIPES.steak, 'pull', '+15'));
+    const st = Object.assign(E.defaultState(), { recipeOptions: {} });
+    expect(late.find((g) => g.untilFoodF).untilFoodF(E.RECIPES.steak, st)).toBe(145 - 4 + 15);
+    const quiet = E.applyBenchSetup(E.TEXTBOOK_COOKS.scrambledEggs, E.benchSetup(E.RECIPES.scrambledEggs, 'stir', 'never'));
+    expect(quiet.some((g) => g.stirEvery)).toBe(false);
+  });
+
+  it('shows the lessons the recipes teach: cast iron is slower, pulling chicken early fails on safety, a hard simmer scorches the rice, walking away from eggs costs', () => {
+    const stainless = E.runBench(E.RECIPES.steak, 'pan', 'stainless').result, iron = E.runBench(E.RECIPES.steak, 'pan', 'castIron').result;
+    expect(iron.trace[0].simSec).toBeGreaterThan(stainless.trace[0].simSec * 1.5);   // preheat to 430°F
+    const early = E.runBench(E.RECIPES.panSeared, 'pull', '-10').result;
+    expect(has(early.judgement, 'FOOD SAFETY')).toBe(true);
+    expect(early.judgement.score).toBeLessThanOrEqual(49);
+    const hard = E.runBench(E.RECIPES.rice, 'dial', '+2').result;
+    expect(has(hard.judgement, 'Scorched bottom') || has(hard.judgement, 'Burnt bottom')).toBe(true);
+    const away = E.runBench(E.RECIPES.scrambledEggs, 'stir', 'never').result;
+    expect(away.judgement.score).toBeLessThan(E.runBench(E.RECIPES.scrambledEggs, 'stir', 'told').result.judgement.score);
+    expect(has(E.runBench(E.RECIPES.omelet, 'stir', 'never').result.judgement, 'Stuck to the pan')).toBe(true);
+    const noLid = E.runBench(E.RECIPES.rice, 'opt:lid', 'none').result;
+    expect(has(noLid.judgement, 'A touch firm')).toBe(true);
+  });
+
+  it('describes each side in words and lines up the numbers', () => {
+    const setup = E.benchSetup(E.RECIPES.steak, 'opt:target', 'well');
+    const lines = E.describeCook(E.RECIPES.steak, E.applyBenchSetup(E.TEXTBOOK_COOKS.steak, setup), setup);
+    expect(lines[0]).toBe('dial 9 until the pan reads 430°F');
+    expect(lines[4]).toBe("dial 9 until the centre reads 156°F");   // well done 160 minus the 4°F pull
+    expect(lines[5]).toBe('off 3:00');
+    const rows = E.benchNumbers(E.RECIPES.rice, E.runBench(E.RECIPES.rice, 'dial', '0').result).map((r) => r.id);
+    expect(rows).toEqual(['time', 'panPeak', 'foodPeak', 'browning', 'water']);
+    expect(E.benchNumbers(E.RECIPES.steak, E.runBench(E.RECIPES.steak, 'dial', '0').result).map((r) => r.id)).toEqual(['time', 'panPeak', 'foodPeak', 'browning', 'smoke']);
+    // the picker carries the bench; the run button is disabled until the two sides differ
+    expect(source).toContain("renderExperimentBench()");
+    expect(source).toContain("h('button', { type: 'button', 'data-kl-bench-run': '1', disabled: choiceA === choiceB,");
+    expect(source).toContain("'data-kl-bench': ran ? ra.result.judgement.score + ',' + rb.result.judgement.score : 'idle'");
+  });
+});
+
+describe('Kitchen Lab kitchen detective', () => {
+  it('builds a case pool from bench runs that scored under the textbook, deterministically', () => {
+    const cases = E.detectiveCases(E.RECIPES.rice);
+    expect(cases.map((c) => c.varId + '=' + c.choiceId).sort()).toEqual(['dial=+2', 'opt:lid=none', 'opt:ratio=onehalf', 'opt:ratio=three']);
+    for (const c of cases) expect(c.result.judgement.score).toBeLessThanOrEqual(100 - 8);
+    expect(E.detectiveCases(E.RECIPES.omelet).map((c) => c.varId)).toEqual(['stir']);
+    const a = E.detectiveCase(10), b = E.detectiveCase(10);
+    expect(a.rec.id).toBe(b.rec.id);
+    expect(a.options.map(E.detectiveKey)).toEqual(b.options.map(E.detectiveKey));
+    expect(E.seededShuffle([1, 2, 3, 4, 5], 3)).toEqual(E.seededShuffle([1, 2, 3, 4, 5], 3));
+    expect(E.seededShuffle([1, 2, 3, 4, 5], 3)).not.toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('offers the culprit among three or four options, none of them the textbook choice, none leaving the same evidence', () => {
+    let fair = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const k = E.detectiveCase(seed);
+      if (!k) continue;
+      fair++;
+      const keys = k.options.map(E.detectiveKey);
+      expect(keys).toContain(E.detectiveKey(k.truth));
+      expect(new Set(keys).size).toBe(keys.length);
+      expect(keys.length).toBeGreaterThanOrEqual(3);
+      expect(keys.length).toBeLessThanOrEqual(4);
+      const vars = E.benchVariables(k.rec);
+      for (const o of k.options) {
+        const v = vars.find((x) => x.id === o.varId);
+        expect(o.choiceId).not.toBe(v.textbook);
+        if (E.detectiveKey(o) !== E.detectiveKey(k.truth)) expect(E.sameEvidence(E.runBench(k.rec, o.varId, o.choiceId).result, k.result)).toBe(false);
+      }
+      expect(k.plan.length).toBe(E.TEXTBOOK_COOKS[k.rec.id].length);
+    }
+    expect(fair).toBeGreaterThan(30);
+    expect(E.nextDetectiveCase(1, 'sheetPan').options.length).toBe(3);   // the dial's two settings and the door: just enough for a fair case
+    expect(E.nextDetectiveCase(1, 'roastChicken').options.length).toBeGreaterThanOrEqual(3);
+    expect(E.nextDetectiveCase(1)).not.toBeNull();
+  });
+
+  it('tells two runs apart by pan peak, food peak, browning, time, water or score', () => {
+    const a = E.runBench(E.RECIPES.rice, 'opt:lid', 'none').result, b = E.runBench(E.RECIPES.rice, 'opt:ratio', 'onehalf').result;
+    expect(E.sameEvidence(a, a)).toBe(true);
+    expect(E.sameEvidence(a, E.runBench(E.RECIPES.rice, 'dial', '+2').result)).toBe(false);   // a scorched pot floor is visible
+    expect(typeof E.sameEvidence(a, b)).toBe('boolean');
+  });
+
+  it('awards Kitchen Detective at five first-guess solves and reminds a live cook what the bench did', () => {
+    const ach = E.ACHIEVEMENTS.find((a) => a.id === 'kitchenDetective');
+    expect(ach.check({ klDetectiveSolved: 4 }, {})).toBe(false);
+    expect(ach.check({ klDetectiveSolved: 5 }, {})).toBe(true);
+    const vars = E.benchVariables(E.RECIPES.steak);
+    expect(E.benchLiveHint(vars.find((v) => v.id === 'dial'), 'Two notches higher', 'B')).toBe('Bench pan B: two notches higher on the dial than the recipe says, at every step.');
+    expect(E.benchLiveHint(vars.find((v) => v.id === 'pull'), '10°F early', 'B')).toBe('Bench pan B: pull it 10°F early.');
+    expect(E.benchLiveHint(vars.find((v) => v.id === 'pan'), '⚫ Cast iron', 'A')).toContain('already set');
+    expect(E.traceMarksFor(E.RECIPES.rice, E.runBench(E.RECIPES.rice, 'dial', '0').result.state, 'Heat off').map((m) => m.icon)).toEqual(['🍚', '⏻']);
+    expect(source).toContain("h('button', { type: 'button', 'data-kl-bench-live': tag, onClick: function() { cookLive(tag, choiceId, r); },");
+    expect(source).toContain("setKL({ recipeOptions: Object.assign({}, st.options), klPanMaterial: st.material || 'stainless', recipeOil: st.oil || null, klBenchLiveHint: benchLiveHint(v, labelOf(choiceId), tag) });");
+    expect(source).toContain("klNewAchievements: [], klBenchLiveHint: null");   // a fresh start clears the reminder
+    expect(source).toContain("d.klBenchLiveHint ? h('div', { 'data-kl-bench-live-hint': '1',");
+  });
+});
+
+describe('Kitchen Lab pasta pot on the shared physics', () => {
+  const potCook = (sched) => cook('pastaSauce', sched);
+
+  it('boils in about six minutes on its own burner, pins at 212°F, and cooks pasta only in boiling water', () => {
+    const r = potCook([{ level: 0, pot: 'start', untilPot: 'boiling' }]);
+    expect(r.simSec).toBeGreaterThan(300);
+    expect(r.simSec).toBeLessThan(420);
+    expect(r.state.potTempF).toBeGreaterThanOrEqual(E.POT_BOILING_F);
+    const held = potCook([{ level: 0, pot: 'start', untilPot: 'boiling' }, { level: 0, for: 600 }]);
+    expect(held.state.potTempF).toBeLessThanOrEqual(212);
+    // dropped at the boil: the water dips, comes back, and the clock counts from there
+    const dropped = potCook([{ level: 0, pot: 'start', untilPot: 'boiling' }, { level: 0, pot: 'drop', for: 600 }]);
+    expect(dropped.state.potPastaInTempF).toBeGreaterThanOrEqual(E.POT_BOILING_F);
+    expect(dropped.state.potPastaSec).toBeGreaterThan(500);
+    expect(dropped.state.potPastaSec).toBeLessThan(600);
+    expect(dropped.state.potState).toBe('pasta-done');
+    // dropped into warm water: the clock waits for the boil
+    const early = potCook([{ level: 0, pot: 'start', untilPotF: 150 }, { level: 0, pot: 'drop', for: 300 }]);
+    expect(early.state.potPastaInTempF).toBeLessThan(E.POT_BOILING_F);
+    expect(early.state.potPastaSec).toBeLessThan(200);
+    expect(early.state.potState).toBe('pasta-in');
+  });
+
+  it('runs on sim time and refuses out-of-order buttons', () => {
+    const cold = E.defaultState();
+    expect(E.potAction(cold, 'drop', 10)).toEqual({});
+    expect(E.potAction(cold, 'drainKeep', 10)).toEqual({});
+    expect(E.potAction(cold, 'start', 10)).toMatchObject({ potState: 'heating', potStartedSimSec: 10, potTempF: 70 });
+    const boiling = Object.assign(E.defaultState(), { potState: 'boiling', potTempF: 212 });
+    expect(E.potAction(boiling, 'drop', 400)).toMatchObject({ potState: 'pasta-in', potPastaInSimSec: 400, potPastaInTempF: 212, potTempF: 202, potPastaSec: 0 });
+    expect(E.potAction(Object.assign(E.defaultState(), { potState: 'pasta-in' }), 'drain', 900)).toMatchObject({ potState: 'drained', potDrainedSimSec: 900, potWaterReserved: false });
+    expect(E.tickPot(Object.assign(E.defaultState(), { potState: 'heating', potTempF: 100 }), E.RECIPES.steak, 1)).toEqual({});   // one-vessel recipes have no pot
+    expect(source).toContain("var potPatch = tickPot(prior, rec, dtSec);");
+    expect(source).not.toContain('tickPotPhase');
+    expect(source).not.toContain('potStartedAt');            // no wall-clock stamps anywhere
+    expect(source).toContain("phase === 'heating' || phase === 'boiling' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'drop',");
+    expect(source).toContain("'⏱️ Drain early (save water)'");
+  });
+
+  it('is a wet sauce: the tomatoes pin the pan at 212°F and the dial sets how fast it reduces', () => {
+    const r = potCook([{ level: 3, untilPanF: 260 }, { level: 3, add: ['oil'], for: 30 }, { level: 3, add: ['garlic'], for: 40 }, { level: 3, add: ['tomatoes'], for: 600 }]);
+    expect(r.state.recipeMoisture).toBeGreaterThan(200);
+    expect(r.trace[3].pan).toBe(212);
+    const hot = potCook([{ level: 3, untilPanF: 260 }, { level: 3, add: ['oil'], for: 30 }, { level: 3, add: ['garlic'], for: 40 }, { level: 7, add: ['tomatoes'], for: 600 }]);
+    expect(hot.state.recipeMoisture).toBeLessThan(r.state.recipeMoisture);
+    expect(hot.trace[3].pan).toBe(212);
+    expect(E.RECIPES.pastaSauce.ingredients.find((i) => i.id === 'tomatoes').moisture).toBe(300);
+  });
+
+  it('joins the bench and the detective with its own pot variables', () => {
+    const tb = E.runBench(E.RECIPES.pastaSauce, 'dial', '0').result;
+    expect(tb.judgement.grade).toBe('A');
+    expect(has(tb.judgement, 'Reduced to cling')).toBe(true);
+    expect(has(tb.judgement, 'Al dente')).toBe(true);
+    expect(has(E.runBench(E.RECIPES.pastaSauce, 'x:water', 'wasted').result.judgement, 'Lost the gold')).toBe(true);
+    expect(has(E.runBench(E.RECIPES.pastaSauce, 'x:drop', 'warm').result.judgement, 'Pasta in cold water')).toBe(true);
+    expect(has(E.runBench(E.RECIPES.pastaSauce, 'x:pastaTime', 'five').result.judgement, 'Pasta underdone')).toBe(true);
+    expect(has(E.runBench(E.RECIPES.pastaSauce, 'x:pastaTime', 'fourteen').result.judgement, 'Pasta overcooked')).toBe(true);
+    expect(has(E.runBench(E.RECIPES.pastaSauce, 'stir', 'never').result.judgement, 'Caught on the bottom')).toBe(true);
+    const lines = E.describeCook(E.RECIPES.pastaSauce, E.TEXTBOOK_COOKS.pastaSauce, E.benchSetup(E.RECIPES.pastaSauce, 'dial', '0'));
+    expect(lines[0]).toBe('pot on, water to boil 0:05');
+    expect(lines[4]).toBe('dial 3 + Crushed tomatoes until the pot is boiling stirring every 60 s');
+    expect(lines[5]).toBe('dial 3 pasta into the pot until the pasta is al dente stirring every 60 s');
+    expect(E.benchNumbers(E.RECIPES.pastaSauce, tb).map((r) => r.id)).toEqual(['time', 'panPeak', 'foodPeak', 'browning', 'reduced', 'pasta', 'unattended', 'smoke']);
+    expect(E.nextDetectiveCase(1, 'pastaSauce')).not.toBeNull();
+  });
+});
+
+describe('Kitchen Lab replay: the logged cook, one thing changed', () => {
+  // A scrambled-egg cook as the cockpit would log it: dial 3 at once, butter at 30 s, eggs at 40 s,
+  // stirred every 8 s, salt and the burner off together at 88 s, judged at 120 s.
+  const eggLog = [{ t: 0, k: 'dial', level: 3 }, { t: 30, k: 'add', id: 'butter' }, { t: 40, k: 'add', id: 'eggs' }]
+    .concat([48, 56, 64, 72, 80].map((t) => ({ t, k: 'stir' })))
+    .concat([{ t: 88, k: 'dial', level: 0 }, { t: 88, k: 'add', id: 'saltPepper' }]);
+
+  it('turns the log into segments, carrying the dial and merging moments', () => {
+    const sched = E.logToSchedule(eggLog, 120);
+    expect(sched[0]).toEqual({ level: 3, until: 30 });
+    expect(sched[1]).toEqual({ level: 3, until: 40, add: ['butter'] });
+    expect(sched[2]).toEqual({ level: 3, until: 48, add: ['eggs'] });
+    expect(sched[3]).toEqual({ level: 3, until: 56, stirNow: 1 });
+    expect(sched[sched.length - 1]).toEqual({ level: 0, until: 120, add: ['saltPepper'] });   // off and salt at the same moment share a segment
+    expect(E.logToSchedule([], 60)).toEqual([{ level: 0, until: 60 }]);
+    const unsorted = E.logToSchedule([{ t: 20, k: 'add', id: 'eggs' }, { t: 5, k: 'dial', level: 2 }], 30);
+    expect(unsorted.map((g) => g.level)).toEqual([0, 2, 2]);
+  });
+
+  it('reproduces the cook tick for tick, so a replay with nothing changed equals the cook', () => {
+    const replay = E.simulateCook(E.RECIPES.scrambledEggs, E.logToSchedule(eggLog, 120), {});
+    const direct = cook('scrambledEggs', [{ until: 30, level: 3 }, { until: 40, level: 3, add: ['butter'] }, { until: 48, level: 3, add: ['eggs'] },
+      { until: 56, level: 3, stirNow: 1 }, { until: 64, level: 3, stirNow: 1 }, { until: 72, level: 3, stirNow: 1 }, { until: 80, level: 3, stirNow: 1 }, { until: 88, level: 3, stirNow: 1 }, { until: 120, level: 0, add: ['saltPepper'] }]);
+    expect(replay.judgement.score).toBe(direct.judgement.score);
+    expect(replay.snapshot.doneness.foodPeakF).toBe(direct.snapshot.doneness.foodPeakF);
+    expect(replay.snapshot.doneness.stirCount).toBe(5);
+    expect(replay.judgement.grade).toBe('A');
+  });
+
+  it('offers the set-up variables plus attention, never the pull point or the pot buttons', () => {
+    expect(E.replayVariables(E.RECIPES.scrambledEggs).map((v) => v.id)).toEqual(['pan', 'dial', 'stir']);
+    expect(E.replayVariables(E.RECIPES.steak).map((v) => v.id)).toEqual(['pan', 'dial', 'oil', 'opt:dry', 'opt:target']);
+    expect(E.replayVariables(E.RECIPES.pastaSauce).map((v) => v.id)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'alt', 'stir']);
+    const dial = E.replayVariables(E.RECIPES.rice).find((v) => v.id === 'dial');
+    expect(dial.choices.map((c) => c.label)).toEqual(['Two notches lower than you did', 'As you did', 'Two notches higher than you did']);
+    const stir = E.replayVariables(E.RECIPES.scrambledEggs).find((v) => v.id === 'stir');
+    expect(stir.choices.map((c) => c.id)).toEqual(['you', 'never', 'often']);
+    expect(stir.choices[2].label).toBe('Stir + fold every 8 s');
+  });
+
+  it('changes exactly one thing about the logged cook and judges it again', () => {
+    const key = 'cook1';
+    const asWas = E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'dial', '0').result;
+    const never = E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'stir', 'never').result;
+    expect(never.snapshot.doneness.stirCount).toBe(0);
+    expect(never.snapshot.doneness.unattendedSec).toBeGreaterThan(asWas.snapshot.doneness.unattendedSec);
+    expect(has(never.judgement, 'Left alone')).toBe(true);
+    const iron = E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'pan', 'castIron').result;
+    expect(iron.snapshot.maxPanTempF).toBeLessThan(asWas.snapshot.maxPanTempF);        // cast iron is still climbing when the eggs go in
+    const hot = E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'dial', '+2').result;
+    expect(hot.snapshot.maxPanTempF).toBeGreaterThan(asWas.snapshot.maxPanTempF + 40);
+    expect(E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'dial', '0')).toBe(E.runReplay(E.RECIPES.scrambledEggs, eggLog, 120, key, 'dial', '0'));   // cached per cook
+    const often = E.replaySetup(E.RECIPES.scrambledEggs, 'stir', 'often');
+    expect(often.stirEvery).toBe(8);
+    expect(E.replaySetup(E.RECIPES.steak, 'opt:target', 'well').options).toEqual({ target: 'well' });
+  });
+
+  it('puts the timeline into the cook report and logs every hand on the cook', () => {
+    const st = Object.assign(E.defaultState(), { recipeOptions: {} });
+    expect(E.describeEvent(E.RECIPES.scrambledEggs, st, { k: 'dial', level: 3 })).toBe('dial 3');
+    expect(E.describeEvent(E.RECIPES.scrambledEggs, st, { k: 'dial', level: 0 })).toBe('burner off');
+    expect(E.describeEvent(E.RECIPES.scrambledEggs, st, { k: 'add', id: 'eggs' })).toBe('+ Whisked eggs (3)');
+    expect(E.describeEvent(E.RECIPES.scrambledEggs, st, { k: 'stir' })).toBe('stir + fold');
+    expect(E.describeEvent(E.RECIPES.pastaSauce, st, { k: 'pot', action: 'drainKeep' })).toBe('pasta drained, a cup of water kept');
+    const report = E.cookReport(E.RECIPES.scrambledEggs, Object.assign(E.defaultState(), { recipeLog: eggLog, recipeJudgement: { score: 100, grade: 'A', verdict: 'x', notes: [] } }), 'F');
+    expect(report).toContain('Timeline:');
+    expect(report).toContain('  0:30  + Butter (1 tbsp)');
+    expect(report).toContain('  1:28  burner off');
+    expect(source).toContain("if ((prior.recipeBurnerLevel || 0) !== level) patch.recipeLog = logEvent(prior, { k: 'dial', level: level });");
+    expect(source).toContain("patch.recipeLog = logEvent(prior, { k: 'add', id: itemId });");
+    expect(source).toContain("recipeLog: logEvent(prior, { k: 'stir' })");
+    expect(source).toContain("advance.recipeLog = logEvent(prior, { k: 'mark', id: finishing.record });");
+    expect(source).toContain("if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, { k: 'pot', action: action });");
+    expect(source.match(/recipeLog: \[\],/g)).toHaveLength(4);
+    expect(source).toContain("!isSandbox && (d.recipeLog || []).length >= 2 ? renderReplayPanel(rec, j) : null,");
+  });
+});
+
+describe('Kitchen Lab forecast: if you change nothing', () => {
+  const st = (over) => Object.assign(E.defaultState(), { recipeLastTickAt: 1_000_000 }, over);
+
+  it('names the moments ahead for a searing steak, in order, and the pan it settles to', () => {
+    const f = E.forecast(E.RECIPES.steak, st({ recipeItemsInPan: ['oil', 'steak'], recipeBurnerLevel: 9, recipePanTempF: 460, recipeFoodInternalF: 110, recipeBrowning: 6, recipeOptions: { target: 'medium' } }));
+    expect(f.settlesF).toBe(469);
+    expect(f.marks.map((m) => m.id)).toEqual(['shade', 'your target', 'overdone']);
+    expect(f.marks[1].label).toBe('centre 145°F (your target)');
+    expect(f.marks[0].label).toBe('browning: deep brown');
+    for (let i = 1; i < f.marks.length; i++) expect(f.marks[i].sec).toBeGreaterThanOrEqual(f.marks[i - 1].sec);
+    expect(f.pastHorizon).toEqual([]);
+    // the same steak with a well-done target asks for 160°F instead, and the USDA floor becomes 'set'
+    const well = E.forecast(E.RECIPES.steak, st({ recipeItemsInPan: ['oil', 'steak'], recipeBurnerLevel: 9, recipePanTempF: 460, recipeFoodInternalF: 110, recipeOptions: { target: 'well' } }));
+    expect(well.marks.map((m) => m.label)).toContain('centre 160°F (your target)');
+    expect(well.marks.map((m) => m.label)).toContain('centre 145°F (set)');
+  });
+
+  it('follows carryover off the heat, and says what lies beyond the horizon', () => {
+    const off = E.forecast(E.RECIPES.steak, st({ recipeItemsInPan: ['oil', 'steak'], recipeBurnerLevel: 0, recipePanTempF: 460, recipeFoodInternalF: 141, recipeHeatRemovedAt: 1_000_000, recipeOptions: {} }));
+    expect(off.settlesF).toBeNull();
+    expect(off.marks.map((m) => m.id)).toEqual(['your target']);        // 141 → 145 on carryover alone
+    expect(off.pastHorizon).toEqual(['centre 160°F (overdone)']);
+    const roast = E.forecast(E.RECIPES.roastChicken, st({ recipeItemsInPan: ['seasoning', 'chicken'], recipeBurnerLevel: 5, recipePanTempF: 350, recipeFoodInternalF: 120 }));
+    expect(roast.horizonSec).toBe(75 * 90);                              // a whole bird gets a longer look ahead
+    expect(roast.marks.map((m) => m.id)).toContain('your target');       // 165°F lands inside it
+  });
+
+  it('watches water, grain, pot and pan as the recipe needs', () => {
+    const rice = E.forecast(E.RECIPES.rice, st({ recipeItemsInPan: ['rice'], recipeBurnerLevel: 2, recipePanTempF: 212, recipeFoodInternalF: 212, recipeMoisture: 120, recipeAbsorbed: 60, recipeOptions: {} }));
+    expect(rice.marks.map((m) => m.id)).toEqual(['grain', 'water']);
+    expect(rice.settlesF).toBe(212);                                    // pinned while there is water
+    const hot = E.forecast(E.RECIPES.rice, st({ recipeItemsInPan: ['rice'], recipeBurnerLevel: 5, recipePanTempF: 212, recipeFoodInternalF: 212, recipeMoisture: 120, recipeAbsorbed: 60, recipeOptions: {} }));
+    expect(hot.marks.map((m) => m.id)).toEqual(['water', 'shade']);      // runs dry, then the floor colours
+    const pot = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'heating', potTempF: 120 }));
+    expect(pot.marks.find((m) => m.id === 'pot').label).toBe('pot boils');
+    const pasta = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'pasta-in', potTempF: 212, potPastaSec: 200, potPastaCook: 200 }));
+    expect(pasta.marks.find((m) => m.id === 'pot')).toMatchObject({ label: 'pasta al dente', sec: 340 });
+    const preheat = E.forecast(E.RECIPES.panSeared, st({ recipeItemsInPan: [], recipeBurnerLevel: 8, recipePanTempF: 200, recipeCurrentStep: 0 }));
+    expect(preheat.marks.map((m) => m.id)).toEqual(['pan']);
+    expect(E.forecast(E.RECIPES.steak, st({ recipeItemsInPan: [], recipeBurnerLevel: 0, recipePanTempF: 70 })).marks).toEqual([]);
+    expect(E.recipeTargetF(E.RECIPES.friedEgg, { recipeOptions: { yolk: 'runny' } })).toBe(150);
+    expect(E.recipeTargetF(E.RECIPES.pancakes, {})).toBe(195);
+    expect(E.recipeTargetF(E.RECIPES.scrambledEggs, {})).toBeNull();
+  });
+
+  it('is coaching: hidden in competition and in demonstrate mode, which the judge records as independent evidence', () => {
+    expect(source).toContain("!inCompetition && !d.klIndependent && d.recipePhase !== 'idle' ? (function() {");
+    expect(source).toContain("if (prior.klIndependent) judgement = Object.assign({}, judgement, { independent: true });");
+    const j = { score: 92, grade: 'A', notes: [], independent: true };
+    const h1 = E.foldRecipeHistory({}, 'steak', j, false);
+    expect(h1.steak).toMatchObject({ attempts: 1, independentRuns: 1, independentBest: 92 });
+    const h2 = E.foldRecipeHistory(h1, 'steak', { score: 70, grade: 'C', notes: [] }, false);
+    expect(h2.steak).toMatchObject({ attempts: 2, independentRuns: 1, independentBest: 92, lastScore: 70 });
+    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: j }), 'F');
+    expect(report).toContain('cooked without coaching (demonstrate mode)');
+  });
+});
+
+describe('Kitchen Lab real kitchen: reading the pan without a thermometer', () => {
+  it('reads a flick of water and the fat by temperature band', () => {
+    expect(E.waterFlickCue(100).tier).toBe('cold');
+    expect(E.waterFlickCue(180).tier).toBe('warm');
+    expect(E.waterFlickCue(250).tier).toBe('sizzle');
+    expect(E.waterFlickCue(330).tier).toBe('hiss');
+    expect(E.waterFlickCue(420).tier).toBe('skitter');
+    expect(E.waterFlickCue(420).text).toContain('Leidenfrost');
+    const evoo = E.SMOKE_POINTS.find((o) => o.oil === 'Extra virgin olive oil');
+    expect(E.fatCue(200, evoo, true)).toContain('thick and still');
+    expect(E.fatCue(300, evoo, true)).toContain('loosened');
+    expect(E.fatCue(340, evoo, true)).toContain('shimmers');
+    expect(E.fatCue(360, evoo, true)).toContain('edge of its smoke point');
+    expect(E.fatCue(400, evoo, true)).toContain('smoking');
+    expect(E.fatCue(400, evoo, false)).toBeNull();
+  });
+
+  it('judges the thermometer habit from the probes in the log, only for recipes with a target', () => {
+    const st = (log, offAt) => Object.assign(E.defaultState(), { recipeLog: log, recipeHeatRemovedSimSec: offAt, recipeOptions: {} });
+    expect(E.thermometerNote(E.RECIPES.steak, st([], 300))).toMatchObject({ neg: true, label: '🌡️ Never probed' });
+    expect(E.thermometerNote(E.RECIPES.steak, st([{ t: 100, k: 'probe', reading: 110 }], 300))).toMatchObject({ neg: true, label: '🌡️ Probed early, not at the end' });
+    const good = E.thermometerNote(E.RECIPES.steak, st([{ t: 100, k: 'probe', reading: 110 }, { t: 280, k: 'probe', reading: 141 }], 300));
+    expect(good).toMatchObject({ neg: false, label: '✓ Verified with the thermometer' });
+    expect(good.detail).toContain('141°F');
+    expect(E.thermometerNote(E.RECIPES.scrambledEggs, st([], 60))).toBeNull();      // no temperature target: no thermometer habit to judge
+    expect(E.thermometerNote(E.RECIPES.freeCook, st([], 60))).toBeNull();
+    // the live judge applies it in real kitchen mode only, and re-grades after the five points
+    expect(source).toContain("if (prior.klRealKitchen && judgement.score != null) {");
+    expect(source).toContain("judgement = Object.assign({}, judgement, { realKitchen: true, notes: (judgement.notes || []).concat([thermo]), score: sc, grade:");
+    // probes and flicks are logged but do not change the replay's schedule
+    expect(E.logToSchedule([{ t: 0, k: 'dial', level: 9 }, { t: 30, k: 'flick' }, { t: 40, k: 'probe', reading: 90 }], 60)).toEqual([{ level: 9, until: 60 }]);
+    const st2 = Object.assign(E.defaultState(), { recipeOptions: {} });
+    expect(E.describeEvent(E.RECIPES.steak, st2, { k: 'probe', reading: 141.4 })).toBe('probed the centre: 141°F');
+    expect(E.describeEvent(E.RECIPES.steak, st2, { k: 'flick' })).toBe('flicked water on the pan');
+    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: { score: 95, grade: 'A', verdict: 'x', notes: [], realKitchen: true, independent: true } }), 'F');
+    expect(report).toContain('cooked in real kitchen mode (no live thermometer)');
+  });
+
+  it('the steak judge reads the rest as a duration: three minutes is the recipe, slicing at once loses the carryover', () => {
+    const rested = E.runBench(E.RECIPES.steak, 'dial', '0').result;
+    expect(has(rested.judgement, 'Rested 3 min')).toBe(true);
+    const sched = E.TEXTBOOK_COOKS.steak.map((g) => g.off ? Object.assign({}, g, { for: 6 }) : g);
+    const sliced = E.simulateCook(E.RECIPES.steak, sched, { options: {} });
+    expect(has(sliced.judgement, 'Sliced straight away')).toBe(true);
+    expect(sliced.judgement.score).toBeLessThan(rested.judgement.score);
+    const short = E.simulateCook(E.RECIPES.steak, E.TEXTBOOK_COOKS.steak.map((g) => g.off ? Object.assign({}, g, { for: 60 }) : g), { options: {} });
+    expect(has(short.judgement, 'Short rest')).toBe(true);
+  });
+});
+
+describe('Kitchen Lab class set and trace scrubber', () => {
+  it('writes five distinct cases as text with an answer key the teacher can read', () => {
+    const text = E.detectiveWorksheet(1, 5, null, 'F');
+    const cases = text.split('\n').filter((l) => /^Case \d+ · /.test(l));
+    expect(cases).toHaveLength(5);
+    expect(new Set(cases).size).toBeGreaterThanOrEqual(3);                     // any-recipe sets cycle recipes
+    expect(text).toContain('KITCHEN DETECTIVE · class set of 5');
+    expect(text).toContain('  The plan:');
+    expect(text).toContain('  What came out: score ');
+    expect(text).toContain('    A. ');
+    expect(text).toMatch(/Answer key \(teacher\): 1-[ABCD] \(/);
+    expect(text).toContain('the judge said: ');
+    expect(text).not.toContain('°C');
+    const rice = E.detectiveWorksheet(1, 3, 'rice', 'C');
+    expect(rice).toContain('class set of 3 · Rice (Absorption Method)');
+    expect(rice.split('\n').filter((l) => /^Case \d+ · Rice/.test(l))).toHaveLength(3);
+    expect(rice).toContain('°C');
+    expect(rice).not.toContain('°F');
+    // an answer letter names one of the printed options, every time
+    const lines = text.split('\n');
+    const keyLine = lines.find((l) => l.startsWith('Answer key'));
+    keyLine.replace('Answer key (teacher): ', '').split(' · ').forEach((entry) => {
+      const m = entry.match(/^(\d+)-([ABCD]) \((.*?)(?:; the judge said: |\)$)/);   // the culprit label may itself hold parentheses (a smoke point)
+      expect(m).not.toBeNull();
+      const start = lines.indexOf('Case ' + m[1] + ' · ' + lines.find((l) => l.startsWith('Case ' + m[1] + ' · ')).slice(('Case ' + m[1] + ' · ').length));
+      const option = lines.slice(start).find((l) => l.startsWith('    ' + m[2] + '. '));
+      expect(option).toBe('    ' + m[2] + '. ' + m[3]);
+    });
+    expect(source).toContain("var text = detectiveWorksheet(seed, 5, recId, units);");
+  });
+
+  it('draws a cursor on the trace where the scrubber points, and reads the moment out as numbers', () => {
+    expect(source).toContain("opts.cursorT != null ? (function() {");
+    expect(source).toContain("'data-kl-trace-cursor': Math.round(tOf(q.p, q.i))");
+    expect(source).toContain("renderTraceScrubber(d.recipeTempHistory, traceMarks(rec), 'klScrubResults'),");
+    expect(source).toContain("renderTraceScrubber(res.history, traceMarksFor(rec, res.state, __alloT('stem.kitchenlab.heat_off', 'Heat off')), 'klScrubDetective'),");
+    expect(source).toContain("'aria-valuetext': klClock(t) + ': pan ' + fmtT(p.pan) + ', centre ' + fmtT(p.food),");
+    expect(source).toContain("klFlickReading: null, klScrubResults: null");    // a new cook starts at the end of its own trace
+  });
+});
+
+describe('Kitchen Lab altitude: water boils lower up a mountain', () => {
+  it('sets the boiling point from the altitude and slows what cooks in water', () => {
+    expect(E.boilingPointF({})).toBe(212);
+    expect(E.boilingPointF({ klAltitudeFt: 2500 })).toBe(207);
+    expect(E.boilingPointF({ klAltitudeFt: 5280 })).toBe(201.4);
+    expect(E.boilingPointF({ klAltitudeFt: 10000 })).toBe(192);
+    expect(E.boilCookRate(212)).toBe(1);
+    expect(E.boilCookRate(201.4)).toBeCloseTo(0.853, 2);
+    expect(E.boilCookRate(192)).toBeCloseTo(0.722, 2);
+    expect(E.ALTITUDES.map((a) => a.ft)).toEqual([0, 2500, 5280, 7000, 10000]);
+    const denver = Object.assign(E.defaultState(), { recipeItemsInPan: ['rice'], recipeMoisture: 100, klAltitudeFt: 5280 });
+    expect(E.boilCap(E.RECIPES.rice, denver, 380)).toBe(201.4);
+    expect(E.boilCap(E.RECIPES.steak, Object.assign({}, denver, { recipeItemsInPan: ['oil', 'steak'] }), 380)).toBe(380);   // a dry pan does not care
+  });
+
+  it('pins the rice pot and the pasta pot at the local boil, and the pasta needs longer', () => {
+    const sea = E.runBench(E.RECIPES.rice, 'alt', '0').result, high = E.runBench(E.RECIPES.rice, 'alt', '10000').result;
+    expect(sea.snapshot.maxPanTempF).toBe(212);
+    expect(high.snapshot.maxPanTempF).toBe(192);
+    expect(high.judgement.grade).toBe('A');                                   // a rest makes rice forgiving
+    expect(has(high.judgement, 'Never past boiling')).toBe(true);
+    expect(high.judgement.notes.find((n) => n.label === '✓ Never past boiling').detail).toContain('water boils at 192°F at this altitude');
+    const pSea = E.runBench(E.RECIPES.pastaSauce, 'alt', '0').result, pHigh = E.runBench(E.RECIPES.pastaSauce, 'alt', '10000').result;
+    expect(pHigh.simSec).toBeGreaterThan(pSea.simSec + 100);                  // al dente takes longer at a cooler boil
+    expect(pHigh.state.potPastaCook).toBeGreaterThanOrEqual(540);
+    expect(pHigh.state.potPastaSec).toBeGreaterThan(700);                     // more minutes in the water for the same cooking
+    expect(pHigh.state.potTempF).toBeLessThanOrEqual(192);
+    expect(pHigh.judgement.grade).toBe('A');
+    expect(has(pHigh.judgement, 'Al dente')).toBe(true);
+    expect(E.benchNumbers(E.RECIPES.pastaSauce, pHigh).map((r) => r.id)).toContain('boil');
+    expect(E.benchNumbers(E.RECIPES.pastaSauce, pHigh).find((r) => r.id === 'pasta').value).toContain('cooks like 9:00 at sea level');
+    // nine sea-level minutes on the clock at 10,000 ft is underdone
+    const clocked = E.simulateCook(E.RECIPES.pastaSauce, E.TEXTBOOK_COOKS.pastaSauce.map((g) => g.untilPotCook ? Object.assign({}, g, { untilPotCook: undefined, untilPotPastaSec: 540 }) : g), { altitudeFt: 10000 });
+    expect(has(clocked.judgement, 'Pasta underdone')).toBe(true);
+  });
+
+  it('moves every threshold that was 212 or 205: the boil step, the pot phases, the cues, the forecast, the trace line', () => {
+    const rice = E.RECIPES.rice.steps.find((st) => st.completeWhen === 'boiling');
+    expect(rice.target).toEqual({ boil: true });
+    expect(source).toContain("if (vesselHasWater(rec, d) && (d.recipePanTempF || 0) >= boilingPointF(d) - 7) {");
+    const pot = E.tickPot(Object.assign(E.defaultState(), { potState: 'heating', potTempF: 199, klAltitudeFt: 5280 }), E.RECIPES.pastaSauce, 1);
+    expect(pot.potState).toBe('boiling');                                     // 199 is a boil in Denver
+    expect(E.tickPot(Object.assign(E.defaultState(), { potState: 'heating', potTempF: 199 }), E.RECIPES.pastaSauce, 1).potState).toBeUndefined();   // not at sea level
+    expect(E.klBoilLevel(200, true, 2, 100, 201.4).caption).toContain('bare simmer');
+    expect(E.klBoilLevel(200, true, 2, 100).caption).toContain('about to boil');
+    expect(E.waterFlickCue(205, 201.4).tier).toBe('sizzle');
+    expect(E.waterFlickCue(205).tier).toBe('warm');
+    const fc = E.forecast(E.RECIPES.rice, Object.assign(E.defaultState(), { recipeItemsInPan: ['rice'], recipeBurnerLevel: 9, recipePanTempF: 150, recipeMoisture: 200, klAltitudeFt: 5280, recipeLastTickAt: 1e6 }));
+    expect(fc.settlesF).toBe(201);
+    expect(source).toContain("var refs = [{ t: boilingPointF(d), label: __alloT('stem.kitchenlab.boil', 'Boil'), c: '#38bdf8' }");
+    const pastaPot = { potWaterReserved: true, potStartedSimSec: 0, potPastaInSimSec: 400, potPastaInTempF: 199, potDrainedSimSec: 940, potPastaSec: 600, potPastaCook: 540 };
+    const j = E.simulateCook(E.RECIPES.pastaSauce, [{ until: 60, level: 3, add: ['oil'] }, { until: 90, level: 3, add: ['garlic'] }, { until: 600, level: 3, add: ['tomatoes'] }, { until: 630, level: 3, add: ['pasta'] }], { fullState: pastaPot, altitudeFt: 5280 }).judgement;
+    expect(has(j, 'Boiling water')).toBe(true);                               // 199°F is a full boil in Denver
+    expect(has(j, 'Al dente')).toBe(true);
+  });
+});
+
+describe('Kitchen Lab oven door, sauce lid and portfolio', () => {
+  it('lets 25°F out per peek, counts the peeks, and the oven judges take a view from three', () => {
+    expect(E.peekOven({ recipePanTempF: 425, recipePeeks: 2 })).toEqual({ recipePanTempF: 400, recipePeeks: 3 });
+    expect(E.ovenDoorNote(0).label).toBe('✓ Door stayed shut');
+    expect(E.ovenDoorNote(2).neg).toBe(false);
+    expect(E.ovenDoorNote(5, 6).label).toBe('🚪 Door opened 5 times');
+    expect(E.ovenDoorNote(5, 6).detail).toContain('about 25°F (14°C) out');   // a difference in the dual form localizeTemps keeps
+    const shut = E.runBench(E.RECIPES.sheetPan, 'x:door', 'shut').result, peeks = E.runBench(E.RECIPES.sheetPan, 'x:door', 'peeks').result;
+    expect(has(shut.judgement, 'Door stayed shut')).toBe(true);
+    expect(peeks.snapshot.peeks).toBe(6);
+    expect(has(peeks.judgement, 'Door opened 6 times')).toBe(true);
+    expect(peeks.judgement.score).toBe(shut.judgement.score - 5);
+    const bird = E.runBench(E.RECIPES.roastChicken, 'x:door', 'peeks').result;
+    expect(bird.simSec).toBeGreaterThan(E.runBench(E.RECIPES.roastChicken, 'x:door', 'shut').result.simSec);   // the bird takes longer in a cooler oven
+    expect(has(bird.judgement, 'Door opened')).toBe(true);
+    // a logged peek replays where it happened, and the timeline names it
+    expect(E.logToSchedule([{ t: 0, k: 'dial', level: 7 }, { t: 600, k: 'peek' }], 900)).toEqual([{ level: 7, until: 600 }, { level: 7, until: 900, peek: true }]);
+    const replayed = E.simulateCook(E.RECIPES.sheetPan, [{ level: 7, until: 300 }, { level: 7, add: ['oil', 'veg'], until: 900, peek: true }, { level: 7, until: 1200, peek: true }, { level: 7, add: ['flip'], until: 1800, peek: true }, { off: true, until: 1810 }]);
+    expect(replayed.snapshot.peeks).toBe(3);
+    expect(E.describeEvent(E.RECIPES.sheetPan, E.defaultState(), { k: 'peek' })).toBe('opened the oven door');
+    expect(E.describeCook(E.RECIPES.sheetPan, E.applyBenchSetup(E.TEXTBOOK_COOKS.sheetPan, E.benchSetup(E.RECIPES.sheetPan, 'x:door', 'peeks'), E.RECIPES.sheetPan), {})[2]).toContain('opening the door every 4:00');
+    expect(source).toContain("h('button', { type: 'button', disabled: isPaused, 'data-kl-peek': d.recipePeeks || 0,");
+    expect(source.match(/recipePeeks: 0,/g)).toHaveLength(4);
+  });
+
+  it('gives the pasta sauce a lid that keeps it thin', () => {
+    expect(E.RECIPES.pastaSauce.options.map((o) => o.id)).toEqual(['lid']);
+    const off = E.runBench(E.RECIPES.pastaSauce, 'opt:lid', 'off').result, on = E.runBench(E.RECIPES.pastaSauce, 'opt:lid', 'on').result;
+    expect(on.state.recipeMoisture).toBeGreaterThan(off.state.recipeMoisture);
+    expect(has(on.judgement, 'Thin sauce')).toBe(true);
+    expect(has(off.judgement, 'Reduced to cling')).toBe(true);
+  });
+
+  it('writes the portfolio from state: recipes, independent runs, badges, detective, bench', () => {
+    const st = Object.assign(E.defaultState(), {
+      recipeHistory: { steak: { attempts: 3, bestScore: 92, bestGrade: 'A', lastScore: 85, lastGrade: 'B', lastIssue: 'Past your target', competitionRuns: 1, independentRuns: 1, independentBest: 92 }, rice: { attempts: 1, bestScore: 100, bestGrade: 'A', lastScore: 100, lastGrade: 'A', lastIssue: null, competitionRuns: 0, independentRuns: 0, independentBest: null } },
+      aGradedRecipeIds: ['steak', 'rice'], klUnlockedAchievements: ['firstCook', 'kitchenDetective'], klDetectiveSolved: 5, klDetectiveCases: 6, klBenchRuns: 4 });
+    const text = E.portfolioText(st, 'F');
+    expect(text).toContain('2 of 12 recipes cooked · 2 mastered (an A) · 1 cooked without coaching · detective 5 of 6 cases on the first guess · bench experiments run: 4');
+    expect(text).toContain('  Pan-Seared Steak: 3 cooks · best A 92 · last B 85 · 1 without coaching (best 92) · 1 in competition · last flagged: Past your target');
+    expect(text).toContain('  Rice (Absorption Method): 1 cook · best A 100 · last A 100');
+    expect(text).toContain('  Scrambled Eggs: not yet cooked');
+    expect(text).toContain('Badges (2 of 27): First Cook, Kitchen Detective');
+    expect(source).toContain("var text = portfolioText(d, units);");
+    expect(source).toContain("klBenchRuns: (prior.klBenchRuns || 0) + 1");
   });
 });

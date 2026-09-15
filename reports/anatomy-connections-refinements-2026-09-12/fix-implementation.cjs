@@ -1,0 +1,1 @@
+const fs=require('node:fs'),file=__dirname+'/implement.cjs';let s=fs.readFileSync(file,'utf8');s=s.replace("activeTab === 'tour' && currentTourStep", "activeTab==='tour'&&currentTourStep");fs.writeFileSync(file,s);

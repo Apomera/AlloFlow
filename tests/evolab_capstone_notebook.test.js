@@ -176,11 +176,14 @@ describe('EvoLab Capstone evidence notebook', () => {
     expect(persisted.runs).toHaveLength(1);
     expect(persisted.runs[0]).toMatchObject({ id: 'run-1', moduleId: 'geneticDrift' });
     expect(persisted.runs[0].sourceRunKey).toMatch(/^geneticDrift:/);
-    // The bottleneck factor (2026-09-13) is always present so a change-one plan can target it.
+    // The bottleneck, selection (2026-09-13), breeding-males and migrants (2026-09-14) factors are always present so a change-one plan can target them.
     expect(persisted.runs[0].comparison.factors).toEqual([
       { id: 'populationSize', label: 'Population size', value: 10 },
+      { id: 'breedingMales', label: 'Breeding males', value: 5 },
+      { id: 'migrants', label: 'Migrants per generation (Nm)', value: 0 },
       { id: 'generations', label: 'Generations', value: 100 },
-      { id: 'bottleneck', label: 'Bottleneck', value: 'Off' }
+      { id: 'bottleneck', label: 'Bottleneck', value: 'Off' },
+      { id: 'selection', label: 'Selection for A (s)', value: 0 }
     ]);
     expect(persisted.runs[0].baseline).toContain('N = 10');
     expect(persisted.runs[0].metrics.find((metric) => metric.label === 'Final p(A) values')).toBeTruthy();

@@ -1,0 +1,174 @@
+{
+  "title": "Kitchen Lab skills evidence",
+  "version": 4,
+  "exportedAt": "2026-09-13T01:06:45.512Z",
+  "scope": "Simulated decisions and reasoning; not certification of physical kitchen competence. Written responses require human review.",
+  "skills": [
+    {
+      "id": "prep",
+      "recorded": false,
+      "independent": false,
+      "scenarios": [],
+      "status": "Ready to explore"
+    },
+    {
+      "id": "knife",
+      "recorded": false,
+      "independent": false,
+      "scenarios": [],
+      "status": "Ready to explore"
+    },
+    {
+      "id": "heat",
+      "recorded": false,
+      "independent": false,
+      "scenarios": [],
+      "status": "Ready to explore"
+    },
+    {
+      "id": "probe",
+      "recorded": false,
+      "independent": false,
+      "scenarios": [],
+      "status": "Ready to explore"
+    },
+    {
+      "id": "measure",
+      "recorded": true,
+      "independent": false,
+      "scenarios": [],
+      "status": "Practice or support recorded"
+    },
+    {
+      "id": "chill",
+      "recorded": false,
+      "independent": false,
+      "scenarios": [],
+      "status": "Ready to explore"
+    }
+  ],
+  "bestDemonstrations": [],
+  "attempts": [
+    {
+      "mission": "measure",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Scale a recipe",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Stock measured",
+          "met": true
+        },
+        {
+          "label": "Scaled quantity checked",
+          "met": true
+        }
+      ],
+      "mode": "demonstrate",
+      "completed": true,
+      "submitted": true,
+      "actionCount": 4,
+      "corrections": 0,
+      "hints": 3,
+      "hintLog": [
+        {
+          "afterAction": 0,
+          "level": 1,
+          "text": "What is 6 servings divided by the original 2 servings?"
+        },
+        {
+          "afterAction": 0,
+          "level": 2,
+          "text": "Add 150 mL of stock The factor is 3, so the target is 450 mL. You have 0 mL; add 450 mL in total, checking as you go."
+        },
+        {
+          "afterAction": 1,
+          "level": 1,
+          "text": "What is 6 servings divided by the original 2 servings?"
+        }
+      ],
+      "reasoningCorrect": true,
+      "answer": "Multiply each original quantity by three.",
+      "reflection": "",
+      "status": "Completed with support",
+      "actions": [
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 150 mL.",
+          "values": {
+            "ml": 150
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 300 mL.",
+          "values": {
+            "ml": 300
+          }
+        },
+        {
+          "action": "add150",
+          "accepted": true,
+          "observation": "Jug contains 450 mL.",
+          "values": {
+            "ml": 450
+          }
+        },
+        {
+          "action": "check",
+          "accepted": true,
+          "observation": "You measured 450 mL at eye level for six servings.",
+          "values": {
+            "ml": 450
+          }
+        }
+      ]
+    },
+    {
+      "mission": "prep",
+      "scenario": "standard",
+      "scenarioLabel": "Foundation challenge",
+      "title": "Set up a safe workspace",
+      "plan": "",
+      "criteria": [
+        {
+          "label": "Hands washed",
+          "met": true
+        },
+        {
+          "label": "Equipment ready",
+          "met": false
+        },
+        {
+          "label": "Vegetables prepared",
+          "met": false
+        }
+      ],
+      "mode": "practice",
+      "completed": false,
+      "submitted": false,
+      "actionCount": 1,
+      "corrections": 0,
+      "hints": 0,
+      "hintLog": [],
+      "reasoningCorrect": false,
+      "answer": null,
+      "reflection": "",
+      "status": "In progress",
+      "actions": [
+        {
+          "action": "wash",
+          "accepted": true,
+          "observation": "Soap-and-water handwashing modeled for at least 20 seconds.",
+          "values": {
+            "washed": true
+          }
+        }
+      ]
+    }
+  ],
+  "rehearsals": []
+}

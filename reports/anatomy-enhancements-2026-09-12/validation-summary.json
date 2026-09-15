@@ -1,0 +1,23 @@
+{
+  "runs": [
+    {
+      "file": "test-results.json",
+      "passed": 597,
+      "failed": 3
+    },
+    {
+      "file": "final-focused-tests.json",
+      "passed": 198,
+      "failed": 0
+    }
+  ],
+  "latestResults": {
+    "files": 37,
+    "passed": 608,
+    "failed": 0
+  },
+  "sourceSha256": "0a4322334c5ef35d81bfa8131a43b2e13dfd00b9b26cffa7f3fb81a656f73106",
+  "mirrorMatches": true,
+  "newTranslationsPerLanguage": 55,
+  "failures": []
+}

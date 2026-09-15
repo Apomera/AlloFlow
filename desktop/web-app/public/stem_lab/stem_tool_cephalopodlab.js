@@ -15203,7 +15203,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           try { sandTex.dispose(); } catch (e) {}
           try { causticsTex.dispose(); } catch (e) {}
           try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
-          renderer.dispose();
+          renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
           canvasEl._clInit = false;
         };
       }

@@ -1,0 +1,772 @@
+[
+  {
+    "app": "light",
+    "reading": "default",
+    "sentence": {
+      "bg": "rgb(253, 224, 71)",
+      "color": "rgb(2, 6, 23)",
+      "border": "0px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(30, 41, 59)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "warm",
+    "sentence": {
+      "bg": "rgb(255, 250, 245)",
+      "color": "rgb(67, 39, 20)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(67, 39, 20)"
+    },
+    "themeValue": "warm",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "sepia",
+    "sentence": {
+      "bg": "rgb(255, 250, 242)",
+      "color": "rgb(42, 31, 19)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(42, 31, 19)"
+    },
+    "themeValue": "sepia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "dark",
+    "sentence": {
+      "bg": "rgb(36, 36, 59)",
+      "color": "rgb(226, 232, 240)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(226, 232, 240)"
+    },
+    "themeValue": "dark",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "highContrast",
+    "sentence": {
+      "bg": "rgb(0, 0, 0)",
+      "color": "rgb(255, 255, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 0)"
+    },
+    "themeValue": "highContrast",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "blue",
+    "sentence": {
+      "bg": "rgb(248, 252, 255)",
+      "color": "rgb(22, 48, 75)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(22, 48, 75)"
+    },
+    "themeValue": "blue",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "green",
+    "sentence": {
+      "bg": "rgb(251, 255, 251)",
+      "color": "rgb(18, 63, 33)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(18, 63, 33)"
+    },
+    "themeValue": "green",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "rose",
+    "sentence": {
+      "bg": "rgb(255, 249, 251)",
+      "color": "rgb(86, 21, 48)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(86, 21, 48)"
+    },
+    "themeValue": "rose",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "dyslexia",
+    "sentence": {
+      "bg": "rgb(255, 254, 248)",
+      "color": "rgb(63, 59, 49)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(63, 59, 49)"
+    },
+    "themeValue": "dyslexia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "light",
+    "reading": "dim",
+    "sentence": {
+      "bg": "rgb(215, 219, 224)",
+      "color": "rgb(0, 0, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "default",
+    "sentence": {
+      "bg": "rgb(66, 32, 6)",
+      "color": "rgb(2, 6, 23)",
+      "border": "0px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(248, 250, 252)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "warm",
+    "sentence": {
+      "bg": "rgb(249, 126, 31)",
+      "color": "rgb(67, 39, 20)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(67, 39, 20)"
+    },
+    "themeValue": "warm",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "sepia",
+    "sentence": {
+      "bg": "rgb(180, 137, 80)",
+      "color": "rgb(42, 31, 19)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(42, 31, 19)"
+    },
+    "themeValue": "sepia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "dark",
+    "sentence": {
+      "bg": "rgb(69, 69, 137)",
+      "color": "rgb(226, 232, 240)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(226, 232, 240)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "highContrast",
+    "sentence": {
+      "bg": "rgb(77, 77, 0)",
+      "color": "rgb(255, 255, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 0)"
+    },
+    "themeValue": "highContrast",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "blue",
+    "sentence": {
+      "bg": "rgb(74, 169, 237)",
+      "color": "rgb(22, 48, 75)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(22, 48, 75)"
+    },
+    "themeValue": "blue",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "green",
+    "sentence": {
+      "bg": "rgb(52, 197, 72)",
+      "color": "rgb(18, 63, 33)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(18, 63, 33)"
+    },
+    "themeValue": "green",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "rose",
+    "sentence": {
+      "bg": "rgb(248, 119, 162)",
+      "color": "rgb(86, 21, 48)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(86, 21, 48)"
+    },
+    "themeValue": "rose",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "dyslexia",
+    "sentence": {
+      "bg": "rgb(207, 176, 23)",
+      "color": "rgb(63, 59, 49)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(63, 59, 49)"
+    },
+    "themeValue": "dyslexia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "dark",
+    "reading": "dim",
+    "sentence": {
+      "bg": "rgb(116, 134, 164)",
+      "color": "rgb(0, 0, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "default",
+    "sentence": {
+      "bg": "rgb(0, 0, 0)",
+      "color": "rgb(255, 255, 0)",
+      "border": "2px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 0)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "warm",
+    "sentence": {
+      "bg": "rgb(249, 126, 31)",
+      "color": "rgb(67, 39, 20)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(67, 39, 20)"
+    },
+    "themeValue": "warm",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "sepia",
+    "sentence": {
+      "bg": "rgb(180, 137, 80)",
+      "color": "rgb(42, 31, 19)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(42, 31, 19)"
+    },
+    "themeValue": "sepia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "dark",
+    "sentence": {
+      "bg": "rgb(69, 69, 137)",
+      "color": "rgb(226, 232, 240)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(226, 232, 240)"
+    },
+    "themeValue": "dark",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "highContrast",
+    "sentence": {
+      "bg": "rgb(77, 77, 0)",
+      "color": "rgb(255, 255, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(255, 255, 0)"
+    },
+    "themeValue": "highContrast",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "blue",
+    "sentence": {
+      "bg": "rgb(74, 169, 237)",
+      "color": "rgb(22, 48, 75)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(22, 48, 75)"
+    },
+    "themeValue": "blue",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "green",
+    "sentence": {
+      "bg": "rgb(52, 197, 72)",
+      "color": "rgb(18, 63, 33)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(18, 63, 33)"
+    },
+    "themeValue": "green",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "rose",
+    "sentence": {
+      "bg": "rgb(248, 119, 162)",
+      "color": "rgb(86, 21, 48)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(86, 21, 48)"
+    },
+    "themeValue": "rose",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "dyslexia",
+    "sentence": {
+      "bg": "rgb(207, 176, 23)",
+      "color": "rgb(63, 59, 49)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(63, 59, 49)"
+    },
+    "themeValue": "dyslexia",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  },
+  {
+    "app": "contrast",
+    "reading": "dim",
+    "sentence": {
+      "bg": "rgb(116, 134, 164)",
+      "color": "rgb(0, 0, 0)",
+      "border": "1px"
+    },
+    "paragraph": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    "themeValue": "default",
+    "options": [
+      "default",
+      "warm",
+      "sepia",
+      "dark",
+      "highContrast",
+      "blue",
+      "green",
+      "rose",
+      "dyslexia"
+    ],
+    "overflow": false
+  }
+]

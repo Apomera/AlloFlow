@@ -12518,40 +12518,58 @@ var EXPEDITION_CONNECTIONS = [
           { id: 'goalCoach', label: 'Goal Coach', icon: '✨', desc: 'SMART goal builder with weak/strong examples + quality checker' },
           { id: 'checkin', label: 'Weekly check-in', icon: '✏️', desc: 'Rate yourself 1–4 on each HOWL with evidence + next-week intention' },
           { id: 'history', label: 'History', icon: '📈', desc: 'Trend chart + past check-ins' },
-          { id: 'crew', label: 'Crew prompts', icon: '🤝', desc: 'Discussion prompts for Crew time' },
-          { id: 'climate', label: 'Climate', icon: '🌡', desc: 'Anonymous Crew climate temperature polls' },
-          { id: 'protocols', label: 'Protocols', icon: '📋', desc: '12 EL/NSRF facilitation scripts (Council, Fishbowl, Tuning, Mirror, more)' },
-          { id: 'library', label: 'Library', icon: '📚', desc: 'Deep dive per HOWL: strands, research, misconceptions' },
+          { id: 'crew', leader: true, label: 'Crew prompts', icon: '🤝', desc: 'Discussion prompts for Crew time' },
+          { id: 'climate', leader: true, label: 'Climate', icon: '🌡', desc: 'Anonymous Crew climate temperature polls' },
+          { id: 'protocols', leader: true, label: 'Protocols', icon: '📋', desc: '12 EL/NSRF facilitation scripts (Council, Fishbowl, Tuning, Mirror, more)' },
+          { id: 'library', leader: true, label: 'Library', icon: '📚', desc: 'Deep dive per HOWL: strands, research, misconceptions' },
           { id: 'conference', label: 'SLC rehearsal', icon: '🎓', desc: 'Student-Led Conference 7-step scaffold' },
           { id: 'print', label: 'Print', icon: '🖨', desc: 'Quarter snapshot for binders + IEP meetings' },
           { id: 'radar', label: 'HOWL Radar', icon: '🎯', desc: 'Visualized 4-axis SVG radar of current self-rating' },
           { id: 'goal_lab', label: 'SMART Lab', icon: '🧪', desc: 'Live SMART quality checker as you type' },
           { id: 'rubric', label: 'Rubric', icon: '📋', desc: 'Click-to-rate self-assessment with rich descriptors' },
-          { id: 'protocol_run', label: 'Run Protocol', icon: '⏱️', desc: 'Step-by-step protocol facilitator with timer + scripts' },
-          { id: 'climate_gauge', label: 'Climate Gauge', icon: '🌡️', desc: 'Animated thermometer of anonymous Crew climate' },
-          { id: 'opener_random', label: 'Opener Randomizer', icon: '🎲', desc: 'Pick an opener by mood and time; skips the ones you used' },
+          { id: 'protocol_run', leader: true, label: 'Run Protocol', icon: '⏱️', desc: 'Step-by-step protocol facilitator with timer + scripts' },
+          { id: 'climate_gauge', leader: true, label: 'Climate Gauge', icon: '🌡️', desc: 'Animated thermometer of anonymous Crew climate' },
+          { id: 'opener_random', leader: true, label: 'Opener Randomizer', icon: '🎲', desc: 'Pick an opener by mood and time; skips the ones you used' },
           { id: 'timeline', label: 'Quarter Timeline', icon: '📅', desc: '9-week quarter visualized as HOWL x week heatmap' },
-          { id: 'goals_lib', label: 'Goals Library', icon: '📚', desc: 'Goal sentences by HOWL and starting level' },
-          { id: 'evidence_lib', label: 'Evidence Library', icon: '🔍', desc: 'Student voices at each level, one to four' },
+          { id: 'goals_lib', leader: true, label: 'Goals Library', icon: '📚', desc: 'Goal sentences by HOWL and starting level' },
+          { id: 'evidence_lib', leader: true, label: 'Evidence Library', icon: '🔍', desc: 'Student voices at each level, one to four' },
           { id: 'exemplars', label: 'Exemplars', icon: '🌟', desc: '80 narrative vignettes of students at each level' },
           { id: 'reflection_prompts', label: 'Reflection', icon: '✨', desc: '200 weekly reflection prompts' },
-          { id: 'misconceptions', label: 'Misconceptions', icon: '💭', desc: 'Common student misconceptions + reframes' },
-          { id: 'climate_scenarios', label: 'Climate Scenarios', icon: '⚖️', desc: 'Crew dynamics worth noticing, and one way to navigate them' },
-          { id: 'rituals', label: 'Rituals', icon: '🎭', desc: 'Openers, closers, celebrations library' },
+          { id: 'misconceptions', leader: true, label: 'Misconceptions', icon: '💭', desc: 'Common student misconceptions + reframes' },
+          { id: 'climate_scenarios', leader: true, label: 'Climate Scenarios', icon: '⚖️', desc: 'Crew dynamics worth noticing, and one way to navigate them' },
+          { id: 'rituals', leader: true, label: 'Rituals', icon: '🎭', desc: 'Openers, closers, celebrations library' },
           { id: 'portrait', label: 'Graduate', icon: '🎓', desc: 'EL Portrait of Graduate traits' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'HOWL Tracker sections',
-          style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
-            var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              title: t.desc,
-              style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (active ? _howFg('#a78bfa') : '#334155'),
-                background: active ? 'rgba(167,139,250,0.18)' : _howBg('#1e293b'),
-                color: active ? _howFg('#e9d5ff') : _howFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
-              t.icon + ' ' + t.label);
-          })
+        // Twenty-seven sections is a Crew leader's tool, not a seventh grader's first screen.
+        // The student sections show; the leader sections sit behind one toggle, which opens
+        // itself when the current view is one of them.
+        var leaderTabs = tabs.filter(function(t) { return t.leader; });
+        var studentTabs = tabs.filter(function(t) { return !t.leader; });
+        var showLeader = !!d.showLeaderTabs || leaderTabs.some(function(t) { return t.id === view; });
+        function tabButton(t) {
+          var active = view === t.id;
+          return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            role: 'tab', 'aria-selected': active,
+            title: t.desc,
+            style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (active ? _howFg('#a78bfa') : '#334155'),
+              background: active ? 'rgba(167,139,250,0.18)' : _howBg('#1e293b'),
+              color: active ? _howFg('#e9d5ff') : _howFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+            t.icon + ' ' + t.label);
+        }
+        return h('div', null,
+          h('div', { role: 'tablist', 'aria-label': 'HOWL Tracker sections',
+            style: { display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
+            studentTabs.map(tabButton),
+            h('button', { key: '__leader', type: 'button', onClick: function() { upd({ showLeaderTabs: !showLeader }); },
+              'aria-expanded': showLeader ? 'true' : 'false', 'aria-controls': 'howl-leader-tabs',
+              title: 'Prompts, protocols, climate, rituals and libraries for the adult who runs Crew',
+              style: { padding: '6px 14px', borderRadius: 8, border: '1px dashed ' + _howBd('#475569'), background: 'transparent', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              (showLeader ? '\u25BE ' : '\u25B8 ') + 'For Crew leaders (' + leaderTabs.length + ')')
+          ),
+          showLeader ? h('div', { id: 'howl-leader-tabs', role: 'tablist', 'aria-label': 'HOWL Tracker sections for Crew leaders',
+            style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap', padding: 8, borderRadius: 8, border: '1px dashed ' + _howBd('#475569') } },
+            leaderTabs.map(tabButton)
+          ) : h('div', { style: { marginBottom: 8 } })
         );
       }
 
@@ -12789,6 +12807,7 @@ var EXPEDITION_CONNECTIONS = [
         })();
 
         return h('div', null,
+          (window.SelHub && window.SelHub.renderElPrimer) ? window.SelHub.renderElPrimer(h, { fg: _howFg, bg: _howBg, bd: _howBd }) : null,
           // Quarter banner
           h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(56,189,248,0.06) 100%)', borderTop: '1px solid rgba(167,139,250,0.4)', borderRight: '1px solid rgba(167,139,250,0.4)', borderBottom: '1px solid rgba(167,139,250,0.4)', borderLeft: '4px solid #a78bfa', marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
@@ -14109,6 +14128,9 @@ var EXPEDITION_CONNECTIONS = [
             h('strong', null, '📚 HOWL Library — deep dive on each habit'),
             h('div', { style: { marginTop: 6 } }, 'Each HOWL has sub-strands, research backing, common misconceptions, and goal examples. Use this to brief students, parents, or new teachers on what HOWLs really mean.')
           ),
+
+          (window.SelHub && window.SelHub.renderElPrimer) ? window.SelHub.renderElPrimer(h, { fg: _howFg, bg: _howBg, bd: _howBd, open: true }) : null,
+
 
           // HOWL picker
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },

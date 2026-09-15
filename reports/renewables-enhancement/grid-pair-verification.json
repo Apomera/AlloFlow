@@ -1,0 +1,58 @@
+{
+  "verifiedAt": "2026-09-12T23:04:56.742Z",
+  "enhancement": "Minute-by-minute comparison and exact-time 3D replay of two captured grid cases",
+  "comparisonVersion": 1,
+  "microgridVersion": 5,
+  "unitTests": {
+    "passed": 360,
+    "failed": 0,
+    "files": 16,
+    "newComparisonTests": 27,
+    "report": "grid-pair-vitest-results.json"
+  },
+  "browserWorkflows": [
+    {
+      "workflow": "grid-pair",
+      "report": "grid-pair-browser-results.json",
+      "automatedAccessibilityAudits": 22,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "grid-study",
+      "report": "grid-study-browser-results.json",
+      "automatedAccessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    }
+  ],
+  "automatedAccessibilityAudits": 43,
+  "visualReview": [
+    "Desktop paired-case controls and unmet-demand trade-off",
+    "Boundary storage chart and final cursor",
+    "Battery inspection at minute 120",
+    "320px selected-minute values and inspection controls"
+  ],
+  "scope": "Real Renewables tool in an isolated local React/Three.js browser host; not a deployed full-application test.",
+  "integrity": {
+    "checkedAt": "2026-09-12T22:59:17.912Z",
+    "sourceSha256": "0cdca1d062a4754972ebe8d59bb97e6a596f76f382f4d8748d7df173a770bf07",
+    "sourceMirrorByteIdentical": true,
+    "sourceMirrorAndBrowserSyntax": true,
+    "scopedDiffWhitespace": true,
+    "previewSourceByteIdentical": true,
+    "previewUrl": "http://127.0.0.1:8790/"
+  }
+}

@@ -2550,7 +2550,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               ),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } },
                 __alloT('stem.schoolbehaviortoolkit.real_autistic_and_disabled_advocates_w', 'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Centered as persons, not behavioral subjects. Read here for the human side of the work.')),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.schoolbehaviortoolkit.ari_ne_eman_temple_grandin_damian_milt', 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Lydia X. Z. Brown · Patty Berne'))
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.schoolbehaviortoolkit.ari_ne_eman_temple_grandin_damian_milt', 'Ari Ne\'eman · Temple Grandin · Damian Milton · Henny Kupferstein · Kassiane Asasumasu · Mel Baggs · Ly Xīnzhèn M. Zhǎngsūn Brown · Patty Berne'))
             )
           ),
           h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.30)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11, lineHeight: 1.65 } },

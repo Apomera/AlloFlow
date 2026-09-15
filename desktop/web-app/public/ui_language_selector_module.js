@@ -210,15 +210,14 @@ const UiLanguageSelector = (props = {}) => {
       },
       className: "hidden",
       accept: ".json",
-      "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
-      "data-help-key": "ui_lang_import_btn"
+      "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack")
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => fileInputRef.current.click(),
-      "data-help-key": "source_upload_btn",
+      "data-help-key": "ui_lang_import_btn",
       className: "p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
       title: languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
       "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack")
@@ -244,7 +243,7 @@ const UiLanguageSelector = (props = {}) => {
       onChange: (e) => setManualInput(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleManualSubmit(),
       placeholder: languageCopy("language_selector.search_placeholder", "Enter Language..."),
-      className: "text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600",
+      className: "text-xs bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-28 px-1 text-slate-600 placeholder:text-slate-600",
       "aria-label": languageCopy("language_selector.search_placeholder", "Enter Language..."),
       "data-help-key": "ui_lang_manual_input"
     }

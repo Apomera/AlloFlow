@@ -1,0 +1,211 @@
+{
+  "connections": {
+    "conn_1": [
+      "Pulmonary blood flow brings blood close to alveolar air. Oxygen and carbon dioxide diffuse across a thin tissue barrier down their own partial-pressure gradients; blood and air normally remain separate.",
+      "During exercise, ventilation and pulmonary blood flow can both increase to support gas exchange.",
+      "If the air–blood barrier becomes thicker, what happens to diffusion when other conditions stay the same?",
+      [
+        "Gas diffusion becomes slower.",
+        "Blood must enter the alveoli.",
+        "Oxygen changes into carbon dioxide."
+      ],
+      "A thicker barrier increases diffusion distance. Ventilation moves air and circulation moves blood; gas exchange between them depends on diffusion.",
+      "22-4-gas-exchange"
+    ],
+    "conn_2": [
+      "At a skeletal neuromuscular junction, a motor neuron releases acetylcholine. This activates the muscle fiber and leads to calcium release inside it. Cardiac and smooth muscle have different control mechanisms.",
+      "To extend the knee, motor neurons activate quadriceps fibers. Tendons transmit their force to the skeleton.",
+      "If acetylcholine receptors at a skeletal neuromuscular junction are blocked, what is the immediate effect?",
+      [
+        "The nerve signal activates the muscle fiber less effectively.",
+        "The tendon produces a stronger nerve signal.",
+        "The bone contracts instead of the muscle."
+      ],
+      "Acetylcholine must act on muscle-fiber receptors to initiate normal neuromuscular transmission. This example concerns skeletal muscle, not every type of muscle.",
+      "10-2-skeletal-muscle"
+    ],
+    "conn_3": [
+      "Skeletal muscles transmit pulling forces through tendons. When that force acts across a joint, it can rotate bones; the effect depends on the joint position and the muscle's moment arm.",
+      "Biceps force reaches the radius through its tendon and contributes to elbow flexion. Other muscles also help flex the elbow.",
+      "Why can the biceps help rotate the forearm at the elbow?",
+      [
+        "Its tendon transmits force at a distance from the joint's axis.",
+        "Its fibers push the radius away from the humerus.",
+        "The radius shortens when the muscle contracts."
+      ],
+      "A pulling force with a moment arm produces torque about the joint. Bone length does not shorten during this movement.",
+      "11-1-interactions-of-skeletal-muscles-their-fascicle-arrangement-and-their-lever-systems"
+    ],
+    "conn_4": [
+      "Hypothalamic GnRH stimulates the anterior pituitary to release FSH and LH. These hormones act on the gonads; gonadal hormones feed back to the brain and pituitary. Feedback patterns vary with the reproductive context.",
+      "In an ovulatory cycle, sustained high estradiol can produce positive feedback that helps trigger an LH surge.",
+      "Which organ releases FSH and LH into the blood?",
+      [
+        "The anterior pituitary.",
+        "The hypothalamus, as another name for GnRH.",
+        "The ovaries and testes only."
+      ],
+      "GnRH comes from the hypothalamus. FSH and LH come from the anterior pituitary and act on gonadal tissues.",
+      "27-2-anatomy-and-physiology-of-the-ovarian-reproductive-system"
+    ],
+    "conn_5": [
+      "Lymphatic vessels collect excess tissue fluid and return it to venous blood. Lymph nodes bring lymph into contact with immune cells. Blood circulation and lymph flow support fluid balance and immune surveillance.",
+      "During an immune response, a draining lymph node may enlarge. A small cut does not always cause noticeable node swelling.",
+      "If lymph drainage from a tissue is obstructed, what is more likely?",
+      [
+        "Fluid accumulates in that tissue.",
+        "The tissue stops receiving all arterial blood immediately.",
+        "Lymph changes into air."
+      ],
+      "Blocked lymph drainage reduces the return of interstitial fluid to blood and can contribute to swelling. Lymph vessels and arteries have different roles.",
+      "21-1-anatomy-of-the-lymphatic-and-immune-systems"
+    ],
+    "conn_6": [
+      "The hypothalamus links neural information with endocrine regulation. It controls many pituitary functions; some endocrine tissues also respond directly to blood chemistry or other signals.",
+      "In the stress axis, hypothalamic CRH promotes pituitary ACTH release. ACTH stimulates the adrenal cortex to produce cortisol, which contributes to negative feedback.",
+      "In this stress-axis example, what does rising cortisol usually do to upstream CRH and ACTH release?",
+      [
+        "It helps reduce their release through negative feedback.",
+        "It always increases both without limit.",
+        "It turns the adrenal cortex into nervous tissue."
+      ],
+      "Cortisol feeds back to the hypothalamus and pituitary. Feedback regulates the pathway; it is not a claim that the pituitary controls every endocrine process.",
+      "17-6-the-adrenal-glands"
+    ],
+    "conn_7": [
+      "During quiet inhalation, the diaphragm and external intercostals expand the chest. Quiet exhalation mainly uses relaxation and elastic recoil. Airway walls contain smooth muscle that adjusts airway diameter.",
+      "As inspiratory muscles expand the chest, alveolar pressure briefly falls below atmospheric pressure and air flows inward.",
+      "What normally drives air out during quiet exhalation?",
+      [
+        "Elastic recoil after inspiratory muscles relax raises alveolar pressure.",
+        "The diaphragm actively pushes air through the lungs on every quiet breath.",
+        "Airway smooth muscle pumps each breath like a heart."
+      ],
+      "Air flows from higher to lower pressure. Quiet expiration is mainly passive; forced expiration recruits additional muscles. Airway smooth muscle regulates resistance.",
+      "22-3-the-process-of-breathing"
+    ],
+    "conn_8": [
+      "Skin receptors convert mechanical, thermal, and potentially damaging stimuli into neural signals. Different receptor types and their connections contribute to touch, temperature, and pain perception.",
+      "Fingertip receptors provide detailed touch information. Perceiving shape or texture also requires processing in the nervous system.",
+      "Why is a touch receptor alone insufficient to identify an object's shape?",
+      [
+        "Its signals must be processed with other sensory information by neural circuits.",
+        "Shape is carried through the blood instead of nerves.",
+        "Every skin receptor detects exactly the same stimulus."
+      ],
+      "Receptors begin sensory transduction. Perception depends on neural processing and information from populations of receptors, not one isolated ending.",
+      "14-1-sensory-perception"
+    ],
+    "conn_9": [
+      "Much venous blood from digestive organs reaches the liver through the hepatic portal system before returning to the heart. The liver processes absorbed nutrients. Many long-chain dietary fats initially enter lymph instead.",
+      "After a meal, absorbed glucose reaches the liver in portal blood. The liver can store glucose as glycogen, while other tissues and hormones also help regulate blood glucose.",
+      "Which absorbed material commonly enters intestinal lymph before reaching blood?",
+      [
+        "Chylomicrons carrying long-chain dietary lipids.",
+        "All absorbed glucose.",
+        "Every absorbed amino acid."
+      ],
+      "Enterocytes package many long-chain lipids into chylomicrons that enter lacteals. Monosaccharides and amino acids mainly enter intestinal capillary blood.",
+      "23-7-chemical-digestion-and-absorption-a-closer-look"
+    ],
+    "conn_10": [
+      "In adults, red bone marrow is a major site of blood-cell production. Blood-forming stem cells give rise to several cell lineages; platelets are fragments released by megakaryocytes. Some immune cells mature elsewhere.",
+      "Marrow in bones such as the pelvis and sternum supports blood-cell production. Developing T cells complete important maturation steps in the thymus.",
+      "Which statement correctly describes platelets?",
+      [
+        "They are cell fragments released from megakaryocytes.",
+        "They are fully formed red blood cells.",
+        "They are hormones secreted by the thymus."
+      ],
+      "Megakaryocytes shed platelets that participate in hemostasis. A shared marrow origin does not make all formed elements the same cell type.",
+      "18-2-production-of-the-formed-elements"
+    ]
+  },
+  "mnemonics": {
+    "mn_carpals": [
+      "S L T P | T T C H",
+      "In each row, read from the thumb side toward the little-finger side. Proximal: scaphoid, lunate, triquetrum, pisiform. Distal: trapezium, trapezoid, capitate, hamate. The pisiform lies on the palm side of the triquetrum.",
+      "8-2-bones-of-the-upper-limb"
+    ],
+    "mn_cranial": [
+      "O P F T E S",
+      "Occipital, parietal, frontal, temporal, ethmoid, sphenoid: six bone types, eight cranial bones. Parietal and temporal bones are paired; this is not a spatial sequence.",
+      "7-2-the-skull"
+    ],
+    "mn_vertebrae": [
+      "7 / 12 / 5",
+      "Seven cervical, twelve thoracic, and five lumbar vertebrae. These are the usual 24 separate adult vertebrae; the fused sacrum and coccyx are additional regions.",
+      "7-3-the-vertebral-column"
+    ],
+    "mn_rotator": [
+      "S I T S",
+      "Supraspinatus, infraspinatus, teres minor, subscapularis form the rotator cuff. They help stabilize the humeral head and have different movement actions.",
+      "11-5-muscles-of-the-pectoral-girdle-and-upper-limbs"
+    ],
+    "mn_erector": [
+      "I L S",
+      "From lateral to medial: iliocostalis, longissimus, spinalis. These are erector spinae columns, not the trapezius. They are not individually represented by this catalog's markers.",
+      "11-3-axial-muscles-of-the-head-neck-and-back"
+    ],
+    "mn_quad": [
+      "R F | V L | V I | V M",
+      "Rectus femoris, vastus lateralis, vastus intermedius, vastus medialis. All extend the knee; rectus femoris also crosses the hip. The letters group the four names rather than describing a spatial order.",
+      "11-6-appendicular-muscles-of-the-pelvic-girdle-and-lower-limbs"
+    ],
+    "mn_heartvalves": [
+      "T P M A",
+      "Tricuspid, pulmonary, mitral, aortic: valve order along the blood-flow route. Chambers, lung vessels, and the lungs lie between parts of this sequence; the valves are not adjacent stops.",
+      "19-1-heart-anatomy"
+    ],
+    "mn_aorta": [
+      "B | L C C | L S",
+      "Usual aortic arch branches: brachiocephalic trunk, left common carotid artery, left subclavian artery. Branching variants occur.",
+      "20-5-circulatory-pathways"
+    ],
+    "mn_cranialn": [
+      "O O O T T A F V G V A H",
+      "Cranial nerves I–XII: olfactory, optic, oculomotor, trochlear, trigeminal, abducens, facial, vestibulocochlear, glossopharyngeal, vagus, accessory, hypoglossal. This cue names the nerves; it does not describe all their functions.",
+      "13-4-the-peripheral-nervous-system"
+    ],
+    "mn_brachial": [
+      "R T D C B",
+      "Roots, trunks, divisions, cords, branches: the major organizational levels of the brachial plexus. Its roots are anterior rami, usually C5–T1, rather than the dorsal and ventral roots of the spinal cord.",
+      "13-4-the-peripheral-nervous-system"
+    ],
+    "mn_immune": [
+      "N L M E B",
+      "Neutrophils, lymphocytes, monocytes, eosinophils, basophils: a common adult peripheral-blood abundance pattern. Proportions vary with age and health; this is not a universal ranking or a list of every immune cell.",
+      "18-4-leukocytes-and-platelets"
+    ],
+    "mn_liver": [
+      "I–VIII",
+      "Couinaud's scheme divides the liver into eight functional segments with portal inflow territories. Major hepatic veins run between many territories. This is a functional segmentation scheme, not the visible surface lobes.",
+      "https://radiologyassistant.nl/abdomen/liver/segmental-anatomy"
+    ],
+    "mn_intestine": [
+      "M S M S/A",
+      "From the lumen outward: mucosa, submucosa, muscularis externa, then serosa or adventitia. The outer covering depends on the organ region; the stomach also has an oblique muscle layer.",
+      "23-1-overview-of-the-digestive-system"
+    ],
+    "mn_skin": [
+      "C L G S B",
+      "In thick skin, from superficial to deep: stratum corneum, lucidum, granulosum, spinosum, basale. Stratum lucidum is characteristic of thick skin on palms and soles; thin skin lacks a distinct lucidum layer.",
+      "5-1-layers-of-the-skin"
+    ],
+    "mn_resp": [
+      "N P L T B B A",
+      "Nasal cavity, pharynx, larynx, trachea, bronchi, bronchioles, alveoli: a simplified inward air route. The second B includes smaller bronchioles; alveolar ducts and sacs connect to the alveoli.",
+      "22-1-organs-and-structures-of-the-respiratory-system"
+    ],
+    "mn_pituitary": [
+      "F L A T | P G",
+      "Anterior pituitary: FSH, LH, ACTH, TSH, prolactin, growth hormone. This cue lists six major hormones; it excludes posterior-pituitary release of oxytocin and vasopressin.",
+      "17-3-the-pituitary-gland-and-hypothalamus"
+    ],
+    "mn_repro": [
+      "P M A T — I",
+      "Prophase I, metaphase I, anaphase I, telophase I. Crossing over occurs during prophase I; homologous chromosomes separate in anaphase I. Sister chromatids normally separate during meiosis II.",
+      "27-1-anatomy-and-physiology-of-the-testicular-reproductive-system"
+    ]
+  }
+}

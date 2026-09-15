@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-09-12T17:34:03.936Z",
+  "unitTests": {
+    "passed": 197,
+    "files": 10,
+    "testTimeoutMs": 15000
+  },
+  "browserWorkflows": [
+    {
+      "name": "design",
+      "accessibilityAudits": 14,
+      "maximumScanMilliseconds": 254
+    },
+    {
+      "name": "resilience",
+      "accessibilityAudits": 14,
+      "maximumScanMilliseconds": 380
+    },
+    {
+      "name": "microgrid",
+      "accessibilityAudits": 13,
+      "maximumScanMilliseconds": null
+    }
+  ],
+  "accessibilityAudits": 41,
+  "sourceSha256": "e9a58383e6a0e1dcf3a187e74fac56796c17d0cfe8e57a76bae7e2064d3d5dfa",
+  "sourceMirrorMatches": true,
+  "scope": "Real tool in isolated local React/Three.js host; not full-application deployment testing"
+}

@@ -126,6 +126,7 @@ function EducatorHubModal(props) {
     // School Rewards & Store (2026-09-02): staff award points daily, so the
     // tool needs a teacher-facing door, not only the Leadership Hub card.
     openSchoolRewards = (() => {}),
+    openCommunicationsStudio = (() => {}),
     setIsUdlWalkthroughOpen = (() => {}),
     setIsDisproAnalyzerOpen = (() => {}),
     // Whiteboard launcher (2026-07-06): the host owns window.open now so it can
@@ -942,6 +943,19 @@ function EducatorHubModal(props) {
               </button>
 
                 <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('school-rewards')} aria-label={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') + ': School Rewards & Store' : tr('hub.add_favorite', 'Add to favorites') + ': School Rewards & Store'} title={hubFavoriteIds.includes('school-rewards') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('school-rewards'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('school-rewards') ? '★' : '☆'}</button>
+              </div>
+              )}
+              {!hideSchoolProfessional && (
+              <div className="relative group" data-hub-id="communications-studio" data-hub-label="Communications Studio" data-hub-section="extend">
+                <button type="button" data-hub-launch="true" data-help-key="educator_hub_communications_studio_card" onClick={() => { setShowEducatorHub(false); openCommunicationsStudio(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-sky-50 to-indigo-50 border border-sky-700 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">{'✉️'}</span>
+                <div>
+                  <h3 className="font-bold text-sky-900">{t('educator_hub.communications_studio_title') || 'Communications Studio'}</h3>
+                  <p className="text-xs text-sky-800 mt-1">{t('educator_hub.communications_studio_desc') || 'Family updates, batch report-card comments, recommendation letters and replies to families, drafted only from your notes. Codenames only, plain-language check, optional translation draft, send to your Drive. Nothing is emailed from here.'}</p>
+                </div>
+              </button>
+
+                <button type="button" data-hub-favorite="true" aria-pressed={hubFavoriteIds.includes('communications-studio')} aria-label={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') + ': Communications Studio' : tr('hub.add_favorite', 'Add to favorites') + ': Communications Studio'} title={hubFavoriteIds.includes('communications-studio') ? tr('hub.remove_favorite', 'Remove from favorites') : tr('hub.add_favorite', 'Add to favorites')} onClick={(event) => { event.stopPropagation(); toggleHubFavorite('communications-studio'); }} className="absolute top-2 right-2 z-10 min-w-9 min-h-9 rounded-full bg-white/90 border border-slate-300 text-amber-600 text-lg leading-none shadow-sm hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">{hubFavoriteIds.includes('communications-studio') ? '★' : '☆'}</button>
               </div>
               )}
             </div>

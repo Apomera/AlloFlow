@@ -1,0 +1,31 @@
+{
+  "passedTests": 223,
+  "passedSuites": 16,
+  "retryPassedTests": 30,
+  "initialRunHadTimeouts": true,
+  "reports": [
+    "titration-weighing-target-tests.json",
+    "titration-weighing-target-retry-tests.json"
+  ],
+  "retriedSuites": [
+    "titration_aliquot_practice.test.js",
+    "titration_transfer_practice.test.js",
+    "titration_weighing_practice.test.js"
+  ],
+  "browserScans": 52,
+  "browserReports": [
+    "titration-weighing-target-browser-results.json",
+    "titration-weighing-breakdown-browser-results.json"
+  ],
+  "browserWidths": [
+    1200,
+    320
+  ],
+  "scopedAxeViolations": 0,
+  "horizontalOverflowCases": 0,
+  "browserPageErrors": 0,
+  "finalVisualReview": [
+    "target desktop",
+    "forced-colors phone"
+  ]
+}

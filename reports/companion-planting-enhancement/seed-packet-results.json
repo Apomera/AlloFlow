@@ -1,0 +1,25 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "keyboardReveal": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "keyboardReveal": true
+    }
+  ],
+  "assertions": [
+    "Botanical packets for every choice",
+    "Phone containment and keyboard shelf navigation",
+    "Case-insensitive search and empty-result reset",
+    "Search preserves funds, time, and staged previews",
+    "Planting still requires confirmation",
+    "Category filters, structure labels, and affordability",
+    "Winter guidance, larger text, and both reduced-motion preferences"
+  ],
+  "errors": [],
+  "accessibility": []
+}

@@ -44,7 +44,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _artAC = null;
-  function getArtAC() { if (!_artAC) { try { _artAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_artAC && _artAC.state === "suspended") { try { _artAC.resume(); } catch(e) {} } return _artAC; }
+  function getArtAC() { if (!_artAC) { try { _artAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_artAC && _artAC.state === "suspended") { try { _artAC.resume(); } catch(e) {} } return _artAC; }
   function artTone(f,d,tp,v) { var ac = getArtAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxArtClick() { artTone(600, 0.03, "sine", 0.04); }
   function sfxArtSuccess() { artTone(523, 0.08, "sine", 0.07); setTimeout(function() { artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { artTone(784, 0.1, "sine", 0.08); }, 140); }
@@ -11684,7 +11684,7 @@ const d = labToolData.artStudio || {};
 
                         else css = 'background: linear-gradient(' + (typeof d.gradAngle === 'number' ? d.gradAngle : 90) + 'deg, ' + stopsStr + ');';
 
-                        navigator.clipboard.writeText(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
+                        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(css).then(function () { if (typeof addToast === 'function') addToast('\u2705 CSS copied!', 'success'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_gradient_css_copied_to_the_clipboard', 'Gradient CSS copied to the clipboard.')); }, function () { if (typeof addToast === 'function') addToast('Unable to copy CSS.', 'error'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_unable_to_copy_gradient_css', 'Unable to copy gradient CSS.')); });
 
                       }, className: "transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900" }, __alloT('stem.artstudio.copy_2', "\uD83D\uDCCB Copy"))
 

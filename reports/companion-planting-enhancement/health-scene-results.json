@@ -1,0 +1,36 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "markers": 5,
+      "keyboardCareReview": true,
+      "inspectionFocusReturn": true,
+      "still": true,
+      "freshMatches": true,
+      "identity": true,
+      "alpha": 1,
+      "cache": 11
+    },
+    {
+      "width": 320,
+      "markers": 5,
+      "keyboardCareReview": true,
+      "inspectionFocusReturn": true,
+      "still": true,
+      "freshMatches": true,
+      "identity": true,
+      "alpha": 1,
+      "cache": 11
+    }
+  ],
+  "assertions": [
+    "Opaque health-colored crops match portraits and keep habitat artwork unchanged",
+    "Health variants update without growth changes and caches stay bounded",
+    "Natural tags preserve plot numbers and disappear when their condition resolves",
+    "Keyboard Care review and inspection restore focus below sticky navigation",
+    "Weeding does not invent health recovery",
+    "Reduced motion, night, maximized layout, fresh-cache equivalence, and cleanup"
+  ],
+  "errors": [],
+  "accessibility": []
+}

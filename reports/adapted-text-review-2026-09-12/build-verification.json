@@ -1,0 +1,17 @@
+{
+  "view_simplified_module.js": {
+    "publicMirrorMatches": true,
+    "hash": "75864275",
+    "hostReferencesValid": true
+  },
+  "pure_helpers_module.js": {
+    "publicMirrorMatches": true,
+    "hash": "73546106",
+    "hostReferencesValid": true
+  },
+  "content_engine_module.js": {
+    "publicMirrorMatches": true,
+    "hash": "91fd0bc0",
+    "hostReferencesValid": true
+  }
+}

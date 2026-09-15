@@ -1,0 +1,50 @@
+{
+  "errors": [],
+  "filaments": {
+    "0": [
+      {
+        "id": "actin-left",
+        "start": 462,
+        "length": 65
+      },
+      {
+        "id": "actin-right",
+        "start": 601,
+        "length": 65
+      }
+    ],
+    "3": [
+      {
+        "id": "actin-left",
+        "start": 482,
+        "length": 65
+      },
+      {
+        "id": "actin-right",
+        "start": 581,
+        "length": 65
+      }
+    ]
+  },
+  "activityFocus": true,
+  "predictionFocus": true,
+  "resultFocus": true,
+  "resultRect": {
+    "top": 635.171875,
+    "bottom": 844.015625,
+    "viewport": 844
+  },
+  "axe": {
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "count": 3
+      },
+      {
+        "id": "color-contrast",
+        "count": 85
+      }
+    ]
+  }
+}

@@ -2769,7 +2769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
         function copyReport() {
           if (!reportText) return;
-          navigator.clipboard.writeText(reportText).then(function() {
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(reportText).then(function() {
             setCopied(true);
             if (addToast) addToast('Report copied to clipboard!', 'success');
             setTimeout(function() { setCopied(false); }, 2000);

@@ -1,0 +1,200 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "stable": true,
+      "fresh": true,
+      "motion": true,
+      "bees": "3",
+      "butterflies": "1",
+      "ladybird": "4",
+      "flowers": "2,3,5,6,9,11,12,14",
+      "identity": true,
+      "alpha": 1,
+      "cache": 16
+    },
+    {
+      "width": 320,
+      "stable": true,
+      "fresh": true,
+      "motion": true,
+      "bees": "3",
+      "butterflies": "1",
+      "ladybird": "4",
+      "flowers": "2,3,5,6,9,11,12,14",
+      "identity": true,
+      "alpha": 1,
+      "cache": 16
+    }
+  ],
+  "assertions": [
+    "Visitors follow flowering stage, crop health, beneficial population, and season",
+    "Structures and new seeds are not flower destinations",
+    "Ladybirds prefer living crops with higher pest pressure",
+    "Flight paths rest at blossoms and join continuously",
+    "Reduced motion is still; winter and night clear visitors",
+    "Desktop, phone, maximized scenes preserve saved garden data",
+    "Canvas state, cache equivalence, accessibility, and unmount cleanup pass"
+  ],
+  "errors": [],
+  "eligibility": {
+    "normal": {
+      "flowers": [
+        1,
+        4
+      ],
+      "bees": 2,
+      "butterflies": 1,
+      "ladybird": 5
+    },
+    "zero": {
+      "flowers": [
+        1,
+        4
+      ],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "negative": {
+      "flowers": [
+        1,
+        4
+      ],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "invalid": {
+      "flowers": [
+        1,
+        4
+      ],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "missing": {
+      "flowers": [
+        1,
+        4
+      ],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "winter": {
+      "flowers": [],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "seed": {
+      "flowers": [],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "structure": {
+      "flowers": [],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": -1
+    },
+    "shelter": {
+      "flowers": [],
+      "bees": 0,
+      "butterflies": 0,
+      "ladybird": 1
+    },
+    "counts": [
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 1,
+        "butterflies": 0,
+        "ladybird": -1
+      },
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 2,
+        "butterflies": 0,
+        "ladybird": -1
+      },
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 3,
+        "butterflies": 0,
+        "ladybird": 0
+      },
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 3,
+        "butterflies": 0,
+        "ladybird": 0
+      },
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 3,
+        "butterflies": 1,
+        "ladybird": 0
+      },
+      {
+        "flowers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "bees": 3,
+        "butterflies": 1,
+        "ladybird": 0
+      }
+    ],
+    "unchanged": true
+  },
+  "paths": {
+    "rests": true,
+    "flying": true,
+    "departureContinuous": true,
+    "arrivalContinuous": true,
+    "still": true,
+    "singleFlower": true,
+    "empty": true
+  },
+  "transitions": {
+    "seedsClear": true,
+    "populationClear": true,
+    "criticalClear": true,
+    "restored": true
+  },
+  "accessibility": [],
+  "paintTiming": {
+    "medianMs": 5.699999995529652,
+    "p95Ms": 9.900000005960464
+  }
+}

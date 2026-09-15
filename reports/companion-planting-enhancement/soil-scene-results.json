@@ -1,0 +1,38 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "conditions": 4,
+      "night": true,
+      "winter": true,
+      "reducedMotionStable": true,
+      "bedCacheMatches": true
+    },
+    {
+      "width": 320,
+      "conditions": 4,
+      "night": true,
+      "winter": true,
+      "reducedMotionStable": true,
+      "bedCacheMatches": true
+    }
+  ],
+  "assertions": [
+    "Materials follow real moisture and watered plots without changing garden state",
+    "Dry and saturated guidance shares the watering cutoff",
+    "Actual watering removes dry soil immediately without growth, time, or budget changes",
+    "Next day drainage clears saturation",
+    "Independent water reflections stop in winter",
+    "Cached materials match fresh painting and release on unmount",
+    "Desktop, phone, night, winter, care lens, and maximized views"
+  ],
+  "errors": [],
+  "reflections": {
+    "dryStill": true,
+    "wetMoves": true,
+    "winterStill": true,
+    "identity": true,
+    "alpha": 1
+  },
+  "accessibility": []
+}

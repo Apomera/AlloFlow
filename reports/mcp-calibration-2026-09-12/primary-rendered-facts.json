@@ -1,0 +1,114 @@
+{
+  "scope": "Rendered HTML facts; model visual review and independent human acceptance are separate",
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\primary\\ed-parent-guide-idea-accessible.html",
+  "title": "Accessible Document — ed-parent-guide-idea",
+  "bodyTextLength": 6714,
+  "images": 1,
+  "placeholderPanels": 1,
+  "controls": [
+    {
+      "text": "Replace",
+      "foreground": [
+        115,
+        115,
+        115
+      ],
+      "background": [
+        71,
+        85,
+        105
+      ],
+      "contrast": 1.5981011874798567
+    },
+    {
+      "text": "Adjust Crop",
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        109,
+        40,
+        217
+      ],
+      "contrast": 7.104892978519159
+    },
+    {
+      "text": "Upload imageFile field",
+      "foreground": [
+        115,
+        115,
+        115
+      ],
+      "background": [
+        29,
+        78,
+        216
+      ],
+      "contrast": 1.413346433806753
+    },
+    {
+      "text": "File field",
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        29,
+        78,
+        216
+      ],
+      "contrast": 6.701618401398807
+    },
+    {
+      "text": "Pick extracted",
+      "foreground": [
+        115,
+        115,
+        115
+      ],
+      "background": [
+        124,
+        58,
+        237
+      ],
+      "contrast": 1.2018106711488472
+    }
+  ],
+  "fileInputs": [
+    {
+      "display": "none",
+      "tabIndex": 0,
+      "label": "Replace"
+    },
+    {
+      "display": "none",
+      "tabIndex": 0,
+      "label": "Upload imageFile field"
+    }
+  ],
+  "links": [
+    {
+      "text": "Skip to main content",
+      "href": "#main-content"
+    },
+    {
+      "text": "Lisa.Pagano@ed.gov",
+      "href": "mailto:Lisa.Pagano@ed.gov"
+    },
+    {
+      "text": "OCR@ed.gov",
+      "href": "mailto:OCR@ed.gov"
+    },
+    {
+      "text": "www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "href": "http://www.lep.gov/resources/EOS_SOI_Philly_012716.pdf"
+    },
+    {
+      "text": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "href": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf"
+    }
+  ]
+}

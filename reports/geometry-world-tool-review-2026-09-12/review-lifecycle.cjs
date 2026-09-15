@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm');const file='stem_lab/stem_tool_geometryworld_builder.js',raw=fs.readFileSync(file,'utf8');let s=raw.replace(/\r\n/g,'\n');function replace(a,b){if(s.split(a).length!==2)throw Error(a.slice(0,100));s=s.replace(a,b);}
+replace('      React.useEffect(function(){if(!selectionEditPreview)setPreviewReview(false);},[selectionEditPreview]);','      React.useEffect(function(){if(!selectionEditPreview || !data.sandboxDockCollapsed)setPreviewReview(false);},[selectionEditPreview,data.sandboxDockCollapsed]);');
+replace('data.worldActive && previewReview && selectionEditPreview && !homeOpen','data.worldActive && previewReview && collapsed && selectionEditPreview && !homeOpen');
+replace("data.worldActive && pointerMode!=='build' && !homeOpen && !data.showcaseActive)additions.push", "data.worldActive && pointerMode!=='build' && !previewReview && !homeOpen && !data.showcaseActive)additions.push");
+replace('.gwe-preview-review h3{font-size:17px;', '.gwe-preview-review h3{font-weight:700;font-size:17px;');
+new vm.Script(s);if(raw.includes('\r\n'))s=s.replace(/\n/g,'\r\n');const fd=fs.openSync(file,'r+');fs.writeSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));fs.closeSync(fd);console.log('Opening Build tools exits world review and keeps a single set of preview actions.');

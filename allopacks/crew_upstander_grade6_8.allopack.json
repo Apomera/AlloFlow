@@ -1,0 +1,594 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 8: Small Moves, Not Big Speeches",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_upstander_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Respect (respectful member of the King community); CASEL Social Awareness (demonstrating empathy and compassion; understanding and expressing gratitude); CASEL Relationship Skills (standing up for the rights of others; seeking or offering support); EL Education Crew (Crew Launch: community and belonging); Maine DOE PBIS Tier 1 (teaching bystander-to-upstander behavior in context)"
+  },
+  "sourceTopic": "Upstander moves for everyday exclusion",
+  "history": [
+    {
+      "id": "cu-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 8: Small Moves, Not Big Speeches",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Respect. \"I am a respectful member of the King community.\"\n\nThis week is about the small moves that change a lunch table, and about making one of them.\n\n1. Read **Small Moves, Not Big Speeches** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Bystander or Upstander?** chart open.\n4. Sort the cards in **Small Move, Big Speech, or Get an Adult?**\n5. Take the quiz. Question 3 is about Jae at the lunch table.\n6. Open the SEL Hub and choose [Upstander Training](#sel-hub/upstander?station=sel_station_crew_launch_upstander). Read the courage ladder in Moves and pick two moves you could actually make. Then open [Peer Support Coach](#sel-hub/peersupport?station=sel_station_crew_launch_upstander) for the words to use afterwards with the person who was left out.\n7. Use the **Sentence Frames** to write your two small moves and when you would use them.\n8. Lock it in with **Remember Notice, Move, Check**.\n9. Finish with the **Design Challenge: Our Crew's Invite Signal**.\n\nYour commitment: this week, make one small move when someone is left out or talked over, and bring back what happened. 🤝\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "cu-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cu-glossary"
+          },
+          {
+            "id": "cu-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "cu-goal-manual",
+            "label": "I made one small move this week when someone was left out or talked over, and I can say what it was",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "cu-reading",
+      "type": "simplified",
+      "title": "Small Moves, Not Big Speeches",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## Small Moves, Not Big Speeches\n\n**HOWL: \"I am a respectful member of the King community.\"**\n\nEveryone knows what a **bystander** is. Someone is being left out, talked over, or picked on, and a ring of people watch it happen. Almost nobody in that ring is cruel. Most of them are waiting for someone else to move first, or they are afraid that moving will make it worse, or they simply do not know what a move would look like. Researchers have a name for the waiting: the **bystander effect**. The more people watching, the less likely any one of them is to act.\n\nAn **upstander** is not a hero with a speech. An upstander is someone who makes one **small move**. The move is usually about the size of a sentence. \"Wait, I want to hear what she was saying.\" \"Come sit with us.\" \"That is not funny.\" Sometimes the move is not words at all: changing seats, starting a different conversation, catching someone's eye and nodding. Sometimes the move happens afterwards, in private: \"That was rough. You okay?\"\n\nHere is a moment from a fictional **Crew**. At lunch, Tomas is telling a story and Reyna keeps cutting across him with jokes. The table laughs at the jokes. Tomas gets quieter and finally stops. Nobody at the table thinks of themselves as unkind. Then Jae says, not loudly, \"Hold on, Tomas, what happened next?\" That is the whole move. Reyna is not called out. Tomas finishes. The table has changed shape by one sentence.\n\nSmall moves work because they are **low risk**. A big speech makes the person being **excluded** into a **spectacle** and makes everyone else defensive. A small move keeps the situation ordinary. It also does something else: it shows the ring of watchers that moving is possible. The second move is always easier than the first, and it is usually made by someone who saw the first one.\n\nBeing a respectful member of a **community**, the King Respect **HOWL**, is mostly made of these moments. Not the assembly about kindness. The lunch table. The group chat. The hallway. The moment when you could look away and do not.\n\nSome situations are bigger than a small move. If someone is being hurt, threatened, or targeted again and again, the move is to get an adult, and that is not tattling; it is the correct size of response. This week is about the everyday version: the exclusions and cut-offs that happen ten times a day and that one sentence can change.",
+      "meta": "6th-8th Grade • Leveled reading • ~420 words"
+    },
+    {
+      "id": "cu-glossary",
+      "type": "glossary",
+      "title": "Upstander Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Bystander",
+          "def": "Someone who sees a person being left out or picked on and does not move.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Upstander",
+          "def": "Someone who sees it and makes one small move.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Bystander effect",
+          "def": "The more people watching, the less likely any one of them is to act.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Small move",
+          "def": "A sentence-sized action that changes a situation without making a scene.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Exclude",
+          "def": "To leave someone out, on purpose or by not noticing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Redirect",
+          "def": "To turn a conversation back toward the person who was cut off.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Low risk",
+          "def": "Unlikely to make things worse for you or for the person you are helping.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Spectacle",
+          "def": "A situation where everyone is watching and nobody can act normally.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Check in",
+          "def": "To ask someone privately, afterwards, how they are.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Community",
+          "def": "The people who share a place and are responsible to each other in it.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 12 terms • Tiered"
+    },
+    {
+      "id": "cu-anchor",
+      "type": "anchor-chart",
+      "title": "Bystander or Upstander?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "BYSTANDER OR UPSTANDER?",
+        "sections": [
+          {
+            "label": "THE RING",
+            "bullets": [
+              "Most watchers are not cruel",
+              "They are waiting for someone else",
+              "More watchers, fewer movers"
+            ],
+            "iconPrompt": "a ring of small figures around an empty center"
+          },
+          {
+            "label": "A SMALL MOVE",
+            "bullets": [
+              "\"Wait, what happened next?\"",
+              "\"Come sit with us.\"",
+              "Change seats, start a new topic"
+            ],
+            "iconPrompt": "one figure in the ring taking a half step forward"
+          },
+          {
+            "label": "WHY SMALL WORKS",
+            "bullets": [
+              "Low risk for everyone",
+              "Keeps it ordinary, not a spectacle",
+              "Shows the ring that moving is possible"
+            ],
+            "iconPrompt": "a single domino tipping the next"
+          },
+          {
+            "label": "BIGGER THAN A MOVE",
+            "bullets": [
+              "Someone hurt, threatened, or targeted again and again",
+              "Get an adult",
+              "That is the right size of response"
+            ],
+            "iconPrompt": "a figure walking toward an open door with an adult silhouette"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "cu-sort",
+      "type": "concept-sort",
+      "title": "Small Move, Big Speech, or Get an Adult?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cu-small",
+            "label": "SMALL MOVE (sentence-sized)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "cu-speech",
+            "label": "BIG SPEECH (makes a spectacle)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "cu-adult",
+            "label": "GET AN ADULT (bigger than a move)",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cu-i1",
+            "content": "\"Hold on, Tomas, what happened next?\"",
+            "categoryId": "cu-small"
+          },
+          {
+            "id": "cu-i2",
+            "content": "Standing up at the table: \"Everyone here needs to think about how they treat people.\"",
+            "categoryId": "cu-speech"
+          },
+          {
+            "id": "cu-i3",
+            "content": "Someone has been shoved into the same locker three days in a row.",
+            "categoryId": "cu-adult"
+          },
+          {
+            "id": "cu-i4",
+            "content": "Moving your tray to sit next to the person eating alone.",
+            "categoryId": "cu-small"
+          },
+          {
+            "id": "cu-i5",
+            "content": "A group chat is sharing a photo of a classmate that they did not agree to.",
+            "categoryId": "cu-adult"
+          },
+          {
+            "id": "cu-i6",
+            "content": "Catching the eye of the person who got cut off and nodding.",
+            "categoryId": "cu-small"
+          },
+          {
+            "id": "cu-i7",
+            "content": "Posting a long message in the chat about how everyone is being toxic.",
+            "categoryId": "cu-speech"
+          },
+          {
+            "id": "cu-i8",
+            "content": "Afterwards, quietly: \"That was rough. You okay?\"",
+            "categoryId": "cu-small"
+          },
+          {
+            "id": "cu-i9",
+            "content": "A student says another student threatened to hurt them after school.",
+            "categoryId": "cu-adult"
+          },
+          {
+            "id": "cu-i10",
+            "content": "Telling the joker, in front of everyone, that they are a bully.",
+            "categoryId": "cu-speech"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "cu-quiz",
+      "type": "quiz",
+      "title": "Small Moves",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does the reading say about most people in the ring of watchers?",
+            "options": [
+              "They enjoy watching someone else get picked on for a change",
+              "They have already decided the person being picked on deserves it",
+              "They are too far away from what is happening to do anything",
+              "They are waiting for someone else to move, or do not know what a move is"
+            ],
+            "correctAnswer": "They are waiting for someone else to move, or do not know what a move is",
+            "conceptLabel": "the ring is not cruel"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the bystander effect?",
+            "options": [
+              "The more people watching, the less likely any one of them is to act",
+              "People become braver when there is a crowd",
+              "Watching someone get hurt makes you feel guilty later",
+              "Adults are less likely to help than students"
+            ],
+            "correctAnswer": "The more people watching, the less likely any one of them is to act",
+            "conceptLabel": "bystander effect"
+          },
+          {
+            "type": "mcq",
+            "question": "What was Jae's move at the lunch table?",
+            "options": [
+              "He told Reyna to stop being rude",
+              "He asked the table to vote on who should talk",
+              "He said \"Hold on, Tomas, what happened next?\"",
+              "He left the table to find a teacher"
+            ],
+            "correctAnswer": "He said \"Hold on, Tomas, what happened next?\"",
+            "conceptLabel": "small moves count"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say a big speech usually works worse than a small move?",
+            "options": [
+              "Because speeches take too long and lunch is short",
+              "Because it makes a spectacle and makes everyone else defensive",
+              "Because teachers do not like speeches in the lunchroom",
+              "Because the person making jokes will just make a better one"
+            ],
+            "correctAnswer": "Because it makes a spectacle and makes everyone else defensive",
+            "conceptLabel": "small beats spectacle"
+          },
+          {
+            "type": "mcq",
+            "question": "Someone is being threatened after school. What size of response does the reading say fits?",
+            "options": [
+              "Getting an adult, which is the correct size, not tattling",
+              "A small move like changing the subject",
+              "A speech to the person doing the threatening",
+              "Waiting to see whether it happens again"
+            ],
+            "correctAnswer": "Getting an adult, which is the correct size, not tattling",
+            "conceptLabel": "bigger than a move"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Someone at lunch keeps getting talked over. Write one small move you could make in the next thirty seconds that does not require a speech.",
+            "expectedAnswer": "A small move: \"Wait, I want to hear what she was saying,\" moving a seat, asking them a direct question, or checking in afterwards.",
+            "conceptLabel": "small moves count"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Think of a time you were in the ring. What small move would have been possible? What stopped it?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "cu-frames",
+      "type": "sentence-frames",
+      "title": "My Two Small Moves",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "When someone gets talked over, my move is: \"____.\""
+          },
+          {
+            "text": "When someone is sitting alone, my move is: ____."
+          },
+          {
+            "text": "I would use it when ____, and not when ____."
+          },
+          {
+            "text": "Afterwards, in private, I could say: \"____.\""
+          },
+          {
+            "text": "It is bigger than a move, and I get an adult, when ____."
+          },
+          {
+            "text": "My move is low risk because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Sentence-sized | A speech, or nothing | One action, a bit long | One sentence or one action anyone could make |\n| Redirects, not accuses | Names the person doing the excluding | Mostly about the excluded person | Turns the moment back to the excluded person without a spectacle |\n| Knows the limit | No line between a move and getting an adult | Names one situation that needs an adult | Names the situations that need an adult and why that is the right size |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "cu-faq",
+      "type": "faq",
+      "title": "Upstander Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
+          "question": "What if I make a move and it makes things worse?",
+          "answer": "Small moves rarely do; that is why they are small. \"What happened next?\" cannot really backfire. If a situation is the kind where any move might make it worse, that is your signal it is bigger than a move, and the move is an adult."
+        },
+        {
+          "question": "What if the person being picked on is someone I do not like?",
+          "answer": "The move is still the move. You are not becoming their friend. You are keeping the table a place where being talked over is not normal, which protects you too."
+        },
+        {
+          "question": "Is getting an adult tattling?",
+          "answer": "Tattling is trying to get someone in trouble for something small. Getting an adult when someone is hurt, threatened, or targeted again and again is the correct size of response. The reading is clear about the difference."
+        },
+        {
+          "question": "What if I froze and did nothing?",
+          "answer": "Then you were in the ring, like most people most of the time. The afterwards move still exists: \"That was rough. You okay?\" It counts."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Respect HOWL says you are a respectful member of the King community. A community is made at the lunch table, not at the assembly. Your teachers score HOWLs; Crew is where you practice them."
+        }
+      ],
+      "meta": "7 questions"
+    },
+    {
+      "id": "cu-memory",
+      "type": "memory-aid",
+      "title": "Remember Notice, Move, Check",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Notice, Move, Check",
+        "instructions": "Each card locks in one idea from Small Moves, Not Big Speeches. Look at the example aid, make it your own, and tell how it helps you move.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "An upstander is not a hero with a speech. An upstander is someone who makes one small move. The second move is always easier than the first, and it is usually made by someone who saw the first one.",
+        "lessonRef": {
+          "resourceId": "cu-reading",
+          "title": "Small Moves, Not Big Speeches"
+        },
+        "cards": [
+          {
+            "id": "cu-ma-nmc",
+            "target": "Notice, make one small move, check in afterwards",
+            "essentialFacts": [
+              "An upstander makes one small move, about the size of a sentence.",
+              "Sometimes the move happens afterwards, in private: \"That was rough. You okay?\""
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Notice, Move, Check. Three beats, like a knock on a door: see it, say one thing, ask them later.",
+            "mapping": "Three beats in order keep the move small: you are not planning a speech, you are doing one thing now and one thing later.",
+            "scaffoldStarter": "I notice ____. I say ____. Later I ask ____.",
+            "scaffoldSteps": [
+              "Write the three beats.",
+              "Put one sentence under \"move.\"",
+              "Put one sentence under \"check.\""
+            ],
+            "coachPrompts": [
+              "Which beat is the one people skip because they are waiting for someone else?"
+            ],
+            "studentPrompt": "Make your own three-beat cue.",
+            "reasoningPrompt": "How does your cue keep a move small instead of turning into a speech?",
+            "hookFact": {
+              "text": "The second move is always easier than the first.",
+              "sourceTitle": "Small Moves, Not Big Speeches (this lesson)"
+            }
+          },
+          {
+            "id": "cu-ma-domino",
+            "target": "A small move shows the ring that moving is possible",
+            "essentialFacts": [
+              "A small move shows the ring of watchers that moving is possible.",
+              "The second move is usually made by someone who saw the first one."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A small move is the first domino. It does not have to knock everything down. It only has to tip the one next to it.",
+            "mapping": "Dominoes fall one at a time; your move only needs to reach the next person, and the reading says that is how the ring changes.",
+            "scaffoldStarter": "My move is like ____ because it only has to ____.",
+            "scaffoldSteps": [
+              "Think of something that starts a chain.",
+              "Say what the first piece has to do (not everything).",
+              "Connect it to your move."
+            ],
+            "coachPrompts": [
+              "Who at the lunch table might make the second move after Jae?"
+            ],
+            "studentPrompt": "Make your own picture for the first move.",
+            "reasoningPrompt": "How does your picture make a move feel possible instead of heroic?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • notice move check, domino"
+    },
+    {
+      "id": "cu-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Our Crew's Invite Signal",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Our Crew's Invite Signal",
+        "instructions": "Design one small move your whole Crew agrees to use when someone is left out or cut off, test it for a week in and out of Crew, and revise it.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "The HOWL behavior is being a respectful member of the community. A shared move the Crew designs and uses turns \"be an upstander\" into one agreed action, and the week of use shows whether it is small enough to actually happen.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your Crew has read about small moves. Individually, everyone has two. As a group, you do not yet have one that everyone recognizes. A shared signal is easier to make because everyone knows what it means and nobody has to be first alone.",
+          "role": "Crew members designing together",
+          "audience": "Your Crew, and the tables and group chats where its members sit during the week",
+          "drivingQuestion": "What is one small move every member of our Crew could make when someone is left out, and does it actually get used?",
+          "seedDirection": "Brainstorm moves that are sentence-sized and low risk. Pick one for \"talked over\" and one for \"sitting alone.\" Agree on the words. Use them for a week. Count how many times each one happened and what it was like.",
+          "lockedLessonFacts": [
+            "Most people in the ring are waiting for someone else to move first.",
+            "An upstander makes one small move, about the size of a sentence.",
+            "A small move keeps the situation ordinary; a big speech makes a spectacle.",
+            "If someone is hurt, threatened, or targeted again and again, the move is to get an adult."
+          ],
+          "openQuestions": [
+            "Which candidate moves are really speeches?",
+            "What are the exact words?",
+            "Where in the week will the move most likely be needed?",
+            "How will we count without making it a competition?"
+          ],
+          "stakeholders": [
+            "The Crew member most likely to be talked over",
+            "The Crew member most likely to be doing the talking over",
+            "Students outside the Crew at the same tables",
+            "The Crew leader"
+          ],
+          "criteria": [
+            "Each move is one sentence or one action",
+            "Each move redirects to the excluded person without naming the excluder",
+            "The Crew names what is bigger than a move and who the adult is",
+            "The week's count is honest, including zero",
+            "Uses at least three glossary words in the record"
+          ],
+          "constraints": [
+            "Exactly two moves",
+            "Words agreed by the whole Crew",
+            "One school week of use",
+            "The revision changes at most one thing"
+          ],
+          "deliverable": "A Crew card with the two moves in the agreed words, the \"bigger than a move\" line, and a one-week count with one revision.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional Crew chose \"Wait, I want to hear the end of that\" for talked-over moments.",
+            "move": "After a week the count was three. Two members said the words felt stiff. The revision was to shorten it to \"Wait, what happened next?\" which is what Jae said in the reading.",
+            "whyItHelps": "It shows that a move too long to say gets shortened, not abandoned."
+          },
+          "frameStarter": "When someone is talked over, we say \"____.\" When someone is alone, we ____. It is bigger than a move when ____, and then we ____.",
+          "frameChoices": [
+            "We used the first move ____ times this week.",
+            "The hardest moment to use it was ____.",
+            "We changed ____ because ____."
+          ],
+          "coachPrompts": [
+            "Would a quiet member of your Crew actually say these words?",
+            "Which move would you have wanted someone to make for you last year?"
+          ]
+        },
+        "coachHint": "If the count is zero, that is data, not failure. Ask whether the moments did not come up or whether the move was too big to make.",
+        "sourceExcerpt": "An upstander is not a hero with a speech. An upstander is someone who makes one small move. The move is usually about the size of a sentence.",
+        "lessonRef": {
+          "resourceId": "cu-reading",
+          "title": "Small Moves, Not Big Speeches"
+        }
+      },
+      "meta": "6th-8th Grade • Design brief • two moves, one week"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_upstander",
+      "name": "Crew station: Week 8: Small Moves, Not Big Speeches",
+      "tools": [
+        "upstander",
+        "peersupport"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 8: Small Moves, Not Big Speeches pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_upstander_time",
+          "type": "timeSpent",
+          "toolId": "upstander",
+          "label": "Spend 5 minutes in Upstander Training",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_upstander_check",
+          "type": "manualComplete",
+          "toolId": "peersupport",
+          "label": "I made one small move this week when someone was left out or talked over, and I can say what it was",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

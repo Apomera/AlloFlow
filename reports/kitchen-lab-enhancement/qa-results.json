@@ -1,0 +1,86 @@
+{
+  "errors": [],
+  "checks": [
+    "Unsafe prep blocked; corrected attempt and reflection recorded.",
+    "All six stations complete; keyboard actions, reasoning, and evidence portfolio verified.",
+    "Export contains full evidence; state and submitted results survive reload.",
+    "Small screens, optional text view, and missing-3D fallback retain working practice.",
+    "All six alternate tasks, prospective plans, independent passport, readable export, and retained best evidence verified.",
+    "Saved attempts without scenario fields migrate without losing completion or reflection.",
+    "Two complete meal rehearsals verify fresh checkpoints, wrong-reasoning retry, support retention, independent completion, pause/resume, reload, exports, next practice, and mobile accessibility.",
+    "Coached rehearsal restores its mode and counts recorded checkpoints without awarding independent skill credit.",
+    "Replay reconstructs actions in 3D and text, preserves stored evidence, supports keyboard stepping, resets at checkpoint transitions, and works with contextual task shortcuts at 320px.",
+    "Adaptive coaching follows actual state; two-level hints retain context through reload and export, avoid duplicate counts, archive hint-only attempts, and offer recovery after burning.",
+    "Real Kitchen Lab plugin landing page and embedded studio load and respond."
+  ],
+  "accessibility": [
+    {
+      "label": "desktop initial",
+      "issues": []
+    },
+    {
+      "label": "selected station hover",
+      "issues": []
+    },
+    {
+      "label": "completed evidence",
+      "issues": []
+    },
+    {
+      "label": "320px text view",
+      "issues": []
+    },
+    {
+      "label": "alternate task evidence",
+      "issues": []
+    },
+    {
+      "label": "320px alternate task",
+      "issues": []
+    },
+    {
+      "label": "completed meal rehearsal",
+      "issues": []
+    },
+    {
+      "label": "320px active rehearsal",
+      "issues": []
+    },
+    {
+      "label": "320px keyboard replay",
+      "issues": []
+    },
+    {
+      "label": "desktop contextual task controls",
+      "issues": []
+    },
+    {
+      "label": "desktop adaptive coaching",
+      "issues": []
+    },
+    {
+      "label": "320px two-level hints",
+      "issues": []
+    }
+  ],
+  "screenshots": [
+    "studio-desktop.png",
+    "studio-browning.png",
+    "studio-text-view.png",
+    "studio-mobile-390.png",
+    "studio-mobile-320.png",
+    "studio-mobile-3d.png",
+    "studio-picnic-evidence.png",
+    "studio-measurement-transfer.png",
+    "studio-challenge-mobile.png",
+    "studio-rehearsal-completed.png",
+    "studio-rehearsal-desktop.png",
+    "studio-rehearsal-mobile.png",
+    "studio-action-replay.png",
+    "studio-replay-mobile.png",
+    "studio-task-focus-mobile.png",
+    "studio-specific-coaching.png",
+    "studio-coaching-mobile.png"
+  ],
+  "pass": true
+}

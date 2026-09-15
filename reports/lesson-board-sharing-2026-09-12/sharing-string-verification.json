@@ -1,0 +1,655 @@
+{
+  "passed": true,
+  "fallbackCalls": 162,
+  "mirrored": true,
+  "checks": [
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_correct"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_revisit"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_missing"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "path_effect"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "yield_effect"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "report_complete"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "report_in_progress"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_progress"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_mission"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_game_responses"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_game_scope"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_location"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_first"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_latest"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_attempts"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_finale"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_finale_not_started"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_plan_reviewed"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_plan_draft"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_project"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "finale_instant"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "finale_other_path"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "finale_other_yield"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_not_selected"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_chosen_effect"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_actual_effect"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_no_explanation"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_oral_done"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_oral_pending"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_rule_check"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_yes"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_not_yet"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_concepts_check"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_yes"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_not_yet"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_self_check"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_yes"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_not_yet"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_finale"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_explanation_review"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "finale_feedback_scope"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_practice"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_practice_not_started"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_practice"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "replay_finished"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "replay_take_break"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_practice_active"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_route_totals"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_practice_scope"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_location"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_checks"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_correct_checks"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_latest_check"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_document_title"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_name"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_preview_context"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_teacher_context"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_class_context"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_solo_context"
+    },
+    {
+      "file": "lesson_board_sharing.js",
+      "key": "share_footer"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_finale"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_finale_done"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_finale_draft"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_finale_ready"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_review_plan"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_resume_plan"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_open_finale"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_practice"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_practice_done"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_practice_pause"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_practice_progress"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_practice_ready"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_open_practice"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_resume_practice"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_share"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_share_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_open_summary"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_title"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "completion_limit_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_download_requested"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_download_failed"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_print_requested"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_print_failed"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_title"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_heading"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_teacher_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_learner_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_local_help"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_optional_name"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_sections"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_mission"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_include_game"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_include_finale"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_include_practice"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_include_evidence"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_choose_section"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_refresh"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_preview"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_preview_heading"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_preview_changed"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_frame_title"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_print"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_html"
+    },
+    {
+      "file": "lesson_board_sharing_ui.jsx",
+      "key": "share_text"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_yield"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_path"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_instant"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_other_path"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_other_yield"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_download_failed"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_download_failed"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_title"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_scenario"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_separate"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_start"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_teacher"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_private"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_project_step"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_project"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_pick_project"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_effect"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_pick_effect"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_evidence_step"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_evidence_help"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_evidence"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_pick_evidence"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_read_evidence"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_plan_step"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_response_mode"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_write"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_oral"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_starters"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_starter_project"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_starter_connection"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_starter_investigation"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_explanation"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_length"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_oral_help"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_oral_done"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_self_review"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_check_connection"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_check_evidence"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_check_purpose"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_review"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_readable_download"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_download_data"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_finished"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_revise"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_success"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_feedback_help"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_rule_ok"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_rule_fix"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_project_missing"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_connection_ok"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_connection_fix"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_response_ok"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_response_fix"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_checks_ok"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_checks_fix"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_feedback_scope"
+    },
+    {
+      "file": "lesson_board_finale_ui.jsx",
+      "key": "finale_discuss"
+    }
+  ]
+}

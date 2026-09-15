@@ -243,6 +243,61 @@
             time: '10-20 min',
             purpose: 'Build a concrete school-support plan for IEP, 504, accommodations, or disclosure choices.',
             next: 'Choose one support need, gather your questions, and identify a trusted adult to involve.'
+          },
+          // Added 2026-09-13 for the Crew Launch path: the eight linked tools that showed the
+          // generic "Complete one small step" line now say what the first step is.
+          crewProtocols: {
+            time: '10-20 min',
+            next: 'Browse by purpose, pick one protocol for today, then note in My Crew plan when you will run it.'
+          },
+          perspective: {
+            time: '6-12 min',
+            next: 'Pick a situation, take the other view first, then say what you would do differently.'
+          },
+          windowOfTolerance: {
+            time: '8-12 min',
+            next: 'Add one sign to each of your three zones, then use Check in to place today.'
+          },
+          sensoryRegulation: {
+            time: '8-15 min',
+            next: 'Start with What is sensory?, then mark the systems that are loud or quiet for you.'
+          },
+          execfunction: {
+            time: '5-10 min',
+            next: 'Go to Start and pick one launch move for today, then Hold to choose your capture spot.'
+          },
+          growthmindset: {
+            time: '5-10 min',
+            next: 'Open Reframe It, write the fixed thought, and turn it into a specific, workable one.'
+          },
+          dearMan: {
+            time: '8-12 min',
+            next: 'Write your ask in one sentence, draft the seven steps, then rehearse it once.'
+          },
+          howlTracker: {
+            time: '5-10 min',
+            next: 'Log a Pulse, then do the Weekly check-in: rate each HOWL and add one specific example.'
+          },
+          // Weeks 7 to 12 of the Crew Launch link five more tools.
+          peersupport: {
+            time: '5-10 min',
+            next: 'Pick two open questions you could ask a friend, then try one on a fictional situation in the practice tab.'
+          },
+          upstander: {
+            time: '8-12 min',
+            next: 'Read the courage ladder in Moves and pick the two smallest moves you could actually make this week.'
+          },
+          digitalWellbeing: {
+            time: '8-12 min',
+            next: 'Do the Self-Check honestly, then choose one habit from the Toolkit and one boundary you set ahead of time.'
+          },
+          teamwork: {
+            time: '8-12 min',
+            next: 'Look at Roles, then write a Communication Plan for a real group: who does what, where, and by when.'
+          },
+          strengths: {
+            time: '5-10 min',
+            next: 'Pick the strengths that feel like you, then find one real moment from this trimester that shows each one.'
           }
         },
         registerTool: function(id, config) {
@@ -288,6 +343,13 @@
           if (purpose.length > 180) purpose = purpose.slice(0, 177).replace(/\s+\S*$/, '') + '...';
           var nextStep = meta.next || 'Complete one small step, then decide whether to save.';
           var guidance = SEL_TOOL_GUIDANCE[id] || {};
+          // Width comes from the hub's reactive viewport state so these pills
+          // re-evaluate on resize / rotation like the rest of the header. The
+          // raw innerWidth read is only a fallback for callers whose ctx
+          // predates the field (the render-smoke stub, an un-rebuilt host).
+          var shellIsCompact = (typeof ctx.isCompact === 'boolean')
+            ? ctx.isCompact
+            : (typeof window !== 'undefined' && window.innerWidth < 720);
           var savePolicy = (typeof ctx.getSavePolicy === 'function') ? ctx.getSavePolicy(id) : {
             checkpointLabel: 'Private checkpoint',
             sharePacketLabel: 'Share Packet eligible'
@@ -389,8 +451,8 @@
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
                 pill(meta.time || 'SEL practice'),
-                pill(savePolicy.checkpointLabel || 'Private checkpoint'),
-                pill(savePolicy.sharePacketLabel || 'Share Packet eligible'),
+                !shellIsCompact && pill(savePolicy.checkpointLabel || 'Private checkpoint'),
+                !shellIsCompact && pill(savePolicy.sharePacketLabel || 'Share Packet eligible'),
                 h('button', {
                   type: 'button',
                   onClick: requestSave,
@@ -1825,6 +1887,86 @@
     // device where storage is blocked.
     var _selActiveStationMemo = null;
 
+    // ─── EL Education primer (2026-09-13) ─────────────────────────────────
+    // The Crew packs and two tools use EL Education's words (Crew, HOWL) as if
+    // everyone knows them. This is the one place the words are defined, with
+    // sources a teacher can open. docs/EL_CREW_PRIMER.md carries the long form.
+    if (!window.SelHub.elPrimer) {
+      window.SelHub.elPrimer = {
+        summary: 'New to Crew or HOWLs? Start here',
+        terms: [
+          { term: 'EL Education', text: 'A national school model (formerly Expeditionary Learning) that grew out of Outward Bound and Harvard in the early 1990s: long project-based expeditions, character assessed alongside academics, and a daily community structure called Crew. King Middle School was one of the first ten EL schools.' },
+          { term: 'Crew', text: 'EL\u2019s word for advisory: a small group of students and one adult who meet regularly to check in, set and review goals, build community, and work through what is hard. Behind it is Kurt Hahn\u2019s line, \u201cWe are crew, not passengers.\u201d' },
+          { term: 'HOWLs', text: 'Habits of Work and Learning: the character habits an EL school teaches and scores separately from academic grades. King names three, each with a student-voiced statement: Respect (\u201cI am a respectful member of the King community\u201d), Responsibility (\u201cI take responsibility for my success as a learner\u201d), Perseverance (\u201cI persevere to produce high quality work\u201d). Other EL schools name four.' },
+          { term: 'Protocols and learning targets', text: 'Protocols are the structured formats Crew and classes use to talk, reflect and repair (circles, fishbowls, tuning). Learning targets are EL\u2019s \u201cI can\u201d goal statements.' }
+        ],
+        links: [
+          { label: 'King Middle School: Expeditionary Learning model', url: 'https://king.portlandschools.org/about/learning-models' },
+          { label: 'King grading guide: the three HOWLs and how they are scored', url: 'https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide' },
+          { label: 'EL Education: Crew', url: 'https://www.eleducation.org/crew' },
+          { label: 'EL Education Core Practice: Building the Culture and Structure of Crew', url: 'https://www.eleducation.org/core-practices/culture-and-character/building-the-culture-and-structure-of-crew/' },
+          { label: 'EL Education Core Practices, complete list', url: 'https://www.eleducation.org/resources/core-practices-a-complete-list-with-links-to-each-practice/' },
+          { label: 'The Hechinger Report on Crew at King (2018)', url: 'https://hechingerreport.org/what-if-personalized-learning-was-less-about-me-and-more-about-us/' }
+        ]
+      };
+      // renderElPrimer(h, { fg, bg, bd, open }) -> a collapsed <details>. fg/bg/bd are the
+      // calling tool's theme mappers (hex -> hex); without them the text inherits.
+      window.SelHub.renderElPrimer = function (h, opts) {
+        var o = opts || {};
+        var fg = typeof o.fg === 'function' ? o.fg : function (x) { return x; };
+        var bg = typeof o.bg === 'function' ? o.bg : function (x) { return x; };
+        var bd = typeof o.bd === 'function' ? o.bd : function (x) { return x; };
+        var p = window.SelHub.elPrimer;
+        return h('details', { 'data-el-primer': 'true', open: !!o.open, style: { margin: '0 0 12px', padding: '4px 12px', borderRadius: 10, border: '1px solid ' + bd('#334155'), background: bg('#0f172a'), color: fg('#e2e8f0') } },
+          h('summary', { style: { minHeight: 44, display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '\uD83E\uDDED ' + p.summary),
+          h('dl', { style: { margin: '4px 0 8px', fontSize: 13, lineHeight: 1.55 } }, p.terms.map(function (t) {
+            return h('div', { key: t.term, style: { marginBottom: 8 } },
+              h('dt', { style: { fontWeight: 800, color: fg('#f1f5f9') } }, t.term),
+              h('dd', { style: { margin: 0, color: fg('#cbd5e1') } }, t.text));
+          })),
+          h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: fg('#94a3b8'), marginBottom: 4 } }, 'Read more'),
+          h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, fontSize: 13, lineHeight: 1.6 } }, p.links.map(function (l) {
+            return h('li', { key: l.url }, h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer', style: { color: fg('#7dd3fc') } }, l.label, h('span', { className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' } }, ' (opens in a new tab)')));
+          })),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: fg('#94a3b8') } }, 'The King pages say what is quoted here; the EL Education pages are linked as the organisation\u2019s own pages on each topic.')
+        );
+      };
+    }
+
+    // ─── Copy to clipboard (2026-09-13) ───────────────────────────────────
+    // Gemini Canvas blocks navigator.clipboard by permissions policy, so a tool
+    // that calls it directly fails on every click there; on a page without the
+    // API the call throws. The shell publishes window.alloCopyText (Clipboard
+    // API, then execCommand). This is the one path SEL tools use: shell helper,
+    // then the API, then execCommand; resolves true or false, never throws.
+    if (!window.SelHub.copyText) {
+      window.SelHub.copyText = function (text) {
+        var str = text == null ? '' : String(text);
+        function viaExec() {
+          try {
+            var ta = document.createElement('textarea');
+            ta.value = str; ta.setAttribute('readonly', ''); ta.setAttribute('aria-hidden', 'true');
+            ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+            document.body.appendChild(ta); ta.select();
+            var ok = document.execCommand && document.execCommand('copy');
+            document.body.removeChild(ta);
+            return !!ok;
+          } catch (e) { return false; }
+        }
+        try {
+          if (typeof window.alloCopyText === 'function') {
+            return Promise.resolve(window.alloCopyText(str)).then(function (ok) { return !!ok; }, function () { return viaExec(); });
+          }
+          if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            return navigator.clipboard.writeText(str).then(function () { return true; }, function () { return viaExec(); });
+          }
+        } catch (e) {}
+        return Promise.resolve(viaExec());
+      };
+      // The line a tool shows when copyText resolves false.
+      window.SelHub.COPY_UNAVAILABLE = 'Copy is not available here. Select the text and press Ctrl+C (or long-press on a phone).';
+    }
+
     if (!window.SelHub.toolLinks) {
       var _selToolLinkRe = /^#sel-hub(?:\/([A-Za-z0-9_-]{1,64}))?\/?(?:\?([A-Za-z0-9_=&.:-]{0,200}))?$/;
       var toolLinks = {
@@ -2940,7 +3082,7 @@
         { id: 'sourcesOfStrength', icon: '\uD83C\uDF1F', label: 'Sources of Strength', desc: 'Map your 8 protective factors. Explore protective supports inspired by the Sources of Strength program. This self-guided map is an adaptation, not delivery of the evaluated school program.', color: 'amber', recommendedRange: '6-12' },
         { id: 'crisiscompanion', icon: '\uD83E\uDEC2', label: 'Crisis Companion', desc: 'Peer support and suicide-prevention skills: what to do if you or a friend is depressed, in crisis, or thinking about self-harm \u2014 recognizing the signs, what to say (and not say), telling a trusted adult, plus 988 and a personal safety plan. Content-warning gated. Aligned with NEDA, AFSP, Sources of Strength, and 988. The acute-support counterpart to Sources of Strength.', color: 'teal', recommendedRange: '6-12' },
         { id: 'identitySupport', icon: '\uD83C\uDF08', label: 'Identity Support', desc: 'Inclusive, affirming space for gender identity, sexual orientation, romantic orientation, and broader identity questions. Vocabulary, identity development, finding community, safety for trans youth, ally guidance. Built on Trevor Project, GLSEN, PFLAG.', color: 'pink', recommendedRange: '5-12' },
-        { id: 'disabilityVoices', icon: '\uD83C\uDFA4', label: 'Disability Voices', desc: 'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, Patty Berne.', color: 'pink', recommendedRange: '6-12' },
+        { id: 'disabilityVoices', icon: '\uD83C\uDFA4', label: 'Disability Voices', desc: 'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne.', color: 'pink', recommendedRange: '6-12' },
         // Self-Direction (agency, goal-setting, executive function)
         { id: '_cat_SelfDirection', icon: '\uD83E\uDDED', label: 'Self-Direction', desc: '', color: 'slate', category: true },
         { id: 'goals',       icon: '\uD83D\uDCCB', label: 'Goal Setter',         desc: 'Set SMART goals, track progress, and celebrate milestones.', color: 'indigo', recommendedRange: '3-12' },
@@ -4573,12 +4715,23 @@
         var doneCount = quests.filter(function(q) { return !!(stationProg[q.qid] || {}).complete; }).length;
         var passCount = quests.filter(function(q) { var progress = stationProg[q.qid] || {}; return progress.passed && !progress.complete; }).length;
         var buttonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + _t.border, background: _t.bgCard, color: _t.text, fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+        var compactTool = !!(selHubTool && isCompact);
+        var stationNav = h('nav', { 'aria-label': 'Station activities', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+          (activeStation.tools || []).map(function(id, index) {
+            var tool = _selToolById(id);
+            var available = window.SelHub && window.SelHub.isRegistered(id);
+            return h('button', { key: id, type: 'button', 'aria-current': selHubTool === id ? 'step' : undefined, 'aria-disabled': !available,
+              style: Object.assign({}, buttonStyle, selHubTool === id ? { background: _t.accent, color: _t.accentText, borderColor: _t.accent } : {}),
+              onClick: function() { openSelToolById(id, tool ? tool.label : id); }
+            }, (index + 1) + '. ' + (tool ? tool.label : id) + (!available ? ' (loading)' : ''));
+          })
+        );
         return h('section', { id: 'sel-active-station-guide', tabIndex: -1, role: 'region', 'aria-label': 'Active SEL Station: ' + activeStation.name,
-          style: { margin: selHubTool ? 12 : '0 0 16px', padding: isCompact ? 14 : 18, borderRadius: 12, background: _t.bgSoft, border: '1px solid ' + _t.pinkAccent, color: _t.text }
+          style: { margin: selHubTool ? 12 : '0 0 16px', padding: selHubTool ? 10 : (isCompact ? 14 : 18), borderRadius: 12, background: _t.bgSoft, border: '1px solid ' + _t.pinkAccent, color: _t.text }
         },
           h('div', { style: { display: 'flex', gap: 12, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' } },
             h('div', null,
-              h('h3', { style: { margin: 0, fontSize: 18 } }, activeStation.name),
+              h('h3', { style: { margin: 0, fontSize: selHubTool ? 16 : 18 } }, activeStation.name),
               h('p', { role: 'status', style: { margin: '6px 0', color: _t.textMuted, fontSize: 13 } }, doneCount + ' of ' + quests.length + ' steps recorded' + (passCount ? ' · ' + passCount + ' passed for now' : '') + '. This is a practice record, not a grade.'),
               (function () {
                 // The "spend N minutes" step for THIS tool, visible while the steps list is collapsed.
@@ -4600,18 +4753,13 @@
               else setTimeout(function() { var input = document.getElementById('sel-tool-search-input'); if (input) input.focus(); }, 50);
             } }, 'Exit station')
           ),
-          h('nav', { 'aria-label': 'Station activities', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
-            (activeStation.tools || []).map(function(id, index) {
-              var tool = _selToolById(id);
-              var available = window.SelHub && window.SelHub.isRegistered(id);
-              return h('button', { key: id, type: 'button', 'aria-current': selHubTool === id ? 'step' : undefined, 'aria-disabled': !available,
-                style: Object.assign({}, buttonStyle, selHubTool === id ? { background: _t.accent, color: _t.accentText, borderColor: _t.accent } : {}),
-                onClick: function() { openSelToolById(id, tool ? tool.label : id); }
-              }, (index + 1) + '. ' + (tool ? tool.label : id) + (!available ? ' (loading)' : ''));
-            })
-          ),
-          h('details', { key: activeStation.id + ':' + (selHubTool || 'catalog'), open: !selHubTool, style: { marginTop: 10 } },
-            h('summary', { style: { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, 'Station steps and reflection'),
+          // On a phone with a tool open, the tool chips fold into the steps disclosure so the
+          // tool itself is on the first screen; the steps' own "Open activity" buttons and
+          // the catalog view still reach every station tool.
+          !compactTool && stationNav,
+          h('details', { key: activeStation.id + ':' + (selHubTool || 'catalog'), open: !selHubTool, style: { marginTop: compactTool ? 4 : 10 } },
+            h('summary', { style: { minHeight: 44, padding: selHubTool ? '6px 0' : '12px 0', cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, compactTool ? 'Station tools, steps and reflection' : 'Station steps and reflection'),
+            compactTool && stationNav,
             activeStation.teacherNote && h('p', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.5 } }, activeStation.teacherNote),
             h('p', { style: { color: _t.textMuted, fontSize: 13, lineHeight: 1.5 } }, 'Steps and notes are saved on this device and may be included in project files. Use fictional examples or leave personal details out. Choose what to share.'),
             quests.length === 0 && h('p', null, 'Choose one activity, try a manageable step, and notice what you would keep or change.'),
@@ -5882,6 +6030,9 @@
           saveCheckpoint: _saveSelCheckpoint,
           getSavePolicy: _selCheckpointSavePolicy,
           savePolicy: _selCheckpointSavePolicy(selHubTool),
+          // Reactive viewport flag (720px) so shells and tools can make
+          // responsive choices without reading window.innerWidth at render.
+          isCompact: isCompact,
 
           // ── Accessibility helpers ──
           srOnly: function(text) { return h('span', { className: 'sr-only' }, text); },
@@ -5980,13 +6131,18 @@
         h('div', {
           style: { flex: 1, overflow: 'auto', position: 'relative' }
         },
-          renderSavingStatus(),
+          // Tool view (2026-09-13): the student who arrived through a pack link sees the
+          // station and the tool first. The saving disclosure and the learning guide are
+          // still here, after the tool, where a reader who wants them will find them; in
+          // the catalog view they keep their place at the top.
+          !selHubTool && renderSavingStatus(),
           renderStationRecovery(),
           toolGrid,
-          selHubTool && renderActivitySupport(),
-          selHubTool && renderPathwayGuide(),
           selHubTool && renderStationGuide(),
-          toolContent
+          selHubTool && renderPathwayGuide(),
+          toolContent,
+          selHubTool && renderActivitySupport(),
+          selHubTool && renderSavingStatus()
         ),
         // CHANGE 1 + CHANGE 3: stacked above the hub modal via zIndex
         ephemeralExplainerModal,

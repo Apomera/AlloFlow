@@ -1,0 +1,5654 @@
+[
+  {
+    "width": 1280,
+    "errors": [],
+    "closeBounds": {
+      "left": 1216,
+      "right": 1256,
+      "top": 18,
+      "bottom": 58
+    },
+    "viewport": 1280,
+    "bodyWidth": 1280,
+    "headings": [
+      "BehaviorLens",
+      "Welcome to BehaviorLens"
+    ],
+    "buttons": [
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Toggle is parent mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "nodes": [
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-observation-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-frequency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-interval-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessiontracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-ioacalc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-taskanalysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-dtt-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-prefassess-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-latency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-nlabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-batchimport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-voiceabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-opdef-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-analysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-overview-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hypothesis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-yellow-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-qualitycheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-trends-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-predict-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-alloBotChat-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bcbahandoff-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abagraph-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scdmanager-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scatterplot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-socialvalidity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cumrecord-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-condprob-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-caseload-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-compare-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-effectsize-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressmonitor-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-violet-400.hover\\:shadow-violet-100.border-violet-200:nth-child(21)"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cantdowontdo-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-heatmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-goals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-contract-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-gray-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-intervention-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progress-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepprep-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-riskscreen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bipgen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-drstrategy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fcttemplate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-maintenance-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-treatintegrity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepgoals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mtss-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-token-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cycle-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-pink-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-choice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-traffic-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-selfcheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-gamify-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-deescalate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-replacebehavior-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reinforcement-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".border-slate-400.overflow-hidden.border:nth-child(4) > .grid-cols-1.md\\:grid-cols-3.grid > .hover\\:border-lime-400.hover\\:shadow-lime-100.border-lime-200"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-audit-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cultural-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reframe-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-biascheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-restorative-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homenote-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-snapshot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-consent-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homelog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-familyvoice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-commlog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hotspot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-crisis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-relmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-antecedentmod-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-record-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaguide-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-counseling-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sandbox-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-glossary-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fbaworkflow-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-teamnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessionnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-pdpath-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-functionquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-practicum-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-casestudy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-obscoach-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sharing-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-printreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mipractice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-skilltracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          }
+        ]
+      },
+      {
+        "id": "aria-progressbar-name",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".h-full"
+            ],
+            "summary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-indigo-400.tracking-wider.uppercase"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(1) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "nodes": [
+          {
+            "target": [
+              "#bl-tool-abc-title"
+            ],
+            "summary": "Fix any of the following:\n  Heading order invalid"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "errors": [],
+    "closeBounds": {
+      "left": 385.390625,
+      "right": 429.390625,
+      "top": 24.75,
+      "bottom": 68.75
+    },
+    "viewport": 390,
+    "bodyWidth": 390,
+    "headings": [
+      "BehaviorLens",
+      "Welcome to BehaviorLens"
+    ],
+    "buttons": [
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Toggle is parent mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "nodes": [
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-observation-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-frequency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-interval-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessiontracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-ioacalc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-taskanalysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-dtt-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-prefassess-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-latency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-nlabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-batchimport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-voiceabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-opdef-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-analysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-overview-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hypothesis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-yellow-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-qualitycheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-trends-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-predict-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-alloBotChat-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bcbahandoff-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abagraph-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scdmanager-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scatterplot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-socialvalidity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cumrecord-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-condprob-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-caseload-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-compare-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-effectsize-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressmonitor-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-violet-400.hover\\:shadow-violet-100.border-violet-200:nth-child(21)"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cantdowontdo-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-heatmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-goals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-contract-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-gray-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-intervention-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progress-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepprep-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-riskscreen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bipgen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-drstrategy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fcttemplate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-maintenance-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-treatintegrity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepgoals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mtss-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-token-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cycle-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-pink-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-choice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-traffic-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-selfcheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-gamify-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-deescalate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-replacebehavior-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reinforcement-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".border-slate-400.overflow-hidden.border:nth-child(4) > .grid-cols-1.md\\:grid-cols-3.grid > .hover\\:border-lime-400.hover\\:shadow-lime-100.border-lime-200"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-audit-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cultural-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reframe-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-biascheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-restorative-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homenote-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-snapshot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-consent-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homelog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-familyvoice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-commlog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hotspot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-crisis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-relmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-antecedentmod-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-record-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaguide-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-counseling-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sandbox-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-glossary-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fbaworkflow-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-teamnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessionnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-pdpath-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-functionquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-practicum-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-casestudy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-obscoach-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sharing-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-printreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mipractice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-skilltracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          }
+        ]
+      },
+      {
+        "id": "aria-progressbar-name",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".h-full"
+            ],
+            "summary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-indigo-400.tracking-wider.uppercase"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(1) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "nodes": [
+          {
+            "target": [
+              "#bl-tool-abc-title"
+            ],
+            "summary": "Fix any of the following:\n  Heading order invalid"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "errors": [],
+    "closeBounds": {
+      "left": 385.390625,
+      "right": 429.390625,
+      "top": 24.75,
+      "bottom": 68.75
+    },
+    "viewport": 320,
+    "bodyWidth": 320,
+    "headings": [
+      "BehaviorLens",
+      "Welcome to BehaviorLens"
+    ],
+    "buttons": [
+      {
+        "label": "AI is off — click to enable",
+        "text": "🤖 AI: OFF"
+      },
+      {
+        "label": "Toggle is parent mode",
+        "text": "👨‍👩‍👧 Family"
+      },
+      {
+        "label": "Close BehaviorLens",
+        "text": "◇"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👩‍🏫 Teacher"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "👪 Parent"
+      },
+      {
+        "label": "Toggle user role",
+        "text": "📊 BCBA / Specialist"
+      },
+      {
+        "label": "Randomize Name",
+        "text": "🎲"
+      },
+      {
+        "label": "Load Demo Student",
+        "text": "🚀Load Demo (14d / 25 entries)"
+      },
+      {
+        "label": "Dismiss Welcome",
+        "text": "✕"
+      },
+      {
+        "label": "Start as Teacher — open ABC Data",
+        "text": "👩‍🏫TeacherStart with ABC Data"
+      },
+      {
+        "label": "Start as Parent — open Home Behavior Log",
+        "text": "👪ParentHome Behavior Log"
+      },
+      {
+        "label": "Start as BCBA or Specialist — open ABA Graph Engine",
+        "text": "📊BCBA / SpecialistABA Graph Engine"
+      },
+      {
+        "label": "Explore the PD Learning Path",
+        "text": "🎓Or explore the PD Learning Path →"
+      },
+      {
+        "label": "5-minute Quick Start — load sandbox data",
+        "text": "⚡5-Min Quick StartLoad sandbox data and explore ABC, AI Analysis, and Trend Dashboard instantly"
+      },
+      {
+        "label": "Open the Guided FBA Workflow",
+        "text": "🧭Guided FBA WorkflowStep-by-step FBA process with scenario practice and AI coaching"
+      },
+      {
+        "label": "Open the Skill Tracker Journey",
+        "text": "🏅Skill Tracker JourneyTrack your growth from Novice to Practitioner with guided challenges"
+      },
+      {
+        "label": "All",
+        "text": "All"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "📋Data Collection"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🧠Analysis & Insights"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🎯Planning & Goals"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "⭐Student Support"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🌍Equity & Culture"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "👪Family & Team"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🏫Environment"
+      },
+      {
+        "label": "Toggle active cat",
+        "text": "🔧Utilities"
+      },
+      {
+        "label": "Open Tool Wizard",
+        "text": "🧭Tool Wizard"
+      },
+      {
+        "label": "Open ABC Data Collection",
+        "text": "📝ABC Data"
+      },
+      {
+        "label": "Open ABA Graph Engine",
+        "text": "📊JABA Graphs"
+      },
+      {
+        "label": "Open SCD Manager",
+        "text": "🔬SCD Manager"
+      },
+      {
+        "label": "Open Effect Size Calculator",
+        "text": "📐Effect Size"
+      },
+      {
+        "label": "Open Hypothesis Diagram",
+        "text": "🔗Hypothesis"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      },
+      {
+        "label": "Toggle is expanded",
+        "text": "👤Student Profile— Eagle▼"
+      },
+      {
+        "label": "Toggle dismissed",
+        "text": "✕"
+      },
+      {
+        "label": "On Open Tool",
+        "text": "→ Open Tool"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "📋📋 Data Collection15▾"
+      },
+      {
+        "label": "Add ABC Data Collection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Antecedent",
+        "text": "antecedent"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Consequence",
+        "text": "consequence"
+      },
+      {
+        "label": null,
+        "text": "Open ABC Data Collection"
+      },
+      {
+        "label": "Add Live Observation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Live Observation"
+      },
+      {
+        "label": "Add Frequency Counter to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Frequency Counter"
+      },
+      {
+        "label": "Add Interval Recording to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Interval Recording"
+      },
+      {
+        "label": "Add Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": "Definition of Duration",
+        "text": "duration"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of Latency",
+        "text": "latency"
+      },
+      {
+        "label": null,
+        "text": "Open Data Sheet"
+      },
+      {
+        "label": "Add Session Data Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Data Tracker"
+      },
+      {
+        "label": "Add IOA Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IOA Calculator"
+      },
+      {
+        "label": "Add Task Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Prompt",
+        "text": "prompt"
+      },
+      {
+        "label": null,
+        "text": "Open Task Analysis"
+      },
+      {
+        "label": "Add DTT Data Sheet to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open DTT Data Sheet"
+      },
+      {
+        "label": "Add Preference Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Preference Assessment"
+      },
+      {
+        "label": "Add Latency Recorder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Latency Recorder"
+      },
+      {
+        "label": "Add Natural Language ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Natural Language ABC"
+      },
+      {
+        "label": "Add Batch Import to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Batch Import"
+      },
+      {
+        "label": "Add Voice-to-ABC to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Voice-to-ABC"
+      },
+      {
+        "label": "Add Operational Definition Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Operational Definition Builder"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🧠🧠 Analysis & Insights23▾"
+      },
+      {
+        "label": "Add AI Pattern Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Behavior Overview to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Overview"
+      },
+      {
+        "label": "Add Hypothesis Diagram to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Function",
+        "text": "function"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add Data Triangulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Triangulation"
+      },
+      {
+        "label": "Add Impact Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Impact Calculator"
+      },
+      {
+        "label": "Add Data Quality Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Data Quality Check"
+      },
+      {
+        "label": "Add Trend Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Trend Dashboard"
+      },
+      {
+        "label": "Add Predictive Insights to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Predictive Insights"
+      },
+      {
+        "label": "Add Ask AlloBot to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Ask AlloBot"
+      },
+      {
+        "label": "Add BCBA Consultation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open BCBA Consultation"
+      },
+      {
+        "label": "Add ABA Graph Engine to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Graph Engine"
+      },
+      {
+        "label": "Add Single-Case Design to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Baseline",
+        "text": "Baseline"
+      },
+      {
+        "label": null,
+        "text": "Open Single-Case Design"
+      },
+      {
+        "label": "Add Scatterplot Analysis to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Scatterplot Analysis"
+      },
+      {
+        "label": "Add Social Validity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Social Validity"
+      },
+      {
+        "label": "Add Cumulative Record to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Cumulative Record"
+      },
+      {
+        "label": "Add Conditional Probability to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": null,
+        "text": "Open Conditional Probability"
+      },
+      {
+        "label": "Add Caseload Dashboard to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Caseload Dashboard"
+      },
+      {
+        "label": "Add Cross-Student Comparison to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cross-Student Comparison"
+      },
+      {
+        "label": "Add Effect Size Calculator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Effect Size Calculator"
+      },
+      {
+        "label": "Add Progress Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": "Definition of Frequency",
+        "text": "frequency"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Monitor"
+      },
+      {
+        "label": "Add Competing Pathways to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Competing Pathways"
+      },
+      {
+        "label": "Add Can't Do / Won't Do to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Can't Do / Won't Do"
+      },
+      {
+        "label": "Add Behavior Timeline Heatmap to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Timeline Heatmap"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🎯🎯 Planning & Goals18▾"
+      },
+      {
+        "label": "Add SMART Goal Builder to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open SMART Goal Builder"
+      },
+      {
+        "label": "Add Behavior Contract to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Behavior Contract"
+      },
+      {
+        "label": "Add Fidelity Checklist to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Fidelity Checklist"
+      },
+      {
+        "label": "Add Feasibility Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Feasibility Check"
+      },
+      {
+        "label": "Add GAS Rubric to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open GAS Rubric"
+      },
+      {
+        "label": "Add Pocket BIP to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open Pocket BIP"
+      },
+      {
+        "label": "Add Intervention Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Intervention Plan"
+      },
+      {
+        "label": "Add Progress Narrative to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Narrative"
+      },
+      {
+        "label": "Add IEP Meeting Prep to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open IEP Meeting Prep"
+      },
+      {
+        "label": "Add Risk Screening to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Risk Screening"
+      },
+      {
+        "label": "Add BIP Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of ABC",
+        "text": "ABC"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": null,
+        "text": "Open BIP Generator"
+      },
+      {
+        "label": "Add DR Strategy Selector to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of DRA",
+        "text": "DRA"
+      },
+      {
+        "label": "Definition of DRI",
+        "text": "DRI"
+      },
+      {
+        "label": "Definition of DRO",
+        "text": "DRO"
+      },
+      {
+        "label": null,
+        "text": "Open DR Strategy Selector"
+      },
+      {
+        "label": "Add FCT Template to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FCT Template"
+      },
+      {
+        "label": "Add Maintenance & Generalization to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Generalization",
+        "text": "generalization"
+      },
+      {
+        "label": null,
+        "text": "Open Maintenance & Generalization"
+      },
+      {
+        "label": "Add Treatment Integrity to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Treatment Integrity"
+      },
+      {
+        "label": "Add IEP Goal Generator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Unavailable until required data is selected"
+      },
+      {
+        "label": "Add MTSS/RTI Tiers to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MTSS/RTI Tiers"
+      },
+      {
+        "label": "Add Progress Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Progress Reports"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "⭐⭐ Student Support11▾"
+      },
+      {
+        "label": "Add Token Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Token Board"
+      },
+      {
+        "label": "Add Escalation Cycle to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Escalation Cycle"
+      },
+      {
+        "label": "Add Reinforcer Assessment to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcer Assessment"
+      },
+      {
+        "label": "Add Choice Board to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Choice Board"
+      },
+      {
+        "label": "Add Traffic Light to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Traffic Light"
+      },
+      {
+        "label": "Add Student Self-Check to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Self-Check"
+      },
+      {
+        "label": "Add My Progress Quest to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open My Progress Quest"
+      },
+      {
+        "label": "Add De-escalation Toolkit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open De-escalation Toolkit"
+      },
+      {
+        "label": "Add Replacement Behavior Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Planner"
+      },
+      {
+        "label": "Add Reinforcement Inventory to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Reinforcement Inventory"
+      },
+      {
+        "label": "Add Replacement Behavior Tracker to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Replacement Behavior Tracker"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🌍🌍 Equity & Culture5▾"
+      },
+      {
+        "label": "Add Environment Audit to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Environment Audit"
+      },
+      {
+        "label": "Add Cultural Context Reflection to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Cultural Context Reflection"
+      },
+      {
+        "label": "Add Strength-Based Reframe to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Strength-Based Reframe"
+      },
+      {
+        "label": "Add Bias Reflection Monitor to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Bias Reflection Monitor"
+      },
+      {
+        "label": "Add Restorative Conversation Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Restorative Conversation Guide"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "👪👪 Family & Team6▾"
+      },
+      {
+        "label": "Add Home Note to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Home Note"
+      },
+      {
+        "label": "Add Student Snapshot Exchange to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Student Snapshot Exchange"
+      },
+      {
+        "label": "Add FERPA Consent Manager to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open FERPA Consent Manager"
+      },
+      {
+        "label": "Add Home Behavior Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Home Behavior Log"
+      },
+      {
+        "label": "Add Family Voice to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Family Voice"
+      },
+      {
+        "label": "Add Communication Log to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Communication Log"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🏫🏫 Environment4▾"
+      },
+      {
+        "label": "Add Routine Hotspot Matrix to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Routine Hotspot Matrix"
+      },
+      {
+        "label": "Add Crisis Plan to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Crisis Plan"
+      },
+      {
+        "label": "Add Relationship Map to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Relationship Map"
+      },
+      {
+        "label": "Add Antecedent Modification Planner to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Antecedent Modification Planner"
+      },
+      {
+        "label": "Toggle Cat",
+        "text": "🔧🔧 Utilities19▾"
+      },
+      {
+        "label": "Add Export Reports to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Export Reports"
+      },
+      {
+        "label": "Add Record Review to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Record Review"
+      },
+      {
+        "label": "Add ABA Quick Guide to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Reinforcement",
+        "text": "reinforcement"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Quick Guide"
+      },
+      {
+        "label": "Add Counseling Simulation to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Counseling Simulation"
+      },
+      {
+        "label": "Add Practice Sandbox to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Practice Sandbox"
+      },
+      {
+        "label": "Add ABA Concept Glossary to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Concept Glossary"
+      },
+      {
+        "label": "Add Guided Workflows to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of FBA",
+        "text": "FBA"
+      },
+      {
+        "label": "Definition of BIP",
+        "text": "BIP"
+      },
+      {
+        "label": "Definition of Behavior",
+        "text": "behavior"
+      },
+      {
+        "label": null,
+        "text": "Open Guided Workflows"
+      },
+      {
+        "label": "Add Team Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Team Notes"
+      },
+      {
+        "label": "Add Session Notes to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Session Notes"
+      },
+      {
+        "label": "Add PD Learning Path to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open PD Learning Path"
+      },
+      {
+        "label": "Add ABA Knowledge Quiz to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Knowledge Quiz"
+      },
+      {
+        "label": "Add What's the Function? to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open What's the Function?"
+      },
+      {
+        "label": "Add Virtual Practicum to favorites",
+        "text": "☆"
+      },
+      {
+        "label": "Definition of Interval Recording",
+        "text": "Interval recording"
+      },
+      {
+        "label": null,
+        "text": "Open Virtual Practicum"
+      },
+      {
+        "label": "Add ABA Case Study Training to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open ABA Case Study Training"
+      },
+      {
+        "label": "Add AI Observation Coach to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open AI Observation Coach"
+      },
+      {
+        "label": "Add Workspace Sharing to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Workspace Sharing"
+      },
+      {
+        "label": "Add Print-Ready Report to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Print-Ready Report"
+      },
+      {
+        "label": "Add MI Practice Simulator to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open MI Practice Simulator"
+      },
+      {
+        "label": "Add Skill Tracker & Mentorship to favorites",
+        "text": "☆"
+      },
+      {
+        "label": null,
+        "text": "Open Skill Tracker & Mentorship"
+      },
+      {
+        "label": null,
+        "text": "💾 Save Workspace"
+      },
+      {
+        "label": "Load workspace from file",
+        "text": "📂 Load Workspace"
+      }
+    ],
+    "axe": [
+      {
+        "id": "aria-allowed-role",
+        "impact": "minor",
+        "nodes": [
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-observation-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-frequency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-interval-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessiontracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-ioacalc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-taskanalysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-dtt-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-prefassess-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-latency-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-nlabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-batchimport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-voiceabc-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-opdef-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-analysis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-overview-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hypothesis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-yellow-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-qualitycheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-trends-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-predict-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-alloBotChat-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bcbahandoff-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abagraph-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scdmanager-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-scatterplot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-socialvalidity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cumrecord-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-condprob-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-caseload-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-compare-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-effectsize-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressmonitor-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-violet-400.hover\\:shadow-violet-100.border-violet-200:nth-child(21)"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cantdowontdo-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-heatmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-goals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-contract-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-gray-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-neutral-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-zinc-500"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-intervention-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progress-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepprep-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-riskscreen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-bipgen-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-drstrategy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fcttemplate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-maintenance-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-treatintegrity-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-iepgoals-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mtss-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-progressreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-token-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cycle-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-pink-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-choice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-traffic-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-selfcheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-gamify-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-deescalate-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-replacebehavior-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reinforcement-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".border-slate-400.overflow-hidden.border:nth-child(4) > .grid-cols-1.md\\:grid-cols-3.grid > .hover\\:border-lime-400.hover\\:shadow-lime-100.border-lime-200"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-audit-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-cultural-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-reframe-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-biascheck-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-restorative-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homenote-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-snapshot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-consent-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-homelog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-familyvoice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-commlog-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-hotspot-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-crisis-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-relmap-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-antecedentmod-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              ".hover\\:border-slate-400"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-record-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaguide-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-counseling-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sandbox-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-glossary-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-fbaworkflow-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-teamnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sessionnotes-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-pdpath-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-abaquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-functionquiz-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-practicum-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-casestudy-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-obscoach-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-sharing-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-printreport-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-mipractice-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          },
+          {
+            "target": [
+              "article[aria-labelledby=\"bl-tool-skilltracker-title\"]"
+            ],
+            "summary": "Fix any of the following:\n  ARIA role group is not allowed for given element"
+          }
+        ]
+      },
+      {
+        "id": "aria-progressbar-name",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".h-full"
+            ],
+            "summary": "Fix any of the following:\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute"
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "nodes": [
+          {
+            "target": [
+              ".text-indigo-400.tracking-wider.uppercase"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(1) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          },
+          {
+            "target": [
+              "div:nth-child(2) > .mb-0\\.5"
+            ],
+            "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.66 (foreground color: #818cf8, background color: #eef2ff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      },
+      {
+        "id": "heading-order",
+        "impact": "moderate",
+        "nodes": [
+          {
+            "target": [
+              "#bl-tool-abc-title"
+            ],
+            "summary": "Fix any of the following:\n  Heading order invalid"
+          }
+        ]
+      }
+    ]
+  }
+]

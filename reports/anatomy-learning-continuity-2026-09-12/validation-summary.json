@@ -1,0 +1,84 @@
+{
+  "date": "2026-09-12T18:31:18.040Z",
+  "sourceSha256": "eb3a1c4cdf22e73e2a706e61cb05d49ce579a4fa81eb3c55778f8f3a386fdcb3",
+  "sourceMirrorIdentical": true,
+  "syntaxValid": true,
+  "fullRun": {
+    "passed": 634,
+    "failed": 0,
+    "files": 38
+  },
+  "finalTargetedRun": {
+    "passed": 227,
+    "failed": 0,
+    "files": 4
+  },
+  "latestVerifiedChecks": 638,
+  "latestVerifiedFiles": 38,
+  "newTranslationKeys": 70,
+  "verifiedLanguagePacks": 6,
+  "browser": {
+    "scenarios": [
+      "exercise",
+      "meal",
+      "wound",
+      "fluid"
+    ],
+    "phoneWidths": [
+      320,
+      390
+    ],
+    "languages": [
+      "french",
+      "spanish_latin_america",
+      "arabic"
+    ],
+    "exportAndReimport": true,
+    "resumeImportedWriting": true,
+    "errors": [],
+    "axe": {
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "count": 3
+        },
+        {
+          "id": "color-contrast",
+          "count": 85
+        }
+      ]
+    },
+    "focus": {
+      "activity": true,
+      "prediction": true,
+      "result": true
+    },
+    "constantActinLength": {
+      "0": [
+        {
+          "id": "actin-left",
+          "start": 462,
+          "length": 65
+        },
+        {
+          "id": "actin-right",
+          "start": 601,
+          "length": 65
+        }
+      ],
+      "3": [
+        {
+          "id": "actin-left",
+          "start": 482,
+          "length": 65
+        },
+        {
+          "id": "actin-right",
+          "start": 581,
+          "length": 65
+        }
+      ]
+    }
+  }
+}

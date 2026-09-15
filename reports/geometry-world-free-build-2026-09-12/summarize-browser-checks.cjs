@@ -1,0 +1,28 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),out=__dirname;
+const r=JSON.parse(fs.readFileSync(path.join(out,'final-free-build-browser.json'),'utf8')),c=r.checks,checks=[];
+const check=(label,pass)=>checks.push({label,pass:!!pass});
+const control=(key,label)=>c[key].controls.find(x=>x.text===label),reachable=x=>!!x&&x.rect.w>=44&&x.rect.h>=44&&x.atCenter;
+check('Native blank sandbox begins with no entry animation',c.nativeArrival.entryAnimation===false);
+check('Native desktop entry has 625 ground cells and no student blocks',c.desktopEntry.state.totalBlocks===625&&c.desktopEntry.state.studentBlocks===0);
+check('Empty sandbox gives Start building as an enabled action',control('desktopEntry','Start building')?.disabled===false);
+check('Print Lab action is disabled before the first block',control('desktopEntry','Send selected build to Print Lab')?.disabled===true);
+check('Sandbox toolbar omits zero-question score and Objectives',!c.desktopEntry.text.includes('0/0')&&!c.desktopEntry.text.includes('Objectives'));
+check('Desktop B adds exactly one first block',c.firstNativeB.state.studentBlocks===1);
+check('First placement preserves the native camera position',JSON.stringify(c.desktopEntry.state.camera)===JSON.stringify(c.firstNativeB.state.camera));
+check('Native Wood choice is reflected in current state',c['preview-wood'].data.selectedBlock===2);
+check('Native Gold choice is reflected in current state',c['preview-gold'].data.selectedBlock===4);
+check('Native Glass quarter-wedge choices are reflected in current state',c['preview-glass-wedge'].data.selectedBlock===6&&c['preview-glass-wedge'].data.selectedShape===3);
+check('Explicitly selected creation stays selected after looking away',c.selectionRetainedAfterLook===true);
+check('Showcase opens for the selected creation',c.showcase.data.showcaseActive===true);
+check('Escape returns from Showcase with the same selection',c.showcaseReturn.data.showcaseActive===false&&c.showcaseReturn.selectionPreserved===true);
+for(const key of ['desktopEntry','phoneSelected','phoneCollapsed','smallCollapsed','smallSelected','smallScrolled','touchEntry','touchSmallPanel','touchSmallScrolled','touchBack'])check(key+' has no document overflow',c[key].overflow===false);
+for(const key of ['smallSelected','smallScrolled','touchSmallPanel','touchSmallScrolled'])check(key+' has a reachable 44px Back to building footer',reachable(control(key,'Back to building')));
+check('Touch Place is a reachable 44px target at native entry',reachable(control('touchEntry','Place block')));
+check('Native touch Place adds exactly one first block',c.touchFirstPlace.state.studentBlocks===1);
+check('Touch Back to building restores visible placement controls',c.touchBack.data.sandboxDockCollapsed===true&&reachable(control('touchBack','Place block')));
+check('Broad interaction pass has no page or console errors',!r.failure&&r.errors.length===0&&r.consoleErrors.length===0);
+const focused=['final-build-focus.json','final-neutral-aim.json'].map(file=>({file,result:JSON.parse(fs.readFileSync(path.join(out,file),'utf8'))}));
+for(const item of focused){for(const entry of item.result.checks)checks.push({...entry,source:item.file});check(item.file+' has no page or console errors',item.result.pass===true&&item.result.errors.length===0&&item.result.consoleErrors.length===0);}
+const result={pass:checks.every(x=>x.pass),checks,interactionStates:Object.keys(c).length,scope:'Current local production; real React/Three WebGL served on loopback; no external API or printer connected'};
+fs.writeFileSync(path.join(out,'browser-verification-summary.json'),JSON.stringify(result,null,2));console.log(JSON.stringify({pass:result.pass,checks:checks.length,interactionStates:result.interactionStates,failed:checks.filter(x=>!x.pass)}));if(!result.pass)process.exitCode=1;

@@ -1,0 +1,8805 @@
+[
+  {
+    "label": "story-empty-edit-error",
+    "width": 1440,
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "page": {
+      "width": 1440,
+      "height": 1000
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 170,
+      "y": 12,
+      "w": 1100,
+      "h": 976,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [],
+    "smallTargets": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 1033,
+        "y": 154,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 969,
+        "y": 512,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 1058,
+        "y": 512,
+        "w": 67,
+        "h": 32,
+        "class": ""
+      }
+    ],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 436,
+        "y": 68,
+        "w": 207,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 436,
+        "y": 739,
+        "w": 207,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 969,
+        "y": 250,
+        "w": 256,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 191,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 309,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 427,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 544,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 662,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 780,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 898,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 1015,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 1133,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 1033,
+        "y": 154,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 969,
+        "y": 512,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 1058,
+        "y": 512,
+        "w": 67,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 680,
+        "y": 585,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 758,
+        "y": 585,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Save story page text",
+      "x": 969,
+      "y": 512,
+      "w": 81,
+      "h": 32,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-empty-edit-error",
+    "width": 390,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "page": {
+      "width": 390,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": 217,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": 290,
+        "w": 358,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": 817,
+        "w": 358,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 25,
+        "y": 1522,
+        "w": 276,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 336,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": 142,
+        "w": 390,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": 364,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": 364,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": 364,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 283,
+        "y": 364,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 16,
+        "y": 412,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 70,
+        "y": 412,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 176,
+        "y": 412,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 244,
+        "y": 412,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 16,
+        "y": 460,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 110,
+        "y": 460,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 185,
+        "y": 460,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 283,
+        "y": 460,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": 508,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": 508,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": 508,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 291,
+        "y": 508,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 16,
+        "y": 556,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 103,
+        "y": 556,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 204,
+        "y": 556,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 16,
+        "y": 604,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 110,
+        "y": 604,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 206,
+        "y": 604,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 16,
+        "y": 652,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 114,
+        "y": 652,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 181,
+        "y": 652,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 275,
+        "y": 652,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 16,
+        "y": 700,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 104,
+        "y": 700,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 188,
+        "y": 700,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": 748,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": 933,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": 1050,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 243,
+        "y": 1122,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 12,
+        "y": 1174,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 25,
+        "y": 1770,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 114,
+        "y": 1770,
+        "w": 67,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 1843,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 1843,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Save story page text",
+      "x": 25,
+      "y": 1770,
+      "w": 81,
+      "h": 44,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-empty-edit-error",
+    "width": 320,
+    "viewport": {
+      "width": 320,
+      "height": 844
+    },
+    "page": {
+      "width": 320,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "⚡",
+        "x": 326,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": -992,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": -919,
+        "w": 288,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": -296,
+        "w": 288,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 25,
+        "y": 420,
+        "w": 270,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 266,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": -1067,
+        "w": 320,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": -845,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": -845,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": -845,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 16,
+        "y": -797,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 89,
+        "y": -797,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 143,
+        "y": -797,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 16,
+        "y": -749,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 84,
+        "y": -749,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 174,
+        "y": -749,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 16,
+        "y": -701,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 91,
+        "y": -701,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 190,
+        "y": -701,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": -653,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": -653,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": -653,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 16,
+        "y": -605,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 101,
+        "y": -605,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 188,
+        "y": -605,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 16,
+        "y": -557,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 106,
+        "y": -557,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 200,
+        "y": -557,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 16,
+        "y": -509,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 94,
+        "y": -509,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 191,
+        "y": -509,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 16,
+        "y": -461,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 110,
+        "y": -461,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 200,
+        "y": -461,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 16,
+        "y": -413,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 100,
+        "y": -413,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": -365,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": -180,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": -52,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 20,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 20,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 12,
+        "y": 72,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 134,
+        "y": 72,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 25,
+        "y": 682,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 114,
+        "y": 682,
+        "w": 67,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 755,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 755,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Save story page text",
+      "x": 25,
+      "y": 682,
+      "w": 81,
+      "h": 44,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-text-editor",
+    "width": 1440,
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "page": {
+      "width": 1440,
+      "height": 1000
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 170,
+      "y": 12,
+      "w": 1100,
+      "h": 976,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [],
+    "smallTargets": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 1033,
+        "y": 154,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 969,
+        "y": 489,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 1058,
+        "y": 489,
+        "w": 67,
+        "h": 32,
+        "class": ""
+      }
+    ],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 436,
+        "y": 68,
+        "w": 207,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 436,
+        "y": 739,
+        "w": 207,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 969,
+        "y": 250,
+        "w": 256,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 191,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 309,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 427,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 544,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 662,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 780,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 898,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 1015,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 1133,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 1033,
+        "y": 154,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 969,
+        "y": 489,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 1058,
+        "y": 489,
+        "w": 67,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 680,
+        "y": 562,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 758,
+        "y": 562,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "TEXTAREA",
+      "role": null,
+      "name": "Story page text",
+      "x": 969,
+      "y": 250,
+      "w": 256,
+      "h": 195,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-text-editor",
+    "width": 390,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "page": {
+      "width": 390,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": 217,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": 290,
+        "w": 358,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": 817,
+        "w": 358,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 25,
+        "y": 1522,
+        "w": 283,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 336,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": 142,
+        "w": 390,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": 364,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": 364,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": 364,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 283,
+        "y": 364,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 16,
+        "y": 412,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 70,
+        "y": 412,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 176,
+        "y": 412,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 244,
+        "y": 412,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 16,
+        "y": 460,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 110,
+        "y": 460,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 185,
+        "y": 460,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 283,
+        "y": 460,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": 508,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": 508,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": 508,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 291,
+        "y": 508,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 16,
+        "y": 556,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 103,
+        "y": 556,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 204,
+        "y": 556,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 16,
+        "y": 604,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 110,
+        "y": 604,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 206,
+        "y": 604,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 16,
+        "y": 652,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 114,
+        "y": 652,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 181,
+        "y": 652,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 275,
+        "y": 652,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 16,
+        "y": 700,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 104,
+        "y": 700,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 188,
+        "y": 700,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": 748,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": 933,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": 1050,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 243,
+        "y": 1122,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 12,
+        "y": 1174,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 25,
+        "y": 1747,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 114,
+        "y": 1747,
+        "w": 67,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 1820,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 1820,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "TEXTAREA",
+      "role": null,
+      "name": "Story page text",
+      "x": 25,
+      "y": 1522,
+      "w": 283,
+      "h": 195,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-text-editor",
+    "width": 320,
+    "viewport": {
+      "width": 320,
+      "height": 844
+    },
+    "page": {
+      "width": 320,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "⚡",
+        "x": 326,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": -969,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": -896,
+        "w": 288,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": -273,
+        "w": 288,
+        "h": 55,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Story page text",
+        "x": 25,
+        "y": 443,
+        "w": 270,
+        "h": 195,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 266,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": -1044,
+        "w": 320,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": -822,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": -822,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": -822,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 16,
+        "y": -774,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 89,
+        "y": -774,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 143,
+        "y": -774,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 16,
+        "y": -726,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 84,
+        "y": -726,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 174,
+        "y": -726,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 16,
+        "y": -678,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 91,
+        "y": -678,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 190,
+        "y": -678,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": -630,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": -630,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": -630,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 16,
+        "y": -582,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 101,
+        "y": -582,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 188,
+        "y": -582,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 16,
+        "y": -534,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 106,
+        "y": -534,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 200,
+        "y": -534,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 16,
+        "y": -486,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 94,
+        "y": -486,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 191,
+        "y": -486,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 16,
+        "y": -438,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 110,
+        "y": -438,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 200,
+        "y": -438,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 16,
+        "y": -390,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 100,
+        "y": -390,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": -342,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": -157,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": -29,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 43,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 43,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 12,
+        "y": 95,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 134,
+        "y": 95,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save story page text",
+        "x": 25,
+        "y": 682,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Cancel story text edit",
+        "x": 114,
+        "y": 682,
+        "w": 67,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 755,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 755,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "TEXTAREA",
+      "role": null,
+      "name": "Story page text",
+      "x": 25,
+      "y": 443,
+      "w": 270,
+      "h": 195,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-edited",
+    "width": 1440,
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "page": {
+      "width": 1440,
+      "height": 1000
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1000,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 170,
+      "y": 12,
+      "w": 1100,
+      "h": 976,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [],
+    "smallTargets": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1474,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Edit text for story page 1",
+        "x": 1033,
+        "y": 154,
+        "w": 95,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 680,
+        "y": 194,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      }
+    ],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Art style",
+        "x": 197,
+        "y": 383,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Auto-clean text from images",
+        "x": 201,
+        "y": 427,
+        "w": 13,
+        "h": 13,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 250,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 299,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 343,
+        "y": 493,
+        "w": 18,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Text-to-speech voice selection",
+        "x": 197,
+        "y": 608,
+        "w": 195,
+        "h": 33,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "IEP goal type",
+        "x": 197,
+        "y": 1315,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal description",
+        "x": 197,
+        "y": 1353,
+        "w": 200,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "IEP goal target count",
+        "x": 197,
+        "y": 1391,
+        "w": 60,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1474,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "Support required for the student to succeed on this goal",
+        "x": 197,
+        "y": 1525,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "SELECT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1576,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "",
+        "x": 197,
+        "y": 1627,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. 2/10 accuracy on probe trials (Sept 2026)",
+        "x": 197,
+        "y": 1678,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. AAC device available, visual supports, extended time",
+        "x": 197,
+        "y": 1729,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "e.g. Communication — Expressive Language",
+        "x": 197,
+        "y": 1780,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 436,
+        "y": 7,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 436,
+        "y": 68,
+        "w": 207,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 436,
+        "y": 739,
+        "w": 207,
+        "h": 55,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 1218,
+        "y": 27,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 191,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 309,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 427,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 544,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 662,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 780,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 898,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 1015,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 1133,
+        "y": 75,
+        "w": 116,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new student profile",
+        "x": 346,
+        "y": 161,
+        "w": 46,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner A",
+        "x": 197,
+        "y": 201,
+        "w": 126,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Demo Learner B",
+        "x": 197,
+        "y": 238,
+        "w": 122,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile: Fresh Learner",
+        "x": 197,
+        "y": 275,
+        "w": 110,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Reset category colors",
+        "x": 197,
+        "y": 533,
+        "w": 38,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Preview selected voice",
+        "x": 197,
+        "y": 645,
+        "w": 78,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Open garden tab",
+        "x": 358,
+        "y": 728,
+        "w": 34,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Export all data as backup file",
+        "x": 197,
+        "y": 1083,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Import Backup",
+        "x": 197,
+        "y": 1120,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Toggle AAC usage analytics",
+        "x": 197,
+        "y": 1169,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Add new IEP goal",
+        "x": 197,
+        "y": 1461,
+        "w": 195,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 436,
+        "y": 142,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 530,
+        "y": 142,
+        "w": 79,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 436,
+        "y": 178,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 526,
+        "y": 178,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 436,
+        "y": 214,
+        "w": 50,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 490,
+        "y": 214,
+        "w": 103,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 436,
+        "y": 250,
+        "w": 64,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 504,
+        "y": 250,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 436,
+        "y": 286,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 530,
+        "y": 286,
+        "w": 71,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 436,
+        "y": 322,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 534,
+        "y": 322,
+        "w": 55,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 436,
+        "y": 358,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 520,
+        "y": 358,
+        "w": 101,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 436,
+        "y": 394,
+        "w": 82,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 522,
+        "y": 394,
+        "w": 81,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 436,
+        "y": 430,
+        "w": 83,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 523,
+        "y": 430,
+        "w": 97,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 436,
+        "y": 466,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 526,
+        "y": 466,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 436,
+        "y": 502,
+        "w": 92,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 532,
+        "y": 502,
+        "w": 74,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 436,
+        "y": 538,
+        "w": 94,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 534,
+        "y": 538,
+        "w": 63,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 436,
+        "y": 574,
+        "w": 90,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 530,
+        "y": 574,
+        "w": 86,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 436,
+        "y": 610,
+        "w": 84,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 524,
+        "y": 610,
+        "w": 80,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 436,
+        "y": 646,
+        "w": 89,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 436,
+        "y": 682,
+        "w": 118,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 436,
+        "y": 866,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 436,
+        "y": 993,
+        "w": 207,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 680,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 834,
+        "y": 154,
+        "w": 69,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 911,
+        "y": 154,
+        "w": 114,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Edit text for story page 1",
+        "x": 1033,
+        "y": 154,
+        "w": 95,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 680,
+        "y": 194,
+        "w": 123,
+        "h": 32,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 680,
+        "y": 548,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 758,
+        "y": 548,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Read this page aloud",
+      "x": 911,
+      "y": 154,
+      "w": 114,
+      "h": 32,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-edited",
+    "width": 390,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "page": {
+      "width": 390,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": 217,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": 290,
+        "w": 358,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": 817,
+        "w": 358,
+        "h": 55,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 336,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": 142,
+        "w": 390,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": 364,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": 364,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": 364,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 283,
+        "y": 364,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 16,
+        "y": 412,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 70,
+        "y": 412,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 176,
+        "y": 412,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 244,
+        "y": 412,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 16,
+        "y": 460,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 110,
+        "y": 460,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 185,
+        "y": 460,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 283,
+        "y": 460,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": 508,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": 508,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": 508,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 291,
+        "y": 508,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 16,
+        "y": 556,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 103,
+        "y": 556,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 204,
+        "y": 556,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 16,
+        "y": 604,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 110,
+        "y": 604,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 206,
+        "y": 604,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 16,
+        "y": 652,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 114,
+        "y": 652,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 181,
+        "y": 652,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 275,
+        "y": 652,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 16,
+        "y": 700,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 104,
+        "y": 700,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 188,
+        "y": 700,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": 748,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": 933,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": 1050,
+        "w": 358,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 1122,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 243,
+        "y": 1122,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Edit text for story page 1",
+        "x": 12,
+        "y": 1174,
+        "w": 95,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 115,
+        "y": 1174,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 1589,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 1589,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Read this page aloud",
+      "x": 243,
+      "y": 1122,
+      "w": 114,
+      "h": 44,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  },
+  {
+    "label": "story-edited",
+    "width": 320,
+    "viewport": {
+      "width": 320,
+      "height": 844
+    },
+    "page": {
+      "width": 320,
+      "height": 844
+    },
+    "root": {
+      "tag": "DIV",
+      "role": "presentation",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-focus-visible ss-modal-root ss-theme-default ss-print-story"
+    },
+    "dialog": {
+      "tag": "DIV",
+      "role": "dialog",
+      "name": "🎨\nSymbol Studio\n\nAI-powered symbol bank • boards • sequences • social stories\n\n×\n🎨\nSymbol Bank\n📋\n",
+      "x": 0,
+      "y": 0,
+      "w": 320,
+      "h": 844,
+      "class": "ss-main-modal"
+    },
+    "workspaceOverflow": [],
+    "overflow": [
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "⚡",
+        "x": 326,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "📚",
+        "x": 398,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🎮",
+        "x": 470,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🔍",
+        "x": 542,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "🌱\n8",
+        "x": 614,
+        "y": 79,
+        "w": 19,
+        "h": 19,
+        "class": ""
+      },
+      {
+        "tag": "SPAN",
+        "role": null,
+        "name": "8",
+        "x": 628,
+        "y": 75,
+        "w": 14,
+        "h": 14,
+        "class": ""
+      }
+    ],
+    "smallTargets": [],
+    "unlabeled": [],
+    "fields": [
+      {
+        "tag": "INPUT",
+        "role": null,
+        "name": "Student name for social story",
+        "x": 16,
+        "y": -727,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Social story situation or goal",
+        "x": 16,
+        "y": -654,
+        "w": 288,
+        "h": 65,
+        "class": ""
+      },
+      {
+        "tag": "TEXTAREA",
+        "role": null,
+        "name": "Additional context for social story",
+        "x": 16,
+        "y": -31,
+        "w": 288,
+        "h": 55,
+        "class": ""
+      }
+    ],
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Close Symbol Studio",
+        "x": 266,
+        "y": 13,
+        "w": 44,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Bank tab",
+        "x": 13,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Board Builder tab",
+        "x": 85,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Sequences tab",
+        "x": 157,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Social Stories tab",
+        "x": 229,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Quick Boards tab",
+        "x": 301,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Visual Packs tab",
+        "x": 373,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Quest tab",
+        "x": 445,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Symbol Search tab",
+        "x": 517,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": "tab",
+        "name": "Word Garden tab",
+        "x": 589,
+        "y": 73,
+        "w": 70,
+        "h": 56,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Profile & settings · Demo Learner A\nShow",
+        "x": 0,
+        "y": -802,
+        "w": 320,
+        "h": 44,
+        "class": "ss-setup-toggle"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Waiting My Turn",
+        "x": 16,
+        "y": -580,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Feeling Angry",
+        "x": 110,
+        "y": -580,
+        "w": 79,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Making Friends",
+        "x": 193,
+        "y": -580,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Doctor Visit",
+        "x": 16,
+        "y": -532,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Haircut",
+        "x": 89,
+        "y": -532,
+        "w": 50,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Schedule Changes",
+        "x": 143,
+        "y": -532,
+        "w": 103,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Lunchtime",
+        "x": 16,
+        "y": -484,
+        "w": 64,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Asking for Help",
+        "x": 84,
+        "y": -484,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sharing & Turns",
+        "x": 174,
+        "y": -484,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: New School",
+        "x": 16,
+        "y": -436,
+        "w": 71,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Losing the Game",
+        "x": 91,
+        "y": -436,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Fire Drill",
+        "x": 190,
+        "y": -436,
+        "w": 55,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Grocery Store",
+        "x": 16,
+        "y": -388,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Substitute Teacher",
+        "x": 100,
+        "y": -388,
+        "w": 101,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting a Shot",
+        "x": 205,
+        "y": -388,
+        "w": 82,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Birthday Party",
+        "x": 16,
+        "y": -340,
+        "w": 81,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Riding the Bus",
+        "x": 101,
+        "y": -340,
+        "w": 83,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Playground Rules",
+        "x": 188,
+        "y": -340,
+        "w": 97,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using the Toilet",
+        "x": 16,
+        "y": -292,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Wearing a Mask",
+        "x": 106,
+        "y": -292,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Saying Goodbye",
+        "x": 200,
+        "y": -292,
+        "w": 92,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Loud Noises",
+        "x": 16,
+        "y": -244,
+        "w": 74,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Going Swimming",
+        "x": 94,
+        "y": -244,
+        "w": 94,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Sleepover",
+        "x": 191,
+        "y": -244,
+        "w": 63,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Getting Dressed",
+        "x": 16,
+        "y": -196,
+        "w": 90,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Assembly Time",
+        "x": 110,
+        "y": -196,
+        "w": 86,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Visiting Dentist",
+        "x": 200,
+        "y": -196,
+        "w": 84,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Using an iPad",
+        "x": 16,
+        "y": -148,
+        "w": 80,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Use template: Personal Space",
+        "x": 100,
+        "y": -148,
+        "w": 89,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Save current story as reusable template",
+        "x": 16,
+        "y": -100,
+        "w": 118,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Generate social story",
+        "x": 16,
+        "y": 85,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Print Story",
+        "x": 16,
+        "y": 213,
+        "w": 288,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Previous story page",
+        "x": 12,
+        "y": 285,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Next story page",
+        "x": 166,
+        "y": 285,
+        "w": 69,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Read this page aloud",
+        "x": 12,
+        "y": 337,
+        "w": 114,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Edit text for story page 1",
+        "x": 134,
+        "y": 337,
+        "w": 95,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Regenerate illustration for this page",
+        "x": 12,
+        "y": 389,
+        "w": 123,
+        "h": 44,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 1",
+        "x": 12,
+        "y": 804,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Go to story page 2",
+        "x": 90,
+        "y": 804,
+        "w": 70,
+        "h": 91,
+        "class": ""
+      }
+    ],
+    "focus": {
+      "tag": "BUTTON",
+      "role": null,
+      "name": "Read this page aloud",
+      "x": 12,
+      "y": 337,
+      "w": 114,
+      "h": 44,
+      "class": ""
+    },
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ]
+    ]
+  }
+]

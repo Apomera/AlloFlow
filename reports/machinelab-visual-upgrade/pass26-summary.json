@@ -1,0 +1,36 @@
+{
+  "enhancement": "Start, Halfway and Full stroke now preview effort and load distances with a shared scale and shape markers.",
+  "sourceSHA256": "0d58da24780c8f97e63eace2207a0e8601d998556b810990154a40bfa1c61ea5",
+  "sourceMirrorParity": true,
+  "syntaxChecks": true,
+  "tests": {
+    "passed": 224,
+    "files": 4,
+    "added": 11
+  },
+  "browser": {
+    "light": {
+      "directory": "pass26-light-final",
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    },
+    "dark": {
+      "directory": "pass26-dark-final",
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    },
+    "contrast": {
+      "directory": "pass26-contrast",
+      "desktopScenarios": 9,
+      "checks": 17,
+      "errors": [],
+      "overflow": false
+    }
+  },
+  "mobileMarkerAlignmentWithinPixels": 0.01,
+  "published": false
+}

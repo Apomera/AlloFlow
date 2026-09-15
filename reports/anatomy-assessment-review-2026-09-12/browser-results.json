@@ -1,0 +1,378 @@
+{
+  "errors": [],
+  "screens": [
+    "quiz-later-lap-feedback",
+    "quiz-later-lap-diagram",
+    "quiz-cycle-wrap",
+    "kidney-quiz-feedback",
+    "kidney-relationship-map",
+    "imaging-second-enter",
+    "modality-explanations"
+  ],
+  "quizSequence": [
+    {
+      "index": 1,
+      "answer": "true",
+      "correct": true
+    },
+    {
+      "index": 5,
+      "answer": "false",
+      "correct": true
+    },
+    {
+      "index": 9,
+      "answer": "true",
+      "correct": true
+    },
+    {
+      "index": 13,
+      "answer": "false",
+      "correct": true
+    },
+    {
+      "index": 17,
+      "answer": "true",
+      "correct": true
+    },
+    {
+      "index": 21,
+      "answer": "false",
+      "correct": true
+    }
+  ],
+  "relationships": [
+    {
+      "id": "kidneys",
+      "text": "Relationship map\n\nSee how this structure sits inside a wider body-system network.\n\nExplore all links\nSELECTED STRUCTURE\nKidneys\n→\nSYSTEM MEMBERSHIP:\nUrinary\nSYSTEM PROCESS\n🏥 Portal Circulation and Nutrient Processing\n→\nPARTNER SYSTEM\n❤️ Circulatory\n\nLinks below describe the selected navigation collection. Some involve this structure directly; others involve a wider system process.",
+      "connections": [
+        "conn_9"
+      ]
+    },
+    {
+      "id": "liver",
+      "text": "Relationship map\n\nSee how this structure sits inside a wider body-system network.\n\nExplore all links\nSELECTED STRUCTURE\nLiver\n→\nSYSTEM MEMBERSHIP:\nDigestive\nSYSTEM PROCESS\n🏥 Portal Circulation and Nutrient Processing\n→\nPARTNER SYSTEM\n❤️ Circulatory\n\nLinks below describe the selected navigation collection. Some involve this structure directly; others involve a wider system process.",
+      "connections": [
+        "conn_9"
+      ]
+    },
+    {
+      "id": "thyroid",
+      "text": "Relationship map\n\nSee how this structure sits inside a wider body-system network.\n\nExplore all links\nSELECTED STRUCTURE\nThyroid Gland\n→\nSYSTEM MEMBERSHIP:\nEndocrine\nSYSTEM PROCESS\n🏥 Portal Circulation and Nutrient Processing\n→\nPARTNER SYSTEM\n❤️ Circulatory\n\nLinks below describe the selected navigation collection. Some involve this structure directly; others involve a wider system process.",
+      "connections": [
+        "conn_9"
+      ]
+    }
+  ],
+  "marker": {
+    "poolLength": 19,
+    "index": 20,
+    "lap": 1,
+    "correctId": "clavicle",
+    "drawnId": "mandible",
+    "question": "🧪 Anatomy Quiz\n⭐ Score 0 - Question 2/19\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nFunction → Structure\n\nQuestions match the anterior diagram.\n\nWhich structure has this function?\n\nHorizontal strut connecting scapula to sternum. Transmits forces from upper limb to axial skeleton.\n\n1\nPelvis\n2\nClavicle\n3\nHumerus\n4\nFibula",
+    "storedFeedback": {
+      "chosen": "clavicle",
+      "correct": true,
+      "questionKey": "science-v2|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|20"
+    },
+    "drawCall": {
+      "path": [
+        [
+          "moveTo",
+          174,
+          52
+        ],
+        [
+          "lineTo",
+          178,
+          57
+        ],
+        [
+          "lineTo",
+          187,
+          47
+        ]
+      ],
+      "canvasWidth": 390,
+      "canvasHeight": 563
+    },
+    "markerCenter": {
+      "x": 180,
+      "y": 52
+    },
+    "drawnStructure": {
+      "id": "mandible",
+      "x": 180,
+      "y": 52
+    },
+    "correctStructure": {
+      "id": "clavicle",
+      "x": 144,
+      "y": 80.6
+    }
+  },
+  "progress": {
+    "before": "🧪 Anatomy Quiz\n⭐ Score 18 - Question 19/19\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nSystem ID\n\nQuestions match the anterior diagram.\n\nWhich listed body system includes this structure?\n\nScaphoid Bone\n\n1\nUrinary\n2\nNervous\n3\nCirculatory\n4\nSkeletal",
+    "after": "🧪 Anatomy Quiz\n⭐ Score 18 - Question 1/19\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nClinical Challenge\n\nQuestions match the anterior diagram.\n\nWhich structure is affected?\n\nFractures may cause epidural or subdural hematoma. Open fontanelles in infants allow brain growth and molding during birth.\n\n1\nSternum\n2\nSkull (Cranium)\n3\nMandible\n4\nHumerus",
+    "focusAfterNext": {
+      "tag": "BODY",
+      "label": null,
+      "quizPanel": false,
+      "text": "Skip to the study panel🫀 Human Anatomy ExplorerBones support movement, protect organs, st"
+    },
+    "saved": {
+      "_bodyView3d": false,
+      "_activeTab": "quiz",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "quizIdx": 19,
+      "quizScore": 18,
+      "_quizAttempts": 19,
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_quizQuestion": {
+        "context": "science-v2|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 19,
+        "poolIds": [
+          "scaphoid_bone",
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "ribs",
+          "humerus",
+          "radius",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals"
+        ]
+      },
+      "quizFeedback": null,
+      "_streak": 0,
+      "_structureConfidence": {
+        "scaphoid_bone": "practice"
+      },
+      "_confidenceAt": {
+        "scaphoid_bone": 1789258971585
+      },
+      "_retrievalEvidence": {
+        "scaphoid_bone": {
+          "attempts": 1,
+          "correct": 0
+        }
+      }
+    }
+  },
+  "keyboard": {
+    "focusAfterNext": {
+      "tag": "BODY",
+      "label": null,
+      "quizPanel": false,
+      "text": "Skip to the study panel🫀 Human Anatomy ExplorerBones support movement, protect organs, st"
+    },
+    "attemptsBefore": 1,
+    "attemptsAfter": 1
+  },
+  "clinical": {
+    "index": 7,
+    "question": "🧪 Anatomy Quiz\n⭐ Score 0 - Question 2/2\n↺ Restart\nEnd quiz\nMisses are added to your review queue. Keys 1–4 answer.\nClinical Challenge\n\nQuestions match the posterior diagram.\n\nWhich structure is affected?\n\n▁▁▁ disease can disrupt filtration, fluid balance, electrolytes, and acid-base regulation.\n\n1\nAdrenal Glands\n2\nKidneys",
+    "feedback": "✅ Correct! Kidneys\n\nFunction: Bean-shaped, retroperitoneal at T12–L3. Each has ~1 million nephrons. Filter 180L/day, produce 1–2L urine. Regulate fluid balance, electrolytes, acid-base, blood pressure (RAAS).\n\n⚠ Clinical: Kidney disease can disrupt filtration, fluid balance, electrolytes, and acid-base regulation.",
+    "links": []
+  },
+  "imaging": {
+    "initial": {
+      "region": "head",
+      "plane": "axial",
+      "modality": "CT",
+      "slice": 50,
+      "tool": "pin",
+      "annotations": [],
+      "spot": {
+        "active": true,
+        "target": "Left hemisphere",
+        "result": null,
+        "clickX": null,
+        "clickY": null,
+        "score": 0,
+        "total": 0,
+        "labelsWere": true
+      },
+      "rulerStart": null
+    },
+    "afterAnswer": {
+      "region": "head",
+      "plane": "axial",
+      "modality": "CT",
+      "slice": 50,
+      "tool": "pin",
+      "annotations": [],
+      "spot": {
+        "active": true,
+        "target": "Left hemisphere",
+        "result": "hit",
+        "clickX": 0.5,
+        "clickY": 0.5,
+        "score": 1,
+        "total": 1,
+        "labelsWere": true
+      },
+      "rulerStart": null
+    },
+    "afterSecondEnter": {
+      "region": "head",
+      "plane": "axial",
+      "modality": "CT",
+      "slice": 50,
+      "tool": "pin",
+      "annotations": [
+        {
+          "id": "img-1789258972745",
+          "type": "pin",
+          "x": 0.5,
+          "y": 0.5,
+          "note": "Observation pin",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      ],
+      "spot": {
+        "active": true,
+        "target": "Left hemisphere",
+        "result": "hit",
+        "clickX": 0.5,
+        "clickY": 0.5,
+        "score": 1,
+        "total": 1,
+        "labelsWere": true
+      },
+      "rulerStart": null,
+      "note": ""
+    }
+  },
+  "cursor": {
+    "saved": {
+      "region": "head",
+      "plane": "axial",
+      "modality": "CT",
+      "slice": 50,
+      "tool": "pin",
+      "annotations": [
+        {
+          "id": "img-1789258972944",
+          "type": "pin",
+          "x": 0.267475553773759,
+          "y": 0.3417767593951762,
+          "note": "Observation pin",
+          "modality": "CT",
+          "region": "head",
+          "plane": "axial",
+          "slice": 50
+        }
+      ],
+      "kbX": 0.5,
+      "kbY": 0.5,
+      "note": ""
+    },
+    "expectedNormalizedPoint": {
+      "x": 0.2681159420289855,
+      "y": 0.34313725490196073
+    }
+  },
+  "modality": {
+    "before": "🔬 Same slice, three ways\nHead · axial · slice 50\n\nThe scanner changes what is bright. Read each panel, then decide which scan answers each question below.\n\nCT\nX-rays measure density. Bone is bright, air is black, soft tissue sits in a narrow grey band. Takes seconds. Uses ionising radiation.\nMRI T1\nMagnet and radio waves. Fat is bright, fluid is dark, so soft-tissue anatomy is crisp. Takes minutes. No radiation.\nMRI T2\nSame scanner, different timing: fluid is bright, so swelling, inflammation and many tumours stand out.\nWhich scan would you order?\n0 / 3\n\nA cyclist has crashed. The team suspects a skull fracture with bleeding and needs an answer within minutes.\n\nCT\nMRI\n\nA footballer felt a pop in the knee. The question is whether a ligament, which is soft tissue, has torn.\n\nMRI\nCT\n\nWhich MRI sequence makes fluid bright, so swelling inside tissue stands out?\n\nMRI T1\nMRI T2",
+    "after": "🔬 Same slice, three ways\nHead · axial · slice 50\n\nThe scanner changes what is bright. Read each panel, then decide which scan answers each question below.\n\nCT\nX-rays measure density. Bone is bright, air is black, soft tissue sits in a narrow grey band. Takes seconds. Uses ionising radiation.\nMRI T1\nMagnet and radio waves. Fat is bright, fluid is dark, so soft-tissue anatomy is crisp. Takes minutes. No radiation.\nMRI T2\nSame scanner, different timing: fluid is bright, so swelling, inflammation and many tumours stand out.\nWhich scan would you order?\n1 / 3\n\nA cyclist has crashed. The team suspects a skull fracture with bleeding and needs an answer within minutes.\n\n✅ CT\nMRI\n\nCT shows bone and fresh bleeding in seconds. MRI takes far longer and is unsafe until metal is ruled out.\n\nA footballer felt a pop in the knee. The question is whether a ligament, which is soft tissue, has torn.\n\nMRI\nCT\n\nWhich MRI sequence makes fluid bright, so swelling inside tissue stands out?\n\nMRI T1\nMRI T2"
+  },
+  "retainedAnswer": {
+    "before": {
+      "_bodyView3d": false,
+      "_activeTab": "explore",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "_retrievalEvidence": {
+        "femur": {
+          "attempts": 7,
+          "correct": 6
+        }
+      },
+      "_structureConfidence": {
+        "femur": "mastered"
+      }
+    },
+    "after": {
+      "_bodyView3d": false,
+      "_activeTab": "explore",
+      "system": "skeletal",
+      "view": "anterior",
+      "complexity": 3,
+      "_retrievalEvidence": {
+        "skull": {
+          "attempts": 1,
+          "correct": 1
+        }
+      },
+      "_structureConfidence": {
+        "skull": "learning"
+      },
+      "_systemsExplored": {
+        "skeletal": true
+      },
+      "_viewsUsed": {
+        "anterior": true
+      },
+      "_quizQuestion": {
+        "context": "science-v2|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone",
+        "index": 0,
+        "poolIds": [
+          "skull",
+          "mandible",
+          "clavicle",
+          "sternum",
+          "ribs",
+          "humerus",
+          "radius",
+          "ulna",
+          "carpals",
+          "pelvis",
+          "femur",
+          "patella",
+          "tibia",
+          "fibula",
+          "tarsals",
+          "hyoid",
+          "metatarsals",
+          "metacarpals",
+          "scaphoid_bone"
+        ]
+      },
+      "quizFeedback": {
+        "chosen": "skull",
+        "correct": true,
+        "questionKey": "science-v2|skeletal|anterior|3|g912|skull,mandible,clavicle,sternum,ribs,humerus,radius,ulna,carpals,pelvis,femur,patella,tibia,fibula,tarsals,hyoid,metatarsals,metacarpals,scaphoid_bone|0"
+      },
+      "_quizAttempts": 1,
+      "_streak": 1,
+      "quizScore": 1,
+      "_totalCorrect": 1,
+      "_confidenceAt": {
+        "skull": 1789258973453
+      }
+    }
+  }
+}

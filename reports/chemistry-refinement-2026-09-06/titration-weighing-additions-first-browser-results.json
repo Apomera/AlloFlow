@@ -1,0 +1,173 @@
+{
+  "checks": [],
+  "errors": [],
+  "scans": [
+    {
+      "state": "compact",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "compact",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "missing-boat",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "missing-boat",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "shield-closed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "shield-closed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "medium-reaches-target",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "medium-reaches-target",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-lower-band",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-lower-band",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-target",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-target",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-upper-band",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "fine-reaches-upper-band",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "would-overshoot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "would-overshoot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "forced-colors",
+      "width": 1200,
+      "overflow": false,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "nodes": [
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.32 (foreground color: #bae6fd, background color: #ffffff, font size: 8.3pt (11px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.06 (foreground color: #f0f9ff, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.47 (foreground color: #c2d8e5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.46 (foreground color: #bcdbdf, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.24 (foreground color: #fde68a, background color: #ffffff, font size: 22.5pt (30px), font weight: bold). Expected contrast ratio of 3:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.24 (foreground color: #fde68a, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.6 (foreground color: #b7d0df, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #e0f2fe, background color: #ffffff, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.6 (foreground color: #b7d0df, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #e0f2fe, background color: #ffffff, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.6 (foreground color: #b7d0df, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.14 (foreground color: #e0f2fe, background color: #ffffff, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.58 (foreground color: #bad1e0, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.13 (foreground color: #d1fae5, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.41 (foreground color: #c8dce7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.38 (foreground color: #c6dfed, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.38 (foreground color: #c6dfed, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.07 (foreground color: #f0f8ff, background color: #ffffff, font size: 14.3pt (19px), font weight: bold). Expected contrast ratio of 3:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.07 (foreground color: #f0f8ff, background color: #ffffff, font size: 14.3pt (19px), font weight: bold). Expected contrast ratio of 3:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e1f7ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.07 (foreground color: #f0f8ff, background color: #ffffff, font size: 14.3pt (19px), font weight: bold). Expected contrast ratio of 3:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.26 (foreground color: #d5e8f2, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.1 (foreground color: #e4f6ff, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.28 (foreground color: #d0e6f2, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.19 (foreground color: #e0edf7, background color: #ffffff, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.27 (foreground color: #d0e8f4, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.09 (foreground color: #e0fbf3, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.4 (foreground color: #c1deed, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.31 (foreground color: #cce4ef, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.31 (foreground color: #cce4ef, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.41 (foreground color: #c4ddea, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.13 (foreground color: #d1fae5, background color: #ffffff, font size: 9.8pt (13px), font weight: bold). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.13 (foreground color: #d1fae5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.13 (foreground color: #d1fae5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.07 (foreground color: #e5faff, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.63 (foreground color: #b5cede, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1",
+            "Fix any of the following:\n  Element has insufficient color contrast of 1.63 (foreground color: #b5cede, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+          ]
+        }
+      ]
+    }
+  ]
+}

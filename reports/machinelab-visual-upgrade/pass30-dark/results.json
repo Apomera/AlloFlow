@@ -1,0 +1,18 @@
+{
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "slow-running",
+    "slow-inspect-1150",
+    "slow-inspect-390",
+    "slow-inspect-320"
+  ],
+  "checks": [
+    "Slow playback continues beyond normal duration",
+    "Keyboard slow selection, inspection takeover, normal restart and timer isolation at 1150",
+    "Keyboard slow selection, inspection takeover, normal restart and timer isolation at 390",
+    "Keyboard slow selection, inspection takeover, normal restart and timer isolation at 320",
+    "Explicit motion off overrides opposite OS preference",
+    "Explicit motion on overrides opposite OS preference"
+  ]
+}

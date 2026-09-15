@@ -1,0 +1,25 @@
+{
+  "viewports": [
+    {
+      "width": 1128,
+      "height": 384,
+      "overflow": false
+    },
+    {
+      "width": 308,
+      "height": 736,
+      "overflow": false
+    }
+  ],
+  "assertions": [
+    "Ready, blocked, and most-mature crops are shown in priority order",
+    "Exact maturity and harvest-health boundaries",
+    "Crop inspection and focus return without changing garden state",
+    "All-crop values open the keyboard map",
+    "Winter rest, large text, and reduced motion",
+    "Perennials restart after harvest; blocked plots remain unharvested",
+    "Empty and habitat-only gardens hide crop watch"
+  ],
+  "errors": [],
+  "accessibility": []
+}

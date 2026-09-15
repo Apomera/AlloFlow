@@ -63,7 +63,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
   });
 
   it('uses asynchronous clipboard feedback without blocking alerts', () => {
-    expect(email).toContain('Promise.resolve(navigator.clipboard.writeText(body)).then(function()');
+    expect(email).toContain('Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body)).then(function()');
     expect(email).toContain("setCopyStatus('Email copied. Paste it into your email app");
     expect(email).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
     expect(email).not.toContain("alert('Copied");

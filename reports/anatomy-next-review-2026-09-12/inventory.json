@@ -1,0 +1,328 @@
+{
+  "source": "stem_lab/stem_tool_anatomy.js",
+  "sha256": "1e6e7959dc78f014589afed116727368ed41a7afbfd816e3c8ee43260c72b125",
+  "mirrorIdentical": true,
+  "counts": {
+    "structures": 128,
+    "uniqueIds": 128,
+    "vocabulary": 10,
+    "elementaryIds": 35
+  },
+  "vocabulary": {
+    "english": [
+      {
+        "term": "Cranium",
+        "structures": [
+          {
+            "id": "skull",
+            "name": "Skull (Cranium)"
+          }
+        ]
+      },
+      {
+        "term": "Hyoid",
+        "structures": [
+          {
+            "id": "hyoid",
+            "name": "Hyoid Bone"
+          }
+        ]
+      },
+      {
+        "term": "Aorta",
+        "structures": [
+          {
+            "id": "aorta",
+            "name": "Aorta"
+          }
+        ]
+      },
+      {
+        "term": "Cerebellum",
+        "structures": [
+          {
+            "id": "cerebellum",
+            "name": "Cerebellum"
+          }
+        ]
+      },
+      {
+        "term": "Circle of Willis",
+        "structures": [
+          {
+            "id": "circle_willis",
+            "name": "Circle of Willis"
+          }
+        ]
+      },
+      {
+        "term": "Deltoid",
+        "structures": [
+          {
+            "id": "deltoid",
+            "name": "Deltoid"
+          }
+        ]
+      },
+      {
+        "term": "Psoas Major",
+        "structures": []
+      },
+      {
+        "term": "Alveoli",
+        "structures": [
+          {
+            "id": "alveoli",
+            "name": "Alveoli"
+          }
+        ]
+      },
+      {
+        "term": "Nephron",
+        "structures": []
+      },
+      {
+        "term": "Villi",
+        "structures": []
+      }
+    ],
+    "spanish_latin_america": [
+      {
+        "term": "Cranium",
+        "structures": []
+      },
+      {
+        "term": "Hyoid",
+        "structures": []
+      },
+      {
+        "term": "Aorta",
+        "structures": [
+          {
+            "id": "aorta",
+            "name": "Aorta"
+          }
+        ]
+      },
+      {
+        "term": "Cerebellum",
+        "structures": []
+      },
+      {
+        "term": "Circle of Willis",
+        "structures": []
+      },
+      {
+        "term": "Deltoid",
+        "structures": [
+          {
+            "id": "deltoid",
+            "name": "Deltoides"
+          }
+        ]
+      },
+      {
+        "term": "Psoas Major",
+        "structures": []
+      },
+      {
+        "term": "Alveoli",
+        "structures": []
+      },
+      {
+        "term": "Nephron",
+        "structures": []
+      },
+      {
+        "term": "Villi",
+        "structures": []
+      }
+    ],
+    "french": [
+      {
+        "term": "Cranium",
+        "structures": []
+      },
+      {
+        "term": "Hyoid",
+        "structures": []
+      },
+      {
+        "term": "Aorta",
+        "structures": []
+      },
+      {
+        "term": "Cerebellum",
+        "structures": []
+      },
+      {
+        "term": "Circle of Willis",
+        "structures": []
+      },
+      {
+        "term": "Deltoid",
+        "structures": []
+      },
+      {
+        "term": "Psoas Major",
+        "structures": []
+      },
+      {
+        "term": "Alveoli",
+        "structures": []
+      },
+      {
+        "term": "Nephron",
+        "structures": []
+      },
+      {
+        "term": "Villi",
+        "structures": []
+      }
+    ],
+    "arabic": [
+      {
+        "term": "Cranium",
+        "structures": []
+      },
+      {
+        "term": "Hyoid",
+        "structures": []
+      },
+      {
+        "term": "Aorta",
+        "structures": []
+      },
+      {
+        "term": "Cerebellum",
+        "structures": []
+      },
+      {
+        "term": "Circle of Willis",
+        "structures": []
+      },
+      {
+        "term": "Deltoid",
+        "structures": []
+      },
+      {
+        "term": "Psoas Major",
+        "structures": []
+      },
+      {
+        "term": "Alveoli",
+        "structures": []
+      },
+      {
+        "term": "Nephron",
+        "structures": []
+      },
+      {
+        "term": "Villi",
+        "structures": []
+      }
+    ]
+  },
+  "elementaryWithoutSimpleDescription": [],
+  "brain": {
+    "system": "nervous",
+    "id": "brain",
+    "name": "Brain",
+    "x": 0.5,
+    "y": 0.05,
+    "v": "b",
+    "fn": "~86 billion neurons. Cerebrum (cognition, sensation, motor), cerebellum (coordination), brainstem (vital functions). Weighs ~1.4 kg, uses 20% of O₂. Protected by meninges (dura, arachnoid, pia mater) and cerebrospinal fluid (CSF). Four lobes per hemisphere: frontal, parietal, temporal, occipital.",
+    "clinical": "Stroke (ischemic/hemorrhagic), TBI, neurodegenerative diseases (Alzheimer, Parkinson), brain tumors, epilepsy. EEG measures brain waves for diagnosis of seizures, sleep disorders, and brain death.",
+    "clinicalKid": "Your brain is the control center for your whole body, helping you think, move, learn, and feel. Sleep, healthy food, and learning new things help it grow strong, and wearing a helmet keeps it safe.",
+    "brainWaves": [
+      {
+        "type": "Delta (δ)",
+        "freq": "0.5–4 Hz",
+        "amplitude": "Highest",
+        "state": "Deep dreamless sleep (N3)",
+        "color": "#6366f1",
+        "emoji": "😴",
+        "characteristics": "Dominant in deep NREM sleep (stage N3). Associated with growth hormone release, tissue repair, and immune system strengthening. Excessive delta in waking = brain injury or encephalopathy.",
+        "clinical": "Abnormal waking delta waves indicate brain lesions, metabolic encephalopathy, or diffuse cortical damage. Used to assess depth of anesthesia and coma."
+      },
+      {
+        "type": "Theta (θ)",
+        "freq": "4–8 Hz",
+        "amplitude": "Medium–High",
+        "state": "Drowsiness, light sleep, meditation",
+        "color": "#8b5cf6",
+        "emoji": "🧘",
+        "characteristics": "Prominent in light sleep (N1), deep meditation, and creative insight. Hippocampal theta rhythms are critical for memory encoding and spatial navigation.",
+        "clinical": "Excessive theta in waking = ADHD, cognitive impairment, or drowsiness. Theta bursts during memory tasks reflect hippocampal-cortical dialogue for memory consolidation."
+      },
+      {
+        "type": "Alpha (α)",
+        "freq": "8–13 Hz",
+        "amplitude": "Medium",
+        "state": "Relaxed wakefulness, eyes closed",
+        "color": "#06b6d4",
+        "emoji": "🌿",
+        "characteristics": "First brain wave discovered (Hans Berger, 1929). Dominant when relaxed with eyes closed. Blocked by eye opening or mental effort (\"alpha blocking\"). Generated primarily in the occipital cortex.",
+        "clinical": "Reduced alpha = anxiety, insomnia. Asymmetric alpha = cortical lesion or stroke. Neurofeedback alpha training is studied for anxiety and ADHD, but blinded-trial evidence is mixed and contested, and \"peak performance\" uses are largely unproven."
+      },
+      {
+        "type": "Beta (β)",
+        "freq": "13–30 Hz",
+        "amplitude": "Low",
+        "state": "Active thinking, focus, alertness",
+        "color": "#f59e0b",
+        "emoji": "⚡",
+        "characteristics": "Dominant during active cognition, problem-solving, conversation, and decision-making. Sub-bands: low beta (13–15 Hz, relaxed focus), mid beta (15–20 Hz, active thinking), high beta (20–30 Hz, anxiety/excitement).",
+        "clinical": "Excessive high beta = anxiety, stress, insomnia. Medications like benzodiazepines increase beta. Beta activity used in BCI (brain-computer interfaces) for motor imagery."
+      },
+      {
+        "type": "Gamma (γ)",
+        "freq": "30–100+ Hz",
+        "amplitude": "Lowest",
+        "state": "Higher cognition, binding, consciousness",
+        "color": "#ef4444",
+        "emoji": "🧠",
+        "characteristics": "Associated with sensory binding (combining sight, sound, touch into unified percepts), peak concentration, expanded consciousness, and compassion meditation. Highest frequency, lowest amplitude. Generated by fast-spiking interneurons.",
+        "clinical": "Reduced gamma = schizophrenia, Alzheimer disease. Gamma entrainment via 40 Hz light/sound stimulation is being researched for Alzheimer treatment. Experienced meditators show elevated gamma."
+      }
+    ],
+    "sleepStages": [
+      {
+        "stage": "N1 (NREM Stage 1)",
+        "pct": "2–5%",
+        "duration": "1–7 min",
+        "waves": "Theta (4–8 Hz)",
+        "emoji": "😌",
+        "desc": "Lightest sleep — transition from wakefulness. Slow rolling eye movements, muscle tone decreasing. Hypnic jerks (myoclonic twitches) common. Easily aroused. Vertex sharp waves appear on EEG.",
+        "clinical": "Excessive N1 = sleep fragmentation (sleep apnea, restless legs). Hypnic hallucinations may occur. Sleep onset latency measured here for narcolepsy diagnosis (MSLT test)."
+      },
+      {
+        "stage": "N2 (NREM Stage 2)",
+        "pct": "45–55%",
+        "duration": "10–25 min",
+        "waves": "Theta + Sleep spindles (12–14 Hz) + K-complexes",
+        "emoji": "💤",
+        "desc": "True sleep begins. Core body temperature drops, heart rate slows. Sleep spindles (thalamocortical bursts) protect sleep and consolidate motor memory. K-complexes are large waveforms responding to external stimuli.",
+        "clinical": "Sleep spindles correlate with IQ and learning ability. Reduced spindles in schizophrenia and aging. K-complexes are the brain's \"sentry\" — evaluating stimuli without waking."
+      },
+      {
+        "stage": "N3 (NREM Stage 3)",
+        "pct": "15–25%",
+        "duration": "20–40 min",
+        "waves": "Delta (0.5–2 Hz), >20% of epoch",
+        "emoji": "🌙",
+        "desc": "Deep/slow-wave sleep (SWS). Most restorative stage. Growth hormone secretion peaks. Glymphatic system clears brain waste (amyloid-β). Declarative memory consolidation occurs. Hardest to awaken from; sleep inertia if aroused.",
+        "clinical": "Reduced N3 in aging, Alzheimer (amyloid accumulation). Sleepwalking, night terrors, and bedwetting occur during N3 arousal. Critical for immune function — sleep deprivation impairs T-cell function."
+      },
+      {
+        "stage": "REM (Rapid Eye Movement)",
+        "pct": "20–25%",
+        "duration": "10–60 min (increases across night)",
+        "waves": "Beta/Gamma (desynchronized, \"paradoxical\" — looks like waking EEG)",
+        "emoji": "🌟",
+        "desc": "Dreaming stage. Brain is highly active (similar to waking) but body is paralyzed (atonia via brainstem inhibition of motor neurons). Rapid conjugate eye movements. Emotional memory processing and creative problem-solving. Cycles lengthen through the night.",
+        "clinical": "REM behavior disorder (RBD): loss of atonia → acting out dreams — strong predictor of Parkinson/Lewy body dementia. Narcolepsy: premature REM onset (SOREMPs). Nightmares occur in REM. SSRIs suppress REM sleep."
+      }
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+const fs=require('node:fs');const f='tests/anatomy_lab_science.test.js';let s=fs.readFileSync(f,'utf8');
+for(const [a,b]of [["_activePathway: 'path_blood', _pathwayStep: 0, selectedStructure: 'sup_vena'","_activePathway: 'path_blood', _pathwayStep: 0, selectedStructure: 'heart'"],["updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0 }))","updMulti(structureFocusPatch(pw.steps[0].structure, { _activePathway: pw.id, _pathwayStep: 0, _pathwayRecap: null }))"]]){if(!s.includes(a))throw Error(a);s=s.replace(a,b);}fs.writeFileSync(f,s);

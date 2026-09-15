@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "implementedLocally": true,
+  "deployed": false,
+  "scope": "Solo Concept Pictionary in AlloHaven Arcade",
+  "regression": {
+    "files": 25,
+    "tests": 219,
+    "passed": 219,
+    "failed": 0
+  },
+  "browser": {
+    "combinations": 6,
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "themes": [
+      "dark",
+      "light"
+    ],
+    "scans": 52,
+    "consoleErrors": []
+  },
+  "integrity": {
+    "modules": [
+      {
+        "file": "arcade_mode_concept_pictionary.js",
+        "mirror": "desktop/web-app/public/arcade_mode_concept_pictionary.js",
+        "sha256": "f7726e9eba1a0f69052d69d79e51e96c92ee09aa1189110db2e3157f7bec8918",
+        "bytes": 36930
+      },
+      {
+        "file": "allohaven_module.js",
+        "mirror": "desktop/web-app/public/allohaven_module.js",
+        "sha256": "3cb9b709b791cb24b84bad5912151c60878155f18cc4b6164f9ce42b1fcf7f23",
+        "bytes": 1480019
+      }
+    ],
+    "hosts": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "pictionaryVersion": "f7726e9eba",
+        "providerPassed": true
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "pictionaryVersion": "f7726e9eba",
+        "providerPassed": true
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "pictionaryVersion": "f7726e9eba",
+        "providerPassed": true
+      }
+    ],
+    "stringsChecked": 547
+  },
+  "limits": [
+    "Browser AI requests used deterministic fixtures, not a production AI provider.",
+    "Glossary pictures reused the earlier authored board fixture; no new image generation occurred.",
+    "The browser checks ran the shipped solo plugin in the arcade context fixture. Live classroom behavior was covered by existing protocol and UI regression tests.",
+    "Drawings and set history remain in the mounted arcade panel; this pass does not add cross-reload storage.",
+    "Stopping the AI wait invalidates its eventual result; the provider request itself may continue.",
+    "Automated accessibility checks and visual review do not establish full conformance.",
+    "No deployment or learner pilot was performed."
+  ]
+}

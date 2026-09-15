@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),file='reports/geometry-world-free-build-2026-09-12/verify-neutral-aim.cjs';let s=fs.readFileSync(file,'utf8');
+const anchor="  r.compactLayout=await page.evaluate(()=>{const stack=document.querySelector('.gw-feedback-stack')?.getBoundingClientRect(),world=document.querySelector('.gw-crosshair')?.getBoundingClientRect();if(!stack||!world)return null;const x=world.x+world.width/2,y=world.y+world.height/2;return {stack:{x:stack.x,y:stack.y,w:stack.width,h:stack.height},crosshair:{x,y},overlapsCrosshair:x>=stack.left&&x<=stack.right&&y>=stack.top&&y<=stack.bottom};});";
+if(s.split(anchor).length!==2)throw Error('Unexpected viewport probe');
+s=s.replace(anchor,`  r.compactLayout=await page.evaluate(()=>{const stack=document.querySelector('.gw-feedback-stack')?.getBoundingClientRect(),cross=document.querySelector('.gw-crosshair')?.getBoundingClientRect(),view=document.querySelector('#geoworld-fs-wrap').getBoundingClientRect(),canvas=__geoWorldEngine.renderer.domElement.getBoundingClientRect();if(!stack||!cross)return null;const x=cross.x+cross.width/2,y=cross.y+cross.height/2,rect=r=>({x:r.x,y:r.y,w:r.width,h:r.height});return {stack:rect(stack),crosshair:rect(cross),crosshairCenter:{x,y},viewport:rect(view),canvas:rect(canvas),canvasCenter:{x:canvas.x+canvas.width/2,y:canvas.y+canvas.height/2},overlapsCrosshair:x>=stack.left&&x<=stack.right&&y>=stack.top&&y<=stack.bottom};});
+  check('Compact desktop feedback leaves the actual crosshair clear',r.compactLayout&&r.compactLayout.overlapsCrosshair===false,r.compactLayout);
+  check('Actual crosshair matches the rendered canvas center',r.compactLayout&&Math.abs(r.compactLayout.crosshairCenter.x-r.compactLayout.canvasCenter.x)<=1&&Math.abs(r.compactLayout.crosshairCenter.y-r.compactLayout.canvasCenter.y)<=1);
+`);
+const fail="}catch(error){r.failure=error.stack;";
+if(s.split(fail).length!==2)throw Error('Unexpected failure probe');
+s=s.replace(fail,"}catch(error){r.failure=error.stack;r.failureState=await page.evaluate(()=>{const e=__geoWorldEngine,h=e.blockUnderCrosshair();return {camera:e.camera.position.toArray(),quaternion:e.camera.quaternion.toArray(),preview:e._placementPreview,hint:__ctx.toolData.geometryWorld.placementHint,hit:h?{point:h.point.toArray(),normal:h.face.normal.toArray(),grid:h.object.userData.gridPos}:null};}).catch(()=>null);");
+const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

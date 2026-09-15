@@ -251,10 +251,11 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     className="hidden"
                     accept=".json"
                     aria-label={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
-                    data-help-key="ui_lang_import_btn"
                 />
+                {/* The help anchor lives on the visible button, not the hidden input: a tour step
+                    or help-mode click resolving the key must land on something a user can see. */}
                 <button type="button"
-                    onClick={() => fileInputRef.current.click()} data-help-key="source_upload_btn"
+                    onClick={() => fileInputRef.current.click()} data-help-key="ui_lang_import_btn"
                     className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
                     title={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
                     aria-label={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
@@ -281,7 +282,8 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     onChange={(e) => setManualInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
                     placeholder={languageCopy('language_selector.search_placeholder', 'Enter Language...')}
-                    className="text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600"
+                    // w-20 (80 px) clipped the placeholder to "Enter Languag" on the welcome screen (2026-09-13).
+                    className="text-xs bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-28 px-1 text-slate-600 placeholder:text-slate-600"
                     aria-label={languageCopy('language_selector.search_placeholder', 'Enter Language...')}
                     data-help-key="ui_lang_manual_input"
                 />

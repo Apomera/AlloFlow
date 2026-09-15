@@ -8605,7 +8605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         clearKeys();
         window.removeEventListener('resize', onResize);
         try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
-        try { renderer.dispose(); } catch (_) {}
+        try { renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); } catch (_) {}
       }
     };
   }

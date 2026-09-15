@@ -70,17 +70,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       name: 'Damian Milton',
       role: 'Autistic sociologist, University of Kent; developed the Double Empathy Problem framework that reframes autism social-skill "deficits" as two-way mismatches in mutual understanding.',
       icon: '⇄', color: '#22d3ee',
-      quote: 'The autistic person and the non-autistic person are equally responsible for the breakdown in mutual understanding. The disability research field has historically located the problem in only one of them.',
+      quote: 'In a sense it is a \'double problem\' as both people experience it, and so it is not a singular problem located in any one person. Rather, it is based in the social interaction between two differently disposed social actors.',
       context: 'Milton\'s 2012 paper has been cited thousands of times and is one of the most-cited works in autism research. It directly challenges the foundational assumption of much social-skills training: that the autistic person is the one who needs to change. Subsequent research (Crompton et al. 2020) found autistic-to-autistic communication is actually highly effective — supporting Milton\'s reframe.',
-      source: 'Milton 2012, Disability & Society, "On the ontological status of autism: the double empathy problem"; Crompton et al. 2020, Autism'
+      source: 'Milton D. (2012). "On the ontological status of autism: the \'double empathy problem\'." Disability & Society, 27(6), 883-887 — open access via the Kent Academic Repository; Crompton et al. (2020), Autism'
     },
     {
       name: 'Henny Kupferstein',
-      role: 'Researcher; published the 2018 survey on PTSD outcomes following ABA exposure that became a major reference point for the autism community critique of behavior intervention.',
+      role: 'Researcher; published the 2018 self-report survey on post-traumatic stress symptoms following ABA exposure that became a major reference point for the autism community critique of behavior intervention. The study is contested and is under a publisher Expression of Concern.',
       icon: '📊', color: '#a78bfa',
-      quote: 'Adults and children exposed to ABA were significantly more likely to meet PTSD diagnostic criteria than those who were not exposed. This is data, not opinion.',
-      context: 'The Kupferstein survey (n=460) found 46% of ABA-exposed respondents met PTSD diagnostic criteria, vs 72% of non-exposed (the difference reached significance). The methodology has been actively debated in the field — small sample, self-report, retrospective. The finding catalyzed industry-wide reckoning regardless. Whatever the precise prevalence, the existence of substantial ABA-related psychological harm is now widely accepted within the field.',
-      source: 'Kupferstein H. (2018). "Evidence of increased PTSD symptoms in autistics exposed to applied behavior analysis." Advances in Autism, 4(1), 19-29.'
+      quote: 'Nearly half (46 percent) of the ABA-exposed respondents met the diagnostic threshold for PTSD, and extreme levels of severity were recorded in 47 percent of the affected subgroup.',
+      context: 'The Kupferstein survey (n=460) reported that 46% of ABA-exposed respondents indicated post-traumatic stress symptoms, while 72% of non-exposed respondents were asymptomatic. Read those two numbers carefully: they describe opposite things, so they are not a 46-versus-72 comparison. Methodologists have contested this study hard — self-report, retrospective, no clinical diagnosis, and recruitment through communities already critical of ABA (Leaf et al. 2018, published in the same journal). In December 2025 the journal issued an Expression of Concern over a possible error in research standards; as of 2026 that investigation is unresolved, and the paper is neither cleared nor retracted. Treat this as a contested claim, not a settled finding. It still belongs here because the survey is a documented turning point in how the autistic community pressed the field on harm — that history is real whatever becomes of the statistic.',
+      source: 'Kupferstein H. (2018). "Evidence of increased PTSD symptoms in autistics exposed to applied behavior analysis." Advances in Autism, 4(1), 19-29 — subject to a publisher Expression of Concern (Advances in Autism, 3 December 2025), investigation unresolved. Read it alongside the critique: Leaf et al. (2018), Advances in Autism, 4(3), 122-129, and Kupferstein\'s reply, 5(4), 318-321.'
     },
     {
       name: 'Kassiane Asasumasu',
@@ -99,19 +99,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       source: 'In My Language (2007, YouTube, ~28M views as of 2024); Ballastexistenz blog; CNN interview 2007'
     },
     {
-      name: 'Lydia X. Z. Brown',
-      role: 'Autistic disability-justice attorney, organizer, and educator; American University faculty; previously at the Autistic Women & Nonbinary Network. Centers race, gender, and class in disability work.',
+      name: 'Ly Xīnzhèn M. Zhǎngsūn Brown',
+      role: 'Autistic, nonbinary disability-justice attorney, organizer, and educator (they/them); published as Lydia X. Z. Brown through 2020. Chairs the American Bar Association Civil Rights & Social Justice Disability Rights Committee; policy counsel at the Center for Democracy & Technology; director of policy and advocacy at the Autistic Women & Nonbinary Network. Centers race, gender, and class in disability work.',
       icon: '⚖️', color: '#22c55e',
-      quote: 'Disability justice is not the same as disability rights. Disability rights asks for inclusion in the existing system. Disability justice asks whether the existing system should exist as it is.',
-      context: 'Brown\'s work draws together the disability-justice framework articulated by Patty Berne, Mia Mingus, Stacey Park Milbern, and others at Sins Invalid. The distinction matters: disability rights got us the ADA. Disability justice asks who is left out by the ADA, who is criminalized for being disabled while poor or Black or undocumented, and what would change if disabled people of color led.',
-      source: 'Autistic Hoya blog; American University faculty page; Sins Invalid framework documents'
+      quote: 'All the Weight of Our Dreams — art and writing entirely by autistic people of color.',
+      context: 'The title of the 2017 anthology Brown led as lead editor — the first of its kind, collecting autistic people of color writing for themselves rather than being written about. Their wider work concerns violence against multiply-marginalised disabled people: institutionalisation, incarceration, and policing. It builds on the disability-justice framework articulated by Patty Berne, Mia Mingus, Stacey Park Milbern and others at Sins Invalid. The distinction that framework draws matters: disability rights won the ADA; disability justice asks who the ADA still leaves out, and who is criminalised for being disabled while also poor, Black, or undocumented.',
+      source: 'Brown, Ashkenazy & Onaiwu, eds. (2017). All the Weight of Our Dreams: On Living Racialized Autism. DragonBee Press; Autistic Hoya blog (2011-2020); autistichoya.net'
     },
     {
       name: 'Patty Berne',
       role: 'Co-founder and former director of Sins Invalid; author of the foundational document that articulated the ten principles of disability justice, distinguishing it from disability rights.',
       icon: '🌟', color: '#ec4899',
-      quote: 'We organize for collective access, collective liberation. We will not leave our most vulnerable behind as we move forward.',
-      context: 'Berne\'s ten principles of disability justice (2015) include intersectionality, leadership of the most impacted, anti-capitalist politics, cross-movement solidarity, recognizing wholeness, sustainability, commitment to cross-disability solidarity, interdependence, collective access, and collective liberation. The framework has become foundational across disabled organizing in the US.',
+      quote: 'Collective Access, that as brown and queer crips we bring flexibility and creative nuance to engage with each other, that we value exploring and creating new ways of doing things that go beyond able-bodied/minded normativity.',
+      context: 'Collective access is the ninth of Berne\'s ten principles of disability justice (2015), alongside intersectionality, leadership of the most impacted, anti-capitalist politics, cross-movement solidarity, recognizing wholeness, sustainability, cross-disability solidarity, interdependence, and collective liberation — which the draft frames as the goal in which no body/mind is left behind. The framework has become foundational across disabled organizing in the US. Note the word \'crip\': it is a reclaimed term, used here by disabled people about themselves, and it is not an invitation for others to use it.',
       source: 'Berne P. (2015). "Disability justice — a working draft." Sins Invalid'
     }
   ];
@@ -125,7 +125,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
     { author: 'Steve Silberman', year: 2015, title: 'NeuroTribes', format: 'Book (popular history)', where: 'Available at most libraries', why: 'Sweeping history of autism research from Asperger and Kanner to the neurodiversity movement. Widely cited starting point.' },
     { author: 'Eric Garcia', year: 2021, title: 'We\'re Not Broken: Changing the Autism Conversation', format: 'Book (journalism)', why: 'Autistic journalist Eric Garcia interviews dozens of autistic adults across the US on housing, work, and care.' },
     { author: 'Sins Invalid', year: 2019, title: 'Skin, Tooth, and Bone: The Basis of Movement is Our People', format: 'Book / Primer', why: 'The foundational disability-justice primer (2nd edition). Articulates the ten principles. Distinguishes disability justice from disability rights.' },
-    { author: 'Lydia X. Z. Brown et al.', year: 2017, title: 'All the Weight of Our Dreams: On Living Racialized Autism', format: 'Anthology', why: 'First anthology of writing by and about autistic people of color. Edited by Brown, E. Ashkenazy, and Morénike Giwa Onaiwu.' },
+    { author: 'Lydia X. Z. Brown, E. Ashkenazy & Morénike Giwa Onaiwu (eds.)', year: 2017, title: 'All the Weight of Our Dreams: On Living Racialized Autism', format: 'Anthology', why: 'First anthology of writing by and about autistic people of color. Published under the lead editor\'s then-name; they now go by Ly Xīnzhèn M. Zhǎngsūn Brown. Search the printed byline to find the book.' },
     { author: 'Devon Price', year: 2022, title: 'Unmasking Autism', format: 'Book', why: 'Autistic social psychologist on masking, late diagnosis, and the cost of performing neurotypicality. Accessible entry point.' },
     { author: 'Temple Grandin', year: 1995, title: 'Thinking in Pictures', format: 'Memoir', why: 'Grandin\'s account of how visual-thinking autism shaped her work in animal-handling design.' }
   ];
@@ -220,7 +220,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
   window.SelHub.registerTool('disabilityVoices', {
     icon: '🎙️',
     label: 'Disability Voices',
-    desc: 'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Lydia X. Z. Brown, Patty Berne.',
+    desc: 'Real autistic and disabled advocates whose work shaped — and critiqued — disability practice. Quotes, context, and a curated reading list. Built so the people the field has been done TO are centered, not relegated to a sidebar in a behavior-science tool. Ari Ne\'eman, Temple Grandin, Damian Milton, Henny Kupferstein, Kassiane Asasumasu, Mel Baggs, Ly Xīnzhèn M. Zhǎngsūn Brown, Patty Berne.',
     color: 'pink',
     category: 'care-of-self',
     render: function(ctx) {
@@ -249,7 +249,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         });
       }
       var view = d.view || 'home';
-      function goto(v) { setDV({ view: v }); }
+
+      // The polite live region is created at load; without this it was never
+      // written to, so switching sections was silent to screen readers.
+      function _disAnnounce(msg) {
+        var region = document.getElementById('allo-live-disvoices');
+        if (!region) return;
+        region.textContent = '';
+        // Re-assigning in a later task makes repeat announcements of the same
+        // string re-fire instead of being collapsed as an unchanged node.
+        setTimeout(function() { region.textContent = msg; }, 30);
+      }
+
+      var DV_TAB_IDS = ['home', 'reading', 'orgs', 'about'];
+
+      function goto(v, label) {
+        setDV({ view: v });
+        if (label) _disAnnounce(label + ' section shown');
+      }
+
+      // WCAG/APG tab pattern: arrows move between tabs, Home/End jump to the
+      // ends, and focus follows selection.
+      function dvTabKeyDown(e, index) {
+        var key = e.key;
+        if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+        e.preventDefault();
+        var nextIndex = index;
+        if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % DV_TAB_IDS.length;
+        if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + DV_TAB_IDS.length) % DV_TAB_IDS.length;
+        if (key === 'Home') nextIndex = 0;
+        if (key === 'End') nextIndex = DV_TAB_IDS.length - 1;
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      }
 
       function header() {
         return h('div', {
@@ -288,11 +321,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 padding: '2px 8px', borderRadius: 999,
                 background: 'rgba(244,114,182,0.12)',
                 border: '1px solid rgba(244,114,182,0.40)',
-                color: _disFg('#f9a8d4'), fontSize: 10, fontWeight: 700,
+                color: _disFg('#f9a8d4'), fontSize: 12, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
               } }, VOICES.length + ' voices · ' + READING_LIST.length + ' readings · ' + ORGANIZATIONS.length + ' orgs')
             ),
-            h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), lineHeight: 1.55 } },
+            h('div', { style: { fontSize: 14, color: _disFg('#94a3b8'), lineHeight: 1.55 } },
               'Real autistic and disabled advocates whose work shaped, and critiqued, disability practice. The people the field has been done to.')
           )
         );
@@ -318,15 +351,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             return h('button', {
               key: tab.id,
               role: 'tab',
+              id: 'disvoices-tab-' + tab.id,
+              'aria-controls': 'disvoices-panel-' + tab.id,
               'aria-selected': active ? 'true' : 'false',
-              onClick: function() { goto(tab.id); },
+              tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) { dvTabKeyDown(e, DV_TAB_IDS.indexOf(tab.id)); },
+              onClick: function() { goto(tab.id, tab.label); },
               style: {
                 position: 'relative',
                 padding: '10px 14px 12px',
                 border: 'none',
                 background: active ? 'rgba(244,114,182,0.10)' : 'transparent',
                 color: active ? _disFg('#f9a8d4') : _disFg('#94a3b8'),
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: active ? 800 : 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
@@ -360,7 +397,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(244,114,182,0.30)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Eight named autistic and disabled advocates. Each entry shows the person\'s role, a documented quote, the context the quote came from, and an on-record citation so students can read further. Identity-first language follows community-consensus norms (Kenny 2016; Bury 2020; Taboas 2023).')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -389,7 +426,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   }, v.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { fontSize: 15, fontWeight: 800, color: v.color, lineHeight: 1.2, marginBottom: 4 } }, v.name),
-                    h('div', { style: { fontSize: 11, color: _disFg('#94a3b8'), lineHeight: 1.55 } }, v.role)
+                    h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), lineHeight: 1.55 } }, v.role)
                   )
                 ),
                 // Quote block
@@ -402,13 +439,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   }
                 },
                   h('span', { style: { color: v.color, fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"'),
-                  h('span', { style: { fontSize: 13, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote),
+                  h('span', { style: { fontSize: 15, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote),
                   h('span', { style: { color: v.color, fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"')
                 ),
                 // Context
-                h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, v.context),
+                h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, v.context),
                 // Source
-                h('div', { style: { fontSize: 10, color: _disFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
                   '📚 ', v.source)
               );
             })
@@ -419,7 +456,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               marginTop: 14, padding: '12px 14px', borderRadius: 10,
               background: 'rgba(167,139,250,0.06)',
               border: '1px solid rgba(167,139,250,0.20)',
-              color: _disFg('#cbd5e1'), fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
+              color: _disFg('#cbd5e1'), fontSize: 14, lineHeight: 1.65, fontStyle: 'italic'
             }
           },
             '💡 If you are studying behavior science, ABA, school psychology, or special education, the most important continuing-education you can do is read the people the work has been done to. Start with In My Language (free on YouTube), Milton 2012 (open access), and the Sins Invalid primer. The science is the science; the application is a relationship.')
@@ -440,7 +477,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(34,197,94,0.20)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Curated reading and viewing for going deeper. Many available at public libraries; the videos and one paper are free online. Tap the bookmark to mark something for yourself.')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -459,10 +496,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 }
               },
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _disFg('#e2e8f0'), lineHeight: 1.3, marginBottom: 3 } }, r.title),
-                  h('div', { style: { fontSize: 11, color: _disFg('#94a3b8'), marginBottom: 6 } },
+                  h('div', { style: { fontSize: 15, fontWeight: 800, color: _disFg('#e2e8f0'), lineHeight: 1.3, marginBottom: 3 } }, r.title),
+                  h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), marginBottom: 6 } },
                     r.author + ' · ' + r.year + ' · ' + r.format),
-                  h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.55 } }, r.why)
+                  h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.55 } }, r.why)
                 ),
                 h('button', {
                   onClick: function() { toggleMarked(key); },
@@ -494,7 +531,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             border: '1px solid rgba(34,211,238,0.20)',
             marginBottom: 14
           } },
-            h('div', { style: { fontSize: 12, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
               'Organizations and movements students can follow, support, or read for ongoing work. Mix of national + Maine-local. Each entry has scope, what they do, and the publicly-listed website (search the name to find current URL).')
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
@@ -525,14 +562,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                         background: o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)',
                         border: '1px solid ' + (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)'),
                         color: o.maine ? '#7dd3fc' : _disFg('#94a3b8'),
-                        fontSize: 9, fontWeight: 700,
+                        fontSize: 12, fontWeight: 700,
                         fontFamily: 'ui-monospace, Menlo, monospace',
                         textTransform: 'uppercase', letterSpacing: '0.04em'
                       } }, o.maine ? '🦞 Maine' : o.scope)
                     ),
-                    h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 6 } }, o.what),
+                    h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 6 } }, o.what),
                     h('div', { style: {
-                      fontSize: 10, color: _disFg('#94a3b8'), fontStyle: 'italic',
+                      fontSize: 12, color: _disFg('#94a3b8'), fontStyle: 'italic',
                       paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)',
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } },
@@ -546,7 +583,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             marginTop: 14, padding: '12px 14px', borderRadius: 10,
             background: 'rgba(167,139,250,0.06)',
             border: '1px solid rgba(167,139,250,0.20)',
-            color: _disFg('#cbd5e1'), fontSize: 11, lineHeight: 1.65, fontStyle: 'italic'
+            color: _disFg('#cbd5e1'), fontSize: 14, lineHeight: 1.65, fontStyle: 'italic'
           } },
             '💡 Following a few of these on social media is one of the easier continuing-education paths. National orgs (ASAN, Sins Invalid, AWN, CommunicationFIRST) are active on Bluesky and Mastodon. Disability Rights Maine and the Maine DD Council post events relevant to families and staff serving Mainers with disabilities. Show up to one virtual event per month and the field changes for you fast.')
         );
@@ -561,8 +598,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Why this tool exists in SEL Hub, not in BehaviorLab'),
-            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Why this tool exists in SEL Hub, not in BehaviorLab'),
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'BehaviorLab teaches operant conditioning through a Skinner-box simulation — pigeons, levers, food pellets. The science is real and worth learning. But putting named real autistic adults inside that visual frame would be exactly what the disability community has documented as harmful: depicting persons alongside animal-conditioning imagery, as if the work flows naturally from rats and pigeons to people. Disability Voices was moved here so the framing centers personhood, not behavioral subjects. Skinner-box imagery has no place alongside named autistic adults.')
           ),
           h('div', {
@@ -572,8 +609,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'On identity-first language'),
-            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'On identity-first language'),
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'This tool uses identity-first language ("autistic person," "disabled person") rather than person-first ("person with autism," "person with a disability"). This follows the consensus of the autistic adult community as documented in peer-reviewed research (Kenny et al. 2016; Bury et al. 2020; Taboas et al. 2023). Some individuals prefer person-first; honor any specific person\'s preference when known.')
           ),
           h('div', {
@@ -583,8 +620,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               border: '1px solid rgba(100,116,139,0.25)'
             }
           },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Sourcing standard'),
-            h('div', { style: { fontSize: 11, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
+            h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Sourcing standard'),
+            h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.65 } },
               'Every quote in this tool is verifiable in the cited source. No attributed quotes are paraphrased. Where context is provided, it is consistent with the cited primary source. Mel Baggs is the only listed person not living; their work continues to teach.')
           )
         );
@@ -599,7 +636,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
         header(),
         navTabs(),
-        content
+        // role="tablist" without a matching panel left screen readers on an
+        // unassociated region. The panel is focusable so keyboard users can
+        // move from the tab straight into the content.
+        h('div', {
+          role: 'tabpanel',
+          id: 'disvoices-panel-' + view,
+          'aria-labelledby': 'disvoices-tab-' + view,
+          tabIndex: 0
+        }, content)
       );
     }
   });

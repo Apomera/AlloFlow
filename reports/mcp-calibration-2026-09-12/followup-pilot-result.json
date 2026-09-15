@@ -1,0 +1,164 @@
+{
+  "runId": "run-mtyy43as-fvwt2r",
+  "status": "completed",
+  "startedAt": "2026-09-12T22:17:11.380Z",
+  "modelCalls": 22,
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-accessible.html",
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-remediation-completion.json"
+  },
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "verdict": {
+    "level": "review",
+    "reviewCount": 1,
+    "cautionCount": 1
+  },
+  "beforeScore": 86,
+  "afterScore": 90,
+  "aiVerificationIncomplete": false,
+  "scoreSource": "min",
+  "estimatedMinimumScore": null,
+  "contentCoverage": {
+    "status": "matched",
+    "reviewRequired": false,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 910,
+    "outputTokens": 1020,
+    "matchedTokens": 910,
+    "missingTokens": 0,
+    "tokenRecall": 1,
+    "missingPassages": [],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 2,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "31910c54e4b52fea0b8c79d08a9a707ab43f413261b3ae15335d82c1fd0753a5",
+    "htmlSha256": "82cfbb5e9bbb05f5b8e4132e66090f92446dc7a6baf2c5569ffc3adcf0847d4a"
+  },
+  "integrityCoverage": 100,
+  "integrityWarning": null,
+  "fidelityNotes": [],
+  "candidateRejectionCount": 2,
+  "candidateRejections": [
+    {
+      "chunkId": "all",
+      "phase": "assembly",
+      "reason": "link-destination-changed",
+      "pass": 1,
+      "sourceLocation": "link:1"
+    },
+    {
+      "chunkId": "all",
+      "phase": "assembly",
+      "reason": "link-destination-changed",
+      "pass": 2,
+      "sourceLocation": "link:1"
+    }
+  ],
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": false,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "autoContinue": {
+    "roundsRun": 2,
+    "log": [
+      "round 1 accepted: score 90 → 90 (det 90, state review-required)",
+      "round 2 accepted: score 90 → 90 (det 90, state review-required)"
+    ]
+  },
+  "taggedPdfError": "active_content_scan_unavailable",
+  "stats": {
+    "apiCalls": 14,
+    "visionCalls": 5,
+    "retries": 0,
+    "recoveredRetries": 0,
+    "authThrottles": 0,
+    "terminalFailures": 0
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; a tagged PDF declaration is not independent verification or a legal conformance certificate. Check deliveryStatus, pdfUa and human-review findings.",
+  "htmlVerificationState": "review-required",
+  "verificationChecks": {
+    "pdfUa": {
+      "standard": "PDF/UA-1 (ISO 14289-1)",
+      "profile": "ua1",
+      "scope": "machine-verifiable PDF/UA checks",
+      "status": "not-applicable",
+      "reason": "No tagged PDF was produced."
+    }
+  },
+  "deliveryReviewReasons": [],
+  "reviewRequired": true,
+  "deliveryStatus": "review-required",
+  "resources": [
+    {
+      "role": "source",
+      "label": "Original document (before)",
+      "uri": "alloflow-remediation://artifact/run-mtyy43as-fvwt2r/source",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ed-parent-guide-idea.pdf",
+      "mimeType": "application/pdf"
+    },
+    {
+      "role": "accessibleHtml",
+      "label": "Accessible HTML (after)",
+      "uri": "alloflow-remediation://artifact/run-mtyy43as-fvwt2r/accessibleHtml",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-accessible.html",
+      "mimeType": "text/html"
+    },
+    {
+      "role": "report",
+      "label": "Remediation report",
+      "uri": "alloflow-remediation://artifact/run-mtyy43as-fvwt2r/report",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-remediation-report.json",
+      "mimeType": "application/json"
+    },
+    {
+      "role": "completionManifest",
+      "label": "Completion manifest",
+      "uri": "alloflow-remediation://artifact/run-mtyy43as-fvwt2r/completionManifest",
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-remediation-completion.json",
+      "mimeType": "application/json"
+    }
+  ],
+  "modelTransport": "agent-bridge",
+  "modelCallsAnswered": 22,
+  "bridgeStats": {
+    "pipelineModelCalls": 22,
+    "requestsPublished": 20,
+    "coalescedReasks": 0,
+    "replayedAnswers": 2,
+    "clientLatencySeconds": {
+      "count": 20,
+      "mean": 54,
+      "max": 146
+    }
+  }
+}

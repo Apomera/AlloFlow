@@ -1,0 +1,98 @@
+{
+  "assertions": [
+    {
+      "name": "Empty builds explain why selection tools are unavailable",
+      "pass": true
+    },
+    {
+      "name": "Escape returns keyboard focus to tool search toggle",
+      "pass": false
+    },
+    {
+      "name": "Searching roof opens the starter library and moves focus there",
+      "pass": true
+    },
+    {
+      "name": "Preview actions are in the fixed dock footer",
+      "pass": true
+    },
+    {
+      "name": "Review exposes one explicit Apply action without modifying blocks",
+      "pass": true
+    },
+    {
+      "name": "Review frames a starter placed away from the current camera",
+      "pass": true,
+      "details": [
+        0,
+        -0.040214526915753064,
+        0.9755144051866336
+      ]
+    },
+    {
+      "name": "Returning to tools keeps the proposal available",
+      "pass": true
+    },
+    {
+      "name": "Unmatched searches provide recovery guidance",
+      "pass": true
+    },
+    {
+      "name": "Tool navigation preserves a partially typed project name and the pending preview",
+      "pass": true
+    },
+    {
+      "name": "Applying the reviewed starter produces one undoable change",
+      "pass": true,
+      "details": {
+        "count": 16,
+        "undo": 1
+      }
+    },
+    {
+      "name": "One undo restores the original empty world",
+      "pass": true
+    },
+    {
+      "name": "Escape cancels the proposal and removes its scene overlay",
+      "pass": true
+    },
+    {
+      "name": "Phone finder provides a scrollable tool list without page overflow",
+      "pass": true,
+      "details": {
+        "overflow": false,
+        "listHeight": 159.828125,
+        "listWidth": 284,
+        "scrollable": true,
+        "bodyHidden": true
+      }
+    },
+    {
+      "name": "Phone Apply stays visible and meets a 44px touch target",
+      "pass": true,
+      "details": {
+        "x": 21,
+        "y": 722,
+        "width": 135.5,
+        "height": 44
+      }
+    },
+    {
+      "name": "Phone world review keeps all actions within the viewport",
+      "pass": true
+    },
+    {
+      "name": "Short landscape can reach the matching tool",
+      "pass": false,
+      "details": {
+        "x": 504,
+        "y": 306.5625,
+        "width": 310,
+        "height": 104.125
+      }
+    }
+  ],
+  "errors": [],
+  "scope": "Local Chromium, actual WebGL; desktop, narrow touch portrait, and short landscape."
+}

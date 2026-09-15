@@ -1,0 +1,614 @@
+[
+  {
+    "version": 1,
+    "profileId": "ui-review",
+    "updatedAt": 1789267140860,
+    "payload": {
+      "board": {
+        "topic": "",
+        "title": "",
+        "words": [],
+        "pages": null,
+        "activePageIdx": 0,
+        "cols": 4,
+        "color": true,
+        "textPos": "below",
+        "textSize": 11,
+        "cellSize": "medium",
+        "language": "en",
+        "editingId": null,
+        "fctMeta": null
+      },
+      "sequence": {
+        "items": [],
+        "input": "",
+        "topic": "",
+        "title": "",
+        "orientation": "horizontal",
+        "nowId": null,
+        "editingId": null
+      },
+      "story": {
+        "situation": "",
+        "studentName": "Demo Learner A",
+        "details": "",
+        "pages": [],
+        "current": 0
+      },
+      "quickBoards": {
+        "qbMode": "firstthen",
+        "cbPath": "fct",
+        "cbFunction": "Escape",
+        "cbPhase": 2,
+        "cbGoalText": "",
+        "ftFirstLabel": "Immediate close flush",
+        "ftFirstImage": null,
+        "ftThenLabel": "",
+        "ftThenImage": null,
+        "cbCount": 2,
+        "cbItems": [
+          {
+            "image": null,
+            "id": "c1",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c2",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c3",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c4",
+            "label": ""
+          }
+        ],
+        "tokenTotal": 5,
+        "tokenLabel": "",
+        "tokenRewardLabel": "",
+        "tokenRewardImage": null,
+        "cmItems": [
+          {
+            "image": null,
+            "id": "cm1",
+            "label": "Take deep breaths"
+          },
+          {
+            "image": null,
+            "id": "cm2",
+            "label": "Count to 10"
+          },
+          {
+            "image": null,
+            "id": "cm3",
+            "label": "Take a walk"
+          },
+          {
+            "image": null,
+            "id": "cm4",
+            "label": "Squeeze a stress ball"
+          },
+          {
+            "image": null,
+            "id": "cm5",
+            "label": "Ask for help"
+          },
+          {
+            "image": null,
+            "id": "cm6",
+            "label": "Drink some water"
+          },
+          {
+            "image": null,
+            "id": "cm7",
+            "label": "Listen to music"
+          },
+          {
+            "image": null,
+            "id": "cm8",
+            "label": "Draw or color"
+          }
+        ],
+        "snItems": [
+          {
+            "image": null,
+            "id": "sn1",
+            "label": "Too loud"
+          },
+          {
+            "image": null,
+            "id": "sn2",
+            "label": "Too bright"
+          },
+          {
+            "image": null,
+            "id": "sn3",
+            "label": "Too crowded"
+          },
+          {
+            "image": null,
+            "id": "sn4",
+            "label": "Need headphones"
+          },
+          {
+            "image": null,
+            "id": "sn5",
+            "label": "Need sunglasses"
+          },
+          {
+            "image": null,
+            "id": "sn6",
+            "label": "Need fidget"
+          },
+          {
+            "image": null,
+            "id": "sn7",
+            "label": "Need to move"
+          },
+          {
+            "image": null,
+            "id": "sn8",
+            "label": "Need a break"
+          },
+          {
+            "image": null,
+            "id": "sn9",
+            "label": "Feel overwhelmed"
+          },
+          {
+            "image": null,
+            "id": "sn10",
+            "label": "Need quiet"
+          }
+        ],
+        "amItems": [
+          {
+            "image": null,
+            "id": "am1",
+            "label": "Can I have...?"
+          },
+          {
+            "image": null,
+            "id": "am2",
+            "label": "Where is...?"
+          },
+          {
+            "image": null,
+            "id": "am3",
+            "label": "What is...?"
+          },
+          {
+            "image": null,
+            "id": "am4",
+            "label": "I want to..."
+          },
+          {
+            "image": null,
+            "id": "am5",
+            "label": "Can you help me?"
+          },
+          {
+            "image": null,
+            "id": "am6",
+            "label": "I need..."
+          },
+          {
+            "image": null,
+            "id": "am7",
+            "label": "When is...?"
+          },
+          {
+            "image": null,
+            "id": "am8",
+            "label": "I don't know"
+          },
+          {
+            "image": null,
+            "id": "am9",
+            "label": "I don't understand"
+          },
+          {
+            "image": null,
+            "id": "am10",
+            "label": "Can I go?"
+          }
+        ],
+        "bcItems": [
+          {
+            "image": null,
+            "id": "bc1",
+            "label": "Head"
+          },
+          {
+            "image": null,
+            "id": "bc2",
+            "label": "Eyes"
+          },
+          {
+            "image": null,
+            "id": "bc3",
+            "label": "Ears"
+          },
+          {
+            "image": null,
+            "id": "bc4",
+            "label": "Throat"
+          },
+          {
+            "image": null,
+            "id": "bc5",
+            "label": "Stomach"
+          },
+          {
+            "image": null,
+            "id": "bc6",
+            "label": "Arm"
+          },
+          {
+            "image": null,
+            "id": "bc7",
+            "label": "Back"
+          },
+          {
+            "image": null,
+            "id": "bc8",
+            "label": "Leg"
+          }
+        ],
+        "twItems": [
+          {
+            "image": null,
+            "id": "tw1",
+            "label": "5 minutes left"
+          },
+          {
+            "image": null,
+            "id": "tw2",
+            "label": "3 minutes left"
+          },
+          {
+            "image": null,
+            "id": "tw3",
+            "label": "1 minute left"
+          },
+          {
+            "image": null,
+            "id": "tw4",
+            "label": "Almost time!"
+          },
+          {
+            "image": null,
+            "id": "tw5",
+            "label": "Time to stop"
+          },
+          {
+            "image": null,
+            "id": "tw6",
+            "label": "Clean up"
+          },
+          {
+            "image": null,
+            "id": "tw7",
+            "label": "Line up"
+          },
+          {
+            "image": null,
+            "id": "tw8",
+            "label": "New activity starts"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "version": 1,
+    "profileId": "ui-review-b",
+    "updatedAt": 1789267132229,
+    "payload": {
+      "board": {
+        "topic": "",
+        "title": "",
+        "words": [],
+        "pages": null,
+        "activePageIdx": 0,
+        "cols": 4,
+        "color": true,
+        "textPos": "below",
+        "textSize": 11,
+        "cellSize": "medium",
+        "language": "en",
+        "editingId": null,
+        "fctMeta": null
+      },
+      "sequence": {
+        "items": [],
+        "input": "",
+        "topic": "",
+        "title": "",
+        "orientation": "horizontal",
+        "nowId": null,
+        "editingId": null
+      },
+      "story": {
+        "situation": "",
+        "studentName": "Demo Learner B",
+        "details": "",
+        "pages": [],
+        "current": 0
+      },
+      "quickBoards": {
+        "qbMode": "firstthen",
+        "cbPath": "fct",
+        "cbFunction": "Escape",
+        "cbPhase": 2,
+        "cbGoalText": "",
+        "ftFirstLabel": "Read B",
+        "ftFirstImage": null,
+        "ftThenLabel": "",
+        "ftThenImage": null,
+        "cbCount": 2,
+        "cbItems": [
+          {
+            "image": null,
+            "id": "c1",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c2",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c3",
+            "label": ""
+          },
+          {
+            "image": null,
+            "id": "c4",
+            "label": ""
+          }
+        ],
+        "tokenTotal": 5,
+        "tokenLabel": "",
+        "tokenRewardLabel": "",
+        "tokenRewardImage": null,
+        "cmItems": [
+          {
+            "image": null,
+            "id": "cm1",
+            "label": "Take deep breaths"
+          },
+          {
+            "image": null,
+            "id": "cm2",
+            "label": "Count to 10"
+          },
+          {
+            "image": null,
+            "id": "cm3",
+            "label": "Take a walk"
+          },
+          {
+            "image": null,
+            "id": "cm4",
+            "label": "Squeeze a stress ball"
+          },
+          {
+            "image": null,
+            "id": "cm5",
+            "label": "Ask for help"
+          },
+          {
+            "image": null,
+            "id": "cm6",
+            "label": "Drink some water"
+          },
+          {
+            "image": null,
+            "id": "cm7",
+            "label": "Listen to music"
+          },
+          {
+            "image": null,
+            "id": "cm8",
+            "label": "Draw or color"
+          }
+        ],
+        "snItems": [
+          {
+            "image": null,
+            "id": "sn1",
+            "label": "Too loud"
+          },
+          {
+            "image": null,
+            "id": "sn2",
+            "label": "Too bright"
+          },
+          {
+            "image": null,
+            "id": "sn3",
+            "label": "Too crowded"
+          },
+          {
+            "image": null,
+            "id": "sn4",
+            "label": "Need headphones"
+          },
+          {
+            "image": null,
+            "id": "sn5",
+            "label": "Need sunglasses"
+          },
+          {
+            "image": null,
+            "id": "sn6",
+            "label": "Need fidget"
+          },
+          {
+            "image": null,
+            "id": "sn7",
+            "label": "Need to move"
+          },
+          {
+            "image": null,
+            "id": "sn8",
+            "label": "Need a break"
+          },
+          {
+            "image": null,
+            "id": "sn9",
+            "label": "Feel overwhelmed"
+          },
+          {
+            "image": null,
+            "id": "sn10",
+            "label": "Need quiet"
+          }
+        ],
+        "amItems": [
+          {
+            "image": null,
+            "id": "am1",
+            "label": "Can I have...?"
+          },
+          {
+            "image": null,
+            "id": "am2",
+            "label": "Where is...?"
+          },
+          {
+            "image": null,
+            "id": "am3",
+            "label": "What is...?"
+          },
+          {
+            "image": null,
+            "id": "am4",
+            "label": "I want to..."
+          },
+          {
+            "image": null,
+            "id": "am5",
+            "label": "Can you help me?"
+          },
+          {
+            "image": null,
+            "id": "am6",
+            "label": "I need..."
+          },
+          {
+            "image": null,
+            "id": "am7",
+            "label": "When is...?"
+          },
+          {
+            "image": null,
+            "id": "am8",
+            "label": "I don't know"
+          },
+          {
+            "image": null,
+            "id": "am9",
+            "label": "I don't understand"
+          },
+          {
+            "image": null,
+            "id": "am10",
+            "label": "Can I go?"
+          }
+        ],
+        "bcItems": [
+          {
+            "image": null,
+            "id": "bc1",
+            "label": "Head"
+          },
+          {
+            "image": null,
+            "id": "bc2",
+            "label": "Eyes"
+          },
+          {
+            "image": null,
+            "id": "bc3",
+            "label": "Ears"
+          },
+          {
+            "image": null,
+            "id": "bc4",
+            "label": "Throat"
+          },
+          {
+            "image": null,
+            "id": "bc5",
+            "label": "Stomach"
+          },
+          {
+            "image": null,
+            "id": "bc6",
+            "label": "Arm"
+          },
+          {
+            "image": null,
+            "id": "bc7",
+            "label": "Back"
+          },
+          {
+            "image": null,
+            "id": "bc8",
+            "label": "Leg"
+          }
+        ],
+        "twItems": [
+          {
+            "image": null,
+            "id": "tw1",
+            "label": "5 minutes left"
+          },
+          {
+            "image": null,
+            "id": "tw2",
+            "label": "3 minutes left"
+          },
+          {
+            "image": null,
+            "id": "tw3",
+            "label": "1 minute left"
+          },
+          {
+            "image": null,
+            "id": "tw4",
+            "label": "Almost time!"
+          },
+          {
+            "image": null,
+            "id": "tw5",
+            "label": "Time to stop"
+          },
+          {
+            "image": null,
+            "id": "tw6",
+            "label": "Clean up"
+          },
+          {
+            "image": null,
+            "id": "tw7",
+            "label": "Line up"
+          },
+          {
+            "image": null,
+            "id": "tw8",
+            "label": "New activity starts"
+          }
+        ]
+      }
+    }
+  }
+]

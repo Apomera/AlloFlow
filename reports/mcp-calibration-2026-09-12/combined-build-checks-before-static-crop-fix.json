@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "phase": "all-requested-automated-checks-passed",
+  "verifiedAt": "2026-09-12T22:44:22.223Z",
+  "sourceBabelParse": true,
+  "sourceSha256": "7b6391a04185b9f0da51430fd5041d97ec6623d8aef443182c5f97695fe24a2a",
+  "sourceBytes": 3393971,
+  "sourceLines": 48471,
+  "sourceCrlfCount": 0,
+  "keyDeclarationCounts": {
+    "const fixContrastViolations =": 1,
+    "const _ACE_CDN_URLS =": 1,
+    "const aiFixChunked =": 1,
+    "const acceptFixedHtmlDetailed =": 1,
+    "const _restoreChunkBoundaryWhitespace =": 1
+  },
+  "sourceTopLevelStatements": 248,
+  "knownSpliceCorruptionAbsent": true,
+  "priorGreenEvidence": "combined-build-checks-before-continuation-fix.json",
+  "build": {
+    "command": "node _build_doc_pipeline_module.js",
+    "exitCode": 0,
+    "stdout": "[DocPipeline] Built C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\doc_pipeline_module.js (48642 lines)\n[DocPipeline] Synced to C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\doc_pipeline_module.js",
+    "stderr": ""
+  },
+  "generatedBabelParse": true,
+  "shippingMirrorsMatch": true,
+  "generatedSha256": "8162fe99a2417c855555e5b6e650fbb494a14f9477920f43692972d3144bbc23",
+  "generatedBytes": 3407293,
+  "integrity": {
+    "command": "node dev-tools/check_pipeline_integrity.js --quiet",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "driverSyntax": {
+    "command": "node --check desktop/mcp/remediation_headless_driver.cjs",
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "sourceAndArtifactsUnchangedAfterTests": true,
+  "scopedDiffWhitespaceCheckPassed": true,
+  "newTestsWhitespaceCheckPassed": true,
+  "remediationUnit": {
+    "report": "remediation-unit-final.json",
+    "summary": "remediation-unit-final-summary.json",
+    "files": 30,
+    "passed": 547,
+    "strictNoSkipValidation": true,
+    "includesFreshShippingBuildParity": true
+  },
+  "mcpCalibration": {
+    "report": "calibration-final.json",
+    "summary": "calibration-final-summary.json",
+    "files": 13,
+    "passed": 112,
+    "strictNoSkipValidation": true
+  },
+  "workflowConfiguration": {
+    "report": "calibration-workflow-tests.json",
+    "passed": 6
+  },
+  "storedCandidateChromiumReplay": {
+    "report": "continuation-assembly-replay.json",
+    "candidate": "continuation-replayed-candidate.html",
+    "accepted": true,
+    "sourceBound": true,
+    "evidenceClass": "Targeted replay; not a new live MCP verdict or human acceptance."
+  }
+}

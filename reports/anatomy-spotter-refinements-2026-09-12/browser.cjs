@@ -1,0 +1,37 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{GlHarness}=require('../anatomy-deep-review-2026-09-12/harness.cjs');
+const evidence={errors:[],screens:[],axe:[],flows:[]};
+(async()=>{
+ const h=new GlHarness({toolFile:'stem_lab/stem_tool_anatomy.js',toolId:'anatomy',width:1120,height:1600,appStyles:true});await h.start();
+ const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1280,height:1000},reducedMotion:'reduce'});page.on('pageerror',e=>evidence.errors.push(e.message));
+ const panel=()=>page.locator('[data-anatomy-spotter-panel]');
+ async function state(data={}){await page.evaluate(data=>{window.__announcements=[];window.__spoken=[];window.__ctx.gradeLevel='9';window.__ctx.callTTS=text=>window.__spoken.push(text);window.__ctx.announceToSR=text=>window.__announcements.push(text);window.__ctx.setToolData(p=>({...p,anatomy:{_bodyView3d:false,_activeTab:'spotter',system:'skeletal',view:'anterior',complexity:3,...data}}));},data);}
+ async function current(){return page.evaluate(()=>window.__ctx.toolData.anatomy);}
+ async function audit(name){const r=await page.evaluate(async()=>{const r=await axe.run('[data-anatomy-spotter-panel]',{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}});return {violations:r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))})),incomplete:r.incomplete.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))};});evidence.axe.push({name,...r});}
+ async function capture(name){assert.equal(/\{[a-zA-Z]+\}/.test(await panel().innerText()),false,name+' unresolved placeholder');const dimensions=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth}));assert.ok(dimensions.scrollWidth<=dimensions.width+1,name+' overflow');const targets=await panel().locator('button').evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).map(n=>({name:n.getAttribute('aria-label')||n.textContent,height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width})));for(const t of targets)assert.ok(t.height>=44&&t.width>=44,name+' small target '+t.name);evidence.screens.push({name,...dimensions,targets});await panel().screenshot({path:path.join(__dirname,name+'.png')});console.log(name);}
+ async function start(){await panel().locator('[data-anatomy-spotter-start]').click();await page.waitForFunction(()=>document.activeElement?.hasAttribute('data-anatomy-spotter-panel'));}
+ async function answer(correct){const d=await current(),id=correct?d._spotterTarget:d._spotterOpts.find(o=>o.id!==d._spotterTarget).id,index=d._spotterOpts.findIndex(o=>o.id===id);await panel().focus();await page.keyboard.press(String(index+1));await panel().locator('[data-anatomy-spotter-feedback]').waitFor();return id;}
+ try{
+  await h.mount(page,{anatomy:{_activeTab:'spotter',system:'skeletal',complexity:3}},undefined,{expectCanvas:false});
+  await page.addStyleTag({content:'html,body{background:white}#wrap{height:auto;min-height:100%;width:min(1120px,100%);margin:auto}'});await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});await state();
+  await capture('desktop-start');await audit('desktop-start');assert.equal(await panel().locator('[data-anatomy-spotter-timing]').isChecked(),false);
+  await start();await panel().getByRole('button',{name:'Read the spotter prompt aloud',exact:true}).click();
+  const d=await current();assert.equal((await page.evaluate(()=>window.__spoken.at(-1))).includes((await panel().locator('[data-anatomy-spotter-option="'+d._spotterTarget+'"]').innerText()).replace(/^\d\s*/,'')),false);
+  await audit('desktop-question');await answer(false);assert.equal((await current())._spotterTotal,1);assert.equal((await current())._spotterElapsed,null);assert.equal(await panel().locator('[data-anatomy-spotter-time]').count(),0);await capture('desktop-review');await audit('desktop-review');
+  await panel().getByRole('button',{name:'Read the marked structure explanation aloud',exact:true}).click();assert.ok((await page.evaluate(()=>window.__spoken.at(-1))).length>40);
+  await panel().getByRole('button',{name:'Next Structure',exact:true}).click();await page.waitForFunction(()=>document.activeElement?.hasAttribute('data-anatomy-spotter-panel'));assert.notEqual((await current())._spotterTarget,d._spotterTarget);
+  await panel().locator('[data-anatomy-spotter-end]').click();await page.waitForFunction(()=>document.activeElement?.hasAttribute('data-anatomy-spotter-start'));assert.equal((await current())._spotterTotal,1);evidence.flows.push('untimed question, review, next, unanswered end, and focus return');
+  await panel().locator('[data-anatomy-spotter-timing]').check();await start();await answer(true);assert.ok((await current())._spotterTimedBestTime>0);assert.equal(await panel().locator('[data-anatomy-spotter-time]').count(),1);await audit('desktop-timed-review');evidence.flows.push('explicit timing and correct-answer credit');
+  const saved=await current();await state(JSON.parse(JSON.stringify(saved)));assert.equal(await panel().locator('[data-anatomy-spotter-time]').count(),1);assert.equal(await panel().locator('[data-anatomy-spotter-option]:disabled').count(),4);await audit('restored-timed-review');
+  await state({_spotterActive:true,_spotterTarget:'skull',_spotterOpts:[],_spotterStartTime:0});assert.equal(await panel().getByRole('alert').count(),1);await audit('recovery');await panel().locator('[data-anatomy-spotter-end]').click();evidence.flows.push('saved-round restoration and incomplete-round escape');
+  for(const width of [390,320]){
+   await page.setViewportSize({width,height:844});await state();await capture('phone-'+width+'-start');await audit('phone-'+width+'-start');await start();await capture('phone-'+width+'-question');await audit('phone-'+width+'-question');await answer(false);await capture('phone-'+width+'-review');await audit('phone-'+width+'-review');
+  }
+  const translations=JSON.parse(fs.readFileSync('dev-tools/i18n/handtl_anatomy_spotter_20260912.json','utf8'));
+  for(const [lang,dict]of Object.entries(translations)){
+   const full=JSON.parse(fs.readFileSync('lang/'+lang+'.js','utf8')).stem.anatomy;await page.setViewportSize({width:390,height:844});await state();await page.evaluate(({dict,rtl})=>{window.__ctx.t=(key,fallback)=>dict[key.slice(13)]||fallback;document.getElementById('wrap').dir=rtl?'rtl':'ltr';window.__rerender();},{dict:full,rtl:lang==='arabic'});
+   assert.equal(await panel().locator('[data-anatomy-spotter-mode]').innerText(),dict.spot_ref_untimed);await capture('phone-'+lang+'-start');await audit(lang+'-start');await start();await answer(false);await capture('phone-'+lang+'-review');await audit(lang+'-review');
+  }
+  await page.evaluate(()=>document.body.classList.add('theme-dark'));await capture('phone-arabic-dark-review');await audit('arabic-dark-review');await panel().locator('[data-anatomy-spotter-end]').click();await capture('phone-arabic-dark-start');await audit('arabic-dark-start');
+  assert.deepEqual(evidence.errors,[]);assert.deepEqual(evidence.axe.flatMap(r=>r.violations),[]);assert.deepEqual(evidence.axe.flatMap(r=>r.incomplete),[]);
+ }finally{fs.writeFileSync(__dirname+'/browser-results.json',JSON.stringify(evidence,null,2)+'\n');await h.destroy(page);await browser.close();await h.stop();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

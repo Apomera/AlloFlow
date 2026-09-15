@@ -1,0 +1,317 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_diode_resistance.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > normalizes optional resistance with milliohm precision and preserves the zero-resistance model shape
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > recovers junction voltage and current from an independent parametric silicon reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > recovers junction voltage and current from an independent parametric schottky reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > recovers junction voltage and current from an independent parametric zener reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches a separate bisection reference and terminal derivative for silicon
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches a separate bisection reference and terminal derivative for schottky
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches a separate bisection reference and terminal derivative for zener
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > solves a 100 mA forward drive with 0.001 Ω without limiting terminal-voltage progress
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > solves a 100 mA forward drive with 1 Ω without limiting terminal-voltage progress
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > solves a 100 mA forward drive with 22 Ω without limiting terminal-voltage progress
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > solves a 100 mA forward drive with 1000 Ω without limiting terminal-voltage progress
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches an explicitly wired resistor plus silicon junction in both polarities
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches an explicitly wired resistor plus schottky junction in both polarities
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > matches an explicitly wired resistor plus zener junction in both polarities
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > distinguishes junction bias from the terminal voltage near a Zener knee
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > retains the zero-resistance failure diagnostic for excessive direct forward drive
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > internal diode series resistance > keeps internal readings defined in a floating circuit and zero for same-node wiring
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > matches a piecewise analytical capacitor charge across a series-loaded Zener knee
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··················stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > follows changing current with the closed-form forward voltage and invalidates held references on electrical edits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > splits voltage and positive absorbed power at 0.01 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > splits voltage and positive absorbed power at -0.01 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > hides unknown internal contributions instead of interpreting missing current as zero
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > series-resistance time response and power > appends reconstructible voltage/power metadata while retaining prior column positions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > keeps forward model samples consistent with the terminal law and current range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > keeps reverse model samples consistent with the terminal law and current range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > keeps both model samples consistent with the terminal law and current range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > keeps breakdown model samples consistent with the terminal law and current range
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > renders a named model illustration, voltage budget, power split and a clipped junction comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··········stdout | tests/circuit_network_diode_resistance.test.js > complete diode curves and dimensional model inspector > uses reverse current arrows, supports a hidden comparison and suppresses failed readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_diodes.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > normalizes named models without accepting arbitrary unvalidated parameters
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > evaluates the silicon exponential and its slope including reverse leakage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > evaluates the schottky exponential and its slope including reverse leakage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches an independent load-line root for a silicon diode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches an independent load-line root for a schottky diode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > keeps reverse leakage signed and solves the reverse load line
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches the inverse Shockley relation for a current-driven junction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > solves two series diodes with a shared load rather than independent branches
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > retains differential readings in a floating diode loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > solves parallel and antiparallel junctions without invented voltage drops
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > handles a same-node diode and reports zero electrical power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rejects excessive ideal forward drive without a clipped or infinite reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rejects an impossible reverse current beyond this non-breakdown model
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > preserves pure linear results and skips nonlinear iteration for legacy circuits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > matches half-wave rectification against independent roots at every time sample
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···············stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > rectifies both polarities through a four-diode floating-source bridge
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > charges and holds a rectifier filter capacitor through negative half cycles
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > carries flyback current into a diode at a timed opening
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > keeps a failed diode transient from exposing partial frames or exports
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > general nonlinear diodes > exports named diode model parameters and convergence iteration counts
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > matches an independent small-step RK4 capacitor reference through rectifier charging pulses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > matches a separate RK4 flyback-current reference after commutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > renders diode polarity, model selection, and current-dependent reference drops
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > describes component shapes, polarity bands, switch position, and voltage overlays
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_diodes.test.js > diode transient reference and presentation > keeps diode controls visible with no invalid trace or numerical readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_zener.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > normalizes validated knee/resistance while preserving existing junction presets
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at -12 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at -5.2 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at -5.1 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at -5 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at -1 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at 0 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at 0.1 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > matches the independent law and local slope at 0.7 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > is continuous at the knee with a finite one-sided breakdown conductance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at -12 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at -3 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 0 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 3 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 5 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 9 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 12 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves a loaded shunt regulator at 24 V against an independent load-line root
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > agrees with the closed-form breakdown regulator voltage and slope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > leaves breakdown when load demand rises
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > supports a reverse current source of 0.001 A and the reverse sign convention
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > supports a reverse current source of 0.01 A and the reverse sign convention
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······················stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > supports a reverse current source of 0.1 A and the reverse sign convention
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > solves floating reverse breakdown and parallel unequal knees
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > keeps a same-node Zener at zero and rejects impossible ideal sources
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > retains finite direct reverse drive without claiming a power or damage limit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > generic Zener reverse branch > distinguishes knee, reverse, forward and unknown operating states
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > Zener transient and metadata > matches piecewise analytical capacitor charging through the breakdown knee
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_network_zener.test.js > Zener transient and metadata > clips both sine polarities using independent roots for opposing Zeners
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > Zener transient and metadata > exports knee, slope and operating region with aligned columns in DC and time CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > plots finite monotone model samples for forward view
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > plots finite monotone model samples for reverse view
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > plots finite monotone model samples for both view
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_network_zener.test.js > junction curves and presentation > plots finite monotone model samples for breakdown view
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > keeps curve exploration read-only and supports existing silicon/Schottky presets
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > resolves a narrow breakdown knee without drawing an off-chart zero-voltage axis
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_zener.test.js > junction curves and presentation > renders Zener controls, breakdown board state and a named I–V plot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_zener.test.js > junction curves and presentation > omits rather than clamps an out-of-range or failed operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all nineteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···
+
+ Test Files  4 passed (4)
+      Tests  96 passed (96)
+   Start at  15:13:06
+   Duration  15.53s (transform 107ms, setup 146ms, import 318ms, tests 8.01s, environment 5.50s)
+

@@ -1,0 +1,31 @@
+{
+  "decision": {
+    "accepted": true,
+    "readingOrderWarn": null,
+    "sizeRatio": 1.0032807873889733,
+    "textRatio": 1,
+    "textLost": 0
+  },
+  "evidence": [
+    {
+      "totalChunks": 2,
+      "shippedOriginalChunks": 1,
+      "candidateRejectionCount": 0,
+      "candidateRejections": []
+    }
+  ],
+  "calls": 2,
+  "storedPayloadsMatched": true,
+  "changed": true,
+  "restoredImageCount": 1,
+  "allImageSourcesIdentical": true,
+  "remainingImageTokens": false,
+  "evidenceClass": "Targeted real-Chromium regression replay of stored requests 19/20 and their answers; not a new live MCP verdict or human acceptance.",
+  "verifiedAt": "2026-09-12T22:39:02.474Z",
+  "sourceSha256": "7b6391a04185b9f0da51430fd5041d97ec6623d8aef443182c5f97695fe24a2a",
+  "originalHtmlSha256": "82cfbb5e9bbb05f5b8e4132e66090f92446dc7a6baf2c5569ffc3adcf0847d4a",
+  "storedResponsesSha256": "656f5fbf2a7c337ca0dbd5992fa53eebf505a497c1b9ae900f06505132bef85c",
+  "candidateHtmlSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+  "candidateFile": "reports/mcp-calibration-2026-09-12/continuation-replayed-candidate.html",
+  "historicalArtifactUnchanged": true
+}

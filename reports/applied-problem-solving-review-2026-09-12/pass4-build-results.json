@@ -1,0 +1,62 @@
+{
+  "checkedAt": "2026-09-12T22:51:57.790Z",
+  "modules": [
+    {
+      "file": "applied_challenge_module.js",
+      "publicMirrorMatches": true,
+      "syntaxValid": true,
+      "sha256": "8ac60805c2f1d8ca16456b7b98d85361f226fec19a6fede418e7d4b2378dbe96"
+    },
+    {
+      "file": "studio_response_module.js",
+      "publicMirrorMatches": true,
+      "syntaxValid": true,
+      "sha256": "5eaa5ae535c1adcfe815119943c4c7d32838841140befbb2f427fb2176d7454c"
+    },
+    {
+      "file": "ui_strings.js",
+      "publicMirrorMatches": true,
+      "syntaxValid": true,
+      "sha256": "39c76a97b908b0191f006078385b8ce3e0153b14f15944d33b1561332429a134"
+    }
+  ],
+  "tests": {
+    "passed": 124,
+    "total": 124,
+    "failed": 0
+  },
+  "sharedRecoveryTests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "browser": {
+    "accessibilityStates": 10,
+    "consoleErrors": 0,
+    "layouts": [
+      {
+        "viewport": 1280,
+        "width": 1280,
+        "firstFieldTop": 777.25,
+        "visibleFields": 1,
+        "previousFirstFieldTop": 841.25,
+        "improvementPixels": 64
+      },
+      {
+        "viewport": 390,
+        "width": 390,
+        "firstFieldTop": 947.1875,
+        "visibleFields": 1,
+        "previousFirstFieldTop": 1051.1875,
+        "improvementPixels": 104
+      },
+      {
+        "viewport": 320,
+        "width": 320,
+        "firstFieldTop": 1093.6875,
+        "visibleFields": 1,
+        "previousFirstFieldTop": 1217.6875,
+        "improvementPixels": 124
+      }
+    ]
+  }
+}

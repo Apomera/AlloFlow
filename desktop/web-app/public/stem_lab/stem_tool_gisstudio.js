@@ -7124,7 +7124,7 @@
           }
           try {
             if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-              navigator.clipboard.writeText(text).then(function () {
+              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function () {
                 setAnalysisCopyStatus('Analysis summary copied to the clipboard.');
                 announce(__alloT('stem.gisstudio.sr_analysis_summary_copied_to_the_clipboard', 'Analysis summary copied to the clipboard.'));
               }, fallbackDownload);

@@ -102,6 +102,124 @@ const validateDraftQuality = (text) => {
   }
   return { isValid: true, error: null };
 };
+// --- Success criteria -------------------------------------------------------
+// A lesson plan's success criteria are keyed by the SAME ids the class results
+// roll up by: the exit ticket's concept labels. The quiz is generated first and
+// the plan last, so the plan derives its criteria from the quiz that already
+// exists; only when no quiz exists do the objectives supply them. Ids are never
+// invented where the data could not match them.
+const getQuizConceptLabels = (item) => {
+    const questions = item && item.data && Array.isArray(item.data.questions) ? item.data.questions : [];
+    const out = [];
+    questions.forEach(q => {
+        const label = q && typeof q.conceptLabel === 'string' ? q.conceptLabel.replace(/\s+/g, ' ').trim() : '';
+        if (label && !out.includes(label)) out.push(label);
+    });
+    return out;
+};
+const _alloCriterionSlug = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+const normalizeSuccessCriteria = (raw, options = {}) => {
+    const concepts = (Array.isArray(options.concepts) ? options.concepts : []).map(c => String(c || '').trim()).filter(Boolean);
+    const objectives = Array.isArray(options.objectives) ? options.objectives : [];
+    const text = (v) => (typeof v === 'string' ? v : (v && typeof v === 'object' ? String(v.statement || v.text || v.criterion || '') : '')).replace(/\s+/g, ' ').trim();
+    const list = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+    const out = [];
+    const seen = new Set();
+    list.forEach((entry, i) => {
+        const statement = text(entry);
+        if (!statement) return;
+        let id = entry && typeof entry === 'object' && typeof entry.id === 'string' ? entry.id.trim() : '';
+        // Snap to the real concept label when the model paraphrased or slugged it.
+        const lower = id.toLowerCase();
+        const match = concepts.find(c => c === id)
+            || concepts.find(c => c.toLowerCase() === lower)
+            || concepts.find(c => _alloCriterionSlug(c) === _alloCriterionSlug(id) && id)
+            || concepts.find(c => statement.toLowerCase().includes(c.toLowerCase()));
+        if (match) id = match;
+        if (!id) id = _alloCriterionSlug(statement) || ('criterion-' + (i + 1));
+        if (seen.has(id)) return;
+        seen.add(id);
+        out.push({ id, statement, source: match ? 'quiz' : 'objective' });
+    });
+    // Every quiz concept must be represented, or its results would have nowhere to land.
+    concepts.forEach(c => {
+        if (seen.has(c)) return;
+        seen.add(c);
+        out.push({ id: c, statement: 'I can ' + c.replace(/^I can\s+/i, '').replace(/\.$/, '') + '.', source: 'quiz' });
+    });
+    if (!out.length) {
+        objectives.forEach((o, i) => {
+            const s = text(o);
+            if (!s) return;
+            const id = _alloCriterionSlug(s) || ('objective-' + (i + 1));
+            if (seen.has(id)) return;
+            seen.add(id);
+            out.push({ id, statement: /^I can\b/i.test(s) ? s : 'I can ' + s.charAt(0).toLowerCase() + s.slice(1), source: 'objective' });
+        });
+    }
+    return out.slice(0, 8);
+};
+
+// --- Unit Path context ------------------------------------------------------
+// Where a lesson sits on the teacher's Unit Path (Learning Web), read from the
+// registry's registered unit-path graphs (acg/v1). A plan is "on the path" when
+// a node's exact resourceId is the plan id, or the plan was generated for a
+// node (data.unitPath). Nothing is inferred from titles or positions.
+const resolveUnitPathContext = (entries, plan) => {
+    const list = Array.isArray(entries) ? entries : [];
+    const planId = plan && plan.id != null ? String(plan.id) : '';
+    const stamped = plan && plan.data && plan.data.unitPath && typeof plan.data.unitPath === 'object' ? plan.data.unitPath : null;
+    const text = (v, n) => String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, n || 400);
+    for (let e = 0; e < list.length; e++) {
+        const entry = list[e];
+        const graph = entry && entry.graph;
+        if (!entry || !/^unit-path:/.test(String(entry.id || '')) || !graph || !Array.isArray(graph.nodes)) continue;
+        const nodes = graph.nodes.filter(n => n && typeof n.id === 'string' && n.id);
+        const byId = {};
+        nodes.forEach(n => { byId[n.id] = n; });
+        const outgoing = {};
+        const incoming = {};
+        (Array.isArray(graph.edges) ? graph.edges : []).forEach(edge => {
+            if (!edge) return;
+            const from = String(edge.source || edge.from || edge.fromId || '');
+            const to = String(edge.target || edge.to || edge.toId || '');
+            if (!byId[from] || !byId[to] || from === to) return;
+            (outgoing[from] = outgoing[from] || []).push(to);
+            (incoming[to] = incoming[to] || []).push(from);
+        });
+        let current = null;
+        if (planId) current = nodes.find(n => String(n.resourceId || '') === planId) || null;
+        if (!current && stamped && String(stamped.graphId || '') === String(entry.id) && byId[String(stamped.nodeId || '')]) current = byId[String(stamped.nodeId)];
+        if (!current) continue;
+        // Linear order: depth-first from the roots in edge order; index is 1-based.
+        const roots = nodes.filter(n => !incoming[n.id] || !incoming[n.id].length);
+        const order = [];
+        const seen = {};
+        const walk = (id) => { if (seen[id]) return; seen[id] = true; order.push(id); (outgoing[id] || []).forEach(walk); };
+        (roots.length ? roots : [current]).forEach(n => walk(n.id));
+        nodes.forEach(n => walk(n.id));
+        const index = order.indexOf(current.id);
+        const nextId = (outgoing[current.id] || [])[0] || (index >= 0 ? order[index + 1] : null) || null;
+        const priorId = (incoming[current.id] || [])[0] || (index > 0 ? order[index - 1] : null) || null;
+        const brief = (n) => n ? {
+            id: n.id,
+            label: text(n.label || n.resourceTitle || n.description || 'Planned lesson', 400),
+            resourceId: n.resourceId ? String(n.resourceId) : '',
+            planned: !n.resourceId,
+        } : null;
+        return {
+            graphId: String(entry.id),
+            title: text(entry.title || (graph.metadata && graph.metadata.title) || '', 300),
+            current: brief(current),
+            prior: brief(priorId ? byId[priorId] : null),
+            next: brief(nextId ? byId[nextId] : null),
+            index: index >= 0 ? index + 1 : null,
+            count: order.length,
+        };
+    }
+    return null;
+};
+
 const getAssetManifest = (historyItems, options = {}) => {
     const assets = historyItems.filter(h =>
         h && !['lesson-plan', 'udl-advice', 'alignment-report', 'gemini-bridge'].includes(h.type)
@@ -129,6 +247,12 @@ const getAssetManifest = (historyItems, options = {}) => {
             default: usage = "(Supplementary Resource)";
         }
         manifest += `- [${item.type.toUpperCase()}] "${title}" (ID: ${item.id}): ${usage}\n`;
+        // The exit ticket is generated BEFORE the plan; its concept labels are
+        // the ids the plan's success criteria must use, so class results roll up.
+        if (item.type === 'quiz') {
+            const concepts = getQuizConceptLabels(item);
+            if (concepts.length) manifest += `    concepts: ${concepts.join('; ')}\n`;
+        }
         if (typeof options.trace === 'function') options.trace({ id:item.id, title, type:item.type, text:manifest.slice(traceStart) });
     });
     manifest += "-------------------------------------------\n";
@@ -1311,6 +1435,9 @@ window.AlloModules.UtilsPure = {
   calculateTextEntropy,
   validateDraftQuality,
   getAssetManifest,
+  getQuizConceptLabels,
+  normalizeSuccessCriteria,
+  resolveUnitPathContext,
   capturePlanningInputs,
   outlineNodeBlueprints,
   synchronizeSavedOutline,

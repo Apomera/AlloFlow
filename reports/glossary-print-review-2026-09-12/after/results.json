@@ -1,0 +1,92 @@
+{
+  "results": [
+    {
+      "name": "MatchingGame",
+      "height": 900,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [
+        {
+          "position": "static",
+          "height": 513.25
+        }
+      ],
+      "grid": null
+    },
+    {
+      "name": "CrosswordGame",
+      "height": 1584,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [
+        {
+          "position": "static",
+          "height": 1583.71875
+        }
+      ],
+      "grid": null
+    },
+    {
+      "name": "BingoGame",
+      "height": 2141,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [
+        {
+          "position": "static",
+          "height": 2140.546875
+        }
+      ],
+      "grid": null
+    },
+    {
+      "name": "WordSearch",
+      "height": 1679,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    },
+    {
+      "name": "Flashcards-standard",
+      "height": 3107,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    },
+    {
+      "name": "Flashcards-language",
+      "height": 3023,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    },
+    {
+      "name": "Export-table",
+      "height": 2136,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    },
+    {
+      "name": "Export-flash-cards",
+      "height": 2789,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    },
+    {
+      "name": "Export-language-cards",
+      "height": 2695,
+      "width": 1280,
+      "clipped": [],
+      "fixed": [],
+      "grid": null
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,111 @@
+{
+  "evidenceClass": "Live client-model agent-bridge pilot using the full frozen nine-page Spanish source. Not a blinded human validation or a Gemini study.",
+  "runId": "arun-c01a88ad-bff0-48e7-bf0a-580b303083cd",
+  "status": "completed",
+  "pendingCount": 0,
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-spanish.pdf",
+    "sizeBytes": 186317,
+    "sha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e"
+  },
+  "compatibility": {
+    "optionsSha256": "64a37b3be8cb34ad7a1bdf3b27f438e470f40904f5aa141946e5d982906ae299",
+    "engineSha256": "c2cc732bd8f6bdc055e7cc16182fdeadd0139db1c6506c618da2c36ac1fc2675"
+  },
+  "originalStartedAt": "2026-09-13T01:54:01.406Z",
+  "resumedStartedAt": "2026-09-13T02:01:40.313Z",
+  "completedAt": "2026-09-13T02:29:47.741Z",
+  "overallWallLimitAt": "2026-09-13T02:39:01.406Z",
+  "completedWithinOriginalWallLimit": true,
+  "options": {
+    "target_score": 95,
+    "fix_passes": 2,
+    "polish_passes": 0,
+    "auto_continue": true,
+    "auto_continue_rounds": 2,
+    "tagged_pdf": true,
+    "validate_ua": true,
+    "narration": "none",
+    "max_run_minutes": 45,
+    "page_range": null
+  },
+  "geminiKeyPresent": false,
+  "modelCallsAnswered": 18,
+  "bridgeStats": {
+    "pipelineModelCalls": 18,
+    "requestsPublished": 18,
+    "coalescedReasks": 0,
+    "replayedAnswers": 0,
+    "clientLatencySeconds": {
+      "count": 18,
+      "mean": 182,
+      "max": 410
+    }
+  },
+  "beforeScore": 58,
+  "afterScore": 96,
+  "verdict": {
+    "level": "review",
+    "reviewCount": 3,
+    "cautionCount": 0
+  },
+  "verificationState": "review-required",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "candidateRejectionCount": 0,
+  "autoContinue": {
+    "roundsRun": 1,
+    "log": [
+      "round 1 accepted: score 96 → 96 (det 96, state review-required)"
+    ]
+  },
+  "taggedPdfError": "active_content_scan_unavailable",
+  "pdfUa": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "not-applicable",
+    "reason": "No tagged PDF was produced."
+  },
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "ohchr-udhr-spanish-accessible.html",
+      "sizeBytes": 19505,
+      "sha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0"
+    },
+    {
+      "role": "report",
+      "relativePath": "ohchr-udhr-spanish-remediation-report.json",
+      "sizeBytes": 7111,
+      "sha256": "7817e5e9971162422c344bc09bb82a7abe36dd7c5689fff8c002508df03fe453"
+    }
+  ],
+  "files": {
+    "accessibleHtml": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-accessible.html",
+    "report": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-remediation-report.json",
+    "completionManifest": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-remediation-completion.json"
+  },
+  "operatorCorrection": {
+    "performed": true,
+    "reason": "Own first audit incorrectly credited a Spanish PDF language declaration despite source catalog Lang being absent; cancelled before remediation output and resumed with corrected, source-grounded judgments. Same source/options/engine retained. Not a product failure or a successful first attempt.",
+    "evidence": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/spanish-udhr-live/client-audit-correction.json",
+    "initialAudit": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/spanish-udhr-live/answer-01.json"
+  },
+  "sourceAuditorDifference": "Auditor2 separately noted missing subject metadata; root and primary auditor did not assign a separate subject penalty. The different live judgments are retained; no scoring thresholds were tuned.",
+  "artifactOperationMarker": {
+    "completedBeforeInitialStart": true,
+    "operationKind": "create",
+    "expectedOutputCount": 1,
+    "outputFormat": "pdf",
+    "helper": "C:/Users/cabba/.codex/plugins/cache/openai-primary-runtime/pdf/26.909.12148/skills/pdf/container_tools/mark_artifact_operation_started.mjs",
+    "evidence": "Original start command continued only after marker helper exit0; PDF request later ended with explicit active_content_scan_unavailable."
+  },
+  "limits": [
+    "Official result remains review-required; targeted later helper checks do not rewrite its verdict.",
+    "The live engine predates the language/title/semantic-coverage fixes discovered during this pilot.",
+    "No tagged PDF was produced; no PDF/UA acceptance or screen-reader/human acceptance is claimed.",
+    "One preserved wrong-tool-name attempt returned protocol unknown-tool only; registered respond_batch then accepted the two correct pending request IDs."
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "checks": [
+    {
+      "label": "Garden loads all supported ground and470structures without truncation",
+      "pass": true,
+      "detail": {
+        "count": 2361,
+        "construction": 470,
+        "ground": 1891,
+        "truncated": false,
+        "questions": 0,
+        "activities": 8,
+        "targets": [
+          1,
+          5,
+          15,
+          45,
+          24,
+          24,
+          24,
+          72,
+          125,
+          85
+        ],
+        "nestedMaterials": {
+          "glass": 98,
+          "gold": 27
+        }
+      }
+    },
+    {
+      "label": "Real Measure returns the ten correct independent target volumes",
+      "pass": true
+    },
+    {
+      "label": "Real nested model contains98glass and27visible gold cells",
+      "pass": true
+    },
+    {
+      "label": "Explore Garden offers eight optional discoveries with no scored questions",
+      "pass": true
+    },
+    {
+      "label": "All eight discoveries appear in the guide",
+      "pass": true
+    },
+    {
+      "label": "Discovery1 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        5,
+        2.6,
+        4
+      ]
+    },
+    {
+      "label": "Discovery1 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery2 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        10,
+        2.6,
+        4
+      ]
+    },
+    {
+      "label": "Discovery2 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery3 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        18,
+        2.6,
+        5
+      ]
+    },
+    {
+      "label": "Discovery3 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery4 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        26,
+        2.6,
+        5
+      ]
+    },
+    {
+      "label": "Discovery4 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery5 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        37,
+        2.6,
+        5
+      ]
+    },
+    {
+      "label": "Discovery5 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery6 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        38,
+        2.6,
+        -3
+      ]
+    },
+    {
+      "label": "Discovery6 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery7 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        48,
+        2.6,
+        -5
+      ]
+    },
+    {
+      "label": "Discovery7 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Discovery8 arrives at its authored clear ground waypoint",
+      "pass": true,
+      "detail": [
+        53,
+        2.6,
+        12
+      ]
+    },
+    {
+      "label": "Discovery8 travel preserves the complete world and score",
+      "pass": true
+    },
+    {
+      "label": "Garden journals self-review without a quiz score",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "garden-hidden-discovery-guide.png",
+    "garden-nested-cubes-final.png",
+    "garden-hidden-monument-final.png",
+    "garden-discovery-overview-final.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "e0eb2aafae54eddd7eac0832b31951000e5403f9b481c2eb6229e9cf002890c9",
+    "stem_tool_geometryworld_builder.js": "a3816eed11f6dc69d0113891e8bc2f27389b87628cfb008c98ef26164177ba61"
+  },
+  "world": {
+    "count": 2361,
+    "construction": 470,
+    "ground": 1891,
+    "truncated": false,
+    "questions": 0,
+    "activities": 8,
+    "targets": [
+      1,
+      5,
+      15,
+      45,
+      24,
+      24,
+      24,
+      72,
+      125,
+      85
+    ],
+    "nestedMaterials": {
+      "glass": 98,
+      "gold": 27
+    }
+  },
+  "pass": true
+}

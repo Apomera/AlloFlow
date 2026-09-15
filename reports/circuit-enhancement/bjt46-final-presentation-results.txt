@@ -1,0 +1,184 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_bjt.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > normalizes NPN/PNP parameters without changing input or non-transistor designs
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all npn bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all pnp bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the npn terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the pnp terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > labels bias regions by junction polarity without a fixed on-voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > does not replace an overflowing exponential with a clipped current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased npn with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased pnp with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 1 V through 100000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 5 V through 10000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > limits saturated collector current through the load instead of forcing beta times base current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > retains signed leakage at cutoff
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves reverse active bias with the reverse gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a loaded emitter follower and includes base loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves two coupled transistors with the reference branch supplying both base currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > keeps all three internal currents and differences in a fully floating circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+········stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > counts a base-only node and every current incidence, including tied terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > supports a diode-connected transistor driven by a known current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using backward-euler with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using trapezoidal with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > matches an independent RC analytical response with a biased BJT using backward-euler
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > matches an independent RC analytical response with a biased BJT using trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > preserves capacitor voltage across an explicit switch in the transistor base drive
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > integrates a BJT, diode, and controlled source in one nonlinear network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > invalidates held samples when base connection or model parameters change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > exports aligned three-terminal model, current, and junction columns in DC and time data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > routes all three terminals and preserves the base node in the orbit geometry
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > renders transistor editing, model limits, C/B/E routes, and correctly named measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > hides all transistor currents when initial constraints make time response fail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_node_inspection.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > maps terminal B current into a shared node and terminal A currents out
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a -0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 1e-15 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > lists both same-node terminals and cancels their known currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not infer aggregate currents when parallel ideal-source currents are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps known currents when the node voltage is floating
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > separates voltage sensing from current-carrying source/output terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > retains both sensing inputs when they reference the same node
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not invent a node terminal for current sensing through another source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··········stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps zero-current open contacts in the connection list
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > suppresses stale finite readings in a failed solution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > falls back to a used node and handles an empty network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > skips duplicate route points while placing a finite arrow
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > renders an optional node action, per-terminal flows and balance readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··············stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > preserves probe action labels outside inspection mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > describes sensing connections and failed totals explicitly
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  2 passed (2)
+      Tests  56 passed (56)
+   Start at  23:10:57
+   Duration  16.91s (transform 197ms, setup 106ms, import 333ms, tests 8.63s, environment 6.28s)
+

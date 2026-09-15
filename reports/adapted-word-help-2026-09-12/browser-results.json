@@ -1,0 +1,206 @@
+[
+  {
+    "width": 320,
+    "app": "light",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 320,
+    "app": "light",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 312,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 320,
+    "app": "dark",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 320,
+    "app": "dark",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 312,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 320,
+    "app": "contrast",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 320,
+    "app": "contrast",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 312,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "light",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "light",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 440,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "dark",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "dark",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 440,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "contrast",
+    "fontSize": 16,
+    "layout": {
+      "left": 8,
+      "right": 296,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 44,
+      "closeWidth": 44
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  },
+  {
+    "width": 1280,
+    "app": "contrast",
+    "fontSize": 24,
+    "layout": {
+      "left": 8,
+      "right": 440,
+      "top": 20,
+      "bottom": 462,
+      "overflow": false,
+      "closeHeight": 66,
+      "closeWidth": 66
+    },
+    "axeSeriousCritical": 0,
+    "exclusiveAudio": true,
+    "escapeStopsAudio": true
+  }
+]

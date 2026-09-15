@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "label": "Change material closes the panel and focuses a reachable native selected choice",
+      "pass": true,
+      "detail": {
+        "label": "Select Stone block, key 1, currently selected",
+        "collapsed": true,
+        "atCenter": true,
+        "width": 44,
+        "height": 44
+      }
+    },
+    {
+      "label": "Change material preserves camera and blocks",
+      "pass": true
+    },
+    {
+      "label": "Change shape closes the panel and focuses a reachable native selected choice",
+      "pass": true,
+      "detail": {
+        "label": "Select Cube shape, 1 cubic unit, currently selected",
+        "collapsed": true,
+        "atCenter": true,
+        "width": 44,
+        "height": 44
+      }
+    },
+    {
+      "label": "Change shape preserves camera and blocks",
+      "pass": true
+    },
+    {
+      "label": "Start building returns keyboard focus to the world",
+      "pass": true
+    },
+    {
+      "label": "B places the first block after keyboard Start building",
+      "pass": true
+    },
+    {
+      "label": "Scrolled Back to building restores world focus",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "pass": true
+}

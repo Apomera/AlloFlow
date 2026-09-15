@@ -855,3 +855,25 @@ describe('Geometry World bridge runtime behavior', () => {
     }
   });
 });
+
+// The STEM host folds a tool's toolData `activeTab` (also subtool / tab / mode / activeSubtool) into the plugin's
+// React key so sub-view switches remount a fresh fiber. Print Lab persisted its tab under exactly that name, so the
+// handoff intake's own persist({ activeTab: 'Design' }) changed the key, remounted Print Lab, and the second
+// instance found the pending handoff already consumed: a Geometry World build arrived as an empty Design tab with
+// "Add or import geometry to preview it" (measured on the live shell, 2026-09-14). Every later tab click would
+// have dropped the in-memory STL the same way. The tab now persists as printStage, which the key ignores.
+describe('Print Lab keeps its plugin key stable across the handoff and its tabs', () => {
+  it('persists the tab under a name the host key does not read, and still restores a legacy activeTab', () => {
+    for (const path of PRINT_PATHS) {
+      const source = readFileSync(path, 'utf8');
+      expect(source).toContain("persist({ printStage: 'Design',");
+      expect(source).toContain('persist({ printStage: name });');
+      expect(source).not.toMatch(/persist\(\{ activeTab/);
+      expect(source).toContain('TABS.indexOf(stored.printStage) >= 0 ? stored.printStage : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab');
+    }
+    // The reason must stay true: the host still keys plugins on these fields.
+    const host = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    expect(host).toContain('_modeTd.subtool || _modeTd.tab || _modeTd.mode || _modeTd.activeTab || _modeTd.activeSubtool');
+    expect(host).not.toContain('_modeTd.printStage');
+  });
+});

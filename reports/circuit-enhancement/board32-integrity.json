@@ -1,0 +1,17 @@
+{
+  "previousSha256": "e6ee3d4cb755f1ff0de37a6e2beb78b76a94a0dea964ecd3352b99bd6b9b98b5",
+  "sourceSha256": "2849a14ac10c7994515f1e2626343e5e814fb050c5d25c7b5a907dc566cec0c4",
+  "sourcePublicIdentical": true,
+  "solverAndUnrelatedWorkspacesPreserved": true,
+  "changes": "Connected presentation components and additional scoped board/dock CSS only",
+  "regression": {
+    "tests": 377,
+    "files": 19
+  },
+  "finalFocused": {
+    "tests": 40,
+    "files": 3
+  },
+  "catalogExamples": 30,
+  "denseViewCases": 8
+}

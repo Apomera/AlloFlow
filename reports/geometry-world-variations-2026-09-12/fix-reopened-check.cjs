@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm');const file='stem_lab/stem_tool_geometryworld_builder.js',original=fs.readFileSync(file,'utf8');let s=original.replace(/\r\n/g,'\n');function replace(a,b){if(s.split(a).length!==2)throw Error(a);s=s.replace(a,b);}
+replace('          if(selected && selected===selectionPollResult)return;', '          var visibleCheck=guidanceData.builderPrintCheck;\n          if(selected && selected===selectionPollResult && visibleCheck && visibleCheck.selectionSignature===signature)return;');
+replace('          if(next===signature)return;', '          if(next===signature && visibleCheck && visibleCheck.selectionSignature===next)return;');
+replace('catch(error){check={error:error.message};}', 'catch(error){check={error:error.message,selectionSignature:next};}');
+replace('.gwe-project-pick>.gwe-project-current{', '.gwe-project-grid{align-items:start}.gwe-project-pick>.gwe-project-current{');
+new vm.Script(s);if(original.includes('\r\n'))s=s.replace(/\n/g,'\r\n');const fd=fs.openSync(file,'r+');fs.writeSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));fs.closeSync(fd);console.log('Recompute cleared checks after same-geometry project restoration; keep shelf cards compact.');

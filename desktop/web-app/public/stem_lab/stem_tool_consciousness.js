@@ -3662,7 +3662,7 @@
             canCopy && h('button', {
               type: 'button', className: 'cns-reset',
               onClick: function () {
-                navigator.clipboard.writeText(summaryText).then(
+                (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(summaryText).then(
                   function () { patchState({ summaryCopied: true }, 'Summary copied to the clipboard'); },
                   function () { patchState({ summaryCopied: false }, 'Copy failed. Select the text and copy it by hand.'); }
                 );

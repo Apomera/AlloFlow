@@ -58,7 +58,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _lifeskAC = null;
-  function getLifeskAC() { if (!_lifeskAC) { try { _lifeskAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_lifeskAC && _lifeskAC.state === "suspended") { try { _lifeskAC.resume(); } catch(e) {} } return _lifeskAC; }
+  function getLifeskAC() { if (!_lifeskAC) { try { _lifeskAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_lifeskAC && _lifeskAC.state === "suspended") { try { _lifeskAC.resume(); } catch(e) {} } return _lifeskAC; }
   function lifeskTone(f,d,tp,v) { var ac = getLifeskAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxLifeskClick() { lifeskTone(600, 0.03, "sine", 0.04); }
 
@@ -3253,7 +3253,7 @@ window.StemLab = window.StemLab || {
         checkBadge('interviewPacketBuilder');
         try {
           if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-            window.navigator.clipboard.writeText(packet).then(function() {
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(packet).then(function() {
               updMulti({ interviewSavedPacket: packet, interviewPacketMsg: 'Interview prep packet copied to clipboard.', interviewPacketSavedAt: Date.now() });
               announceToSR(__alloT('stem.lifeskills.sr_interview_prep_packet_copied', 'Interview prep packet copied'));
             }).catch(function() {

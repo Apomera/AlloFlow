@@ -1,0 +1,8 @@
+const fs=require('node:fs'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const report=__dirname+'/README.md';let text=fs.readFileSync(report,'utf8').replaceAll('](/C:/','](C:/');fs.writeFileSync(report,text);
+const paths=[...text.matchAll(/\]\((C:\/[^)]+)\)/g)].map(m=>m[1].replace(/:\d+$/,''));for(const p of paths)assert.ok(fs.existsSync(p),'Missing report target: '+p);
+const source=fs.readFileSync('stem_lab/stem_tool_anatomy.js'),hash=crypto.createHash('sha256').update(source).digest('hex'),baseline=JSON.parse(fs.readFileSync('reports/anatomy-spotter-refinements-2026-09-12/verification.json','utf8'));
+assert.equal(hash,baseline.sha256);assert.ok(source.equals(fs.readFileSync('desktop/web-app/public/stem_lab/stem_tool_anatomy.js')));
+const b=JSON.parse(fs.readFileSync(__dirname+'/browser-results.json','utf8')),c=JSON.parse(fs.readFileSync(__dirname+'/contrast-results.json','utf8'));assert.deepEqual(b.errors,[]);
+const result={kind:'read-only application audit; report and evidence files added',sha256:hash,unchangedFromPreviousPass:true,mirrorIdentical:true,opportunities:6,sourceLinksVerified:paths.length,gradeStates:b.ageGates.length,glossaryLanguages:b.glossary.length,screenshots:b.screens.filter(x=>typeof x==='string').length,axeScans:b.axe.length,axeViolations:b.axe.flatMap(x=>x.violations).length,axeIncompleteGroups:b.axe.flatMap(x=>x.incomplete).length,manualContrastScope:'light-mode EEG name labels',manualContrastFailures:c.results.filter(x=>x.failsAtBothEnds).length,browserErrors:b.errors.length,externalModelCalls:0,previousPassingTests:baseline.passedTests,regressionSuiteRerun:false};
+fs.writeFileSync(__dirname+'/verification.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));

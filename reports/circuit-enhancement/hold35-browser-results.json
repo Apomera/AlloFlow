@@ -1,0 +1,23 @@
+{
+  "scenarios": [
+    "RC charge and reversed-time comparisons, shared part/probe selection, finite signed bars and unchanged electrical history",
+    "Exact before/after flyback sample, continuous current/energy, contact state, sample stepping, clipped full-scope markers and saved-state restoration",
+    "UI electrical edits and duration changes disable stale comparisons, undo restores matching references, holding pauses playback, DC clear restores focus",
+    "Floating probes, ambiguous source currents and failed calculations do not invent bars, differences or marker points",
+    "Desktop and phone comparison layouts, sign/continuity explanation, keyboard clear focus and zero accessibility violations"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ]
+}

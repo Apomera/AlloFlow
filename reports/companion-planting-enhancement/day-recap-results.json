@@ -1,0 +1,23 @@
+{
+  "viewports": [],
+  "assertions": [
+    "Exact newly-ready flags and crop highlights",
+    "Expandable crop evidence and current-crop inspection",
+    "Phone recap focus and containment",
+    "Forecast alignment and immutable day-end snapshot",
+    "Bounded entrance animation and both reduced-motion preferences",
+    "Year reset explains annual clearing and perennial carryover",
+    "Completed-day season and year labels",
+    "Replanting from a cleared bed preserves funds and time",
+    "Pending preview protection and keyboard return",
+    "Serialized recap restoration",
+    "Legacy reports remain readable without fabricated values"
+  ],
+  "errors": [],
+  "recapFocus": {
+    "top": 91,
+    "navBottom": 74
+  },
+  "recapAccessibility": [],
+  "rolloverAccessibility": []
+}

@@ -591,7 +591,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           // --- Sound effects ---
           function playBeep() {
             try {
-              var ac = new (window.AudioContext || window.webkitAudioContext)();
+              var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
               var osc = ac.createOscillator();
               var gain = ac.createGain();
               osc.connect(gain); gain.connect(ac.destination);
@@ -602,7 +602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           }
           function playCelebrate() {
             try {
-              var ac = new (window.AudioContext || window.webkitAudioContext)();
+              var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
               [440, 554, 659, 880].forEach(function(freq, i) {
                 var osc = ac.createOscillator();
                 var gain = ac.createGain();

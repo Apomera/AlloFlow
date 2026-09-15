@@ -1,0 +1,537 @@
+{
+  "scope": "Local canonical source with real React and Three/WebGL; generated API calls are not used",
+  "checks": [
+    {
+      "label": "Home Learn starts the actual Harbor preset",
+      "pass": true
+    },
+    {
+      "label": "Harbor uses a live visible WebGL canvas",
+      "pass": true
+    },
+    {
+      "label": "All seven NPCs and six activities are loaded",
+      "pass": true
+    },
+    {
+      "label": "Large Harbor terrain does not truncate the teaching world",
+      "pass": true
+    },
+    {
+      "label": "Five real measured components match the authored mathematics",
+      "pass": true,
+      "detail": [
+        {
+          "count": 6,
+          "volume": 6
+        },
+        {
+          "count": 24,
+          "volume": 24
+        },
+        {
+          "count": 24,
+          "volume": 24
+        },
+        {
+          "count": 24,
+          "volume": 24
+        },
+        {
+          "count": 24,
+          "volume": 24
+        }
+      ]
+    },
+    {
+      "label": "Activity journal is an accessible modal dialog",
+      "pass": true
+    },
+    {
+      "label": "All six stations appear in the activity selector",
+      "pass": true
+    },
+    {
+      "label": "Opening the guide moves keyboard focus into it",
+      "pass": true
+    },
+    {
+      "label": "Shift Tab wraps to the final journal control",
+      "pass": true
+    },
+    {
+      "label": "Tab wraps from the final control to Close",
+      "pass": true
+    },
+    {
+      "label": "Guide keyboard input cannot change blocks, selection, build history, or question score",
+      "pass": true
+    },
+    {
+      "label": "Hint opens through its native disclosure control",
+      "pass": true
+    },
+    {
+      "label": "Self-review updates visible activity progress",
+      "pass": true
+    },
+    {
+      "label": "Notes and review marks do not alter the question score or construction",
+      "pass": true
+    },
+    {
+      "label": "A different activity starts with its own notes",
+      "pass": true
+    },
+    {
+      "label": "Switching activities preserves the first journal note and review",
+      "pass": true
+    },
+    {
+      "label": "Native journal download includes the reviewed activity and explanation",
+      "pass": true
+    },
+    {
+      "label": "Escape safely dismisses the guide",
+      "pass": true
+    },
+    {
+      "label": "Closing and reopening the guide retains the journal",
+      "pass": true
+    },
+    {
+      "label": "Activity 1 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          -20,
+          2.6,
+          14
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 1 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "Activity 2 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          -17,
+          2.6,
+          -7
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 2 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "Activity 3 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          -6,
+          2.6,
+          3
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 3 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "Activity 4 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          15,
+          2.6,
+          -2
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 4 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "Activity 5 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          16,
+          2.6,
+          4
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 5 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "Activity 6 travels to clear space and cancels entry motion",
+      "pass": true,
+      "detail": {
+        "position": [
+          9,
+          2.6,
+          14
+        ],
+        "entry": null,
+        "blocked": false
+      }
+    },
+    {
+      "label": "Activity 6 travel preserves construction, history, selection, and score",
+      "pass": true
+    },
+    {
+      "label": "No horizontal page overflow at 390x844",
+      "pass": true
+    },
+    {
+      "label": "Guide has no internal horizontal overflow at 390",
+      "pass": true
+    },
+    {
+      "label": "Guide Close activity guide target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 63.53125,
+        "height": 44,
+        "hit": true,
+        "label": "Close activity guide"
+      }
+    },
+    {
+      "label": "Guide SELECT target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 340,
+        "height": 44,
+        "hit": true,
+        "label": "SELECT"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 137.609375,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide SUMMARY target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 312,
+        "height": 44,
+        "hit": true,
+        "label": "SUMMARY"
+      }
+    },
+    {
+      "label": "Guide TEXTAREA target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 312,
+        "height": 91.0625,
+        "hit": true,
+        "label": "TEXTAREA"
+      }
+    },
+    {
+      "label": "Guide LABEL target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 312,
+        "height": 44,
+        "hit": true,
+        "label": "LABEL"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 166,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 390",
+      "pass": true,
+      "detail": {
+        "width": 166,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Activities remains discoverable at 390",
+      "pass": true
+    },
+    {
+      "label": "No horizontal page overflow at 320x700",
+      "pass": true
+    },
+    {
+      "label": "Guide has no internal horizontal overflow at 320",
+      "pass": true
+    },
+    {
+      "label": "Guide Close activity guide target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 63.53125,
+        "height": 44,
+        "hit": true,
+        "label": "Close activity guide"
+      }
+    },
+    {
+      "label": "Guide SELECT target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 270,
+        "height": 44,
+        "hit": true,
+        "label": "SELECT"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 137.609375,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide SUMMARY target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 242,
+        "height": 44,
+        "hit": true,
+        "label": "SUMMARY"
+      }
+    },
+    {
+      "label": "Guide TEXTAREA target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 242,
+        "height": 91.0625,
+        "hit": true,
+        "label": "TEXTAREA"
+      }
+    },
+    {
+      "label": "Guide LABEL target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 242,
+        "height": 44,
+        "hit": true,
+        "label": "LABEL"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 131,
+        "height": 65.375,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 320",
+      "pass": true,
+      "detail": {
+        "width": 131,
+        "height": 65.375,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Activities remains discoverable at 320",
+      "pass": true
+    },
+    {
+      "label": "No horizontal page overflow at 844x390",
+      "pass": true
+    },
+    {
+      "label": "Guide has no internal horizontal overflow at 844",
+      "pass": true
+    },
+    {
+      "label": "Guide Close activity guide target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 63.53125,
+        "height": 44,
+        "hit": true,
+        "label": "Close activity guide"
+      }
+    },
+    {
+      "label": "Guide SELECT target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 570,
+        "height": 44,
+        "hit": true,
+        "label": "SELECT"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 137.609375,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide SUMMARY target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 532,
+        "height": 44,
+        "hit": true,
+        "label": "SUMMARY"
+      }
+    },
+    {
+      "label": "Guide TEXTAREA target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 532,
+        "height": 91.0625,
+        "hit": true,
+        "label": "TEXTAREA"
+      }
+    },
+    {
+      "label": "Guide LABEL target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 532,
+        "height": 44,
+        "hit": true,
+        "label": "LABEL"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 139.6875,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Guide BUTTON target is reachable and at least44px at 844",
+      "pass": true,
+      "detail": {
+        "width": 137.1875,
+        "height": 44,
+        "hit": true,
+        "label": "BUTTON"
+      }
+    },
+    {
+      "label": "Activities remains discoverable at 844",
+      "pass": true
+    },
+    {
+      "label": "Journal survives leaving Geometry World and returning to the same lesson",
+      "pass": true
+    },
+    {
+      "label": "Harbor entry supports a touch phone",
+      "pass": true
+    },
+    {
+      "label": "Touch journal travels to the reservoir",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "harbor-overview-1440.png",
+    "harbor-activity-guide-1440.png",
+    "harbor-guide-390x844.png",
+    "harbor-guide-320x700.png",
+    "harbor-guide-844x390.png",
+    "harbor-guide-touch-390.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "1e8243e2ae7aa76770c1e4ee7c4b0d81dd236c2a309651c83b1c211f8aeef623",
+    "stem_tool_geometryworld_builder.js": "7a383f06308d40c3e6421cbb9a3f76e5a599597dce5199460ec770d12bcf6a71"
+  },
+  "loaded": {
+    "truncated": false,
+    "npcs": 7,
+    "structures": 61,
+    "blocks": 2673,
+    "activities": 6,
+    "measure": [
+      {
+        "count": 6,
+        "volume": 6
+      },
+      {
+        "count": 24,
+        "volume": 24
+      },
+      {
+        "count": 24,
+        "volume": 24
+      },
+      {
+        "count": 24,
+        "volume": 24
+      },
+      {
+        "count": 24,
+        "volume": 24
+      }
+    ]
+  },
+  "pass": true
+}

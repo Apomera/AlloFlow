@@ -35,7 +35,7 @@ describe('Geometry World animation runtime', () => {
 
   it('creates a copyable diagnostic and cleans stale state before retry', () => {
     expect(SOURCE).toContain('function copyEngineFailureDetails()');
-    expect(SOURCE).toContain("navigator.clipboard.writeText(report)");
+    expect(SOURCE).toContain("(window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report)");
     expect(SOURCE).toContain("'Copy error details'");
     expect(SOURCE).toContain('if (window[engineKey]) destroyEngine();');
   });

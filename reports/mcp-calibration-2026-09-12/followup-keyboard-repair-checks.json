@@ -1,0 +1,38 @@
+{
+  "scope": "Native file input focus and layout after accepted repair9; no file was selected",
+  "checks": [
+    {
+      "width": 320,
+      "scrollWidth": 530,
+      "focused": true,
+      "display": "block",
+      "label": "Replace",
+      "foreground": "rgb(17, 24, 39)",
+      "background": "rgb(255, 255, 255)",
+      "outlineStyle": "auto",
+      "outlineWidth": "1px"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 530,
+      "focused": true,
+      "display": "block",
+      "label": "Replace",
+      "foreground": "rgb(17, 24, 39)",
+      "background": "rgb(255, 255, 255)",
+      "outlineStyle": "auto",
+      "outlineWidth": "1px"
+    },
+    {
+      "width": 1000,
+      "scrollWidth": 1000,
+      "focused": true,
+      "display": "block",
+      "label": "Replace",
+      "foreground": "rgb(17, 24, 39)",
+      "background": "rgb(255, 255, 255)",
+      "outlineStyle": "auto",
+      "outlineWidth": "1px"
+    }
+  ]
+}

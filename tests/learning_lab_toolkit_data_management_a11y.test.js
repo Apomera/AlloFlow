@@ -59,7 +59,7 @@ describe('Learning Lab Toolkit data-management accessibility', () => {
   });
 
   it('supports asynchronous backup copying and manual fallback', () => {
-    expect(section).toContain('Promise.resolve(navigator.clipboard.writeText(exportJson))');
+    expect(section).toContain('Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(exportJson))');
     expect(section).toContain('The backup JSON is selected; use Control+C or Command+C.');
   });
 

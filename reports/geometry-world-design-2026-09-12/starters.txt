@@ -1,0 +1,39 @@
+  // Recipes are rebuilt on the integer grid, so changing size never stretches blocks.
+  var STARTER_SPECS = [
+    ['arch','Garden arch','Architecture','A stone gateway with a timber lintel and slab cap.',{width:[5,3,11],height:[5,4,12]}],
+    ['stairs','Timber stairs','Architecture','Supported steps for a terrace or doorway.',{height:[4,2,10],depth:[3,2,7]}],
+    ['window','Framed window','Architecture','A brick surround, glass center, and projecting sill.',{width:[5,3,11],height:[5,3,11]}],
+    ['roof','Gabled roof','Architecture','A solid roof with wedge edges. Lower rises create a stepped pitch.',{width:[6,4,12,2],depth:[4,2,12],rise:[3,1,6]}],
+    ['bridge','Footbridge','Landscape','A supported span with a solid deck and railings.',{width:[7,5,15],depth:[3,3,7],height:[4,3,8]}],
+    ['bench','Garden bench','Landscape','Stone legs, a timber seat, and a comfortable back.',{width:[5,3,11]}],
+    ['pavilion','Market pavilion','Buildings','An open shelter with columns, a raised floor, and a slab roof.',{width:[7,4,12],depth:[5,4,12],height:[6,4,12]}],
+    ['tower','Lookout tower','Buildings','A hollow lookout with a doorway and crenellated top.',{width:[5,5,11,2],depth:[5,5,11,2],height:[7,5,14]}]
+  ];
+  function configureArchitecturalStarter(id,options) {
+    var spec=STARTER_SPECS.find(function(s){return 'starter_'+s[0]===id;}),o=options||{},v={};
+    if(!spec)return {ok:false,reason:'Choose an architectural starter.'};
+    var fields=Object.keys(spec[4]),invalid=fields.find(function(k){var f=spec[4][k],n=o[k]===undefined?f[0]:Number(o[k]);v[k]=n;return o[k]==='' || !Number.isInteger(n) || n<f[1] || n>f[2] || (n-f[1])%(f[3]||1)!==0;});
+    if(invalid){var range=spec[4][invalid];return {ok:false,reason:'Choose '+invalid+' from '+range[1]+' to '+range[2]+' in steps of '+(range[3]||1)+'.'};}
+    var rotation=o.rotation===undefined?0:Number(o.rotation),palette=o.palette||'original';
+    if(!Number.isInteger(rotation) || rotation<0 || rotation>3)return {ok:false,reason:'Choose a quarter-turn rotation.'};
+    if(['original','timber','stone','brick'].indexOf(palette)===-1)return {ok:false,reason:'Choose a starter material palette.'};
+    if(spec[0]==='roof' && v.rise>v.width/2)return {ok:false,reason:'Roof rise can be at most half the roof width.'};
+    var cells=Object.create(null),w=v.width,h=v.height,d=v.depth;
+    function p(x,y,z,type,shape,turn){type=type||'stone';if(palette!=='original' && type!=='glass')type=palette==='timber'?'wood':palette;cells[x+','+y+','+z]={x:x,y:y,z:z,type:type,shape:shape||'cube',rotation:turn||0};}
+    switch(spec[0]){
+      case 'arch':for(var y=1;y<=h-2;y++){p(0,y,0);p(w-1,y,0);}for(var x=0;x<w;x++){p(x,h-1,0,'wood');p(x,h,0,'stone','halfB');}break;
+      case 'stairs':for(var x=0;x<h;x++)for(var z=0;z<d;z++)for(var y=1;y<=x+1;y++)p(x,y,z,'wood');break;
+      case 'window':for(var x=0;x<w;x++)for(var y=1;y<=h;y++)p(x,y,0,x===0||x===w-1||y===1||y===h?'brick':'glass');for(var x=0;x<w;x++)p(x,1,1,'stone','halfB');break;
+      case 'roof':for(var z=0;z<d;z++)for(var x=0;x<w;x++){var height=Math.floor(Math.min(x,w-1-x)*v.rise/(w/2));for(var y=1;y<=height;y++)p(x,y,z,'wood');p(x,height+1,z,'wood','halfA',x<w/2?0:2);}break;
+      case 'bridge':for(var x=0;x<w;x++)for(var z=0;z<d;z++){p(x,h-1,z,'wood');if(x===0||x===w-1)for(var y=1;y<h-1;y++)p(x,y,z);if(z===0||z===d-1)p(x,h,z,'wood');}break;
+      case 'bench':for(var x=0;x<w;x++){p(x,2,0,'wood');p(x,2,1,'wood');p(x,3,0,'wood');if(x===0||x===w-1){p(x,1,0);p(x,1,1);}}break;
+      case 'pavilion':for(var x=0;x<w;x++)for(var z=0;z<d;z++){p(x,1,z);p(x,h,z,'wood','halfB');if((x===0||x===w-1)&&(z===0||z===d-1))for(var y=2;y<h;y++)p(x,y,z,'wood');}break;
+      case 'tower':for(var x=0;x<w;x++)for(var z=0;z<d;z++){p(x,1,z);if(x===0||x===w-1||z===0||z===d-1){for(var y=2;y<h;y++)if(!(z===d-1&&x===Math.floor(w/2)&&y<4+Math.floor((h-7)/3)))p(x,y,z);if((x+z)%2===0)p(x,h,z);}}break;
+    }
+    var blocks=Object.keys(cells).map(function(k){return cells[k];});
+    for(var r=0;r<rotation;r++){var maxX=Math.max.apply(null,blocks.map(function(b){return b.x;}));blocks=blocks.map(function(b){return Object.assign({},b,{x:b.z,z:maxX-b.x,rotation:(b.rotation+1)%4});});}
+    var stamp={id:id,name:spec[1],category:spec[2],description:spec[3],fields:spec[4],blocks:blocks.sort(compareBlocks)};
+    var checked=normalizeBuildStamp(stamp);if(!checked.ok)return checked;
+    return {ok:true,stamp:stamp,settings:Object.assign({},v,{rotation:rotation,palette:palette})};
+  }
+  function architecturalStarters(){return STARTER_SPECS.map(function(s){return configureArchitecturalStarter('starter_'+s[0]).stamp;});}

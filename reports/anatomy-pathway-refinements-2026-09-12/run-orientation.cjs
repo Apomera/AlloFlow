@@ -1,0 +1,1 @@
+const fs=require('node:fs');let source=fs.readFileSync(__dirname+'/localize-orientation.cjs','utf8');source=source.replace(`label+"', '"+label`,`label+"','"+label`);new Function('require','__dirname',source)(require,__dirname);

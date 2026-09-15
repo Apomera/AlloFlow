@@ -34433,7 +34433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       '@misc{unesco2010falconry,\n  author = {{UNESCO}},\n  title = {Falconry, a living human heritage. Intangible Cultural Heritage list.},\n  year = {2010},\n  url = {https://ich.unesco.org/en/RL/falconry-a-living-human-heritage-01708}\n}'
                     ].join('\n\n');
                     try {
-                      navigator.clipboard.writeText(bibtex).then(function() {
+                      (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(bibtex).then(function() {
                         rhAnnounce(__alloT('stem.raptorhunt.sr_bibtex_bibliography_copied_to_clipboard', 'BibTeX bibliography copied to clipboard'));
                         if (ctx.awardXP) ctx.awardXP(2, 'Bibliography export');
                       });

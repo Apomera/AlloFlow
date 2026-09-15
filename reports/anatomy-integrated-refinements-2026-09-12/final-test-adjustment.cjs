@@ -1,0 +1,2 @@
+const fs=require('fs');let f='tests/anatomy_mobile_a11y_polish.test.js',s=fs.readFileSync(f,'utf8');s=s.replace("t('stem.anatomy.quiz_sr_wrong', 'Not quite. The answer was ')","t('stem.anatomy.quiz_sr_wrong','Not quite. The answer was ')");fs.writeFileSync(f,s);
+const file=__dirname+'/translations.json';const translations=JSON.parse(fs.readFileSync(file,'utf8'));translations.arabic.case_femur='قد يتسبب كسر قرب الورك في تضرر الأوعية التي تغذي رأس العظم الممتد نحو الركبة. أي عظم معني؟';fs.writeFileSync(file,JSON.stringify(translations,null,2)+'\n');

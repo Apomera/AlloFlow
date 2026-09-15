@@ -1,0 +1,61 @@
+{
+  "name": "ending-phone",
+  "errors": [],
+  "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nChapter complete\n\nEpisode recap\n\nLook back at your decisions, then take one useful idea into your next adventure.\n\nDecisions completed\n3\nStory level reached\n2\nConcepts to revisit (2)\n\nTake one idea with you\n\nWhich decision changed the story most? What evidence from the lesson supported it?\n\nContinue the story\nExport Storybook PDF\nEpisode progress\n3 completed · Episode ended\nReview your journey above and choose what to do next.",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+      "height": 691,
+      "scrollHeight": 1153
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Open story summary",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Open reading view",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Read each scene automatically",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Continue the story",
+      "disabled": false,
+      "top": 668,
+      "height": 46,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Export Storybook PDF",
+      "disabled": false,
+      "top": 726,
+      "height": 46,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

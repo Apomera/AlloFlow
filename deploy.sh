@@ -196,18 +196,39 @@ if [[ "${SKIP_CDN_DEPLOYABLE:-0}" != "1" ]]; then
   echo "  ✓ CDN-deployable: no ≥25MiB tracked files; root lock passes npm-10 ci."
 fi
 
-# ── Step 0.75: host comment budget ──────────────────────────────────
+# ── Step 0.75: host comment budget (ADVISORY) ───────────────────────
 # AlloFlowANTI.txt is pasted into Gemini Canvas verbatim, so every comment byte
 # ships. Comments are agent-to-agent regression notes and worth keeping, but a
 # previous full strip regrew to 336 KB (12.6% of the file, 2026-09-13). This is
-# a RATCHET like the __alloT key gate: the total may only go down. To add a
+# a RATCHET like the __alloT key gate: the total should only go down. To add a
 # note, condense or remove another. Re-baseline: node dev-tools/
 # check_anti_comment_budget.cjs --update (down) / --allow-increase (up, on purpose).
+#
+# ADVISORY ONLY since 2026-09-14 — it warns, it never aborts. The ratchet was
+# added recently and immediately blocked a full deploy of ten lanes' work: the
+# baseline was already exceeded by COMMITTED history (+2,477 B at HEAD, before
+# any uncommitted edit), so every deploy failed at this step until somebody
+# hand-condensed other people's notes. A byte budget on agent commentary is a
+# housekeeping signal, not a reason to withhold a release. Aaron's call.
+# Re-arm by restoring the `|| { ... exit 1; }` shape if the budget ever becomes
+# something a deploy should genuinely block on.
 if [[ "${SKIP_COMMENT_BUDGET:-0}" != "1" ]]; then
-  echo ""
-  echo "=== Step 0.75: host comment budget (ratchet) ==="
-  node dev-tools/check_anti_comment_budget.cjs --quiet
-  echo "  ✓ AlloFlowANTI.txt comment bytes are at or under the ratchet baseline."
+  {
+    _cb_yellow=$'\033[33m'
+    _cb_green=$'\033[32m'
+    _cb_reset=$'\033[0m'
+    echo ""
+    echo "=== Step 0.75: host comment budget (ratchet, advisory) ==="
+    if node dev-tools/check_anti_comment_budget.cjs --quiet; then
+      printf "%s  ✓ AlloFlowANTI.txt comment bytes are at or under the ratchet baseline.%s\n" "$_cb_green" "$_cb_reset"
+    else
+      printf "%s  ⚠️  AlloFlowANTI.txt comment budget exceeded — see the figures above.%s\n" "$_cb_yellow" "$_cb_reset"
+      printf "%s     Condense a note, or re-baseline deliberately:%s\n" "$_cb_yellow" "$_cb_reset"
+      printf "%s       node dev-tools/check_anti_comment_budget.cjs --update --allow-increase%s\n" "$_cb_yellow" "$_cb_reset"
+      printf "%s     (Continuing anyway — Step 0.75 is advisory only.)%s\n" "$_cb_yellow" "$_cb_reset"
+    fi
+    echo "=== end Step 0.75 ==="
+  } || true
 fi
 
 # ── Step 0.8: behavioural gate (tests affected by this change) ─────

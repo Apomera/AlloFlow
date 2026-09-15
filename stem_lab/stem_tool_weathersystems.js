@@ -2034,7 +2034,7 @@ var GEOGRAPHY_PROFILES = {
     function finish(ok) { if (onResult) onResult(!!ok); }
     try {
       if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-        window.navigator.clipboard.writeText(text).then(function () { finish(true); }).catch(function () { legacyClipboardCopy(text, finish); });
+        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function () { finish(true); }).catch(function () { legacyClipboardCopy(text, finish); });
         return;
       }
     } catch (error) {}
@@ -5315,7 +5315,7 @@ var geographyGroup = new THREE.Group();
               materials.forEach(function (material) { if (material && material.dispose) material.dispose(); });
             }
           });
-          renderer.dispose();
+          renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
           immersiveRuntimeRef.current = null;
         };
       }, [d.tab, d.immersiveSceneMode, dataRoot._threeLoaded, d.immersiveDataSource, d.immersiveQuality, d.liveWeather && d.liveWeather.observedAt, d.liveWeatherTimelineIndex, state.scenario, state.simHour, state.temp, state.humidity, state.pressure, state.windSpeed, state.windDir, state.terrain, d.immersiveGeography, selectedStation]);

@@ -1,0 +1,109 @@
+  var BUILD_STAMP_KEY = 'alloflow.geometry-world.build-stamps.v1';
+  var BUILD_STAMP_LIMIT = 12, BUILD_STAMP_TOTAL = 6000, BUILD_STAMP_BYTES = 768 * 1024;
+  function selectionEditSnapshot(engine) {
+    var selection=engine && engine._builderSelection, records=[],seen=Object.create(null);
+    if(!selection || !Array.isArray(selection.blocks) || !selection.blocks.length || selection.blocks.length>MAX_BLOCKS || !engine.blocks)return {ok:false,reason:'Select a creation before editing it.'};
+    for(var i=0;i<selection.blocks.length;i++){
+      var p=selection.blocks[i],mesh=p && engine.blocks[keyFor(p)],u=mesh && mesh.userData;
+      if(!p || ![p.x,p.y,p.z].every(function(v){return typeof v==='number' && isFinite(v) && Math.floor(v)===v;}) || seen[keyFor(p)] || !isStudentBlock(u) || !u.gridPos || keyFor(u.gridPos)!==keyFor(p))return {ok:false,reason:'The selected creation changed. Select it again before editing.'};
+      if(!BLOCK_TYPES.some(function(t){return t.id===u.blockType && t.id!=='grass';}) || !BLOCK_SHAPES.some(function(s){return s.id===u.shape;}) || !Number.isInteger(u.rotation) || u.rotation<0 || u.rotation>3)return {ok:false,reason:'A selected block has an unsupported shape or material.'};
+      seen[keyFor(p)]=true;records.push({x:p.x,y:p.y,z:p.z,type:u.blockType,shape:u.shape,rotation:u.rotation});
+    }
+    records.sort(compareBlocks);
+    return {ok:true,blocks:records,signature:JSON.stringify(records)};
+  }
+  // Rotate about the selection's grid-aligned footprint and keep its minimum
+  // corner fixed. Odd/even footprints remain integral without rounding cells.
+  function transformCreationBlocks(blocks, operation, values) {
+    values=values || {};
+    if(!Array.isArray(blocks) || !blocks.length)return {ok:false,reason:'Select a creation first.'};
+    var minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+    blocks.forEach(function(b){minX=Math.min(minX,b.x);maxX=Math.max(maxX,b.x);minZ=Math.min(minZ,b.z);maxZ=Math.max(maxZ,b.z);});
+    var offset={x:0,y:0,z:0};
+    if(operation==='move' || operation==='duplicate'){
+      for(var axis of ['x','y','z']){
+        var value=values[axis];
+        if(typeof value!=='number' || !isFinite(value) || Math.floor(value)!==value || Math.abs(value)>128)return {ok:false,reason:'Use whole-number offsets from -128 to 128.'};
+        offset[axis]=value;
+      }
+      if(!offset.x && !offset.y && !offset.z)return {ok:false,reason:'Choose an offset of at least one block.'};
+    }else if(operation==='recolor'){
+      if(!BLOCK_TYPES.some(function(t){return t.id===values.type && t.id!=='grass';}))return {ok:false,reason:'Choose a building material.'};
+    }else if(['rotate','mirrorX','mirrorZ'].indexOf(operation)===-1)return {ok:false,reason:'Choose an editing action.'};
+    var additions=blocks.map(function(source){
+      var b=Object.assign({},source);
+      if(operation==='move' || operation==='duplicate'){b.x+=offset.x;b.y+=offset.y;b.z+=offset.z;}
+      if(operation==='rotate'){b.x=minX+(source.z-minZ);b.z=minZ+(maxX-source.x);b.rotation=(source.rotation+1)%4;}
+      // A halfA slopes toward local +X. Reflection changes that direction;
+      // quarter wedges are symmetric but obey the same equivalent orientation.
+      if(operation==='mirrorX'){b.x=minX+maxX-source.x;b.rotation=(6-source.rotation)%4;}
+      if(operation==='mirrorZ'){b.z=minZ+maxZ-source.z;b.rotation=(4-source.rotation)%4;}
+      if(operation==='recolor')b.type=values.type;
+      return b;
+    });
+    return {ok:true,additions:additions,removals:operation==='duplicate'?[]:blocks.map(function(b){return {x:b.x,y:b.y,z:b.z};}),label:{move:'Move creation',duplicate:'Duplicate creation',rotate:'Rotate creation',mirrorX:'Mirror creation across X',mirrorZ:'Mirror creation across Z',recolor:'Recolor creation'}[operation]};
+  }
+  function previewSelectionEdit(engine,operation,values) {
+    var snapshot=selectionEditSnapshot(engine);
+    if(!snapshot.ok)return snapshot;
+    if(engine._destroyed || engine._showcase || !engine._currentLesson || !engine._currentLesson.sandbox || typeof engine.previewBuildBatch!=='function')return {ok:false,reason:'Open Free Build before editing a creation.'};
+    var plan=transformCreationBlocks(snapshot.blocks,operation,values);if(!plan.ok)return plan;
+    var result=engine.previewBuildBatch(plan.additions,plan.removals,{label:plan.label});
+    return Object.assign({},result,{engine:engine,lesson:engine._currentLesson,sourceSignature:snapshot.signature,additions:plan.additions,removals:plan.removals,label:plan.label,beforeSelection:copyLocal(engine._builderSelection),afterSelection:{blocks:plan.additions.map(function(b){return {x:b.x,y:b.y,z:b.z};})}});
+  }
+  function commitSelectionEdit(engine,plan) {
+    if(!plan || !plan.ok || plan.engine!==engine || engine._destroyed || engine._showcase || engine._currentLesson!==plan.lesson || typeof engine.commitBuildBatch!=='function')return {ok:false,reason:'Preview this change again before applying it.'};
+    if(plan.sourceSignature){var current=selectionEditSnapshot(engine);if(!current.ok || current.signature!==plan.sourceSignature)return {ok:false,reason:'The selected creation changed after this preview. Preview it again.'};}
+    return engine.commitBuildBatch(plan.additions,plan.removals,{label:plan.label,beforeSelection:plan.beforeSelection,afterSelection:plan.afterSelection});
+  }
+  function normalizeBuildStamp(candidate) {
+    if(!candidate || typeof candidate!=='object' || typeof candidate.id!=='string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(candidate.id) || typeof candidate.name!=='string' || !candidate.name.trim() || candidate.name.length>48)return {ok:false,reason:'A saved stamp is not a valid named recipe.'};
+    var checked=normalizeEditableWorld({schema:EDITABLE_WORLD_SCHEMA,title:candidate.name,blocks:candidate.blocks});
+    if(!checked.ok)return {ok:false,reason:checked.error};
+    return {ok:true,value:{id:candidate.id,name:candidate.name.replace(/[\u0000-\u001f\u007f]/g,' ').trim(),blocks:checked.value.blocks},summary:checked.summary};
+  }
+  function readBuildStamps(storage) {
+    try{
+      storage=storage || window.localStorage;
+      var raw=storage.getItem(BUILD_STAMP_KEY);if(raw==null)return {ok:true,stamps:[]};
+      if(raw.length>BUILD_STAMP_BYTES || editableWorldByteLength(raw)>BUILD_STAMP_BYTES)throw new Error('The stamp library is larger than its safe limit.');
+      var parsed=JSON.parse(raw),stamps=[],seen=Object.create(null),total=0;
+      if(!parsed || parsed.schema!=='alloflow-build-stamps/1' || !Array.isArray(parsed.stamps) || parsed.stamps.length>BUILD_STAMP_LIMIT)throw new Error('The saved stamp library could not be read.');
+      for(var rawStamp of parsed.stamps){var checked=normalizeBuildStamp(rawStamp);if(!checked.ok || seen[rawStamp.id])throw new Error('The saved stamp library contains an invalid recipe.');seen[rawStamp.id]=true;total+=checked.value.blocks.length;stamps.push(checked.value);}
+      if(total>BUILD_STAMP_TOTAL)throw new Error('The stamp library is larger than its safe limit.');
+      return {ok:true,stamps:stamps};
+    }catch(error){return {ok:false,stamps:[],reason:(error && error.message || 'Browser storage is unavailable.')+' Your world is unchanged; save an editable world to keep your work.'};}
+  }
+  function writeBuildStamps(stamps,storage) {
+    try{
+      var text=JSON.stringify({schema:'alloflow-build-stamps/1',stamps:stamps}),checked=readBuildStamps({getItem:function(){return text;}});
+      if(!checked.ok)return checked;
+      (storage || window.localStorage).setItem(BUILD_STAMP_KEY,text);return checked;
+    }catch(_){return {ok:false,reason:'This browser could not save the stamp library. Save an editable world to keep your work.'};}
+  }
+  function saveSelectionStamp(engine,name,storage) {
+    var library=readBuildStamps(storage);if(!library.ok)return library;
+    if(library.stamps.length>=BUILD_STAMP_LIMIT)return {ok:false,reason:'Your library holds 12 stamps. Remove one before saving another.'};
+    name=typeof name==='string'?name.replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,48):'';
+    if(!name)return {ok:false,reason:'Give this stamp a short name.'};
+    var snapshot=selectionEditSnapshot(engine);if(!snapshot.ok)return snapshot;
+    var xs=snapshot.blocks.map(function(b){return b.x;}),zs=snapshot.blocks.map(function(b){return b.z;}),ys=snapshot.blocks.map(function(b){return b.y;});
+    var ox=Math.floor((Math.min.apply(null,xs)+Math.max.apply(null,xs))/2),oz=Math.floor((Math.min.apply(null,zs)+Math.max.apply(null,zs))/2),oy=Math.min.apply(null,ys)-1;
+    var candidate={id:'stamp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9),name:name,blocks:snapshot.blocks.map(function(b){return Object.assign({},b,{x:b.x-ox,y:b.y-oy,z:b.z-oz});})};
+    var checked=normalizeBuildStamp(candidate);if(!checked.ok)return checked;
+    if(library.stamps.some(function(stamp){return stamp.name.toLocaleLowerCase()===name.toLocaleLowerCase();}))return {ok:false,reason:'A stamp already uses that name. Choose a different name.'};
+    return writeBuildStamps(library.stamps.concat([checked.value]),storage);
+  }
+  function removeBuildStamp(id,storage) {
+    var library=readBuildStamps(storage);if(!library.ok)return library;
+    return writeBuildStamps(library.stamps.filter(function(stamp){return stamp.id!==id;}),storage);
+  }
+  function previewBuildStamp(engine,stamp,origin) {
+    var checked=normalizeBuildStamp(stamp);if(!checked.ok)return checked;
+    if(!engine || engine._destroyed || engine._showcase || !engine._currentLesson || !engine._currentLesson.sandbox || typeof engine.previewBuildBatch!=='function')return {ok:false,reason:'Open Free Build before placing a stamp.'};
+    if(!origin || ![origin.x,origin.y,origin.z].every(function(v){return typeof v==='number' && isFinite(v) && Math.floor(v)===v;}))return {ok:false,reason:'Choose a whole-number grid corner for this stamp.'};
+    var min=checked.summary.min,additions=checked.value.blocks.map(function(b){return Object.assign({},b,{x:b.x+origin.x-min.x,y:b.y+origin.y-min.y,z:b.z+origin.z-min.z});}),label='Place '+checked.value.name;
+    var result=engine.previewBuildBatch(additions,[],{label:label});
+    return Object.assign({},result,{engine:engine,lesson:engine._currentLesson,additions:additions,removals:[],label:label,beforeSelection:copyLocal(engine._builderSelection || null),afterSelection:{blocks:additions.map(function(b){return {x:b.x,y:b.y,z:b.z};})}});
+  }
+

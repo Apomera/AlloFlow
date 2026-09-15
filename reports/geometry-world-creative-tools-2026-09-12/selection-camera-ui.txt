@@ -1,0 +1,8 @@
+      function renderCreationCameraTools(){
+        return h('details',{className:'gwe-camera-orbit-tools'},h('summary',null,'Orbit & views'),
+          h('div',{className:'gwe-builder-actions','aria-label':'Orbit selected creation'},
+            [['Orbit left',-Math.PI/12,0,1],['Orbit right',Math.PI/12,0,1],['Tilt up',0,Math.PI/18,1],['Tilt down',0,-Math.PI/18,1],['Closer',0,0,1/1.18],['Farther',0,0,1.18]].map(function(action){return h('button',{key:action[0],type:'button',onClick:function(){orbitSelectedCreation(ctx,action[1],action[2],action[3]);}},action[0]);})),
+          h('div',{className:'gwe-builder-actions','aria-label':'Selected creation views'},['front','side','top','free'].map(function(preset){return h('button',{key:preset,type:'button',onClick:function(){selectedCreationView(ctx,preset);}},preset==='free'?'Free view':preset[0].toUpperCase()+preset.slice(1));}))
+        );
+      }
+

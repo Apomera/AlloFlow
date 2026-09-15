@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-13T15:29:34.296Z",
+  "generatedAt": "2026-09-15T01:09:41.144Z",
   "scope": [
     "SEL Hub shell/catalog",
     "Recent SEL work entry point",
@@ -19,7 +19,7 @@
     "issueCount": 0,
     "errorCount": 0,
     "warningCount": 0,
-    "toolCount": 71,
+    "toolCount": 72,
     "toolThemesAudited": [
       "light",
       "dark",
@@ -39,21 +39,6 @@
     {
       "view": "sel-hub-catalog",
       "theme": "light",
-      "renderedBytes": 231422,
-      "issueCount": 0,
-      "errorCount": 0,
-      "warningCount": 0,
-      "checks": {
-        "hasRecentWork": true,
-        "hasSharePacketLauncher": true,
-        "hasTeacherLaunch": true,
-        "hasPrivacyCopy": true
-      },
-      "issues": []
-    },
-    {
-      "view": "sel-hub-catalog",
-      "theme": "dark",
       "renderedBytes": 231433,
       "issueCount": 0,
       "errorCount": 0,
@@ -68,8 +53,23 @@
     },
     {
       "view": "sel-hub-catalog",
+      "theme": "dark",
+      "renderedBytes": 231444,
+      "issueCount": 0,
+      "errorCount": 0,
+      "warningCount": 0,
+      "checks": {
+        "hasRecentWork": true,
+        "hasSharePacketLauncher": true,
+        "hasTeacherLaunch": true,
+        "hasPrivacyCopy": true
+      },
+      "issues": []
+    },
+    {
+      "view": "sel-hub-catalog",
       "theme": "high-contrast",
-      "renderedBytes": 231367,
+      "renderedBytes": 231378,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -84,7 +84,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "mobile-high-contrast",
-      "renderedBytes": 231180,
+      "renderedBytes": 231191,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,

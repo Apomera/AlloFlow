@@ -1,0 +1,157 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > bounds saved camera settings and wraps azimuth without mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > normalizes invalid persisted camera fields to finite defaults
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > maps each branch to its own named nodes and two real 3D terminal paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps electrical values and solved readings independent of graphics options
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps topology stable when component values change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps sensing paths separate from current-carrying terminal routes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps every supported device family in a dense finite scene
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 35 elevation 52
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 0 elevation 85
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 180 elevation 38
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 155 elevation 15
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1 azimuth -90 elevation 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > reuses an already loaded compatible engine
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > uses the shared loader with required orbit controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > rejects a missing loader, failed asset, and missing camera controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > bounds a stalled loader and clears its timer after successful loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > offers orbit mode while preserving the default projected board
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > renders keyboard controls, named selections, snapshot readings, and model limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··············stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > shows time and switch side from the shared snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_orbit_flow.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > follows signed branch current independently of voltage or power direction
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > correctly distinguishes a supplying source and an absorbing resistor in a solved circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds ambiguous parallel ideal-source currents while keeping the circuit valid
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > does not infer a current direction from zero power in an ideal wire
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current undefined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > withholds unknown or nonfinite current -Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D conventional-current readings > distinguishes zero and signed subthreshold readings without claiming they are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > moves in opposite directions on A and B leads of the same branch
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > reverses the entire pattern when the signed branch current reverses
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > uses equal illustrative speed for every route length and current magnitude
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > wraps onto the lead and caps geometry for long routes and long-running motion
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > has no markers for unknown, zero, or degenerate leads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D lead-trail placement > does not change the simulation, held sample, or shared time when changing display preferences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > offers manual stepping and explicit playback with signed terminal and power explanations
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > respects saved circuit motion pause and exposes a deliberate resume action
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > explains why capacitor current trails do not cross the dielectric
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit_flow.test.js > 3D current-trail teaching and controls > identifies ambiguous current as undetermined without drawing a direction in its reading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····················stdout | tests/circuit_table_semantics_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+····
+
+ Test Files  4 passed (4)
+      Tests  49 passed (49)
+   Start at  18:28:27
+   Duration  8.59s (transform 73ms, setup 107ms, import 193ms, tests 3.61s, environment 3.67s)
+

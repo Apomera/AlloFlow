@@ -1,0 +1,309 @@
+{
+  "assertions": [
+    {
+      "name": "Customized starter has a rendered thumbnail",
+      "pass": true
+    },
+    {
+      "name": "Starter preview leaves blocks unchanged",
+      "pass": true
+    },
+    {
+      "name": "Customized arch uses selected size, material and rotation",
+      "pass": true,
+      "details": {
+        "count": 22,
+        "blocks": [
+          {
+            "x": 0,
+            "y": 1,
+            "z": 0,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 1,
+            "z": 6,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 0,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 2,
+            "z": 6,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 3,
+            "z": 0,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 3,
+            "z": 6,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 4,
+            "z": 0,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 4,
+            "z": 6,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 0,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 1,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 2,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 3,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 4,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 5,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 5,
+            "z": 6,
+            "type": "brick",
+            "shape": "cube",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 0,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 1,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 2,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 3,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 4,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 5,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          },
+          {
+            "x": 0,
+            "y": 6,
+            "z": 6,
+            "type": "brick",
+            "shape": "halfB",
+            "rotation": 1
+          }
+        ],
+        "undo": 1,
+        "preview": false
+      }
+    },
+    {
+      "name": "Whole starter undoes in one step",
+      "pass": true
+    },
+    {
+      "name": "Incompatible roof dimensions block preview",
+      "pass": true
+    },
+    {
+      "name": "Reset restores valid settings",
+      "pass": true
+    },
+    {
+      "name": "Dragging previews a snapped move without mutating blocks",
+      "pass": true
+    },
+    {
+      "name": "Applying the drag moves the entire selection by two cells",
+      "pass": true
+    },
+    {
+      "name": "Undo restores the precise selection after a handle move",
+      "pass": true
+    },
+    {
+      "name": "Keyboard handle produces a move preview",
+      "pass": true
+    },
+    {
+      "name": "Escape removes handles and cancels the pending move",
+      "pass": true
+    },
+    {
+      "name": "Selection defaults to visible block centers",
+      "pass": true
+    },
+    {
+      "name": "Hidden-block choice is visible in the canvas guidance",
+      "pass": true
+    },
+    {
+      "name": "Customization fits 390px phone layout",
+      "pass": true,
+      "details": {
+        "overflow": false,
+        "inputs": [
+          {
+            "left": 34,
+            "right": 136,
+            "width": 102,
+            "height": 44
+          },
+          {
+            "left": 144,
+            "right": 246,
+            "width": 102,
+            "height": 44
+          },
+          {
+            "left": 254,
+            "right": 356,
+            "width": 102,
+            "height": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "Customization fits 320px phone layout",
+      "pass": true,
+      "details": {
+        "overflow": false,
+        "inputs": [
+          {
+            "left": 34,
+            "right": 112.65625,
+            "width": 78.65625,
+            "height": 44
+          },
+          {
+            "left": 120.65625,
+            "right": 199.328125,
+            "width": 78.671875,
+            "height": 44
+          },
+          {
+            "left": 207.328125,
+            "right": 285.984375,
+            "width": 78.65625,
+            "height": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "Courtyard keeps three merged shadow-casting meshes",
+      "pass": true,
+      "details": {
+        "courtyard": {
+          "style": "garden-workshop",
+          "drawCalls": 3,
+          "tier": "detail",
+          "plotClear": true
+        },
+        "shadowCasters": 3,
+        "blocks": 177
+      }
+    }
+  ],
+  "errors": [],
+  "scope": "Local React and Three.js host in Chromium; desktop and phone viewports."
+}

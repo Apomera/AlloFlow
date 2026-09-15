@@ -1,0 +1,113 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_orbit.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > bounds saved camera settings and wraps azimuth without mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > normalizes invalid persisted camera fields to finite defaults
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > maps each branch to its own named nodes and two real 3D terminal paths
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps electrical values and solved readings independent of graphics options
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+···stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps topology stable when component values change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps sensing paths separate from current-carrying terminal routes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > keeps every supported device family in a dense finite scene
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 35 elevation 52
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 0 elevation 85
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1.6956521739130435 azimuth 180 elevation 38
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 0.8648648648648649 azimuth 155 elevation 15
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > orbitable circuit geometry and camera > fits all scene corners at aspect 1 azimuth -90 elevation 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > reuses an already loaded compatible engine
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > uses the shared loader with required orbit controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > rejects a missing loader, failed asset, and missing camera controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D engine loading and fallback > bounds a stalled loader and clears its timer after successful loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > offers orbit mode while preserving the default projected board
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > renders keyboard controls, named selections, snapshot readings, and model limits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_orbit.test.js > 3D board accessible presentation > shows time and switch side from the shared snapshot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+················stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all twenty SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  16:39:47
+   Duration  5.67s (transform 58ms, setup 68ms, import 146ms, tests 2.67s, environment 2.22s)
+

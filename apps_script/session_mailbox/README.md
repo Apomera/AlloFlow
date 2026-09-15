@@ -20,17 +20,28 @@ remain in the Google account chosen by the teacher.
    button works offline and inside Gemini Canvas (this folder's `Code.gs` is
    the same file). Name the project **AlloFlow Class Mailbox** (click
    "Untitled project" to rename). Save (Ctrl+S).
+   Then open **Project Settings** (the gear in the left rail), tick **Show
+   "appsscript.json" manifest file in editor**, open `appsscript.json` from
+   the file list and replace its contents with the manifest printed under
+   "v24: Send to Drive" below. It tells Google the script may touch only the
+   files it creates (`drive.file`) and make outbound web requests; without
+   it, Google grants the script access to your entire Drive.
 3. Click **Deploy → New deployment**. Click the gear next to "Select type"
    and choose **Web app**.
 4. Set **Execute as: Me** and **Who has access: Anyone**. Click **Deploy**.
-5. Authorize when prompted. Google can show a "Google hasn't verified this app"
-   warning because this teacher-created script is an unpublished OAuth app.
-   That is expected, but it is not a blanket assurance of safety. Continue
-   only if you created the project, reviewed the pasted source, and recognize
-   the account and project name; otherwise cancel. Google explains this flow
-   at https://developers.google.com/apps-script/guides/services/authorization.
+5. Authorize when prompted. With the manifest in place the consent screen
+   asks for two things: "See, edit, create, and delete only the specific
+   Google Drive files you use with this app" and "Connect to an external
+   service". Neither is a sensitive scope, so Google's "Google hasn't
+   verified this app" interstitial is not expected. If it still appears
+   (deployments without the manifest request full Drive access, which does
+   trigger it), continue only if you created the project, reviewed the
+   pasted source, and recognize the account and project name; otherwise
+   cancel. Google explains this flow at
+   https://developers.google.com/apps-script/guides/services/authorization.
    The script uses cache/properties for live sessions and Drive for hosted
-   homework, admin-token recovery, and completed student submissions.
+   homework, admin-token recovery, completed student submissions, and the
+   documents you send to Drive.
 6. Copy the **Web app URL** (ends in `/exec`) and paste it into AlloFlow:
    **Student QR → Live class without accounts → Connect mailbox**. AlloFlow
    runs a self-test and claims the admin token automatically.
@@ -44,6 +55,53 @@ pencil icon → Version: New version → Deploy. The URL stays the same.
 > participant credential. Older scripts must be updated before new AlloFlow
 > builds will show a live-session QR.
 
+## v24: Send to Drive, Google Docs, Forms, and page import
+
+Version 24 lets AlloFlow hand finished work to **your own Drive** and read a
+web page **for you**. Everything stays in your account; the mailbox never
+serves any of it to students.
+
+| Request | What happens | Needs |
+| --- | --- | --- |
+| `{a:'deliver'}` with a DOCX, PPTX, HTML, CSV, PDF or JSON file | The file lands in **AlloFlow Class Mailbox / Delivered documents**. DOCX and HTML become a native Google Doc, PPTX a Google Slides deck, CSV a Sheet; `convert:'none'` keeps the original. The reply carries the link. | `drive.file` + outbound requests (the shipped manifest) |
+| `{a:'deliverform'}` with quiz items | A Google Form is created in quiz mode (points, correct choices marked, expected short answers kept as feedback) and moved into the same subfolder. | the optional Forms scope (below) |
+| `{a:'fetchpage'}` with a URL | The page is fetched from Google's servers and returned as plain text with its title, so an article can be leveled without a browser-side reader proxy that sites flag as a bot. Private and local addresses are refused; 60 requests per minute. | outbound requests (the shipped manifest) |
+
+All three require the admin token: the deployment is reachable by anyone, so
+without that gate it would be an open upload box.
+
+**The manifest** (`appsscript.json`, see step 2):
+
+```json
+{
+  "timeZone": "America/New_York",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "webapp": {
+    "access": "ANYONE_ANONYMOUS",
+    "executeAs": "USER_DEPLOYING"
+  },
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/script.external_request"
+  ]
+}
+```
+
+**Google Forms is opt-in.** The manifest deliberately omits the Forms scope,
+because it is a broader permission than the two the script normally needs.
+To enable `deliverform`, add `"https://www.googleapis.com/auth/forms"` to
+`oauthScopes`, deploy a new version, and authorize again (this scope can
+trigger Google's unverified-app interstitial; the step 5 advice applies).
+Until then the action replies `forms-scope` and nothing else changes.
+
+**Changing scopes re-prompts you.** Whenever `oauthScopes` changes, the next
+deploy asks you to authorize again. Scripts deployed before v24 without a
+manifest asked for full Drive access; after this update they ask for less.
+Your existing mailbox folder was created by this same script, so it stays
+reachable under the narrower scope.
+
 ## What it stores
 
 | Data | Where | Lifetime |
@@ -53,6 +111,7 @@ pencil icon → Version: New version → Deploy. The URL stays the same.
 | Homework pack manifests and chunks | AlloFlow Class Mailbox folder in **your** Drive | until you delete them |
 | Completed mailbox student submissions (JSON) | the same private Drive folder | until you delete them according to school policy |
 | Admin token recovery note | the same private Drive folder | until rotated or deleted |
+| Documents you send to Drive (Docs, Slides, Sheets, PDFs, Forms) | a "Delivered documents" subfolder of the same folder | until you delete them |
 
 No student accounts exist. A live QR carries a random **join-only secret**.
 The mailbox exchanges it for a signed participant credential bound to one

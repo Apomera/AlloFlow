@@ -1,0 +1,28 @@
+{
+  "aliasEntry": {
+    "typed": "drink, beverage",
+    "rendered": "drinkbeverage",
+    "persisted": [
+      "drinkbeverage"
+    ]
+  },
+  "filteredSelection": {
+    "selectedPreviewStillShown": 1,
+    "results": 0
+  },
+  "storyHasTextEditor": 0,
+  "visiblePrintText": "",
+  "failedReplacement": {
+    "priorStoryVisible": 0,
+    "toasts": [
+      [
+        "toasts.story_written_generating_illustrations",
+        "success"
+      ],
+      [
+        "toasts.story_generation_failedCould not parse story",
+        "error"
+      ]
+    ]
+  }
+}

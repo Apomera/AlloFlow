@@ -1,0 +1,167 @@
+{
+  "scenarios": [
+    "Divider polarity, lead reversal, selected-part probing, actual 3D node picking with either lead, same-node zero, unused-node uncertainty, shared overlay changes, inspection exit, disclosure persistence, and modal focus return",
+    "A known voltage difference within a floating circuit retains undetermined absolute node voltages; measuring from that section to reference remains unknown",
+    "Held/current differential readings and signed changes use the same lead pair, preserve switch sides and held references, share response playback, and avoid live-announcement flooding during playback"
+  ],
+  "examples": [],
+  "axe": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "page": 1280,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 1280,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "page": 1280,
+        "dialog": 1246,
+        "scroll": 1246
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "page": 390,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "page": 390,
+        "dialog": 372,
+        "scroll": 372
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "page": 320,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "page": 320,
+        "dialog": 302,
+        "scroll": 302
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "inline",
+      "violations": [],
+      "overflow": {
+        "width": 844,
+        "page": 844,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "mode": "expanded",
+      "violations": [],
+      "overflow": {
+        "width": 844,
+        "page": 844,
+        "dialog": 826,
+        "scroll": 826
+      }
+    }
+  ],
+  "resources": [],
+  "pixels": [
+    {
+      "name": "meter44-voltage-board",
+      "lit": 246974,
+      "canvasPixels": 619200,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-floating-board",
+      "lit": 247493,
+      "canvasPixels": 619200,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-inline-1280",
+      "lit": 100962,
+      "canvasPixels": 355120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-expanded-1280",
+      "lit": 246974,
+      "canvasPixels": 619200,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-inline-390",
+      "lit": 27469,
+      "canvasPixels": 69120,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-expanded-390",
+      "lit": 36629,
+      "canvasPixels": 95771.71875,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-inline-320",
+      "lit": 17343,
+      "canvasPixels": 50140,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "meter44-expanded-320",
+      "lit": 25284,
+      "canvasPixels": 63480,
+      "captures": 1,
+      "viewportCapture": true
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 14
+}

@@ -1,0 +1,508 @@
+rules_version = '2';
+// AlloFlow Firestore security rules — v1.0 draft (2026-07-01).
+//
+// Deploy: Firebase console → Firestore Database → Rules → paste → Publish.
+// BEFORE deploying, copy the currently published rules into
+// docs/firestore.rules.PREVIOUS so rollback is one paste away.
+// Full context + threat model: docs/LIVE_SESSION_HARDENING_PROPOSAL.md.
+// Deploy/rollback/smoke checklist: docs/FIRESTORE_RULES_DEPLOY.md.
+//
+// Design summary (matches the write paths verified in code on 2026-07-01):
+//   - Everything requires Firebase (anonymous) auth.
+//   - Session docs: created/deleted/edited freely ONLY by the creating
+//     teacher (hostId == auth.uid). Other participants may write exactly
+//     participant surfaces restricted to their own uid. Quiz fallbacks expose
+//     only fixed-shape responseReceipts metadata; raw answers remain host-only.
+//   - LIST on sessions is denied → codes can't be enumerated via queries.
+//   - WebRTC signaling docs: the guest owns their doc; the session host may
+//     merge only answer/iceFromHost and may delete post-connect.
+//   - Student CONTENT never appears in any of these paths by design (it is
+//     WebRTC peer-to-peer) — these rules protect metadata integrity.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function authed() { return request.auth != null; }
+
+    match /artifacts/{appId} {
+
+      // ── Live session documents ─────────────────────────────────────────
+      match /public/data/sessions/{code} {
+        function isHost() { return authed() && resource.data.hostId == request.auth.uid; }
+        function changedTop() {
+          return request.resource.data.diff(resource.data).affectedKeys();
+        }
+        function validOrganizerProgress(progress) {
+          return progress is map
+            && progress.keys().hasAll(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
+            && progress.keys().hasOnly(['activityId', 'type', 'gameType', 'status', 'score', 'correct', 'total', 'attempts', 'at'])
+            && progress.activityId is string
+            && progress.activityId.size() >= 8
+            && progress.activityId.size() <= 160
+            && progress.type in ['venn', 'tchart', 'cesort', 'pipeline', 'conceptmap', 'outline', 'fishbone', 'problemsolution', 'frayer', 'seethinkwonder', 'storymap', 'strandchallenge3d', 'conceptrecall3d', 'palacerecall']
+            && (progress.gameType == null || progress.gameType in ['vennDiagram', 'tchartSort', 'causeEffectSort', 'pipelineBuilder', 'conceptMapSort', 'outlineSort', 'fishboneSort', 'problemSolutionSort', 'frayerSort', 'seeThinkWonderSort', 'storyMapSort', 'strandChallenge3d', 'strandChallenge3dAttempt', 'conceptRecall', 'conceptRecallAttempt', 'palaceRecall', 'palaceRecallAttempt'])
+            && progress.status in ['loading', 'ready', 'failed', 'working', 'attempted', 'complete']
+            && progress.score is int && progress.score >= 0 && progress.score <= 100000
+            && progress.correct is int && progress.correct >= 0 && progress.correct <= 100000
+            && progress.total is int && progress.total >= 0 && progress.total <= 100000
+            && progress.attempts is int && progress.attempts >= 0 && progress.attempts <= 10000
+            && progress.at is number && progress.at > 0;
+        }
+        function validActivityProgress(progress) {
+          return progress is map
+            && progress.keys().hasAll(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
+            && progress.keys().hasOnly(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
+            && progress.version == 1
+            && progress.activityId is string
+            && progress.activityId.size() >= 1
+            && progress.activityId.size() <= 160
+            && progress.activityId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
+            && progress.kind is string
+            && progress.kind.size() >= 1
+            && progress.kind.size() <= 40
+            && progress.kind.matches('^[a-z][a-z0-9_]{0,39}$')
+            && progress.status in ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused']
+            && progress.completed is int && progress.completed >= 0 && progress.completed <= 100000
+            && progress.total is int && progress.total >= 0 && progress.total <= 100000
+            && progress.completed <= progress.total
+            && progress.at is number && progress.at > 0;
+        }
+        function validImageDelivery(receipt) {
+          return receipt is map
+            && receipt.keys().hasAll(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
+            && receipt.keys().hasOnly(['version', 'resourceId', 'status', 'loaded', 'total', 'omitted', 'assignmentAt', 'at'])
+            && receipt.version == 1
+            && receipt.resourceId is string && receipt.resourceId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
+            && receipt.status in ['loading', 'ready', 'failed']
+            && receipt.total is int && receipt.total >= 1 && receipt.total <= 100000
+            && receipt.loaded is int && receipt.loaded >= 0 && receipt.loaded <= receipt.total
+            && receipt.omitted is int && receipt.omitted >= 0 && receipt.omitted <= receipt.total - receipt.loaded
+            && (receipt.status != 'ready' || receipt.loaded == receipt.total)
+            && receipt.assignmentAt is int && receipt.assignmentAt >= 0 && receipt.assignmentAt <= 999999999999999
+            && receipt.at is int && receipt.at > 0 && receipt.at <= 999999999999999;
+        }
+        function rosterOnlySelf() {
+          // Students may only touch their OWN roster entry. Nested fields are
+          // deliberately not enumerated here (the client/mailbox validators
+          // enforce per-field shapes); current student-written fields include
+          // join metadata, xp, signal/signalAt, viewingResourceId/viewingAt,
+          // the Word Sounds wsProgress / wsProbeResult summaries
+          // (2026-07-12: structured numbers + pattern-checked ids only — see
+          // SESSION_TIER1_LEAVES in AlloFlowANTI.txt for justifications),
+          // and lastSeen (2026-07-16: ms-timestamp presence heartbeat, ~60s).
+          // hostPresence is host-owned lease metadata; students cannot alter top-level host fields.
+          return resource.data.get('roster', {})
+            .diff(request.resource.data.get('roster', {}))
+            .affectedKeys().hasOnly([request.auth.uid])
+            && (!('viewingResourceStatus' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', null) == null
+              || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', '')
+                in ['loading', 'ready', 'failed'])
+            && (!('organizerProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)))
+            && (!('activityProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validActivityProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('activityProgress', null)))
+            && (!('imageDelivery' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validImageDelivery(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('imageDelivery', null)));
+        }
+        function quizNestedOnlySelf(field) {
+          return !(field in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || resource.data.get('quizState', {}).get(field, {})
+                .diff(request.resource.data.get('quizState', {}).get(field, {}))
+                .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function validQuizResponseReceipt(receipt) {
+          return receipt is map
+            && receipt.keys().hasAll([
+              'activityId', 'questionIndex', 'submittedAt', 'flow'
+            ])
+            && receipt.keys().hasOnly([
+              'activityId', 'questionIndex', 'submittedAt', 'flow'
+            ])
+            && receipt.activityId is string
+            && receipt.activityId.size() >= 1
+            && receipt.activityId.size() <= 120
+            && receipt.questionIndex is int
+            && receipt.questionIndex >= 0
+            && receipt.questionIndex <= 9999
+            && receipt.submittedAt is number
+            && receipt.submittedAt > 0
+            && receipt.flow in ['assessment', 'presentation'];
+        }
+        function quizReceiptOnlySelf() {
+          return !('responseReceipts' in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || (quizNestedOnlySelf('responseReceipts')
+              && validQuizResponseReceipt(
+                request.resource.data.get('quizState', {})
+                  .get('responseReceipts', {})
+                  .get(request.auth.uid, null)
+              ));
+        }
+        function validQuizTeam(team) {
+          return team is string
+            && team in ['Red', 'Blue', 'Green', 'Yellow'];
+        }
+        function quizTeamOnlySelf() {
+          return !('teams' in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || (quizNestedOnlySelf('teams')
+              && validQuizTeam(
+                request.resource.data.get('quizState', {})
+                  .get('teams', {})
+                  .get(request.auth.uid, null)
+              ));
+        }
+        function quizOnlySelf() {
+          // Answers stay P2P. Students may publish only a bounded receipt that
+          // confirms submission without carrying an answer, plus their own
+          // class-vs-boss team slot. The host bypass above permits resets.
+          return resource.data.get('quizState', {})
+              .diff(request.resource.data.get('quizState', {}))
+              .affectedKeys().hasOnly(['responseReceipts', 'teams'])
+            && quizReceiptOnlySelf()
+            && quizTeamOnlySelf();
+        }
+        function reactionsOnlySelf() {
+          return resource.data.get('bridgeReactions', {})
+            .diff(request.resource.data.get('bridgeReactions', {}))
+            .affectedKeys().hasOnly([request.auth.uid]);
+        }
+        function democracyOnlySelfVote() {
+          // Adventure democracy mode: students cast democracy.votes.{their uid}
+          // (an option string from the scene's fixed choice list).
+          return resource.data.get('democracy', {})
+              .diff(request.resource.data.get('democracy', {}))
+              .affectedKeys().hasOnly(['votes'])
+            && resource.data.get('democracy', {}).get('isActive', false) == true
+            && resource.data.get('democracy', {}).get('phase', '') == 'voting'
+            && resource.data.get('democracy', {}).get('votes', {})
+              .diff(request.resource.data.get('democracy', {}).get('votes', {}))
+              .affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '') is string
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '').size() >= 1
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '').size() <= 500
+            && request.resource.data.get('democracy', {}).get('votes', {}).get(request.auth.uid, '')
+              in resource.data.get('democracy', {}).get('activeOptions', []);
+        }
+        function lessonBoardPlay() {
+          let old = resource.data.get('escapeRoomState', {});
+          let next = request.resource.data.get('escapeRoomState', {});
+          let oldAll = old.get('teamProgress', {}).get('All', {});
+          let nextAll = next.get('teamProgress', {}).get('All', {});
+          let run = oldAll.get('boardRuns', {}).get(old.get('attemptId', ''), {});
+          let step = run.get('steps', {}).get('t' + string(run.get('turn', 0)), {});
+          let changed = old.diff(next).affectedKeys();
+          let action = nextAll.get('boardActions', {}).get(request.auth.uid, {});
+          return changed.hasOnly(['teamProgress', 'teams'])
+            && old.get('teams', {}).diff(next.get('teams', {})).affectedKeys().hasOnly([request.auth.uid])
+            && (old.get('isActive', false) == true
+            && resource.data.get('roster', {}).keys().hasAny([request.auth.uid])
+            && (!('teams' in changed) || next.get('teams', {}).get(request.auth.uid, '') == 'All')
+            && (!('teamProgress' in changed) || (
+              old.get('isPaused', false) == false
+              && old.get('teams', {}).get(request.auth.uid, '') == 'All'
+              && old.get('teamProgress', {}).diff(next.get('teamProgress', {})).affectedKeys().hasOnly(['All'])
+              && oldAll.diff(nextAll).affectedKeys().hasOnly(['boardActions'])
+              && oldAll.get('boardActions', {}).diff(nextAll.get('boardActions', {})).affectedKeys().hasOnly([request.auth.uid])
+              && action is map && action.keys().hasAll(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.keys().hasOnly(['attemptId', 'turn', 'requestId', 'kind', 'targetId', 'value'])
+              && action.attemptId == old.get('attemptId', '!')
+              && action.attemptId is string && action.attemptId.matches('^[A-Za-z0-9_-]{1,128}$')
+              && !(action.attemptId in ['constructor', 'prototype', '__proto__'])
+              && action.turn is int && action.turn == run.get('turn', -1) && action.turn >= 0 && action.turn < 48
+              && action.requestId is string && action.requestId.matches('^[A-Za-z0-9_-]{1,128}$')
+              && !(action.requestId in ['constructor', 'prototype', '__proto__'])
+              && (step.get('retryRound', 0) == 0 || action.requestId.matches('^r' + string(step.get('retryRound', 0)) + '_[A-Za-z0-9_-]*$'))
+              && action.targetId is string && action.targetId.matches('^[a-z][a-z0-9_-]{0,39}$')
+              && !(action.targetId in ['constructor', 'prototype', '__proto__'])
+              && action.value is string
+              && ((action.kind == 'vote' && step.get('phase', '') == 'choose' && action.value == '')
+                || (action.kind == 'answer' && step.get('phase', '') == 'answer'
+                  && action.targetId == step.get('targetId', '') && action.value.matches('^[0-9,]{1,24}$')))
+            ))
+          );
+        }
+
+        function connectedEscapePlay() {
+          let old = resource.data.get('escapeRoomState', {});
+          let next = request.resource.data.get('escapeRoomState', {});
+          let oldAll = old.get('teamProgress', {}).get('All', {});
+          let nextAll = next.get('teamProgress', {}).get('All', {});
+          let changed = old.diff(next).affectedKeys();
+          let action = nextAll.get('connectedActions', {}).get(request.auth.uid, {});
+          return old.get('mode', '') != 'connected-room' || (
+            old.get('isActive', false) == true
+            && resource.data.get('roster', {}).keys().hasAny([request.auth.uid])
+            && (!('teams' in changed) || next.get('teams', {}).get(request.auth.uid, '') == 'All')
+            && (!('teamProgress' in changed) || (
+              old.get('isPaused', false) == false
+              && old.get('teams', {}).get(request.auth.uid, '') == 'All'
+              && old.get('teamProgress', {}).diff(next.get('teamProgress', {})).affectedKeys().hasOnly(['All'])
+              && oldAll.diff(nextAll).affectedKeys().hasOnly(['connectedActions'])
+              && oldAll.get('connectedActions', {}).diff(nextAll.get('connectedActions', {})).affectedKeys().hasOnly([request.auth.uid])
+              && action is map
+              && action.keys().hasOnly(['attemptId', 'requestId', 'nodeId', 'kind', 'value'])
+              && action.get('attemptId', '') == old.get('attemptId', '!')
+              && action.get('attemptId', '') is string
+              && action.get('attemptId', '').matches('^[A-Za-z0-9_-]{1,160}$')
+              && !(action.get('requestId', '') in ['__proto__', 'constructor', 'prototype'])
+              && !(action.get('nodeId', '') in ['constructor', 'prototype'])
+              && action.get('requestId', '') is string
+              && action.get('requestId', '').matches('^[A-Za-z0-9_-]{1,160}$')
+              && action.get('nodeId', '') is string
+              && action.get('nodeId', '').matches('^[a-z][a-z0-9_-]{0,39}$')
+              && action.get('kind', '') in ['interact', 'hint']
+              && action.get('value', false) is string
+              && action.get('value', '').matches('^[0-9,]{0,40}$')
+            ))
+          );
+        }
+        function escapeRoomTeamPlay() {
+          // Collaborative escape room: team progress is SHARED game state by
+          // design (non-PII enums/ids, session-scoped) — any roster member
+          // may update their team's progress; team-slot claims are per-uid.
+          let oldEscape = resource.data.get('escapeRoomState', {});
+          let nextEscape = request.resource.data.get('escapeRoomState', {});
+          let changedEscape = oldEscape.diff(nextEscape).affectedKeys();
+          let oldAll = oldEscape.get('teamProgress', {}).get('All', {});
+          let nextAll = nextEscape.get('teamProgress', {}).get('All', {});
+          let changedAll = oldAll.diff(nextAll).affectedKeys();
+          let nextAction = nextAll.get('questActions', {}).get(request.auth.uid, {});
+          let oldQuest = oldEscape.get('conceptQuest', {});
+          let turnScoped = oldQuest.get('actionSchema', 0) == 1;
+          return oldEscape
+              .diff(request.resource.data.get('escapeRoomState', {}))
+              .affectedKeys().hasOnly(['teamProgress', 'teams'])
+            && connectedEscapePlay()
+            && (
+              oldEscape.get('mode', '') != 'concept-quest'
+              || !('teamProgress' in changedEscape)
+              || (
+                changedAll.hasOnly(['questVotes', 'questVoteTurns', 'questActions', 'questRoles'])
+                && (!('questVotes' in changedAll)
+                  || (oldAll.get('questVotes', {}).diff(nextAll.get('questVotes', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questVotes', {}).get(request.auth.uid, '') is string
+                    && nextAll.get('questVotes', {}).get(request.auth.uid, '').matches('^room-[1-8]$')
+                    && (!turnScoped || (oldEscape.get('isActive', false) == true
+                      && oldEscape.get('isPaused', false) == false
+                      && oldQuest.get('phase', '') == 'explore'
+                      && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') == oldQuest.get('turnKey', '!')))))
+                && (!('questVoteTurns' in changedAll)
+                  || (oldAll.get('questVoteTurns', {}).diff(nextAll.get('questVoteTurns', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') is string
+                    && oldEscape.get('isActive', false) == true
+                    && oldEscape.get('isPaused', false) == false
+                    && oldQuest.get('phase', '') == 'explore'
+                    && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') == oldQuest.get('turnKey', '!')))
+                && (!('questRoles' in changedAll)
+                  || (oldAll.get('questRoles', {}).diff(nextAll.get('questRoles', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questRoles', {}).get(request.auth.uid, '') in ['analyst', 'explainer', 'connector', 'investigator']))
+                && (!('questActions' in changedAll)
+                  || (oldAll.get('questActions', {}).diff(nextAll.get('questActions', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAction is map
+                    && nextAction.keys().hasOnly(['abilityId', 'roleId', 'answerIndex', 'submittedAt', 'supportId', 'supportTargetUid', 'turnKey'])
+                    && nextAction.get('abilityId', '') in ['analyze', 'explain', 'connect', 'question']
+                    && nextAction.get('roleId', '') in ['', 'analyst', 'explainer', 'connector', 'investigator']
+                    && nextAction.get('supportId', '') in ['', 'clarify', 'guard', 'encourage']
+                    && nextAction.get('supportTargetUid', '') is string
+                    && ((nextAction.get('supportId', '') == '' && nextAction.get('supportTargetUid', '') == '')
+                      || (nextAction.get('supportId', '') != ''
+                        && nextAction.get('supportTargetUid', '').matches('^[A-Za-z0-9_-]{1,128}$')
+                        && nextAction.get('supportTargetUid', '') != request.auth.uid))
+                    && nextAction.get('answerIndex', -1) is int
+                    && nextAction.get('answerIndex', -1) >= 0
+                    && nextAction.get('answerIndex', -1) <= 5
+                    && nextAction.get('submittedAt', 0) is number
+                    && nextAction.get('submittedAt', 0) > 0
+                    && nextAction.get('turnKey', '') is string
+                    && nextAction.get('turnKey', '').size() <= 160
+                    && (!turnScoped || (oldEscape.get('isActive', false) == true
+                      && oldEscape.get('isPaused', false) == false
+                      && oldQuest.get('phase', '') == 'battle'
+                      && nextAction.get('turnKey', '') == oldQuest.get('turnKey', '!')))))
+              )
+            )
+            && (
+              !('teams' in changedEscape)
+              || (oldEscape.get('teams', {}).diff(nextEscape.get('teams', {})).affectedKeys().hasOnly([request.auth.uid])
+                && (oldEscape.get('mode', '') != 'concept-quest'
+                  || nextEscape.get('teams', {}).get(request.auth.uid, '') == 'All'))
+            );
+        }
+
+        // Students need GET by code; LIST would allow code enumeration.
+        allow get: if authed()
+          && (resource.data.get('kind', '') != 'assignment'
+            || (resource.data.expiresAt is timestamp && resource.data.expiresAt > request.time));
+        allow list: if false;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid
+          && (request.resource.data.get('kind', '') != 'assignment'
+            || (request.resource.data.expiresAt is timestamp
+              && request.resource.data.expiresAt > request.time
+              && request.resource.data.expiresAt <= request.time + duration.value(31, 'd')));
+        allow delete: if isHost();
+        allow update: if isHost() || (
+          authed()
+          && changedTop().hasOnly(['roster', 'quizState', 'bridgeReactions', 'democracy', 'escapeRoomState'])
+          && (!('roster' in changedTop()) || rosterOnlySelf())
+          && (!('quizState' in changedTop()) || quizOnlySelf())
+          && (!('bridgeReactions' in changedTop()) || reactionsOnlySelf())
+          && (!('democracy' in changedTop()) || democracyOnlySelfVote())
+          && (!('escapeRoomState' in changedTop()) || (resource.data.get('escapeRoomState', {}).get('mode', '') == 'lesson-board' ? lessonBoardPlay() : escapeRoomTeamPlay()))
+        );
+      }
+
+      // ── WebRTC signaling handshakes (polling + pictionary) ─────────────
+      // Docs live at {signaling|pictionary-signaling}/{code}/peers/{peerUid}
+      // and hold only SDP offers/answers, ICE candidates, and a codename;
+      // both sides delete the doc ~750ms after the connection opens.
+      match /public/data/{signalingCollection}/{code}/peers/{peerUid} {
+        function isSignaling() {
+          return signalingCollection == 'signaling'
+              || signalingCollection == 'pictionary-signaling'
+              || signalingCollection == 'quiz-signaling';
+        }
+        function isSessionHost() {
+          return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code)).data.hostId == request.auth.uid;
+        }
+        allow read: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow create: if isSignaling() && authed() && request.auth.uid == peerUid;
+        allow delete: if isSignaling() && authed()
+          && (request.auth.uid == peerUid || isSessionHost());
+        allow update: if isSignaling() && authed() && (
+          (request.auth.uid == peerUid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest']))
+          || (isSessionHost()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['answer', 'iceFromHost']))
+        );
+      }
+
+      // ── Chunked session assets (teacher resource manifest + chunks) ────
+      // Read by students during resource hydration; written by teachers.
+      // Authed-write is a known soft spot (see proposal §2.2.2) — tightening
+      // requires binding assets to a session host, a follow-up code change.
+      match /public/data/session_assets/{assetId} {
+        function isOwner() {
+          return authed() && resource.data.ownerUid == request.auth.uid;
+        }
+        function parentPath() {
+          return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(resource.data.parentId);
+        }
+        function validCreate() {
+          return authed()
+            && request.resource.data.keys().hasAll([
+              'kind', 'ownerUid', 'parentId', 'parentKind', 'createdAt', 'expiresAt'
+            ])
+            && request.resource.data.ownerUid == request.auth.uid
+            && request.resource.data.parentId is string
+            && request.resource.data.parentId.size() >= 5
+            && request.resource.data.parentId.size() <= 80
+            && request.resource.data.parentKind in ['live', 'assignment']
+            && request.resource.data.createdAt is timestamp
+            && request.resource.data.createdAt <= request.time
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt <= request.time + duration.value(31, 'd');
+        }
+        allow get: if isOwner() || (
+          authed()
+          && resource.data.expiresAt is timestamp
+          && resource.data.expiresAt > request.time
+          && exists(parentPath())
+          && get(parentPath()).data.hostId == resource.data.ownerUid
+        );
+        allow list: if false;
+        allow create: if validCreate();
+        allow update: if isOwner()
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.parentId == resource.data.parentId
+          && request.resource.data.parentKind == resource.data.parentKind
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt <= resource.data.expiresAt;
+        allow delete: if isOwner();
+      }
+
+      // ── Driving Questions Boards ───────────────────────────────────────
+      // Phase 1b of DRIVING_QUESTIONS_BOARD_SPEC.md. Items live in a
+      // SUBCOLLECTION rather than inside the board doc, because Firestore rules
+      // gate whole documents: a single doc holding held + approved questions
+      // could not hide the held ones from a participant permitted to read it
+      // (spec §10.2). The mailbox keeps its single-doc layout and filters
+      // server-side; both must reach the same answer, which the shared
+      // conformance suite checks.
+      match /public/data/boards/{boardId} {
+        function boardDoc() { return resource.data; }
+        function isBoardHost() { return authed() && resource.data.hostId == request.auth.uid; }
+
+        // The config (prompt, policy) is readable by anyone who joined; the
+        // questions themselves are gated per-item below.
+        allow get: if authed();
+        allow list: if false;
+        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow update, delete: if isBoardHost();
+
+        match /items/{itemId} {
+          function board() {
+            return get(/databases/$(database)/documents/artifacts/$(appId)/public/data/boards/$(boardId)).data;
+          }
+          function isHost() { return authed() && board().hostId == request.auth.uid; }
+          function isOwn() { return authed() && resource.data.uid == request.auth.uid; }
+          function boardOpen() {
+            return board().expiresAt is timestamp && board().expiresAt > request.time;
+          }
+
+          // HELD_HIDDEN_FROM_PEERS + OWN_ALWAYS_VISIBLE + HOST_SEES_ALL.
+          // NOTE for `list`: Firestore evaluates list against the QUERY, not each
+          // document, so a participant MUST query with where(status==approved) or
+          // where(uid==self). The adapter issues exactly those two queries and
+          // merges; an unconstrained participant query is denied by design.
+          allow get, list: if isHost() || isOwn() || resource.data.status == "approved";
+
+          // AUTHORSHIP_NOT_FORGEABLE — uid must be the caller, and the initial
+          // status must match the board policy so a student cannot self-approve
+          // onto a teacher_review board. TEXT_IS_SANITIZED is bounded here;
+          // exact normalization stays in the contract.
+          allow create: if authed()
+            && boardOpen()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 200
+            && request.resource.data.answered == false
+            && request.resource.data.status == (board().revealPolicy == "auto_publish" ? "approved" : "pending");
+
+          // STATUS_IS_HOST_ONLY — status and answered are teacher-only, and a
+          // participant cannot edit their question after posting (which would
+          // otherwise let approved text be swapped for something else).
+          allow update, delete: if isHost();
+        }
+      }
+
+      // ── Cross-session concept mastery — RETIRED 2026-07-01 ─────────────
+      // The app no longer writes here (mastery is device-local; teachers get
+      // it via live P2P snapshots + student project files). Kept readable/
+      // self-writable only for clients running pre-migration builds; safe to
+      // flip to `allow read, write: if false;` once all surfaces are updated,
+      // and legacy docs can be bulk-deleted.
+      match /public/data/conceptMastery/{uid} {
+        allow read, write: if false;
+      }
+
+      // ── Per-user private data (teacher history, adventure images) ──────
+      match /users/{uid}/{document=**} {
+        allow read, write: if authed() && request.auth.uid == uid;
+      }
+    }
+
+    // Default deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

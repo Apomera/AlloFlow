@@ -72,10 +72,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for evoLab 1`] = `
 {
-  "buttons": 32,
+  "buttons": 33,
   "inputs": 0,
-  "lengthBucket": 215,
-  "sha": "5609326fa92f7821",
+  "lengthBucket": 217,
+  "sha": "863c9af4b21817c4",
   "svgs": 0,
 }
 `;

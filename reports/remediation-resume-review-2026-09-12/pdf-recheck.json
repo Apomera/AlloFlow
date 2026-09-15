@@ -1,0 +1,261 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/remediation-resume-review-2026-09-12/pdf-recheck-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "document_export_at_acceptance.spec.ts",
+      "file": "document_export_at_acceptance.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "education HTML/PDF exports expose expected semantics and keyboard behavior; human AT stays not run",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 29479,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"artifact\": \"education-reading-html\",\u001b[39m\n\u001b[31m+     \"id\": \"inspection-executed\",\u001b[39m\n\u001b[31m+     \"observed\": \"locator.evaluate: Timeout 2500ms exceeded.\u001b[39m\n\u001b[31m+ Call log:\u001b[39m\n\u001b[31m+ \u001b[2m  - waiting for getByRole('link', { name: 'Skip to main content', exact: true })\u001b[22m\u001b[39m\n\u001b[31m+ \u001b[2m    - locator resolved to visible <a class=\\\"skip-link\\\" href=\\\"#main-content\\\" title=\\\"Skip to main content\\\" aria-label=\\\"Skip to main content\\\">Skip to main content</a>\u001b[22m\u001b[39m\n\u001b[31m+ \",\u001b[39m\n\u001b[31m+     \"status\": \"unavailable\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"artifact\": \"education-reading-html\",\u001b[39m\n\u001b[31m+     \"id\": \"inspection-executed\",\u001b[39m\n\u001b[31m+     \"observed\": \"locator.evaluate: Timeout 2500ms exceeded.\u001b[39m\n\u001b[31m+ Call log:\u001b[39m\n\u001b[31m+ \u001b[2m  - waiting for getByRole('link', { name: 'Skip to main content', exact: true })\u001b[22m\u001b[39m\n\u001b[31m+ \u001b[2m    - locator resolved to visible <a class=\\\"skip-link\\\" href=\\\"#main-content\\\" title=\\\"Skip to main content\\\" aria-label=\\\"Skip to main content\\\">Skip to main content</a>\u001b[22m\u001b[39m\n\u001b[31m+ \",\u001b[39m\n\u001b[31m+     \"status\": \"unavailable\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_at_acceptance.spec.ts:21:181",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_at_acceptance.spec.ts",
+                      "column": 181,
+                      "line": 21
+                    },
+                    "snippet": "  19 |   fs.writeFileSync(testInfo.outputPath('manual-results.template.json'), JSON.stringify(manualTemplate(report), null, 2));\n  20 |   expect(report.artifacts).toHaveLength(5);\n> 21 |   expect(report.artifacts.flatMap((artifact: any) => artifact.checks.filter((check: any) => check.status !== 'passed').map((check: any) => ({ artifact: artifact.id, ...check })))).toEqual([]);\n     |                                                                                                                                                                                     ^\n  22 |   expect(report.automatedStatus).toBe('passed');\n  23 |   expect(report.humanAcceptance).toMatchObject({ status: 'not-run', releaseDecision: 'pending-human-at' });\n  24 |   for (const artifact of report.artifacts) {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_at_acceptance.spec.ts",
+                        "column": 181,
+                        "line": 21
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  -  1\u001b[39m\n\u001b[31m+ Received  + 12\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   Object {\u001b[39m\n\u001b[31m+     \"artifact\": \"education-reading-html\",\u001b[39m\n\u001b[31m+     \"id\": \"inspection-executed\",\u001b[39m\n\u001b[31m+     \"observed\": \"locator.evaluate: Timeout 2500ms exceeded.\u001b[39m\n\u001b[31m+ Call log:\u001b[39m\n\u001b[31m+ \u001b[2m  - waiting for getByRole('link', { name: 'Skip to main content', exact: true })\u001b[22m\u001b[39m\n\u001b[31m+ \u001b[2m    - locator resolved to visible <a class=\\\"skip-link\\\" href=\\\"#main-content\\\" title=\\\"Skip to main content\\\" aria-label=\\\"Skip to main content\\\">Skip to main content</a>\u001b[22m\u001b[39m\n\u001b[31m+ \",\u001b[39m\n\u001b[31m+     \"status\": \"unavailable\",\u001b[39m\n\u001b[31m+   },\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  19 |   fs.writeFileSync(testInfo.outputPath('manual-results.template.json'), JSON.stringify(manualTemplate(report), null, 2));\n  20 |   expect(report.artifacts).toHaveLength(5);\n> 21 |   expect(report.artifacts.flatMap((artifact: any) => artifact.checks.filter((check: any) => check.status !== 'passed').map((check: any) => ({ artifact: artifact.id, ...check })))).toEqual([]);\n     |                                                                                                                                                                                     ^\n  22 |   expect(report.automatedStatus).toBe('passed');\n  23 |   expect(report.humanAcceptance).toMatchObject({ status: 'not-run', releaseDecision: 'pending-human-at' });\n  24 |   for (const artifact of report.artifacts) {\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_at_acceptance.spec.ts:21:181"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-12T18:34:27.735Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-resume-review-2026-09-12\\pdf-recheck-artifacts\\document_export_at_accepta-ac6a3-vior-human-AT-stays-not-run-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-resume-review-2026-09-12\\pdf-recheck-artifacts\\document_export_at_accepta-ac6a3-vior-human-AT-stays-not-run-chromium\\test-failed-2.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-resume-review-2026-09-12\\pdf-recheck-artifacts\\document_export_at_accepta-ac6a3-vior-human-AT-stays-not-run-chromium\\test-failed-3.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-resume-review-2026-09-12\\pdf-recheck-artifacts\\document_export_at_accepta-ac6a3-vior-human-AT-stays-not-run-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-resume-review-2026-09-12\\pdf-recheck-artifacts\\document_export_at_accepta-ac6a3-vior-human-AT-stays-not-run-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\document_export_at_acceptance.spec.ts",
+                    "column": 181,
+                    "line": 21
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-b91af4ce69da52d469c6",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 16,
+          "column": 5
+        },
+        {
+          "title": "a heading demotion and positive tabindex fail the keyboard/semantic acceptance contract",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-12T18:35:01.622Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-466bb066bee16b008f59",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 31,
+          "column": 5
+        },
+        {
+          "title": "a tagged PDF with changed table values fails cell and reading-order expectations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-12T18:35:01.622Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-3903a90ffed1404bdfeb",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 48,
+          "column": 5
+        },
+        {
+          "title": "searchable but untagged PDF text does not establish tagged reading-order acceptance",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-12T18:35:01.623Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "9adb0dfc7bd3d4235ed9-5600e10ebe4c48bc37fe",
+          "file": "document_export_at_acceptance.spec.ts",
+          "line": 60,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T18:34:22.202Z",
+    "duration": 39918.759000000005,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

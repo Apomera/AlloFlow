@@ -1,0 +1,4 @@
+const fs=require('fs'),crypto=require('crypto');const result={modules:{}};const host=fs.readFileSync('AlloFlowANTI.txt','utf8');
+for(const file of ['view_simplified_module.js','content_engine_module.js','app_styles_module.js']){const bytes=fs.readFileSync(file);if(!bytes.equals(fs.readFileSync('desktop/web-app/public/'+file)))throw Error('Mirror mismatch '+file);const hash=crypto.createHash('sha256').update(bytes).digest('hex').slice(0,8);if(!host.includes(file+'?v='+hash))throw Error('Pin mismatch '+file);result.modules[file]={hash,mirrorMatches:true,canonicalPinMatches:true};}
+if(!fs.readFileSync('ui_strings.js').equals(fs.readFileSync('desktop/web-app/public/ui_strings.js')))throw Error('Catalog mismatch');result.catalogMirrorMatches=true;
+fs.writeFileSync('reports/adapted-word-help-2026-09-12/build-verification.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result));

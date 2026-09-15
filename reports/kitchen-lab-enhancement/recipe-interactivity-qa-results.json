@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "Direct 3D pot, pan, board, and plate selection opens the matching workspace; camera dragging does not select or record a cooking action.",
+    "A complete recipe succeeds through the scene-side cooking actions and heat controls, retaining the same assessment and action guards.",
+    "Keyboard selection, synchronized burner controls, protected replay, and 320px text-mode actions remain usable.",
+    "A touch tap on the 3D pan selects the pan workspace."
+  ],
+  "accessibility": [
+    {
+      "label": "Interactive 3D scene and selected-pan actions",
+      "issues": []
+    },
+    {
+      "label": "320px interactive bench in text view",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

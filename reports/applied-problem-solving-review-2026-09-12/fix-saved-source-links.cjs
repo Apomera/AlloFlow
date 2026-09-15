@@ -1,0 +1,7 @@
+const fs=require('fs');const p='applied_challenge_source.jsx';let s=fs.readFileSync(p,'utf8');
+const old="  return normalizeAppliedChallengeSearchResults({ results: _apsString(evidence, 2200).split(/\\r?\\n/).map(line => line.trim()).filter(line => /^https?:\\/\\/\\S+$/i.test(line)).map(url => ({ url })) }, '');";
+if(!s.includes(old))throw Error('Source link helper missing');
+s=s.replace(old,"  const seen = new Set();\n  return _apsString(evidence, 2200).split(/\\r?\\n/).map(line => line.trim()).filter(line => /^https?:\\/\\/\\S+$/i.test(line)).flatMap(url => normalizeAppliedChallengeSearchResults({ results: [{ url }] }, '')).filter(link => { if (seen.has(link.url)) return false; seen.add(link.url); return true; });");fs.writeFileSync(p,s);
+const tests='tests/applied_challenge_source_workflow.test.js';s=fs.readFileSync(tests,'utf8');
+const point="describe('Source references preserve learner ownership',()=>{";
+s=s.replace(point,point+"\n it('keeps links and duplicate protection across multiple batches of search results',()=>{const evidence=Array.from({length:7},(_,i)=>'https://example.org/source-'+i).join('\\n');expect(api._testing.appliedChallengeEvidenceLinks(evidence)).toHaveLength(7);expect(api._testing.appliedChallengeAttachReference([{...ownRow(),evidence}],{...source,url:'https://example.org/source-6'},'own','new').reason).toBe('duplicate');});");fs.writeFileSync(tests,s);

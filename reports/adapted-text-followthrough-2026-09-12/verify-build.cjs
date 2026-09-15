@@ -1,0 +1,3 @@
+const fs=require('fs'),crypto=require('crypto');const modules={};
+for(const f of ['view_simplified_module.js','app_styles_module.js']){const data=fs.readFileSync(f);if(!data.equals(fs.readFileSync('desktop/web-app/public/'+f)))throw Error('Mirror drift '+f);const hash=crypto.createHash('sha256').update(data).digest('hex').slice(0,8);if(!fs.readFileSync('AlloFlowANTI.txt','utf8').includes(f+'?v='+hash))throw Error('Stale pin '+f);modules[f]={hash,mirrorMatches:true,canonicalPinMatches:true};}
+fs.writeFileSync('reports/adapted-text-followthrough-2026-09-12/build-verification.json',JSON.stringify({modules},null,2));console.log(JSON.stringify({modules}));

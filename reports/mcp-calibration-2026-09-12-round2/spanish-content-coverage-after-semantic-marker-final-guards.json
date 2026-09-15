@@ -1,0 +1,212 @@
+{
+  "schema": 1,
+  "evidenceClass": "Targeted deterministic post-fix check of unchanged stored live HTML; not a new live model pilot or replacement official verdict.",
+  "createdAt": "2026-09-13T03:01:13.702Z",
+  "browser": "148.0.7778.96",
+  "helper": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\mcp\\remediation_narration_plan.cjs",
+    "sha256": "4cbe3774451d91df011db46ad6bc7d84ea05803d802de14ced682fa87ce0f9c3"
+  },
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-extract-result.json",
+    "sha256": "8b45ca972a4b17e15dae0a2b6270187ca6dd4be12e97a191a76bd7c7ba43d92d",
+    "textSha256": "ba69fcf03d1eb804e49299e17d044ce3ac0502d64f9639d1421c3a13331a0bbc"
+  },
+  "unchangedArtifacts": {
+    "html": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0",
+    "report": "7817e5e9971162422c344bc09bb82a7abe36dd7c5689fff8c002508df03fe453"
+  },
+  "originalOfficialCoverage": {
+    "status": "review_required",
+    "reviewRequired": true,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 1959,
+    "outputTokens": 1957,
+    "matchedTokens": 1927,
+    "missingTokens": 32,
+    "tokenRecall": 0.9837,
+    "missingPassages": [
+      {
+        "sourceUnit": 18,
+        "startToken": 680,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 19,
+        "startToken": 720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 21,
+        "startToken": 800,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 22,
+        "startToken": 840,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 23,
+        "startToken": 880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 24,
+        "startToken": 920,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 25,
+        "startToken": 960,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 26,
+        "startToken": 1000,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 27,
+        "startToken": 1040,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 30,
+        "startToken": 1160,
+        "expectedTokens": 40,
+        "missingTokens": 3
+      },
+      {
+        "sourceUnit": 31,
+        "startToken": 1200,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 34,
+        "startToken": 1320,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 35,
+        "startToken": 1360,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 36,
+        "startToken": 1400,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 37,
+        "startToken": 1440,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 39,
+        "startToken": 1520,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 40,
+        "startToken": 1560,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 41,
+        "startToken": 1600,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 43,
+        "startToken": 1680,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 44,
+        "startToken": 1720,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      },
+      {
+        "sourceUnit": 46,
+        "startToken": 1800,
+        "expectedTokens": 40,
+        "missingTokens": 2
+      },
+      {
+        "sourceUnit": 48,
+        "startToken": 1880,
+        "expectedTokens": 40,
+        "missingTokens": 1
+      }
+    ],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "pdfjs",
+      "pagesExamined": 9,
+      "emptyPageCandidates": 0,
+      "pageErrorCount": 0,
+      "lowConfidencePageCount": 0,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank.",
+    "sourceSha256": "bdb502756316c23f418f0f2a5a4855ebefc08b6f67e05028f187cd6e3357268e",
+    "htmlSha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0"
+  },
+  "postFixCoverage": {
+    "status": "matched",
+    "reviewRequired": false,
+    "method": "normalized-token-occurrence-check",
+    "sourceTokens": 1959,
+    "outputTokens": 1989,
+    "matchedTokens": 1959,
+    "missingTokens": 0,
+    "tokenRecall": 1,
+    "missingPassages": [],
+    "missingPassagesTruncated": 0,
+    "extraction": {
+      "method": "frozen-production-extract",
+      "pagesExamined": null,
+      "emptyPageCandidates": null,
+      "pageErrorCount": null,
+      "lowConfidencePageCount": null,
+      "errorPages": [],
+      "lowConfidencePages": []
+    },
+    "scope": {
+      "pageRange": null,
+      "wholeDocument": true
+    },
+    "note": "Compares extracted source token occurrences with HTML. Missing tokens can reflect omissions or rewording and require review. A match does not establish reading order, semantic fidelity, correct OCR or visual coverage. Empty page candidates may be intentionally blank."
+  },
+  "originalVerdictPreserved": {
+    "level": "review",
+    "reviewCount": 3,
+    "cautionCount": 0
+  },
+  "claimLimit": "Checks conservative lexical retention only. Does not establish WCAG conformance, screen-reader acceptance, OCR accuracy or semantic reading order."
+}

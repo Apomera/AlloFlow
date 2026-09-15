@@ -1,0 +1,112 @@
+{
+  "sha256": "1e6e7959dc78f014589afed116727368ed41a7afbfd816e3c8ee43260c72b125",
+  "mirrorIdentical": true,
+  "reviewedClinicalNotes": 13,
+  "truncatedInQuiz": 13,
+  "reviewed": [
+    {
+      "id": "femur",
+      "name": "Femur",
+      "source": "https://www.orthoinfo.org/diseases--conditions/hip-fractures/",
+      "full": "A femoral-neck fracture can damage vessels supplying the femoral head, increasing the risk of bone injury from reduced blood flow. Risk and recovery depend on fracture pattern, displacement, treatment, and the person's health; one mortality percentage is not a prognosis for an individual.",
+      "quizFeedback": "A femoral-neck fracture can damage vessels supplying the femoral head, increasing the risk of bone injury from reduced blood flow.",
+      "truncated": true
+    },
+    {
+      "id": "quads",
+      "name": "Quadriceps Femoris",
+      "source": "https://www.orthoinfo.org/diseases--conditions/quadriceps-tendon-tear/",
+      "full": "The quadriceps tendon and patellar tendon transmit force through the knee's extensor mechanism. A complete tendon rupture can prevent active knee extension. Anterior knee pain alone does not establish a tendon rupture or a single-muscle cause.",
+      "quizFeedback": "The quadriceps tendon and patellar tendon transmit force through the knee's extensor mechanism.",
+      "truncated": true
+    },
+    {
+      "id": "rotator_cuff",
+      "name": "Rotator Cuff (SITS)",
+      "source": "https://www.orthoinfo.org/diseases--conditions/rotator-cuff-tears",
+      "full": "Rotator-cuff tendons help transmit muscle force and stabilize the shoulder. A tear may produce pain or weakness, but pain with arm elevation is not specific to a tear. History, examination, and appropriate imaging are interpreted together.",
+      "quizFeedback": "Rotator-cuff tendons help transmit muscle force and stabilize the shoulder.",
+      "truncated": true
+    },
+    {
+      "id": "aorta",
+      "name": "Aorta",
+      "source": "https://www.acc.org/Guidelines/Guidelines/2022/11/02/14/08/Aortic-Disease",
+      "full": "An aortic aneurysm is an abnormal enlargement; a dissection separates layers of the aortic wall. Repair decisions depend on the affected segment, size, growth, symptoms, and patient factors. A single diameter cutoff does not apply to every aneurysm. Suspected acute dissection is an emergency.",
+      "quizFeedback": "An aortic aneurysm is an abnormal enlargement; a dissection separates layers of the aortic wall.",
+      "truncated": true
+    },
+    {
+      "id": "carotid",
+      "name": "Carotid Arteries",
+      "source": "https://esvs.org/wp-content/uploads/2023/03/ESVS-2023-Carotid-guidelines.pdf",
+      "full": "Carotid plaque can narrow the artery or release material that obstructs vessels supplying the brain. Stenosis can increase stroke risk, but does not mean a stroke has occurred. Decisions about intervention depend on symptoms, severity, expected benefit, and procedural risk, rather than a percentage alone.",
+      "quizFeedback": "Carotid plaque can narrow the artery or release material that obstructs vessels supplying the brain.",
+      "truncated": true
+    },
+    {
+      "id": "hippocampus",
+      "name": "Hippocampus",
+      "source": "https://www.nia.nih.gov/health/alzheimers-symptoms-and-diagnosis/how-biomarkers-help-diagnose-dementia",
+      "full": "Hippocampal injury can impair formation of new memories. Reduced hippocampal volume may occur in several conditions; MRI shrinkage alone does not establish Alzheimer's disease. Clinical history, cognitive assessment, and other appropriate investigations help interpret an imaging finding.",
+      "quizFeedback": "Hippocampal injury can impair formation of new memories. Reduced hippocampal volume may occur in several conditions;",
+      "truncated": true
+    },
+    {
+      "id": "spleen",
+      "name": "Spleen",
+      "source": "https://doi.org/10.1186/s13017-022-00457-5",
+      "full": "The spleen is richly supplied with blood, so traumatic injury can cause serious bleeding. Some stable patients can be managed with monitoring and sometimes embolization, while others need surgery. Management depends on circulation, injury findings, and available expertise; injury does not automatically mean splenectomy.",
+      "quizFeedback": "The spleen is richly supplied with blood, so traumatic injury can cause serious bleeding.",
+      "truncated": true
+    },
+    {
+      "id": "kidneys",
+      "name": "Kidneys",
+      "source": "https://kdigo.org/wp-content/uploads/2024/03/KDIGO-2024-CKD-Guideline.pdf",
+      "full": "Kidney disease can disrupt filtration, fluid balance, electrolytes, and acid-base regulation. Dialysis is started using a combined assessment of symptoms, signs, laboratory findings, kidney function, and the person's preferences. A low filtration estimate alone is not an automatic start rule.",
+      "quizFeedback": "Kidney disease can disrupt filtration, fluid balance, electrolytes, and acid-base regulation.",
+      "truncated": true
+    },
+    {
+      "id": "pancreas",
+      "name": "Pancreas",
+      "source": "https://www.cancer.gov/types/pancreatic/patient/pancreatic-treatment-pdq",
+      "full": "Pancreatic disease can affect enzyme-producing tissue, ducts, or endocrine cells. In pancreatic cancer, outlook and treatment depend on cancer type, extent, resectability, and the person's health. A single survival percentage cannot describe every pancreatic tumor or predict an individual's outcome.",
+      "quizFeedback": "Pancreatic disease can affect enzyme-producing tissue, ducts, or endocrine cells.",
+      "truncated": true
+    },
+    {
+      "id": "sweat_glands",
+      "name": "Sweat Glands",
+      "source": "https://www.cdc.gov/niosh/heat-stress/about/illnesses.html",
+      "full": "Sweat evaporation helps remove heat, but cooling also depends on conditions such as humidity and airflow. Heat stroke can occur with dry skin or profuse sweating. Sweating does not rule it out; suspected heat stroke with altered mental status is an emergency.",
+      "quizFeedback": "Sweat evaporation helps remove heat, but cooling also depends on conditions such as humidity and airflow.",
+      "truncated": true
+    },
+    {
+      "id": "testes_repro",
+      "name": "Testes",
+      "source": "https://www.auanet.org/documents/education/Acute-Scrotum.pdf",
+      "full": "Testicular torsion twists the spermatic cord and can compromise blood flow. Sudden severe testicular pain requires urgent assessment. Tissue injury risk rises with delay, but a fixed hour limit must not be used to postpone care or assume that assessment is no longer worthwhile.",
+      "quizFeedback": "Testicular torsion twists the spermatic cord and can compromise blood flow. Sudden severe testicular pain requires urgent assessment.",
+      "truncated": true
+    },
+    {
+      "id": "epididymis",
+      "name": "Epididymis",
+      "source": "https://www.cdc.gov/std/treatment-guidelines/epididymitis.htm",
+      "full": "Epididymal inflammation can cause scrotal pain and swelling, which can overlap with testicular torsion. Pain relief when the scrotum is elevated must not be used by itself to exclude torsion. Sudden severe pain or an uncertain diagnosis needs urgent clinical assessment.",
+      "quizFeedback": "Epididymal inflammation can cause scrotal pain and swelling, which can overlap with testicular torsion.",
+      "truncated": true
+    },
+    {
+      "id": "prostate",
+      "name": "Prostate Gland",
+      "source": "https://www.cancer.gov/types/prostate/psa-fact-sheet",
+      "full": "Benign prostate enlargement can affect urine flow because the gland surrounds the urethra. PSA can rise with cancer and with noncancerous conditions. An elevated PSA or an examination finding prompts interpretation and further evaluation; neither alone confirms prostate cancer.",
+      "quizFeedback": "Benign prostate enlargement can affect urine flow because the gland surrounds the urethra.",
+      "truncated": true
+    }
+  ]
+}

@@ -426,7 +426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
   // ── Audio System (auto-injected) ──
   var _beeAC = null;
-  function getBeeAC() { if (!_beeAC) { try { _beeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_beeAC && _beeAC.state === "suspended") { try { _beeAC.resume(); } catch(e) {} } return _beeAC; }
+  function getBeeAC() { if (!_beeAC) { try { _beeAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_beeAC && _beeAC.state === "suspended") { try { _beeAC.resume(); } catch(e) {} } return _beeAC; }
   function beeTone(f,d,tp,v) { var ac = getBeeAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxBeeBuzz() { beeTone(220,0.1,"sawtooth",0.04); }
   function sfxBeeCollect() { beeTone(660,0.06,"sine",0.06); }
@@ -7061,7 +7061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function exportColonyReport() {
           var report = buildColonyReport();
           if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(report).then(function() {
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function() {
               if (addToast) addToast('📋 Colony report copied to clipboard! Paste into a doc to share.', 'success');
               if (awardStemXP) awardStemXP('beehive', 10, 'Exported colony report');
             }, function() {
@@ -21964,7 +21964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               try { if (world.renderer._alloComposer.renderTarget2) world.renderer._alloComposer.renderTarget2.dispose(); } catch (_) {}
               world.renderer._alloComposer = null; world.renderer._alloBloom = null;
             }
-            if (world.renderer) { try { if (world.renderer.renderLists && world.renderer.renderLists.dispose) world.renderer.renderLists.dispose(); world.renderer.dispose(); } catch (_) {} }
+            if (world.renderer) { try { if (world.renderer.renderLists && world.renderer.renderLists.dispose) world.renderer.renderLists.dispose(); world.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(world.renderer); } catch (_) {} }
             if (world.canvas && world.canvas.parentNode) world.canvas.parentNode.removeChild(world.canvas);
             threeWorld = null;
           }
@@ -27189,7 +27189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             });
           };
           if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(portfolio).then(function() {
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(portfolio).then(function() {
               if (addToast) addToast('Science Notebook portfolio copied to clipboard.', 'success');
               announceBee('Science Notebook portfolio copied to clipboard.', false);
             }, showManualCopy);
@@ -27960,7 +27960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               announceBee('Experiment evidence is ready in the manual copy panel.', false);
             };
             if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(report).then(function() {
+              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function() {
                 if (addToast) addToast('Experiment evidence record copied to clipboard.', 'success');
                 announceBee('Experiment evidence record copied to clipboard.', false);
               }, showManualCopy);

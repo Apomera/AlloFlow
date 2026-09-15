@@ -1,0 +1,59 @@
+      function cancelSelectionPreview(){setSelectionEditPreview(null);setSelectionEditNotice('');}
+      function previewCreationChange(){
+        var offset={};['x','y','z'].forEach(function(axis){offset[axis]=selectionOffset[axis].trim()===''?NaN:Number(selectionOffset[axis]);});offset.type=selectionEditMaterial;
+        var result=previewSelectionEdit(window[ENGINE_KEY],selectionEditMode,offset);
+        setSelectionEditPreview(result);setSelectionEditNotice(result.ok?result.label+': '+result.additions.length+' blocks. Review the outline, then apply.':result.reason);
+      }
+      function applyCreationChange(){
+        var result=commitSelectionEdit(window[ENGINE_KEY],selectionEditPreview);
+        if(!result.ok){setSelectionEditNotice(result.reason);setSelectionEditPreview(null);return;}
+        var label=selectionEditPreview.label;setSelectionEditPreview(null);setSelectionEditNotice(label+' applied. Undo reverses the whole change.');
+        var selected=selectionMeasurement(window[ENGINE_KEY]);patchGeometryState(ctx,{measureResult:selected?selected.measurement:null,builderPanel:'build'});
+        announce(ctx,label+' applied. Undo reverses the whole change.','success');
+      }
+      function stampCoordinates(){var result={};['x','y','z'].forEach(function(axis){result[axis]=stampOrigin[axis].trim()===''?NaN:Number(stampOrigin[axis]);});return result;}
+      function previewStoredStamp(){
+        var selected=stampLibrary.stamps.find(function(stamp){return stamp.id===stampId;}) || stampLibrary.stamps[0];
+        if(!selected){setStampNotice('Save a selection as a stamp first.');return;}
+        var result=previewBuildStamp(window[ENGINE_KEY],selected,stampCoordinates());setSelectionEditPreview(result);
+        setSelectionEditNotice(result.ok?result.label+': '+result.additions.length+' blocks. Review the outline, then apply.':result.reason);
+      }
+      function renderCoordinateInputs(prefix,values,setValues,label){
+        return h('fieldset',{className:'gwe-edit-coordinates'},h('legend',null,label),['x','y','z'].map(function(axis){return h('label',{key:axis,htmlFor:prefix+'-'+axis},axis.toUpperCase(),h('input',{id:prefix+'-'+axis,type:'number',inputMode:'numeric',step:1,min:axis==='y' && prefix==='gwe-stamp-corner'?1:-128,max:128,value:values[axis],onChange:function(event){var next=Object.assign({},values);next[axis]=event.target.value;setValues(next);cancelSelectionPreview();}}));}));
+      }
+      function renderCreationEditing(){
+        return h(React.Fragment,null,
+          hasRetainedSelection && h('details',{className:'gwe-details gwe-creation-editor'},
+            h('summary',null,'Edit whole creation'),
+            h('p',{className:'gwe-builder-note'},'Change every outlined block together, including separate pieces. Preview each change before applying it.'),
+            h('label',{className:'gwe-edit-label',htmlFor:'gwe-creation-edit-action'},'Action'),
+            h('select',{id:'gwe-creation-edit-action',value:selectionEditMode,onChange:function(event){setSelectionEditMode(event.target.value);cancelSelectionPreview();}},[['move','Move'],['duplicate','Duplicate'],['rotate','Rotate 90°'],['mirrorX','Mirror left / right (X)'],['mirrorZ','Mirror front / back (Z)'],['recolor','Change material']].map(function(option){return h('option',{key:option[0],value:option[0]},option[1]);})),
+            (selectionEditMode==='move' || selectionEditMode==='duplicate') && renderCoordinateInputs('gwe-creation-offset',selectionOffset,setSelectionOffset,'Offset in blocks · X right, Y up, Z depth'),
+            selectionEditMode==='rotate' && h('p',{className:'gwe-builder-note'},'Turns around the vertical axis. The footprint starts at the same grid corner.'),
+            selectionEditMode==='recolor' && h(React.Fragment,null,h('label',{className:'gwe-edit-label',htmlFor:'gwe-creation-material'},'New material'),h('select',{id:'gwe-creation-material',value:selectionEditMaterial,onChange:function(event){setSelectionEditMaterial(event.target.value);cancelSelectionPreview();}},BLOCK_TYPES.filter(function(type){return type.id!=='grass';}).map(function(type){return h('option',{key:type.id,value:type.id},type.name);}))),
+            h('div',{className:'gwe-builder-actions'},h('button',{type:'button',onClick:previewCreationChange},'Preview change'))
+          ),
+          h('details',{className:'gwe-details gwe-stamp-library'},
+            h('summary',null,'Reusable building stamps'+(stampLibrary.stamps.length?' · '+stampLibrary.stamps.length:'')),
+            h('p',{className:'gwe-builder-note'},'Keep an arch, window, or staircase as editable blocks. Up to 12 named stamps stay in this browser.'),
+            !stampLibrary.ok && h('p',{className:'gwe-edit-notice',role:'status'},stampLibrary.reason),
+            hasRetainedSelection && h('form',{className:'gwe-stamp-save',onSubmit:function(event){event.preventDefault();var result=saveSelectionStamp(window[ENGINE_KEY],stampName);if(result.ok){setStampLibrary(result);setStampId(result.stamps[result.stamps.length-1].id);setStampName('');setStampNotice('Stamp saved in this browser.');}else setStampNotice(result.reason);}},
+              h('label',{className:'gwe-edit-label',htmlFor:'gwe-stamp-name'},'Name this selection'),h('input',{id:'gwe-stamp-name',type:'text',maxLength:48,value:stampName,placeholder:'For example, garden arch',onChange:function(event){setStampName(event.target.value);}}),
+              h('div',{className:'gwe-builder-actions'},h('button',{type:'submit',disabled:!stampLibrary.ok},'Save selection as stamp'))),
+            stampLibrary.stamps.length>0 && h(React.Fragment,null,
+              h('label',{className:'gwe-edit-label',htmlFor:'gwe-stamp-choice'},'Choose a stamp'),
+              h('select',{id:'gwe-stamp-choice',value:stampId || stampLibrary.stamps[0].id,onChange:function(event){setStampId(event.target.value);cancelSelectionPreview();}},stampLibrary.stamps.map(function(stamp){return h('option',{key:stamp.id,value:stamp.id},stamp.name+' · '+stamp.blocks.length+' blocks');})),
+              renderCoordinateInputs('gwe-stamp-corner',stampOrigin,setStampOrigin,'Place the nearest grid corner at'),
+              h('div',{className:'gwe-builder-actions'},
+                h('button',{type:'button',onClick:function(){var live=window[ENGINE_KEY],cell=live && live._placementPreview && live._placementPreview.cell;if(cell){setStampOrigin({x:String(cell.x),y:String(cell.y),z:String(cell.z)});cancelSelectionPreview();setStampNotice('Grid corner updated from your current aim.');}else setStampNotice('Aim at nearby ground or a block face first.');}},'Use aimed cell'),
+                h('button',{type:'button',onClick:previewStoredStamp},'Preview stamp')),
+              h('details',{className:'gwe-stamp-manage'},h('summary',null,'Manage saved stamps'),h('p',{className:'gwe-builder-note'},'Removing a recipe leaves all placed blocks in your world.'),h('div',{className:'gwe-builder-actions'},h('button',{type:'button',onClick:function(){var id=stampId || stampLibrary.stamps[0].id,result=removeBuildStamp(id);if(result.ok){setStampLibrary(result);setStampId('');cancelSelectionPreview();setStampNotice('Saved stamp removed. Placed blocks are unchanged.');}else setStampNotice(result.reason);}},'Remove saved stamp')))
+            ),
+            stampNotice && h('p',{className:'gwe-edit-notice',role:'status'},stampNotice)
+          ),
+          (selectionEditNotice || selectionEditPreview) && h('section',{className:'gwe-edit-preview','data-ready':selectionEditPreview && selectionEditPreview.ok?'true':'false','aria-label':'Creation change preview'},
+            h('p',{className:'gwe-edit-notice',role:'status','aria-live':'polite'},selectionEditNotice),
+            selectionEditPreview && h('div',{className:'gwe-builder-actions'},h('button',{type:'button',className:selectionEditPreview.ok?'gwe-primary':'',disabled:!selectionEditPreview.ok,onClick:applyCreationChange},'Apply preview'),h('button',{type:'button',onClick:cancelSelectionPreview},'Cancel preview')))
+        );
+      }
+

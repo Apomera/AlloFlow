@@ -141,7 +141,7 @@ describe('Learning Lab Communication Preferences accessibility', () => {
 
   it('supports asynchronous copying and manual fallback', () => {
     expect(section).toContain("typeof navigator === 'undefined' || !navigator.clipboard");
-    expect(section).toContain('Promise.resolve(navigator.clipboard.writeText(text))');
+    expect(section).toContain('Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text))');
     expect(section).toContain("focusById(id, true)");
   });
 

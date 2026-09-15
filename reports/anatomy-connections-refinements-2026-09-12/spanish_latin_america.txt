@@ -1,0 +1,87 @@
+La circulación pulmonar acerca la sangre al aire alveolar. El oxígeno y el dióxido de carbono difunden a través de una barrera delgada según sus propios gradientes de presión parcial; normalmente, sangre y aire permanecen separados.
+Durante el ejercicio, la ventilación y el flujo sanguíneo pulmonar pueden aumentar para facilitar el intercambio de gases.
+Si la barrera entre el aire y la sangre se engrosa, ¿qué ocurre con la difusión si las demás condiciones no cambian?
+La difusión de gases se vuelve más lenta.
+La sangre debe entrar en los alvéolos.
+El oxígeno se transforma en dióxido de carbono.
+Una barrera más gruesa aumenta la distancia de difusión. La ventilación mueve aire y la circulación mueve sangre; el intercambio entre ambos depende de la difusión.
+En una unión neuromuscular esquelética, una neurona motora libera acetilcolina. Esto activa la fibra muscular y provoca la liberación de calcio en su interior. El músculo cardíaco y el liso tienen otros mecanismos de control.
+Para extender la rodilla, las neuronas motoras activan fibras del cuádriceps. Los tendones transmiten su fuerza al esqueleto.
+Si se bloquean los receptores de acetilcolina de una unión neuromuscular esquelética, ¿cuál es el efecto inmediato?
+La señal nerviosa activa la fibra muscular con menos eficacia.
+El tendón produce una señal nerviosa más fuerte.
+El hueso se contrae en lugar del músculo.
+La acetilcolina debe actuar sobre los receptores de la fibra muscular para iniciar la transmisión neuromuscular normal. Este ejemplo corresponde al músculo esquelético, no a todos los tipos de músculo.
+Los músculos esqueléticos transmiten fuerzas de tracción mediante tendones. Si la fuerza actúa a través de una articulación, puede hacer girar los huesos; su efecto depende de la posición articular y del brazo de momento del músculo.
+La fuerza del bíceps llega al radio por su tendón y contribuye a flexionar el codo. Otros músculos también ayudan a flexionarlo.
+¿Por qué el bíceps puede ayudar a girar el antebrazo alrededor del codo?
+Su tendón transmite fuerza a cierta distancia del eje de la articulación.
+Sus fibras empujan el radio para alejarlo del húmero.
+El radio se acorta cuando el músculo se contrae.
+Una fuerza de tracción con un brazo de momento genera torque alrededor de la articulación. El hueso no se acorta durante este movimiento.
+La GnRH del hipotálamo estimula la liberación de FSH y LH por la hipófisis anterior. Estas hormonas actúan sobre las gónadas; las hormonas gonadales ejercen retroalimentación sobre el cerebro y la hipófisis. Los patrones varían según el contexto reproductivo.
+En un ciclo ovulatorio, un nivel alto y sostenido de estradiol puede generar retroalimentación positiva que favorece un pico de LH.
+¿Qué órgano libera FSH y LH a la sangre?
+La hipófisis anterior.
+El hipotálamo, ya que FSH y LH son otros nombres de la GnRH.
+Solo los ovarios y los testículos.
+La GnRH procede del hipotálamo. La FSH y la LH proceden de la hipófisis anterior y actúan sobre los tejidos gonadales.
+Los vasos linfáticos recogen el exceso de líquido tisular y lo devuelven a la sangre venosa. Los ganglios ponen la linfa en contacto con células inmunitarias. La circulación sanguínea y el flujo linfático apoyan el equilibrio de líquidos y la vigilancia inmunitaria.
+Durante una respuesta inmunitaria, un ganglio que drena la región puede aumentar de tamaño. Un corte pequeño no siempre provoca una hinchazón perceptible de los ganglios.
+Si se obstruye el drenaje linfático de un tejido, ¿qué es más probable?
+Se acumula líquido en ese tejido.
+El tejido deja de recibir toda la sangre arterial de inmediato.
+La linfa se convierte en aire.
+El drenaje linfático bloqueado reduce el retorno del líquido intersticial a la sangre y puede contribuir a la hinchazón. Los vasos linfáticos y las arterias cumplen funciones distintas.
+El hipotálamo conecta la información nerviosa con la regulación endocrina. Controla muchas funciones hipofisarias; algunos tejidos endocrinos también responden directamente a la composición de la sangre o a otras señales.
+En el eje del estrés, la CRH hipotalámica favorece la liberación de ACTH hipofisaria. La ACTH estimula la corteza suprarrenal para producir cortisol, que contribuye a la retroalimentación negativa.
+En este ejemplo del eje del estrés, ¿qué suele hacer el aumento de cortisol a la liberación de CRH y ACTH en los niveles anteriores?
+Ayuda a reducir su liberación mediante retroalimentación negativa.
+Siempre aumenta ambas sin límite.
+Convierte la corteza suprarrenal en tejido nervioso.
+El cortisol ejerce retroalimentación sobre el hipotálamo y la hipófisis. Este mecanismo regula la vía; no significa que la hipófisis controle todos los procesos endocrinos.
+Durante la inhalación tranquila, el diafragma y los intercostales externos expanden el tórax. La exhalación tranquila depende principalmente de la relajación y el retroceso elástico. Las paredes de las vías respiratorias contienen músculo liso que ajusta su diámetro.
+Cuando los músculos inspiratorios expanden el tórax, la presión alveolar baja brevemente por debajo de la atmosférica y el aire entra.
+¿Qué impulsa normalmente la salida de aire durante una exhalación tranquila?
+El retroceso elástico tras la relajación de los músculos inspiratorios eleva la presión alveolar.
+El diafragma empuja activamente el aire a través de los pulmones en cada respiración tranquila.
+El músculo liso de las vías respiratorias bombea cada respiración como un corazón.
+El aire se mueve de mayor a menor presión. La exhalación tranquila es principalmente pasiva; la forzada utiliza músculos adicionales. El músculo liso de las vías respiratorias regula la resistencia.
+Los receptores cutáneos convierten estímulos mecánicos, térmicos y potencialmente dañinos en señales nerviosas. Diferentes receptores y sus conexiones contribuyen a percibir tacto, temperatura y dolor.
+Los receptores de las yemas de los dedos aportan información táctil detallada. Percibir formas o texturas también requiere procesamiento en el sistema nervioso.
+¿Por qué un receptor táctil por sí solo no basta para identificar la forma de un objeto?
+Los circuitos nerviosos deben procesar sus señales junto con otra información sensorial.
+La forma viaja por la sangre en lugar de los nervios.
+Todos los receptores cutáneos detectan exactamente el mismo estímulo.
+Los receptores inician la transducción sensorial. La percepción depende del procesamiento nervioso y de información de grupos de receptores, no de una terminación aislada.
+Gran parte de la sangre venosa de los órganos digestivos llega al hígado por el sistema porta hepático antes de volver al corazón. El hígado procesa nutrientes absorbidos. Muchos lípidos alimentarios de cadena larga entran primero en la linfa.
+Después de una comida, la glucosa absorbida llega al hígado por la sangre portal. El hígado puede almacenarla como glucógeno; otros tejidos y hormonas también ayudan a regular la glucemia.
+¿Qué material absorbido suele entrar en la linfa intestinal antes de llegar a la sangre?
+Quilomicrones que transportan lípidos alimentarios de cadena larga.
+Toda la glucosa absorbida.
+Todos los aminoácidos absorbidos.
+Los enterocitos empaquetan muchos lípidos de cadena larga en quilomicrones que entran en los vasos quilíferos. Los monosacáridos y aminoácidos entran principalmente en los capilares sanguíneos intestinales.
+En adultos, la médula ósea roja es un sitio principal de producción de células sanguíneas. Las células madre hematopoyéticas originan varias líneas celulares; las plaquetas son fragmentos liberados por megacariocitos. Algunas células inmunitarias maduran en otros lugares.
+La médula de huesos como la pelvis y el esternón apoya la producción de células sanguíneas. Los linfocitos T en desarrollo completan etapas importantes de maduración en el timo.
+¿Qué afirmación describe correctamente las plaquetas?
+Son fragmentos celulares liberados por megacariocitos.
+Son glóbulos rojos completamente formados.
+Son hormonas secretadas por el timo.
+Los megacariocitos liberan plaquetas que participan en la hemostasia. Compartir un origen medular no convierte a todos los elementos formes en el mismo tipo celular.
+En cada fila, lee desde el lado del pulgar hacia el meñique. Proximal: escafoides, semilunar, piramidal, pisiforme. Distal: trapecio, trapezoide, grande, ganchoso. El pisiforme está en la cara palmar del piramidal.
+Occipital, parietal, frontal, temporal, etmoides, esfenoides: seis tipos, ocho huesos craneales. Los parietales y temporales son pares; no es una secuencia espacial.
+Siete vértebras cervicales, doce torácicas y cinco lumbares. Son las 24 vértebras habitualmente separadas del adulto; el sacro y el cóccix fusionados son regiones adicionales.
+Supraespinoso, infraespinoso, redondo menor y subescapular forman el manguito rotador. Ayudan a estabilizar la cabeza del húmero y tienen diferentes acciones de movimiento.
+De lateral a medial: iliocostal, longísimo y espinoso. Son columnas del erector de la columna, no el trapecio. Los marcadores de este catálogo no las representan individualmente.
+Recto femoral, vasto lateral, vasto intermedio y vasto medial. Todos extienden la rodilla; el recto femoral también cruza la cadera. Las letras agrupan los cuatro nombres, sin describir un orden espacial.
+Tricúspide, pulmonar, mitral y aórtica: orden de las válvulas en la ruta sanguínea. Entre partes de la secuencia se encuentran cámaras, vasos pulmonares y pulmones; las válvulas no son pasos adyacentes.
+Ramas habituales del arco aórtico: tronco braquiocefálico, arteria carótida común izquierda y arteria subclavia izquierda. Existen variantes de ramificación.
+Nervios craneales I–XII: olfatorio, óptico, oculomotor, troclear, trigémino, abducens, facial, vestibulococlear, glosofaríngeo, vago, accesorio e hipogloso. La clave nombra los nervios, pero no describe todas sus funciones.
+Raíces, troncos, divisiones, fascículos y ramas: principales niveles organizativos del plexo braquial. Sus raíces son ramos anteriores, normalmente C5–T1, no las raíces dorsales y ventrales de la médula espinal.
+Neutrófilos, linfocitos, monocitos, eosinófilos y basófilos: patrón común de abundancia en la sangre periférica adulta. Las proporciones varían con la edad y la salud; no es un orden universal ni una lista de todas las células inmunitarias.
+El esquema de Couinaud divide el hígado en ocho segmentos funcionales con territorios de entrada portal. Las venas hepáticas principales pasan entre muchos territorios. Son segmentos funcionales, no los lóbulos visibles en la superficie.
+Desde la luz hacia afuera: mucosa, submucosa, muscular externa y luego serosa o adventicia. La cubierta externa depende de la región del órgano; el estómago también posee una capa muscular oblicua.
+En la piel gruesa, de superficial a profundo: estratos córneo, lúcido, granuloso, espinoso y basal. El estrato lúcido es característico de palmas y plantas; la piel delgada no tiene un estrato lúcido definido.
+Cavidad nasal, faringe, laringe, tráquea, bronquios, bronquiolos y alvéolos: ruta simplificada del aire entrante. La segunda B incluye los bronquiolos pequeños; los conductos y sacos alveolares conectan con los alvéolos.
+Hipófisis anterior: FSH, LH, ACTH, TSH, prolactina y hormona del crecimiento. La clave enumera seis hormonas principales; excluye la liberación de oxitocina y vasopresina por la hipófisis posterior.
+Profase I, metafase I, anafase I y telofase I. El entrecruzamiento ocurre en la profase I; los cromosomas homólogos se separan en la anafase I. Las cromátidas hermanas normalmente se separan en la meiosis II.

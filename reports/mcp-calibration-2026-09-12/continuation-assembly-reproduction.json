@@ -1,0 +1,94 @@
+{
+  "sourceLength": 16770,
+  "called": 2,
+  "chunkLengths": [
+    15996,
+    774
+  ],
+  "resultUnchanged": true,
+  "evidence": [
+    {
+      "totalChunks": 2,
+      "shippedOriginalChunks": 2,
+      "candidateRejectionCount": 1,
+      "candidateRejections": [
+        {
+          "chunkId": "all",
+          "phase": "assembly",
+          "reason": "link-destination-changed",
+          "sourceLocation": "link:1"
+        }
+      ]
+    }
+  ],
+  "decision": {
+    "accepted": false,
+    "reason": "link-destination-changed",
+    "sourceLocation": "link:1"
+  },
+  "linksBefore": [
+    {
+      "href": "#main-content",
+      "text": "Skip to main content",
+      "class": "sr-only"
+    },
+    {
+      "href": "mailto:Lisa.Pagano@ed.gov",
+      "text": "Lisa.Pagano@ed.gov",
+      "class": ""
+    },
+    {
+      "href": "mailto:OCR@ed.gov",
+      "text": "OCR@ed.gov",
+      "class": ""
+    },
+    {
+      "href": "http://www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "text": "www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "class": ""
+    },
+    {
+      "href": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "text": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "class": ""
+    }
+  ],
+  "linksAfter": [
+    {
+      "href": "#main-content",
+      "text": "Skip to main content",
+      "class": "sr-only"
+    },
+    {
+      "href": "mailto:Lisa.Pagano@ed.gov",
+      "text": "Lisa.Pagano@ed.gov",
+      "class": ""
+    },
+    {
+      "href": "mailto:OCR@ed.gov",
+      "text": "OCR@ed.gov",
+      "class": ""
+    },
+    {
+      "href": "http://www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "text": "www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "class": ""
+    },
+    {
+      "href": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "text": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "class": ""
+    }
+  ],
+  "targetMismatch": {
+    "id": "main-content",
+    "index": 5971,
+    "before": "P students are also commonly referred to as English learners or English language learners. [3] DOJ Guidance to Federal Financial Assistance Recipients Regarding Title VI Prohibition Against National Origin Disc",
+    "after": "P students are also commonly referred to as English learners or English language learners.[3] DOJ Guidance to Federal Financial Assistance Recipients Regarding Title VI Prohibition Against National Origin Discr"
+  },
+  "identityDecision": {
+    "accepted": false,
+    "reason": "link-destination-changed",
+    "sourceLocation": "link:1"
+  }
+}

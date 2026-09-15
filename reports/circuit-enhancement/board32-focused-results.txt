@@ -1,0 +1,146 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_scope_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > defaults to the full run and bounds maximum zoom without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":0.9,"end":0.1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":null,"end":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":-1,"end":3}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > centers a bounded viewport at either end of the run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > clips a linear segment at both edges without changing its slope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > keeps vertical switching segments at a viewport boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > does not interpolate or join across an unknown region
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > returns no path when the viewport has no data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > interpolates rising and falling edges at nonuniform sample times
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters rising edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters falling edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > recognizes an exact sample at the level once
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > reports the interval spent at threshold before crossing to the other side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > preserves the exact time and after snapshot of a switch jump
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > never bridges an unknown trace segment
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > rejects unknown traces, failed runs and nonfinite levels
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > measures spacing between like directions rather than alternate edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > finds sine crossings without counting floating-point zero noise at endpoints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > resolves small signals with a relative level tolerance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > uses amperes for current levels and exported readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > does not infer same-direction spacing across an unknown gap
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > finds a real simulated switch jump and resolves its after state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > renders named navigation controls, zoom extent and an exact event marker
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····························stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > hides navigation and crossings when the simulation fails
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all sixteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····
+
+ Test Files  3 passed (3)
+      Tests  40 passed (40)
+   Start at  11:52:10
+   Duration  40.19s (transform 336ms, setup 470ms, import 901ms, tests 16.90s, environment 17.67s)
+

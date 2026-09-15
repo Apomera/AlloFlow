@@ -1,0 +1,14 @@
+{
+  "errors": [],
+  "overflow": false,
+  "shots": [
+    "stations-1150",
+    "stations-390",
+    "stations-320"
+  ],
+  "checks": [
+    "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 1150",
+    "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 390",
+    "Arrow cycle, reverse wrap, Home/End, Tab exit/reentry, click, scene reset and progress at 320"
+  ]
+}

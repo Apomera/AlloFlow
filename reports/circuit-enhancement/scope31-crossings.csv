@@ -1,0 +1,3 @@
+crossing,component,metric,unit,level,direction,time_s,level_hold_end_s,method,sample_time_s,sample_side,same_direction_spacing_s,reciprocal_spacing_Hz
+1,U2,voltage,V,0,rising,0.001124701721995428,0.001124701721995428,interpolated,0.0011230583825745132,,,
+2,U2,voltage,V,0,rising,0.0021247983714171807,0.0021247983714171807,interpolated,0.0021253313932710115,,0.0010000966494217527,999.9033599184553

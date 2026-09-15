@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Graph auto mode reverses real chronological progress",
+    "reproduced": true
+  },
+  {
+    "name": "Graph documented two-column CSV imports session numbers instead of values",
+    "reproduced": true
+  },
+  {
+    "name": "Graph percentage targets plot correct count instead of percent",
+    "reproduced": true
+  },
+  {
+    "name": "Removing middle tracker target then adding duplicates IDs and edits both targets",
+    "reproduced": true
+  },
+  {
+    "name": "Ending tracker session discards active duration and retains timer into next session",
+    "reproduced": true
+  },
+  {
+    "name": "Progress Monitor ignores goal date and suppresses zero goals",
+    "reproduced": true
+  },
+  {
+    "name": "Unassigned phase borrows denominator from named-phase observations",
+    "reproduced": true
+  },
+  {
+    "name": "Zero-incident observed phase is omitted entirely from phase summaries",
+    "reproduced": true
+  },
+  {
+    "name": "AI freshness fingerprint ignores narrative and setting edits",
+    "reproduced": true
+  },
+  {
+    "name": "Data quality reports too few incomplete entries when omissions affect different rows",
+    "reproduced": true
+  },
+  {
+    "name": "Unknown timezone becomes UTC after repeated workspace normalization",
+    "reproduced": true
+  },
+  {
+    "name": "Frequency Counter rejects zero events even after valid observation time",
+    "reproduced": true
+  }
+]

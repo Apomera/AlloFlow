@@ -602,8 +602,264 @@
     return { progress: progress, isNew: isNew };
   }
 
+  // ── Arrhenius kinetics (pure) ─────────────────────────────────────────────
+  // The Kinetics section printed k = Ae^(-Ea/RT) as a STRING, so a student could
+  // read the equation but never vary Ea or T and watch the rate answer. These
+  // are the model behind the live panel below.
+  //
+  // R is the gas constant in J/(mol*K) because Ea is conventionally quoted in
+  // kJ/mol -- named, not a bare literal, so the kJ/J factor cannot hide.
+  var ARRH_R = 8.314462618;             // J/(mol*K)
+
+  // k = A * exp(-Ea / (R*T)).  eaKJ in kJ/mol, tempK in kelvin, A in s^-1.
+  function arrheniusK(eaKJ, tempK, aPre) {
+    var A = (typeof aPre === 'number' && isFinite(aPre) && aPre > 0) ? aPre : 1e13;
+    if (!isFinite(eaKJ) || !isFinite(tempK) || tempK <= 0) return NaN;
+    return A * Math.exp(-(eaKJ * 1000) / (ARRH_R * tempK));
+  }
+
+  // Fraction of molecules with at least Ea of energy -- the Boltzmann tail.
+  // This is the "why" behind the rate: it IS the exponential factor.
+  function arrheniusFraction(eaKJ, tempK) {
+    if (!isFinite(eaKJ) || !isFinite(tempK) || tempK <= 0) return NaN;
+    return Math.exp(-(eaKJ * 1000) / (ARRH_R * tempK));
+  }
+
+  // How many times faster at t2 than t1 (same Ea, same A -- A cancels).
+  function arrheniusRatio(eaKJ, t1K, t2K) {
+    if (!isFinite(eaKJ) || !isFinite(t1K) || !isFinite(t2K) || t1K <= 0 || t2K <= 0) return NaN;
+    return Math.exp((eaKJ * 1000 / ARRH_R) * (1 / t1K - 1 / t2K));
+  }
+
+  // ── Radioactive decay (pure) ──────────────────────────────────────────────
+  // The Nuclear section listed nine isotopes and their half-lives as STRINGS.
+  // Half-life is the one topic in that section that is inherently a curve: a
+  // table of "30 years" cannot show that the SHAPE is identical for Tc-99m and
+  // U-238 once you measure time in half-lives, which is the whole idea.
+  //
+  // Half-lives in YEARS, from NNDC/IAEA evaluated data. Stored numerically here
+  // and separately from NUCLEAR.halfLives (which keeps the human strings the
+  // section already displayed) so the prose is not silently rewritten.
+  // C-14 is 5700 yr (current evaluation); the table's "5,730 years" is the older
+  // Libby-era figure kept verbatim in the prose. Both are cited as such below.
+  var HALF_LIFE_YEARS = {
+    'C-14': 5700,
+    'U-238': 4.468e9,
+    'U-235': 7.04e8,
+    'Pu-239': 24110,
+    'I-131': 8.0252 / 365.25,
+    'Tc-99m': 6.0072 / 24 / 365.25,
+    'Sr-90': 28.79,
+    'Cs-137': 30.08,
+    'K-40': 1.248e9
+  };
+
+  // Fraction remaining after `elapsed` in the SAME unit as the half-life.
+  // N/N0 = (1/2)^(t / t_half) = exp(-ln2 * t / t_half).
+  function decayFraction(elapsed, halfLife) {
+    if (!isFinite(elapsed) || !isFinite(halfLife) || halfLife <= 0 || elapsed < 0) return NaN;
+    return Math.pow(0.5, elapsed / halfLife);
+  }
+
+  // Decay constant lambda = ln2 / t_half, and the mean lifetime 1/lambda.
+  // The mean life is LONGER than the half-life (by 1/ln2 = 1.4427x) - a standard
+  // exam trap, so it is derived here rather than eyeballed.
+  function decayConstant(halfLife) {
+    if (!isFinite(halfLife) || halfLife <= 0) return NaN;
+    return Math.LN2 / halfLife;
+  }
+
+  // How long to fall to `fraction` of the original. Inverse of decayFraction.
+  function decayTimeFor(fraction, halfLife) {
+    if (!isFinite(fraction) || !isFinite(halfLife) || halfLife <= 0) return NaN;
+    if (fraction <= 0 || fraction > 1) return NaN;
+    return halfLife * (Math.log(fraction) / Math.log(0.5));
+  }
+
+  // Radiocarbon age from remaining C-14 fraction - the actual dating calculation.
+  function radiocarbonAge(fraction) {
+    return decayTimeFor(fraction, HALF_LIFE_YEARS['C-14']);
+  }
+
+  // ── Solution concentration (pure) ─────────────────────────────────────────
+  // The Solutions section defined molarity and dilution as formula strings. The
+  // dilution law is the single most-used bench calculation in school chemistry
+  // and it is one line of arithmetic, so there is no reason a student cannot
+  // drive it.
+
+  // M = n / V.  moles, litres -> mol/L.
+  function molarity(moles, litres) {
+    if (!isFinite(moles) || !isFinite(litres) || litres <= 0 || moles < 0) return NaN;
+    return moles / litres;
+  }
+
+  // n = m / M_r.  grams, g/mol -> moles.
+  function molesFromMass(grams, molarMass) {
+    if (!isFinite(grams) || !isFinite(molarMass) || molarMass <= 0 || grams < 0) return NaN;
+    return grams / molarMass;
+  }
+
+  // Dilution law M1V1 = M2V2, solved for whichever term is missing.
+  // Volumes may be in any unit as long as both are the same; the answer comes
+  // back in that unit. Returns NaN rather than Infinity when the solve is
+  // impossible, so a bad input cannot render as a number.
+  function dilutionSolve(which, v) {
+    var m1 = v.m1, v1 = v.v1, m2 = v.m2, v2 = v.v2;
+    function ok(x) { return isFinite(x) && x > 0; }
+    if (which === 'm2') return (ok(m1) && ok(v1) && ok(v2)) ? (m1 * v1) / v2 : NaN;
+    if (which === 'v2') return (ok(m1) && ok(v1) && ok(m2)) ? (m1 * v1) / m2 : NaN;
+    if (which === 'm1') return (ok(m2) && ok(v2) && ok(v1)) ? (m2 * v2) / v1 : NaN;
+    if (which === 'v1') return (ok(m2) && ok(v2) && ok(m1)) ? (m2 * v2) / m1 : NaN;
+    return NaN;
+  }
+
+  // How much SOLVENT to add to go from (m1,v1) to concentration m2.
+  // This is the number a student actually needs at the bench, and it is the
+  // step the formula alone hides: you add the DIFFERENCE, not the final volume.
+  function solventToAdd(m1, v1, m2) {
+    var v2 = dilutionSolve('v2', { m1: m1, v1: v1, m2: m2 });
+    if (!isFinite(v2)) return NaN;
+    return v2 - v1;   // negative means m2 > m1, which dilution cannot do
+  }
+
+  // ── Galvanic cells (pure) ─────────────────────────────────────────────────
+  // Standard REDUCTION potentials in volts vs the standard hydrogen electrode
+  // (CRC/IUPAC). REDOX.halfReactions displays some couples in the OXIDATION
+  // direction with the sign already flipped (Zn, Mg, Li), which is correct as a
+  // display but cannot be subtracted directly. These are all reductions, one
+  // convention, so E_cell = E_cathode - E_anode always holds.
+  var STANDARD_REDUCTION = {
+    'Li+/Li':   { e: -3.04, label: 'Li\u207A + e\u207B \u2192 Li' },
+    'Mg2+/Mg':  { e: -2.37, label: 'Mg\u00B2\u207A + 2e\u207B \u2192 Mg' },
+    'Al3+/Al':  { e: -1.66, label: 'Al\u00B3\u207A + 3e\u207B \u2192 Al' },
+    'Zn2+/Zn':  { e: -0.76, label: 'Zn\u00B2\u207A + 2e\u207B \u2192 Zn' },
+    'Fe2+/Fe':  { e: -0.44, label: 'Fe\u00B2\u207A + 2e\u207B \u2192 Fe' },
+    'Ni2+/Ni':  { e: -0.25, label: 'Ni\u00B2\u207A + 2e\u207B \u2192 Ni' },
+    'Pb2+/Pb':  { e: -0.13, label: 'Pb\u00B2\u207A + 2e\u207B \u2192 Pb' },
+    'H+/H2':    { e:  0.00, label: '2H\u207A + 2e\u207B \u2192 H\u2082 (reference)' },
+    'Cu2+/Cu':  { e:  0.34, label: 'Cu\u00B2\u207A + 2e\u207B \u2192 Cu' },
+    'Ag+/Ag':   { e:  0.80, label: 'Ag\u207A + e\u207B \u2192 Ag' },
+    'Cl2/Cl-':  { e:  1.36, label: 'Cl\u2082 + 2e\u207B \u2192 2Cl\u207B' },
+    'F2/F-':    { e:  2.87, label: 'F\u2082 + 2e\u207B \u2192 2F\u207B' }
+  };
+
+  var FARADAY = 96485;   // C/mol e-
+
+  // E_cell = E_cathode - E_anode, both as REDUCTION potentials.
+  function cellPotential(cathodeKey, anodeKey) {
+    var c = STANDARD_REDUCTION[cathodeKey];
+    var a = STANDARD_REDUCTION[anodeKey];
+    if (!c || !a) return NaN;
+    return c.e - a.e;
+  }
+
+  // deltaG = -nFE, in joules per mole of reaction. Negative = spontaneous.
+  function cellDeltaG(eCell, n) {
+    if (!isFinite(eCell) || !isFinite(n) || n <= 0) return NaN;
+    return -n * FARADAY * eCell;
+  }
+
+  // Given two couples, which one is the cathode? The one with the HIGHER
+  // reduction potential is reduced; the other is oxidised. Picking them the
+  // other way round is the classic sign error, so the model decides rather than
+  // trusting the student's slot order.
+  // ── Gibbs free energy (pure) ──────────────────────────────────────────────
+  // THERMO.concepts states dG = dH - T dS and "dG < 0: spontaneous" as text, and
+  // THERMO.examples notes CaCO3 is "No at room T, yes at high T" without ever
+  // showing the temperature where that flips. The flip IS the concept, and it is
+  // one line of arithmetic.
+  //
+  // Units: dH in kJ/mol, dS in J/(mol*K) - the way tables quote them, and the
+  // factor of 1000 between them is the single most common arithmetic error here,
+  // so the conversion lives in ONE place.
+  function gibbsFreeEnergy(dhKJ, dsJ, tempK) {
+    if (!isFinite(dhKJ) || !isFinite(dsJ) || !isFinite(tempK) || tempK < 0) return NaN;
+    return dhKJ - tempK * (dsJ / 1000);
+  }
+
+  // Temperature where dG changes sign: dH = T dS, so T = dH/dS.
+  // Returns NaN when dS is zero (no crossover) - and note a crossover below 0 K
+  // is not physical, which the caller must interpret rather than display raw.
+  function gibbsCrossoverK(dhKJ, dsJ) {
+    if (!isFinite(dhKJ) || !isFinite(dsJ) || dsJ === 0) return NaN;
+    return (dhKJ * 1000) / dsJ;
+  }
+
+  // Which of the four sign combinations this reaction is, and what that means.
+  // This is the table every student memorises; deriving it removes the memory step.
+  function spontaneityRegime(dhKJ, dsJ) {
+    if (!isFinite(dhKJ) || !isFinite(dsJ)) return null;
+    var exo = dhKJ < 0;
+    var disorder = dsJ > 0;
+    if (exo && disorder) return { key: 'always', label: 'Spontaneous at every temperature' };
+    if (!exo && !disorder) return { key: 'never', label: 'Never spontaneous at any temperature' };
+    if (exo && !disorder) return { key: 'lowT', label: 'Spontaneous only BELOW the crossover' };
+    return { key: 'highT', label: 'Spontaneous only ABOVE the crossover' };
+  }
+
+  // ── Buffers (pure) ────────────────────────────────────────────────────────
+  // ACIDS_BASES.weakAcids lists twelve pKa values and the section states the
+  // Henderson-Hasselbalch equation as a string. A buffer is the one place a
+  // student can SEE why pKa matters: at a 1:1 ratio pH = pKa exactly.
+  //
+  // pH = pKa + log10([A-]/[HA]).
+  function hendersonHasselbalch(pKa, baseConc, acidConc) {
+    if (!isFinite(pKa) || !isFinite(baseConc) || !isFinite(acidConc)) return NaN;
+    if (baseConc <= 0 || acidConc <= 0) return NaN;
+    return pKa + Math.log10(baseConc / acidConc);
+  }
+
+  // A buffer works while the ratio stays within about 10:1 either way, i.e.
+  // pKa +/- 1. Outside that a small addition swings the pH sharply.
+  function bufferCapacityOk(pKa, pH) {
+    if (!isFinite(pKa) || !isFinite(pH)) return false;
+    return Math.abs(pH - pKa) <= 1;
+  }
+
+  // pOH and the pH/pOH sum at 25 C (Kw = 1.0e-14).
+  var PKW_25C = 14;
+  function pOHFromPH(pH) {
+    if (!isFinite(pH)) return NaN;
+    return PKW_25C - pH;
+  }
+
+  function assignElectrodes(keyA, keyB) {
+    var a = STANDARD_REDUCTION[keyA];
+    var b = STANDARD_REDUCTION[keyB];
+    if (!a || !b) return null;
+    if (a.e === b.e) return null;            // same couple: no net cell
+    return a.e > b.e
+      ? { cathode: keyA, anode: keyB }
+      : { cathode: keyB, anode: keyA };
+  }
+
   try {
     window.__alloChemPure = {
+      arrheniusK: arrheniusK,
+      arrheniusFraction: arrheniusFraction,
+      arrheniusRatio: arrheniusRatio,
+      decayFraction: decayFraction,
+      decayConstant: decayConstant,
+      decayTimeFor: decayTimeFor,
+      radiocarbonAge: radiocarbonAge,
+      HALF_LIFE_YEARS: HALF_LIFE_YEARS,
+      molarity: molarity,
+      molesFromMass: molesFromMass,
+      dilutionSolve: dilutionSolve,
+      solventToAdd: solventToAdd,
+      cellPotential: cellPotential,
+      cellDeltaG: cellDeltaG,
+      assignElectrodes: assignElectrodes,
+      STANDARD_REDUCTION: STANDARD_REDUCTION,
+      FARADAY: FARADAY,
+      gibbsFreeEnergy: gibbsFreeEnergy,
+      gibbsCrossoverK: gibbsCrossoverK,
+      spontaneityRegime: spontaneityRegime,
+      hendersonHasselbalch: hendersonHasselbalch,
+      bufferCapacityOk: bufferCapacityOk,
+      pOHFromPH: pOHFromPH,
+      PKW_25C: PKW_25C,
+      ARRH_R: ARRH_R,
       parseFormula: parseFormula,
       parseSpecies: parseSpecies,
       parseEquation: parseEquation,
@@ -814,27 +1070,48 @@
   // reordering answers here is safe. Keep correct-answer positions spread --
   // the original bank never used position 3, which made "never pick D" a
   // winning strategy. `check` tags are executed by the invariant test.
+
+  // Topics that exist in BOTH chemistry tools: a reference table here, and a
+  // thing a student can actually drive over in Molecule Lab. Nothing pointed
+  // across before, so the live version was unreachable from the page about the
+  // same topic.
+  //
+  // ONLY topics where molecule is genuinely interactive are listed. Measured as
+  // controls beyond the collapsed shell: equilibrium 12 buttons + SVG, gaslaws 3
+  // sliders, kinetics 4 sliders, thermo 1 slider + 6 buttons. organic/redox/
+  // nuclear/solubility/acidbase are static card-lists in BOTH tools, so a link
+  // there would promise something the destination does not deliver.
+  var MOLECULE_LIVE_COUNTERPARTS = {
+    equilibrium: { section: 'equilibrium', label: 'Le Chatelier simulator' },
+    gas_laws:    { section: 'gaslaws',     label: 'PV = nRT sandbox' },
+    kinetics:    { section: 'kinetics',    label: 'rate + collision model' },
+    // thermo now has its OWN live Gibbs explorer here, so this link is no longer
+    // "go somewhere it is interactive" but "see the same topic from the bond-energy
+    // side". The label has to say which, or it reads as if this section were static.
+    thermo:      { section: 'thermo',      label: 'bond-energy view in Molecule Lab' }
+  };
+
   var BATTLE_QS = [
-    { q: 'What is the chemical formula for table salt?', a: ['NaCl', 'KCl', 'NaOH', 'HCl'], correct: 0, dmg: 15 },
-    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '4', '1', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'H2O' } },
-    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Francium', 'Fermium', 'Iron'], correct: 3, dmg: 15, check: { kind: 'elementName', symbol: 'Fe' } },
-    { q: 'What gas do plants produce in photosynthesis?', a: ['CO\u2082', 'N\u2082', 'O\u2082', 'H\u2082'], correct: 2, dmg: 20 },
-    { q: 'At 25 \u00B0C, what is the pH of neutral pure water?', a: ['0', '14', '1', '7'], correct: 3, dmg: 20 },
-    { q: 'Rust is an oxide of which element?', a: ['Iron', 'Copper', 'Aluminum', 'Zinc'], correct: 0, dmg: 15 },
-    { q: 'Which subatomic particle has no charge?', a: ['Proton', 'Electron', 'Neutron', 'Ion'], correct: 2, dmg: 20 },
-    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Nitrogen', 'Oxygen', 'Carbon dioxide', 'Argon'], correct: 0, dmg: 20 },
-    { q: 'Diamond and graphite are both forms of:', a: ['Silicon', 'Carbon', 'Sulfur', 'Iron'], correct: 1, dmg: 25 },
-    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, dmg: 20 },
-    { q: 'What is the chemical symbol for gold?', a: ['Ag', 'Au', 'Go', 'Gd'], correct: 1, dmg: 15, check: { kind: 'elementSymbol', name: 'Gold' } },
-    { q: 'How many atoms are in one molecule of CO\u2082?', a: ['1', '2', '4', '3'], correct: 3, dmg: 15, check: { kind: 'atomTotal', formula: 'CO2' } },
-    { q: 'Which element has the symbol Na?', a: ['Sodium', 'Nickel', 'Neon', 'Nitrogen'], correct: 0, dmg: 15, check: { kind: 'elementName', symbol: 'Na' } },
-    { q: 'The molar mass of NaCl is closest to:', a: ['23 g/mol', '35 g/mol', '58 g/mol', '81 g/mol'], correct: 2, dmg: 20, check: { kind: 'molarMass', formula: 'NaCl', tol: 1 } },
-    { q: 'What charge does a proton carry?', a: ['Negative', 'None', 'Positive', 'It varies'], correct: 2, dmg: 15 },
-    { q: 'Which of these is a noble gas?', a: ['Chlorine', 'Helium', 'Hydrogen', 'Sulfur'], correct: 1, dmg: 20 },
-    { q: 'H\u2082SO\u2084 is the formula for which acid?', a: ['Hydrochloric acid', 'Nitric acid', 'Carbonic acid', 'Sulfuric acid'], correct: 3, dmg: 20 },
-    { q: 'At sea level (1 atm), pure water boils at:', a: ['100 \u00B0C', '0 \u00B0C', '50 \u00B0C', '212 \u00B0C'], correct: 0, dmg: 15 },
-    { q: 'An atom with exactly 6 protons is always:', a: ['Oxygen', 'Nitrogen', 'Carbon', 'Silicon'], correct: 2, dmg: 25, check: { kind: 'elementZ', symbol: 'C', z: 6 } },
-    { q: 'Which pH value is the most acidic?', a: ['13', '2', '9', '7'], correct: 1, dmg: 20 }
+    { q: 'What is the chemical formula for table salt?', a: ['NaCl', 'KCl', 'NaOH', 'HCl'], correct: 0, explain: 'Sodium (Na, +1) and chloride (Cl, \u22121) balance one-to-one, so the formula unit is NaCl.', dmg: 15 },
+    { q: 'How many atoms in one molecule of H\u2082O?', a: ['2', '4', '1', '3'], correct: 3, explain: 'Count every atom, not every element: 2 H + 1 O = 3 atoms.', dmg: 15, check: { kind: 'atomTotal', formula: 'H2O' } },
+    { q: 'Which element has symbol Fe?', a: ['Fluorine', 'Francium', 'Fermium', 'Iron'], correct: 3, explain: 'Fe comes from the Latin \u2018ferrum\u2019. Several symbols follow Latin names rather than English ones.', dmg: 15, check: { kind: 'elementName', symbol: 'Fe' } },
+    { q: 'What gas do plants produce in photosynthesis?', a: ['CO\u2082', 'N\u2082', 'O\u2082', 'H\u2082'], correct: 2, explain: 'Plants take in CO\u2082 and release O\u2082 as the by-product of splitting water.', dmg: 20 },
+    { q: 'At 25 \u00B0C, what is the pH of neutral pure water?', a: ['0', '14', '1', '7'], correct: 3, explain: 'At 25 \u00B0C neutral means [H\u207A] = [OH\u207B] = 1\u00D710\u207B\u2077 M, and \u2212log(10\u207B\u2077) = 7.', dmg: 20 },
+    { q: 'Rust is an oxide of which element?', a: ['Iron', 'Copper', 'Aluminum', 'Zinc'], correct: 0, explain: 'Rust is hydrated iron(III) oxide, Fe\u2082O\u2083\u00B7nH\u2082O \u2014 iron plus oxygen plus water.', dmg: 15 },
+    { q: 'Which subatomic particle has no charge?', a: ['Proton', 'Electron', 'Neutron', 'Ion'], correct: 2, explain: 'Protons are +1 and electrons are \u22121; the neutron is the neutral particle in the nucleus.', dmg: 20 },
+    { q: 'What is the most abundant gas in Earth\u2019s atmosphere?', a: ['Nitrogen', 'Oxygen', 'Carbon dioxide', 'Argon'], correct: 0, explain: 'Air is about 78% nitrogen and 21% oxygen \u2014 N\u2082 wins by a wide margin.', dmg: 20 },
+    { q: 'Diamond and graphite are both forms of:', a: ['Silicon', 'Carbon', 'Sulfur', 'Iron'], correct: 1, explain: 'Both are pure carbon. Same element, different bonding arrangement \u2014 they are allotropes.', dmg: 25 },
+    { q: 'Acid + Base \u2192 Salt + ?', a: ['Gas', 'Metal', 'Water', 'Acid'], correct: 2, explain: 'Neutralisation: H\u207A from the acid and OH\u207B from the base combine to make water.', dmg: 20 },
+    { q: 'What is the chemical symbol for gold?', a: ['Ag', 'Au', 'Go', 'Gd'], correct: 1, explain: 'Au, from the Latin \u2018aurum\u2019. Ag is silver \u2014 another Latin-derived symbol.', dmg: 15, check: { kind: 'elementSymbol', name: 'Gold' } },
+    { q: 'How many atoms are in one molecule of CO\u2082?', a: ['1', '2', '4', '3'], correct: 3, explain: '1 carbon + 2 oxygen = 3 atoms. The subscript counts atoms of that element only.', dmg: 15, check: { kind: 'atomTotal', formula: 'CO2' } },
+    { q: 'Which element has the symbol Na?', a: ['Sodium', 'Nickel', 'Neon', 'Nitrogen'], correct: 0, explain: 'Na is sodium, from the Latin \u2018natrium\u2019. Nickel is Ni and neon is Ne.', dmg: 15, check: { kind: 'elementName', symbol: 'Na' } },
+    { q: 'The molar mass of NaCl is closest to:', a: ['23 g/mol', '35 g/mol', '58 g/mol', '81 g/mol'], correct: 2, explain: 'Na(23) + Cl(35.5) \u2248 58.5 g/mol \u2014 add one molar mass per atom in the formula.', dmg: 20, check: { kind: 'molarMass', formula: 'NaCl', tol: 1 } },
+    { q: 'What charge does a proton carry?', a: ['Negative', 'None', 'Positive', 'It varies'], correct: 2, explain: 'Protons carry +1, which is what makes the nucleus positive and fixes the element\'s identity.', dmg: 15 },
+    { q: 'Which of these is a noble gas?', a: ['Chlorine', 'Helium', 'Hydrogen', 'Sulfur'], correct: 1, explain: 'Helium sits in Group 18 with a full outer shell, so it is essentially unreactive.', dmg: 20 },
+    { q: 'H\u2082SO\u2084 is the formula for which acid?', a: ['Hydrochloric acid', 'Nitric acid', 'Carbonic acid', 'Sulfuric acid'], correct: 3, explain: 'H\u2082SO\u2084 is sulfuric acid \u2014 the sulfate ion SO\u2084\u00B2\u207B with two acidic hydrogens.', dmg: 20 },
+    { q: 'At sea level (1 atm), pure water boils at:', a: ['100 \u00B0C', '0 \u00B0C', '50 \u00B0C', '212 \u00B0C'], correct: 0, explain: '100 \u00B0C at 1 atm. 212 is the same temperature on the Fahrenheit scale, not Celsius.', dmg: 15 },
+    { q: 'An atom with exactly 6 protons is always:', a: ['Oxygen', 'Nitrogen', 'Carbon', 'Silicon'], correct: 2, explain: 'Proton count IS the element. Six protons is always carbon, whatever the neutron count.', dmg: 25, check: { kind: 'elementZ', symbol: 'C', z: 6 } },
+    { q: 'Which pH value is the most acidic?', a: ['13', '2', '9', '7'], correct: 1, explain: 'Lower pH = more acidic. The scale is logarithmic, so pH 2 is 100,000\u00D7 more acidic than pH 7.', dmg: 20 }
   ];
   try { if (window.__alloChemPure) window.__alloChemPure.BATTLE_QS = BATTLE_QS; } catch (_e) {}
 
@@ -1367,6 +1644,116 @@
   // ═══════════════════════════════════════════════════════════
   // ORGANIC CHEMISTRY — functional groups
   // ═══════════════════════════════════════════════════════════
+  // Functional-group recognition drill.
+  //
+  // The section lists 18 groups as reference cards. Recognising one in a structure
+  // is the actual organic skill, and the errors are not random: students confuse
+  // SPECIFIC pairs (aldehyde/ketone, acid/ester, alcohol/ether, amide/amine).
+  // So every wrong option carries its own explanation of what that group would
+  // have looked like - a generic "try again" teaches nothing about the confusion
+  // the student actually has.
+  //
+  // Deterministic order, no shuffle: progress is a plain index, so an item cannot
+  // change under a student who reloads mid-drill.
+  var FG_DRILL = [
+    {
+      prompt: 'CH\u2083CH\u2082\u2013CHO',
+      hint: 'The carbonyl sits at the END of the chain.',
+      options: ['Aldehyde', 'Ketone', 'Carboxylic acid', 'Alcohol'],
+      correct: 0,
+      why: 'C=O with an H attached, at the end of the chain \u2014 that is an aldehyde (R\u2013CHO).',
+      distractors: {
+        1: 'A ketone has the C=O in the MIDDLE, between two carbons (R\u2013CO\u2013R\u2032). Here the carbonyl carbon still carries an H.',
+        2: 'A carboxylic acid is R\u2013COOH: the carbonyl carbon also carries an \u2013OH. There is no OH here.',
+        3: 'An alcohol is R\u2013OH with no C=O at all. This has a double-bonded oxygen.'
+      }
+    },
+    {
+      prompt: '(CH\u2083)\u2082C=O',
+      hint: 'Count the carbons attached to the carbonyl.',
+      options: ['Aldehyde', 'Ketone', 'Ester', 'Ether'],
+      correct: 1,
+      why: 'The C=O carbon is bonded to two carbons and no hydrogen \u2014 a ketone (acetone).',
+      distractors: {
+        0: 'An aldehyde needs an H on the carbonyl carbon. Both neighbours here are methyl groups.',
+        2: 'An ester is R\u2013COO\u2013R\u2032: it needs a second oxygen bridging to another carbon.',
+        3: 'An ether is R\u2013O\u2013R\u2032 with a SINGLE-bonded oxygen. This oxygen is double-bonded.'
+      }
+    },
+    {
+      prompt: 'CH\u2083\u2013COO\u2013CH\u2082CH\u2083',
+      hint: 'Two oxygens: one double-bonded, one bridging to a carbon.',
+      options: ['Carboxylic acid', 'Ester', 'Anhydride', 'Ether'],
+      correct: 1,
+      why: 'C=O plus an O bridging to another carbon chain \u2014 an ester (ethyl acetate).',
+      distractors: {
+        0: 'A carboxylic acid ends in \u2013COOH: the second oxygen carries a HYDROGEN, not a carbon chain.',
+        2: 'An anhydride is R\u2013CO\u2013O\u2013CO\u2013R\u2032 \u2014 TWO carbonyls sharing one oxygen. There is only one C=O here.',
+        3: 'An ether has no carbonyl at all, just R\u2013O\u2013R\u2032.'
+      }
+    },
+    {
+      prompt: 'CH\u2083CH\u2082\u2013O\u2013CH\u2082CH\u2083',
+      hint: 'One oxygen, single bonds only.',
+      options: ['Alcohol', 'Ether', 'Ester', 'Ketone'],
+      correct: 1,
+      why: 'An oxygen bridging two carbon chains with single bonds \u2014 an ether (diethyl ether).',
+      distractors: {
+        0: 'An alcohol is R\u2013OH: the oxygen carries a HYDROGEN. Here both sides are carbon.',
+        2: 'An ester needs a C=O as well as the bridging oxygen.',
+        3: 'A ketone needs a C=O. Every bond to this oxygen is single.'
+      }
+    },
+    {
+      prompt: 'CH\u2083\u2013CO\u2013NH\u2082',
+      hint: 'Nitrogen next to a carbonyl.',
+      options: ['Amine', 'Amide', 'Nitrile', 'Carboxylic acid'],
+      correct: 1,
+      why: 'C=O bonded directly to nitrogen \u2014 an amide. This is the bond that links amino acids into proteins.',
+      distractors: {
+        0: 'An amine is R\u2013NH\u2082 with NO carbonyl. The C=O next to the nitrogen is what makes it an amide \u2014 and it is why amides are not basic like amines.',
+        2: 'A nitrile is R\u2013C\u2261N, a triple bond to nitrogen and no oxygen.',
+        3: 'A carboxylic acid has \u2013OH on the carbonyl, not \u2013NH\u2082.'
+      }
+    },
+    {
+      prompt: 'C\u2086H\u2085\u2013OH',
+      hint: 'The OH is attached directly to the ring.',
+      options: ['Alcohol', 'Phenol', 'Ether', 'Aldehyde'],
+      correct: 1,
+      why: 'An \u2013OH bonded straight to a benzene ring is a phenol \u2014 markedly more acidic than an ordinary alcohol because the ring stabilises the anion.',
+      distractors: {
+        0: 'Close, but the ring matters: an OH on a plain carbon chain is an alcohol. Attached to an aromatic ring it is a phenol, and about a million times more acidic.',
+        2: 'An ether would need the oxygen bridging to a second carbon group, not to an H.',
+        3: 'An aldehyde needs a C=O. This oxygen is single-bonded.'
+      }
+    },
+    {
+      prompt: 'CH\u2083\u2013C\u2261CH',
+      hint: 'Count the bonds between the two carbons.',
+      options: ['Alkane', 'Alkene', 'Alkyne', 'Nitrile'],
+      correct: 2,
+      why: 'A carbon\u2013carbon TRIPLE bond \u2014 an alkyne (propyne).',
+      distractors: {
+        0: 'An alkane has only single C\u2013C bonds and is saturated \u2014 no double or triple bonds anywhere in it.',
+        1: 'An alkene is a DOUBLE bond, C=C. Count again: there are three lines here.',
+        3: 'A nitrile is a triple bond to NITROGEN (R\u2013C\u2261N). This triple bond is carbon to carbon.'
+      }
+    },
+    {
+      prompt: 'CH\u2083CH\u2082\u2013COOH',
+      hint: 'Carbonyl AND hydroxyl on the same carbon.',
+      options: ['Ester', 'Aldehyde', 'Carboxylic acid', 'Alcohol'],
+      correct: 2,
+      why: 'C=O and \u2013OH on the same carbon \u2014 a carboxylic acid (propanoic acid). That combination is what makes it acidic.',
+      distractors: {
+        0: 'An ester bridges the second oxygen to a CARBON chain. Here it carries an H.',
+        1: 'An aldehyde has an H on the carbonyl carbon, not an \u2013OH.',
+        3: 'An alcohol has no carbonyl. This has both C=O and \u2013OH, which is why it is far more acidic than an alcohol.'
+      }
+    }
+  ];
+
   var ORGANIC_CHEM = {
     intro: 'Organic chemistry is the chemistry of carbon. More carbon compounds known than all other elements combined.',
     functionalGroups: [
@@ -1407,6 +1794,16 @@
       { type: 'Reduction', mechanism: 'Gain of e- / gain H / loss of O', example: 'Aldehyde → primary alcohol' }
     ]
   };
+
+  // Exposed AFTER ORGANIC_CHEM is assigned - `var` hoists the name but not the
+  // value, so exporting this above the literal silently produced an empty list
+  // and the "only uses group names the cards teach" test passed vacuously.
+  try {
+    if (window.__alloChemPure) {
+      window.__alloChemPure.FG_DRILL = FG_DRILL;
+      window.__alloChemPure.ORGANIC_GROUP_NAMES = ORGANIC_CHEM.functionalGroups.map(function(g) { return g.name; });
+    }
+  } catch (_e) {}
 
   // ═══════════════════════════════════════════════════════════
   // BIOCHEMISTRY — life chemistry
@@ -5546,7 +5943,12 @@
                       var ok = i === bq.correct;
                       var nEHP = battleEnemyHP, nHP = battleHP, nScore = battleScore;
                       if (ok) { chemSound('correct'); nEHP = Math.max(0, battleEnemyHP - bq.dmg); nScore++; } else { chemSound('damage'); nHP = Math.max(0, battleHP - 15); }
+                      // Every battle item carries `explain`, so a miss teaches the
+                      // reason rather than only naming the right option. The text
+                      // rides on the existing _battleFeedback string so the live
+                      // region below announces answer AND reason in one utterance.
                       var fb = ok ? '\u2705 Hit! -' + bq.dmg + ' HP!' : '\u274C -15 HP! Answer: ' + bq.a[bq.correct];
+                      if (bq.explain) fb += ' \u2014 ' + bq.explain;
                       updMulti({ _battleEnemyHP: nEHP, _battleHP: nHP, _battleScore: nScore, _battleFeedback: fb });
                     }, className: 'min-h-[40px] px-3 py-2 text-xs font-bold rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-1 ' + (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50') }, opt);
                   })
@@ -5975,6 +6377,115 @@
                   })
                 )
               ),
+
+              // ── Live buffer designer ──────────────────────
+              // The table above lists twelve pKa values and the Key Equations card
+              // states Henderson-Hasselbalch as a string. A buffer is where pKa stops
+              // being a number to look up and becomes the thing that decides the pH:
+              // at a 1:1 ratio pH IS pKa, exactly, for every acid in the list.
+              (function() {
+                var buf = Object.assign({ idx: 0, ratio: 0 }, d.buffer || {});
+                function setBuf(patch) { upd('buffer', Object.assign({}, buf, patch)); }
+
+                var acids = ACIDS_BASES.weakAcids;
+                var acid = acids[buf.idx] || acids[0];
+                // ratio is log10([A-]/[HA]) so the slider is linear in pH.
+                var ratio = Math.pow(10, buf.ratio);
+                var pH = hendersonHasselbalch(acid.pKa, ratio, 1);
+                var inRange = bufferCapacityOk(acid.pKa, pH);
+                var pOH = pOHFromPH(pH);
+
+                // Where this buffer sits on a 0-14 scale.
+                var SW = 240, SH = 26;
+                var x = Math.max(0, Math.min(14, pH)) / 14 * (SW - 8) + 4;
+                var xKa = Math.max(0, Math.min(14, acid.pKa)) / 14 * (SW - 8) + 4;
+
+                function fm(x2, dp) { return isFinite(x2) ? x2.toFixed(typeof dp === 'number' ? dp : 2) : '--'; }
+
+                var ratioText = buf.ratio === 0
+                  ? '1 to 1'
+                  : (buf.ratio > 0 ? fm(ratio, ratio >= 10 ? 0 : 1) + ' to 1' : '1 to ' + fm(1 / ratio, (1 / ratio) >= 10 ? 0 : 1));
+
+                var srBuf = acid.name + ' buffer, pKa ' + acid.pKa + '. Base to acid ratio '
+                  + ratioText + '. pH ' + fm(pH) + ', pOH ' + fm(pOH) + '. '
+                  + (inRange ? 'Within useful buffering range.' : 'Outside the useful buffering range.');
+
+                return h('div', { className: 'bg-white border-2 border-amber-400 rounded-xl p-3 mb-3' },
+                  h('div', { className: 'text-sm font-bold text-amber-800 mb-1' },
+                    __alloT('stem.chembalance.buffer_live_title', '\u2696\uFE0F Design a buffer')),
+                  h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                    __alloT('stem.chembalance.buffer_live_intro', 'pH = pKa + log\u2081\u2080([A\u207B]/[HA]). Pick an acid and shift the ratio \u2014 at 1:1 the pH lands exactly on the pKa, every time.')),
+
+                  h('div', { className: 'mb-2' },
+                    h('label', { htmlFor: 'buf-acid', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                      __alloT('stem.chembalance.weak_acid', 'Weak acid')),
+                    h('select', {
+                      id: 'buf-acid', value: String(buf.idx),
+                      onChange: function(e) { setBuf({ idx: parseInt(e.target.value, 10) }); },
+                      className: 'w-full min-h-[44px] text-xs border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                      'aria-label': __alloT('stem.chembalance.choose_weak_acid', 'Choose a weak acid')
+                    }, acids.map(function(a, i) {
+                      return h('option', { key: i, value: String(i) }, a.name + ' (pKa ' + a.pKa + ')');
+                    }))
+                  ),
+
+                  h('div', { className: 'mb-3' },
+                    h('label', { htmlFor: 'buf-ratio', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                      __alloT('stem.chembalance.base_acid_ratio', 'Base : acid ratio') + ': ',
+                      h('output', { htmlFor: 'buf-ratio', className: 'font-mono text-amber-800' }, ratioText)),
+                    h('input', {
+                      id: 'buf-ratio', type: 'range', min: -2, max: 2, step: 0.25, value: buf.ratio,
+                      onChange: function(e) { setBuf({ ratio: parseFloat(e.target.value) }); },
+                      className: 'w-full min-h-[44px]',
+                      'aria-label': __alloT('stem.chembalance.base_acid_ratio', 'Base to acid ratio'),
+                      'aria-valuetext': ratioText + ', pH ' + fm(pH)
+                    })
+                  ),
+
+                  h('svg', { viewBox: '0 0 ' + SW + ' ' + SH, role: 'img', 'aria-label': srBuf, 'data-testid': 'chem-buffer-scale', style: { width: '100%', height: 'auto', display: 'block' }, className: 'mb-2' },
+                    h('rect', { x: 4, y: 4, width: SW - 8, height: 9, fill: '#e2e8f0', rx: 2 }),
+                    h('rect', { x: 4, y: 4, width: (SW - 8) * (7 / 14), height: 9, fill: '#fecaca', rx: 2 }),
+                    h('rect', { x: 4 + (SW - 8) * (7 / 14), y: 4, width: (SW - 8) * (7 / 14), height: 9, fill: '#bfdbfe' }),
+                    // The pKa tick sits ABOVE the bar and the pH dot ON it, so at a
+                    // 1:1 ratio (where they coincide - the whole point) the dot does
+                    // not swallow the tick and hide the relationship.
+                    h('line', { x1: xKa, y1: 0, x2: xKa, y2: 4, stroke: '#78350f', strokeWidth: 1.5 }),
+                    h('text', { x: xKa, y: 21, textAnchor: 'middle', style: { fontSize: '5px' }, fill: '#78350f' }, 'pKa'),
+                    h('circle', { cx: x, cy: 8.5, r: 3.5, fill: '#0f172a', stroke: '#ffffff', strokeWidth: 1 }),
+                    h('text', { x: 4, y: SH - 2, style: { fontSize: '6px' }, fill: '#475569' }, '0 acid'),
+                    h('text', { x: SW / 2, y: SH - 2, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' }, '7'),
+                    h('text', { x: SW - 4, y: SH - 2, textAnchor: 'end', style: { fontSize: '6px' }, fill: '#475569' }, '14 base')
+                  ),
+
+                  h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                    h('div', { className: 'bg-amber-50 border border-amber-200 rounded p-2 text-center' },
+                      h('div', { className: 'text-[0.625rem] font-bold text-amber-700' }, 'pKa'),
+                      h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, String(acid.pKa))),
+                    h('div', { 'data-testid': 'chem-buffer-ph', className: 'bg-slate-50 border-2 border-slate-400 rounded p-2 text-center' },
+                      h('div', { className: 'text-[0.625rem] font-bold text-slate-700' }, 'pH'),
+                      h('div', { className: 'font-mono text-[0.6875rem] font-black text-slate-900' }, fm(pH))),
+                    h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2 text-center' },
+                      h('div', { className: 'text-[0.625rem] font-bold text-slate-700' }, 'pOH'),
+                      h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, fm(pOH)))
+                  ),
+
+                  buf.ratio === 0
+                    ? h('div', { 'data-testid': 'chem-buffer-atpka', className: 'bg-emerald-50 border border-emerald-300 rounded p-2 mb-2 text-[0.6875rem] text-emerald-900' },
+                        __alloT('stem.chembalance.buffer_at_pka', 'At 1:1 the log term is log\u2081\u2080(1) = 0, so pH = pKa exactly. That is what a pKa IS: the pH at which the acid is half dissociated.'))
+                    : h('div', { 'data-testid': 'chem-buffer-capacity', className: (inRange ? 'bg-slate-50 border border-slate-300 text-slate-800' : 'bg-rose-50 border border-rose-300 text-rose-900') + ' rounded p-2 mb-2 text-[0.6875rem]' },
+                        inRange
+                          ? __alloT('stem.chembalance.buffer_in_range', 'Within pKa \u00B1 1, so this still buffers well against added acid or base.')
+                          : __alloT('stem.chembalance.buffer_out_of_range', 'More than 1 pH unit from the pKa \u2014 one component is nearly used up, so a small addition now swings the pH sharply. Pick an acid whose pKa is nearer your target pH.')),
+
+                  h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srBuf),
+
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { setBuf({ idx: 0, ratio: 0 }); },
+                    className: 'min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700'
+                  }, __alloT('stem.chembalance.reset_explorer_5', 'Reset'))
+                );
+              })(),
               h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3' },
                 h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.key_equations', 'Key Equations')),
                 h('div', { className: 'space-y-1 text-xs' },
@@ -6023,6 +6534,112 @@
                 })
               )
             ),
+
+            // ── Live galvanic cell builder ──────────────────
+            // The table above lists half-reactions and their potentials. Building a
+            // cell from two of them is the skill, and the near-universal error is
+            // picking the wrong electrode as cathode and then reporting a negative
+            // voltage for a spontaneous cell. Here the model ASSIGNS the electrodes
+            // from the potentials, so the student sees which one is reduced and why.
+            (function() {
+              var cell = Object.assign({ a: 'Zn2+/Zn', b: 'Cu2+/Cu', n: 2 }, d.redoxCell || {});
+              function setCell(patch) { upd('redoxCell', Object.assign({}, cell, patch)); }
+
+              var keys = Object.keys(STANDARD_REDUCTION);
+              var roles = assignElectrodes(cell.a, cell.b);
+              var same = !roles;
+              var eCell = roles ? cellPotential(roles.cathode, roles.anode) : NaN;
+              var dG = roles ? cellDeltaG(eCell, cell.n) : NaN;
+
+              function couple(k) { return STANDARD_REDUCTION[k] || { e: 0, label: k }; }
+              function sv(x, dp) { return isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(typeof dp === 'number' ? dp : 2) : '--'; }
+
+              var srCell = same
+                ? 'Both electrodes are the same couple, so there is no potential difference and no cell.'
+                : 'Cathode ' + roles.cathode + ' at ' + sv(couple(roles.cathode).e)
+                  + ' volts, anode ' + roles.anode + ' at ' + sv(couple(roles.anode).e)
+                  + ' volts. Cell potential ' + sv(eCell) + ' volts, delta G '
+                  + (isFinite(dG) ? (dG / 1000).toFixed(0) : '--') + ' kilojoules per mole, '
+                  + (eCell > 0 ? 'spontaneous.' : 'not spontaneous.');
+
+              function picker(id, label, value, onChange) {
+                return h('div', null,
+                  h('label', { htmlFor: id, className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' }, label),
+                  h('select', {
+                    id: id, value: value, onChange: onChange,
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': label
+                  }, keys.map(function(k) {
+                    return h('option', { key: k, value: k }, k + '  (' + sv(STANDARD_REDUCTION[k].e) + ' V)');
+                  }))
+                );
+              }
+
+              return h('div', { className: 'bg-white border-2 border-emerald-400 rounded-xl p-3 mb-3' },
+                h('div', { className: 'text-sm font-bold text-emerald-800 mb-1' },
+                  __alloT('stem.chembalance.cell_live_title', '\u26A1 Build a cell')),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.cell_live_intro', 'Pick two couples. The higher reduction potential is ALWAYS the cathode \u2014 the bench decides, so a spontaneous cell can never come out negative.')),
+
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-3' },
+                  picker('cell-a', __alloT('stem.chembalance.electrode_a', 'Electrode A'), cell.a,
+                    function(e) { setCell({ a: e.target.value }); }),
+                  picker('cell-b', __alloT('stem.chembalance.electrode_b', 'Electrode B'), cell.b,
+                    function(e) { setCell({ b: e.target.value }); })
+                ),
+
+                same
+                  ? h('div', { 'data-testid': 'chem-cell-same', className: 'bg-amber-50 border border-amber-300 rounded p-2 text-[0.6875rem] text-amber-900' },
+                      __alloT('stem.chembalance.cell_same_couple', 'Two identical couples have the same potential, so there is nothing to drive electrons either way. A cell needs a DIFFERENCE.'))
+                  : h('div', null,
+                      h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                        h('div', { 'data-testid': 'chem-cell-cathode', className: 'bg-emerald-50 border border-emerald-300 rounded p-2' },
+                          h('div', { className: 'text-[0.625rem] font-bold text-emerald-800' },
+                            __alloT('stem.chembalance.cathode_reduction', 'Cathode (reduction, +)')),
+                          h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, couple(roles.cathode).label),
+                          h('div', { className: 'font-mono text-[0.625rem] text-slate-600' }, 'E\u00B0 = ' + sv(couple(roles.cathode).e) + ' V')),
+                        h('div', { 'data-testid': 'chem-cell-anode', className: 'bg-rose-50 border border-rose-300 rounded p-2' },
+                          h('div', { className: 'text-[0.625rem] font-bold text-rose-800' },
+                            __alloT('stem.chembalance.anode_oxidation', 'Anode (oxidation, \u2212)')),
+                          h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, couple(roles.anode).label),
+                          h('div', { className: 'font-mono text-[0.625rem] text-slate-600' }, 'E\u00B0 = ' + sv(couple(roles.anode).e) + ' V'))
+                      ),
+
+                      h('div', { className: 'bg-slate-50 border-2 border-slate-300 rounded p-2 mb-2 text-center' },
+                        h('div', { className: 'text-[0.625rem] font-bold text-slate-700' },
+                          __alloT('stem.chembalance.cell_potential', 'E\u00B0cell = E\u00B0cathode \u2212 E\u00B0anode')),
+                        h('div', { 'data-testid': 'chem-cell-voltage', className: 'font-mono text-sm font-black text-slate-900' },
+                          sv(couple(roles.cathode).e) + ' \u2212 (' + sv(couple(roles.anode).e) + ') = ' + sv(eCell) + ' V')),
+
+                      h('div', { className: 'mb-2' },
+                        h('label', { htmlFor: 'cell-n', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                          __alloT('stem.chembalance.electrons_transferred', 'Electrons transferred (n)') + ': ',
+                          h('output', { htmlFor: 'cell-n', className: 'font-mono text-emerald-800' }, String(cell.n))),
+                        h('input', {
+                          id: 'cell-n', type: 'range', min: 1, max: 6, step: 1, value: cell.n,
+                          onChange: function(e) { setCell({ n: parseInt(e.target.value, 10) }); },
+                          className: 'w-full min-h-[44px]',
+                          'aria-label': __alloT('stem.chembalance.electrons_transferred', 'Electrons transferred'),
+                          'aria-valuetext': cell.n + ' electrons'
+                        })),
+
+                      h('div', { 'data-testid': 'chem-cell-dg', className: 'bg-indigo-50 border border-indigo-300 rounded p-2 text-[0.6875rem] text-indigo-900' },
+                        '\u0394G\u00B0 = \u2212nFE\u00B0 = \u2212' + cell.n + ' \u00D7 96485 \u00D7 ' + sv(eCell)
+                        + ' = ' + (isFinite(dG) ? (dG / 1000).toFixed(0) : '--') + ' kJ/mol \u2014 '
+                        + (eCell > 0
+                            ? __alloT('stem.chembalance.cell_spontaneous', 'negative, so the reaction runs on its own. This is a battery.')
+                            : __alloT('stem.chembalance.cell_nonspontaneous', 'positive, so it will not run on its own. Swapping the electrodes does not help \u2014 you would need to PUSH it with an external supply (electrolysis).')))
+                    ),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srCell),
+
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setCell({ a: 'Zn2+/Zn', b: 'Cu2+/Cu', n: 2 }); },
+                  className: 'mt-2 min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700'
+                }, __alloT('stem.chembalance.reset_daniell', 'Reset to the Daniell cell'))
+              );
+            })(),
             h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3' },
               h('div', { className: 'text-sm font-bold text-purple-700 mb-2' }, __alloT('stem.chembalance.electrochemical_cells', 'Electrochemical Cells')),
               REDOX.cells.map(function(c, i) {
@@ -6063,6 +6680,95 @@
                 );
               })
             ),
+
+            // ── Functional-group recognition drill ──────────
+            // Reading 18 reference cards is not the same as spotting a group in a
+            // structure. Every wrong option here explains what THAT group would have
+            // looked like, because the errors are specific confusions (aldehyde vs
+            // ketone, acid vs ester, alcohol vs phenol) rather than random guesses.
+            (function() {
+              var fgd = Object.assign({ idx: 0, picked: null, score: 0, seen: 0 }, d.fgDrill || {});
+              function setFgd(patch) { upd('fgDrill', Object.assign({}, fgd, patch)); }
+
+              var item = FG_DRILL[Math.min(fgd.idx, FG_DRILL.length - 1)];
+              var answered = fgd.picked !== null && fgd.picked !== undefined;
+              var right = answered && fgd.picked === item.correct;
+              var last = fgd.idx >= FG_DRILL.length - 1;
+
+              var feedback = !answered ? ''
+                : (right ? item.why : (item.distractors[fgd.picked] || item.why));
+
+              var srFg = !answered
+                ? 'Question ' + (fgd.idx + 1) + ' of ' + FG_DRILL.length + '. Which functional group is ' + item.prompt + '?'
+                : (right ? 'Correct. ' : 'Not quite. ') + feedback;
+
+              return h('div', { className: 'bg-white border-2 border-emerald-400 rounded-xl p-3 mb-3' },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('div', { className: 'text-sm font-bold text-emerald-800' },
+                    __alloT('stem.chembalance.fg_drill_title', '\uD83D\uDD0D Name that group')),
+                  h('span', { className: 'ml-auto text-[0.625rem] font-bold text-slate-600' },
+                    (fgd.idx + 1) + ' / ' + FG_DRILL.length
+                    + (fgd.seen > 0 ? '  \u00B7  ' + fgd.score + '/' + fgd.seen : ''))),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.fg_drill_intro', 'Spotting the group is the skill the cards above cannot practise. A wrong answer explains what that group would have looked like.')),
+
+                h('div', { 'data-testid': 'chem-fg-prompt', className: 'bg-slate-900 rounded-lg p-3 mb-2 text-center' },
+                  h('div', { className: 'font-mono text-base font-bold text-white' }, item.prompt)),
+
+                h('p', { className: 'text-[0.625rem] text-slate-600 italic mb-2 text-center' }, item.hint),
+
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  item.options.map(function(opt, i) {
+                    var isCorrect = i === item.correct;
+                    var cls = answered
+                      ? (isCorrect ? 'bg-emerald-100 text-emerald-900 border-emerald-600'
+                         : (i === fgd.picked ? 'bg-rose-100 text-rose-900 border-rose-500' : 'bg-slate-50 text-slate-500 border-slate-200'))
+                      : 'bg-white text-slate-700 border-slate-300 hover:border-emerald-600 hover:bg-emerald-50';
+                    return h('button', {
+                      key: i, type: 'button',
+                      'data-fg-option': String(i),
+                      'aria-pressed': answered && i === fgd.picked,
+                      'aria-disabled': answered,
+                      disabled: answered,
+                      onClick: function() {
+                        if (answered) return;
+                        var ok = i === item.correct;
+                        if (ok) { chemSound('correct'); } else { chemSound('wrong'); }
+                        setFgd({ picked: i, score: fgd.score + (ok ? 1 : 0), seen: fgd.seen + 1 });
+                      },
+                      className: 'min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1 ' + cls
+                    }, opt);
+                  })
+                ),
+
+                answered && h('div', {
+                  'data-testid': 'chem-fg-feedback',
+                  className: 'rounded p-2 mb-2 text-[0.6875rem] ' + (right ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-amber-50 border border-amber-300 text-amber-900')
+                },
+                  h('span', { className: 'font-bold' }, right
+                    ? __alloT('stem.chembalance.fg_correct', 'Correct. ')
+                    : __alloT('stem.chembalance.fg_not_quite', 'Not quite. ')),
+                  feedback),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srFg),
+
+                h('div', { className: 'flex gap-2' },
+                  answered && !last && h('button', {
+                    type: 'button',
+                    'data-testid': 'chem-fg-next',
+                    onClick: function() { setFgd({ idx: fgd.idx + 1, picked: null }); },
+                    className: 'min-h-[44px] px-4 py-2 text-xs font-bold rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-900'
+                  }, __alloT('stem.chembalance.fg_next', 'Next structure \u2192')),
+                  answered && last && h('div', { 'data-testid': 'chem-fg-done', className: 'text-[0.6875rem] font-bold text-emerald-900 self-center' },
+                    __alloT('stem.chembalance.fg_done', 'That is the set \u2014 ') + fgd.score + '/' + fgd.seen + '.'),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { setFgd({ idx: 0, picked: null, score: 0, seen: 0 }); },
+                    className: 'min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700'
+                  }, __alloT('stem.chembalance.fg_restart', 'Start over'))
+                )
+              );
+            })(),
             h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded-xl p-3 mb-3' },
               h('div', { className: 'text-sm font-bold text-cyan-700 mb-2' }, __alloT('stem.chembalance.iupac_naming_rules', 'IUPAC Naming Rules')),
               h('ol', { className: 'space-y-1 list-decimal list-inside text-xs text-cyan-900' },
@@ -6156,6 +6862,114 @@
                 );
               })
             ),
+
+            // ── Live Gibbs free energy ──────────────────────
+            // The concepts card states dG = dH - T dS and "dG < 0: spontaneous", and
+            // the examples card says CaCO3 is "No at room T, yes at high T" WITHOUT
+            // ever showing where that flips. The flip is the whole concept. Here the
+            // student moves T and watches the sign change at a temperature the model
+            // computes (CaCO3: 1113 K, which is the real decomposition range).
+            (function() {
+              var th = Object.assign({ preset: 'caco3', tempK: 298 }, d.gibbs || {});
+              function setTh(patch) { upd('gibbs', Object.assign({}, th, patch)); }
+
+              // dH in kJ/mol, dS in J/(mol*K). Values are standard tabulated data;
+              // each dH matches the figure already shown in THERMO.examples.
+              var GIBBS_PRESETS = {
+                caco3:  { label: 'CaCO\u2083 \u2192 CaO + CO\u2082 (lime kiln)', dh: 178, ds: 160 },
+                haber:  { label: 'N\u2082 + 3H\u2082 \u2192 2NH\u2083 (Haber)', dh: -92.4, ds: -198.7 },
+                comb:   { label: 'C + O\u2082 \u2192 CO\u2082 (combustion)', dh: -393.5, ds: 2.9 },
+                boil:   { label: 'H\u2082O(l) \u2192 H\u2082O(g) (boiling)', dh: 44, ds: 118.9 },
+                freeze: { label: 'H\u2082O(l) \u2192 H\u2082O(s) (freezing)', dh: -6.01, ds: -22.0 }
+              };
+
+              var p = GIBBS_PRESETS[th.preset] || GIBBS_PRESETS.caco3;
+              var dG = gibbsFreeEnergy(p.dh, p.ds, th.tempK);
+              var cross = gibbsCrossoverK(p.dh, p.ds);
+              var regime = spontaneityRegime(p.dh, p.ds);
+              var spontaneous = isFinite(dG) && dG < 0;
+              var hasCrossover = isFinite(cross) && cross > 0
+                && (regime.key === 'lowT' || regime.key === 'highT');
+
+              function sv(x, dp) { return isFinite(x) ? (x >= 0 ? '+' : '') + x.toFixed(typeof dp === 'number' ? dp : 1) : '--'; }
+
+              var srG = p.label + ' at ' + th.tempK + ' kelvin. Delta G is '
+                + sv(dG) + ' kilojoules per mole, so the reaction is '
+                + (spontaneous ? 'spontaneous' : 'not spontaneous') + '. '
+                + (hasCrossover ? 'The sign flips at ' + Math.round(cross) + ' kelvin.' : regime.label + '.');
+
+              return h('div', { className: 'bg-white border-2 border-amber-400 rounded-xl p-3 mb-3' },
+                h('div', { className: 'text-sm font-bold text-amber-800 mb-1' },
+                  __alloT('stem.chembalance.gibbs_live_title', '\uD83C\uDF21\uFE0F Will it go? Move the temperature')),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.gibbs_live_intro', '\u0394G = \u0394H \u2212 T\u0394S. Enthalpy and entropy are fixed for a reaction; temperature is the dial. Watch the sign flip.')),
+
+                h('div', { className: 'mb-2' },
+                  h('label', { htmlFor: 'gibbs-preset', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.reaction', 'Reaction')),
+                  h('select', {
+                    id: 'gibbs-preset', value: th.preset,
+                    onChange: function(e) { setTh({ preset: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-xs border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.chembalance.choose_reaction', 'Choose a reaction')
+                  }, Object.keys(GIBBS_PRESETS).map(function(k) {
+                    return h('option', { key: k, value: k }, GIBBS_PRESETS[k].label);
+                  }))
+                ),
+
+                h('div', { className: 'mb-3' },
+                  h('label', { htmlFor: 'gibbs-temp', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.temperature_k', 'Temperature') + ': ',
+                    h('output', { htmlFor: 'gibbs-temp', className: 'font-mono text-amber-800' },
+                      th.tempK + ' K (' + (th.tempK - 273.15).toFixed(0) + ' \u00B0C)')),
+                  h('input', {
+                    id: 'gibbs-temp', type: 'range', min: 100, max: 1500, step: 25, value: th.tempK,
+                    onChange: function(e) { setTh({ tempK: parseInt(e.target.value, 10) }); },
+                    className: 'w-full min-h-[44px]',
+                    'aria-label': __alloT('stem.chembalance.temperature_k', 'Temperature in kelvin'),
+                    'aria-valuetext': th.tempK + ' kelvin, delta G ' + sv(dG) + ' kilojoules per mole'
+                  })
+                ),
+
+                h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                  h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2 text-center' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-700' }, '\u0394H'),
+                    h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, sv(p.dh) + ' kJ')),
+                  h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2 text-center' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-700' }, '\u0394S'),
+                    h('div', { className: 'font-mono text-[0.6875rem] text-slate-900' }, sv(p.ds) + ' J/K')),
+                  h('div', {
+                    'data-testid': 'chem-gibbs-dg',
+                    className: 'border-2 rounded p-2 text-center ' + (spontaneous ? 'bg-emerald-50 border-emerald-500' : 'bg-rose-50 border-rose-400')
+                  },
+                    h('div', { className: 'text-[0.625rem] font-bold ' + (spontaneous ? 'text-emerald-800' : 'text-rose-800') }, '\u0394G'),
+                    h('div', { className: 'font-mono text-[0.6875rem] font-black text-slate-900' }, sv(dG) + ' kJ'))
+                ),
+
+                h('div', {
+                  'data-testid': 'chem-gibbs-verdict',
+                  className: 'rounded p-2 mb-2 text-[0.6875rem] font-bold ' + (spontaneous ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-rose-50 border border-rose-300 text-rose-900')
+                }, spontaneous
+                  ? __alloT('stem.chembalance.gibbs_spontaneous', '\u0394G is negative \u2014 this reaction runs on its own at this temperature.')
+                  : __alloT('stem.chembalance.gibbs_nonspontaneous', '\u0394G is positive \u2014 it will not run on its own at this temperature.')),
+
+                hasCrossover
+                  ? h('div', { 'data-testid': 'chem-gibbs-crossover', className: 'bg-amber-50 border border-amber-300 rounded p-2 text-[0.6875rem] text-amber-900' },
+                      __alloT('stem.chembalance.gibbs_crossover', 'Sign flips at ') + Math.round(cross) + ' K ('
+                      + (cross - 273.15).toFixed(0) + ' \u00B0C) \u2014 ' + regime.label + '.')
+                  : h('div', { 'data-testid': 'chem-gibbs-regime', className: 'bg-slate-50 border border-slate-300 rounded p-2 text-[0.6875rem] text-slate-800' },
+                      regime.label
+                      + __alloT('stem.chembalance.gibbs_no_crossover', ' \u2014 \u0394H and \u0394S pull the same way, so temperature never changes the answer.')),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srG),
+
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setTh({ preset: 'caco3', tempK: 298 }); },
+                  className: 'mt-2 min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700'
+                }, __alloT('stem.chembalance.reset_explorer_4', 'Reset'))
+              );
+            })(),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
               h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.example_reactions', 'Example Reactions')),
               THERMO.examples.map(function(e, i) {
@@ -6200,6 +7014,150 @@
               h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.arrhenius_equation', 'Arrhenius Equation')),
               h('div', { className: 'bg-white border border-amber-200 rounded p-2 font-mono text-xs' }, KINETICS.arrhenius)
             ),
+
+            // ── Live Arrhenius explorer ───────────────────────────────────
+            // The card above states the equation; this lets a student MOVE Ea
+            // and T and watch k, the Boltzmann fraction, and the 10-degree
+            // speed-up answer back. The "rate doubles per 10 C" rule of thumb
+            // is only true near Ea ~ 50 kJ/mol, which the readout makes
+            // testable instead of asserted (KINETICS.factors hedges it in
+            // words; here the student can falsify it).
+            (function() {
+              var kin = Object.assign({ eaKJ: 50, tempC: 25, catalyst: false }, d.kinetics || {});
+              function setKin(patch) { upd('kinetics', Object.assign({}, kin, patch)); }
+
+              // A catalyst lowers Ea; it does not change A or the temperature.
+              var effEa = kin.catalyst ? Math.max(5, kin.eaKJ - 25) : kin.eaKJ;
+              var tK = kin.tempC + 273.15;
+              var kNow = arrheniusK(effEa, tK);
+              var frac = arrheniusFraction(effEa, tK);
+              var ratio10 = arrheniusRatio(effEa, tK, tK + 10);
+              // speed-up from the catalyst at the SAME temperature
+              var catFactor = kin.catalyst
+                ? arrheniusFraction(effEa, tK) / arrheniusFraction(kin.eaKJ, tK)
+                : 1;
+
+              function fmt(x) {
+                if (!isFinite(x)) return '--';
+                if (x === 0) return '0';
+                var e = Math.floor(Math.log10(Math.abs(x)));
+                if (e >= -3 && e <= 5) return x.toPrecision(3);
+                return x.toExponential(2);
+              }
+
+              // A multiplier reads better as a grouped integer once it is large:
+              // "24,000x" lands where "2.40e+4x" does not.
+              function fmtFactor(x) {
+                if (!isFinite(x)) return '--';
+                if (x >= 10000 && x < 1e9) return Math.round(x).toLocaleString('en-US');
+                if (x >= 100) return String(Math.round(x));
+                if (x >= 10) return x.toFixed(1);
+                return x.toFixed(2);
+              }
+
+              // "1.74e-7 %" is true but unreadable. The same number as "about 1 in
+              // 574 million collisions" is the fact a student can actually hold --
+              // and it is the reason activation energy matters at all.
+              function fmtOdds(f) {
+                if (!isFinite(f) || f <= 0) return '--';
+                if (f >= 0.01) return (f * 100).toFixed(1) + '% of collisions';
+                var oneIn = 1 / f;
+                if (oneIn >= 1e15) return 'fewer than 1 in a quadrillion collisions';
+                return 'about 1 in ' + Math.round(oneIn).toLocaleString('en-US') + ' collisions';
+              }
+
+              var summary = 'Activation energy ' + effEa + ' kilojoules per mole at '
+                + kin.tempC + ' degrees Celsius. Rate constant ' + fmt(kNow)
+                + ' per second. Enough energy in ' + fmtOdds(frac) + '. '
+                + 'Warming by 10 degrees multiplies the rate by ' + ratio10.toFixed(2) + '.';
+
+              return h('div', { className: 'bg-white border-2 border-amber-300 rounded-xl p-3 mb-3' },
+                h('div', { className: 'text-sm font-bold text-amber-800 mb-1' },
+                  __alloT('stem.chembalance.arrhenius_live_title', '🌡️ Try it: move Ea and T')),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.arrhenius_live_intro', 'The equation above is fixed. These two sliders are not — change them and watch every number answer back.')),
+
+                // Ea slider
+                h('div', { className: 'mb-3' },
+                  h('label', { htmlFor: 'kin-ea', className: 'block text-xs font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.activation_energy', 'Activation energy Ea') + ': ',
+                    h('output', { htmlFor: 'kin-ea', className: 'font-mono text-amber-800' }, kin.eaKJ + ' kJ/mol')),
+                  h('input', {
+                    id: 'kin-ea', type: 'range', min: 10, max: 150, step: 5,
+                    value: kin.eaKJ,
+                    onChange: function(e) { setKin({ eaKJ: parseInt(e.target.value, 10) }); },
+                    className: 'w-full min-h-[44px]',
+                    'aria-label': __alloT('stem.chembalance.activation_energy', 'Activation energy in kilojoules per mole'),
+                    'aria-valuetext': kin.eaKJ + ' kilojoules per mole'
+                  })
+                ),
+
+                // Temperature slider
+                h('div', { className: 'mb-3' },
+                  h('label', { htmlFor: 'kin-temp', className: 'block text-xs font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.temperature', 'Temperature') + ': ',
+                    h('output', { htmlFor: 'kin-temp', className: 'font-mono text-amber-800' }, kin.tempC + ' °C (' + tK.toFixed(2) + ' K)')),
+                  h('input', {
+                    id: 'kin-temp', type: 'range', min: -20, max: 200, step: 5,
+                    value: kin.tempC,
+                    onChange: function(e) { setKin({ tempC: parseInt(e.target.value, 10) }); },
+                    className: 'w-full min-h-[44px]',
+                    'aria-label': __alloT('stem.chembalance.temperature', 'Temperature in degrees Celsius'),
+                    'aria-valuetext': kin.tempC + ' degrees Celsius, ' + tK.toFixed(2) + ' kelvin'
+                  })
+                ),
+
+                h('label', { className: 'flex items-center gap-2 mb-3 text-xs font-bold text-slate-800 min-h-[44px]' },
+                  h('input', {
+                    type: 'checkbox', checked: !!kin.catalyst,
+                    onChange: function(e) { setKin({ catalyst: !!e.target.checked }); },
+                    className: 'w-4 h-4'
+                  }),
+                  __alloT('stem.chembalance.add_catalyst', 'Add a catalyst (lowers Ea by 25 kJ/mol)')),
+
+                // Readouts
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  h('div', { className: 'bg-amber-50 border border-amber-200 rounded p-2' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-amber-700' },
+                      __alloT('stem.chembalance.rate_constant_k', 'Rate constant k')),
+                    h('div', { className: 'font-mono text-xs text-slate-900' }, fmt(kNow) + ' s⁻¹')),
+                  h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded p-2' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-cyan-700' },
+                      __alloT('stem.chembalance.fraction_with_enough_energy', 'Collisions with enough energy')),
+                    h('div', { className: 'font-mono text-xs text-slate-900' }, fmtOdds(frac)))
+                ),
+
+                // The rule-of-thumb test -- the pedagogical point of the panel
+                h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2 mb-2' },
+                  h('div', { className: 'text-[0.625rem] font-bold text-slate-700 mb-1' },
+                    __alloT('stem.chembalance.ten_degree_test', 'Warm it by 10 °C — does the rate really double?')),
+                  h('div', { className: 'font-mono text-xs text-slate-900' },
+                    '×' + (isFinite(ratio10) ? ratio10.toFixed(2) : '--')),
+                  h('div', { className: 'text-[0.625rem] text-slate-700 mt-1' },
+                    ratio10 >= 1.8 && ratio10 <= 2.2
+                      ? __alloT('stem.chembalance.ten_degree_holds', 'Close to double — the rule of thumb holds around this Ea.')
+                      : (ratio10 < 1.8
+                          ? __alloT('stem.chembalance.ten_degree_low', 'Less than double. The “rate doubles every 10 °C” rule is only a rough fit near Ea ≈ 50 kJ/mol.')
+                          : __alloT('stem.chembalance.ten_degree_high', 'More than double. High-Ea reactions are far more temperature-sensitive than the rule suggests.')))
+                ),
+
+                kin.catalyst && h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded p-2 mb-2' },
+                  h('div', { className: 'text-[0.625rem] font-bold text-emerald-800' },
+                    __alloT('stem.chembalance.catalyst_speedup', 'Catalyst speed-up at the same temperature')),
+                  h('div', { className: 'font-mono text-xs text-slate-900' }, '×' + fmtFactor(catFactor)),
+                  h('div', { className: 'text-[0.625rem] text-emerald-900 mt-1' },
+                    __alloT('stem.chembalance.catalyst_note', 'The catalyst lowers Ea only. Temperature is unchanged — the reaction is faster because more collisions clear a lower barrier.'))
+                ),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, summary),
+
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setKin({ eaKJ: 50, tempC: 25, catalyst: false }); },
+                  className: 'min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700'
+                }, __alloT('stem.chembalance.reset_explorer', 'Reset'))
+              );
+            })(),
             h('div', { className: 'bg-emerald-50 border border-emerald-200 rounded-xl p-3' },
               h('div', { className: 'text-sm font-bold text-emerald-700 mb-2' }, __alloT('stem.chembalance.reaction_mechanisms', 'Reaction Mechanisms')),
               KINETICS.mechanisms.map(function(m, i) {
@@ -6291,6 +7249,117 @@
                 );
               })
             ),
+
+            // ── Live dilution bench ─────────────────────────
+            // The card above gives M = mol/L and the dilution law as strings. This is
+            // the calculation a student actually performs at a bench, and the step the
+            // formula hides is that you add the DIFFERENCE in volume, not the final
+            // volume. The beaker draws that difference.
+            (function() {
+              var sol = Object.assign({ m1: 12, v1: 25, m2: 3 }, d.solutions || {});
+              function setSol(patch) { upd('solutions', Object.assign({}, sol, patch)); }
+
+              var v2 = dilutionSolve('v2', { m1: sol.m1, v1: sol.v1, m2: sol.m2 });
+              var add = solventToAdd(sol.m1, sol.v1, sol.m2);
+              var impossible = isFinite(add) && add < 0;
+              var factor = (isFinite(sol.m1) && isFinite(sol.m2) && sol.m2 > 0) ? sol.m1 / sol.m2 : NaN;
+
+              function num(x, dp) {
+                if (!isFinite(x)) return '--';
+                return x.toFixed(typeof dp === 'number' ? dp : 1);
+              }
+
+              // Beaker fill: stock vs added solvent, as a share of the final volume.
+              var BW = 120, BH = 72;
+              var stockFrac = (isFinite(v2) && v2 > 0) ? Math.min(1, sol.v1 / v2) : 1;
+              var stockH = Math.max(2, stockFrac * (BH - 12));
+              var totalH = BH - 12;
+
+              var srSol = impossible
+                ? 'Cannot dilute to a stronger concentration. Target ' + sol.m2
+                  + ' molar is above the stock ' + sol.m1 + ' molar.'
+                : 'Diluting ' + sol.v1 + ' millilitres of ' + sol.m1 + ' molar stock to '
+                  + sol.m2 + ' molar needs a final volume of ' + num(v2)
+                  + ' millilitres, so add ' + num(add) + ' millilitres of solvent.';
+
+              function field(id, label, value, step, min, onChange, unit) {
+                return h('div', null,
+                  h('label', { htmlFor: id, className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' }, label),
+                  h('input', {
+                    id: id, type: 'number', value: value, step: step, min: min,
+                    onChange: onChange,
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': label + (unit ? ' in ' + unit : '')
+                  })
+                );
+              }
+
+              return h('div', { className: 'bg-white border-2 border-cyan-300 rounded-xl p-3 mb-3' },
+                h('div', { className: 'text-sm font-bold text-cyan-800 mb-1' },
+                  __alloT('stem.chembalance.dilution_live_title', '\uD83E\uDDEA Dilution bench')),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.dilution_live_intro', 'M\u2081V\u2081 = M\u2082V\u2082. Set a stock and a target; the bench works out the volume to make up to, and how much solvent that means adding.')),
+
+                h('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+                  field('sol-m1', __alloT('stem.chembalance.stock_conc', 'Stock M\u2081'), sol.m1, 0.1, 0.01,
+                    function(e) { setSol({ m1: Math.max(0.01, parseFloat(e.target.value) || 0.01) }); }, 'molar'),
+                  field('sol-v1', __alloT('stem.chembalance.stock_vol', 'Volume V\u2081 (mL)'), sol.v1, 1, 1,
+                    function(e) { setSol({ v1: Math.max(1, parseFloat(e.target.value) || 1) }); }, 'millilitres'),
+                  field('sol-m2', __alloT('stem.chembalance.target_conc', 'Target M\u2082'), sol.m2, 0.1, 0.01,
+                    function(e) { setSol({ m2: Math.max(0.01, parseFloat(e.target.value) || 0.01) }); }, 'molar')
+                ),
+
+                impossible
+                  ? h('div', { 'data-testid': 'chem-dilution-impossible', className: 'bg-rose-50 border border-rose-300 rounded p-2 mb-2 text-[0.6875rem] text-rose-900' },
+                      __alloT('stem.chembalance.dilution_impossible', 'Adding solvent can only make a solution weaker. To reach a higher concentration you need more solute, or you must evaporate solvent off \u2014 not dilute.'))
+                  : h('div', null,
+                      h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                        h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded p-2' },
+                          h('div', { className: 'text-[0.625rem] font-bold text-cyan-700' },
+                            __alloT('stem.chembalance.make_up_to', 'Make up to (V\u2082)')),
+                          h('div', { 'data-testid': 'chem-dilution-v2', className: 'font-mono text-xs text-slate-900' }, num(v2) + ' mL')),
+                        h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded p-2' },
+                          h('div', { className: 'text-[0.625rem] font-bold text-emerald-800' },
+                            __alloT('stem.chembalance.solvent_to_add', 'Solvent to ADD')),
+                          h('div', { 'data-testid': 'chem-dilution-add', className: 'font-mono text-xs text-slate-900' }, num(add) + ' mL'))
+                      ),
+
+                      h('svg', { viewBox: '0 0 ' + BW + ' ' + BH, role: 'img', 'aria-label': srSol,
+                        'data-testid': 'chem-dilution-beaker',
+                        style: { width: '100%', maxWidth: '220px', height: 'auto', display: 'block', margin: '0 auto' },
+                        className: 'mb-2'
+                      },
+                        // Two beakers, before -> after. A single beaker with a dark
+                        // band at the bottom reads as two LAYERED liquids, which is the
+                        // opposite of the idea: the solute spreads through the whole
+                        // larger volume, so the colour DILUTES rather than stacking.
+                        h('rect', { x: 8, y: 6 + (totalH - stockH), width: 34, height: stockH, fill: '#0891b2', rx: 1 }),
+                        h('rect', { x: 7, y: 6, width: 36, height: totalH, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, rx: 2 }),
+                        h('text', { x: 25, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' },
+                          num(sol.v1, 0) + ' mL @ ' + num(sol.m1, 1) + ' M'),
+                        h('text', { x: 60, y: 6 + totalH / 2, textAnchor: 'middle', style: { fontSize: '9px' }, fill: '#0f172a' }, '→'),
+                        h('text', { x: 60, y: 6 + totalH / 2 + 9, textAnchor: 'middle', style: { fontSize: '5px' }, fill: '#475569' },
+                          '+' + num(add, 0) + ' mL'),
+                        h('rect', { x: 78, y: 6, width: 34, height: totalH, fill: '#7dd3fc', fillOpacity: Math.max(0.15, stockFrac), rx: 1 }),
+                        h('rect', { x: 77, y: 6, width: 36, height: totalH, fill: 'none', stroke: '#94a3b8', strokeWidth: 2, rx: 2 }),
+                        h('text', { x: 95, y: BH - 1, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' },
+                          num(v2, 0) + ' mL @ ' + num(sol.m2, 1) + ' M')
+                      ),
+
+                      h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2 text-[0.6875rem] text-slate-800' },
+                        __alloT('stem.chembalance.dilution_factor', 'Dilution factor: ') + num(factor, 2)
+                        + __alloT('stem.chembalance.dilution_factor_note', '\u00D7 \u2014 the concentration falls by that factor because the SOLUTE is unchanged and only the volume grew.'))
+                    ),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srSol),
+
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setSol({ m1: 12, v1: 25, m2: 3 }); },
+                  className: 'mt-2 min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700'
+                }, __alloT('stem.chembalance.reset_explorer_3', 'Reset'))
+              );
+            })(),
             h('div', { className: 'bg-amber-50 border border-amber-200 rounded-xl p-3 mb-3' },
               h('div', { className: 'text-sm font-bold text-amber-700 mb-2' }, __alloT('stem.chembalance.solubility_rules', 'Solubility Rules')),
               h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-900' },
@@ -6344,6 +7413,131 @@
                 );
               })
             ),
+
+            // ── Live decay curve ─────────────────────────────────────────
+            // The card above lists nine half-lives as text. Half-life is the one
+            // idea here that IS a curve: the same shape governs a 6-hour medical
+            // tracer and a 4.5-billion-year primordial isotope, and a table of
+            // numbers cannot show that. Measured in half-lives, every isotope
+            // draws the identical line - which is the point.
+            (function() {
+              var nuc = Object.assign({ isotope: 'C-14', halves: 1, frac: 0.5 }, d.nuclear || {});
+              function setNuc(patch) { upd('nuclear', Object.assign({}, nuc, patch)); }
+
+              var isoNames = Object.keys(HALF_LIFE_YEARS);
+              var hl = HALF_LIFE_YEARS[nuc.isotope] || HALF_LIFE_YEARS['C-14'];
+              var remaining = decayFraction(nuc.halves * hl, hl);
+              var lambda = decayConstant(hl);
+              var meanLife = 1 / lambda;
+
+              // Years -> the largest unit that keeps the number readable.
+              function humanYears(y) {
+                if (!isFinite(y)) return '--';
+                if (y < 1 / 365.25) return (y * 365.25 * 24).toPrecision(3) + ' hours';
+                if (y < 1) return (y * 365.25).toPrecision(3) + ' days';
+                if (y < 1e3) return y.toPrecision(3) + ' years';
+                if (y < 1e6) return (y / 1e3).toPrecision(3) + ' thousand years';
+                if (y < 1e9) return (y / 1e6).toPrecision(3) + ' million years';
+                return (y / 1e9).toPrecision(3) + ' billion years';
+              }
+
+              // Curve over 0..6 half-lives in a 0..100 x 0..100 viewBox.
+              // PAD is the plot inset; the left gutter holds the % labels and the
+              // bottom gutter the axis caption, so neither is clipped by the viewBox
+              // edge nor drawn on top of the curve.
+              var CW = 260, CH = 104, PAD = 4, LGUT = 22, BGUT = 12;
+              var pts = [];
+              for (var s = 0; s <= 60; s++) {
+                var hx = s / 10;
+                var x = LGUT + (hx / 6) * (CW - LGUT - PAD);
+                var y = PAD + (1 - Math.pow(0.5, hx)) * (CH - PAD - BGUT);
+                pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+              }
+              var markX = LGUT + (Math.min(nuc.halves, 6) / 6) * (CW - LGUT - PAD);
+              var markY = PAD + (1 - remaining) * (CH - PAD - BGUT);
+
+              var srCurve = 'Decay curve for ' + nuc.isotope + '. After '
+                + nuc.halves + (nuc.halves === 1 ? ' half-life, ' : ' half-lives, ') + (remaining * 100).toFixed(1)
+                + ' percent remains, which is ' + humanYears(nuc.halves * hl) + '.';
+
+              return h('div', { className: 'bg-white border-2 border-cyan-300 rounded-xl p-3 mb-3' },
+                h('div', { className: 'text-sm font-bold text-cyan-800 mb-1' },
+                  __alloT('stem.chembalance.decay_live_title', '☢️ Watch it decay')),
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                  __alloT('stem.chembalance.decay_live_intro', 'Pick an isotope and slide through its half-lives. The curve never changes shape — only the clock does.')),
+
+                h('div', { className: 'mb-2' },
+                  h('label', { htmlFor: 'nuc-isotope', className: 'block text-xs font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.isotope', 'Isotope')),
+                  h('select', {
+                    id: 'nuc-isotope',
+                    value: nuc.isotope,
+                    onChange: function(e) { setNuc({ isotope: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-xs font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.chembalance.choose_isotope', 'Choose an isotope')
+                  }, isoNames.map(function(nm) {
+                    return h('option', { key: nm, value: nm }, nm + ' — ' + humanYears(HALF_LIFE_YEARS[nm]));
+                  }))
+                ),
+
+                h('div', { className: 'mb-3' },
+                  h('label', { htmlFor: 'nuc-halves', className: 'block text-xs font-bold text-slate-800 mb-1' },
+                    __alloT('stem.chembalance.half_lives_elapsed', 'Half-lives elapsed') + ': ',
+                    h('output', { htmlFor: 'nuc-halves', className: 'font-mono text-cyan-800' }, String(nuc.halves))),
+                  h('input', {
+                    id: 'nuc-halves', type: 'range', min: 0, max: 10, step: 1,
+                    value: nuc.halves,
+                    onChange: function(e) { setNuc({ halves: parseInt(e.target.value, 10) }); },
+                    className: 'w-full min-h-[44px]',
+                    'aria-label': __alloT('stem.chembalance.half_lives_elapsed', 'Half-lives elapsed'),
+                    'aria-valuetext': nuc.halves + (nuc.halves === 1 ? ' half-life, ' : ' half-lives, ') + (remaining * 100).toFixed(1) + ' percent remaining'
+                  })
+                ),
+
+                h('svg', { viewBox: '0 0 ' + CW + ' ' + CH, role: 'img', 'aria-label': srCurve,
+                  'data-testid': 'chem-decay-curve',
+                  style: { width: '100%', height: 'auto', display: 'block' },
+                  className: 'mb-2 rounded bg-slate-50 border border-slate-200'
+                },
+                  [1, 2, 3].map(function(q) {
+                    var gy = PAD + (q / 4) * (CH - PAD - BGUT);
+                    return h('line', { key: 'g' + q, x1: LGUT, y1: gy, x2: CW - PAD, y2: gy, stroke: '#cbd5e1', strokeWidth: 0.5, strokeDasharray: '3 3' });
+                  }),
+                  h('polyline', { points: pts.join(' '), fill: 'none', stroke: '#0891b2', strokeWidth: 2 }),
+                  h('circle', { cx: markX, cy: markY, r: 4, fill: '#0e7490' }),
+                  h('text', { x: PAD, y: PAD + 6, style: { fontSize: '7px' }, fill: '#475569' }, '100%'),
+                  h('text', { x: PAD, y: CH - BGUT, style: { fontSize: '7px' }, fill: '#475569' }, '0%'),
+                  h('text', { x: CW - PAD, y: CH - 3, textAnchor: 'end', style: { fontSize: '7px' }, fill: '#475569' }, '6 half-lives')
+                ),
+
+                h('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                  h('div', { className: 'bg-cyan-50 border border-cyan-200 rounded p-2' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-cyan-700' },
+                      __alloT('stem.chembalance.fraction_remaining', 'Still radioactive')),
+                    h('div', { className: 'font-mono text-xs text-slate-900' },
+                      (remaining * 100).toFixed(remaining < 0.01 ? 3 : 1) + ' %')),
+                  h('div', { className: 'bg-slate-50 border border-slate-300 rounded p-2' },
+                    h('div', { className: 'text-[0.625rem] font-bold text-slate-700' },
+                      __alloT('stem.chembalance.real_time_elapsed', 'Real time elapsed')),
+                    h('div', { className: 'font-mono text-xs text-slate-900' }, humanYears(nuc.halves * hl)))
+                ),
+
+                // The trap: "ten half-lives = gone" is false. It is 1/1024, not 0.
+                h('div', { className: 'bg-amber-50 border border-amber-300 rounded p-2 mb-2 text-[0.6875rem] text-amber-900' },
+                  nuc.halves >= 10
+                    ? __alloT('stem.chembalance.decay_never_zero', 'After 10 half-lives about 1 part in 1024 is left — small, but never exactly zero. Decay is halving, and half of something is never nothing.')
+                    : __alloT('stem.chembalance.decay_mean_life', 'Mean lifetime of one atom: ') + humanYears(meanLife)
+                      + __alloT('stem.chembalance.decay_mean_life_note', ' — longer than the half-life, because the slow half drags the average up.')),
+
+                h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, srCurve),
+
+                h('button', {
+                  type: 'button',
+                  onClick: function() { setNuc({ isotope: 'C-14', halves: 1 }); },
+                  className: 'min-h-[44px] px-3 py-2 text-xs font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700'
+                }, __alloT('stem.chembalance.reset_explorer_2', 'Reset'))
+              );
+            })(),
             h('div', { className: 'bg-rose-50 border border-rose-200 rounded-xl p-3 mb-3' },
               h('div', { className: 'text-sm font-bold text-rose-700 mb-2' }, __alloT('stem.chembalance.fission', 'Fission')),
               h('div', { className: 'text-xs text-rose-900 leading-relaxed' }, NUCLEAR.fission)
@@ -6926,6 +8120,23 @@
               onClick: function() { setStemLabTool('titrationLab'); announceToSR(__alloT('stem.chembalance.sr_opening_titration_lab', 'Opening Titration Lab')); },
               className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100'
             }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
+
+            // Deep-links into the matching molecule section. referenceLibraryOpen
+            // must be set too, or the student lands with the tab bar collapsed and
+            // no way to reach a neighbouring section.
+            MOLECULE_LIVE_COUNTERPARTS[subtool] && h('button', {
+              type: 'button',
+              onClick: function() {
+                var target = MOLECULE_LIVE_COUNTERPARTS[subtool];
+                setLabToolData(function(prev) {
+                  var mol = Object.assign({}, prev.molecule || {}, { expSection: target.section, referenceLibraryOpen: true });
+                  return Object.assign({}, prev, { molecule: mol });
+                });
+                setStemLabTool('molecule');
+                announceToSR(__alloT('stem.chembalance.sr_opening_molecule_lab', 'Opening Molecule Lab') + ': ' + target.label);
+              },
+              className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-600 rounded-full hover:bg-indigo-100'
+            }, '\u269B\uFE0F ' + __alloT('stem.chembalance.try_it_live', 'Try it live') + ': ' + MOLECULE_LIVE_COUNTERPARTS[subtool].label + ' \u2192'),
             h('button', {
               type: 'button',
               'aria-label': __alloT('stem.chembalance.snapshot', 'Save a snapshot of this chemistry workspace'),

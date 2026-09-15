@@ -1,0 +1,21 @@
+{
+  "assertions": [
+    {
+      "name": "Repeated zoom and refit keep the clipping range finite and stable",
+      "pass": true
+    },
+    {
+      "name": "Zoom keeps the model anchored in the unobstructed screen area",
+      "pass": true
+    },
+    {
+      "name": "Loading a different lesson releases review controls without restoring a stale pose",
+      "pass": true
+    },
+    {
+      "name": "Unmounting Geometry World releases preview camera ownership",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

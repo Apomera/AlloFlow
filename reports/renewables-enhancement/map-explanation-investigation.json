@@ -1,0 +1,591 @@
+{
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "solarPv",
+  "settings": {
+    "irradiance": 1000,
+    "area": 30,
+    "efficiency": 20,
+    "incidence": 0
+  },
+  "phase": 0,
+  "result": {
+    "version": 1,
+    "id": "solarPv",
+    "settings": {
+      "irradiance": 1000,
+      "area": 30,
+      "efficiency": 20,
+      "incidence": 0
+    },
+    "power": 5.76,
+    "available": 30,
+    "loss": 24.240000000000002,
+    "status": "Generating",
+    "stages": [
+      {
+        "label": "Light intercepted",
+        "value": 30,
+        "unit": "kW"
+      },
+      {
+        "label": "DC electricity",
+        "value": 6,
+        "unit": "kW"
+      },
+      {
+        "label": "AC electricity",
+        "value": 5.76,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0.192
+    }
+  },
+  "note": "",
+  "assumptions": "Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.",
+  "scenarioAssumptions": null,
+  "formula": "P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000",
+  "source": "https://www.energy.gov/cmei/systems/how-does-solar-work",
+  "operatingScenario": null,
+  "comparison": null,
+  "experiments": [],
+  "designMaps": [
+    {
+      "result": {
+        "version": 1,
+        "mechanismVersion": 1,
+        "id": "solarPv",
+        "profileId": "steady",
+        "profileName": "Steady conditions",
+        "phase": 0,
+        "duration": null,
+        "baseSettings": {
+          "irradiance": 1000,
+          "area": 20,
+          "efficiency": 20,
+          "incidence": 0
+        },
+        "config": {
+          "x": {
+            "key": "area",
+            "label": "Panel area",
+            "unit": "m²",
+            "low": 10,
+            "high": 30
+          },
+          "y": {
+            "key": "efficiency",
+            "label": "Module efficiency",
+            "unit": "%",
+            "low": 10,
+            "high": 30
+          },
+          "count": 3,
+          "metric": "power",
+          "target": 5,
+          "error": ""
+        },
+        "metric": "power",
+        "unit": "kW",
+        "metricLabel": "Electrical output",
+        "reference": {
+          "value": 3.84,
+          "input": 20,
+          "remainder": 16.16,
+          "requested": null,
+          "unserved": null,
+          "initial": 0,
+          "endStored": 0,
+          "shutdownMinutes": 0,
+          "clippedMinutes": 0,
+          "status": "Generating"
+        },
+        "xValues": [
+          10,
+          20,
+          30
+        ],
+        "yValues": [
+          10,
+          20,
+          30
+        ],
+        "rows": [
+          {
+            "index": 0,
+            "xi": 0,
+            "yi": 0,
+            "x": 10,
+            "y": 10,
+            "settings": {
+              "irradiance": 1000,
+              "area": 10,
+              "efficiency": 10,
+              "incidence": 0
+            },
+            "result": {
+              "value": 0.96,
+              "input": 10,
+              "remainder": 9.04,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -2.88,
+            "percent": -75,
+            "meetsTarget": false
+          },
+          {
+            "index": 1,
+            "xi": 1,
+            "yi": 0,
+            "x": 20,
+            "y": 10,
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 10,
+              "incidence": 0
+            },
+            "result": {
+              "value": 1.92,
+              "input": 20,
+              "remainder": 18.08,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -1.92,
+            "percent": -50,
+            "meetsTarget": false
+          },
+          {
+            "index": 2,
+            "xi": 2,
+            "yi": 0,
+            "x": 30,
+            "y": 10,
+            "settings": {
+              "irradiance": 1000,
+              "area": 30,
+              "efficiency": 10,
+              "incidence": 0
+            },
+            "result": {
+              "value": 2.88,
+              "input": 30,
+              "remainder": 27.12,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -0.96,
+            "percent": -25,
+            "meetsTarget": false
+          },
+          {
+            "index": 3,
+            "xi": 0,
+            "yi": 1,
+            "x": 10,
+            "y": 20,
+            "settings": {
+              "irradiance": 1000,
+              "area": 10,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 1.92,
+              "input": 10,
+              "remainder": 8.08,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -1.92,
+            "percent": -50,
+            "meetsTarget": false
+          },
+          {
+            "index": 4,
+            "xi": 1,
+            "yi": 1,
+            "x": 20,
+            "y": 20,
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 3.84,
+              "input": 20,
+              "remainder": 16.16,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 0,
+            "percent": 0,
+            "meetsTarget": false
+          },
+          {
+            "index": 5,
+            "xi": 2,
+            "yi": 1,
+            "x": 30,
+            "y": 20,
+            "settings": {
+              "irradiance": 1000,
+              "area": 30,
+              "efficiency": 20,
+              "incidence": 0
+            },
+            "result": {
+              "value": 5.76,
+              "input": 30,
+              "remainder": 24.240000000000002,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 1.92,
+            "percent": 50,
+            "meetsTarget": true
+          },
+          {
+            "index": 6,
+            "xi": 0,
+            "yi": 2,
+            "x": 10,
+            "y": 30,
+            "settings": {
+              "irradiance": 1000,
+              "area": 10,
+              "efficiency": 30,
+              "incidence": 0
+            },
+            "result": {
+              "value": 2.88,
+              "input": 10,
+              "remainder": 7.12,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": -0.96,
+            "percent": -25,
+            "meetsTarget": false
+          },
+          {
+            "index": 7,
+            "xi": 1,
+            "yi": 2,
+            "x": 20,
+            "y": 30,
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 30,
+              "incidence": 0
+            },
+            "result": {
+              "value": 5.76,
+              "input": 20,
+              "remainder": 14.24,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 1.92,
+            "percent": 50,
+            "meetsTarget": true
+          },
+          {
+            "index": 8,
+            "xi": 2,
+            "yi": 2,
+            "x": 30,
+            "y": 30,
+            "settings": {
+              "irradiance": 1000,
+              "area": 30,
+              "efficiency": 30,
+              "incidence": 0
+            },
+            "result": {
+              "value": 8.64,
+              "input": 30,
+              "remainder": 21.36,
+              "requested": null,
+              "unserved": null,
+              "initial": 0,
+              "endStored": 0,
+              "shutdownMinutes": 0,
+              "clippedMinutes": 0,
+              "status": "Generating"
+            },
+            "delta": 4.800000000000001,
+            "percent": 125.00000000000001,
+            "meetsTarget": true
+          }
+        ],
+        "peak": 8.64,
+        "least": 0.96,
+        "highest": [
+          8
+        ],
+        "targetMatches": [
+          5,
+          7,
+          8
+        ],
+        "variedScenarioInput": null,
+        "prediction": "",
+        "assumptions": "Each cell replays one combination of two base inputs. Other base inputs, the operating scenario, and the inspection minute are captured at run time. Steady generators compare kW; operating scenarios and batteries compare delivered kWh over the full sequence. Values follow control steps and duplicate samples are removed. Bars compare sampled output on one scale. Highest and target results apply only to tested combinations; no interpolation, cost, or installation optimum is calculated."
+      },
+      "view": {
+        "open": false,
+        "selected": 8
+      },
+      "explanation": {
+        "analysis": {
+          "version": 1,
+          "mapVersion": 1,
+          "mechanismVersion": 1,
+          "id": "solarPv",
+          "profileId": "steady",
+          "profileName": "Steady conditions",
+          "phase": 0,
+          "duration": null,
+          "selected": 8,
+          "unit": "kW",
+          "metric": "power",
+          "metricLabel": "Electrical output",
+          "axes": {
+            "x": {
+              "key": "area",
+              "label": "Panel area",
+              "unit": "m²",
+              "low": 10,
+              "high": 30
+            },
+            "y": {
+              "key": "efficiency",
+              "label": "Module efficiency",
+              "unit": "%",
+              "low": 10,
+              "high": 30
+            }
+          },
+          "target": 5,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 0
+          },
+          "cases": [
+            {
+              "key": "reference",
+              "label": "Reference",
+              "settings": {
+                "irradiance": 1000,
+                "area": 20,
+                "efficiency": 20,
+                "incidence": 0
+              },
+              "result": {
+                "value": 3.84,
+                "input": 20,
+                "remainder": 16.16,
+                "requested": null,
+                "unserved": null,
+                "initial": 0,
+                "endStored": 0,
+                "shutdownMinutes": 0,
+                "clippedMinutes": 0,
+                "status": "Generating"
+              },
+              "delta": 0,
+              "meetsTarget": false
+            },
+            {
+              "key": "horizontal",
+              "label": "Horizontal input only",
+              "settings": {
+                "irradiance": 1000,
+                "area": 30,
+                "efficiency": 20,
+                "incidence": 0
+              },
+              "result": {
+                "value": 5.76,
+                "input": 30,
+                "remainder": 24.240000000000002,
+                "requested": null,
+                "unserved": null,
+                "initial": 0,
+                "endStored": 0,
+                "shutdownMinutes": 0,
+                "clippedMinutes": 0,
+                "status": "Generating"
+              },
+              "delta": 1.92,
+              "meetsTarget": true
+            },
+            {
+              "key": "vertical",
+              "label": "Vertical input only",
+              "settings": {
+                "irradiance": 1000,
+                "area": 20,
+                "efficiency": 30,
+                "incidence": 0
+              },
+              "result": {
+                "value": 5.76,
+                "input": 20,
+                "remainder": 14.24,
+                "requested": null,
+                "unserved": null,
+                "initial": 0,
+                "endStored": 0,
+                "shutdownMinutes": 0,
+                "clippedMinutes": 0,
+                "status": "Generating"
+              },
+              "delta": 1.92,
+              "meetsTarget": true
+            },
+            {
+              "key": "both",
+              "label": "Both inputs",
+              "settings": {
+                "irradiance": 1000,
+                "area": 30,
+                "efficiency": 30,
+                "incidence": 0
+              },
+              "result": {
+                "value": 8.64,
+                "input": 30,
+                "remainder": 21.36,
+                "requested": null,
+                "unserved": null,
+                "initial": 0,
+                "endStored": 0,
+                "shutdownMinutes": 0,
+                "clippedMinutes": 0,
+                "status": "Generating"
+              },
+              "delta": 4.800000000000001,
+              "meetsTarget": true
+            }
+          ],
+          "effects": {
+            "horizontalAlone": 1.92,
+            "verticalAlone": 1.92,
+            "combined": 4.800000000000001,
+            "extraCombined": 0.9600000000000009,
+            "horizontalAfterVertical": 2.880000000000001,
+            "verticalAfterHorizontal": 2.880000000000001
+          },
+          "unchanged": {
+            "horizontal": false,
+            "vertical": false
+          },
+          "tolerance": 8.640000000000002e-9,
+          "relationship": "above",
+          "assumptions": "Four cases replay the recorded reference, each selected input separately, and both together. Extra combined effect = joint change minus the two separate changes. This compares model outputs at these settings; it is not an efficiency, an energy loss, or a general attribution. The two orders are alternative comparisons of the same four cases, not successive operating periods."
+        },
+        "open": false,
+        "observation": "Recorded trial 9: a \"combined\" effect."
+      },
+      "conclusion": ""
+    }
+  ],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": []
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": []
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": []
+    }
+  ]
+}

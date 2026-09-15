@@ -223,13 +223,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for gameS
 
 exports[`science-sim + studio render goldens > renders + pins a digest for kitchenLab [ssr] 1`] = `
 {
-  "buttons": 8,
+  "buttons": 13,
   "canvases": 0,
-  "inputs": 1,
-  "lengthBucket": 198,
+  "inputs": 0,
+  "lengthBucket": 51,
   "paths": 0,
   "selects": 0,
-  "sha": "bc82022851912a8f",
+  "sha": "96f303389ede9370",
   "svgs": 0,
 }
 `;

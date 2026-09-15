@@ -1,0 +1,1564 @@
+{
+  "points": [
+    {
+      "y": 121.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 136.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 151.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 166.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 181.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 196.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 211.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 226.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 241.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 256.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 271.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 286.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 301.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    },
+    {
+      "y": 316.5,
+      "elements": [
+        {
+          "tag": "P",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 57,
+            "y": 119.5,
+            "width": 206,
+            "height": 207.96875,
+            "top": 119.5,
+            "right": 263,
+            "bottom": 327.46875,
+            "left": 57
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "anatomy-clinical-note",
+          "position": "static",
+          "bg": "rgb(248, 250, 252)",
+          "rect": {
+            "x": 44,
+            "y": 54.5,
+            "width": 232,
+            "height": 525.359375,
+            "top": 54.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "anatomy-flashcard-content",
+          "cls": "",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 44,
+            "y": -77.5,
+            "width": 232,
+            "height": 657.359375,
+            "top": -77.5,
+            "right": 276,
+            "bottom": 579.859375,
+            "left": 44
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "w-full min-h-[180px] rounded-xl p-5 border-2 transition-all text-left border-teal-400 bg-teal-50",
+          "position": "static",
+          "bg": "rgb(240, 253, 250)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 820.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 724.859375,
+            "left": 26
+          }
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "space-y-3",
+          "position": "static",
+          "bg": "rgba(0, 0, 0, 0)",
+          "rect": {
+            "x": 26,
+            "y": -95.5,
+            "width": 268,
+            "height": 1175.359375,
+            "top": -95.5,
+            "right": 294,
+            "bottom": 1079.859375,
+            "left": 26
+          }
+        }
+      ]
+    }
+  ],
+  "rect": {
+    "x": 57,
+    "y": 119.5,
+    "width": 206,
+    "height": 207.96875,
+    "top": 119.5,
+    "right": 263,
+    "bottom": 327.46875,
+    "left": 57
+  },
+  "color": "rgb(51, 65, 85)",
+  "bg": "rgba(0, 0, 0, 0)",
+  "scroll": 548,
+  "violations": [],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "contrastRatio": 0,
+                "fontSize": "9.8pt (13px)",
+                "fontWeight": "normal",
+                "messageKey": "elmPartiallyObscuring",
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [],
+              "impact": "serious",
+              "message": "Element's background color could not be determined because it partially overlaps other elements"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p data-anatomy-clinical-note-text=\"true\">",
+          "target": [
+            "p[data-anatomy-clinical-note-text=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it partially overlaps other elements"
+        }
+      ]
+    }
+  ]
+}

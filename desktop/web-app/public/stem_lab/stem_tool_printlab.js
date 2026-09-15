@@ -923,7 +923,12 @@
       var initialProfile = normalizePrinterProfile(stored.profile);
       var persistedReport = pendingHandoff ? null : normalizePersistedPreflight(stored.preflight);
       var initialReport = initialRecipe && persistedReport && stored.preflightBinding === persistedPreflightBinding(initialRecipe, initialUnitMm, initialProfile) ? persistedReport : null;
-      var _tab = React.useState(pendingHandoff ? 'Design' : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design')), activeTab = _tab[0], setActiveTab = _tab[1];
+      // Persisted under printStage, NOT activeTab: the STEM host folds a tool's toolData.activeTab into the plugin's
+      // React key, so every tab change (and the handoff intake's own persist) remounted Print Lab and dropped the
+      // in-memory STL bytes; a Geometry World build arrived as an empty Design tab (measured on the live shell, 2026-09-14).
+      // A legacy stored activeTab is left as it is: rewriting it would change the key once more.
+      var storedStage = TABS.indexOf(stored.printStage) >= 0 ? stored.printStage : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design');
+      var _tab = React.useState(pendingHandoff ? 'Design' : storedStage), activeTab = _tab[0], setActiveTab = _tab[1];
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
       var _profilePoints = React.useState({}), profilePoints = _profilePoints[0], setProfilePoints = _profilePoints[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
@@ -990,7 +995,7 @@
         if (!pendingHandoff) return;
         // Persist only small form defaults. The STL bytes and editable source model
         // intentionally remain in component memory and disappear when Print Lab closes.
-        persist({ activeTab: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description, aiUse: pendingHandoff.aiUse || 'NONE', aiDisclosure: pendingHandoff.aiDisclosure || '' });
+        persist({ printStage: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description, aiUse: pendingHandoff.aiUse || 'NONE', aiDisclosure: pendingHandoff.aiDisclosure || '' });
       }, []);
 
       React.useEffect(function () {
@@ -1063,7 +1068,7 @@
       }
 
       function chooseTab(name) {
-        setActiveTab(name); persist({ activeTab: name });
+        setActiveTab(name); persist({ printStage: name });
       }
 
       function onTabKey(event, index) {

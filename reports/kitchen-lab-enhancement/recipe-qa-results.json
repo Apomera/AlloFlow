@@ -1,0 +1,33 @@
+{
+  "errors": [],
+  "checks": [
+    "mushroom for 2 completed through actual controls with all criteria, reasoning, and reflection.",
+    "mushroom for 4 completed through actual controls with all criteria, reasoning, and reflection.",
+    "tomato for 2 completed through actual controls with all criteria, reasoning, and reflection.",
+    "tomato for 4 completed through actual controls with all criteria, reasoning, and reflection.",
+    "Synchronized monitor heat, vessel navigation, shared clock controls, pause/reload, hidden-page pause, archived dish review, and complete JSON review export verified.",
+    "Skills Studio link, narrow-screen controls, missing-WebGL fallback, and blocked storage retain access to cooking."
+  ],
+  "accessibility": [
+    {
+      "label": "recipe kitchen initial",
+      "issues": []
+    },
+    {
+      "label": "plated recipe evidence",
+      "issues": []
+    },
+    {
+      "label": "320px recipe text controls",
+      "issues": []
+    }
+  ],
+  "screenshots": [
+    "recipe-kitchen-initial.png",
+    "recipe-kitchen-cooking.png",
+    "recipe-mushroom-plated.png",
+    "recipe-tomato-plated.png",
+    "recipe-kitchen-mobile.png"
+  ],
+  "pass": true
+}

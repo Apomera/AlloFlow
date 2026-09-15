@@ -1,0 +1,6281 @@
+{
+  "title": "Renewables Lab: individual energy mechanisms",
+  "modelVersion": 1,
+  "selected": "solarPv",
+  "settings": {
+    "irradiance": 800,
+    "area": 40,
+    "efficiency": 20,
+    "incidence": 20
+  },
+  "phase": 50,
+  "result": {
+    "version": 1,
+    "id": "solarPv",
+    "settings": {
+      "irradiance": 120,
+      "area": 40,
+      "efficiency": 20,
+      "incidence": 20
+    },
+    "power": 0.8660207193162931,
+    "available": 4.51052457977236,
+    "loss": 3.644503860456067,
+    "status": "Generating",
+    "stages": [
+      {
+        "label": "Light intercepted",
+        "value": 4.51052457977236,
+        "unit": "kW"
+      },
+      {
+        "label": "DC electricity",
+        "value": 0.902104915954472,
+        "unit": "kW"
+      },
+      {
+        "label": "AC electricity",
+        "value": 0.8660207193162931,
+        "unit": "kW"
+      }
+    ],
+    "extra": {
+      "efficiency": 0.192
+    }
+  },
+  "note": "Doubling area doubles power and accumulated electricity in the same cloud sequence.",
+  "assumptions": "Direct-beam model only: no diffuse sky light, shading, temperature effects, tracking schedule, or inverter clipping. A 90° beam contributes zero. This is not a daily yield estimate.",
+  "scenarioAssumptions": "Synthetic resource sequences and battery requests are prescribed teaching inputs. Power is held over each one-minute interval; the final endpoint adds no energy. Battery requests remain fixed when capacity or power is changed.",
+  "formula": "P_AC = irradiance × area × cos(angle) × module efficiency × 0.96 / 1,000",
+  "source": "https://www.energy.gov/cmei/systems/how-does-solar-work",
+  "operatingScenario": {
+    "version": 1,
+    "profileId": "clouds",
+    "label": "Passing clouds",
+    "baseSettings": {
+      "irradiance": 800,
+      "area": 40,
+      "efficiency": 20,
+      "incidence": 20
+    },
+    "duration": 120,
+    "selectedMinute": 50,
+    "totals": {
+      "input": 43.100568206713646,
+      "delivered": 8.27530909568902,
+      "remainder": 34.82525911102466,
+      "requested": 0,
+      "unserved": 0
+    },
+    "samples": [
+      {
+        "minute": 0,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 0,
+          "delivered": 0,
+          "remainder": 0,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 1,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 0.5011693977524845,
+          "delivered": 0.09622452436847703,
+          "remainder": 0.4049448733840074,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 2,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 1.002338795504969,
+          "delivered": 0.19244904873695406,
+          "remainder": 0.8098897467680148,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 3,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 1.5035081932574534,
+          "delivered": 0.28867357310543107,
+          "remainder": 1.2148346201520224,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 4,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 2.004677591009938,
+          "delivered": 0.38489809747390813,
+          "remainder": 1.6197794935360297,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 5,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 2.505846988762422,
+          "delivered": 0.4811226218423852,
+          "remainder": 2.024724366920037,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 6,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 3.0070163865149064,
+          "delivered": 0.5773471462108622,
+          "remainder": 2.4296692403040443,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 7,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 3.5081857842673907,
+          "delivered": 0.6735716705793393,
+          "remainder": 2.8346141136880516,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 8,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 4.009355182019875,
+          "delivered": 0.7697961949478164,
+          "remainder": 3.239558987072059,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 9,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 4.510524579772359,
+          "delivered": 0.8660207193162934,
+          "remainder": 3.6445038604560662,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 10,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 5.0116939775248435,
+          "delivered": 0.9622452436847705,
+          "remainder": 4.049448733840074,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 11,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 5.512863375277328,
+          "delivered": 1.0584697680532476,
+          "remainder": 4.454393607224081,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 12,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 6.014032773029812,
+          "delivered": 1.1546942924217245,
+          "remainder": 4.859338480608089,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 13,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 6.515202170782296,
+          "delivered": 1.2509188167902014,
+          "remainder": 5.264283353992096,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 14,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 7.0163715685347805,
+          "delivered": 1.3471433411586784,
+          "remainder": 5.669228227376103,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 15,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 7.517540966287265,
+          "delivered": 1.4433678655271553,
+          "remainder": 6.0741731007601105,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 16,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 8.01871036403975,
+          "delivered": 1.5395923898956323,
+          "remainder": 6.479117974144118,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 17,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 8.519879761792234,
+          "delivered": 1.6358169142641092,
+          "remainder": 6.884062847528125,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 18,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 9.021049159544718,
+          "delivered": 1.7320414386325862,
+          "remainder": 7.2890077209121324,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 19,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 9.522218557297203,
+          "delivered": 1.8282659630010631,
+          "remainder": 7.69395259429614,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 20,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 10.023387955049687,
+          "delivered": 1.92449048736954,
+          "remainder": 8.098897467680148,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 21,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 10.524557352802171,
+          "delivered": 2.0207150117380173,
+          "remainder": 8.503842341064155,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 22,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 11.025726750554655,
+          "delivered": 2.116939536106494,
+          "remainder": 8.908787214448163,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 23,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 11.52689614830714,
+          "delivered": 2.213164060474971,
+          "remainder": 9.31373208783217,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 24,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 12.028065546059624,
+          "delivered": 2.309388584843448,
+          "remainder": 9.718676961216177,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 25,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 12.529234943812108,
+          "delivered": 2.405613109211925,
+          "remainder": 10.123621834600184,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 26,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 754.6666666666667,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.4463080792558,
+          "available": 28.36618791279063,
+          "loss": 22.91987983353483,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 28.36618791279063,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 5.673237582558126,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.4463080792558,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 13.030404341564592,
+          "delivered": 2.501837633580402,
+          "remainder": 10.528566707984192,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 27,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 709.3333333333334,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.119144696402978,
+          "available": 26.662211960432177,
+          "loss": 21.543067264029197,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 26.662211960432177,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 5.332442392086436,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.119144696402978,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 13.503174140111103,
+          "delivered": 2.592609434901332,
+          "remainder": 10.910564705209772,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 28,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 664,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.7919813135501546,
+          "available": 24.958236008073726,
+          "loss": 20.166254694523573,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 24.958236008073726,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.991647201614745,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.7919813135501546,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 13.947544339451639,
+          "delivered": 2.6779285131747153,
+          "remainder": 11.269615826276926,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 29,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 618.6666666666666,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.4648179306973335,
+          "available": 23.25426005571528,
+          "loss": 18.78944212501795,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 23.25426005571528,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.650852011143056,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.4648179306973335,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 14.363514939586201,
+          "delivered": 2.757794868400551,
+          "remainder": 11.605720071185653,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 30,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 573.3333333333334,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.137654547844512,
+          "available": 21.550284103356837,
+          "loss": 17.412629555512325,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 21.550284103356837,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.310056820671367,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.137654547844512,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 14.75108594051479,
+          "delivered": 2.83220850057884,
+          "remainder": 11.918877439935953,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 31,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 528,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.8104911649916895,
+          "available": 19.846308150998386,
+          "loss": 16.035816986006697,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 19.846308150998386,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.969261630199677,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.8104911649916895,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 15.110257342237404,
+          "delivered": 2.901169409709582,
+          "remainder": 12.209087932527824,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 32,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 482.66666666666663,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.483327782138867,
+          "available": 18.142332198639934,
+          "loss": 14.659004416501068,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 18.142332198639934,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.628466439727987,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.483327782138867,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 15.441029144754044,
+          "delivered": 2.964677595792777,
+          "remainder": 12.476351548961269,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 33,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 437.3333333333333,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.156164399286046,
+          "available": 16.43835624628149,
+          "loss": 13.282191846995444,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 16.43835624628149,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.287671249256298,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.156164399286046,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 15.74340134806471,
+          "delivered": 3.0227330588284245,
+          "remainder": 12.720668289236286,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 34,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 392,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.8290010164332244,
+          "available": 14.734380293923044,
+          "loss": 11.90537927748982,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 14.734380293923044,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.946876058784609,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.8290010164332244,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 16.0173739521694,
+          "delivered": 3.0753357988165253,
+          "remainder": 12.942038153352877,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 35,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 346.6666666666667,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.501837633580403,
+          "available": 13.030404341564598,
+          "loss": 10.528566707984195,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 13.030404341564598,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.6060808683129197,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.501837633580403,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 16.262946957068117,
+          "delivered": 3.122485815757079,
+          "remainder": 13.140461141311041,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 36,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 301.33333333333337,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.174674250727581,
+          "available": 11.326428389206152,
+          "loss": 9.151754138478571,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 11.326428389206152,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.2652856778412302,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.174674250727581,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 16.48012036276086,
+          "delivered": 3.164183109650086,
+          "remainder": 13.315937253110778,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 37,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 256.00000000000006,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.8475108678747592,
+          "available": 9.622452436847704,
+          "loss": 7.774941568972944,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 9.622452436847704,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.9244904873695408,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.8475108678747592,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 16.66889416924763,
+          "delivered": 3.2004276804955456,
+          "remainder": 13.468466488752089,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 38,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 210.66666666666674,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.5203474850219376,
+          "available": 7.918476484489258,
+          "loss": 6.39812899946732,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 7.918476484489258,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.5836952968978517,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.5203474850219376,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 16.829268376528425,
+          "delivered": 3.231219528293458,
+          "remainder": 13.59804884823497,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 39,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 165.33333333333334,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.193184102169115,
+          "available": 6.214500532130808,
+          "loss": 5.0213164299616935,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 6.214500532130808,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.2429001064261616,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.193184102169115,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 16.961242984603246,
+          "delivered": 3.256558653043824,
+          "remainder": 13.704684331559426,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 40,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120.00000000000001,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162933,
+          "available": 4.510524579772361,
+          "loss": 3.6445038604560676,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.510524579772361,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.9021049159544723,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162933,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.064817993472094,
+          "delivered": 3.2764450547466426,
+          "remainder": 13.788372938725454,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 41,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.139993403134966,
+          "delivered": 3.290878733401914,
+          "remainder": 13.849114669733055,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 42,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.215168812797838,
+          "delivered": 3.3053124120571855,
+          "remainder": 13.909856400740656,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 43,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.29034422246071,
+          "delivered": 3.319746090712457,
+          "remainder": 13.970598131748257,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 44,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.365519632123583,
+          "delivered": 3.3341797693677284,
+          "remainder": 14.031339862755859,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 45,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.440695041786455,
+          "delivered": 3.348613448023,
+          "remainder": 14.09208159376346,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 46,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.515870451449327,
+          "delivered": 3.3630471266782713,
+          "remainder": 14.152823324771061,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 47,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.5910458611122,
+          "delivered": 3.377480805333543,
+          "remainder": 14.213565055778663,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 48,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.666221270775072,
+          "delivered": 3.3919144839888142,
+          "remainder": 14.274306786786264,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 49,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.741396680437944,
+          "delivered": 3.4063481626440857,
+          "remainder": 14.335048517793865,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 50,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.816572090100816,
+          "delivered": 3.420781841299357,
+          "remainder": 14.395790248801466,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 51,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.89174749976369,
+          "delivered": 3.4352155199546286,
+          "remainder": 14.456531979809068,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 52,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 17.96692290942656,
+          "delivered": 3.4496491986099,
+          "remainder": 14.517273710816669,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 53,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.042098319089433,
+          "delivered": 3.4640828772651715,
+          "remainder": 14.57801544182427,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 54,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.117273728752306,
+          "delivered": 3.478516555920443,
+          "remainder": 14.638757172831872,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 55,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.192449138415178,
+          "delivered": 3.4929502345757144,
+          "remainder": 14.699498903839473,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 56,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.26762454807805,
+          "delivered": 3.507383913230986,
+          "remainder": 14.760240634847074,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 57,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.342799957740922,
+          "delivered": 3.5218175918862573,
+          "remainder": 14.820982365854675,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 58,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.417975367403795,
+          "delivered": 3.5362512705415288,
+          "remainder": 14.881724096862277,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 59,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.493150777066667,
+          "delivered": 3.5506849491968,
+          "remainder": 14.942465827869878,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 60,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.56832618672954,
+          "delivered": 3.5651186278520717,
+          "remainder": 15.00320755887748,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 61,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.64350159639241,
+          "delivered": 3.579552306507343,
+          "remainder": 15.06394928988508,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 62,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.718677006055284,
+          "delivered": 3.5939859851626146,
+          "remainder": 15.124691020892682,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 63,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.793852415718156,
+          "delivered": 3.608419663817886,
+          "remainder": 15.185432751900283,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 64,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.86902782538103,
+          "delivered": 3.6228533424731575,
+          "remainder": 15.246174482907884,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 65,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 120,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 0.8660207193162931,
+          "available": 4.51052457977236,
+          "loss": 3.644503860456067,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 4.51052457977236,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 0.902104915954472,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 0.8660207193162931,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 18.9442032350439,
+          "delivered": 3.637287021128429,
+          "remainder": 15.306916213915486,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 66,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 165.33333333333334,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.193184102169115,
+          "available": 6.214500532130808,
+          "loss": 5.0213164299616935,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 6.214500532130808,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.2429001064261616,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.193184102169115,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 19.019378644706773,
+          "delivered": 3.6517206997837004,
+          "remainder": 15.367657944923087,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 67,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 210.66666666666666,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.5203474850219367,
+          "available": 7.918476484489254,
+          "loss": 6.398128999467318,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 7.918476484489254,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.5836952968978508,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.5203474850219367,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 19.12295365357562,
+          "delivered": 3.671607101486519,
+          "remainder": 15.451346552089115,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 68,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 255.99999999999997,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 1.8475108678747587,
+          "available": 9.622452436847702,
+          "loss": 7.7749415689729435,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 9.622452436847702,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 1.9244904873695403,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 1.8475108678747587,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 19.25492826165044,
+          "delivered": 3.696946226236885,
+          "remainder": 15.55798203541357,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 69,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 301.3333333333333,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.1746742507275805,
+          "available": 11.326428389206148,
+          "loss": 9.151754138478568,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 11.326428389206148,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.26528567784123,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.1746742507275805,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 19.415302468931237,
+          "delivered": 3.7277380740347974,
+          "remainder": 15.687564394896452,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 70,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 346.6666666666667,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.501837633580403,
+          "available": 13.030404341564598,
+          "loss": 10.528566707984195,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 13.030404341564598,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.6060808683129197,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.501837633580403,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 19.604076275418006,
+          "delivered": 3.763982644880257,
+          "remainder": 15.84009363053776,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 71,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 392,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 2.8290010164332244,
+          "available": 14.734380293923044,
+          "loss": 11.90537927748982,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 14.734380293923044,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 2.946876058784609,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 2.8290010164332244,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 19.82124968111075,
+          "delivered": 3.805679938773264,
+          "remainder": 16.015569742337497,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 72,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 437.3333333333333,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.156164399286046,
+          "available": 16.43835624628149,
+          "loss": 13.282191846995444,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 16.43835624628149,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.287671249256298,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.156164399286046,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 20.066822686009466,
+          "delivered": 3.8528299557138177,
+          "remainder": 16.21399273029566,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 73,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 482.66666666666663,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.483327782138867,
+          "available": 18.142332198639934,
+          "loss": 14.659004416501068,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 18.142332198639934,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.628466439727987,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.483327782138867,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 20.34079529011416,
+          "delivered": 3.9054326957019185,
+          "remainder": 16.43536259441225,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 74,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 528,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 3.8104911649916895,
+          "available": 19.846308150998386,
+          "loss": 16.035816986006697,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 19.846308150998386,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 3.969261630199677,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 3.8104911649916895,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 20.643167493424823,
+          "delivered": 3.963488158737566,
+          "remainder": 16.67967933468727,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 75,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 573.3333333333334,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.137654547844512,
+          "available": 21.550284103356837,
+          "loss": 17.412629555512325,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 21.550284103356837,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.310056820671367,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.137654547844512,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 20.973939295941463,
+          "delivered": 4.026996344820761,
+          "remainder": 16.946942951120715,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 76,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 618.6666666666666,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.4648179306973335,
+          "available": 23.25426005571528,
+          "loss": 18.78944212501795,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 23.25426005571528,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.650852011143056,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.4648179306973335,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 21.333110697664075,
+          "delivered": 4.095957253951503,
+          "remainder": 17.237153443712586,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 77,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 664,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 4.7919813135501546,
+          "available": 24.958236008073726,
+          "loss": 20.166254694523573,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 24.958236008073726,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 4.991647201614745,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 4.7919813135501546,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 21.720681698592664,
+          "delivered": 4.170370886129792,
+          "remainder": 17.550310812462886,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 78,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 709.3333333333333,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.1191446964029765,
+          "available": 26.66221196043217,
+          "loss": 21.543067264029194,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 26.66221196043217,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 5.332442392086434,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.1191446964029765,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.192
+          }
+        },
+        "energy": {
+          "input": 22.136652298727224,
+          "delivered": 4.250237241355628,
+          "remainder": 17.88641505737161,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 79,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 754.6666666666667,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.4463080792558,
+          "available": 28.36618791279063,
+          "loss": 22.91987983353483,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 28.36618791279063,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 5.673237582558126,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.4463080792558,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19199999999999998
+          }
+        },
+        "energy": {
+          "input": 22.58102249806776,
+          "delivered": 4.335556319629011,
+          "remainder": 18.245466178438765,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 80,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 23.053792296614272,
+          "delivered": 4.4263281209499405,
+          "remainder": 18.627464175664343,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 81,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 23.554961694366757,
+          "delivered": 4.5225526453184175,
+          "remainder": 19.03240904904835,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 82,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 24.05613109211924,
+          "delivered": 4.6187771696868944,
+          "remainder": 19.437353922432358,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 83,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 24.557300489871725,
+          "delivered": 4.715001694055371,
+          "remainder": 19.842298795816365,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 84,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 25.05846988762421,
+          "delivered": 4.811226218423848,
+          "remainder": 20.247243669200373,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 85,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 25.559639285376694,
+          "delivered": 4.907450742792325,
+          "remainder": 20.65218854258438,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 86,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 26.060808683129178,
+          "delivered": 5.003675267160802,
+          "remainder": 21.057133415968387,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 87,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 26.561978080881662,
+          "delivered": 5.099899791529279,
+          "remainder": 21.462078289352394,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 88,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 27.063147478634146,
+          "delivered": 5.196124315897756,
+          "remainder": 21.867023162736402,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 89,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 27.56431687638663,
+          "delivered": 5.292348840266233,
+          "remainder": 22.27196803612041,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 90,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 28.065486274139115,
+          "delivered": 5.38857336463471,
+          "remainder": 22.676912909504416,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 91,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 28.5666556718916,
+          "delivered": 5.484797889003187,
+          "remainder": 23.081857782888424,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 92,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 29.067825069644083,
+          "delivered": 5.581022413371664,
+          "remainder": 23.48680265627243,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 93,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 29.568994467396568,
+          "delivered": 5.677246937740141,
+          "remainder": 23.89174752965644,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 94,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 30.070163865149052,
+          "delivered": 5.773471462108618,
+          "remainder": 24.296692403040446,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 95,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 30.571333262901536,
+          "delivered": 5.869695986477095,
+          "remainder": 24.701637276424453,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 96,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 31.07250266065402,
+          "delivered": 5.965920510845572,
+          "remainder": 25.10658214980846,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 97,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 31.573672058406505,
+          "delivered": 6.062145035214049,
+          "remainder": 25.511527023192468,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 98,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 32.07484145615899,
+          "delivered": 6.158369559582526,
+          "remainder": 25.916471896576475,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 99,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 32.57601085391148,
+          "delivered": 6.254594083951003,
+          "remainder": 26.321416769960482,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 100,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 33.07718025166396,
+          "delivered": 6.3508186083194795,
+          "remainder": 26.72636164334449,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 101,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 33.578349649416445,
+          "delivered": 6.4470431326879565,
+          "remainder": 27.131306516728497,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 102,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 34.07951904716893,
+          "delivered": 6.543267657056433,
+          "remainder": 27.536251390112504,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 103,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 34.580688444921414,
+          "delivered": 6.63949218142491,
+          "remainder": 27.94119626349651,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 104,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 35.0818578426739,
+          "delivered": 6.735716705793387,
+          "remainder": 28.34614113688052,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 105,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 35.58302724042638,
+          "delivered": 6.831941230161864,
+          "remainder": 28.751086010264526,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 106,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 36.08419663817887,
+          "delivered": 6.928165754530341,
+          "remainder": 29.156030883648533,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 107,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 36.58536603593135,
+          "delivered": 7.024390278898818,
+          "remainder": 29.56097575703254,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 108,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 37.086535433683835,
+          "delivered": 7.120614803267295,
+          "remainder": 29.965920630416548,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 109,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 37.58770483143632,
+          "delivered": 7.216839327635772,
+          "remainder": 30.370865503800555,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 110,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 38.088874229188804,
+          "delivered": 7.313063852004249,
+          "remainder": 30.775810377184563,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 111,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 38.59004362694129,
+          "delivered": 7.409288376372726,
+          "remainder": 31.18075525056857,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 112,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 39.09121302469377,
+          "delivered": 7.505512900741203,
+          "remainder": 31.585700123952577,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 113,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 39.592382422446256,
+          "delivered": 7.60173742510968,
+          "remainder": 31.990644997336585,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 114,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 40.09355182019874,
+          "delivered": 7.697961949478157,
+          "remainder": 32.39558987072059,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 115,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 40.594721217951225,
+          "delivered": 7.794186473846634,
+          "remainder": 32.8005347441046,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 116,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 41.09589061570371,
+          "delivered": 7.890410998215111,
+          "remainder": 33.20547961748861,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 117,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 41.59706001345619,
+          "delivered": 7.986635522583588,
+          "remainder": 33.610424490872624,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 118,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 42.09822941120868,
+          "delivered": 8.082860046952066,
+          "remainder": 34.015369364256635,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 119,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 42.59939880896116,
+          "delivered": 8.179084571320542,
+          "remainder": 34.420314237640646,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      },
+      {
+        "minute": 120,
+        "run": {
+          "version": 1,
+          "id": "solarPv",
+          "settings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "power": 5.773471462108622,
+          "available": 30.07016386514907,
+          "loss": 24.296692403040446,
+          "status": "Generating",
+          "stages": [
+            {
+              "label": "Light intercepted",
+              "value": 30.07016386514907,
+              "unit": "kW"
+            },
+            {
+              "label": "DC electricity",
+              "value": 6.014032773029815,
+              "unit": "kW"
+            },
+            {
+              "label": "AC electricity",
+              "value": 5.773471462108622,
+              "unit": "kW"
+            }
+          ],
+          "extra": {
+            "efficiency": 0.19200000000000003
+          }
+        },
+        "energy": {
+          "input": 43.100568206713646,
+          "delivered": 8.27530909568902,
+          "remainder": 34.82525911102466,
+          "requested": 0,
+          "unserved": 0
+        },
+        "clipped": false,
+        "requested": 0,
+        "unserved": 0
+      }
+    ]
+  },
+  "comparison": {
+    "first": {
+      "profileId": "clouds",
+      "profileName": "Passing clouds",
+      "phase": 50,
+      "baseSettings": {
+        "irradiance": 800,
+        "area": 20,
+        "efficiency": 20,
+        "incidence": 20
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 120,
+          "area": 20,
+          "efficiency": 20,
+          "incidence": 20
+        },
+        "power": 0.43301035965814655,
+        "available": 2.25526228988618,
+        "loss": 1.8222519302280336,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 2.25526228988618,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 0.451052457977236,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 0.43301035965814655,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.192
+        }
+      },
+      "energy": {
+        "input": 8.908286045050408,
+        "delivered": 1.7103909206496786,
+        "remainder": 7.197895124400733,
+        "requested": 0,
+        "unserved": 0
+      },
+      "totals": {
+        "input": 21.550284103356823,
+        "delivered": 4.13765454784451,
+        "remainder": 17.41262955551233,
+        "requested": 0,
+        "unserved": 0
+      }
+    },
+    "second": {
+      "profileId": "clouds",
+      "profileName": "Passing clouds",
+      "phase": 50,
+      "baseSettings": {
+        "irradiance": 800,
+        "area": 40,
+        "efficiency": 20,
+        "incidence": 20
+      },
+      "run": {
+        "version": 1,
+        "id": "solarPv",
+        "settings": {
+          "irradiance": 120,
+          "area": 40,
+          "efficiency": 20,
+          "incidence": 20
+        },
+        "power": 0.8660207193162931,
+        "available": 4.51052457977236,
+        "loss": 3.644503860456067,
+        "status": "Generating",
+        "stages": [
+          {
+            "label": "Light intercepted",
+            "value": 4.51052457977236,
+            "unit": "kW"
+          },
+          {
+            "label": "DC electricity",
+            "value": 0.902104915954472,
+            "unit": "kW"
+          },
+          {
+            "label": "AC electricity",
+            "value": 0.8660207193162931,
+            "unit": "kW"
+          }
+        ],
+        "extra": {
+          "efficiency": 0.192
+        }
+      },
+      "energy": {
+        "input": 17.816572090100816,
+        "delivered": 3.420781841299357,
+        "remainder": 14.395790248801466,
+        "requested": 0,
+        "unserved": 0
+      },
+      "totals": {
+        "input": 43.100568206713646,
+        "delivered": 8.27530909568902,
+        "remainder": 34.82525911102466,
+        "requested": 0,
+        "unserved": 0
+      }
+    },
+    "changes": [
+      {
+        "key": "area",
+        "label": "Panel area",
+        "before": 20,
+        "after": 40,
+        "unit": "m²"
+      }
+    ],
+    "context": [],
+    "comparable": true,
+    "controlled": true,
+    "powerDelta": 0.43301035965814655,
+    "powerPercent": 100,
+    "energyDelta": 1.7103909206496786
+  },
+  "experiments": [],
+  "notebooks": [
+    {
+      "id": "solarPv",
+      "name": "Solar PV",
+      "readings": [
+        {
+          "name": "Cloud baseline",
+          "note": "Compare the same cloud profile and minute.",
+          "profileId": "clouds",
+          "phase": 50,
+          "baseSettings": {
+            "irradiance": 800,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 120,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 20
+            },
+            "power": 0.43301035965814655,
+            "available": 2.25526228988618,
+            "loss": 1.8222519302280336,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 2.25526228988618,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 0.451052457977236,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 0.43301035965814655,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 8.908286045050408,
+            "delivered": 1.7103909206496786,
+            "remainder": 7.197895124400733,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 21.550284103356823,
+            "delivered": 4.13765454784451,
+            "remainder": 17.41262955551233,
+            "requested": 0,
+            "unserved": 0
+          }
+        },
+        {
+          "name": "",
+          "note": "At 60 degrees the direct-beam power is half.",
+          "profileId": "steady",
+          "phase": 1,
+          "baseSettings": {
+            "irradiance": 1000,
+            "area": 20,
+            "efficiency": 20,
+            "incidence": 60
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 1000,
+              "area": 20,
+              "efficiency": 20,
+              "incidence": 60
+            },
+            "power": 1.9200000000000004,
+            "available": 10.000000000000002,
+            "loss": 8.080000000000002,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 10.000000000000002,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 2.0000000000000004,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 1.9200000000000004,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "Twice the area, revised observation",
+          "note": "Doubling area doubles power and accumulated electricity in the same cloud sequence.",
+          "profileId": "clouds",
+          "phase": 50,
+          "baseSettings": {
+            "irradiance": 800,
+            "area": 40,
+            "efficiency": 20,
+            "incidence": 20
+          },
+          "result": {
+            "version": 1,
+            "id": "solarPv",
+            "settings": {
+              "irradiance": 120,
+              "area": 40,
+              "efficiency": 20,
+              "incidence": 20
+            },
+            "power": 0.8660207193162931,
+            "available": 4.51052457977236,
+            "loss": 3.644503860456067,
+            "status": "Generating",
+            "stages": [
+              {
+                "label": "Light intercepted",
+                "value": 4.51052457977236,
+                "unit": "kW"
+              },
+              {
+                "label": "DC electricity",
+                "value": 0.902104915954472,
+                "unit": "kW"
+              },
+              {
+                "label": "AC electricity",
+                "value": 0.8660207193162931,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "efficiency": 0.192
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 17.816572090100816,
+            "delivered": 3.420781841299357,
+            "remainder": 14.395790248801466,
+            "requested": 0,
+            "unserved": 0
+          },
+          "scenarioTotals": {
+            "input": 43.100568206713646,
+            "delivered": 8.27530909568902,
+            "remainder": 34.82525911102466,
+            "requested": 0,
+            "unserved": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "name": "Wind",
+      "readings": []
+    },
+    {
+      "id": "hydro",
+      "name": "Hydropower",
+      "readings": []
+    },
+    {
+      "id": "geothermal",
+      "name": "Geothermal",
+      "readings": []
+    },
+    {
+      "id": "solarThermal",
+      "name": "Concentrating solar",
+      "readings": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave energy",
+      "readings": []
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal stream",
+      "readings": []
+    },
+    {
+      "id": "biomass",
+      "name": "Biomass",
+      "readings": []
+    },
+    {
+      "id": "storage",
+      "name": "Battery storage",
+      "readings": [
+        {
+          "name": "",
+          "note": "",
+          "profileId": "steady",
+          "phase": 60,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 50,
+            "available": 0,
+            "loss": 3.0958424017657027,
+            "status": "Discharging",
+            "stages": [
+              {
+                "label": "Charging input now",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output now",
+                "value": 50,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 60,
+              "initial": 0,
+              "stored": 46.9041575982343,
+              "charge": 50,
+              "delivered": 0,
+              "loss": 3.0958424017657027,
+              "soc": 46.9041575982343,
+              "eta": 0.938083151964686,
+              "charging": false
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "",
+          "note": "Charging accepted 50 kWh; 44 kWh returned; 6 kWh lost.",
+          "profileId": "steady",
+          "phase": 120,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 0,
+            "available": 0,
+            "loss": 5.999999999999993,
+            "status": "Cycle complete",
+            "stages": [
+              {
+                "label": "Charging input now",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output now",
+                "value": 0,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 120,
+              "initial": 0,
+              "stored": 0,
+              "charge": 50,
+              "delivered": 44.00000000000001,
+              "loss": 5.999999999999993,
+              "soc": 0,
+              "eta": 0.938083151964686,
+              "charging": false
+            }
+          },
+          "accumulatedEnergy": null,
+          "scenarioTotals": null
+        },
+        {
+          "name": "Interrupted charge, empty start",
+          "note": "The charging interruption leaves 31 kWh of the fixed demand request unserved.",
+          "profileId": "interrupted",
+          "phase": 240,
+          "baseSettings": {
+            "capacity": 100,
+            "power": 50,
+            "roundtrip": 88,
+            "initial": 0
+          },
+          "result": {
+            "version": 1,
+            "id": "storage",
+            "settings": {
+              "capacity": 100,
+              "power": 50,
+              "roundtrip": 88,
+              "initial": 0
+            },
+            "power": 0,
+            "available": 0,
+            "loss": 6.000000000000018,
+            "status": "Scenario complete",
+            "stages": [
+              {
+                "label": "Charging input next minute",
+                "value": 0,
+                "unit": "kW"
+              },
+              {
+                "label": "Discharging output next minute",
+                "value": 0,
+                "unit": "kW"
+              }
+            ],
+            "extra": {
+              "minute": 240,
+              "initial": 0,
+              "stored": 0,
+              "charge": 49.99999999999991,
+              "delivered": 44.00000000000009,
+              "loss": 6.000000000000018,
+              "soc": 0,
+              "eta": 0.938083151964686,
+              "charging": false,
+              "request": 0,
+              "unserved": 0,
+              "mode": "complete"
+            }
+          },
+          "accumulatedEnergy": {
+            "input": 49.99999999999991,
+            "delivered": 44.00000000000009,
+            "remainder": 6.000000000000018,
+            "requested": 75.00000000000001,
+            "unserved": 30.99999999999991
+          },
+          "scenarioTotals": {
+            "input": 49.99999999999991,
+            "delivered": 44.00000000000009,
+            "remainder": 6.000000000000018,
+            "requested": 75.00000000000001,
+            "unserved": 30.99999999999991
+          }
+        }
+      ]
+    }
+  ]
+}

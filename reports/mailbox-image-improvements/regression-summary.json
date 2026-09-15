@@ -1,0 +1,78 @@
+{
+  "date": "2026-09-12",
+  "passed": 266,
+  "failed": 1,
+  "total": 267,
+  "suites": [
+    {
+      "file": "class_mailbox.test.js",
+      "passed": 45,
+      "failures": [
+        "ANTI wiring pins keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks"
+      ]
+    },
+    {
+      "file": "first_wave_cdn_extraction.test.js",
+      "passed": 3,
+      "failures": []
+    },
+    {
+      "file": "lesson_board_mailbox.test.js",
+      "passed": 29,
+      "failures": []
+    },
+    {
+      "file": "live_activity_progress_contract.test.js",
+      "passed": 4,
+      "failures": []
+    },
+    {
+      "file": "live_session_auto_retry.test.js",
+      "passed": 15,
+      "failures": []
+    },
+    {
+      "file": "live_session_learner_recovery.test.js",
+      "passed": 20,
+      "failures": []
+    },
+    {
+      "file": "mailbox_image_delivery.test.js",
+      "passed": 25,
+      "failures": []
+    },
+    {
+      "file": "mailbox_script_source_module.test.js",
+      "passed": 8,
+      "failures": []
+    },
+    {
+      "file": "mailbox_session_bridge.test.js",
+      "passed": 37,
+      "failures": []
+    },
+    {
+      "file": "self_contained_pack.test.js",
+      "passed": 10,
+      "failures": []
+    },
+    {
+      "file": "session_transport.test.js",
+      "passed": 45,
+      "failures": []
+    },
+    {
+      "file": "studio_response_boundary.test.js",
+      "passed": 13,
+      "failures": []
+    },
+    {
+      "file": "symbol_studio_live_aac_integration.test.js",
+      "passed": 12,
+      "failures": []
+    }
+  ],
+  "remainingFailures": [
+    "Existing Word Cloud dependency pin in class_mailbox.test.js"
+  ]
+}

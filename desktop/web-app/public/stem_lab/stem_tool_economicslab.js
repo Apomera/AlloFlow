@@ -98,7 +98,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('economicsLab')
 
   // ── Audio (auto-injected) ──
   var _ecoAC = null;
-  function getEcoAC() { if (!_ecoAC) { try { _ecoAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_ecoAC && _ecoAC.state === "suspended") { try { _ecoAC.resume(); } catch(e) {} } return _ecoAC; }
+  function getEcoAC() { if (!_ecoAC) { try { _ecoAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_ecoAC && _ecoAC.state === "suspended") { try { _ecoAC.resume(); } catch(e) {} } return _ecoAC; }
   function ecoTone(f,d,tp,v) { var ac = getEcoAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxEcoClick() { ecoTone(600, 0.03, "sine", 0.04); }
   function sfxEcoSuccess() { ecoTone(523, 0.08, "sine", 0.07); setTimeout(function() { ecoTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { ecoTone(784, 0.1, "sine", 0.08); }, 140); }
@@ -2052,7 +2052,7 @@ var d = labToolData || {};
                   (d.econGlossary || []).length > 0 && React.createElement('button', {
                     onClick: function () {
                       var glossaryText = (d.econGlossary || []).map(function (g) { return g.concept + ' \u2014 ' + g.explanation; }).join('\n');
-                      try { navigator.clipboard.writeText(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
+                      try { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(glossaryText); if (addToast) addToast(t('stem.economicslab.glossary_copied', 'Glossary copied \u2014 paste it into your notes'), 'success'); } catch (e) { if (addToast) addToast('Copy failed', 'error'); }
                     },
                     className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200 font-bold'
                   }, t('stem.economicslab.copy_glossary', '\uD83D\uDCCB Copy')),

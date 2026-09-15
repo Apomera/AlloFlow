@@ -29,7 +29,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   // ── Sound effects (badge fanfare only — quiz uses ctx.beep) ──
   var _audioCtx = null;
   function getAudioCtx() {
-    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!_audioCtx) _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
     return _audioCtx;
   }
   function playBadgeSound() {

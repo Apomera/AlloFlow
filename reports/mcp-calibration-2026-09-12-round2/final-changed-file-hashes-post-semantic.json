@@ -1,0 +1,61 @@
+{
+  "createdAt": "2026-09-13T03:11:37.157Z",
+  "files": [
+    {
+      "file": "desktop/mcp/remediation_headless_driver.cjs",
+      "sha256": "c944fd623c7a7d5121d6034a2a67b4b67f8437f6a41272c89680a5dd97b85c86"
+    },
+    {
+      "file": "desktop/mcp/alloflow-remediation-mcp-stdio.cjs",
+      "sha256": "9ed8ec48ead117d0ac6d422fde6b82ad4801b09abae397571598c64f5fa8327e"
+    },
+    {
+      "file": "desktop/mcp/remediation_narration_plan.cjs",
+      "sha256": "76f7d430480bf9addc9f54c28e9fc7686d0155a58490e43e089b310082bd0e6f"
+    },
+    {
+      "file": "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+      "sha256": "504619e18988c83459059d14ccbda8636da9a0a1e91ff90a886bbdf33ee385eb"
+    },
+    {
+      "file": "tests/generated_baseline_language.test.js",
+      "sha256": "5e1bdfd8f557a424d022f12620f131bcf453f220a725f7c5696b098a8bd8440e"
+    },
+    {
+      "file": "tests/doc_pipeline_title_attributes.test.js",
+      "sha256": "d2e4d024a38146bd74e9fd3728f92ed5ca3b6b395ada460be63378308f30ccdf"
+    },
+    {
+      "file": "tests/semantic_list_marker_coverage.test.js",
+      "sha256": "cdd2ce7263f17f4e2021b986aad115c1a250de528c75aae8678a4caab24bee5f"
+    },
+    {
+      "file": "package.json",
+      "sha256": "083473a836d51e7690914dad731ac976e38d287333a8aa36c7f5149d231bbdbb"
+    },
+    {
+      "file": "dev-tools/remediation_validation.json",
+      "sha256": "41348e1e6790c820af55c48417c2a0906ea254fc92a7bcaa4536d4b38ddf6f9f"
+    },
+    {
+      "file": ".github/workflows/remote-mcp-verify.yml",
+      "sha256": "92d515634c2371ca6b761164b08763077c0611763909d9895620c1934334dc44"
+    },
+    {
+      "file": ".github/workflows/mcpb-release.yml",
+      "sha256": "fff880f0c252b7e6fc90f428b88beee17150eaf7a47113236f485cc0fd2af11e"
+    },
+    {
+      "file": "doc_pipeline_source.jsx",
+      "sha256": "8018c9c074b609d5dd7a94a50e516a0d886ead8b375cb052c80f77e90188dfd6"
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "sha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3"
+    },
+    {
+      "file": "desktop/web-app/public/doc_pipeline_module.js",
+      "sha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3"
+    }
+  ]
+}

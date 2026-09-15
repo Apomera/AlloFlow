@@ -1,0 +1,2 @@
+'use strict';
+const fs=require('node:fs'),file='reports/geometry-world-free-build-2026-09-12/verify-neutral-aim.cjs';let s=fs.readFileSync(file,'utf8');const anchor="world=document.querySelector('#geoworld-fs-wrap')?.getBoundingClientRect()";if(s.split(anchor).length!==2)throw Error('Unexpected crosshair probe anchor');s=s.replace(anchor,"world=document.querySelector('.gw-crosshair')?.getBoundingClientRect()");const fd=fs.openSync(file,'r+');try{fs.writeFileSync(fd,s);fs.ftruncateSync(fd,Buffer.byteLength(s));}finally{fs.closeSync(fd);}

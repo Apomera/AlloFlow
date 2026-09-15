@@ -2161,7 +2161,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
         // ── Printable one-pager ──
         var printableOnePager = h('div', { className: 'hidden print:block bg-white text-black p-8' },
-          h('h1', { className: 'text-2xl font-bold mb-2' }, (lp.name || 'My') + '\'s Learning Profile'),
+          h('h1', { className: 'text-2xl font-bold mb-2' }, lp.name ? lp.name + '’s Learning Profile' : 'My Learning Profile'),
           lp.grade && h('div', { className: 'text-sm mb-4' }, lp.grade),
           lp.intro && h('section', { className: 'mb-4' },
             h('h2', { className: 'text-lg font-bold mb-1' }, 'Introduction'),
@@ -3329,8 +3329,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
         var output = template ? template.generate(fieldVals) : '';
         var copyOutput = function() {
           if (!output) return;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(output).then(function() {
+          if (window.SelHub && window.SelHub.copyText) {
+            window.SelHub.copyText(output).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
               addToast({ message: 'Copied to clipboard', type: 'success' });
               announceSR('Letter copied to clipboard');
             }).catch(function() {

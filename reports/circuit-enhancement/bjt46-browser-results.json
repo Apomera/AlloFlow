@@ -1,0 +1,413 @@
+{
+  "scenarios": [
+    "NPN saturation exposes three separately signed currents; actual 3D trail instance positions agree with each terminal current before and after manual stepping",
+    "Base-node, polarity, and beta edits recalculate, reset time, update saved state, invalidate held references, and participate in undo",
+    "Node inspection includes base-current incidence, and junction probe buttons use the actual B/E and C/E node pairs",
+    "PNP lead directions reverse consistently and downloaded CSV contains explicit transistor model, junction, current, and total-power columns"
+  ],
+  "examples": [
+    {
+      "id": "bridge",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "shared",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "sources",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "current",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "rc-charge",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "rl-start",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "rlc-ring",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bridge-settle",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "lc-energy",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "sine-filter",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "pulse-smooth",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "triangle-current",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "switch-hold",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "switch-discharge",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "switch-flyback",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-half-wave",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-bridge",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-filter",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-flyback",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "zener-regulator",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "zener-line",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "zener-limiter",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-resistance",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "diode-resistance-sweep",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "zener-resistance",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "controlled-amplifier",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "controlled-current",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "controlled-sense",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "controlled-feedback",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-buffer",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-inverting",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-clipping",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-filter",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-bandwidth",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-gain-bandwidth",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-slew",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "opamp-startup",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "harmonic-triangle",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "harmonic-clipping",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "harmonic-smoothing",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bjt-npn-switch",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bjt-pnp-switch",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bjt-follower",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bjt-amplifier",
+      "solved": true,
+      "routesClear": true
+    },
+    {
+      "id": "bjt-mirror",
+      "solved": true,
+      "routesClear": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "expanded": false,
+      "violations": [],
+      "overflow": {
+        "viewport": 1280,
+        "page": 1280,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 1280,
+      "height": 1000,
+      "expanded": true,
+      "violations": [],
+      "overflow": {
+        "viewport": 1280,
+        "page": 1280,
+        "dialog": 1246,
+        "scroll": 1246
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "expanded": false,
+      "violations": [],
+      "overflow": {
+        "viewport": 390,
+        "page": 390,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "expanded": true,
+      "violations": [],
+      "overflow": {
+        "viewport": 390,
+        "page": 390,
+        "dialog": 372,
+        "scroll": 372
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "expanded": false,
+      "violations": [],
+      "overflow": {
+        "viewport": 320,
+        "page": 320,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "expanded": true,
+      "violations": [],
+      "overflow": {
+        "viewport": 320,
+        "page": 320,
+        "dialog": 302,
+        "scroll": 302
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "expanded": false,
+      "violations": [],
+      "overflow": {
+        "viewport": 844,
+        "page": 844,
+        "dialog": 0,
+        "scroll": 0
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "expanded": true,
+      "violations": [],
+      "overflow": {
+        "viewport": 844,
+        "page": 844,
+        "dialog": 826,
+        "scroll": 826
+      }
+    }
+  ],
+  "resources": [],
+  "pixels": [
+    {
+      "name": "bjt46-npn-orbit",
+      "lit": 143176,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "bjt46-pnp-orbit",
+      "lit": 143256,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "bjt46-expanded-1280",
+      "lit": 142320,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "bjt46-expanded-390",
+      "lit": 34332,
+      "canvasPixels": 95771.71875,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "bjt46-expanded-320",
+      "lit": 23713,
+      "canvasPixels": 63480,
+      "captures": 1,
+      "viewportCapture": true
+    }
+  ],
+  "npnTrails": [
+    {
+      "terminal": "C",
+      "current": 0.004929643564651622,
+      "visible": true,
+      "difference": 5.623158805900663e-8
+    },
+    {
+      "terminal": "E",
+      "current": -0.005359681270818564,
+      "visible": true,
+      "difference": 9.542136146113598e-8
+    },
+    {
+      "terminal": "B",
+      "current": 0.00043003770616694136,
+      "visible": true,
+      "difference": 1.754985011231133e-8
+    }
+  ],
+  "pnpTrails": [
+    {
+      "terminal": "C",
+      "current": -0.004929643564651591,
+      "visible": true,
+      "difference": 5.8442360897768405e-8
+    },
+    {
+      "terminal": "E",
+      "current": 0.005359681270818518,
+      "visible": true,
+      "difference": 1.2622144691929592e-9
+    },
+    {
+      "terminal": "B",
+      "current": -0.0004300377061669262,
+      "visible": true,
+      "difference": 1.282855647291344e-8
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 13
+}

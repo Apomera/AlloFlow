@@ -1,0 +1,141 @@
+{
+  "assertions": [
+    {
+      "name": "Home includes an empty My Worlds shelf",
+      "pass": true
+    },
+    {
+      "name": "Starter architecture has four rendered previews",
+      "pass": true
+    },
+    {
+      "name": "Complete pavilion previews without placing blocks",
+      "pass": true
+    },
+    {
+      "name": "Pavilion is editable geometry in one operation",
+      "pass": true,
+      "details": {
+        "pavilion": 86
+      }
+    },
+    {
+      "name": "One Undo removes the entire starter",
+      "pass": true
+    },
+    {
+      "name": "Redo restores the complete starter",
+      "pass": true
+    },
+    {
+      "name": "Click selects only one roof block, even inside a connected structure",
+      "pass": true
+    },
+    {
+      "name": "Add selection keeps two chosen blocks without expanding neighbors",
+      "pass": true
+    },
+    {
+      "name": "Direction buttons preview a move without changing blocks",
+      "pass": true
+    },
+    {
+      "name": "Moved sub-selection remains exact",
+      "pass": true
+    },
+    {
+      "name": "Undo retains the exact partial selection",
+      "pass": true
+    },
+    {
+      "name": "Drag rectangle selects the whole pavilion without placing blocks",
+      "pass": true
+    },
+    {
+      "name": "Selection marquee is removed after the gesture",
+      "pass": true
+    },
+    {
+      "name": "Direct orbit moves the camera without changing geometry",
+      "pass": true
+    },
+    {
+      "name": "Done leaves camera mode and removes its controls",
+      "pass": true
+    },
+    {
+      "name": "Named project saves all starter blocks",
+      "pass": true
+    },
+    {
+      "name": "Welcome screen still appears after refresh with saved projects",
+      "pass": true
+    },
+    {
+      "name": "My Worlds restores every editable block after refresh",
+      "pass": true
+    },
+    {
+      "name": "Reopened project is framed instead of spawning inside the building",
+      "pass": true
+    },
+    {
+      "name": "Connecting base is previewed before changes",
+      "pass": true
+    },
+    {
+      "name": "Print preparation adds a padded base and columns",
+      "pass": true
+    },
+    {
+      "name": "One Undo restores both floating originals",
+      "pass": true
+    },
+    {
+      "name": "Starter cards fit 390px screens",
+      "pass": true,
+      "details": {
+        "w": 390,
+        "scroll": 390,
+        "cards": [
+          {
+            "left": 21,
+            "right": 190.5,
+            "width": 169.5
+          },
+          {
+            "left": 199.5,
+            "right": 369,
+            "width": 169.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "Starter cards fit 320px screens",
+      "pass": true,
+      "details": {
+        "w": 320,
+        "scroll": 320,
+        "cards": [
+          {
+            "left": 21,
+            "right": 155.5,
+            "width": 134.5
+          },
+          {
+            "left": 164.5,
+            "right": 299,
+            "width": 134.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "Activity self-review lights its world milestone",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Local React/Three WebGL harness; native tools with explicit fixtures where noted"
+}

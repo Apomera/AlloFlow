@@ -16082,7 +16082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         focusById('learning-lab-email-body', true);
         return;
       }
-      Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body)).then(function() {
         setCopyStatus('Email copied. Paste it into your email app, review the recipient, and send it there.');
         llAnnounce(__alloLLT('stem.learning_lab.sr_email_copied_to_the_clipboard', 'Email copied to the clipboard.'));
       }).catch(function() {
@@ -17813,7 +17813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         focusById('learning-lab-message-body', true);
         return;
       }
-      Promise.resolve(navigator.clipboard.writeText(body)).then(function() {
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body)).then(function() {
         setCopyStatus('Message copied. Paste it into your messaging app, review the recipient and details, and send it there.');
         llAnnounce(__alloLLT('stem.learning_lab.sr_message_copied_to_the_clipboard', 'Message copied to the clipboard.'));
       }).catch(function() {
@@ -19938,7 +19938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
         setCopyStatus({ id: item.id, message: 'Clipboard access is unavailable. The script text is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_script_text_i', 'Clipboard access is unavailable. The script text is selected for manual copying.')); focusById(textId, true); return;
       }
-      Promise.resolve(navigator.clipboard.writeText(text)).then(function() {
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text)).then(function() {
         setCopyStatus({ id: item.id, message: 'Script copied. Review and adapt it before using it.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_script_copied_to_the_clipboard', 'Script copied to the clipboard.'));
       }).catch(function() {
         setCopyStatus({ id: item.id, message: 'The script could not be copied automatically. The text is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_script_text_is_selec', 'Automatic copying failed. The script text is selected for manual copying.')); focusById(textId, true);
@@ -20635,7 +20635,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
         setCopyStatus({ id: statusId, message: 'Clipboard access is unavailable. The draft is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_draft_text_is', 'Clipboard access is unavailable. The draft text is selected for manual copying.')); focusById(textId, true); return;
       }
-      Promise.resolve(navigator.clipboard.writeText(body)).then(function() { setCopyStatus({ id: statusId, message: 'Draft copied. Review it before sharing.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_draft_copied_to_the_clipboard', 'Draft copied to the clipboard.')); }).catch(function() { setCopyStatus({ id: statusId, message: 'Automatic copying failed. The draft is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_draft_text_is_select', 'Automatic copying failed. The draft text is selected for manual copying.')); focusById(textId, true); });
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body)).then(function() { setCopyStatus({ id: statusId, message: 'Draft copied. Review it before sharing.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_draft_copied_to_the_clipboard', 'Draft copied to the clipboard.')); }).catch(function() { setCopyStatus({ id: statusId, message: 'Automatic copying failed. The draft is selected; use Control+C or Command+C.' }); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_draft_text_is_select', 'Automatic copying failed. The draft text is selected for manual copying.')); focusById(textId, true); });
     }
     function removeDraft(draft) {
       askLearningLabConfirmation('Remove this saved ' + (templateFor(draft.type) || TEMPLATES[0]).label + ' draft? This cannot be undone.', { title: 'Remove saved draft?', confirmText: 'Remove draft' }).then(function(accepted) {
@@ -21005,7 +21005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function copySummary() {
       var text = summaryText(); var id = 'learning-lab-communication-summary';
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { setCopyStatus('Clipboard access is unavailable. The summary is selected; use Control+C or Command+C.'); llAnnounce(__alloLLT('stem.learning_lab.sr_clipboard_access_is_unavailable_the_summary_is_se', 'Clipboard access is unavailable. The summary is selected for manual copying.')); focusById(id, true); return; }
-      Promise.resolve(navigator.clipboard.writeText(text)).then(function() { setCopyStatus('Summary copied. Review and adapt it before sharing.'); llAnnounce(__alloLLT('stem.learning_lab.sr_communication_preference_summary_copied', 'Communication preference summary copied.')); }).catch(function() { setCopyStatus('Automatic copying failed. The summary is selected; use Control+C or Command+C.'); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_summary_is_selected', 'Automatic copying failed. The summary is selected for manual copying.')); focusById(id, true); });
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text)).then(function() { setCopyStatus('Summary copied. Review and adapt it before sharing.'); llAnnounce(__alloLLT('stem.learning_lab.sr_communication_preference_summary_copied', 'Communication preference summary copied.')); }).catch(function() { setCopyStatus('Automatic copying failed. The summary is selected; use Control+C or Command+C.'); llAnnounce(__alloLLT('stem.learning_lab.sr_automatic_copying_failed_the_summary_is_selected', 'Automatic copying failed. The summary is selected for manual copying.')); focusById(id, true); });
     }
     function resetProfile() {
       askLearningLabConfirmation('Clear all saved communication preferences and custom wording? This cannot be undone.', { title: 'Clear communication preferences?', confirmText: 'Clear preferences' }).then(function(accepted) { if (!accepted) return; saveProfile({}, 'Communication preferences cleared.'); focusById('learning-lab-communication-preferences-heading'); });
@@ -21106,7 +21106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function copyExport() {
       var id = 'learning-lab-toolkit-export-json';
       if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') { report('error', 'Clipboard access is unavailable. The backup JSON is selected; use Control+C or Command+C.'); focusById(id, true); return; }
-      Promise.resolve(navigator.clipboard.writeText(exportJson)).then(function() { report('success', 'Backup JSON copied. Store it securely because it may contain sensitive information.'); }).catch(function() { report('error', 'Automatic copying failed. The backup JSON is selected; use Control+C or Command+C.'); focusById(id, true); });
+      Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(exportJson)).then(function() { report('success', 'Backup JSON copied. Store it securely because it may contain sensitive information.'); }).catch(function() { report('error', 'Automatic copying failed. The backup JSON is selected; use Control+C or Command+C.'); focusById(id, true); });
     }
     function validateImport() {
       var text = String(importText || '').trim();

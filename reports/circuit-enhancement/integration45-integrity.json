@@ -1,0 +1,23 @@
+{
+  "baselineSHA256": "2527335bd76065cdab39427483afd396f5381b1a839f65469758c16ba2a20edd",
+  "sourceSHA256": "e4c09b8fb190f59a926752a208615976b94a1f9999ca127a24ecec26586c740d",
+  "mirrorIdentical": true,
+  "existingFunctions": 118,
+  "unchangedFunctions": 111,
+  "changedFunctions": [
+    "solveNetworkCircuit",
+    "circuitNetworkTransient",
+    "circuitNetworkTransientCSV",
+    "circuitNetworkHoldKey",
+    "CircuitNetworkSampleCompare",
+    "CircuitNetworkScope",
+    "CircuitNetworkWorkbench"
+  ],
+  "addedFunctions": [
+    "circuitNetworkIntegration",
+    "circuitNetworkCompanion",
+    "circuitNetworkIntegrationHistory",
+    "CircuitNetworkIntegrationControls"
+  ],
+  "removedFunctions": []
+}

@@ -1,0 +1,11 @@
+ FAIL  tests/anatomy_lab_science.test.js > Anatomy Lab comparison-pair integrity > routes all interactive structure selection through comparison tracking
+AssertionError: expected '// ══════════════════════════════════…' to contain 'updMulti(selectionPatch(st.id))'
+
+- Expected
++ Receive
+
+ Test Files  1 failed | 9 passed (10)
+      Tests  1 failed | 291 passed (292)
+   Start at  12:24:57
+   Duration  41.98s (transform 303ms, setup 217ms, import 1.35s, tests 24.79s, environment 12.28s)
+

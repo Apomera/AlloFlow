@@ -1,0 +1,87 @@
+{
+  "viewports": [
+    {
+      "width": 390,
+      "height": 3799,
+      "canvasTop": 944.59375,
+      "primaryTop": 363.09375,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 3480,
+      "canvasTop": 935.5,
+      "primaryTop": 388.5,
+      "overflow": false
+    }
+  ],
+  "assertions": [
+    "Starter → grow → predict → advance → inspect day report",
+    "Workspace and canvas continuity",
+    "Responsive water guidance and care feedback",
+    "Harvest → funds → replant → resume",
+    "Keyboard plot navigation, preview, removal confirmation and replanting",
+    "Root inspection and serialized restoration",
+    "Quick undo refunds paid seeds",
+    "Empty unfunded garden recovery preserves records",
+    "Winter pause and spring growth",
+    "Water, pest, and soil-care priorities",
+    "Crop meters and actual companion effects",
+    "Conflicts and expandable neighbor explanations",
+    "Keyboard crop browsing and focus return",
+    "Harvest receipt, proceeds, and replanting handoff",
+    "Reduced motion for crop and harvest animations",
+    "Batched hide/reveal visibility updates repaint the garden",
+    "Harvest, care, and companion garden views",
+    "View changes preserve previews, time, funds, and canvas identity",
+    "Text plot values match live canvas data",
+    "Maximized scene and phone view controls",
+    "View transition, reduced motion, and saved-session restoration"
+  ],
+  "errors": [],
+  "initial": {
+    "height": 1145,
+    "canvasTop": 453.59375,
+    "primaryTop": 208.546875,
+    "overflow": false
+  },
+  "initialMobile": [
+    {
+      "width": 390,
+      "height": 1159,
+      "canvasTop": 633,
+      "primaryTop": 328.5,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 1249,
+      "canvasTop": 722.5,
+      "primaryTop": 388.5,
+      "overflow": false
+    }
+  ],
+  "firstNaturalHarvestDay": 19,
+  "mobileCropFocus": {
+    "top": 87.34375,
+    "navBottom": 74
+  },
+  "cropPanelAccessibility": [],
+  "harvestAccessibility": [],
+  "gardenViews": [
+    {
+      "id": "harvest",
+      "summary": "2 ready · 11 growing · 1 need care"
+    },
+    {
+      "id": "care",
+      "summary": "3 of 14 crops need attention"
+    },
+    {
+      "id": "companions",
+      "summary": "9 helped · 1 with net conflicts · 4 with no net effect"
+    }
+  ],
+  "gardenViewsAccessibility": [],
+  "accessibility": []
+}

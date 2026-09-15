@@ -1,0 +1,18 @@
+[
+  {
+    "integration": "backward-euler",
+    "ok": true,
+    "steps": 3897,
+    "rejected": 3,
+    "energyPercent": 87.92433745064857,
+    "maxVoltageError": 0.30981709417370507
+  },
+  {
+    "integration": "trapezoidal",
+    "ok": true,
+    "steps": 372,
+    "rejected": 3,
+    "energyPercent": 99.99854851075405,
+    "maxVoltageError": 0.023275578934811275
+  }
+]

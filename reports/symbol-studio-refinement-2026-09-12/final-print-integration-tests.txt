@@ -1,0 +1,10 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+
+  Snapshots  1 updated 
+ Test Files  3 passed (3)
+      Tests  31 passed (31)
+   Start at  21:51:29
+   Duration  29.55s (transform 606ms, setup 644ms, import 763ms, tests 15.77s, environment 10.83s)
+

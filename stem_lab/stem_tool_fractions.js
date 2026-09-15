@@ -1873,7 +1873,7 @@ window.StemLab = window.StemLab || {
     // ═══ SOUND EFFECTS ENGINE ═══
     var _audioCtx = null;
     var getAudio = function() {
-      if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { /* silent */ } }
+      if (!_audioCtx) { try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) { /* silent */ } }
       return _audioCtx;
     };
     var playTone = function(freq, dur, type, vol) {
@@ -6262,7 +6262,7 @@ window.StemLab = window.StemLab || {
         var txt = generateReport();
         try {
           if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(txt).then(function() {
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(txt).then(function() {
               addToast('📋 Report copied to clipboard', 'success');
             }).catch(function() { addToast('Could not copy', 'error'); });
           }
@@ -6535,7 +6535,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() {
                   if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                    navigator.clipboard.writeText(g.goal).then(function() { addToast('📋 Goal copied', 'success'); });
+                    (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(g.goal).then(function() { addToast('📋 Goal copied', 'success'); });
                   }
                 },
                 className: 'transition-colors px-2 py-1 rounded text-[0.625rem] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200'

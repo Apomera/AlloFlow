@@ -1938,7 +1938,7 @@ var d = labToolData.cell || {};
       // context across render cycles like a true singleton should.
       var _cellACRef = React.useRef(null);
       function getCellAC() {
-        if (!_cellACRef.current) { try { _cellACRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+        if (!_cellACRef.current) { try { _cellACRef.current = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
         if (_cellACRef.current && _cellACRef.current.state === 'suspended') { try { _cellACRef.current.resume(); } catch(e) {} }
         return _cellACRef.current;
       }
@@ -24579,7 +24579,7 @@ var d = labToolData.cell || {};
                 var text = JSON.stringify(payload, null, 2);
                 upd('interiorProgressTransfer', text);
                 upd('interiorProgressNotice', 'Progress JSON prepared. Copy it to move this study record to another session or device.');
-                try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () {}); } catch (e) {}
+                try { if (navigator.clipboard && navigator.clipboard.writeText) (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).catch(function () {}); } catch (e) {}
               }
               function importCellProgress() {
                 var text = String(d.interiorProgressTransfer || '').trim(), parsed;

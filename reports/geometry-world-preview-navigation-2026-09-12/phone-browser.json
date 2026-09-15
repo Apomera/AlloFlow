@@ -1,0 +1,83 @@
+{
+  "assertions": [
+    {
+      "name": "Preview fits beside its card without clipping",
+      "pass": true,
+      "details": {
+        "minX": 537.5499374290641,
+        "maxX": 1277.7084216385608,
+        "minY": 304.46159471421765,
+        "maxY": 855.6435154400416,
+        "card": {
+          "left": 16,
+          "right": 316,
+          "top": 128,
+          "bottom": 539.921875
+        },
+        "viewport": {
+          "left": 11,
+          "right": 1429,
+          "top": 64,
+          "bottom": 949
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Phone review uses the clear canvas width for a larger model",
+      "pass": true,
+      "details": {
+        "minX": 35.082288849564236,
+        "maxX": 284.91771115043576,
+        "minY": 508.0789146665363,
+        "maxY": 715.8517256454385,
+        "card": {
+          "left": 12,
+          "right": 308,
+          "top": 118,
+          "bottom": 371.4375
+        },
+        "viewport": {
+          "left": 7,
+          "right": 313,
+          "top": 60,
+          "bottom": 837
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Phone review keeps Back to tools visible while hiding the duplicate dock",
+      "pass": true
+    },
+    {
+      "name": "Expanded phone controls still leave the entire model visible",
+      "pass": true,
+      "details": {
+        "minX": 35.082288849564215,
+        "maxX": 284.91771115043576,
+        "minY": 578.0142121344599,
+        "maxY": 785.1731982809843,
+        "card": {
+          "left": 12,
+          "right": 308,
+          "top": 118,
+          "bottom": 511.4375
+        },
+        "viewport": {
+          "left": 7,
+          "right": 313,
+          "top": 60,
+          "bottom": 837
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Returning to tools restores the phone dock and preserves the pending proposal",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Actual Chromium WebGL, mouse, keyboard, touch, responsive layout, and fullscreen."
+}

@@ -1,0 +1,181 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_bjt.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > normalizes NPN/PNP parameters without changing input or non-transistor designs
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all npn bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all pnp bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the npn terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the pnp terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > labels bias regions by junction polarity without a fixed on-voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > does not replace an overflowing exponential with a clipped current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased npn with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased pnp with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 1 V through 100000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 5 V through 10000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > limits saturated collector current through the load instead of forcing beta times base current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > retains signed leakage at cutoff
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves reverse active bias with the reverse gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a loaded emitter follower and includes base loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves two coupled transistors with the reference branch supplying both base currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > keeps all three internal currents and differences in a fully floating circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+················stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > counts a base-only node and every current incidence, including tied terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > supports a diode-connected transistor driven by a known current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using backward-euler with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using trapezoidal with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > matches an independent RC analytical response with a biased BJT using backward-euler
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > matches an independent RC analytical response with a biased BJT using trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > preserves capacitor voltage across an explicit switch in the transistor base drive
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > integrates a BJT, diode, and controlled source in one nonlinear network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > invalidates held samples when base connection or model parameters change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > exports aligned three-terminal model, current, and junction columns in DC and time data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > routes all three terminals and preserves the base node in the orbit geometry
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > renders transistor editing, model limits, C/B/E routes, and correctly named measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > hides all transistor currents when initial constraints make time response fail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·······stdout | tests/circuit_network_integration.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > defaults missing or invalid settings to the identical backward Euler trajectory
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > stamps capacitor history using previous current as well as voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > stamps inductor history using previous voltage as well as current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is undefined
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is NaN
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > uses backward Euler when complementary history is Infinity
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RC startup with bounded error at every accepted timestamp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > matches analytical RL startup including negative initial current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > retains LC energy after startup with voltage error below 0.5% of amplitude over five periods
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·········stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > keeps physical RLC damping and underdamped step overshoot
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > retains known floating response without assigning a ground
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > bootstraps parallel capacitor currents without inventing initial readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > keeps zero-state degenerate circuits finite even when initial complementary values are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > matches an independent closed-form nonlinear diode/capacitor response
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > trapezoidal network integration > bounds expensive calculations and returns no partial trace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_network_integration.test.js > integration events and provenance > carries switch states continuously, restarts with backward Euler, then resumes trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > restarts at finite pulse corners without integrating across them
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > continues to reject incompatible switch constraints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > exports requested and actual methods, constraints, and restart reasons without changing old column positions
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_integration.test.js > integration events and provenance > invalidates a held sample when its integration method changes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > retains backward Euler for timed op-amps while RLC states use trapezoidal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_integration.test.js > integration events and provenance > leaves op-amp-only runs identical under either RLC preference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_integration.test.js > integration events and provenance > labels algebraic traces correctly when no storage is present
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_integration.test.js > integration events and provenance > renders a named method selector, accuracy limits, and the LC energy investigation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·
+
+ Test Files  2 passed (2)
+      Tests  55 passed (55)
+   Start at  23:08:00
+   Duration  8.58s (transform 73ms, setup 68ms, import 150ms, tests 4.75s, environment 2.85s)
+

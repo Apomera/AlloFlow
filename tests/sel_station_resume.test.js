@@ -183,6 +183,27 @@ describe.skipIf(!R)('SEL Hub · the active station comes back', () => {
     h.unmount();
   });
 
+  it('on a phone with a tool open, the station tool chips fold into the steps disclosure', () => {
+    seedStations([STATION]);
+    const wide = window.innerWidth;
+    window.innerWidth = 390;
+    try {
+      window.__alloSelHubPendingTool = { toolId: '', label: '', stationId: STATION.id, at: Date.now() };
+      const h = mountHub({ selHubTool: 'zones' });
+      const nav = document.querySelector('#sel-active-station-guide nav[aria-label="Station activities"]');
+      expect(nav, 'station nav still rendered').toBeTruthy();
+      expect(nav.closest('details'), 'nav is inside the disclosure on a phone').toBeTruthy();
+      expect(document.querySelector('#sel-active-station-guide summary').textContent).toContain('Station tools, steps and reflection');
+      h.unmount();
+    } finally { window.innerWidth = wide; }
+    // Desktop: the chips stay above the disclosure.
+    window.__alloSelHubPendingTool = { toolId: '', label: '', stationId: STATION.id, at: Date.now() };
+    const h2 = mountHub({ selHubTool: 'zones' });
+    const nav2 = document.querySelector('#sel-active-station-guide nav[aria-label="Station activities"]');
+    expect(nav2 && nav2.closest('details')).toBeNull();
+    h2.unmount();
+  });
+
   it('with storage blocked, quest progress a project loaded into the window slot is still shown', () => {
     seedStations([STATION]);
     const desc = Object.getOwnPropertyDescriptor(window, 'localStorage');

@@ -1217,7 +1217,7 @@ window.StemLab = window.StemLab || {
           // ═══ SOUND EFFECTS ═══
           var _audioCtx = React.useRef(null);
           var getAudio = function() {
-            if (!_audioCtx.current) { try { _audioCtx.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (!_audioCtx.current) { try { _audioCtx.current = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
             return _audioCtx.current;
           };
           var playTone = function(freq, dur, type, vol) {

@@ -1,0 +1,114 @@
+{
+  "passed": true,
+  "scope": "Production components and authored fixtures. No external AI or learner pilot.",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "focused activity with restored draft",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mixed-answer practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mission completed entirely in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved concept review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher concept practice groups",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "draftReload": true,
+      "focusMissionComplete": true,
+      "practiceIsolated": true,
+      "conceptReview": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "focused activity with restored draft",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mixed-answer practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mission completed entirely in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved concept review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher concept practice groups",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "draftReload": true,
+      "focusMissionComplete": true,
+      "practiceIsolated": true,
+      "conceptReview": true
+    },
+    {
+      "width": 320,
+      "scans": [
+        {
+          "label": "focused activity with restored draft",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mixed-answer practice",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "mission completed entirely in focus view",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "saved concept review",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher concept practice groups",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors concept review",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "draftReload": true,
+      "focusMissionComplete": true,
+      "practiceIsolated": true,
+      "conceptReview": true
+    }
+  ],
+  "errors": []
+}

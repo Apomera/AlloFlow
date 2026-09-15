@@ -1,0 +1,13 @@
+{
+  "functionalAssertions": 75,
+  "allAssertionsPass": true,
+  "authoringStates": 24,
+  "workflowOverflow": 0,
+  "runtimeErrors": [],
+  "phoneControlsBelow44px": 0,
+  "pdfPages": 2,
+  "priorUiStates": 18,
+  "boardRegressionStates": 6,
+  "allRenderedStates": 48,
+  "boardPrintColumnsPreserved": true
+}

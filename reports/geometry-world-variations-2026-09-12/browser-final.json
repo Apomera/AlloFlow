@@ -1,0 +1,135 @@
+{
+  "assertions": [
+    {
+      "name": "Welcome offers the mode navigation on entry",
+      "pass": true
+    },
+    {
+      "name": "Save as new variation keeps original and switches active identity",
+      "pass": true
+    },
+    {
+      "name": "New variation has a distinct visible title",
+      "pass": true
+    },
+    {
+      "name": "Keyboard focus follows the newly duplicated project",
+      "pass": true
+    },
+    {
+      "name": "Duplicate reveals a third project without opening it",
+      "pass": true
+    },
+    {
+      "name": "Shelf marks exactly one current project",
+      "pass": true
+    },
+    {
+      "name": "Piece inspection highlights geometry and keeps full selection/history",
+      "pass": true
+    },
+    {
+      "name": "Focused corners stand out while the full-selection frame is hidden",
+      "pass": true
+    },
+    {
+      "name": "Full selection frame returns after inspection",
+      "pass": true
+    },
+    {
+      "name": "Return camera restores the previous view",
+      "pass": true
+    },
+    {
+      "name": "Custom base preview leaves existing blocks untouched",
+      "pass": true
+    },
+    {
+      "name": "Brick base applies as one undo step and joins the raised piece",
+      "pass": true,
+      "details": {
+        "history": 1,
+        "baseBlocks": 288,
+        "pieces": 1
+      }
+    },
+    {
+      "name": "One undo restores exact original geometry and selection",
+      "pass": true
+    },
+    {
+      "name": "Oversized inspection names the problem and retains full export selection",
+      "pass": true
+    },
+    {
+      "name": "320px base inputs remain readable with 44px touch targets and no page overflow",
+      "pass": true,
+      "details": {
+        "overflow": false,
+        "inputWidth": 107,
+        "inputHeight": 44,
+        "dock": {
+          "x": 7,
+          "y": 304.734375,
+          "width": 306,
+          "height": 523.265625,
+          "top": 304.734375,
+          "right": 313,
+          "bottom": 828,
+          "left": 7
+        },
+        "children": [
+          {
+            "class": "gwe-builder-head",
+            "height": 61,
+            "flex": "0 0 auto"
+          },
+          {
+            "class": "gwe-workflow",
+            "height": 27,
+            "flex": "0 0 auto"
+          },
+          {
+            "class": "gwe-builder-actions gwe-builder-quick-actions",
+            "height": 69.1875,
+            "flex": "0 0 auto"
+          },
+          {
+            "class": "gwe-builder-body",
+            "height": 301.078125,
+            "flex": "1 1 auto"
+          },
+          {
+            "class": "gwe-builder-footer",
+            "height": 63,
+            "flex": "0 0 auto"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Phone focus has an accessible return control inside the viewport",
+      "pass": true,
+      "details": {
+        "x": 27,
+        "y": 205,
+        "width": 101.234375,
+        "height": 44
+      }
+    },
+    {
+      "name": "Large piece lists initially show eight bounded cards",
+      "pass": true
+    },
+    {
+      "name": "Pagination reaches the remaining pieces",
+      "pass": true
+    },
+    {
+      "name": "The final piece remains inspectable",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Local Chromium with real WebGL, desktop and 320px touch viewport."
+}

@@ -167,6 +167,22 @@ function LessonPlanView(props) {
   var normalizeMaterialItem = value => typeof props.normalizeMaterialItem === 'function' ? props.normalizeMaterialItem(_lessonPlanText(value)) : _lessonPlanText(value);
   var renderFormattedText = value => typeof props.renderFormattedText === 'function' ? props.renderFormattedText(_lessonPlanText(value)) : _lessonPlanText(value);
   var addToast = props.addToast;
+  // Success-criteria rollup: the live quiz controls publish class results per
+  // concept label on window and announce them; re-render when they change so
+  // the strip on the plan is live without threading session data through props.
+  var _rollupTick = React.useState(0);
+  React.useEffect(function () {
+    if (typeof window === 'undefined') return undefined;
+    var onRollup = function () {
+      _rollupTick[1](function (v) {
+        return v + 1;
+      });
+    };
+    window.addEventListener('alloflow:criterion-rollup', onRollup);
+    return function () {
+      window.removeEventListener('alloflow:criterion-rollup', onRollup);
+    };
+  }, []);
   var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, {
     ...fieldProps,
     text: _lessonPlanText(fieldProps.text)
@@ -181,7 +197,12 @@ function LessonPlanView(props) {
     className: "flex flex-wrap justify-between items-start gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl font-bold text-indigo-900 mb-1"
-  }, t('lesson_plan.header_title')), /*#__PURE__*/React.createElement("div", {
+  }, t('lesson_plan.header_title')), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
+    className: "mb-1 inline-flex flex-wrap items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800",
+    "data-unit-path-node": generatedContent.data.unitPath.nodeId
+  }, /*#__PURE__*/React.createElement("span", null, "🗺️ ", t('lesson_plan.unit_path_label') || 'Unit Path'), /*#__PURE__*/React.createElement("span", {
+    className: "font-normal"
+  }, [generatedContent.data.unitPath.title, generatedContent.data.unitPath.index && generatedContent.data.unitPath.count ? `node ${generatedContent.data.unitPath.index} of ${generatedContent.data.unitPath.count}` : '', generatedContent.data.unitPath.label].filter(Boolean).join(' · '))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-x-3 gap-y-1 break-words text-sm font-bold text-indigo-700"
   }, /*#__PURE__*/React.createElement("span", null, t('lesson_plan.topic_label'), ": ", sourceTopic || 'General'), /*#__PURE__*/React.createElement("span", null, t('lesson_plan.grade_label'), ": ", gradeLevel))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 no-print"
@@ -321,7 +342,67 @@ function LessonPlanView(props) {
   }) : /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
     text: generatedContent?.data.hook,
     className: "text-sm text-slate-700"
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), Array.isArray(generatedContent?.data.successCriteria) && generatedContent.data.successCriteria.length > 0 && (() => {
+    // Success criteria: derived from the exit ticket generated before this
+    // plan (each id IS that quiz's concept label) or from the objectives.
+    // The live quiz controls roll class results up by the same ids and
+    // publish them; Reteach hands a criterion to the existing next-lesson
+    // machinery as a Remediation follow-up, nothing new is generated here.
+    const criteria = generatedContent.data.successCriteria;
+    const rollup = typeof window !== 'undefined' && window.__alloCriterionRollup && typeof window.__alloCriterionRollup === 'object' ? window.__alloCriterionRollup : null;
+    const stat = id => rollup && rollup.byConcept && rollup.byConcept[id] ? rollup.byConcept[id] : null;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "bg-white p-4 rounded-lg border border-indigo-100",
+      "data-success-criteria": "plan"
+    }, /*#__PURE__*/React.createElement("h4", {
+      className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(Flag, {
+      size: 14
+    }), " ", t('lesson_headers.success_criteria') || 'Success criteria'), /*#__PURE__*/React.createElement("ul", {
+      className: "text-sm text-slate-700 space-y-2"
+    }, criteria.map((c, i) => {
+      if (!c || typeof c !== 'object') return null;
+      const s = stat(c.id);
+      const pct = s && s.total > 0 ? Math.round(s.met / s.total * 100) : null;
+      const statement = _lessonPlanText(c.statement);
+      return /*#__PURE__*/React.createElement("li", {
+        key: c.id || i,
+        className: "flex flex-wrap items-start gap-2"
+      }, isEditingLessonPlan ? /*#__PURE__*/React.createElement("textarea", {
+        "aria-label": t('lesson_plan.edit_success_criterion') || `Edit success criterion ${i + 1}`,
+        value: statement,
+        onChange: e => handleLessonPlanChange('successCriteria', {
+          ...c,
+          statement: e.target.value
+        }, i),
+        className: "w-full text-sm bg-transparent border-b border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-300 outline-none",
+        rows: Math.max(1, Math.ceil(statement.length / 40))
+      }) : /*#__PURE__*/React.createElement("span", {
+        className: "flex-1 min-w-[12rem]"
+      }, /*#__PURE__*/React.createElement(BilingualFieldRenderer, {
+        text: c.statement
+      })), /*#__PURE__*/React.createElement("span", {
+        className: "text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100",
+        title: c.source === 'quiz' ? 'Rolls up from the exit ticket questions carrying this concept label' : 'Derived from an objective'
+      }, c.id), pct !== null && /*#__PURE__*/React.createElement("span", {
+        className: `text-[11px] font-bold px-2 py-0.5 rounded-full border ${pct >= 80 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : pct >= 60 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`,
+        "data-criterion-mastery": c.id
+      }, `${pct}% met (${s.met}/${s.total})`), pct !== null && pct < 80 && isTeacherMode && typeof handleActivateNextLesson === 'function' && /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: () => handleActivateNextLesson({
+          nextTopic: statement,
+          focus: `Reteach so students can meet this success criterion: ${statement}. Only ${pct}% of the class met it on the exit ticket (concept label: ${c.id}).`,
+          type: 'Remediation',
+          rationale: `${pct}% of the class met this criterion on the exit ticket.`
+        }, {
+          synthetic: true
+        }),
+        className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+      }, t('lesson_plan.reteach') || 'Reteach'));
+    })), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[11px] text-slate-500"
+    }, rollup && rollup.sessionLabel ? `Class results from ${rollup.sessionLabel}.` : t('lesson_plan.criteria_hint') || 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.'));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 rounded-lg border border-indigo-100"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2"

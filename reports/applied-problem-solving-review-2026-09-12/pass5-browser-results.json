@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "width": 1280,
+      "axeViolations": 0,
+      "queryOnly": true,
+      "referenceNeedsChecking": true,
+      "lessonAndDraftPreserved": true
+    },
+    {
+      "width": 390,
+      "axeViolations": 0,
+      "queryOnly": true,
+      "referenceNeedsChecking": true,
+      "lessonAndDraftPreserved": true
+    },
+    {
+      "width": 320,
+      "axeViolations": 0,
+      "queryOnly": true,
+      "referenceNeedsChecking": true,
+      "lessonAndDraftPreserved": true
+    },
+    {
+      "offlineUnavailable": true
+    }
+  ],
+  "errors": []
+}

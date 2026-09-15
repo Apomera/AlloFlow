@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\tables\\nces-condition-of-education.pdf",
+    "sizeBytes": 2126802,
+    "sha256": "1af930c7316af4c17c67b61d080741e4ac5b99c6b1f8e2af217a97a9c6664700"
+  },
+  "compatibility": {
+    "optionsSha256": "6981c52f9f7f2e73862708b2051e18bae9f2823a33876137f05e1ad4e26318ac",
+    "engineSha256": "35db980f8d843cb88ae1e9c2f13f16afa8f1626133dd166a81918fd8ee10d9aa"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-09-13T21:27:54.716Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "nces-condition-of-education-accessible.html",
+      "sizeBytes": 175011,
+      "sha256": "3617a560ebd3caf52e2a5a3402ba78a9550647f75fb20320ac7c5906a771b119"
+    },
+    {
+      "role": "report",
+      "relativePath": "nces-condition-of-education-remediation-report.json",
+      "sizeBytes": 10307,
+      "sha256": "011b4fcaba07e51f51cb3df0a1cb471294c13301feb0f5b25cbb0078f00cb38d"
+    }
+  ]
+}

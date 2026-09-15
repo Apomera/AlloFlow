@@ -30,13 +30,18 @@ describe('DB-B2: chunk-retry body swap treats document text as DATA, not a repla
     // context for $&/$1/$$ to be interpreted in. Assert the concatenation and
     // that the reassembly is adopted only when it survives the preservation
     // gate — the corruption class DB-B2 describes cannot arise here at all.
+    // The gate is the shared strict-content preservation check (it used to be a
+    // 0.7 length ratio); the adoption still keys off its `accepted` verdict.
     expect(dp).toMatch(/const reassembled = preambleStr \+ '\\n' \+ fixedChunks\.join\('\\n'\) \+ '\\n' \+ postamble;/);
-    expect(dp).toMatch(/const _reassemblyAccepted = reassembled\.length > _origInputHtml\.length \* 0\.7;/);
+    expect(dp).toMatch(/const _reassemblyDecision = acceptFixedHtmlDetailed\(reassembled, currentHtml, \{ mode: 'faithful', strictContent: true \}\);\s*\n\s*const _reassemblyAccepted = _reassemblyDecision\.accepted;/);
   });
   it('the deterministic-fix handlers (title/lang/lang-span/svg-desc) also use function replacers', () => {
     // these substitute AI-generated p.title/p.lang/p.text/p.desc — same $-token corruption class
-    expect(dp).toMatch(/\.replace\(\/<title>\[\^<\]\*<\\\/title>\/i, \(\) => '<title>' \+ p\.title/);
-    expect(dp).toMatch(/\.replace\('<\/head>', \(\) => '<title>' \+ p\.title/);
+    // fix_title escapes the AI text once, then substitutes it through fn replacers in both
+    // branches (an existing attributed <title>, or insertion before </head>).
+    expect(dp).toMatch(/const title = String\(p\.title\)\.replace\(\/&\/g, '&amp;'\)\.replace\(\/<\/g, '&lt;'\)\.replace\(\/>\/g, '&gt;'\);/);
+    expect(dp).toMatch(/return html\.replace\(titlePattern, \(\) => '<title>' \+ title \+ '<\/title>'\);/);
+    expect(dp).toMatch(/return html\.replace\(\/<\\\/head\\s\*>\/i, \(\) => '<title>' \+ title \+ '<\/title>/);
     expect(dp).toMatch(/\(m, g1\) => '<html' \+ g1 \+ 'lang="' \+ p\.lang/); // $1 capture preserved
     expect(dp).toMatch(/\.replace\(new RegExp\(escapeForRegex\(p\.text\)\), \(\) => '<span lang="/);
     expect(dp).toMatch(/\.replace\(\/<\\\/title>\/i, \(\) => '<\/title><desc>' \+ p\.desc/);
@@ -143,7 +148,7 @@ describe('B2-3: /auto agent runs the deterministic net + heading-outline guard (
     expect(dp).toMatch(/_autoHo = _headingOutlineIssue\(currentHtml\)/);
     expect(dp).toMatch(/if \(_autoHo\.missingH1\) finalScore = Math\.max\(0, Math\.min\(finalScore, 90\)\)/);
     // returns the heading-outline state so the verdict is inspectable
-    expect(dp).toMatch(/return \{ html: currentHtml, score: finalScore,[^}]*headingOutline: _autoHo \}/);
+    expect(dp).toMatch(/return \{ html: currentHtml, score: finalScore,[^}]*headingOutline: _autoHo[^}]*\}/);
   });
   // Pure-logic mirror of the cap rule: missingH1 caps to <=90; skip alone does NOT cap.
   const capRule = (score, ho) => ho.missingH1 ? Math.max(0, Math.min(score, 90)) : score;

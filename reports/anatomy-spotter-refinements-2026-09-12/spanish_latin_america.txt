@@ -1,0 +1,34 @@
+Identifica la estructura marcada y aprende de la retroalimentación
+cerca de la parte superior, alrededor de la cabeza y el cuello
+en la parte superior del cuerpo, alrededor de los hombros y el pecho
+en la zona del pecho y la parte superior del abdomen
+alrededor de la parte inferior del abdomen, las caderas y la parte superior de los muslos
+en la parte inferior del cuerpo, alrededor de las piernas
+en el lado izquierdo de la figura
+en el lado derecho de la figura
+cerca del centro de la figura
+El marcador está {horizontal}, {vertical}.
+Spotter necesita al menos cuatro estructuras diferentes a la vista. Elige otra vista o activa más capas.
+Identifica la estructura marcada.
+Correcto.
+La estructura marcada es
+Mejor tiempo medido: {seconds} s
+Identifica la estructura en la mira. Tómate tiempo para comparar las opciones y luego usa la retroalimentación para repasar su función.
+Mostrar los tiempos de respuesta (opcional)
+La práctica sin cronómetro es la opción predeterminada. Medir el tiempo es un reto personal; no cambia el crédito de las respuestas ni mide el dominio. No hay límite de tiempo.
+Medición de tiempo activada
+Práctica sin cronómetro
+{correct} respuestas correctas de {total} intentos
+Izquierda y derecha se refieren a quien observa. La pista ubica el marcador, no toda la extensión de la estructura.
+Leer la consigna de Spotter en voz alta
+Esta pregunta guardada de Spotter está incompleta.
+Inicia una pregunta nueva con estructuras visibles en el diagrama actual.
+Iniciar una pregunta nueva
+La estructura marcada está oculta por la vista o los filtros de capas actuales.
+Restablece su vista o capa para ver la mira. También puedes usar la pista de posición o elegir una estructura visible.
+Elegir una estructura en esta vista
+Elegiste {chosen}: {chosenfunction} Estructura marcada — {target}: {targetfunction}
+Tiempo de respuesta: {seconds} s
+Leer la explicación de la estructura marcada en voz alta
+Concepto:
+Estudiar {name} en el diagrama

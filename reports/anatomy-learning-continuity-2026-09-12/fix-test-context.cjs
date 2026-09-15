@@ -1,0 +1,1 @@
+const fs=require('node:fs'),file='tests/anatomy_learning_continuity.test.js';let s=fs.readFileSync(file,'utf8');s=s.replace("system:'respiratory',view:'anterior'","system:'organs',view:'anterior'");fs.writeFileSync(file,s);console.log('Test uses the catalog diaphragm context.');

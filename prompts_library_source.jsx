@@ -177,11 +177,18 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         - Do NOT include "Note:" or meta-commentary about the user's request (e.g. "Since the user requested None...").
         - Do NOT summarize what you are doing. Just provide the content.
         - **DO NOT** mention scissors, glue, or physical cutting for digital assets like Timelines or Concept Sorts.
+        SUCCESS CRITERIA (REQUIRED): Write 2-5 student-facing "I can ..." statements in "successCriteria".
+        If the Asset Inventory lists a QUIZ (the exit ticket) with "concepts", each concept MUST become one
+        criterion whose "id" is that concept text EXACTLY as written, so the class results for those questions
+        roll up to the criterion. Otherwise derive the criteria from the objectives with short slug ids.
         FORMAT:
         Return ONLY JSON with this structure:
         {
             "materialsNeeded": ["..."],
             "objectives": ["..."],
+            "successCriteria": [
+                { "id": "exact concept label from the quiz, or a short-slug", "statement": "I can ...", "source": "quiz" }
+            ],
             "essentialQuestion": "...",
             "hook": "...",
             "directInstruction": "...",

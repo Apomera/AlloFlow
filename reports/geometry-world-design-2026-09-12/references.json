@@ -1,0 +1,123 @@
+[
+  {
+    "slug": "geometry-world",
+    "page": "https://education.minecraft.net/en-us/lessons/geometry-world",
+    "title": "Geometry World",
+    "metadataUrl": "https://education.minecraft.net/bin/minecraft-edu/userDatabaseServlet.content.json?type=lesson&value=geometry-world&region=US&mode=",
+    "worldUrl": "https://education.minecraft.net/lessonsworldfile/2519943712898388-Geometry_World.mcworld",
+    "supportingFiles": [
+      {
+        "DisplayOrder": 1,
+        "Title": "Geometry World file",
+        "Description": "The file of the Geometry World",
+        "FileName": "https://education.minecraft.net/lessonsupportfiles/Geometry_World.zip",
+        "OriginalFileName": "Geometry_World.zip"
+      },
+      {
+        "DisplayOrder": 2,
+        "Title": "Lesson Plan pdf file",
+        "Description": "",
+        "FileName": "https://education.minecraft.net/lessonsupportfiles/Area-Perimeter-Marco-Vigelini.pdf",
+        "OriginalFileName": "Area-Perimeter-Marco-Vigelini.pdf"
+      }
+    ],
+    "localFile": "reference-worlds/geometry-world.mcworld",
+    "bytes": 327305,
+    "sha256": "9b97505ac9fe97b230865c65532e517c2135a3ecb03f69787d3d9f723939e3c5"
+  },
+  {
+    "slug": "volume-world",
+    "page": "https://education.minecraft.net/en-us/lessons/volume-world",
+    "title": "Volume World",
+    "metadataUrl": "https://education.minecraft.net/bin/minecraft-edu/userDatabaseServlet.content.json?type=lesson&value=volume-world&region=US&mode=",
+    "externalReferences": [
+      {
+        "DisplayOrder": 1,
+        "Title": "Minecraft World File",
+        "Description": "Download the world and open with Minecraft: Education Edition.",
+        "Url": "https://aka.ms/VolumeWorld5"
+      },
+      {
+        "DisplayOrder": 2,
+        "Title": "Common Core Standard Link 5.MD.C.3",
+        "Description": "",
+        "Url": "http://www.corestandards.org/Math/Content/5/MD/C/3/"
+      },
+      {
+        "DisplayOrder": 3,
+        "Title": "Common Core Standard Link 5.MD.C.4",
+        "Description": "",
+        "Url": "http://www.corestandards.org/Math/Content/5/MD/C/4/"
+      },
+      {
+        "DisplayOrder": 4,
+        "Title": "Common Core Standard Link 5.MD.C.5",
+        "Description": "",
+        "Url": "http://www.corestandards.org/Math/Content/5/MD/C/5/"
+      },
+      {
+        "DisplayOrder": 5,
+        "Title": "Engage NY Link #1",
+        "Description": "Associated Engage NY module and lesson.",
+        "Url": "https://www.engageny.org/resource/grade-5-mathematics-module-5-topic-lesson-1"
+      },
+      {
+        "DisplayOrder": 6,
+        "Title": "Engage NY Link #2",
+        "Description": "Associated Engage NY module and lesson.",
+        "Url": "https://www.engageny.org/resource/grade-5-mathematics-module-5-topic-b-lesson-4"
+      },
+      {
+        "DisplayOrder": 7,
+        "Title": "Engage NY Link #3",
+        "Description": "",
+        "Url": "https://www.engageny.org/resource/grade-5-mathematics-module-5-topic-b-lesson-6"
+      }
+    ]
+  },
+  {
+    "slug": "geometry-points-lines-planes",
+    "page": "https://education.minecraft.net/en-us/lessons/geometry-points-lines-planes",
+    "title": "Geometry - Points Lines Planes",
+    "metadataUrl": "https://education.minecraft.net/bin/minecraft-edu/userDatabaseServlet.content.json?type=lesson&value=geometry-points-lines-planes&region=US&mode=",
+    "worldUrl": "https://education.minecraft.net/lessonsworldfile/3911798400485637-Geometry - Building Symmetry.mcworld",
+    "supportingFiles": [
+      {
+        "DisplayOrder": 1,
+        "Title": "Geometry - Points Lines Planes.mcworld.zip",
+        "Description": "This is a pre-made world with exploration problems and a prescribed path built in with students starting at the schoolhouse.",
+        "FileName": "https://education.minecraft.net/lessonsupportfiles/Geometry-Points-Lines-Planes.mcworld.zip",
+        "OriginalFileName": "Geometry-Points-Lines-Planes.mcworld.zip"
+      }
+    ],
+    "localFile": "reference-worlds/geometry-points-lines-planes.mcworld",
+    "bytes": 1730689,
+    "sha256": "1843fa8019727c61c0983605f05e8bc696f95181adb3c86af47cf944d9a9ba7a"
+  },
+  {
+    "slug": "geometric-garden",
+    "page": "https://education.minecraft.net/en-us/lessons/geometric-garden",
+    "title": "Geometric Garden",
+    "metadataUrl": "https://education.minecraft.net/bin/minecraft-edu/userDatabaseServlet.content.json?type=lesson&value=geometric-garden&region=US&mode=",
+    "worldUrl": "https://education.minecraft.net/lessonsworldfile/6554295529008649-Geometric Garden STUDENT.mcworld",
+    "localFile": "reference-worlds/geometric-garden.mcworld",
+    "bytes": 14682617,
+    "sha256": "1ae84a8dae05fd99da3eebd139ef9d051a48d06c5041ce56f4b4be51684a9fab"
+  },
+  {
+    "slug": "volume-world",
+    "worldUrl": "https://aka.ms/VolumeWorld5",
+    "resolvedUrl": "https://education.minecraft.net/content/dam/education-edition/worlds/5.MD.3%2C4%2C5%20Volume%20World.mcworld",
+    "localFile": "reference-worlds/volume-world.mcworld",
+    "bytes": 102318,
+    "sha256": "42a24872f4cd4404ac7ae83f9249d8b095404c63339a731d9cfefe6335a6fb76"
+  },
+  {
+    "slug": "geometry-points-lines-planes-support",
+    "worldUrl": "https://education.minecraft.net/lessonsupportfiles/Geometry-Points-Lines-Planes.mcworld.zip",
+    "resolvedUrl": "https://education.minecraft.net/lessonsupportfiles/Geometry-Points-Lines-Planes.mcworld.zip",
+    "localFile": "reference-worlds/geometry-points-lines-planes-support.zip",
+    "bytes": 1477186,
+    "sha256": "11da6e69c3ebce63d9450a9d97206ee5b76c191f3fab4b4cf46941a06709304f"
+  }
+]

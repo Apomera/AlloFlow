@@ -1,0 +1,64 @@
+{
+  "status": "retrieved",
+  "sources": [
+    {
+      "id": "wwc-elementary-math-intervention-2021",
+      "url": "https://ies.ed.gov/ncee/wwc/PracticeGuide/26",
+      "title": "Assisting Students Struggling with Mathematics: Intervention in the Elementary Grades",
+      "author": "What Works Clearinghouse practice-guide panel (Institute of Education Sciences)",
+      "publishedAt": "2021-03",
+      "retrievedAt": "2026-09-13T01:32:29.030Z",
+      "evidenceKind": "content-specific",
+      "scope": "WWC practice guide for grades K to 6. Mathematics intervention guidance for elementary grades, including systematic instruction, representations and mathematical language. Content-specific guidance for mathematics; it addresses the practices named in its recommendations, not every objective in this lesson. 4th Grade is within the stated range; educators must judge fit to the specific learners and objective. This source does not validate an AI-written script or alignment to a particular standard.",
+      "evidenceLevel": "Varies by recommendation; publisher ratings are shown only where captured in the retrieved text.",
+      "recommendations": [
+        {
+          "id": "wwc-elementary-math-intervention-2021-r1",
+          "text": "Systematic Instruction: Provide systematic instruction during intervention to develop student understanding of mathematical ideas.",
+          "locator": "Recommendation 1; retrieved page text offset 7",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 1)",
+          "supportingText": "Systematic Instruction: Provide systematic instruction during intervention to develop student understanding of mathematical ideas."
+        },
+        {
+          "id": "wwc-elementary-math-intervention-2021-r2",
+          "text": "Mathematical Language: Teach clear and concise mathematical language and support students' use of the language to help students effectively communicate their understanding of mathematical concepts.",
+          "locator": "Recommendation 2; retrieved page text offset 15",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 2)",
+          "supportingText": "Mathematical Language: Teach clear and concise mathematical language and support students' use of the language to help students effectively communicate their understanding of mathematical concepts."
+        },
+        {
+          "id": "wwc-elementary-math-intervention-2021-r3",
+          "text": "Representations: Use a well-chosen set of concrete and semi-concrete representations to support students' learning of mathematical concepts and procedures.",
+          "locator": "Recommendation 3; retrieved page text offset 23",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 3)",
+          "supportingText": "Representations: Use a well-chosen set of concrete and semi-concrete representations to support students' learning of mathematical concepts and procedures."
+        },
+        {
+          "id": "wwc-elementary-math-intervention-2021-r4",
+          "text": "Number Lines: Use the number line to facilitate the learning of mathematical concepts and procedures, build understanding of grade-level material, and prepare students for advanced mathematics.",
+          "locator": "Recommendation 4; retrieved page text offset 31",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 4)",
+          "supportingText": "Number Lines: Use the number line to facilitate the learning of mathematical concepts and procedures, build understanding of grade-level material, and prepare students for advanced mathematics."
+        },
+        {
+          "id": "wwc-elementary-math-intervention-2021-r5",
+          "text": "Word Problems: Provide deliberate instruction on word problems to deepen students' mathematical understanding and support their capacity to apply mathematical ideas.",
+          "locator": "Recommendation 5; retrieved page text offset 39",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 5)",
+          "supportingText": "Word Problems: Provide deliberate instruction on word problems to deepen students' mathematical understanding and support their capacity to apply mathematical ideas."
+        },
+        {
+          "id": "wwc-elementary-math-intervention-2021-r6",
+          "text": "Timed Activities: Regularly include timed activities as one way to build fluency in mathematics.",
+          "locator": "Recommendation 6; retrieved page text offset 47",
+          "evidenceLevel": "Strong (reported by WWC for Recommendation 6)",
+          "supportingText": "Timed Activities: Regularly include timed activities as one way to build fluency in mathematics."
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "Could not use \"Developing Effective Fractions Instruction for Kindergarten Through 8th Grade\": Public guidance retrieval timed out.",
+    "Retrieved guidance supports the teaching approach; the generated script has not been evaluated as an intervention."
+  ]
+}

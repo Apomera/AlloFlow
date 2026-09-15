@@ -1,0 +1,177 @@
+{
+  "checks": [
+    "Actual weighing controls reach exact target-band edges, preserve signed distances and stale records, allow actual-mass recording after an overshoot, and keep the off-pan sample distinct from the negative display.",
+    "Fixed full and close-up scales, edge versus off-scale markers, native keyboard toggling, retained progress, tiny and maximum samples, forced colors, sticky readout, desktop/phone accessibility and layout, malformed state, and unchanged live chemistry pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "empty-full",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-full",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-closeup",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-closeup",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "closeup-lower-edge",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "closeup-lower-edge",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "below-band",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "below-band",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "lower-band-edge",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "lower-band-edge",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "at-target",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "at-target",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "upper-band-edge",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "upper-band-edge",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "above-band",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "above-band",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "closeup-upper-edge",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "closeup-upper-edge",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "above-closeup",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "above-closeup",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "retained-off-pan",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

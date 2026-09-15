@@ -1,0 +1,180 @@
+{
+  "assertions": [
+    {
+      "name": "Preview fits beside its card without clipping",
+      "pass": true,
+      "details": {
+        "minX": 537.5499374290641,
+        "maxX": 1277.7084216385608,
+        "minY": 304.46159471421765,
+        "maxY": 855.6435154400416,
+        "card": {
+          "left": 16,
+          "right": 316,
+          "top": 128,
+          "bottom": 539.921875
+        },
+        "viewport": {
+          "left": 11,
+          "right": 1429,
+          "top": 64,
+          "bottom": 949
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Opening camera controls preserves an unobstructed model",
+      "pass": true,
+      "details": {
+        "minX": 537.5499374290641,
+        "maxX": 1277.7084216385608,
+        "minY": 304.46159471421765,
+        "maxY": 855.6435154400416,
+        "card": {
+          "left": 16,
+          "right": 316,
+          "top": 128,
+          "bottom": 678.921875
+        },
+        "viewport": {
+          "left": 11,
+          "right": 1429,
+          "top": 64,
+          "bottom": 949
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Dragging rotates the preview without locking the cursor",
+      "pass": true
+    },
+    {
+      "name": "Scroll zoom changes the camera without changing material selection",
+      "pass": true
+    },
+    {
+      "name": "Top view looks down on the complete proposal",
+      "pass": true
+    },
+    {
+      "name": "Building and history shortcuts do not alter the world during review",
+      "pass": true
+    },
+    {
+      "name": "Back to tools restores the original camera and keeps the proposal",
+      "pass": true
+    },
+    {
+      "name": "Rotating into phone portrait automatically refits below the review card",
+      "pass": true,
+      "details": {
+        "minX": 28.74362758729082,
+        "maxX": 163.41311846465814,
+        "minY": 549.3421188431705,
+        "maxY": 666.290817044035,
+        "card": {
+          "left": 12,
+          "right": 308,
+          "top": 118,
+          "bottom": 371.4375
+        },
+        "viewport": {
+          "left": 7,
+          "right": 313,
+          "top": 60,
+          "bottom": 837
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Expanded phone camera controls remain usable without covering the model",
+      "pass": true,
+      "details": {
+        "minX": 28.74362758729082,
+        "maxX": 163.41311846465814,
+        "minY": 619.3057766091799,
+        "maxY": 735.9082287105025,
+        "card": {
+          "left": 12,
+          "right": 308,
+          "top": 118,
+          "bottom": 511.4375
+        },
+        "viewport": {
+          "left": 7,
+          "right": 313,
+          "top": 60,
+          "bottom": 837
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "A real two-finger pinch zooms without triggering touch movement",
+      "pass": true
+    },
+    {
+      "name": "Fit model recovers the full view after pinch zoom",
+      "pass": true
+    },
+    {
+      "name": "Fullscreen refits the preview around its controls",
+      "pass": true,
+      "details": {
+        "minX": 69.84566857480772,
+        "maxX": 250.15433142519228,
+        "minY": 406.2936837860654,
+        "maxY": 561.6938501195356,
+        "card": {
+          "left": 12,
+          "right": 308,
+          "top": 118,
+          "bottom": 371.4375
+        },
+        "viewport": {
+          "left": 0,
+          "right": 320,
+          "top": 0,
+          "bottom": 844
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Short landscape preserves access to the model and review actions",
+      "pass": true,
+      "details": {
+        "minX": 377.17189923158185,
+        "maxX": 633.4524515591595,
+        "minY": 128.01784296231466,
+        "maxY": 324.53703026233137,
+        "card": {
+          "left": 12,
+          "right": 312,
+          "top": 70,
+          "bottom": 378
+        },
+        "viewport": {
+          "left": 11,
+          "right": 833,
+          "top": 64,
+          "bottom": 379
+        },
+        "clipped": false
+      }
+    },
+    {
+      "name": "Escape releases review input, removes the proposal, and restores the original position",
+      "pass": true
+    },
+    {
+      "name": "Apply commits once and releases preview camera ownership",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Actual Chromium WebGL, mouse, keyboard, touch, responsive layout, and fullscreen."
+}

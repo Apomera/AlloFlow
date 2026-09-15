@@ -1,0 +1,68 @@
+      var _shelf=React.useState(function(){return readWorldShelf();}),worldShelf=_shelf[0],setWorldShelf=_shelf[1];
+      var _projectName=React.useState(''),projectName=_projectName[0],setProjectName=_projectName[1];
+      var _projectNotice=React.useState('Your first block starts a local draft.'),projectNotice=_projectNotice[0],setProjectNotice=_projectNotice[1];
+      var _projectChoice=React.useState(''),projectChoice=_projectChoice[0],setProjectChoice=_projectChoice[1];
+      var _removeProject=React.useState(''),removeProject=_removeProject[0],setRemoveProject=_removeProject[1];
+      var _starterOpen=React.useState(false),starterOpen=_starterOpen[0],setStarterOpen=_starterOpen[1];
+      var _starterCategory=React.useState('Architecture'),starterCategory=_starterCategory[0],setStarterCategory=_starterCategory[1];
+      var _starterId=React.useState('starter_arch'),starterId=_starterId[0],setStarterId=_starterId[1];
+      var _pointerMode=React.useState('build'),pointerMode=_pointerMode[0],setPointerMode=_pointerMode[1];
+      var _selectionOperation=React.useState('replace'),selectionOperation=_selectionOperation[0],setSelectionOperation=_selectionOperation[1];
+      var starters=React.useMemo(architecturalStarters,[]);
+      var starterCards=React.useMemo(function(){return starterOpen?starters.filter(function(s){return s.category===starterCategory;}).map(function(s){return {stamp:s,image:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(activitySnapshotSvg({blocks:s.blocks}))};}):[];},[starterOpen,starterCategory,starters]);
+      var projectCards=React.useMemo(function(){return homeOpen?worldShelf.projects.map(function(p){return {project:p,image:p.world.blocks.length?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(activitySnapshotSvg({blocks:p.world.blocks})):''};}):[];},[homeOpen,worldShelf]);
+      function savedDraft(result){
+        if(!result.ok){setProjectNotice(result.reason);return;}
+        if(result.empty){setProjectNotice('Your first block starts a local draft.');return;}
+        if(result.project)setProjectNotice('Saved in this browser · '+new Date(result.project.savedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+        if(!result.unchanged)setWorldShelf(result);
+      }
+      function openShelfProject(project){
+        var live=window[ENGINE_KEY];if(!live || live._showcaseExporting)return;
+        var fresh=readWorldShelf(),chosen=fresh.projects.find(function(p){return p.id===project.id;});
+        if(!fresh.ok || !chosen){setProjectNotice(fresh.reason || 'This project is no longer saved.');setWorldShelf(fresh);return;}
+        if(live._currentLesson && live._currentLesson.sandbox){var backup=saveWorldDraft(live);savedDraft(backup);if(!backup.ok)return;}
+        var result;
+        if(chosen.world.blocks.length)result=restoreEditableWorld(live,chosen.world,ctx);
+        else {live.loadLesson(FREE_BUILD_LESSON);result={ok:true};}
+        if(!result.ok){setProjectNotice(result.error);return;}
+        live._currentLesson=Object.assign({},live._currentLesson,{builderGarden:chosen.garden});if(live.refreshLandscape)live.refreshLandscape(live._currentLesson.ground);
+        live._workshopProjectId=chosen.id;live._workshopProjectVersion=chosen.version;live._workshopSavedSignature=JSON.stringify([chosen.world,chosen.garden]);
+        setProjectName(chosen.world.title);setProjectChoice('');setRemoveProject('');setPointerMode('build');
+        patchGeometryState(ctx,{activeLesson:'builderSandbox',worldActive:true,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,showSandboxLauncher:false,creatorMode:false,builderPanel:'build',sandboxDockCollapsed:false,hudPreset:'builder',hudPanel:'',builderPrintContext:null,builderPrintCheck:null,measureResult:null});
+        savedDraft({ok:true,projects:fresh.projects,project:chosen});announce(ctx,'Opened '+chosen.world.title+'. Continue editing your saved blocks.','success');focusWorldSurface(50);
+      }
+      function renderWorldShelf(){
+        return h('section',{className:'gwe-world-shelf','aria-label':'My Worlds'},h('div',{className:'gwe-shelf-heading'},h('h2',null,'My Worlds'),h('span',null,worldShelf.projects.length+' / 8 projects')),
+          h('p',null,'Free Build drafts saved on this browser. Blocks, shapes, materials, and garden choice are kept. Download JSON for a portable copy.'),
+          !worldShelf.ok && h('p',{role:'status'},worldShelf.reason),
+          !worldShelf.projects.length && h('p',{className:'gwe-shelf-empty'},'Your next creation belongs here. Start building and a draft will appear automatically.'),
+          h('div',{className:'gwe-project-grid'},projectCards.map(function(card){var p=card.project;return h('article',{className:'gwe-project-card',key:p.id},
+            h('button',{type:'button',className:'gwe-project-pick','aria-pressed':projectChoice===p.id,onClick:function(){setProjectChoice(p.id);setRemoveProject('');}},card.image?h('img',{src:card.image,alt:'',loading:'lazy'}):h('span',{className:'gwe-project-empty-art','aria-hidden':'true'},'◇'),h('strong',null,p.world.title),h('span',null,p.world.blocks.length+' blocks · '+new Date(p.savedAt).toLocaleDateString())),
+            projectChoice===p.id && h('div',{className:'gwe-project-actions'},h('p',null,'Open these editable blocks in Free Build. Your current Free Build draft is saved first.'),h('button',{type:'button',className:'gwe-primary',onClick:function(){openShelfProject(p);}},'Open this project'),
+              h('button',{type:'button',onClick:function(){downloadBlob(new Blob([JSON.stringify(p.world,null,2)],{type:'application/json'}),safeFilePart(p.world.title)+'.json');}},'Download project JSON'),
+              h('button',{type:'button',disabled:!!(window[ENGINE_KEY] && window[ENGINE_KEY]._workshopProjectId===p.id),onClick:function(){setRemoveProject(p.id);}},'Remove from shelf'),
+              removeProject===p.id && h('div',{className:'gwe-project-remove'},h('p',null,'Remove this saved project from this browser? Download a copy first if you want to keep it.'),h('button',{type:'button',onClick:function(){var result=removeWorldProject(p.id);if(result.ok){setWorldShelf(result);setProjectChoice('');setRemoveProject('');}else setProjectNotice(result.reason);}},'Confirm removal'),h('button',{type:'button',onClick:function(){setRemoveProject('');}},'Keep project'))));})),
+          h('p',{className:'gwe-project-status',role:'status'},projectNotice));
+      }
+      function renderStarterLibrary(){
+        return h('details',{className:'gwe-details gwe-starter-library gwe-stamp-library',onToggle:function(e){setStarterOpen(e.currentTarget.open);}},h('summary',null,'Architectural starter kit'),
+          h('p',{className:'gwe-builder-note'},'Start with a complete structure, then make every block your own.'),
+          h('div',{className:'gwe-starter-categories',role:'group','aria-label':'Starter category'},['Architecture','Landscape','Buildings'].map(function(c){return h('button',{key:c,type:'button','aria-pressed':starterCategory===c,onClick:function(){setStarterCategory(c);setStarterId(starters.find(function(s){return s.category===c;}).id);cancelSelectionPreview();}},c);})),
+          h('div',{className:'gwe-stamp-gallery','aria-label':'Architectural starters'},starterCards.map(function(card){var s=card.stamp;return h('button',{key:s.id,type:'button',className:'gwe-stamp-card gwe-starter-card','aria-label':'Choose starter '+s.name,'aria-pressed':starterId===s.id,onClick:function(){setStarterId(s.id);cancelSelectionPreview();}},h('span',{className:'gwe-stamp-art'},h('img',{src:card.image,alt:'',loading:'lazy'}),h('span',{className:'gwe-stamp-selection'},starterId===s.id?'✓ Selected':'Choose')),h('span',{className:'gwe-stamp-card-name'},s.name),h('span',{className:'gwe-stamp-card-facts'},s.blocks.length+' editable blocks'));})),
+          h('p',{className:'gwe-builder-note'},(starters.find(function(s){return s.id===starterId;})||starters[0]).description),
+          renderCoordinateInputs('gwe-starter-corner',stampOrigin,setStampOrigin,'Place the starter corner at'),
+          h('div',{className:'gwe-builder-actions'},h('button',{type:'button',onClick:function(){var live=window[ENGINE_KEY],cell=live && live._placementPreview && live._placementPreview.cell;if(cell){setStampOrigin({x:String(cell.x),y:String(cell.y),z:String(cell.z)});cancelSelectionPreview();}else setSelectionEditNotice('Aim at nearby ground or a block face first.');}},'Use aim for starter'),
+            h('button',{type:'button',onClick:function(){var s=starters.find(function(s){return s.id===starterId;})||starters[0],result=previewBuildStamp(window[ENGINE_KEY],s,stampCoordinates());setSelectionEditPreview(result);setSelectionEditNotice(result.ok?s.name+': '+s.blocks.length+' editable blocks. Review the outline, then apply.':result.reason);}},'Preview starter')));
+      }
+      function changePointerMode(mode){var live=window[ENGINE_KEY];cancelSelectionPreview();if(live && live.cancelDrawing)live.cancelDrawing(true);if(live && live.setDrawMode)live.setDrawMode('single');setPointerMode(mode);}
+      function renderDirectControls(){
+        return h('details',{className:'gwe-details gwe-direct-controls'},h('summary',null,'Select blocks & move the camera'),
+          h('div',{className:'gwe-pointer-modes',role:'group','aria-label':'World pointer tool'},[['build','Build'],['select','Select blocks'],['orbit','Orbit camera']].map(function(m){return h('button',{type:'button',key:m[0],'aria-pressed':pointerMode===m[0],onClick:function(){changePointerMode(m[0]);}},m[1]);})),
+          h('p',{className:'gwe-builder-note'},pointerMode==='select'?'Click one block or drag a rectangle. The rectangle includes blocks behind the visible surface. Escape returns to building.':pointerMode==='orbit'?'Drag to orbit. Shift-drag or right-drag to pan. Scroll to zoom. Touch users can drag and use the camera buttons. Escape returns to building.':'Use Select blocks to choose parts of a structure. Orbit camera gives you a cursor-controlled construction view.'),
+          pointerMode==='select' && h('label',{className:'gwe-edit-label'},'Selection action',h('select',{'aria-label':'Selection action',value:selectionOperation,onChange:function(e){setSelectionOperation(e.target.value);}},[['replace','Replace selection'],['add','Add blocks'],['remove','Remove blocks']].map(function(o){return h('option',{key:o[0],value:o[0]},o[1]);}))),
+          pointerMode==='select' && h('button',{type:'button',onClick:function(){var live=window[ENGINE_KEY],hit=live && live.blockUnderCrosshair && live.blockUnderCrosshair(),p=hit && hit.object && hit.object.userData.gridPos,result=updateWorkshopSelection(live,p?[p]:[],selectionOperation);cancelSelectionPreview();setSelectionEditNotice(result.ok?result.count+' blocks selected.':result.reason);var selected=selectionMeasurement(live);patchGeometryState(ctx,{measureResult:selected?selected.measurement:null});}},'Use aimed block for selection'),
+          hasRetainedSelection && h('div',{className:'gwe-nudge-controls',role:'group','aria-label':'Preview a one-block move'},[['− X',-1,0,0],['+ X',1,0,0],['Down',0,-1,0],['Up',0,1,0],['− Z',0,0,-1],['+ Z',0,0,1]].map(function(a){return h('button',{type:'button',key:a[0],onClick:function(){var offset={x:a[1],y:a[2],z:a[3]},result=previewSelectionEdit(window[ENGINE_KEY],'move',offset);setSelectionEditMode('move');setSelectionOffset({x:String(a[1]),y:String(a[2]),z:String(a[3])});setSelectionEditPreview(result);setSelectionEditNotice(result.ok?'Move one block '+a[0]+'. Review the outline, then apply.':result.reason);}},a[0]);})),
+          hasRetainedSelection && h('p',{className:'gwe-builder-note'},'Move buttons preview one grid step. Apply preview commits the whole selection.'),
+          pointerMode!=='build' && h('button',{type:'button',onClick:function(){patchGeometryState(ctx,{sandboxDockCollapsed:true});focusWorldSurface(0);}},'Open canvas controls'));
+      }

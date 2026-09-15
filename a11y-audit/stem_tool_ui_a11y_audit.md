@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-09-13T18:45:22.000Z
+Generated: 2026-09-14T23:30:15.017Z
 
 ## Scope
 
@@ -100,7 +100,7 @@ Generated: 2026-09-13T18:45:22.000Z
 | `economicsLab` Economics Lab | science | standard | 25 | 8 | 1 | 0 | 0 | 0 |  |
 | `ecosystem` Ecosystem Simulator | science | standard | 49 | 13 | 1 | 0 | 0 | 0 |  |
 | `epidemicSim` Epidemic Modeling Lab | Life Science | standard | 24 | 14 | 1 | 0 | 0 | 0 |  |
-| `evoLab` EvoLab — Evolution | biology | standard | 32 | 0 | 0 | 0 | 0 | 0 |  |
+| `evoLab` EvoLab — Evolution | biology | standard | 33 | 0 | 0 | 0 | 0 | 0 |  |
 | `fieldJourneys` Field Journeys (Pilot) | Ecology & Environment | light opt-out | 0 | 0 | 0 | 1 | 2 | 2 | empty-render x1, heading x1, light-background x1, metadata x1, no-interactive-controls x1 |
 | `fireEcology` Fire Ecology & Indigenous Stewardship | science | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
 | `firstResponse` First Response Lab | life-skills | standard | 1 | 0 | 0 | 0 | 0 | 0 |  |
@@ -148,7 +148,7 @@ Generated: 2026-09-13T18:45:22.000Z
 | `organismId` Taxonomy Explorer | science | standard | 102 | 0 | 0 | 0 | 0 | 0 |  |
 | `paperTrail` PaperTrail: Official Documents | applied | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `parentingLab` Science of Parenting Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
-| `particleLab3d` Particle Lab 3D | science | standard | 51 | 12 | 1 | 0 | 0 | 0 |  |
+| `particleLab3d` Particle Lab 3D | science | standard | 63 | 12 | 1 | 0 | 0 | 0 |  |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 34 | 1 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 37 | 10 | 1 | 0 | 0 | 0 |  |
 | `plateTectonics` Plate Tectonics | science | standard | 35 | 5 | 6 | 0 | 0 | 0 |  |
@@ -164,7 +164,7 @@ Generated: 2026-09-13T18:45:22.000Z
 | `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 17 | 7 | 0 | 0 | 0 | 0 |  |
 | `rockCycle` Rock Cycle | science | standard | 16 | 1 | 1 | 0 | 0 | 0 |  |
 | `rocks` Rocks & Minerals Explorer | science | standard | 12 | 0 | 1 | 0 | 0 | 0 |  |
-| `scaleExplorer` Scale Explorer | science | standard | 77 | 7 | 1 | 0 | 0 | 0 |  |
+| `scaleExplorer` Scale Explorer | science | standard | 81 | 8 | 1 | 0 | 0 | 0 |  |
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 15 | 0 | 0 | 0 | 0 | 0 |  |
 | `semiconductor` Semiconductor Lab | science | standard | 28 | 9 | 1 | 0 | 0 | 0 |  |
 | `simShelf` Sim Shelf | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |

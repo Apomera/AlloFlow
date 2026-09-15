@@ -1,0 +1,120 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_bjt.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > normalizes NPN/PNP parameters without changing input or non-transistor designs
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all npn bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all pnp bias quadrants
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the npn terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the pnp terminal Jacobian to independent finite differences
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > labels bias regions by junction polarity without a fixed on-voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > does not replace an overflowing exponential with a clipped current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased npn with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased pnp with independently calculated currents and power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 1 V through 100000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 5 V through 10000 ohms
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > limits saturated collector current through the load instead of forcing beta times base current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > retains signed leakage at cutoff
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves reverse active bias with the reverse gain
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves a loaded emitter follower and includes base loading
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > solves two coupled transistors with the reference branch supplying both base currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > keeps all three internal currents and differences in a fully floating circuit
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > counts a base-only node and every current incidence, including tied terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > three-terminal network solving > supports a diode-connected transistor driven by a known current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using backward-euler with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > normalizes NPN/PNP parameters without changing input or non-transistor designs 1352ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all npn bias quadrants 18ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches independent alpha-form equations in all pnp bias quadrants 2ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the npn terminal Jacobian to independent finite differences 3ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > matches the pnp terminal Jacobian to independent finite differences 3ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > labels bias regions by junction polarity without a fixed on-voltage 2ms
+ ✓ tests/circuit_network_bjt.test.js > reciprocal Ebers-Moll transistor model > does not replace an overflowing exponential with a clipped current 5ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased npn with independently calculated currents and power 4ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > solves a voltage-biased pnp with independently calculated currents and power 4ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 1 V through 100000 ohms 12ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > matches a nested independent DC root for input 5 V through 10000 ohms 7ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > limits saturated collector current through the load instead of forcing beta times base current 2ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > retains signed leakage at cutoff 2ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > solves reverse active bias with the reverse gain 1ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > solves a loaded emitter follower and includes base loading 2ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > solves two coupled transistors with the reference branch supplying both base currents 2ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > keeps all three internal currents and differences in a fully floating circuit 5ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > counts a base-only node and every current incidence, including tied terminals 3ms
+ ✓ tests/circuit_network_bjt.test.js > three-terminal network solving > supports a diode-connected transistor driven by a known current 2ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using backward-euler with finite conserved readings 689ms
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using trapezoidal with finite conserved readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > couples to capacitor state using trapezoidal with finite conserved readings 239ms
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > integrates a BJT, diode, and controlled source in one nonlinear network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > invalidates held samples when base connection or model parameters change
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > exports aligned three-terminal model, current, and junction columns in DC and time data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > routes all three terminals and preserves the base node in the orbit geometry
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > renders transistor editing, model limits, C/B/E routes, and correctly named measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_bjt.test.js > transistor dynamics and presentation > hides all transistor currents when initial constraints make time response fail
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > integrates a BJT, diode, and controlled source in one nonlinear network 5ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > invalidates held samples when base connection or model parameters change 14ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > exports aligned three-terminal model, current, and junction columns in DC and time data 18ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > routes all three terminals and preserves the base node in the orbit geometry 15ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > renders transistor editing, model limits, C/B/E routes, and correctly named measurements 43ms
+ ✓ tests/circuit_network_bjt.test.js > transistor dynamics and presentation > hides all transistor currents when initial constraints make time response fail 20ms
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  22:51:10
+   Duration  4.72s (transform 53ms, setup 49ms, import 76ms, tests 2.48s, environment 1.46s)
+

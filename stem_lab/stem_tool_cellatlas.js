@@ -1626,7 +1626,7 @@
         function copyTeacherPacket() {
           var report = teacherPacket();
           if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldTeacherReviewStatus: 'unavailable' }); return; }
-          navigator.clipboard.writeText(report).then(function () { patch({ alphaFoldTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ alphaFoldTeacherReviewStatus: 'failed' }); });
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ alphaFoldTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ alphaFoldTeacherReviewStatus: 'failed' }); });
         }
         function learnerPacket() {
           return [
@@ -1646,7 +1646,7 @@
         function copyLearnerPacket() {
           var report = learnerPacket();
           if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldLearnerExportStatus: 'unavailable' }); return; }
-          navigator.clipboard.writeText(report).then(function () { patch({ alphaFoldLearnerExportStatus: 'copied' }); }).catch(function () { patch({ alphaFoldLearnerExportStatus: 'failed' }); });
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ alphaFoldLearnerExportStatus: 'copied' }); }).catch(function () { patch({ alphaFoldLearnerExportStatus: 'failed' }); });
         }
         return h('section', { className: 'cal-card cal-af-return', 'aria-labelledby': 'cal-af-return-title' },
           h('p', { className: 'cal-kicker' }, 'Returned from AlphaFold'),
@@ -1875,7 +1875,7 @@
         function copyReproducibilityPacket() {
           var report = reproducibilityPacket();
           if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ reproducibilityPacketStatus: 'unavailable' }); return; }
-          navigator.clipboard.writeText(report).then(function () { patch({ reproducibilityPacketStatus: 'copied' }); }).catch(function () { patch({ reproducibilityPacketStatus: 'failed' }); });
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ reproducibilityPacketStatus: 'copied' }); }).catch(function () { patch({ reproducibilityPacketStatus: 'failed' }); });
         }
         function reproducibilityArtifact() {
           return buildExportArtifact('reproducibility-audit', 'Cell Atlas reproducibility audit', reproducibilityPacket(), {
@@ -2433,7 +2433,7 @@
         function copyDesignPacket() {
           var report = designPacket();
           if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ designPacketStatus: 'unavailable' }); return; }
-          navigator.clipboard.writeText(report).then(function () { patch({ designPacketStatus: 'copied' }); }).catch(function () { patch({ designPacketStatus: 'failed' }); });
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ designPacketStatus: 'copied' }); }).catch(function () { patch({ designPacketStatus: 'failed' }); });
         }
         function designArtifact() {
           return buildExportArtifact('study-design', 'Cell Atlas study-design packet', designPacket(), {
@@ -2557,7 +2557,7 @@
         function copyCrossTissuePacket() {
           var report = crossTissuePacket();
           if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ crossTissuePacketStatus: 'unavailable' }); return; }
-          navigator.clipboard.writeText(report).then(function () { patch({ crossTissuePacketStatus: 'copied' }); }).catch(function () { patch({ crossTissuePacketStatus: 'failed' }); });
+          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ crossTissuePacketStatus: 'copied' }); }).catch(function () { patch({ crossTissuePacketStatus: 'failed' }); });
         }
         function crossTissueArtifact() {
           return buildExportArtifact('cross-tissue-cer', 'Cell Atlas cross-tissue CER packet', crossTissuePacket(), {
@@ -2797,7 +2797,7 @@
       function copyCellAtlasTeacherReview() {
         var report = cellAtlasTeacherPacket();
         if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.writeText) { patch({ cellAtlasTeacherReviewStatus: 'unavailable' }); return; }
-        navigator.clipboard.writeText(report).then(function () { patch({ cellAtlasTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ cellAtlasTeacherReviewStatus: 'failed' }); });
+        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ cellAtlasTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ cellAtlasTeacherReviewStatus: 'failed' }); });
       }
 
       function renderSource() {

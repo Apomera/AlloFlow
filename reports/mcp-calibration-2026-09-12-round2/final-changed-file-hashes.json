@@ -1,0 +1,53 @@
+{
+  "createdAt": "2026-09-13T02:37:31.456Z",
+  "files": [
+    {
+      "file": "desktop/mcp/remediation_headless_driver.cjs",
+      "sha256": "c944fd623c7a7d5121d6034a2a67b4b67f8437f6a41272c89680a5dd97b85c86"
+    },
+    {
+      "file": "desktop/mcp/alloflow-remediation-mcp-stdio.cjs",
+      "sha256": "9ed8ec48ead117d0ac6d422fde6b82ad4801b09abae397571598c64f5fa8327e"
+    },
+    {
+      "file": "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+      "sha256": "504619e18988c83459059d14ccbda8636da9a0a1e91ff90a886bbdf33ee385eb"
+    },
+    {
+      "file": "tests/generated_baseline_language.test.js",
+      "sha256": "5e1bdfd8f557a424d022f12620f131bcf453f220a725f7c5696b098a8bd8440e"
+    },
+    {
+      "file": "tests/doc_pipeline_title_attributes.test.js",
+      "sha256": "11b085165da63d41c35e98b3765f5a2abfd71c71cb75e81c1b27ae3a132d8d96"
+    },
+    {
+      "file": "package.json",
+      "sha256": "db8ef9c50546b67bbe1559afa2d0be4bc07b768d363ee700541130632bed9778"
+    },
+    {
+      "file": "dev-tools/remediation_validation.json",
+      "sha256": "a37c4f9b6e376de3006ac85c35eea7f0dbe1daa886a4857ae5b1329f4c3f63aa"
+    },
+    {
+      "file": ".github/workflows/remote-mcp-verify.yml",
+      "sha256": "f80d6d2f968c275dcb24dab9f0654bcd91e43b7b3f2524919611dde8577e01f7"
+    },
+    {
+      "file": ".github/workflows/mcpb-release.yml",
+      "sha256": "2fe1fe7bbfc5d64c25f92f45901a3ea3748c56455f4e47ad5161eb2e82f35bd3"
+    },
+    {
+      "file": "doc_pipeline_source.jsx",
+      "sha256": "43df46187f382c55e53012f8dd1240ae71d53c885fdfc25c9f0fbccb6f8a9b85"
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "sha256": "6e4f854ff2c8ae90156a303f8c69337c7261912ce742882f01f5dae220c1ca63"
+    },
+    {
+      "file": "desktop/web-app/public/doc_pipeline_module.js",
+      "sha256": "6e4f854ff2c8ae90156a303f8c69337c7261912ce742882f01f5dae220c1ca63"
+    }
+  ]
+}

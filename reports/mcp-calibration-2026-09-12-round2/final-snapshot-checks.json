@@ -1,0 +1,40 @@
+{
+  "completedAt": "2026-09-13T03:12:19.459Z",
+  "finalHelperSyntaxPassed": true,
+  "scopedGitDiffCheckPassed": true,
+  "manifestValidated": true,
+  "calibrationSelectionExactlyOnce": [
+    "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+    "tests/generated_baseline_language.test.js",
+    "tests/doc_pipeline_title_attributes.test.js",
+    "tests/semantic_list_marker_coverage.test.js",
+    "tests/mcp_content_coverage.test.js",
+    "tests/mcp_narration_languages.test.js"
+  ],
+  "workflowValidation": "final-wiring-validation-post-semantic.json",
+  "finalFileHashes": "final-changed-file-hashes-post-semantic.json",
+  "originalArtifactHashesUnchanged": true,
+  "originalArtifactHashChecks": "Finalizer verified official HTML e4888cd4...25d0 and report7817e5e9...e453 against completion manifest.",
+  "pilotShutdown": "spanish-server-shutdown.json",
+  "pilotChromiumExitVerified": "final-wiring-validation.json",
+  "pilotConnectionRemoved": true,
+  "terminalServerLifecycles": [
+    {
+      "pid": 11324,
+      "shutdown": "stdin-close",
+      "exitCode": 0
+    },
+    {
+      "pid": 8772,
+      "shutdown": "stdin-close",
+      "exitCode": 0
+    },
+    {
+      "pid": 29700,
+      "shutdown": "stdin-close",
+      "exitCode": 0
+    }
+  ],
+  "sourceAndModuleFreeze": "language-title-companion-verification.json",
+  "finalGuardFreeze": "semantic-marker-final-patch.json"
+}

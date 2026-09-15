@@ -102,7 +102,7 @@ window.StemLab = window.StemLab || {
   var _audioCtx = null;
   var _volumeDeleteReturnEl = null;
   function getAudioCtx() {
-    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!_audioCtx) _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
     return _audioCtx;
   }
   function playSound(type) {

@@ -8621,7 +8621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var ks = R_NL.useState(false); var showJson = ks[0]; var setShowJson = ks[1];
     var jsonStr = JSON.stringify(allData, null, 2);
     function copy() {
-      try { navigator.clipboard.writeText(jsonStr); } catch (e) {}
+      try { (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(jsonStr); } catch (e) {}
     }
     function downloadCsv() {
       var lines = ['Tool,Date,Summary'];

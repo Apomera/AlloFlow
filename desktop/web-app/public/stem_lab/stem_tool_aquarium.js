@@ -13557,7 +13557,7 @@ window.StemLab = window.StemLab || {
         if(intersectionObserver)intersectionObserver.disconnect();
         if(controls){if(controls.removeEventListener)controls.removeEventListener('change',requestRender);controls.dispose();}
         disposeGroup(scene);clearFishPigmentCache();persistentTextures.forEach(function(map){map.dispose();});persistentTextures=[];
-        focusState=null;fishById={};plantById={};if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();renderer.dispose();
+        focusState=null;fishById={};plantById={};if(renderer.renderLists&&renderer.renderLists.dispose)renderer.renderLists.dispose();renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
       }
     };
   }
@@ -14247,7 +14247,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           function getAquaAC() {
             if (soundEnabled === false) return null;
             var runtime = runtimeRef.current;
-            if (!runtime.audioContext) { try { runtime.audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (!runtime.audioContext) { try { runtime.audioContext = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
             if (runtime.audioContext && runtime.audioContext.state === 'suspended') { try { runtime.audioContext.resume(); } catch(e) {} }
             return runtime.audioContext;
           }

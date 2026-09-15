@@ -79,6 +79,7 @@ const directionEnglish = {
   map_next_goal: 'finishes your goal: {goal}',
   map_also_ready: 'or',
   map_all_visited: '🎉 You have been to every station on this map.',
+  map_choose_station: 'Choose a station from the map or the list below to continue.',
   map_jump_any: 'Go to any station',
   map_visited_sr: 'already visited',
   your_goals: 'Your goals',
@@ -86,12 +87,15 @@ const directionEnglish = {
   goal_open: 'not yet complete',
   signals_note: 'Goals check themselves on this device as you play and earn XP — and your own checkmarks count too.',
   missing_choices: 'Some activity choices are no longer available in this assignment. Choose from the activities still listed below or ask your teacher for an updated board.',
+  choice: 'choice',
   choices: 'choices',
   selected_prefix: 'Selected',
   selected_suffix: 'You can choose another activity below.',
+  single_choice_selected: 'You can return to this activity at any time.',
   choose_activity: 'Choose activity',
   open_activity: 'Open activity',
   choice_hint: 'Choose one activity to begin. You can return here and choose another card later.',
+  single_choice_hint: 'Open the remaining activity, or ask your teacher for an updated board.',
 };
 
 const directionEnglishKeys = Object.keys(directionEnglish).map((key) => `directions.${key}`);

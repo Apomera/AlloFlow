@@ -611,7 +611,7 @@ const d = labToolData.solarSystem || {};
           // --- Sound effects (singleton AudioContext) ---
           var _solarAC = null;
           function getSolarAC() {
-            if (!_solarAC) { try { _solarAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (!_solarAC) { try { _solarAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
             if (_solarAC && _solarAC.state === 'suspended') { try { _solarAC.resume(); } catch(e) {} }
             return _solarAC;
           }
@@ -5895,7 +5895,7 @@ const d = labToolData.solarSystem || {};
                 try { spaceBackdropTexture.dispose(); } catch (e) {}
 
                 if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
-                renderer.dispose();
+                renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
 
                 const solarDisposedResources = new Set();
                 function disposeSolarResource(resource) {
@@ -25082,7 +25082,7 @@ const d = labToolData.solarSystem || {};
                             terrainMicroTex = null;
                           }
 
-                          renderer.dispose();
+                          renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
 
                           if (hud.parentElement) hud.parentElement.removeChild(hud);
 

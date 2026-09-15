@@ -1,0 +1,60 @@
+Pourquoi le nombre d’os séparés peut-il changer pendant la croissance ?
+Certains os en développement fusionnent avec la maturation du squelette. Le nombre adulte habituel de 206 est une référence conventionnelle, pas un nombre à appliquer sans changement à tous les âges.
+Un os est-il un tissu vivant ou seulement un support dur ?
+L’os contient des cellules vivantes et reçoit du sang. Des cellules construisent, entretiennent et résorbent le tissu osseux, permettant au squelette de grandir, de se réparer et de se remodeler.
+Pourquoi l’os a-t-il besoin de minéraux et de collagène ?
+Les minéraux donnent sa dureté à l’os, tandis que le collagène l’aide à résister à la traction sans être trop cassant. Sa forme et son organisation interne influencent aussi sa résistance aux charges.
+Pourquoi la marche nécessite-t-elle des muscles stabilisateurs et des muscles moteurs ?
+Le mouvement dépend d’une activité musculaire coordonnée. Certains muscles produisent un mouvement, d’autres s’y opposent ou le contrôlent, et d’autres stabilisent une articulation ou un segment du corps. Leur participation dépend du mouvement et de sa réalisation.
+Le muscle cardiaque reste-t-il contracté entre les battements ?
+Chaque battement comporte contraction et relâchement, permettant l’éjection et le remplissage. À une fréquence constante de 70 battements par minute, le calcul donne 100 800 battements par jour ; la fréquence réelle varie avec l’activité et d’autres conditions.
+Un muscle peut-il produire une force sans raccourcissement visible ?
+Oui. Lors d’une contraction isométrique, la tension musculaire augmente sans changement global de longueur du muscle ni de position articulaire. Tenir un objet immobile demande une force, même sans mouvement visible.
+Pourquoi les parois capillaires sont-elles beaucoup plus fines que les parois artérielles ?
+Les artères transportent le sang sous pression et possèdent des parois résistantes. Les capillaires ont des parois très fines adaptées aux échanges avec les tissus. Cette courte distance de diffusion facilite le passage de substances entre le sang et les tissus voisins.
+Comment la fréquence cardiaque et le volume par battement donnent-ils le débit par minute ?
+Le débit cardiaque est la fréquence cardiaque multipliée par le volume d’éjection systolique. Par exemple, 70 battements par minute × 70 mL par battement = 4,9 L par minute. C’est un exemple de calcul, pas une valeur fixe pour chaque personne.
+Pourquoi le corps doit-il continuer à fabriquer des globules rouges ?
+Les globules rouges vieillissent et sont éliminés, tandis que la moelle osseuse rouge les remplace. Environ 120 jours est une estimation habituelle de leur durée de vie, pas une durée exacte pour chaque cellule.
+Les neurones sont-ils les seules cellules utiles au fonctionnement du système nerveux ?
+Les neurones communiquent par des signaux électriques et chimiques. Les cellules gliales les soutiennent, régulent leur environnement et, pour certaines, forment la myéline. Différents types cellulaires coopèrent au sein des circuits nerveux.
+Tous les signaux nerveux voyagent-ils à la même vitesse ?
+La vitesse de conduction varie notamment avec le diamètre de l’axone et sa myélinisation. Dans les axones myélinisés, les potentiels d’action sont régénérés aux interruptions appelées nœuds de Ranvier. Une vitesse maximale ne décrit pas toutes les fibres nerveuses.
+Pourquoi les neurones ont-ils besoin d’énergie même entre les signaux ?
+Les neurones maintiennent des concentrations ioniques différentes de part et d’autre de leur membrane. Des pompes utilisant l’ATP entretiennent ces gradients, qui rendent la signalisation électrique possible. L’énergie métabolique utilisée diffère de l’électricité fournie par une pile à une ampoule.
+Les ganglions lymphatiques et la rate filtrent-ils le même liquide ?
+Les ganglions filtrent la lymphe et la mettent en contact avec des cellules immunitaires. La rate surveille le sang. Tous deux participent à la défense immunitaire, mais leurs circuits liquidiens diffèrent.
+Que fait la rate avec les globules rouges vieillissants ?
+La rate aide à éliminer les globules rouges vieux ou endommagés et participe aux réponses immunitaires contre les éléments présents dans le sang. Des composants des cellules éliminées peuvent être recyclés.
+Comment la lymphe circule-t-elle sans pompe centrale comme le cœur ?
+Les mouvements du corps, les variations de pression liées à la respiration et les contractions des parois lymphatiques favorisent le flux. Des valves limitent le reflux pendant le retour du liquide vers la circulation veineuse.
+Le foie sert-il uniquement à éliminer les substances nocives ?
+Le foie transforme les nutriments, fabrique des protéines sanguines importantes, produit la bile et transforme de nombreuses substances. Plusieurs de ces fonctions se déroulent en même temps.
+Comment l’intestin grêle augmente-t-il son contact avec les nutriments digérés ?
+Les plis circulaires, les villosités et les microvillosités microscopiques augmentent la surface d’absorption de l’intestin grêle. Un pli, une villosité et une microvillosité correspondent à différents niveaux de cette structure.
+Pourquoi le volume de filtrat rénal dépasse-t-il largement celui de l’urine ?
+Une estimation de référence chez l’adulte est d’environ 180 L de filtrat par jour. Les tubules rénaux renvoient la plupart de l’eau filtrée et de nombreux solutés utiles dans le sang. Seule une petite fraction du liquide filtré devient de l’urine.
+Comment l’épiderme reçoit-il des nutriments sans vaisseaux sanguins ?
+Les nutriments diffusent vers l’épiderme à partir des vaisseaux du derme sous-jacent. La peau comporte plusieurs couches de structures différentes ; sa couche externe ne contient pas ses propres vaisseaux sanguins.
+Toute la peau se renouvelle-t-elle selon un calendrier fixe ?
+Les cellules formées dans les couches profondes de l’épiderme progressent vers la surface puis sont éliminées. Le renouvellement est graduel et sa durée varie. Toute la peau, y compris le derme, ne se renouvelle pas d’un seul coup.
+Pourquoi la peau peut-elle s’étirer puis retrouver en partie sa forme ?
+Le collagène du derme aide à résister à la traction et les fibres élastiques favorisent le retour à la forme initiale. L’étirement a des limites : ces tissus peuvent être lésés et leur récupération dépend notamment de l’âge et de l’étendue des dommages.
+Comment la fréquence et le volume respiratoires déterminent-ils l’air déplacé par minute ?
+La ventilation minute est la fréquence respiratoire × le volume courant. Par exemple, 12 respirations par minute × 0,5 L par respiration = 6 L par minute. Une partie de l’air inspiré reste dans les voies conductrices et n’atteint pas les surfaces d’échange.
+Pourquoi de nombreuses petites alvéoles favorisent-elles les échanges gazeux ?
+Les alvéoles offrent une grande surface et une barrière fine entre l’air et le sang. L’oxygène et le dioxyde de carbone diffusent selon leurs propres gradients de pression partielle ; l’air ne passe normalement pas directement dans les vaisseaux sanguins.
+Qu’est-ce qui fait sortir l’air pendant une expiration calme ?
+Après le relâchement des muscles inspiratoires, le recul élastique aide à réduire le volume pulmonaire et à élever la pression alvéolaire au-dessus de la pression atmosphérique. L’expiration calme est surtout passive ; l’expiration forcée sollicite d’autres muscles.
+L’hypophyse contrôle-t-elle directement toutes les glandes endocrines ?
+L’hypothalamus et l’hypophyse régulent de nombreuses voies endocrines, mais toutes les réponses hormonales ne commencent pas là. Les cellules des îlots pancréatiques répondent notamment aux variations des nutriments sanguins et à d’autres signaux.
+L’adrénaline et le cortisol viennent-ils de la même partie de la surrénale ?
+La médullosurrénale libère des catécholamines comme l’adrénaline. Le cortex surrénalien externe produit des hormones stéroïdes, dont le cortisol. Différents tissus et signaux contribuent à la réponse au stress.
+Le pancréas endocrine libère-t-il uniquement de l’insuline ?
+Les îlots pancréatiques contiennent plusieurs types cellulaires. Les cellules bêta libèrent l’insuline et les cellules alpha le glucagon. Ces hormones ont des effets différents qui participent à la régulation de la glycémie.
+Un follicule ovarien est-il la même chose qu’un ovocyte ?
+Un follicule ovarien contient un ovocyte et des cellules de soutien qui l’entourent. Le follicule et l’ovocyte sont des structures différentes, dont la taille change pendant le développement.
+Pourquoi un spermatozoïde possède-t-il une tête et une longue queue ?
+La tête du spermatozoïde contient le noyau et un acrosome qui contribue à la fécondation. Son flagelle permet le mouvement. Comparer la taille de cellules nécessite de préciser la longueur, la largeur ou le volume.
+Les échanges placentaires nécessitent-ils un mélange direct des sangs maternel et fœtal ?
+Les circulations maternelle et fœtale restent normalement séparées ; les échanges se font à travers les tissus placentaires. L’oxygène et les nutriments passent vers le fœtus, tandis que le dioxyde de carbone et d’autres déchets passent vers la circulation maternelle.

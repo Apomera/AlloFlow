@@ -1,0 +1,54 @@
+{
+  "checks": [
+    {
+      "name": "Search resumed 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Source review 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Final review links 1280",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Search resumed 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Source review 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Final review links 390",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Restored source notes without restoring search history",
+      "passed": true
+    },
+    {
+      "name": "Search resumed 320",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Source review 320",
+      "axeViolations": 0,
+      "overflow": false
+    },
+    {
+      "name": "Final review links 320",
+      "axeViolations": 0,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

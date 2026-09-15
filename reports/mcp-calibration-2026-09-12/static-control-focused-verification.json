@@ -1,0 +1,34 @@
+{
+  "sourceSha256": "48163c2357dbb6053bb3ed7bbd5f7da07bcc631039caa082044fab0f9e18a5d7",
+  "focusedValidation": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/static_crop_cleanup.test.js tests/strip_executable_scripts.test.js tests/placeholder_chrome_audit.test.js --maxWorkers=1",
+    "passed": 50,
+    "failed": 0,
+    "suiteCounts": {
+      "static_crop_cleanup": 29,
+      "strip_executable_scripts": 11,
+      "placeholder_chrome_audit": 10
+    },
+    "chromiumCases": [
+      "raw legacy Replace setInputFiles changes embedded image after crop removal",
+      "canonical export removes dead crop and file picker while source controls, transcript, caption and image remain",
+      "generated crop callback works with runtime before static cleanup; owned controls removed afterward"
+    ],
+    "sourceParse": "Full-source Babel JSX parse passed",
+    "lineEndings": "LF; three existing NUL bytes preserved"
+  },
+  "deepHardeningCompatibility": {
+    "command": "node node_modules/vitest/vitest.mjs run tests/remediation_pipeline_deep_hardening.test.js --maxWorkers=1",
+    "passed": 18,
+    "failed": 0,
+    "staleAssertionUpdate": "Initial run failed an unrelated source-string assertion expecting filter(Boolean) without entry cloning. Root confirmed an earlier authorized recovery change clones per-run queue entries. Updated only the two assertions to the existing .map(item => ({ ...item })) expression and retained the ordering assertion. No queue production code changed; no claim that this was independently rerun against a pre-edit snapshot."
+  },
+  "preservationLimitations": [
+    "Unmarked historical controls with erased handler signatures are preserved because ownership cannot be proved.",
+    "Malformed or unknown control contents are preserved, including parser-repaired ranges whose end sentinel leaves the parsed control.",
+    "No-parser helper path preserves original control content; canonical sanitizer retains its existing escaped-text fallback."
+  ],
+  "independentReview": "Auditor two confirmed malformed button and Replace parent-closure cases preserved; actual candidate preserved all 19 source blocks, image src/alt and links. Raw output crop0/input1; canonical output crop0/input0.",
+  "totalFocusedTestsPassed": 68,
+  "productionBuildPerformedByThisAgent": false
+}

@@ -442,8 +442,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
             }
           }
-          if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
-            window.navigator.clipboard.writeText(script).then(copied).catch(fallbackCopy);
+          if (window.SelHub && window.SelHub.copyText) {
+            window.SelHub.copyText(script).then(function(ok) { if (ok) copied(); else fallbackCopy(); });
           } else fallbackCopy();
         }
 

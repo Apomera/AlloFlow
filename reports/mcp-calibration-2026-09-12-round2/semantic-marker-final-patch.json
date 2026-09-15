@@ -1,0 +1,13 @@
+{
+  "module": {
+    "path": "desktop/mcp/remediation_narration_plan.cjs",
+    "initialSha256": "0c29f25a0d687902fa5e713cd91ff09134f231db1f1fb7ee47d7d55650ff1760",
+    "preVisibilityGuardSha256": "4cbe3774451d91df011db46ad6bc7d84ea05803d802de14ced682fa87ce0f9c3",
+    "finalSha256": "76f7d430480bf9addc9f54c28e9fc7686d0155a58490e43e089b310082bd0e6f"
+  },
+  "test": {
+    "path": "tests/semantic_list_marker_coverage.test.js",
+    "sha256": "cdd2ce7263f17f4e2021b986aad115c1a250de528c75aae8678a4caab24bee5f"
+  },
+  "scope": "Semantic source-identified decimal list marker credits only; ordinary numeric tokens and thresholds unchanged. The final change adds inline visibility:collapse parity with the already guarded stylesheet surface."
+}

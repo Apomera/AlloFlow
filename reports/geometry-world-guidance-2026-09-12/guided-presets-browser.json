@@ -1,0 +1,390 @@
+{
+  "scope": "Local canonical JavaScript, real React and Three/WebGL; optional activities reached through Home Learn",
+  "checks": [
+    {
+      "label": "areaSurface has a live WebGL canvas",
+      "pass": true
+    },
+    {
+      "label": "areaSurface loads complete teaching models and independent terrain",
+      "pass": true,
+      "detail": {
+        "ground": 625,
+        "construction": 244,
+        "truncated": false,
+        "activities": 5,
+        "questions": 3,
+        "npcGround": true,
+        "measurements": [
+          {
+            "count": 72,
+            "occupied": 72,
+            "bounding": 72,
+            "surface": 108,
+            "materials": {
+              "diamond": 72
+            }
+          },
+          {
+            "count": 72,
+            "occupied": 72,
+            "bounding": 72,
+            "surface": 114,
+            "materials": {
+              "gold": 72
+            }
+          },
+          {
+            "count": 100,
+            "occupied": 100,
+            "bounding": 100,
+            "surface": 130,
+            "materials": {
+              "sand": 50,
+              "wood": 50
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "areaSurface real measured component counts match the lesson",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activities preserve quiz counts and ground-level guides",
+      "pass": true
+    },
+    {
+      "label": "Area actual Measure confirms all six-face surface areas",
+      "pass": true
+    },
+    {
+      "label": "areaSurface native guide lists every new activity",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activity1 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          9,
+          2.6,
+          5
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "areaSurface activity1 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activity2 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          10,
+          2.6,
+          4
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "areaSurface activity2 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activity3 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          9,
+          2.6,
+          13
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "areaSurface activity3 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activity4 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          10,
+          2.6,
+          1
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "areaSurface activity4 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface activity5 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          19,
+          2.6,
+          15
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "areaSurface activity5 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface review is recorded separately from the question score",
+      "pass": true
+    },
+    {
+      "label": "areaSurface journal does not mutate protected models or assessment",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume has a live WebGL canvas",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume loads complete teaching models and independent terrain",
+      "pass": true,
+      "detail": {
+        "ground": 775,
+        "construction": 188,
+        "truncated": false,
+        "activities": 4,
+        "questions": 4,
+        "npcGround": true,
+        "measurements": [
+          {
+            "count": 68,
+            "occupied": 68,
+            "bounding": 168,
+            "surface": 132,
+            "materials": {
+              "diamond": 48,
+              "gold": 20
+            }
+          },
+          {
+            "count": 56,
+            "occupied": 56,
+            "bounding": 108,
+            "surface": 120,
+            "materials": {
+              "gold": 56
+            }
+          },
+          {
+            "count": 64,
+            "occupied": 64,
+            "bounding": 144,
+            "surface": 168,
+            "materials": {
+              "wood": 64
+            }
+          }
+        ]
+      }
+    },
+    {
+      "label": "compositeVolume real measured component counts match the lesson",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume activities preserve quiz counts and ground-level guides",
+      "pass": true
+    },
+    {
+      "label": "Composite real measurement confirms48+20T and64within144U",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume native guide lists every new activity",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume activity1 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          3,
+          2.6,
+          9
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "compositeVolume activity1 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume activity2 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          22,
+          2.6,
+          5
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "compositeVolume activity2 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume activity3 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          4,
+          2.6,
+          9
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "compositeVolume activity3 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume activity4 arrives safely at its exact ground waypoint",
+      "pass": true,
+      "detail": {
+        "position": [
+          25,
+          2.6,
+          18
+        ],
+        "blocked": false
+      }
+    },
+    {
+      "label": "compositeVolume activity4 travel preserves blocks and quiz score",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume review is recorded separately from the question score",
+      "pass": true
+    },
+    {
+      "label": "compositeVolume journal does not mutate protected models or assessment",
+      "pass": true
+    },
+    {
+      "label": "The hinted student step can be built and measured as50without changing the protectedT",
+      "pass": true,
+      "detail": {
+        "occupied": 50,
+        "bounding": 60,
+        "count": 50,
+        "teaching": 68
+      }
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "areaSurface-build-activity.png",
+    "area-surface-guided-overview.png",
+    "compositeVolume-build-activity.png",
+    "composite-two-color-t.png"
+  ],
+  "worlds": {
+    "areaSurface": {
+      "ground": 625,
+      "construction": 244,
+      "truncated": false,
+      "activities": 5,
+      "questions": 3,
+      "npcGround": true,
+      "measurements": [
+        {
+          "count": 72,
+          "occupied": 72,
+          "bounding": 72,
+          "surface": 108,
+          "materials": {
+            "diamond": 72
+          }
+        },
+        {
+          "count": 72,
+          "occupied": 72,
+          "bounding": 72,
+          "surface": 114,
+          "materials": {
+            "gold": 72
+          }
+        },
+        {
+          "count": 100,
+          "occupied": 100,
+          "bounding": 100,
+          "surface": 130,
+          "materials": {
+            "sand": 50,
+            "wood": 50
+          }
+        }
+      ]
+    },
+    "compositeVolume": {
+      "ground": 775,
+      "construction": 188,
+      "truncated": false,
+      "activities": 4,
+      "questions": 4,
+      "npcGround": true,
+      "measurements": [
+        {
+          "count": 68,
+          "occupied": 68,
+          "bounding": 168,
+          "surface": 132,
+          "materials": {
+            "diamond": 48,
+            "gold": 20
+          }
+        },
+        {
+          "count": 56,
+          "occupied": 56,
+          "bounding": 108,
+          "surface": 120,
+          "materials": {
+            "gold": 56
+          }
+        },
+        {
+          "count": 64,
+          "occupied": 64,
+          "bounding": 144,
+          "surface": 168,
+          "materials": {
+            "wood": 64
+          }
+        }
+      ]
+    }
+  },
+  "sources": {
+    "stem_tool_geometryworld.js": "5c48126dacbb4931186d7b9361f5e70c70a23419740c5fa3f2d03fb50f2f9fa1",
+    "stem_tool_geometryworld_builder.js": "c0cb7cd5b1eb53f12cd0d88a99a36693fd50e95d977650995f410784a129e48c"
+  },
+  "pass": true
+}

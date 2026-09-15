@@ -1,0 +1,59 @@
+{
+  "verifiedAt": "2026-09-12T21:57:51.419Z",
+  "enhancement": "Captured grid capacity experiments across all three battery strategies",
+  "studyVersion": 1,
+  "microgridVersion": 5,
+  "unitTests": {
+    "passed": 333,
+    "failed": 0,
+    "files": 15,
+    "newExperimentTests": 28,
+    "report": "grid-study-vitest-results.json"
+  },
+  "browserWorkflows": [
+    {
+      "workflow": "grid-study",
+      "report": "grid-study-browser-results.json",
+      "automatedAccessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    },
+    {
+      "workflow": "grid-limit",
+      "report": "grid-limit-browser-results.json",
+      "automatedAccessibilityAudits": 21,
+      "violations": 0,
+      "pageErrors": 0,
+      "consoleErrors": 0,
+      "phoneWidths": [
+        390,
+        320
+      ],
+      "documentOverflow": false
+    }
+  ],
+  "automatedAccessibilityAudits": 42,
+  "visualReview": [
+    "Desktop comparison with all five default ratings visible",
+    "Shortfall chart and line legend",
+    "Battery 3D inspection",
+    "320px controls, comparison, selected case, and observations"
+  ],
+  "scope": "Real Renewables tool in an isolated local React/Three.js browser host; not a deployed full-application test.",
+  "integrity": {
+    "checkedAt": "2026-09-12T21:53:39.068Z",
+    "sourceSha256": "43b23fedfbf41e39a5d2e2d6f092f63bbc7a9b28ab8846000f7a8b48f3b72991",
+    "sourceMirrorByteIdentical": true,
+    "sourceMirrorAndBrowserSyntax": true,
+    "scopedDiffWhitespace": true,
+    "previewSourceByteIdentical": true,
+    "previewUrl": "http://127.0.0.1:8790/",
+    "previewRestarted": true
+  }
+}

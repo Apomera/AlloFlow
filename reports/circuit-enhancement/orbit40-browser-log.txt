@@ -1,0 +1,281 @@
+All 39 example scenes rendered
+{
+  "scenarios": [
+    "Mesh picking after four camera orientations; node picking/probes/inspection; keyboard orbit, pan, zoom, fit and focus preserve the electrical state and held reference",
+    "Pointer orbit persists its camera; leaving the scene disposes GPU geometry; re-entry restores the view",
+    "Shared energy/voltage/current overlays, reduced graphics load and labels; idle scenes do not render continuously",
+    "Switch lever and 3D timestamp follow exact before/after solver snapshots",
+    "Graphics-context loss reports a recoverable error; retry creates a fresh canvas and preserves the circuit",
+    "Asset-loading failure offers the working projected board without losing the model"
+  ],
+  "examples": [
+    {
+      "id": "bridge",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "shared",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "sources",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "current",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rc-charge",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rl-start",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rlc-ring",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "bridge-settle",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "sine-filter",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "pulse-smooth",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "triangle-current",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-hold",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-discharge",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-flyback",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-half-wave",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-bridge",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-filter",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-flyback",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-regulator",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-line",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-limiter",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-resistance",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-resistance-sweep",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-resistance",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-amplifier",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-current",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-sense",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-feedback",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-buffer",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-inverting",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-clipping",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-filter",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-bandwidth",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-gain-bandwidth",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-slew",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-startup",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-triangle",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-clipping",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-smoothing",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "width": 390,
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "width": 320,
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      }
+    }
+  ],
+  "resources": [
+    {
+      "geometries": 114,
+      "textures": 9
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 3
+}

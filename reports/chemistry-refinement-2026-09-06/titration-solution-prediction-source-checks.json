@@ -1,0 +1,12 @@
+{
+  "sourceSyntax": true,
+  "sourcePublicMatch": true,
+  "equipmentLiteralReferences": 429,
+  "equipmentEnglishKeys": 419,
+  "newEnglishKeys": 17,
+  "fallbacksMatchCatalog": true,
+  "translationsPending": true,
+  "predictionLegendVisibleBeforeReveal": true,
+  "resultDiagramsAligned": true,
+  "feedbackBelowResult": true
+}

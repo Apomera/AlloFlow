@@ -1,0 +1,81 @@
+[
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-21",
+  "section": 4,
+  "of": 6,
+  "htmlChars": 16000,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [
+   {
+    "tag": "h3",
+    "text": "Racial/Ethnic Enrollment in Public and Private Schools",
+    "id": "racial-ethnic-enrollment-in-public-and-private-schools"
+   }
+  ],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [],
+  "tables": [],
+  "linkCount": 4,
+  "links": [
+   {
+    "text": "Characteristics of Elementary and",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cla",
+    "ariaLabel": null
+   },
+   {
+    "text": "Public Charter School Enrollment",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cgb?tid=4",
+    "ariaLabel": null
+   },
+   {
+    "text": "School Enrollment",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cgc",
+    "ariaLabel": null
+   },
+   {
+    "text": "Racial/Ethnic",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cge",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 0,
+   "ol": 0,
+   "li": 0,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [],
+  "buttons": [
+   {
+    "text": "×",
+    "ariaLabel": "Remove this image placeholder",
+    "labelled": true
+   }
+  ],
+  "inlineColors": [
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569",
+   "color:#4a6675;font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em",
+   "position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "container');(function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii Figure 4. Line chart with markers titled Enrollment in elementary and secondar",
+  "textChars": 4591
+ }
+]

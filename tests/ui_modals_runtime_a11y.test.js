@@ -561,6 +561,28 @@ describe('Shared UI modals rendered accessibility', () => {
     await expectNoSeriousAxe(dialog);
   });
 
+  it('renders one description under every role card, inside the button that names it', async () => {
+    await mount(React.createElement(components.RoleSelectionModal, {
+      onSelect: vi.fn(),
+      onGateRequired: vi.fn(),
+    }));
+    const expected = {
+      role_student: 'Join your class and learn with a private codename.',
+      role_teacher: 'Build accessible lessons and adapt materials for your class.',
+      role_parent: 'Support learning at home with family-friendly tools.',
+      role_independent: 'Study at your own pace with progress tracking and no class to join.',
+    };
+    for (const [helpKey, description] of Object.entries(expected)) {
+      const card = host.querySelector(`button[data-help-key="${helpKey}"]`);
+      expect(card, helpKey).toBeTruthy();
+      // The description is part of the button's accessible name, so a screen-reader user hears
+      // what the role means before choosing it.
+      expect(card.textContent, helpKey).toContain(description);
+      expect(card.querySelectorAll('span.text-xs.text-slate-600'), helpKey).toHaveLength(1);
+    }
+    await expectNoSeriousAxe(host.querySelector('[role="dialog"]'));
+  });
+
   it('keeps microphone feedback outside the disabled control and exposes busy state', async () => {
     delete window.SpeechRecognition;
     delete window.webkitSpeechRecognition;

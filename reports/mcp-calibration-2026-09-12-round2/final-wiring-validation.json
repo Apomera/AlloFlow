@@ -1,0 +1,15 @@
+{
+  "yamlParsed": [
+    ".github/workflows/remote-mcp-verify.yml",
+    ".github/workflows/mcpb-release.yml"
+  ],
+  "parser": "PyYAML",
+  "manifestValidated": true,
+  "calibrationContains": [
+    "tests/mcp_agent_bridge_terminal_modes_e2e.test.js",
+    "tests/generated_baseline_language.test.js",
+    "tests/doc_pipeline_title_attributes.test.js"
+  ],
+  "scopedDiffCheckPassed": true,
+  "ownedPilotChromiumExited": true
+}

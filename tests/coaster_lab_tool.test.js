@@ -1904,7 +1904,7 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
 
   it.each(TOOL_PATHS)('%s: the riders are posed by their own row, and stand down when told to', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
-    const s = src.indexOf('function updateRiders(){');
+    const s = src.indexOf('function updateRiders(everyone){');
     const e = src.indexOf('\n}', src.indexOf('r.arms[1].rotation.x = -armUp;', s));
     expect(s).toBeGreaterThan(-1);
     const body = src.slice(s, e);
@@ -1919,8 +1919,14 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     // reduced motion and a stationary train both relax the pose; FX Lite hides them
     expect(body).toContain("const still = reducedMotion() || !track || Math.abs(sim.v) < 0.5;");
     expect(body).toContain('const show = !fxLite;');
-    // a rear row sits at its own seat and higher, or it stares into the car ahead
+    // the riders whose seat the onboard camera borrows are not drawn (their arms
+    // swung up through the lens in airtime); a trackside photo still shows everyone
+    expect(body).toContain('const hidden = everyone ? -1 : eyeCar();');
+    expect(body).toContain('const want = show && c !== hidden;');
+    expect(src).toContain("function eyeCar(){ return xrOn ? 0 : camMode === 'onboard' ? activeSeat() : -1; }");
+    // a rear row sits at its own seat, at eye height, or it stares into the car ahead
     expect(src).toContain('const camSeat = activeSeat();');
+    expect(src).toContain('camSeat ? 1.93 : 1.25');
     expect(src).toContain('frameAt(sim.S + (camSeat ? -0.2 : 1.4) - camSeat * CAR_GAP, _p, _t, _u);');
     // the train shows the restraint the measured forces demand
     expect(src).toContain('function syncRestraintStyle(){');
@@ -1940,7 +1946,7 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(src).toContain("const PHOTO_LABEL = { A: 'the first crest', B: 'the valley', C: 'the loop apex', D: 'the marked turn' };");
     // the crowd is posed for the instant being photographed, even in a headless run
     expect(src).toContain('// pose the riders for this exact instant: a synchronous fastRun never runs');
-    expect(src).toContain('updateRiders();\n    const iB = mk.idx;');
+    expect(src).toContain('updateRiders(true);\n    const iB = mk.idx;');
     // framed on the middle of the train, close enough that riders read
     expect(src).toContain('frameAt(sim.S - (TRAIN_CARS - 1) * CAR_GAP / 2, _p, _t, _u);');
     // the valley stays the headline shot, so anything reading tele.photo still works

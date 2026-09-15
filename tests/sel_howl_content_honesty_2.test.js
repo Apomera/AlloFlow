@@ -157,6 +157,27 @@ describe.skipIf(!R)('HOWL Tracker · one script, shown once', () => {
     h.unmount();
   });
 
+  it('a student sees the student sections; the Crew-leader sections sit behind one toggle', () => {
+    const h = mount({});
+    const tabs = () => Array.from(h.container.querySelectorAll('[role="tab"]')).map((b) => b.textContent.trim());
+    const before = tabs();
+    expect(before.length).toBeLessThanOrEqual(16);
+    expect(before.some((t) => /Weekly check-in/.test(t))).toBe(true);
+    expect(before.some((t) => /Climate Scenarios|Rituals|Opener Randomizer/.test(t))).toBe(false);
+    const toggle = Array.from(h.container.querySelectorAll('button')).find((b) => /For Crew leaders/.test(b.textContent));
+    expect(toggle).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    act(() => { toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })); });
+    const after = tabs();
+    expect(after.length).toBe(before.length + 12);
+    expect(after.some((t) => /Climate Scenarios/.test(t))).toBe(true);
+    h.unmount();
+    // Opened on a leader section, the toggle is already open.
+    const h2 = mount({ view: 'protocols' });
+    expect(h2.container.querySelector('#howl-leader-tabs')).toBeTruthy();
+    h2.unmount();
+  });
+
   it('Goals library: sentences by HOWL and level, no template boilerplate', () => {
     const h = mount({ view: 'goals_lib' });
     const text = h.container.textContent;

@@ -1,0 +1,411 @@
+{
+  "passed": true,
+  "results": [
+    {
+      "theme": "dark",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    },
+    {
+      "theme": "dark",
+      "width": 390,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors with save controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text with saved gallery",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    },
+    {
+      "theme": "light",
+      "width": 390,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "scans": [
+        {
+          "label": "first clues and learner explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "readable saved work before resume",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "resumed drawing without another launch",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "before and after gallery with explanation",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "selected portfolio preview and download controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "downloaded HTML accessibility and print styling",
+          "violations": []
+        },
+        {
+          "label": "interrupted AI draft with expired session",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "unfinished work is downloadable without launching",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visible cross-tab save conflict",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "confirmation before replacing local work",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "forced colors with save controls",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "200 percent text with saved gallery",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reloadedDrawingPixels": true,
+      "preservedTimer": true,
+      "noAutomaticAIResend": true,
+      "explicitResumeCharge": true,
+      "beforeAfterGallery": true,
+      "selectedHTMLAndTextDownloads": true,
+      "stalePreviewBlocked": true,
+      "crossTabConflict": true,
+      "accountSeparation": true
+    }
+  ],
+  "errors": [],
+  "provider": "Deterministic browser fixtures; no external AI requests."
+}

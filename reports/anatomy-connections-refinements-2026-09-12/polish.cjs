@@ -1,0 +1,9 @@
+const fs=require('node:fs'),file='stem_lab/stem_tool_anatomy.js';let s=fs.readFileSync(file,'utf8');function rep(a,b){if(!s.includes(a))throw Error('Missing '+a);s=s.replace(a,b);}
+rep('var mnemonicsHidden=safeFlagMap(d._mnemonicsHidden,mnemonicIds);','function validMnemonicHidden(raw){var result={};if(!raw||typeof raw!==\'object\'||Array.isArray(raw))return result;mnemonicIds.forEach(function(id){if(raw[id]===true)result[id]=true;});return result;}\n        var mnemonicsHidden=validMnemonicHidden(d._mnemonicsHidden);');
+rep('hidden=safeFlagMap(state._mnemonicsHidden,mnemonicIds)','hidden=validMnemonicHidden(state._mnemonicsHidden)');
+rep("h('span',{'aria-hidden':true},isExpanded?' −':' +')", "h('span',{'aria-hidden':true,className:'anatomy-learning-chevron','data-open':isExpanded?'true':'false'})");
+rep("h('span', { className: 'text-[0.6875rem] text-purple-500' }, showMnemonics ? '\\u25B2' : '\\u25BC')", "h('span', {className:'anatomy-learning-chevron','aria-hidden':true,'data-open':showMnemonics?'true':'false'})");
+rep('.anatomy-connections-panel{min-width:0;', '.anatomy-learning-chevron{display:inline-block;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-inline-start:10px;vertical-align:middle}.anatomy-learning-chevron[data-open=true]{transform:rotate(45deg)}.anatomy-mnemonics-card>button span{font-size:13px;color:#581c87}.theme-dark .anatomy-mnemonics-card>button span{color:#e9d5ff!important}.anatomy-connections-panel{min-width:0;');
+fs.writeFileSync(file,s);fs.writeFileSync('desktop/web-app/public/'+file,s);
+// Use the distinct Arabic names for trapezium and trapezoid.
+const translationFile=__dirname+'/arabic.txt';let ar=fs.readFileSync(translationFile,'utf8');ar=ar.replace('البعيد: شبه المنحرف، شبه المنحرف الصغير، الكبير، الخطافي.','البعيد: المربعي، شبه المنحرف، الكبير، الخطافي.');fs.writeFileSync(translationFile,ar);

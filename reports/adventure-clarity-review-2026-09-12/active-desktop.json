@@ -1,0 +1,101 @@
+{
+  "name": "active-desktop",
+  "errors": [],
+  "text": "Adventure Mode\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n\nExplore the topic. Earn XP to increase the challenge.\n\nLog\nImmersive View\nAuto-Read: OFF\nRestart\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nNo Scene Image\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\n1\nCompare water measurements at both sites\n2\nPlant trees beside the river and explain the tradeoff\n3\nAsk the farmer for observations from last summer",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar",
+      "height": 449,
+      "scrollHeight": 596
+    }
+  ],
+  "height": 900,
+  "width": 1200,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "View Narrative Ledger (AI Memory)",
+      "disabled": false,
+      "top": 174,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Enter Immersive Mode",
+      "disabled": false,
+      "top": 174,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Turn on Auto-Read (DM Voice)",
+      "disabled": false,
+      "top": 174,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start new adventure",
+      "disabled": false,
+      "top": 174,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "1Compare water measurements at both sites",
+      "disabled": false,
+      "top": 761,
+      "height": 52,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Compare water measurements at both sites",
+      "disabled": false,
+      "top": 769,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "2Plant trees beside the river and explain the tradeoff",
+      "disabled": false,
+      "top": 761,
+      "height": 52,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Plant trees beside the river and explain the tradeoff",
+      "disabled": false,
+      "top": 769,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "3Ask the farmer for observations from last summer",
+      "disabled": false,
+      "top": 829,
+      "height": 52,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Listen: Ask the farmer for observations from last summer",
+      "disabled": false,
+      "top": 837,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

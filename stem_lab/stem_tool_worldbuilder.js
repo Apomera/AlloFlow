@@ -28,7 +28,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
   // ── Audio System (auto-injected) ──
   var _wbAC = null;
-  function getWbAC() { if (!_wbAC) { try { _wbAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_wbAC && _wbAC.state === "suspended") { try { _wbAC.resume(); } catch(e) {} } return _wbAC; }
+  function getWbAC() { if (!_wbAC) { try { _wbAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_wbAC && _wbAC.state === "suspended") { try { _wbAC.resume(); } catch(e) {} } return _wbAC; }
   function wbTone(f,d,tp,v) { var ac = getWbAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxWbCreate() { wbTone(440,0.06,"sine",0.06); }
   function sfxWbMagic() { wbTone(880,0.08,"sine",0.05); }

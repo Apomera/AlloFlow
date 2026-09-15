@@ -1,0 +1,238 @@
+{
+  "scenarios": [
+    "Method changes stop playback, restart at zero, invalidate the held sample, preserve circuit edits/selection/3D view, and show measured LC energy retention for each method",
+    "Native keyboard method selection and DC/time mode persistence",
+    "Exact before/after switch sampling remains available with trapezoidal integration",
+    "Downloaded response CSV records requested/actual methods and switch restart provenance"
+  ],
+  "examples": [
+    {
+      "id": "bridge",
+      "solved": true
+    },
+    {
+      "id": "shared",
+      "solved": true
+    },
+    {
+      "id": "sources",
+      "solved": true
+    },
+    {
+      "id": "current",
+      "solved": true
+    },
+    {
+      "id": "rc-charge",
+      "solved": true
+    },
+    {
+      "id": "rl-start",
+      "solved": true
+    },
+    {
+      "id": "rlc-ring",
+      "solved": true
+    },
+    {
+      "id": "bridge-settle",
+      "solved": true
+    },
+    {
+      "id": "lc-energy",
+      "solved": true
+    },
+    {
+      "id": "sine-filter",
+      "solved": true
+    },
+    {
+      "id": "pulse-smooth",
+      "solved": true
+    },
+    {
+      "id": "triangle-current",
+      "solved": true
+    },
+    {
+      "id": "switch-hold",
+      "solved": true
+    },
+    {
+      "id": "switch-discharge",
+      "solved": true
+    },
+    {
+      "id": "switch-flyback",
+      "solved": true
+    },
+    {
+      "id": "diode-half-wave",
+      "solved": true
+    },
+    {
+      "id": "diode-bridge",
+      "solved": true
+    },
+    {
+      "id": "diode-filter",
+      "solved": true
+    },
+    {
+      "id": "diode-flyback",
+      "solved": true
+    },
+    {
+      "id": "zener-regulator",
+      "solved": true
+    },
+    {
+      "id": "zener-line",
+      "solved": true
+    },
+    {
+      "id": "zener-limiter",
+      "solved": true
+    },
+    {
+      "id": "diode-resistance",
+      "solved": true
+    },
+    {
+      "id": "diode-resistance-sweep",
+      "solved": true
+    },
+    {
+      "id": "zener-resistance",
+      "solved": true
+    },
+    {
+      "id": "controlled-amplifier",
+      "solved": true
+    },
+    {
+      "id": "controlled-current",
+      "solved": true
+    },
+    {
+      "id": "controlled-sense",
+      "solved": true
+    },
+    {
+      "id": "controlled-feedback",
+      "solved": true
+    },
+    {
+      "id": "opamp-buffer",
+      "solved": true
+    },
+    {
+      "id": "opamp-inverting",
+      "solved": true
+    },
+    {
+      "id": "opamp-clipping",
+      "solved": true
+    },
+    {
+      "id": "opamp-filter",
+      "solved": true
+    },
+    {
+      "id": "opamp-bandwidth",
+      "solved": true
+    },
+    {
+      "id": "opamp-gain-bandwidth",
+      "solved": true
+    },
+    {
+      "id": "opamp-slew",
+      "solved": true
+    },
+    {
+      "id": "opamp-startup",
+      "solved": true
+    },
+    {
+      "id": "harmonic-triangle",
+      "solved": true
+    },
+    {
+      "id": "harmonic-clipping",
+      "solved": true
+    },
+    {
+      "id": "harmonic-smoothing",
+      "solved": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "height": 1000,
+      "violations": [],
+      "overflow": {
+        "viewport": 1280,
+        "document": 1280
+      }
+    },
+    {
+      "width": 390,
+      "height": 1000,
+      "violations": [],
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      }
+    },
+    {
+      "width": 320,
+      "height": 1000,
+      "violations": [],
+      "overflow": {
+        "viewport": 320,
+        "document": 320
+      }
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "violations": [],
+      "overflow": {
+        "viewport": 844,
+        "document": 844
+      }
+    }
+  ],
+  "resources": [],
+  "pixels": [
+    {
+      "name": "integration45-orbit-1280",
+      "lit": 153748,
+      "canvasPixels": 485900,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "integration45-orbit-390",
+      "lit": 36930,
+      "canvasPixels": 95771.71875,
+      "captures": 1,
+      "viewportCapture": true
+    },
+    {
+      "name": "integration45-orbit-320",
+      "lit": 25513,
+      "canvasPixels": 63480,
+      "captures": 1,
+      "viewportCapture": true
+    }
+  ],
+  "pageErrors": [],
+  "energy": {
+    "trapezoidal": "Ideal LC energy at end: 99.999% of its starting value. No resistor is present.",
+    "backwardEuler": "87.924%"
+  },
+  "finalDisposals": 6
+}

@@ -44,7 +44,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _geoAC = null;
-  function getGeoAC() { if (!_geoAC) { try { _geoAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_geoAC && _geoAC.state === "suspended") { try { _geoAC.resume(); } catch(e) {} } return _geoAC; }
+  function getGeoAC() { if (!_geoAC) { try { _geoAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_geoAC && _geoAC.state === "suspended") { try { _geoAC.resume(); } catch(e) {} } return _geoAC; }
   function geoTone(f,d,tp,v) { var ac = getGeoAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxGeoClick() { geoTone(600, 0.03, "sine", 0.04); }
 

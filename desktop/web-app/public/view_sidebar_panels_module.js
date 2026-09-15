@@ -697,7 +697,7 @@ function UniversalSettingsPanel(props) {
   const standardsProviderApi = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.StandardsProvider : null;
   const localStandardsProvider = standardsProviderApi && typeof standardsProviderApi.getRegisteredProvider === "function" ? standardsProviderApi.getRegisteredProvider() : null;
   const localStandardsManifest = localStandardsProvider && typeof localStandardsProvider.getManifest === "function" ? localStandardsProvider.getManifest() : null;
-  const surpriseAi = props.callGemini || (typeof window !== "undefined" ? window.callGemini : null);
+  const surpriseAi = props.callGemini !== void 0 ? props.callGemini : typeof window !== "undefined" && typeof window.callGemini === "function" && !window.callGemini._alloQrBlocked ? window.callGemini : null;
   const runSurpriseMe = async () => {
     const match = localResolution && localResolution.match;
     if (!match || !localStandardsProvider || !surpriseAi) return;
@@ -1406,6 +1406,8 @@ function MathPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t("math.modes.step_by_step")),
     /* @__PURE__ */ React.createElement("option", { value: "Conceptual" }, t("math.modes.conceptual")),
     /* @__PURE__ */ React.createElement("option", { value: "Real-World Application" }, t("math.modes.real_world")),
+    /* @__PURE__ */ React.createElement("option", { value: "Spiral Review" }, "\u{1F501} ", t("math.modes.spiral_review") || "Spiral Review (mixed skills)"),
+    /* @__PURE__ */ React.createElement("option", { value: "Difficulty Ladder" }, "\u{1FA9C} ", t("math.modes.difficulty_ladder") || "Difficulty Ladder (easy to hard)"),
     /* @__PURE__ */ React.createElement("option", { value: "Fluency Probes" }, "\u23F1\uFE0F ", t("math.modes.fluency_probe") || "Fluency Probe"),
     /* @__PURE__ */ React.createElement("option", { value: "Fluency Maze" }, "\u{1F3AF} ", t("math.modes.fluency_maze") || "Fluency Maze")
   )))), typeof openMathCreate === "function" && /* @__PURE__ */ React.createElement(
@@ -1519,7 +1521,7 @@ function MathPanel(props) {
     setCubeShowLayers,
     setExploreDifficulty,
     t
-  }), (mathMode === "Problem Set Generator" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  }), (mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" || mathMode === "Word Problems from Source" || mathMode === "Freeform Builder") && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.quantity")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(ListOrdered, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.text_field"),
@@ -1531,14 +1533,14 @@ function MathPanel(props) {
       onChange: (e) => setMathQuantity(parseInt(e.target.value) || 5),
       className: `${SIDEBAR_PANEL_UI.control} pl-8 focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     }
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, mathMode === "Problem Set Generator" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, mathMode === "Problem Set Generator" || mathMode === "Spiral Review" || mathMode === "Difficulty Ladder" ? t("math.labels.topic_skill") : mathMode === "Word Problems from Source" ? t("math.labels.instructions_opt") : t("math.labels.problem_question")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-2.5 left-2 pointer-events-none" }, /* @__PURE__ */ React.createElement(Calculator, { size: 14, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       "aria-label": t("math.labels.problem_question") || "Math problem input",
       "data-help-key": "math_input",
       value: mathInput,
       onChange: (e) => setMathInput(e.target.value),
-      placeholder: mathMode === "Problem Set Generator" ? t("math.placeholder_topic") : mathMode === "Word Problems from Source" ? t("math.placeholder_focus") : t("math.placeholder_eq"),
+      placeholder: mathMode === "Problem Set Generator" ? t("math.placeholder_topic") : mathMode === "Spiral Review" ? t("math.placeholder_spiral") || 'Skills to mix, e.g. "adding fractions, area of rectangles, one-step equations" (10 problems)' : mathMode === "Difficulty Ladder" ? t("math.placeholder_ladder") || 'One skill to climb, e.g. "two-step equations" (8 problems, easy to hard)' : mathMode === "Word Problems from Source" ? t("math.placeholder_focus") : t("math.placeholder_eq"),
       className: `${SIDEBAR_PANEL_UI.textarea} h-24 resize-y pl-8 text-xs font-mono focus-visible:border-blue-500 focus-visible:ring-blue-500/20`
     }
   ))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "math_graph" }, /* @__PURE__ */ React.createElement(

@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Behavior Lens local audit fixture</title><link rel="stylesheet" href="preview.css"></head><body><main id="root"></main><script src="react-runtime.js"></script><script>
+  ([
+  'AlertCircle', 'AlertTriangle', 'ArrowLeft', 'BarChart2', 'BarChart3',
+  'Bell', 'Brain', 'Calendar', 'Camera', 'Check', 'CheckCircle',
+  'ChevronDown', 'ChevronLeft', 'ChevronRight', 'ChevronUp',
+  'Clipboard', 'ClipboardList', 'Clock', 'Cloud', 'CloudOff', 'Copy',
+  'Database', 'Download', 'Edit', 'Edit2', 'Edit3', 'ExternalLink',
+  'Eye', 'EyeOff', 'FileText', 'Filter', 'Flag', 'Folder', 'Gauge',
+  'Globe', 'Grid', 'Hash', 'Heart', 'Home', 'Info', 'Layers',
+  'Layout', 'Lightbulb', 'List', 'Loader', 'Lock', 'Mail',
+  'MapPin', 'MessageCircle', 'MessageSquare', 'Mic', 'MicOff', 'Minus',
+  'MoreHorizontal', 'MoreVertical', 'Music', 'PauseCircle', 'PenTool',
+  'PieChart', 'Play', 'PlayCircle', 'Plus', 'Power', 'Printer',
+  'RefreshCw', 'Repeat', 'RotateCw', 'Save', 'Search', 'Send', 'Settings',
+  'Share', 'Share2', 'Shield', 'ShieldAlert', 'ShieldCheck', 'Smile',
+  'Sparkles', 'Speaker', 'Square', 'Star', 'Sun', 'Target', 'ThumbsDown', 'ThumbsUp',
+  'Trash', 'Trash2', 'TrendingDown', 'TrendingUp', 'Trophy', 'Type',
+  'Upload', 'User', 'UserCheck', 'UserPlus', 'Users', 'Video', 'Volume2',
+  'Wifi', 'WifiOff', 'Wind', 'X', 'XCircle', 'Zap', 'ZoomIn', 'ZoomOut'
+]).forEach(name=>window[name]=props=>React.createElement('span',{'aria-hidden':'true',style:{display:'inline-block',width:(props?.size||18)+'px',height:(props?.size||18)+'px'}}, '◇'));
+  window.addToast=(...args)=>(window.auditToasts||=[]).push(args); window.warnLog=()=>{};window.debugLog=()=>{};
+  window.safeGetItem=k=>localStorage.getItem(k);window.safeSetItem=(k,v)=>localStorage.setItem(k,v);
+  window.callGemini=async()=>'';window.callGeminiVision=async()=>'';window.studentNickname='Eagle';
+  window.AlloModules={};localStorage.clear();sessionStorage.clear();localStorage.setItem('bl_onboarded','1');localStorage.setItem('bl_ai_consent_v1','1');localStorage.setItem('bl_student_roster',JSON.stringify([{id:'audit-eagle',name:'Eagle'},{id:'audit-falcon',name:'Falcon'}]));
+  for (const [id,name] of [['audit-eagle','Eagle'],['audit-falcon','Falcon']]) localStorage.setItem('behaviorLens_workspace_'+id,JSON.stringify({version:4,student:name,studentId:id,savedAt:new Date().toISOString(),abcEntries:[1,2,3].map(i=>({id:id+'-'+i,timestamp:'2026-09-12T12:0'+i+':00.000Z',antecedent:'Unfamiliar multi-step worksheet',behavior:'Asks for another explanation',consequence:'Adult rephrased the directions',intensity:null,phase:'Baseline',tags:['preserve'],metadata:{audit:true}})),observationSessions:[],sessionHistory:[]}));
+  window.callGemini=prompt=>{window.auditLastPrompt=prompt;window.auditAiCalls=(window.auditAiCalls||0)+1;return new Promise(resolve=>window.auditResolveAI=resolve)};
+  </script><script src="../../../behavior_lens_workspace_module.js"></script><script src="../../../behavior_lens_module.js"></script><script>
+  auditCreateRoot(document.getElementById('root')).render(React.createElement(AlloModules.BehaviorLens,{onClose:()=>window.auditClosed=true,callGemini,callGeminiVision,addToast,t:(key,arg)=>typeof arg==='string'?arg:undefined,studentNickname:'Eagle',dashboardData:[{studentNickname:"Eagle"},{studentNickname:"Falcon"}],isTeacherMode:true,alloBotRef:{current:null},firestore:null,firebaseAuth:null,isCanvasEnv:true}));
+  </script></body></html>

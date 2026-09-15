@@ -1,0 +1,34 @@
+{
+  "scope": "Combined calibration, parity, packaging and maintained unit gate snapshot before final one-line inline-collapse guard",
+  "createdAt": "2026-09-13T03:04:57.201Z",
+  "files": [
+    {
+      "file": "doc_pipeline_source.jsx",
+      "sha256": "8018c9c074b609d5dd7a94a50e516a0d886ead8b375cb052c80f77e90188dfd6"
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "sha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3"
+    },
+    {
+      "file": "desktop/web-app/public/doc_pipeline_module.js",
+      "sha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3"
+    },
+    {
+      "file": "desktop/mcp/remediation_headless_driver.cjs",
+      "sha256": "c944fd623c7a7d5121d6034a2a67b4b67f8437f6a41272c89680a5dd97b85c86"
+    },
+    {
+      "file": "desktop/mcp/alloflow-remediation-mcp-stdio.cjs",
+      "sha256": "9ed8ec48ead117d0ac6d422fde6b82ad4801b09abae397571598c64f5fa8327e"
+    },
+    {
+      "file": "desktop/mcp/remediation_narration_plan.cjs",
+      "sha256": "4cbe3774451d91df011db46ad6bc7d84ea05803d802de14ced682fa87ce0f9c3"
+    },
+    {
+      "file": "tests/semantic_list_marker_coverage.test.js",
+      "sha256": "9522ae2e87712ffb62d4b87f592c19dc72866efc727d1677619a8e0580f3fdfe"
+    }
+  ]
+}

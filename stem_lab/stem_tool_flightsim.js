@@ -10432,7 +10432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           if (threeRendererRef.current) {
             var renderer = threeRendererRef.current;
             try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
-            renderer.dispose();
+            renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
             threeRendererRef.current = null;
           }
           if (threeSceneRef.current) {

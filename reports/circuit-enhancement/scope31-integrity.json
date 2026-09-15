@@ -1,0 +1,36 @@
+{
+  "pass": 31,
+  "checkedAt": "2026-09-12T15:24:13.192Z",
+  "sourceSha256": "e6ee3d4cb755f1ff0de37a6e2beb78b76a94a0dea964ecd3352b99bd6b9b98b5",
+  "sourcePublicByteParity": true,
+  "javascriptSyntax": true,
+  "scopedWhitespace": true,
+  "newTestWhitespace": true,
+  "existingCircuitSolverAndIntegrationUnchanged": true,
+  "existingMeasurementMathUnchanged": true,
+  "outsideConnectedWorkspaceOnlyNavigationCssAndWhitespace": true,
+  "regression": {
+    "files": 19,
+    "tests": 377,
+    "newNavigationTests": 30
+  },
+  "browser": {
+    "host": "Isolated local React 18 circuit host; Playwright Chromium",
+    "navigationScenarios": 7,
+    "priorMeasurementPassed": true,
+    "priorTimingPassed": true,
+    "axeWidths": [
+      1280,
+      390,
+      320
+    ],
+    "scopedAxeViolations": 0,
+    "pageErrors": 0,
+    "horizontalPageOverflow": false
+  },
+  "visualReview": [
+    "scope31-crossing-focus.jpg",
+    "scope31-navigation-320.jpg",
+    "scope31-finder-320.jpg"
+  ]
+}

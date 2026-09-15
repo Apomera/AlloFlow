@@ -324,7 +324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var AudioContextCtor = getAudioContextCtor();
             if (!AudioContextCtor) throw new Error('Web Audio API is not available in this environment.');
             if (!window._alloSynthCtx || window._alloSynthCtx.state === 'closed') {
-              var ac = new AudioContextCtor();
+              var ac = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
               var gain = ac.createGain(); gain.gain.value = d.volume || 0.5;
               var analyser = ac.createAnalyser(); analyser.fftSize = 2048;
               // Resonant filter
@@ -2003,7 +2003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               var obj = { g: d.seqGrid || {}, m: d.beatMelody || [], b: d.seqBPM || 120, s: d.seqSwing || '0' };
               var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
               var url = location.origin + location.pathname + '#beat=' + b64;
-              navigator.clipboard.writeText(url).then(function () { addToast(__alloT('stem.music.beat_url_copied', '\uD83D\uDD17 Beat URL copied!'), 'success'); })
+              (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(url).then(function () { addToast(__alloT('stem.music.beat_url_copied', '\uD83D\uDD17 Beat URL copied!'), 'success'); })
                 .catch(function () { prompt('Copy this URL:', url); });
             } catch (e) { addToast(__alloT('stem.music.share_failed', '\u274C Share failed'), 'error'); }
           }

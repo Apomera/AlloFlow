@@ -1,0 +1,148 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_active_refinements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > freezes a reference while calculating signed live changes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > distinguishes matching settings and a change with no lamp-current effect
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > identifies multiple simultaneous physical edits
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores view, probe, and inactive sensor settings for a manual experiment
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores the unused manual input when comparing sensor experiments
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > allows overlaid light/dark responses but separates manual and light axes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data null
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":2,"design":{}}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":1,"design":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > ignores unsupported reference data {"version":1,"design":[]}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every manual operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every light operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > exports enough settings to reproduce every dark operating point
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > renders frozen reference evidence, shared-axis curves, and accessible node controls
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_active_refinements.test.js > active electronics comparison and reproducible exports > explains why a reference with a different input axis is hidden
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_connected_network.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a balanced bridge with zero current in the cross-link
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves the loaded unbalanced bridge without treating its arms independently
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > accounts for a series feeder shared by parallel loads
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent 3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > supports an independent -3 V source between two non-ground nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of -0.005 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > solves a signed current source of 1e-12 A with a resistive return
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > keeps known differential voltages and currents in a floating source loop
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > knows zero resistor drop without assigning a ground to isolated nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > retains node voltages but does not invent how parallel ideal sources share current
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed wire without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > uses an ideal closed switch without artificial resistance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > marks only redundant wire currents unknown and still knows their zero power
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > leaves the voltage of an open switch to a floating island unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects conflicting sources without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects shorted source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects same-node nonzero source without leaking stale readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··················stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at -0.005 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > rejects a current source without a return even at 1e-12 A
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > handles balanced ideal current sources without inventing their terminal voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > conserves current and power across cross-linked networks and wide resistance ratios
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > normalizes finite settings, bounded part counts, node names, and unique IDs without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > general connected DC networks > exports terminal connectivity, polarity, and blank unknown values in CSV
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > connected workspace rendering > renders editable arbitrary terminals, the projected board, and measurements
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+········stdout | tests/circuit_connected_network.test.js > connected workspace rendering > shows a recoverable diagnostic and hides calculated values for inconsistent constraints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_connected_network.test.js > connected workspace rendering > shows empty-workspace guidance without mutating another saved workspace
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  2 passed (2)
+      Tests  44 passed (44)
+   Start at  14:38:03
+   Duration  38.91s (transform 175ms, setup 96ms, import 542ms, tests 13.74s, environment 16.73s)
+

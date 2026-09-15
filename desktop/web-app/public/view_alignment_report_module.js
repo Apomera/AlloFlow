@@ -35,6 +35,39 @@ var Sparkles = _lazyIcon('Sparkles');
 // ─── Plan O: Comprehensive section renderers ───────────────────────────
 // Each curriculum-readiness dimension renders as a card with a status and
 // supporting evidence, recommendations, or an explicit incomplete state.
+// Every list entry the AI reviewers return is rendered through auditText: a string passes
+// through, an object is flattened to one sentence, anything else renders as nothing. React
+// throws on an object child, and on 2026-09-13 a {profile, encounter} student-impact entry
+// took the whole Curriculum Audit down through the error boundary. The dispatcher coerces
+// the same way before caching; this is the render-side guard for anything it did not see.
+var AUDIT_TEXT_LEAD_KEYS = ['profile', 'student', 'learner', 'who', 'word', 'term', 'claim', 'label', 'title'];
+var AUDIT_TEXT_BODY_KEYS = ['encounter', 'experience', 'impact', 'text', 'description', 'detail', 'fix', 'suggestion', 'action', 'recommendation', 'correction', 'gap', 'issue', 'finding', 'reason', 'note'];
+function auditText(entry) {
+  if (typeof entry === 'string') return entry;
+  if (typeof entry === 'number' || typeof entry === 'boolean') return String(entry);
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return '';
+  var take = function (keys) {
+    return keys.map(function (k) {
+      return entry[k];
+    }).filter(function (v) {
+      return typeof v === 'string' && v.trim();
+    }).map(function (v) {
+      return v.trim();
+    });
+  };
+  var known = AUDIT_TEXT_LEAD_KEYS.concat(AUDIT_TEXT_BODY_KEYS);
+  var rest = Object.keys(entry).filter(function (k) {
+    return known.indexOf(k) === -1 && typeof entry[k] === 'string' && entry[k].trim();
+  }).map(function (k) {
+    return entry[k].trim();
+  });
+  var bodies = take(AUDIT_TEXT_BODY_KEYS);
+  var parts = take(AUDIT_TEXT_LEAD_KEYS).concat(bodies.length ? bodies : rest);
+  if (!parts.length) return '';
+  if (parts.length === 1) return parts[0];
+  var tail = parts.slice(1).join(' ');
+  return /^[a-z]/.test(tail) ? parts[0] + ' ' + tail : parts[0] + ': ' + tail;
+}
 function statusBadgeClass(status) {
   if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
   if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
@@ -873,7 +906,7 @@ function VocabularySection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded"
-    }, w);
+    }, auditText(w));
   }))), v.tier3Examples && v.tier3Examples.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -884,7 +917,7 @@ function VocabularySection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-purple-100 text-purple-900 rounded"
-    }, w);
+    }, auditText(w));
   }))),
   // Reading-level harvest from analysis items
   v.readingLevels && v.readingLevels.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -913,7 +946,7 @@ function VocabularySection(p) {
   }, v.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // LLM review pairing (Plan O Step 1 enhancement)
   v.llmReview && /*#__PURE__*/React.createElement("div", {
@@ -934,7 +967,7 @@ function VocabularySection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-orange-100 text-orange-900 rounded line-through"
-    }, w);
+    }, auditText(w));
   }))), v.llmReview.missedTier2 && v.llmReview.missedTier2.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("div", {
@@ -945,7 +978,7 @@ function VocabularySection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded"
-    }, w);
+    }, auditText(w));
   }))), v.llmReview.recommendations && v.llmReview.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Suggested Tier 2 words to add for this topic + grade:"), /*#__PURE__*/React.createElement("div", {
@@ -954,7 +987,7 @@ function VocabularySection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold"
-    }, '+ ' + w);
+    }, '+ ' + auditText(w));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, v.notes || ''));
@@ -1008,7 +1041,7 @@ function EngagementSection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded"
-    }, t);
+    }, auditText(t));
   }))), " // Modalities row", /*#__PURE__*/React.createElement("div", {
     className: "mb-3 grid grid-cols-1 md:grid-cols-2 gap-2"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -1019,7 +1052,7 @@ function EngagementSection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded"
-    }, m);
+    }, auditText(m));
   }) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-slate-500 italic"
   }, "(none)"))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -1030,7 +1063,7 @@ function EngagementSection(p) {
     return /*#__PURE__*/React.createElement("span", {
       key: i,
       className: "text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded"
-    }, m);
+    }, auditText(m));
   }) : /*#__PURE__*/React.createElement("span", {
     className: "text-xs text-emerald-700"
   }, "all four covered")))),
@@ -1109,7 +1142,7 @@ function EngagementSection(p) {
   }, e.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // LLM review
   e.llmReview && /*#__PURE__*/React.createElement("div", {
@@ -1129,7 +1162,7 @@ function EngagementSection(p) {
   }, e.llmReview.formatGaps.map(function (g, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, g);
+    }, auditText(g));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, e.notes || ''));
@@ -1206,7 +1239,7 @@ function AccessibilitySection(p) {
   }, a.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // LLM review with student impacts
   a.llmReview && /*#__PURE__*/React.createElement("div", {
@@ -1226,7 +1259,7 @@ function AccessibilitySection(p) {
   }, a.llmReview.studentImpacts.map(function (s, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, s);
+    }, auditText(s));
   }))), a.llmReview.fixes && a.llmReview.fixes.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Suggested fixes:"), /*#__PURE__*/React.createElement("ul", {
@@ -1234,7 +1267,7 @@ function AccessibilitySection(p) {
   }, a.llmReview.fixes.map(function (f, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, f);
+    }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, a.notes || ''));
@@ -1382,7 +1415,7 @@ function AccuracySection(p) {
   }, a.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // LLM review with claims to verify
   a.llmReview && /*#__PURE__*/React.createElement("div", {
@@ -1403,7 +1436,7 @@ function AccuracySection(p) {
     return /*#__PURE__*/React.createElement("li", {
       key: i,
       className: "italic"
-    }, '"' + c + '"');
+    }, '\"' + auditText(c) + '\"');
   }))), a.llmReview.fixes && a.llmReview.fixes.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Suggested improvements:"), /*#__PURE__*/React.createElement("ul", {
@@ -1411,7 +1444,7 @@ function AccuracySection(p) {
   }, a.llmReview.fixes.map(function (f, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, f);
+    }, auditText(f));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, a.notes || ''));
@@ -1498,7 +1531,7 @@ function DifferentiationSection(p) {
   }, d.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))), d.llmReview && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1516,7 +1549,7 @@ function DifferentiationSection(p) {
   }, d.llmReview.priorityAdditions.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))), d.llmReview.qualityFlags && d.llmReview.qualityFlags.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Quality flags:"), /*#__PURE__*/React.createElement("ul", {
@@ -1524,7 +1557,7 @@ function DifferentiationSection(p) {
   }, d.llmReview.qualityFlags.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, d.notes || ''));
@@ -1591,7 +1624,7 @@ function CognitiveLoadSection(p) {
   }, c.recommendations.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))), c.llmReview && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1607,7 +1640,7 @@ function CognitiveLoadSection(p) {
   }, c.llmReview.specificAdjustments.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   })))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic"
   }, c.notes || ''));
@@ -1635,7 +1668,7 @@ function CulturalResponsivenessSection(p) {
   }, c.strengths.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // Gaps
   Array.isArray(c.gaps) && c.gaps.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1647,7 +1680,7 @@ function CulturalResponsivenessSection(p) {
   }, c.gaps.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))),
   // Additions (the actionable list)
   Array.isArray(c.additions) && c.additions.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1659,7 +1692,7 @@ function CulturalResponsivenessSection(p) {
   }, c.additions.map(function (r, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, r);
+    }, auditText(r));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-slate-500 italic mt-2"
   }, c.notes || ''));
@@ -2356,6 +2389,68 @@ function NotApplicableCard(p) {
     className: "text-sm text-slate-600"
   }, d.reason));
 }
+// Each dimension card renders inside its own boundary, so one bad AI field degrades to a
+// single "could not be displayed" card instead of tripping the error boundary above the
+// whole report (2026-09-13: one object entry in an accessibility list blanked the entire
+// Curriculum Audit). Written as a hybrid: React constructs it as a class and routes render
+// errors to getDerivedStateFromError; a plain function-call harness gets the children back.
+// Keyed by report generation time so a regenerated audit remounts a clean boundary.
+var _ReactBase = typeof React !== 'undefined' && React && React.Component ? React.Component : function () {};
+function _dimensionBoundaryKey(comp, id) {
+  var meta = comp && comp.auditMetadata;
+  return id + ':' + (meta && meta.generatedAt || '');
+}
+function DimensionBoundary(props) {
+  if (!(this instanceof DimensionBoundary)) return props && props.children !== undefined ? props.children : null;
+  _ReactBase.call(this, props);
+  this.state = {
+    failed: false,
+    message: ''
+  };
+}
+DimensionBoundary.prototype = Object.create(_ReactBase.prototype);
+DimensionBoundary.prototype.constructor = DimensionBoundary;
+DimensionBoundary.getDerivedStateFromError = function (error) {
+  return {
+    failed: true,
+    message: error && error.message ? String(error.message).slice(0, 240) : 'The section could not be rendered.'
+  };
+};
+DimensionBoundary.prototype.componentDidCatch = function (error) {
+  try {
+    (window.warnLog || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error));
+  } catch (_) {}
+};
+DimensionBoundary.prototype.render = function () {
+  if (!this.state.failed) return this.props.children;
+  var p = this.props;
+  var headingId = p.id ? p.id + '-heading' : undefined;
+  return /*#__PURE__*/React.createElement("section", {
+    id: p.id || undefined,
+    "aria-labelledby": headingId,
+    tabIndex: -1,
+    "data-audit-section-failed": "true",
+    className: "bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 mb-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true",
+    className: "text-lg"
+  }, "⚠"), /*#__PURE__*/React.createElement("h3", {
+    id: headingId,
+    className: "font-bold text-amber-900"
+  }, p.label + ' could not be displayed'), /*#__PURE__*/React.createElement("span", {
+    className: "ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900"
+  }, "Display error")), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-900 mb-2"
+  }, "The saved data for this section could not be rendered. The other dimensions are unaffected; regenerate the audit to rebuild this one."), /*#__PURE__*/React.createElement("details", {
+    className: "text-xs text-amber-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-semibold"
+  }, "Show error"), /*#__PURE__*/React.createElement("pre", {
+    className: "mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap"
+  }, this.state.message)));
+};
 function ComprehensiveBlock(p) {
   var c = p.comp;
   if (!c) return null;
@@ -2376,7 +2471,7 @@ function ComprehensiveBlock(p) {
   }, c.auditScope.warnings.map(function (w, i) {
     return /*#__PURE__*/React.createElement("li", {
       key: i
-    }, w);
+    }, auditText(w));
   })) : null), /*#__PURE__*/React.createElement("div", {
     className: "mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"
   }, /*#__PURE__*/React.createElement("strong", null, "Accessibility scope: "), "These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required."), c.differentiation && c.differentiation.audioCoverage && /*#__PURE__*/React.createElement(AudioCoverageSummary, {
@@ -2384,8 +2479,13 @@ function ComprehensiveBlock(p) {
   }), c.overall && /*#__PURE__*/React.createElement(ReadinessScoreCard, {
     overall: c.overall
   }),
+  /*#__PURE__*/
   // Standards rendered first (most teacher-relevant)
-  c.standards ? c.standards.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-standards"),
+    id: "audit-standards",
+    label: "Standards alignment"
+  }, c.standards ? c.standards.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-standards",
     data: c.standards,
     label: "Standards alignment"
@@ -2402,7 +2502,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-standards",
     label: "Standards alignment"
-  }), c.vocabulary ? c.vocabulary.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-vocabulary"),
+    id: "audit-vocabulary",
+    label: "Vocabulary fit"
+  }, c.vocabulary ? c.vocabulary.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-vocabulary",
     data: c.vocabulary,
     label: "Vocabulary fit"
@@ -2415,7 +2519,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-vocabulary",
     label: "Vocabulary fit"
-  }), c.engagement ? c.engagement.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-engagement"),
+    id: "audit-engagement",
+    label: "Engagement variety"
+  }, c.engagement ? c.engagement.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-engagement",
     data: c.engagement,
     label: "Engagement variety"
@@ -2428,7 +2536,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-engagement",
     label: "Engagement variety"
-  }), c.accessibility ? c.accessibility.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-accessibility"),
+    id: "audit-accessibility",
+    label: "Content accessibility"
+  }, c.accessibility ? c.accessibility.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-accessibility",
     data: c.accessibility,
     label: "Content accessibility"
@@ -2441,7 +2553,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-accessibility",
     label: "Content accessibility"
-  }), c.udl ? c.udl.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-udl"),
+    id: "audit-udl",
+    label: "UDL principles"
+  }, c.udl ? c.udl.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-udl",
     data: c.udl,
     label: "UDL principles"
@@ -2454,7 +2570,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-udl",
     label: "UDL principles"
-  }), c.accuracy ? c.accuracy.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-accuracy"),
+    id: "audit-accuracy",
+    label: "Content accuracy"
+  }, c.accuracy ? c.accuracy.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-accuracy",
     data: c.accuracy,
     label: "Content accuracy"
@@ -2467,9 +2587,14 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-accuracy",
     label: "Content accuracy"
-  }),
+  })),
+  /*#__PURE__*/
   // Plan R+ new dimensions
-  c.differentiation ? c.differentiation.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-differentiation"),
+    id: "audit-differentiation",
+    label: "Differentiation coverage"
+  }, c.differentiation ? c.differentiation.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-differentiation",
     data: c.differentiation,
     label: "Differentiation coverage"
@@ -2482,7 +2607,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-differentiation",
     label: "Differentiation coverage"
-  }), c.cognitiveLoad ? c.cognitiveLoad.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-cognitiveLoad"),
+    id: "audit-cognitiveLoad",
+    label: "Cognitive load / pacing"
+  }, c.cognitiveLoad ? c.cognitiveLoad.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-cognitiveLoad",
     data: c.cognitiveLoad,
     label: "Cognitive load / pacing"
@@ -2499,7 +2628,11 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-cognitiveLoad",
     label: "Cognitive load / pacing"
-  }), c.culturalResponsiveness ? c.culturalResponsiveness.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
+  })), /*#__PURE__*/React.createElement(DimensionBoundary, {
+    key: _dimensionBoundaryKey(c, "audit-culturalResponsiveness"),
+    id: "audit-culturalResponsiveness",
+    label: "Cultural responsiveness"
+  }, c.culturalResponsiveness ? c.culturalResponsiveness.computeFailed ? /*#__PURE__*/React.createElement(FailedDimensionCard, {
     id: "audit-culturalResponsiveness",
     data: c.culturalResponsiveness,
     label: "Cultural responsiveness"
@@ -2516,7 +2649,7 @@ function ComprehensiveBlock(p) {
   }) : /*#__PURE__*/React.createElement(MissingDimensionCard, {
     id: "audit-culturalResponsiveness",
     label: "Cultural responsiveness"
-  }));
+  })));
 }
 function auditResourceFingerprint(resource) {
   return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null;

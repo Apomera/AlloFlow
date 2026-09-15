@@ -1,0 +1,28 @@
+{
+  "previousSha256": "8667f6e23a0dcc0efb42aa76f21c85b99fe12124598d1eb78055bda89759be8a",
+  "sourceSha256": "3c9ef48c198d799d0c14be15580d6d19066176c3f7560d21da6bd30ceb29201e",
+  "sourcePublicIdentical": true,
+  "solverAndScopeMathematicsPreserved": true,
+  "unrelatedWorkspacesPreserved": true,
+  "newSampleComparisonTests": 35,
+  "regression": {
+    "tests": 457,
+    "files": 22
+  },
+  "focused": {
+    "tests": 84,
+    "files": 4
+  },
+  "axeWidths": [
+    1280,
+    390,
+    320
+  ],
+  "browserScenarios": [
+    "RC charge and reversed-time comparisons, shared part/probe selection, finite signed bars and unchanged electrical history",
+    "Exact before/after flyback sample, continuous current/energy, contact state, sample stepping, clipped full-scope markers and saved-state restoration",
+    "UI electrical edits and duration changes disable stale comparisons, undo restores matching references, holding pauses playback, DC clear restores focus",
+    "Floating probes, ambiguous source currents and failed calculations do not invent bars, differences or marker points",
+    "Desktop and phone comparison layouts, sign/continuity explanation, keyboard clear focus and zero accessibility violations"
+  ]
+}

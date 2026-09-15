@@ -3945,6 +3945,117 @@ async function _builderFetchExportImage(url, options = {}) {
     }
   }
 }
+const ALLO_DRIVE_MB_URL_KEY = "alloflow_session_mailbox_url";
+const ALLO_DRIVE_MB_ADMIN_KEY = "alloflow_session_mailbox_admin";
+const ALLO_DRIVE_DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+function _alloReadMailboxConfig(storage) {
+  try {
+    const store = storage || (typeof localStorage !== "undefined" ? localStorage : null);
+    if (!store) return null;
+    const url = String(store.getItem(ALLO_DRIVE_MB_URL_KEY) || "").trim();
+    const admin = String(store.getItem(ALLO_DRIVE_MB_ADMIN_KEY) || "").trim();
+    if (!/^https:\/\/script\.google\.com\/[^\s]*\/exec(?:\?[^\s]*)?$/.test(url) || !admin) return null;
+    return { url, admin };
+  } catch (_) {
+    return null;
+  }
+}
+const ALLO_DRIVE_ERROR_TEXT = {
+  "not-admin": "The saved admin token was refused. Reconnect the mailbox from the Live class setup.",
+  "bad-action": "This mailbox predates v24. Paste the current script and deploy a new version.",
+  "forms-scope": "Google Forms is not enabled on this mailbox yet. Add the Forms scope described in the mailbox README, then try again.",
+  "drive-error": "Drive refused the file.",
+  "too-large": "The file is too large to send through the mailbox (25 MB limit).",
+  "bad-mime": "That file type cannot be sent.",
+  "bad-request": "Nothing to send."
+};
+async function _alloMailboxDeliverCall(config, payload, fetchImpl) {
+  const doFetch = fetchImpl || (typeof fetch === "function" ? fetch : null);
+  if (!doFetch) throw new Error("This browser cannot reach the mailbox.");
+  const res = await doFetch(config.url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ ...payload, admin: config.admin })
+  });
+  let data = null;
+  try {
+    data = await res.json();
+  } catch (_) {
+    data = null;
+  }
+  if (!data || typeof data !== "object") throw new Error("The mailbox did not answer. Redeploy it from the Live class setup.");
+  if (!data.ok) {
+    const code = String(data.e || "error");
+    const base = ALLO_DRIVE_ERROR_TEXT[code] || "Mailbox error: " + code;
+    throw new Error(code === "drive-error" && data.d ? base + " " + String(data.d) : base);
+  }
+  return data;
+}
+function _alloBlobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read the exported file."));
+      reader.onload = () => {
+        const s = String(reader.result || "");
+        resolve(s.slice(s.indexOf(",") + 1));
+      };
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+function _alloQuizToFormItems(quizData) {
+  const questions = Array.isArray(quizData && quizData.questions) ? quizData.questions : [];
+  const text = (v) => String(v == null ? "" : v).replace(/\s+/g, " ").trim();
+  const items = [];
+  questions.forEach((q) => {
+    if (!q || typeof q !== "object") return;
+    const prompt2 = text(q.question || q.prompt || q.text);
+    if (!prompt2) return;
+    const type = String(q.type || "mcq");
+    const options = (Array.isArray(q.options) ? q.options : []).map((o) => text(o && typeof o === "object" ? o.text || o.label || o.value : o)).filter(Boolean);
+    const explanation = text(q.explanation);
+    if ((type === "mcq" || type === "multiple-choice" || type === "multi-select") && options.length >= 2) {
+      const raw = q.correctAnswers !== void 0 ? q.correctAnswers : q.correctAnswer;
+      const list = Array.isArray(raw) ? raw : [raw];
+      const answer = list.map((a) => typeof a === "number" ? a : options.indexOf(text(a))).filter((i) => i >= 0 && i < options.length);
+      items.push({
+        type: type === "multi-select" ? "checkbox" : "mc",
+        prompt: prompt2,
+        options,
+        answer: answer.length ? answer : void 0,
+        help: explanation || void 0,
+        points: 1
+      });
+      return;
+    }
+    if (type === "short-answer" || type === "fill-blank" || type === "numeric-response") {
+      const expected = text(q.correctAnswer || q.expectedAnswer || q.expectedFill || q.correctValue || (Array.isArray(q.correctAnswers) ? q.correctAnswers.join(" / ") : ""));
+      items.push({ type: "short", prompt: prompt2, answer: expected || void 0, help: explanation || void 0, points: 1 });
+      return;
+    }
+    items.push({ type: "paragraph", prompt: prompt2, help: explanation || void 0, points: 0 });
+  });
+  return items;
+}
+function _alloFormQuizzesFromHistory(history) {
+  return (Array.isArray(history) ? history : []).filter((item) => item && item.type === "quiz" && item.data && Array.isArray(item.data.questions) && item.data.questions.length > 0).map((item) => ({ key: String(item.id), title: String(item.title || item.meta || "Quiz").slice(0, 120), item }));
+}
+try {
+  if (typeof window !== "undefined") {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.DriveDelivery = Object.freeze({
+      readMailboxConfig: _alloReadMailboxConfig,
+      deliverCall: _alloMailboxDeliverCall,
+      blobToBase64: _alloBlobToBase64,
+      quizToFormItems: _alloQuizToFormItems,
+      formQuizzesFromHistory: _alloFormQuizzesFromHistory
+    });
+  }
+} catch (_) {
+}
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS,
@@ -8053,7 +8164,7 @@ ${pageCss}
       finishAlternativeExport();
     }
   }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
-  const runOfficeExport = React.useCallback(async (format) => {
+  const runOfficeExport = React.useCallback(async (format, sink) => {
     if (altExportBusy) return;
     const doc = exportPreviewRef.current?.contentDocument;
     if (!doc) return;
@@ -8078,14 +8189,85 @@ ${pageCss}
       const clean = getCleanBuilderDocument({ forExport: true });
       if (!clean) throw new Error("The editable preview is not ready.");
       const result = await api.build({ html: clean.html, title: clean.title, format });
-      downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
-      addToast && addToast(result.message, "success");
+      if (typeof sink === "function") {
+        await sink(result);
+      } else {
+        downloadBuilderBlob(result.blob, { fileName: result.fileName, extension: format });
+        addToast && addToast(result.message, "success");
+      }
     } catch (error) {
       addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || "unknown error"}`, "error");
     } finally {
       finishAlternativeExport();
     }
   }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
+  const [driveDeliveryBusy, setDriveDeliveryBusy] = React.useState("");
+  const [driveDeliveryLink, setDriveDeliveryLink] = React.useState(null);
+  const [selectedFormQuizKey, setSelectedFormQuizKey] = React.useState("");
+  const mailboxConfig = React.useMemo(() => _alloReadMailboxConfig(), [driveDeliveryBusy, driveDeliveryLink, altExportBusy]);
+  const formQuizzes = React.useMemo(() => _alloFormQuizzesFromHistory(history), [history]);
+  const openMailboxSetup = React.useCallback(() => {
+    if (typeof window !== "undefined" && typeof window.__alloOpenMailboxSetup === "function") {
+      try {
+        window.__alloOpenMailboxSetup();
+        return;
+      } catch (_) {
+      }
+    }
+    addToast && addToast("Open Student QR \u2192 Live class without accounts \u2192 Connect mailbox, then come back here.", "info");
+  }, [addToast]);
+  const sendDocToDrive = React.useCallback(async () => {
+    const config = _alloReadMailboxConfig();
+    if (!config) {
+      openMailboxSetup();
+      return;
+    }
+    setDriveDeliveryBusy("doc");
+    setDriveDeliveryLink(null);
+    try {
+      await runOfficeExport("docx", async (result) => {
+        try {
+          const b64 = await _alloBlobToBase64(result.blob);
+          const name = String(result.fileName || "AlloFlow document.docx");
+          const reply = await _alloMailboxDeliverCall(config, { a: "deliver", name, mime: ALLO_DRIVE_DOCX_MIME, b64, convert: "doc" });
+          setDriveDeliveryLink({ url: reply.url, label: "the Google Doc" });
+          addToast && addToast("Sent to your Drive as a Google Doc.", "success");
+        } catch (error) {
+          addToast && addToast(error?.message || "Could not send to Drive.", "error");
+        }
+      });
+    } finally {
+      setDriveDeliveryBusy("");
+    }
+  }, [runOfficeExport, addToast, openMailboxSetup]);
+  const sendQuizToForm = React.useCallback(async () => {
+    const config = _alloReadMailboxConfig();
+    if (!config) {
+      openMailboxSetup();
+      return;
+    }
+    const chosen = formQuizzes.find((q) => q.key === selectedFormQuizKey) || formQuizzes[0];
+    if (!chosen) {
+      addToast && addToast("Generate a quiz first.", "info");
+      return;
+    }
+    const items = _alloQuizToFormItems(chosen.item.data);
+    if (!items.length) {
+      addToast && addToast("This quiz has no questions a Google Form can hold.", "info");
+      return;
+    }
+    setDriveDeliveryBusy("form");
+    setDriveDeliveryLink(null);
+    try {
+      const reply = await _alloMailboxDeliverCall(config, { a: "deliverform", title: chosen.title, items, quiz: true });
+      setDriveDeliveryLink({ url: reply.editUrl || reply.url, label: "the Google Form" });
+      addToast && addToast("Google Form created in your Drive.", "success");
+    } catch (error) {
+      addToast && addToast(error?.message || "Could not create the Form.", "error");
+    } finally {
+      setDriveDeliveryBusy("");
+    }
+  }, [formQuizzes, selectedFormQuizKey, addToast, openMailboxSetup]);
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
     if (preflight.errors) {
@@ -8264,7 +8446,7 @@ ${pageCss}
         const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
         return /* @__PURE__ */ React.createElement("option", { key: source.id, value: source.id, disabled: alreadyUsed }, source.title || _builderCitationAuthorKey(source, citationStyle), alreadyUsed ? " ? already cited" : "");
       }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex shrink-0", role: "group", "aria-label": "Reorder source " + (index + 1) }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, -1), disabled: !index, className: "h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " earlier" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveCitationItemDraft(index, 1), disabled: index === citationItemsDraft.length - 1, className: "h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30", "aria-label": "Move source " + (index + 1) + " later" }, "?"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeCitationItemDraft(index), disabled: citationItemsDraft.length === 1, className: "h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30", "aria-label": "Remove source " + (index + 1) + " from citation" }, "Remove"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-1.5 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Prefix", /* @__PURE__ */ React.createElement("input", { value: item.prefix, onChange: (event) => updateCitationItemDraft(index, { prefix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., see" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Page or locator", /* @__PURE__ */ React.createElement("input", { value: item.locator, onChange: (event) => updateCitationItemDraft(index, { locator: event.target.value.slice(0, 80) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "23 or chap. 2" })), /* @__PURE__ */ React.createElement("label", { className: "text-[8px] font-bold uppercase text-slate-600" }, "Suffix", /* @__PURE__ */ React.createElement("input", { value: item.suffix, onChange: (event) => updateCitationItemDraft(index, { suffix: event.target.value.slice(0, 120) }), className: "mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-2 text-[10px] font-medium normal-case text-slate-800", placeholder: "e.g., emphasis added" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressAuthor, onChange: (event) => updateCitationItemDraft(index, { suppressAuthor: event.target.checked }), className: "accent-cyan-800" }), "Suppress author"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex min-h-7 cursor-pointer items-center gap-1 rounded border border-slate-200 bg-white px-2 text-[9px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: item.suppressYear, onChange: (event) => updateCitationItemDraft(index, { suppressYear: event.target.checked }), className: "accent-cyan-800" }), "Suppress year")));
-    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("header", { className: "builder-workspace-header bg-white border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "builder-document-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-[11px] font-semibold text-slate-600" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("h3", { id: "builder-current-document-title", className: "truncate text-sm font-bold text-slate-800", title: previewDocumentTitle }, previewDocumentTitle)), /* @__PURE__ */ React.createElement("div", { className: "builder-workspace-actions" }, /* @__PURE__ */ React.createElement(
+    }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCitationItemDraft, disabled: citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0), className: "h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, "+ Add another source"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[8px] font-black uppercase tracking-wide text-cyan-800" }, "Preview ? ", _BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle), /* @__PURE__ */ React.createElement("p", { className: "mt-1 break-words text-[11px] font-semibold text-slate-800", "aria-live": "polite" }, _builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle))), /* @__PURE__ */ React.createElement("p", { className: "min-h-4 text-[10px] font-bold text-red-700", role: "alert" }, citationEditorError)), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 border-t border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => closeCitationEditor(true), className: "h-9 rounded border border-slate-300 bg-white px-3 text-[10px] font-bold text-slate-700 hover:bg-slate-50" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !citationItemsDraft.length, className: "h-9 rounded bg-cyan-800 px-4 text-[10px] font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, "Update citation"))), /* @__PURE__ */ React.createElement("header", { className: "builder-workspace-header bg-white border-b border-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "builder-document-heading" }, /* @__PURE__ */ React.createElement("h2", { id: "document-builder-title", className: "text-[11px] font-semibold text-slate-600" }, isAdvancedReview ? "Review Studio" : "Document Builder"), /* @__PURE__ */ React.createElement("h3", { id: "builder-current-document-title", className: "truncate text-sm font-semibold text-slate-700", title: previewDocumentTitle }, previewDocumentTitle)), /* @__PURE__ */ React.createElement("div", { className: "builder-workspace-actions" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         ref: mobileSettingsButtonRef,
@@ -8323,7 +8505,7 @@ ${pageCss}
         event.currentTarget.open = false;
         event.currentTarget.querySelector("summary")?.focus();
       }
-    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Google Drive"), mailboxConfig ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_to_drive", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendDocToDrive, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "doc" ? "Sending to Drive\u2026" : "Google Doc (send to my Drive)"), formQuizzes.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, formQuizzes.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to send as a Google Form", value: selectedFormQuizKey || formQuizzes[0].key, onChange: (event) => setSelectedFormQuizKey(event.target.value), disabled: !!altExportBusy || !!driveDeliveryBusy, className: "w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] text-slate-700 bg-white" }, formQuizzes.map((quiz) => /* @__PURE__ */ React.createElement("option", { key: quiz.key, value: quiz.key }, quiz.title))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_send_quiz_to_form", disabled: !!altExportBusy || !!driveDeliveryBusy, onClick: sendQuizToForm, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-50 rounded-lg disabled:opacity-50" }, driveDeliveryBusy === "form" ? "Creating the Form\u2026" : "Google Form (quiz, send to my Drive)")), driveDeliveryLink && /* @__PURE__ */ React.createElement("a", { href: driveDeliveryLink.url, target: "_blank", rel: "noopener noreferrer", className: "block px-2 py-1 text-[11px] font-semibold text-emerald-800 underline" }, "Open ", driveDeliveryLink.label, " in Drive \u2197"), /* @__PURE__ */ React.createElement("p", { className: "px-2 pb-1 text-[10px] text-slate-500" }, "Files land in your Drive under AlloFlow Class Mailbox / Delivered documents.")) : /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "doc_builder_connect_mailbox", onClick: openMailboxSetup, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 rounded-lg" }, "Connect your Class Mailbox to send documents to your Drive \u2192"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       let text = "";

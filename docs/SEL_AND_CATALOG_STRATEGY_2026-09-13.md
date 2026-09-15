@@ -256,6 +256,36 @@ source; each script is shown once with the situations it fits; the climate navig
 with the crisis escalation line on the cards that need it. The tool is 1.12 MB, from 2.1 MB before
 this week. Details in `docs/sel_hub_review_queue.md` §19m.
 
+**Night, second walk: the first screen.** Screenshots of the 13 Crew-linked tools (real Chromium,
+desktop and phone, AI off, station active) showed the tool below the fold under two disclosures and
+the station panel, two screens down on a phone, and the HOWL Tracker opening on 27 tabs. Now: tool
+first with the guides after it; on a phone the station's tool chips fold into its disclosure and the
+policy pills give way; the HOWL Tracker shows 15 student sections with 12 leader sections behind one
+toggle. A "My's Learning Profile" heading was fixed on the way. Details in
+`docs/sel_hub_review_queue.md` §19n; harness `scratch/crew_tools_shots.cjs`.
+
+**Night, third pass: what the first screen says.** Eight of the thirteen Crew tools showed the
+hub's generic "Complete one small step" line under the title; each now says its first step in the
+words the pack uses. Emotion Zones opens on 9 tabs with 14 behind "More"; Executive Function's
+unexplored tabs no longer look locked; Growth Mindset says the AI coach is off and hands the
+student to Reframe It. Details in `docs/sel_hub_review_queue.md` §19o.
+
+**Late night: the words get defined.** Aaron asked whether Crew is ever explained to someone new
+to EL. It was not. One primer (EL Education, Crew, HOWLs, protocols and learning targets, with six
+verified sources: King's own pages, EL Education's, and a reported piece on Crew at King) now lives
+on the hub and renders in the HOWL Tracker and Crew Protocols; every Crew pack defines Crew and HOWL
+in its glossary and opens its FAQ with "What is Crew, anyway?" and "What is a HOWL?", linked; and
+`docs/EL_CREW_PRIMER.md` is the teacher one-pager for the PD. Details in
+`docs/sel_hub_review_queue.md` §19p.
+
+**Late night: the trimester is whole.** Weeks 7 to 12 exist as packs in the same shape, two per
+HOWL, ending with the student-led conference rehearsal. Twelve packs audit clean; 18 linked tools
+walk clean in a real browser with AI off. A quiz balancer keeps answer position and option length
+honest at generation time. On the way, a clipboard defect in twelve SEL tools (direct Clipboard API
+calls that Canvas blocks) was fixed with one shared helper. The teacher guide's table covers twelve
+weeks; the per-week pages for 7 to 12 are the next writing task. Details in
+`docs/sel_hub_review_queue.md` §19r.
+
 ## 8. Questions only Aaron or Christian can answer
 
 - Does King run CharacterStrong in Crew, Facing History, or neither? The comparison and the pack topics change slightly with the answer; the positioning does not.

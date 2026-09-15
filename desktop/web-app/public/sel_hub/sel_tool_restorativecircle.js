@@ -1978,8 +1978,8 @@ window.SelHub = window.SelHub || {
                   var text = 'Our Community Agreements\n' + '='.repeat(30) + '\n\n';
                   agreements.forEach(function(ag, i) { text += (i + 1) + '. ' + ag + '\n'; });
                   text += '\nCreated: ' + new Date().toLocaleDateString() + '\n';
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(text);
+                  if (window.SelHub && window.SelHub.copyText) {
+                    window.SelHub.copyText(text).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                     addToast('Agreements copied to clipboard!', 'success');
                   } else {
                     addToast('Copy not supported in this browser', 'info');
@@ -2150,8 +2150,8 @@ window.SelHub = window.SelHub || {
                     }, '\uD83D\uDD0A'),
                     h('button', {
                       onClick: function() {
-                        if (navigator.clipboard && navigator.clipboard.writeText) {
-                          navigator.clipboard.writeText(q);
+                        if (window.SelHub && window.SelHub.copyText) {
+                          window.SelHub.copyText(q).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                           addToast('Question copied!', 'success');
                           incrementBadgeStat('questionsUsed', 1);
                         }
@@ -2190,8 +2190,8 @@ window.SelHub = window.SelHub || {
               }, '\uD83D\uDD0A Read Aloud'),
               h('button', { 'aria-label': 'Copy',
                 onClick: function() {
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(d.randomQuestion);
+                  if (window.SelHub && window.SelHub.copyText) {
+                    window.SelHub.copyText(d.randomQuestion).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                     addToast('Copied!', 'success');
                   }
                 },
@@ -2283,8 +2283,8 @@ window.SelHub = window.SelHub || {
                           className: 'text-xs text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
                         h('button', { onClick: function() {
-                            if (navigator.clipboard && navigator.clipboard.writeText) {
-                              navigator.clipboard.writeText(phrase);
+                            if (window.SelHub && window.SelHub.copyText) {
+                              window.SelHub.copyText(phrase).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                               addToast('Phrase copied!', 'success');
                             }
                           },
@@ -2434,8 +2434,8 @@ window.SelHub = window.SelHub || {
               }, '\uD83D\uDD0A Read Aloud'),
               h('button', { 'aria-label': 'Copy',
                 onClick: function() {
-                  if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(d.empathyAnalysis);
+                  if (window.SelHub && window.SelHub.copyText) {
+                    window.SelHub.copyText(d.empathyAnalysis).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                     addToast('Analysis copied!', 'success');
                   }
                 },

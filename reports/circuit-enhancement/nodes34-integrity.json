@@ -1,0 +1,23 @@
+{
+  "previousSha256": "ee5088d7c916a5f494e99c2704dd5355ff4fd4ae5703365ba43bc3ed6bc0ea3a",
+  "sourceSha256": "8667f6e23a0dcc0efb42aa76f21c85b99fe12124598d1eb78055bda89759be8a",
+  "sourcePublicIdentical": true,
+  "solverAndScopeMathematicsPreserved": true,
+  "unrelatedWorkspacesPreserved": true,
+  "regression": {
+    "tests": 422,
+    "files": 21
+  },
+  "focused": {
+    "tests": 36,
+    "files": 3
+  },
+  "newInspectionTests": 26,
+  "catalogExamples": 30,
+  "denseViewCases": 8,
+  "axeWidths": [
+    1280,
+    390,
+    320
+  ]
+}

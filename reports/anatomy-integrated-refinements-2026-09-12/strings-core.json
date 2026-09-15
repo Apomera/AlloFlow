@@ -1,0 +1,14 @@
+{
+  "ref2_myth_prompt": "Myth or fact? ",
+  "ref2_tf_prompt": "True or false? ",
+  "ref2_quiz_progress": "Continuous practice · {correct} correct / {attempts} answered · Question {number}",
+  "ref2_read_question": "Read the question aloud",
+  "ref2_mri_t1": "Magnet and radio waves. On a conventional T1-weighted image, fat is often bright and simple fluid dark. MRI uses no ionizing radiation.",
+  "ref2_mri_screening": "CT is often used for rapid assessment of suspected acute skull injury and bleeding. MRI requires safety screening: implants and devices must be identified and their MR safety conditions checked.",
+  "ref2_scan_question": "Which scan best fits this teaching scenario?",
+  "ref2_mri_source": "Source: FDA MRI benefits and risks",
+  "ref2_relationship_intro": "Explore processes that involve this structure.",
+  "ref2_direct_process": "Related process",
+  "ref2_relationship_scope": "These links connect the selected structure with an authored body-system process.",
+  "ref2_relationship_empty": "No direct process link has been authored for this structure yet. Explore all links to browse other system processes."
+}

@@ -1,0 +1,71 @@
+{
+  "verifiedAt": "2026-09-12T20:36:45.354Z",
+  "pipelineIntegrity": "passed",
+  "trackedDiffWhitespace": "passed",
+  "newFileWhitespace": "passed",
+  "moduleParity": [
+    {
+      "file": "doc_pipeline_module.js",
+      "webSha256": "a63459459b2d5fa37c5893a3178f706c52555ba58a256542365109fb243d5132",
+      "desktopSha256": "a63459459b2d5fa37c5893a3178f706c52555ba58a256542365109fb243d5132"
+    },
+    {
+      "file": "view_pdf_audit_module.js",
+      "webSha256": "1ec0ce0803cf9f07f61bb391bcf7236ece56ee2643d790f1584540e9247e8242",
+      "desktopSha256": "1ec0ce0803cf9f07f61bb391bcf7236ece56ee2643d790f1584540e9247e8242"
+    },
+    {
+      "file": "utils_pure_module.js",
+      "webSha256": "7af9ec4e74b999fbccf0de826fcb31c2f1347bfb75172e10fb0df0fd05da1369",
+      "desktopSha256": "7af9ec4e74b999fbccf0de826fcb31c2f1347bfb75172e10fb0df0fd05da1369"
+    }
+  ],
+  "sourceHashes": {
+    "doc_pipeline_source.jsx": "c5601fe3f91a1d85437190e2cea18cb525be60bd2869cc6eb21ba5bef693572b",
+    "view_pdf_audit_source.jsx": "11d68891abbf146bde991728e27ffc26bd1a9c18a5124630067a21d537a303b3",
+    "utils_pure_source.jsx": "8be9d72d4b5a5961b707b425a58324d9e785d812311471c4523a2527c0dd451f",
+    "remediation_batch_workspace.jsx": "e6a440c11bb45ec66e679dfc847b5deb87d342a174f2288d1365acebd5f5d8c2",
+    "remediation_workspace_component.jsx": "8c67c724e2554c0ee1baa3ee122d3454d8b970386ff5531ccd64f97485e17119",
+    "remediation_workspace.css": "7b313aeec6cea068fd2cf3c717e29e4fb50880350155fa8db15834da20b3dcfe",
+    "_build_view_pdf_audit_module.js": "9889824e7b5dd2b6dcef30b253d3412e29146fe7dc90045096d4551dd8877f8a",
+    "dev-tools/build_document_at_fixture_suite.cjs": "e5a4b7c2a5b79649050aba107fe72f72f3705e698c2fc6f60d41360fed7f021c",
+    "dev-tools/document_export_at_acceptance.cjs": "f17618af64c9cad20a0e5cccb11bda68b334dd85d198f1b94bf5ef4db8bfa78e",
+    "dev-tools/remediation_validation.json": "35db33cd94bb10e42da1cd43301a3d5fbe235ab037a5edae7eade1423ee6c149",
+    "tests/remediation_retry_startup.test.js": "a75fcaafd8cdc4e8b2633ece44189003af15c7b3a66af7e5acf5ff352df63f08",
+    "tests/remediation_workspace.test.js": "48447bfb53cf9af1adaaf94ec7150889fc88e55aec98151542e1c6bb555c2a12",
+    "tests/batch_checkpoint_boundary_commit.test.js": "7a5fc671cf33b0de22de60551306ca870a56772dbf81b4f11984bdd0fad7cae3",
+    "tests/utils_pure_storage.test.js": "acc81184eacf93b52aa83025f8824a7c3b14058988e69c16101f42256285d6d8",
+    "tests/e2e/remediation_continuity.spec.ts": "3fa6302eca7eb13cf6b39f39ae16ba6cc78897e47edf72d4544dceadc9692926",
+    "tests/e2e/remediation_batch_recovery.spec.ts": "10110b5393330b9d2e3dc55ea1983a31038a53534abbb8d9436b7a5e74b92ce9",
+    "tests/remediation_validation.test.js": "d3418694aec3946aabf3f4258b94b8e3b2e4f4908a88d759ed9fa75b9335db79"
+  },
+  "finalRegressions": {
+    "passed": 68,
+    "failed": 0,
+    "success": true
+  },
+  "fullValidation": {
+    "status": "passed",
+    "verifiedAt": "2026-09-12T20:35:44.962Z",
+    "unit": {
+      "files": 25,
+      "passed": 494
+    },
+    "browser": {
+      "files": 16,
+      "passed": 232
+    },
+    "testsPassed": 726
+  },
+  "sourcesUnchangedDuringValidation": true,
+  "visualReview": {
+    "viewportWidth": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "status": "reviewed",
+    "automatedLayoutAndAxe": "passed"
+  }
+}

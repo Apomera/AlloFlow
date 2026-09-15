@@ -1,0 +1,6 @@
+{
+  "file": "desktop/mcp/remediation_narration_plan.cjs",
+  "beforeSha256": "0c29f25a0d687902fa5e713cd91ff09134f231db1f1fb7ee47d7d55650ff1760",
+  "afterSha256": "e36764a459eb5996e265b39739200f405876706c9fcab01a5de37e45184919c9",
+  "scope": "Semantic decimal OL marker representation only; no thresholds or original live artifacts changed."
+}

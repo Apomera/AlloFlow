@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Recorded cook replays the starting bench, rejected decision, pasta heat load, and final dish through the slider, keyboard, and decision jump.",
+    "Replay preserves complete saved/exported evidence, supports mobile/text/skip navigation, returns to the finished dish, and clears on reload or a fresh cook.",
+    "Recipe replay remains usable when the 3D runtime is unavailable."
+  ],
+  "accessibility": [
+    {
+      "label": "Recipe replay with 3D and change observations",
+      "issues": []
+    },
+    {
+      "label": "320px recipe replay in text view",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

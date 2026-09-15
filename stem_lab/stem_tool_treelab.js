@@ -66,7 +66,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // ── Audio (shared house style: short, quiet, never blocking) ──
   var _treeAC = null;
   function getTreeAC() {
-    if (!_treeAC) { try { _treeAC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (!_treeAC) { try { _treeAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) {} }
     if (_treeAC && _treeAC.state === 'suspended') { try { _treeAC.resume(); } catch (e) {} }
     return _treeAC;
   }

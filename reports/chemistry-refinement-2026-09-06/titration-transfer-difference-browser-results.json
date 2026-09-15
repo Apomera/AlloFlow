@@ -1,0 +1,261 @@
+{
+  "checks": [
+    "Both dry readings share the same boat mass; removing it preserves delivered solid, exact subtraction, and all solid widths on a fixed scale.",
+    "Keyboard disclosure, pressed state, Escape focus return, ARIA references, current source copies, records and wet-state exclusion, remount/restart defaults, zero/tiny/max samples, narrow layouts, forced colors and live chemistry isolation pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "no-source",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "no-source",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "loaded-unpoured",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "loaded-unpoured",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "dry-compact",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "dry-compact",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "gross-readings",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "gross-readings",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "solid-only",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "solid-only",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "recorded-dry",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "recorded-dry",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-gross",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-gross",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-solid",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "forced-colors-solid",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": true,
+      "automatedColorContrast": false,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "wet-stale-record",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "wet-stale-record",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "source-copy-preserved",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "source-copy-preserved",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "zero-residue",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "tiny-rounded-sample",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "tiny-rounded-sample",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "malformed-source",
+      "width": 1200,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    },
+    {
+      "state": "malformed-source",
+      "width": 320,
+      "overflow": false,
+      "forcedColors": false,
+      "automatedColorContrast": true,
+      "missingReferences": [],
+      "violations": []
+    }
+  ]
+}

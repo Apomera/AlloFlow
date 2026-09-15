@@ -17,7 +17,7 @@
             "bottom": 900
           }
         ],
-        "focus": "Close"
+        "focus": null
       }
     },
     {
@@ -170,7 +170,7 @@
             "bottom": 844
           }
         ],
-        "focus": "Close"
+        "focus": null
       }
     },
     {
@@ -323,7 +323,7 @@
             "bottom": 740
           }
         ],
-        "focus": "Close"
+        "focus": null
       }
     },
     {

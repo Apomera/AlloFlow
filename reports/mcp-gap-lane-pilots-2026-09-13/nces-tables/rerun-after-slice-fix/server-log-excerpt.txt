@@ -1,0 +1,79 @@
+4:agent-bridge run started: nces-condition-of-education.pdf — the client model answers all pipeline calls
+6:rendered 5/5 page(s) to JPEG (1874 KB)
+12:console: [PDF Audit] Large document (~2077KB) — auditing in page slices from the start (a whole-document pass would exceed the Vision model).
+13:console: [PDF Audit/slices] page range 19-23 of 54 bounds the slices
+16:vision slice pages 23-23: attached 1 rendered page(s)
+19:vision slice pages 19-22: attached 4 rendered page(s)
+20:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-1 (vision) in 113s
+21:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-2 (vision) in 113s
+24:console: [PDF Audit/slices] merged 2/2 slices for a 54-page document
+114:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-3 (vision) in 64s
+133:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-4 (vision) in 33s
+139:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-5 (vision) in 180s
+160:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-6 (text) in 194s
+161:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-7 (text) in 194s
+162:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-8 (text) in 194s
+172:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-9 (text) in 62s
+173:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-10 (text) in 62s
+174:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-11 (text) in 62s
+186:[PDF Fix] Removed executable scripts or unsupported generated crop controls for static export (data/JSON-LD scripts kept)
+207:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-12 (text) in 196s
+208:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-13 (text) in 196s
+209:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-14 (text) in 196s
+214:[aiFixChunked:pdf-pass-1] rejected chunk candidate for chunk 2: form-state-changed; preserving the input
+215:[aiFixChunked:pdf-pass-1] chunk 2 rejected (in=19511/1092, out=19531/1092) — keeping original
+218:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-15 (text) in 93s
+219:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-16 (text) in 93s
+220:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-17 (text) in 93s
+223:[aiFixChunked:pdf-pass-1] rejected chunk candidate for chunk 5: form-state-changed; preserving the input
+224:[aiFixChunked:pdf-pass-1] chunk 5 rejected (in=20563/1349, out=20583/1349) — keeping original
+226:[aiFixChunked:pdf-pass-1] chunk 6 reported UNCHANGED — keeping original
+241:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-18 (text) in 454s
+242:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-19 (text) in 454s
+243:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-20 (text) in 454s
+253:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-21 (text) in 252s
+254:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-22 (text) in 252s
+255:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-23 (text) in 252s
+261:[Auto-fix] Pass 1: 3 of 6 fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.
+262:[Auto-fix] Pass 1: AI 85/100, axe 2 violations, Equal Access 3 failures + 7 review findings
+274:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-24 (text) in 49s
+275:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-25 (text) in 49s
+276:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-26 (text) in 49s
+283:[aiFixChunked:pdf-pass-2] chunk 3 reported UNCHANGED — keeping original
+284:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-27 (text) in 3s
+285:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-28 (text) in 3s
+286:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-29 (text) in 3s
+288:[aiFixChunked:pdf-pass-2] chunk 4 reported UNCHANGED — keeping original
+291:[aiFixChunked:pdf-pass-2] chunk 6 reported UNCHANGED — keeping original
+307:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-30 (text) in 25s
+308:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-31 (text) in 25s
+309:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-32 (text) in 25s
+319:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-33 (text) in 13s
+320:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-34 (text) in 13s
+321:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-35 (text) in 13s
+327:[Auto-fix] Pass 2: 3 of 6 fixer chunk(s) came back unchanged (nothing left to fix or kept by the gate); that is a complete outcome, not a throttle.
+328:[Auto-fix] Pass 2: AI 100/100, axe 0 violations, Equal Access 1 failures + 7 review findings
+342:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-36 (text) in 25s
+343:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-37 (text) in 25s
+344:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-38 (text) in 25s
+354:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-39 (text) in 12s
+355:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-40 (text) in 12s
+356:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-41 (text) in 12s
+371:[PDF Fix] Final headline (weakest-layer): min(AI 85, deterministic 76 [axe 100, EqualAccess 76, using the more conservative]) = 76
+373:console: [Integrity] Final text: 20384 chars / source: 15853 chars (100% coverage, method=pdfjs+normalized)
+374:console: [Integrity] VALUE-FIDELITY — 16 source numeric value(s) not found unchanged in the output (sample withheld from the log — FERPA). A remediation should never change numbers — review the Dif
+375:console: [AltQuality] 2/2 image description(s) flagged (0 high): "Figure 3. Line chart titled Enrollment i" [too-long]; "Figure 4. Line chart with markers titled" [too-long]
+378:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-42 (vision) in 75s
+384:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-43 (vision) in 64s
+388:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-44 (vision) in 28s
+391:progress: toast: ⚠️ 2 images failed to reinsert — review in the fidelity panel.
+399:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-45 (text) in 16s
+400:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-46 (text) in 16s
+401:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-47 (text) in 16s
+411:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-48 (text) in 21s
+412:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-49 (text) in 21s
+413:client answered mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-50 (text) in 21s
+419:[PDF Fix] Re-scored after recovery mutations (weakest-layer): min(AI 95, deterministic 76) = 76 (was 76)
+421:console: [DocPipe][Payload][z9gv1c/e1] +1883.4s — uploaded 9.58MB across 50 call(s) — vision:transform 2.71MB/1, vision:image-inventory 2.71MB/1, vision:style 2.71MB/1, text:auto-fix loop 0.61MB/36, 
+422:console: [DocPipe][Done][z9gv1c/e1] +1883.4s — Primary remediation pass complete (host may continue: auto-continuation, final audit, tagged export, validation) {totalElapsed: 1883s, apiCalls: 42, visio
+423:completed: verdict review

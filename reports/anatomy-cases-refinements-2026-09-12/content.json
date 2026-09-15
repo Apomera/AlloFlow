@@ -1,0 +1,90 @@
+{
+  "case_1": {
+    "presentation": "A 16-year-old runner reports aching around the front of the knee after increasing training. Stairs and squats make it worse. There was no single injury, and no locking is reported.",
+    "question": "Which joint region would you examine first, and which clues support that choice?",
+    "answer": "The patellofemoral region, where the kneecap meets the femur.",
+    "hint": "Use the location of the pain and activities that load a bent knee. A symptom pattern can suggest a region without identifying one damaged tissue.",
+    "explanation": "Anterior knee pain with stairs or squatting is consistent with patellofemoral pain. The patella transmits quadriceps force and contacts the femur as the knee bends. Several surrounding tissues can contribute to pain; articular cartilage itself has no pain-sensing nerves.",
+    "limit": "This history does not prove abnormal patellar tracking or cartilage injury. Examination is needed to distinguish other causes of anterior knee pain.",
+    "scope": "The marker shows the patella, not a diagnosed lesion or the whole joint surface.",
+    "structureId": "patella",
+    "reference": "https://www.orthoinfo.org/diseases--conditions/patellofemoral-pain-syndrome/"
+  },
+  "case_2": {
+    "presentation": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful, and lying on that shoulder can disturb sleep. No examination or imaging results are given.",
+    "question": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+    "answer": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+    "hint": "Think about the muscles that stabilize the humeral head while the arm moves. Distinguish pain-limited movement from demonstrated weakness.",
+    "explanation": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one of its four muscles, and its tendon passes beneath the acromion. Rotator-cuff disorders can cause pain with overhead activity, but several shoulder conditions have similar symptoms.",
+    "limit": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examination and, when appropriate, imaging provide additional evidence.",
+    "scope": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a tear.",
+    "structureId": "rotator_cuff",
+    "reference": "https://www.orthoinfo.org/diseases--conditions/rotator-cuff-tears"
+  },
+  "case_3": {
+    "presentation": "During a supervised exercise demonstration, an adolescent's pulse speeds up during running and gradually slows during recovery. The lesson is about the normal control of heart rate.",
+    "question": "Which structure normally initiates the heartbeat, and how can its rate change during exercise?",
+    "answer": "The sinoatrial (SA) node, modified by autonomic signals and circulating hormones.",
+    "hint": "Separate the heart's own pacemaker activity from the signals that adjust its rate.",
+    "explanation": "Pacemaker cells in the SA node, located in the right atrium, normally initiate electrical activity. Sympathetic activity and catecholamines increase their firing rate, while parasympathetic activity slows it. Exercise changes the balance of these influences.",
+    "limit": "A pulse observation does not identify every rhythm. This normal-physiology example does not establish that an unexplained racing or irregular heartbeat is benign.",
+    "scope": "The marker shows the whole heart. The SA node is a small region of the right atrium and is not separately outlined.",
+    "structureId": "heart",
+    "reference": "https://openstax.org/books/anatomy-and-physiology-2e/pages/19-2-cardiac-muscle-and-electrical-activity"
+  },
+  "case_4": {
+    "presentation": "An adult has intermittent tingling on the palm side of the thumb, index finger, and middle finger, especially at night. The little finger is unaffected. The cause has not yet been established.",
+    "question": "Which nerve's sensory territory fits these clues, and where could it be compressed?",
+    "answer": "The median nerve; compression at the carpal tunnel is one possible explanation.",
+    "hint": "Map the affected digits and compare them with the unaffected little finger. A nerve territory helps localize a problem.",
+    "explanation": "In the hand, the median nerve supplies the palmar thumb, index, middle, and thumb-side half of the ring finger. It passes beneath the flexor retinaculum at the wrist. Compression there can cause carpal tunnel symptoms; the little finger is mainly in the ulnar nerve territory.",
+    "limit": "The pattern supports a median-nerve hypothesis but does not prove the site or cause. The vignette does not establish that typing caused the symptoms.",
+    "scope": "The marker locates the median nerve schematically; it does not display an individual person's compression site.",
+    "structureId": "median",
+    "reference": "https://www.orthoinfo.org/en/diseases--conditions/carpal-tunnel-syndrome/"
+  },
+  "case_5": {
+    "presentation": "An adolescent has a persistently enlarged, painless neck lymph node, drenching night sweats, and unexplained weight loss. This fictional case calls for prompt clinical assessment.",
+    "question": "Why do these clues require further investigation, and why can they not establish Hodgkin lymphoma by themselves?",
+    "answer": "Persistent enlargement with systemic symptoms warrants investigation; tissue and clinical evidence are needed to determine the cause.",
+    "hint": "A lymph node can enlarge for several reasons. Distinguish a reason to investigate from proof of a particular disease.",
+    "explanation": "Lymph nodes filter lymph and support immune responses. Infection, inflammatory disease, and malignancy can all cause enlargement. Hodgkin lymphoma is one possible cause of this pattern, and diagnosis typically involves lymph-node tissue examined by specialists.",
+    "limit": "Node size, texture, and symptoms alone cannot identify the lymphoma type or exclude other causes. This is an exercise in recognizing uncertainty, not making a diagnosis from a short story.",
+    "scope": "The cervical-node marker shows a lymph-node region, not a biopsy result or a specific enlarged node.",
+    "structureId": "cervical_ln",
+    "reference": "https://www.cancer.gov/types/lymphoma/patient/adult-hodgkin-treatment-pdq"
+  },
+  "case_6": {
+    "presentation": "In a fictional emergency case, a person with type 1 diabetes has missed insulin, becomes confused, and breathes deeply and rapidly. Hospital tests show high glucose, elevated ketones, and metabolic acidosis.",
+    "question": "How can inadequate insulin lead to acidosis, and why does breathing change?",
+    "answer": "Insulin deficiency promotes ketone production; increased ventilation helps lower carbon dioxide during metabolic acidosis.",
+    "hint": "Link the missing hormone to fat metabolism, then connect an acid–base disturbance to ventilation.",
+    "explanation": "Pancreatic beta cells normally produce insulin. In type 1 diabetes, loss of beta-cell function creates a need for replacement insulin. Inadequate insulin can promote fat breakdown and hepatic ketone production. Accumulating ketoacids lower blood pH; deeper ventilation reduces carbon dioxide as partial compensation.",
+    "limit": "High glucose alone does not establish diabetic ketoacidosis; ketosis and acidosis are also essential findings. DKA is a medical emergency, and compensatory breathing does not correct the underlying insulin deficiency.",
+    "scope": "The islet marker represents endocrine cell clusters in the pancreas; beta cells are one cell type within them.",
+    "structureId": "islets",
+    "reference": "https://www.cdc.gov/diabetes/about/diabetic-ketoacidosis.html"
+  },
+  "case_7": {
+    "presentation": "A child falls onto the shoulder while cycling. Imaging confirms a fracture through the middle region of the clavicle. The task is to explain the bone's mechanical role.",
+    "question": "How does the clavicle's role help explain a fracture after force reaches the shoulder?",
+    "answer": "The clavicle acts as a strut and transmits force between the shoulder girdle and the trunk.",
+    "hint": "Trace a load from the shoulder toward the sternum. Consider the bone's shape as well as its connections.",
+    "explanation": "The clavicle links the scapula to the sternum and helps hold the shoulder away from the chest. Loads at the shoulder can stress its curved shaft. Midshaft fractures are common, but their mechanics cannot be reduced to a claim that the bone has no muscular attachments.",
+    "limit": "This case provides imaging confirmation. Pain or deformity alone does not describe the fracture pattern, and treatment depends on factors beyond this anatomy example.",
+    "scope": "The marker shows the clavicle as a whole, not the fracture line seen on imaging.",
+    "structureId": "clavicle",
+    "reference": "https://www.orthoinfo.org/en/diseases--conditions/clavicle-fracture-broken-collarbone/"
+  },
+  "case_8": {
+    "presentation": "During an uphill walk at high altitude, a hiker breathes faster than during a similar walk near sea level. The example concerns the effect of altitude on inspired oxygen.",
+    "question": "Does altitude mainly change oxygen's percentage in air or its inspired partial pressure? Explain the difference.",
+    "answer": "The oxygen fraction remains about 21%, while lower atmospheric pressure reduces inspired oxygen partial pressure.",
+    "hint": "Partial pressure depends on both a gas's fraction and the total pressure. A similar fraction does not guarantee a similar partial pressure.",
+    "explanation": "At altitude, lower barometric pressure lowers inspired and alveolar oxygen partial pressure. This can reduce oxygen loading into blood. Increased ventilation is one compensatory response; acclimatization includes additional changes over time.",
+    "limit": "This example does not identify one 'most stressed' structure or determine whether a person has altitude illness. Symptoms need context beyond the oxygen-pressure relationship.",
+    "scope": "The alveoli marker locates the gas-exchange region; it does not display oxygen pressure or measure a person's oxygenation.",
+    "structureId": "alveoli",
+    "reference": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-6-modifications-in-respiratory-functions"
+  }
+}

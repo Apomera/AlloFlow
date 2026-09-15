@@ -1404,9 +1404,9 @@ function _buildAlloPackShareUrl(encodedPack, aiPolicy = 'off') {
 // Code.gs remains the one canonical source. The generated CDN module serves
 // Canvas and online sessions; the compact gzip fallback preserves first-use
 // offline/Desktop copying without keeping 2,590 lines of Apps Script inline.
-const ALLO_MB_SCRIPT_VERSION = 23;
-const ALLO_MB_SCRIPT_SHA256 = 'cf91247446b7878ab392d5dd3e06f4e06e91009c295c89e6aa50672bdf84b232';
-const ALLO_MB_SCRIPT_BYTES = 129663;
+const ALLO_MB_SCRIPT_VERSION = 24;
+const ALLO_MB_SCRIPT_SHA256 = 'f5b38a25f6d479bc03690ba2b88083f0a9dfbb9dc4ce089f18e3587a9ae3bf61';
+const ALLO_MB_SCRIPT_BYTES = 145173;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -14039,6 +14039,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
     window.__alloLazyWalkthroughCopilot = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WalkthroughCopilot', 'https://alloflow-cdn.pages.dev/walkthrough_copilot_cdn_module.js?v=wc081301'); }; })();
+    window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs091301'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
@@ -15004,7 +15005,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             // Regression mode embeds Data Plotter, which in turn owns the kernel.
             'stem_lab/stem_tool_datastudio.js': ['stem_lab/stem_tool_dataplot.js'],
             'stem_lab/stem_lumen_study.js': ['stem_lab/stem_lumen_evidence.js'],
-            'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js']
+            'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js'],
+            // The builder owns the home chooser; per-tile loading fetches only what is declared here.
+            'stem_lab/stem_tool_geometryworld.js': ['stem_lab/stem_tool_geometryworld_builder.js']
           };
 
           function loadStemModuleWithDependencies(mod, force, ancestors) {
@@ -16471,6 +16474,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
   const [isWalkthroughCopilotOpen, setIsWalkthroughCopilotOpen] = useState(false);
+  const [isCommunicationsStudioOpen, setIsCommunicationsStudioOpen] = useState(false);
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
   // Leadership Hub Drive backup (2026-08-17): the hub's own auto-save runs when
@@ -28575,10 +28579,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current);
           return;
       }
-      syncProgressToFirestore();
-      progressSyncTimerRef.current = setInterval(syncProgressToFirestore, 60000);
+      // PhaseKHelpers is a deferred module. A student joining from a phone can
+      // reach this effect long before the background pump gets to it, so ask
+      // for it by name and poll until it lands instead of calling through the
+      // wrapper (which throws, unhandled, once a minute). Module presence is a
+      // dependency of the run below, so the sync starts on a FRESH closure --
+      // polling a window global alone would leave stale deps captured here.
+      if (!(window.AlloModules && window.AlloModules.PhaseKHelpers)) {
+          if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current);
+          try { if (window.__alloLazyLiveSessionSync) window.__alloLazyLiveSessionSync(); } catch (_) {}
+          let cancelled = false;
+          // Patience matches the lazy-module ceiling, not a courtesy poll.
+          const waitUntil = Date.now() + 65000;
+          const waitTimer = setInterval(() => {
+              if (cancelled) return;
+              if (window.AlloModules && window.AlloModules.PhaseKHelpers) {
+                  clearInterval(waitTimer);
+                  setModulesReady(n => n + 1); // re-run with a fresh closure
+              } else if (Date.now() > waitUntil) {
+                  clearInterval(waitTimer);
+                  console.warn('[syncProgressToFirestore] PhaseKHelpers did not load; progress sync is off for this session.');
+              }
+          }, 1000);
+          return () => { cancelled = true; clearInterval(waitTimer); };
+      }
+      // Never let a sync failure surface as an unhandled rejection: this runs
+      // on a timer nobody awaits.
+      const runSync = () => {
+          try {
+              const r = syncProgressToFirestore();
+              if (r && typeof r.catch === 'function') r.catch(e => console.warn('[syncProgressToFirestore] sync failed', e));
+          } catch (e) { console.warn('[syncProgressToFirestore] sync failed', e); }
+      };
+      runSync();
+      progressSyncTimerRef.current = setInterval(runSync, 60000);
       return () => { if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current); };
-  }, [isCanvas, activeSessionCode, studentNickname, syncProgressToFirestore]);
+  }, [isCanvas, activeSessionCode, studentNickname, syncProgressToFirestore, modulesReady]);
   useEffect(() => {
       if (history.length > 0 && activeSidebarTab !== 'history') {
           setIsHistoryPulsing(true);
@@ -42197,6 +42233,7 @@ const parseTaggedContent = (text) => {
             if (toolId === 'evaluation') { handleOpenPrincipalEvaluationFromSettings(); }
             else if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
             else if (toolId === 'walkthroughCopilot') { if (typeof window.__alloLazyWalkthroughCopilot === 'function') { try { window.__alloLazyWalkthroughCopilot(); } catch (_) {} } setIsWalkthroughCopilotOpen(true); }
+            else if (toolId === 'communicationsStudio') { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }
             else if (toolId === 'dispro') { if (typeof window.__alloLazyDisproAnalyzer === 'function') { try { window.__alloLazyDisproAnalyzer(); } catch (_) {} } setIsDisproAnalyzerOpen(true); }
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
@@ -42268,6 +42305,15 @@ const parseTaggedContent = (text) => {
           onClose: () => { setIsDisproAnalyzerOpen(false); _alloHubToolClosed(); },
           t,
           addToast,
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="CommunicationsStudio.CommunicationsStudioPanel" isOpen={isCommunicationsStudioOpen} onClose={() => { setIsCommunicationsStudioOpen(false); _alloHubToolClosed(); }} icon="✉️" displayName="Communications Studio" t={t}>
+        {(CommunicationsStudioPanel) => React.createElement(CommunicationsStudioPanel, {
+          isOpen: true,
+          roster: rosterKey,
+          dashboardData,
+          onClose: () => { setIsCommunicationsStudioOpen(false); _alloHubToolClosed(); },
+          t,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="WalkthroughCopilot.WalkthroughCopilotPanel" isOpen={isWalkthroughCopilotOpen} onClose={() => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); }} icon="👣" displayName="Walkthrough Copilot" t={t}>
@@ -43213,7 +43259,7 @@ const parseTaggedContent = (text) => {
                   setShowStemLab, setStemLabTab, setStemLabTool
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} openCommunicationsStudio={() => { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate loaderName="__alloLazyReportWriter" moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {

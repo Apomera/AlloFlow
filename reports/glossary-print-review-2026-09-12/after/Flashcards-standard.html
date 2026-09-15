@@ -1,0 +1,268 @@
+
+            <!DOCTYPE html>
+            <html lang="en" dir="ltr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Flashcards - 9/12/2026</title>
+                <style>
+                    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #1e293b; }
+                    @page { margin: 12mm; }
+                    * { box-sizing: border-box; }
+                    @media print {
+                        body { padding: 0; margin: 0; max-width: 100%; }
+                        .no-print { display: none; }
+                        .card-container { break-inside: avoid; }
+                        .card-container, .front { border-color: #777 !important; }
+                        .card-side * { color: #000 !important; }
+                    }
+                    
+            .card-container {
+                position: relative;
+                display: flex;
+                border: 2px dashed #cbd5e1;
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+                min-height: 220px;
+                height: auto;
+                background: white;
+            }
+            .card-side {
+                flex: 1 1 0;
+                min-width: 0;
+                overflow-wrap: anywhere;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                position: static;
+                overflow: visible;
+            }
+            .front { border-inline-end: 2px dashed #cbd5e1; }
+            .cut-guide {
+                position: absolute;
+                top: 4px; left: 50%;
+                transform: translateX(-50%);
+                font-size: 10px; color: #475569;
+                background: white; padding: 0 5px;
+                font-weight: bold;
+            }
+            .lang-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #475569;
+                margin-bottom: 2px;
+                font-weight: bold;
+            }
+            .primary-text { font-size: 20px; font-weight: bold; color: #1e293b; margin-bottom: 5px; }
+            .secondary-text { font-size: 16px; color: #4f46e5; font-weight: bold; margin-top: 5px; }
+            .def-text { font-size: 13px; color: #475569; line-height: 1.4; }
+            .def-trans { font-size: 13px; color: #475569; line-height: 1.4; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; width: 100%; }
+            .etym-text { font-size: 11px; color: #4338ca; font-style: italic; line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #c7d2fe; width: 100%; }
+            .etym-roots { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; }
+            .root-chip { font-size: 10px; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; padding: 2px 6px; border-radius: 999px; font-style: normal; }
+            .root-chip b { font-weight: 700; }
+            .root-chip i { font-size: 9px; color: #6366f1; text-transform: uppercase; font-style: normal; letter-spacing: 0.03em; margin: 0 2px; }
+            .set-header {
+                background: #f1f5f9; color: #334155;
+                padding: 15px; margin: 40px 0 20px 0;
+                text-align: center; font-weight: bold; border-radius: 8px;
+                border: 1px solid #e2e8f0;
+                page-break-after: avoid;
+            }
+        
+                </style>
+            </head>
+            <body>
+                
+            <div class="no-print" style="background: #eef2ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #c7d2fe;">
+                <h1 style="margin-top:0; color: #3730a3; font-family: sans-serif;">Flashcard Generator</h1>
+                <p style="color: #4338ca; font-family: sans-serif;">Instructions: Print single-sided. Cut along the dashed borders. Fold in the middle to create double-sided cards.</p>
+                <button onclick="window.print()" style="background: #4f46e5; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; font-family: sans-serif;">Print</button>
+            </div>
+        <h2 class="set-header">Spanish Study Set</h2>
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Photosynthesis</div>
+                        <div class="secondary-text">Photosynthesis</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Plants use sunlight, water, and carbon dioxide to make food and release oxygen. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. The process supports food webs and moves energy through ecosystems. END OF LONG DEFINITION.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        <div class="etym-text">📜 <strong>Word roots:</strong> From Greek roots meaning light and putting together. From Greek roots meaning light and putting together. From Greek roots meaning light and putting together. From Greek roots meaning light and putting together. </div>
+                        <div class="etym-roots"><span class="root-chip"><b>photo</b> <i>(Greek)</i> = light</span></div><div class="etym-related"><strong>Related words:</strong> photograph, phototropism</div>
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Evaporation</div>
+                        <div class="secondary-text">Evaporation</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Liquid water changes into water vapor when it gains heat energy.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Condensation</div>
+                        <div class="secondary-text">Condensation</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Living things interact with their surroundings and depend on one another.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Precipitation</div>
+                        <div class="secondary-text">Precipitation</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Plants use sunlight, water, and carbon dioxide to make food and release oxygen.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Ecosystem</div>
+                        <div class="secondary-text">Ecosystem</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Liquid water changes into water vapor when it gains heat energy.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Habitat</div>
+                        <div class="secondary-text">Habitat</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Living things interact with their surroundings and depend on one another.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Producer</div>
+                        <div class="secondary-text">Producer</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Plants use sunlight, water, and carbon dioxide to make food and release oxygen.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Consumer</div>
+                        <div class="secondary-text">Consumer</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Liquid water changes into water vapor when it gains heat energy.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Decomposer</div>
+                        <div class="secondary-text">Decomposer</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Living things interact with their surroundings and depend on one another.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Adaptation</div>
+                        <div class="secondary-text">Adaptation</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Plants use sunlight, water, and carbon dioxide to make food and release oxygen.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Population</div>
+                        <div class="secondary-text">Population</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Liquid water changes into water vapor when it gains heat energy.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+                    <div class="card-container">
+                        <div class="card-side front">
+                        <div class="cut-guide">FOLD HERE</div>
+                        <div class="lang-label">English</div>
+                        <div class="primary-text">Community</div>
+                        <div class="secondary-text">Community</div><div class="lang-label" style="margin-top:2px;">Spanish</div>
+                    </div>
+                        <div class="card-side back">
+                        <div class="def-text"><strong>English:</strong> Living things interact with their surroundings and depend on one another.</div>
+                        <div class="def-trans"><strong>Spanish:</strong> Las plantas y los animales dependen de su entorno para sobrevivir.</div>
+                        
+                        
+                    </div>
+                    </div>
+                
+            </body>
+            </html>
+        

@@ -1,0 +1,54 @@
+{
+  "pass": 30,
+  "title": "Slow-motion workshop playback",
+  "status": "complete",
+  "published": false,
+  "sourceSha256": "f9c660e78d7270d7921234006d2989d80fa88f3d08e29f8e2b0931f49d25eaca",
+  "changes": [
+    "Optional playback at one-third speed for all six mechanisms",
+    "Capture the duration when a run begins; prevent stale cleanup from stopping a newer run",
+    "Honor explicit motion preferences and label motion-off demonstrations as still",
+    "Native keyboard-accessible speed checkbox, disabled during playback or unavailable WebGL"
+  ],
+  "tests": {
+    "uniquePassed": 530,
+    "added": 18,
+    "geometryPassed": 279,
+    "finalUiPassed": 251,
+    "geometryReport": "pass30-tests.json",
+    "uiReport": "pass30-ui-final-tests.json",
+    "initialFailures": "Four UI assertions assumed WebGL availability; corrected for the no-WebGL render fixture. Final UI suite passes."
+  },
+  "browser": {
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "widths": [
+      1150,
+      390,
+      320
+    ],
+    "screenshots": 12,
+    "checks": 18,
+    "errors": 0,
+    "horizontalOverflow": false,
+    "reports": [
+      "pass30-light-final/results.json",
+      "pass30-dark/results.json",
+      "pass30-contrast/results.json"
+    ],
+    "reviewedImages": [
+      "pass30-light-final/slow-inspect-320.png",
+      "pass30-dark/slow-running.png",
+      "pass30-contrast/slow-inspect-390.png"
+    ]
+  },
+  "verification": {
+    "sourceMirrorIdentical": true,
+    "syntax": true,
+    "diffCheck": true
+  },
+  "pending": null
+}

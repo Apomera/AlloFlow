@@ -452,7 +452,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
                     style: { padding: 8, borderRadius: 6, border: '1.5px solid ' + (picked ? c.color : '#334155'),
                       background: picked ? c.color + '22' : _cnsBg('#1e293b'),
                       color: picked ? c.color : _cnsFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' } },
-                    h('div', { style: { fontSize: 14 } }, c.icon + ' ' + h('span', null, '')),
+                    h('div', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
                     h('div', { style: { fontSize: 11, fontWeight: 700, marginTop: 2 } }, c.label),
                     h('div', { style: { fontSize: 10, color: _cnsFg('#94a3b8'), marginTop: 2, lineHeight: 1.3 } }, c.hint)
                   );

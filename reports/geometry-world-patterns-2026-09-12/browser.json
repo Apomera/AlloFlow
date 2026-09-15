@@ -1,0 +1,129 @@
+{
+  "assertions": [
+    {
+      "name": "Normal construction retains the single lightweight outline",
+      "pass": true
+    },
+    {
+      "name": "Review shows actual material textures without placing any blocks",
+      "pass": true
+    },
+    {
+      "name": "Review surfaces respond to Balanced material detail",
+      "pass": true
+    },
+    {
+      "name": "Lighting targets the framed structure rather than the distant camera",
+      "pass": true
+    },
+    {
+      "name": "Applying a material preview releases its GPU scene overlay",
+      "pass": true
+    },
+    {
+      "name": "Three instances preview two copies and retain the source",
+      "pass": true
+    },
+    {
+      "name": "Apply selects every instance in a single undoable operation",
+      "pass": true
+    },
+    {
+      "name": "One keyboard Undo removes all copies",
+      "pass": true
+    },
+    {
+      "name": "Redo restores the entire selected pattern",
+      "pass": true
+    },
+    {
+      "name": "Aligning the far grid edge places the last column at X = -1",
+      "pass": true
+    },
+    {
+      "name": "Phone precision fields remain labeled, touch-sized, and within the page",
+      "pass": true,
+      "details": {
+        "overflow": false,
+        "fields": [
+          {
+            "label": "Pattern axisX · acrossZ · in depthY · stack",
+            "height": 44,
+            "width": 278
+          },
+          {
+            "label": "DirectionPositive direction (+)Negative direction (−)",
+            "height": 44,
+            "width": 278
+          },
+          {
+            "label": "Total instances",
+            "height": 44,
+            "width": 135
+          },
+          {
+            "label": "Gap in blocks",
+            "height": 44,
+            "width": 135
+          }
+        ]
+      }
+    },
+    {
+      "name": "Phone material review keeps all three actions available",
+      "pass": true
+    },
+    {
+      "name": "Phone review hides overlapping play controls while preserving the model",
+      "pass": true
+    },
+    {
+      "name": "Short landscape can reach ground alignment",
+      "pass": true
+    },
+    {
+      "name": "Expanded Harbor loads all eight activities and the eastern architecture",
+      "pass": true
+    },
+    {
+      "name": "Both new activities can be reached without lifting the learner onto a structure",
+      "pass": true,
+      "details": [
+        {
+          "id": "arcade-patterns",
+          "travel": true,
+          "camera": [
+            28.5,
+            2.6,
+            -13.5
+          ],
+          "expected": [
+            28.5,
+            2.6,
+            -13.5
+          ]
+        },
+        {
+          "id": "community-studio",
+          "travel": true,
+          "camera": [
+            41.5,
+            2.6,
+            1.5
+          ],
+          "expected": [
+            41.5,
+            2.6,
+            1.5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New reference arches each measure nine cubes in the running engine",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Actual Chromium WebGL and React controls; desktop, 320px phone, and 390px-high landscape."
+}

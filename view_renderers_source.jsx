@@ -38,6 +38,9 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
     normalizedText = normalizedText.replace(/\n{3,}/g, '\n\n');
     normalizedText = normalizedText.replace(/(^|\n)\s*#\s*(?=\n|$)/g, '$1');
     normalizedText = normalizedText.replace(/^Title:\s*(.+)/m, '# $1');
+    // A [[CHART: {...}]] directive is parsed one line at a time below. The model sometimes wraps the JSON
+    // across lines or runs it into a paragraph, which rendered the directive as prose: collapse it onto one line of its own.
+    normalizedText = normalizedText.replace(/\[\[CHART:([\s\S]*?)\]\]/g, (m, body) => '\n[[CHART: ' + body.replace(/\s*\n\s*/g, ' ').trim() + ']]\n');
     const lines = normalizedText.split('\n');
     const elements = [];
     let tableBuffer = [];

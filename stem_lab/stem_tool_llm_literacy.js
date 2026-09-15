@@ -1319,7 +1319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       function copyToClipboard(text, label) {
         try {
           if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function() {
+            (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(text).then(function() {
               addToast((label || 'Copied') + ' to clipboard', 'success');
             }, function() { fallbackCopy(text, label); });
           } else {

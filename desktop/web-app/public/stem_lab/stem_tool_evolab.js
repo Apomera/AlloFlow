@@ -173,6 +173,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         } catch (e) {}
       };
 
+
+      // Copy plain text for the student or teacher to paste elsewhere. Routed
+      // through the shell's alloCopyText first: Gemini Canvas refuses
+      // navigator.clipboard by permissions policy, and execCommand needs the
+      // click's own activation. Resolves true when something copied.
+      var copyPlainText = function(text) {
+        var s = String(text == null ? '' : text);
+        var legacy = function() {
+          try {
+            var area = document.createElement('textarea');
+            area.value = s; area.setAttribute('readonly', 'readonly');
+            area.style.position = 'fixed'; area.style.top = '-1000px'; area.style.opacity = '0';
+            document.body.appendChild(area); area.select();
+            var ok = document.execCommand && document.execCommand('copy');
+            document.body.removeChild(area);
+            return !!ok;
+          } catch (e) { return false; }
+        };
+        return new Promise(function(resolve) {
+          if (typeof window.alloCopyText === 'function') {
+            try { Promise.resolve(window.alloCopyText(s)).then(function(ok) { resolve(ok !== false); }).catch(function() { resolve(legacy()); }); return; } catch (e) { resolve(legacy()); return; }
+          }
+          if (legacy()) { resolve(true); return; }
+          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(s).then(function() { resolve(true); }).catch(function() { resolve(false); }); return; }
+          resolve(false);
+        });
+      };
       // ── Learning progress ──
       // evoBadges (below) still records which modules were VISITED. Completion is
       // earned by doing: finishing a hunt, running 20 generations, grading a
@@ -180,7 +207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // auto-detected by the simulator or ticked by the student. Predictions and
       // checks back the predict-observe-explain gates and the end-of-run
       // misconception checks. One object so a project file carries it whole.
-      var _emptyProgress = function() { return { completed: {}, experiments: {}, predictions: {}, checks: {}, challenges: {}, records: {}, notes: {}, exitTickets: {} }; };
+      var _emptyProgress = function() { return { completed: {}, experiments: {}, predictions: {}, checks: {}, challenges: {}, records: {}, notes: {}, exitTickets: {}, quiz: null }; };
       var _normalizeProgress = function(raw) {
         var p = raw && typeof raw === 'object' ? raw : {};
         return {
@@ -191,7 +218,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           challenges: p.challenges && typeof p.challenges === 'object' ? p.challenges : {},
           records: p.records && typeof p.records === 'object' ? p.records : {},
           notes: p.notes && typeof p.notes === 'object' ? p.notes : {},
-          exitTickets: p.exitTickets && typeof p.exitTickets === 'object' ? p.exitTickets : {}
+          exitTickets: p.exitTickets && typeof p.exitTickets === 'object' ? p.exitTickets : {},
+          // Misconceptions quiz: first and latest full pass, so a student (and the class snapshot) can see which misconceptions were shed.
+          quiz: p.quiz && typeof p.quiz === 'object' ? p.quiz : null
         };
       };
       var _progressRef = useRef(null);
@@ -208,7 +237,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           challenges: Object.assign({}, cur.challenges),
           records: Object.assign({}, cur.records),
           notes: Object.assign({}, cur.notes),
-          exitTickets: Object.assign({}, cur.exitTickets)
+          exitTickets: Object.assign({}, cur.exitTickets),
+          quiz: cur.quiz ? Object.assign({}, cur.quiz) : null
         };
         mutator(next);
         _progressRef.current = next;
@@ -279,9 +309,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         writeProgress(function(p) { p.predictions[moduleId] = patch ? Object.assign({}, p.predictions[moduleId] || {}, patch) : undefined; if (!patch) delete p.predictions[moduleId]; });
       };
       var getNote = function(moduleId) { var p = _progressRef.current; var n = p && p.notes && p.notes[moduleId]; return n && typeof n === 'object' && typeof n.text === 'string' ? n : null; };
-      var saveNote = function(moduleId, text) {
+      var saveNote = function(moduleId, text, cer) {
         var clean = String(text == null ? '' : text).slice(0, 2000);
-        writeProgress(function(p) { if (clean.trim()) p.notes[moduleId] = { text: clean, at: new Date().toISOString() }; else delete p.notes[moduleId]; });
+        var parts = cer && typeof cer === 'object' ? { claim: String(cer.claim || '').slice(0, 600), evidence: String(cer.evidence || '').slice(0, 600), reasoning: String(cer.reasoning || '').slice(0, 600) } : null;
+        writeProgress(function(p) {
+          if (clean.trim()) { var rec = { text: clean, at: new Date().toISOString() }; if (parts) rec.cer = parts; p.notes[moduleId] = rec; }
+          else delete p.notes[moduleId];
+        });
       };
       var getTicket = function(day) { var p = _progressRef.current; var r = p && p.exitTickets && p.exitTickets[day]; return r && typeof r === 'object' && typeof r.text === 'string' ? r : null; };
       var saveTicket = function(day, text, confidence) {
@@ -301,20 +335,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var CHALLENGE_INDEX = [
         { moduleId: 'predatorVision', id: 'camo90in8', title: 'Sharp eyes: 90% camouflage by round 8' }, { moduleId: 'predatorVision', id: 'reAdapt', title: 'Re-adapt after an environment change' },
         { moduleId: 'mateChoice', id: 'plateauUnder70', title: 'Hold the peacock balance under 0.70' }, { moduleId: 'mateChoice', id: 'dullOut', title: 'Dull the males down against choosy females' },
-        { moduleId: 'climatePressure', id: 'survive03', title: 'Survive warming of 0.030 per generation' }, { moduleId: 'climatePressure', id: 'survive03lowVar', title: 'Survive 0.030 with low variation' },
+        { moduleId: 'climatePressure', id: 'survive03', title: 'Survive warming of 0.030 per generation' }, { moduleId: 'climatePressure', id: 'survive03lowVar', title: 'Survive 0.040 with low variation' },
         { moduleId: 'selectionSandbox', id: 'tightStabilizing', title: 'SD below 0.08 under stabilizing selection' }, { moduleId: 'selectionSandbox', id: 'bimodal', title: 'A clean disruptive split' },
         { moduleId: 'beakLab', id: 'bigBeaks', title: 'Mean beak past 10.5 mm' }, { moduleId: 'beakLab', id: 'recover', title: 'Bring the small beaks back' },
         { moduleId: 'antibioticLab', id: 'eradicate', title: 'Eradicate the infection' }, { moduleId: 'antibioticLab', id: 'rollback', title: 'Roll resistance back' },
         { moduleId: 'geneticDrift', id: 'allFixed', title: 'Every drift lineage decided' }, { moduleId: 'geneticDrift', id: 'holdSteady', title: 'Big numbers hold steady' },
-        { moduleId: 'hardyWeinberg', id: 'purge', title: 'Purge an allele in 30 generations' }, { moduleId: 'hardyWeinberg', id: 'mutationMelt', title: 'Melt a fixed allele' },
+        { moduleId: 'hardyWeinberg', id: 'purge', title: 'Purge an allele to p ≥ 0.95 in 30 generations' }, { moduleId: 'hardyWeinberg', id: 'mutationMelt', title: 'Melt a fixed allele' },
         { moduleId: 'speciation', id: 'milestone20', title: 'Divergence milestone in 20 generations' }, { moduleId: 'speciation', id: 'holdTogether', title: 'Same pressure, same shape' },
         { moduleId: 'coevolution', id: 'redQueen', title: 'Run in place for 40 generations' },
         { moduleId: 'phyloBuilder', id: 'perfectFirst', title: 'Perfect tree, first grading' }, { moduleId: 'phyloBuilder', id: 'noHints', title: 'Perfect tree without the checklist' },
         { moduleId: 'discoveryTimeline', id: 'perfectOrder', title: 'Sequence six milestones first try' },
-        { moduleId: 'commonAncestry', id: 'detective5', title: 'Bone detective, five for five' },
+        { moduleId: 'commonAncestry', id: 'detective5', title: 'Bone detective, five for five' }, { moduleId: 'commonAncestry', id: 'evidence15', title: 'Every line of evidence, first pass' },
         { moduleId: 'geneticDrift', id: 'bottleneckScar', title: 'Scar of a bottleneck' },
+        { moduleId: 'speciation', id: 'holdWithFlow', title: 'Divergence against gene flow' },
+        { moduleId: 'coevolution', id: 'relaxed', title: 'Relaxed selection after a predator crash' },
         { moduleId: 'misconceptions', id: 'perfect12', title: '12 of 12 misconceptions in one pass' },
-        { moduleId: 'selectionSleuth', id: 'streak10', title: 'Ten mechanisms in a row' }, { moduleId: 'homologySleuth', id: 'streak10', title: 'Ten homology calls in a row' }
+        { moduleId: 'selectionSleuth', id: 'streak10', title: 'Ten mechanisms in a row' }, { moduleId: 'homologySleuth', id: 'streak10', title: 'Ten homology calls in a row' },
+        { moduleId: 'termSprint', id: 'tenForTen', title: 'Ten for ten on the term sprint' },
+        { moduleId: 'hardyWeinberg', id: 'falseAlarm', title: 'Catch a false alarm' }, { moduleId: 'selectionSandbox', id: 'mystery5', title: 'Five mystery regimes in a row' },
+        { moduleId: 'speciation', id: 'isolated80', title: 'Isolation index 0.8 in a mating trial' },
+        { moduleId: 'selectionSandbox', id: 'lowHerit', title: 'Peak on a low heritability budget' },
+        { moduleId: 'hardyWeinberg', id: 'finishPurge', title: 'Finish the purge with inbreeding' },
+        { moduleId: 'geneticDrift', id: 'neTiny', title: 'Drift like ten with a thousand' },
+        { moduleId: 'antibioticLab', id: 'comboIn5', title: 'Two drugs, gone in five' },
+        { moduleId: 'phyloBuilder', id: 'flipWithTwo', title: 'Flip the tree with two sites' },
+        { moduleId: 'geneticDrift', id: 'oneOfFive', title: 'Five islands, one population' }
       ];
       var getCheck = function(moduleId) { var p = _progressRef.current; return (p && p.checks && p.checks[moduleId]) || null; };
       var saveCheck = function(moduleId, rec) {
@@ -374,6 +419,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       ChallengeList = stableType('ChallengeList', ChallengeList);
       FieldNote = stableType('FieldNote', FieldNote);
       KeyTerms = stableType('KeyTerms', KeyTerms);
+      ModelLimits = stableType('ModelLimits', ModelLimits);
+      DataTable = stableType('DataTable', DataTable);
+      TermSprint = stableType('TermSprint', TermSprint);
+      MysteryRegime = stableType('MysteryRegime', MysteryRegime);
+      EvidenceSort = stableType('EvidenceSort', EvidenceSort);
       ExitTicketCard = stableType('ExitTicketCard', ExitTicketCard);
       TraitHistogram = stableType('TraitHistogram', TraitHistogram);
       MainMenu = stableType('MainMenu', MainMenu);
@@ -387,6 +437,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // menu). The ✓ badge is COMPLETED, earned inside the module via
       // markComplete() when the student actually does the work.
       var BADGE_IDS = ['predatorVision','mateChoice','climatePressure','selectionSandbox','beakLab','speciation','coevolution','phyloBuilder','hardyWeinberg','geneticDrift','commonAncestry','antibioticLab','discoveryTimeline','misconceptions','selectionSleuth','homologySleuth','capstone'];
+      // Display names for every progress key (modules plus the term sprint).
+      // Short handles for the twelve Misconceptions Quiz items, in quiz order.
+      var MISCONCEPTION_LABELS = [
+        t('stem.evolab.mq_l1', '"Just a theory"'), t('stem.evolab.mq_l2', 'Humans from monkeys'), t('stem.evolab.mq_l3', 'Evolution has a goal'), t('stem.evolab.mq_l4', 'Fitness = strength'),
+        t('stem.evolab.mq_l5', 'Acquired traits inherited'), t('stem.evolab.mq_l6', 'Why still apes'), t('stem.evolab.mq_l7', 'Mutations always bad'), t('stem.evolab.mq_l8', 'Evolution explains life\'s origin'),
+        t('stem.evolab.mq_l9', 'Evolution is random'), t('stem.evolab.mq_l10', 'Macroevolution unobserved'), t('stem.evolab.mq_l11', 'Giraffes needed long necks'), t('stem.evolab.mq_l12', 'Evolution is always slow')
+      ];
+      var MODULE_TITLES = {
+        predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project', termSprint: 'Term Sprint'
+      };
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -803,30 +863,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // FieldNote — one free-text observation per module (UDL: expression).
       // Draft lives locally while typing; saved on blur or the button, so the
       // host is not re-rendered per keystroke. Shows up in the Learning Journal.
+      // FieldNote — one note per module, saved to the journal. Two shapes: a free
+      // sentence or two, or Claim · Evidence · Reasoning (the CER structure used
+      // in science writing). CER is stored as its three parts AND as one joined
+      // text, so every reader of notes (journal, snapshot, copy) keeps working.
+      var CER_FIELDS = [
+        { key: 'claim', label: __alloT('stem.evolab.cer_claim', 'Claim'), prompt: __alloT('stem.evolab.cer_claim_p', 'One sentence that answers the question. "The mean beak got deeper because…"') },
+        { key: 'evidence', label: __alloT('stem.evolab.cer_evidence', 'Evidence'), prompt: __alloT('stem.evolab.cer_evidence_p', 'Numbers from YOUR run: a before and an after, a survivor count, a rate. Copy them from the data table.') },
+        { key: 'reasoning', label: __alloT('stem.evolab.cer_reasoning', 'Reasoning'), prompt: __alloT('stem.evolab.cer_reasoning_p', 'Why that evidence supports the claim: name the mechanism (variation, who survived, what was inherited) and one thing the model leaves out.') }
+      ];
+      var joinCer = function(c) { return CER_FIELDS.map(function(f) { return f.label + ': ' + String(c[f.key] || '').trim(); }).filter(function(line) { return !/:\s*$/.test(line); }).join('\n'); };
       function FieldNote(props) {
         var moduleId = props.moduleId;
         var saved = getNote(moduleId);
-        var draftState = useState(saved ? saved.text : ''), draft = draftState[0], setDraft = draftState[1];
+        var savedCer = saved && saved.cer && typeof saved.cer === 'object' ? saved.cer : null;
+        var modeState = useState(savedCer ? 'cer' : 'free'), mode = modeState[0], setMode = modeState[1];
+        var draftState = useState(saved && !savedCer ? saved.text : ''), draft = draftState[0], setDraft = draftState[1];
+        var cerState = useState({ claim: savedCer ? String(savedCer.claim || '') : '', evidence: savedCer ? String(savedCer.evidence || '') : '', reasoning: savedCer ? String(savedCer.reasoning || '') : '' }), cer = cerState[0], setCer = cerState[1];
         var statusState = useState(''), status = statusState[0], setStatus = statusState[1];
-        var dirty = draft !== (saved ? saved.text : '');
+        var savedText = saved ? saved.text : '';
+        var current = mode === 'cer' ? joinCer(cer) : draft;
+        var dirty = current !== savedText;
         var commit = function() {
           if (!dirty) return;
-          saveNote(moduleId, draft);
+          if (mode === 'cer') saveNote(moduleId, joinCer(cer), cer); else saveNote(moduleId, draft);
           setStatus(__alloT('stem.evolab.note_saved', 'Saved to your journal'));
           announce(__alloT('stem.evolab.sr_note_saved', 'Field note saved to your journal.'));
         };
         var noteId = 'evolab-note-' + moduleId;
         var border = props.border || 'border-slate-300';
         var heading = props.heading || 'text-slate-700';
+        var prompt = props.prompt || __alloT('stem.evolab.field_note_prompt_default', 'What surprised you here, and what would you test next?');
+        var modeBtn = function(id, label) {
+          return h('button', { type: 'button', onClick: function() { setMode(id); if (status) setStatus(''); }, 'aria-pressed': mode === id, className: 'rounded-lg px-2.5 py-1 text-xs font-bold ' + (mode === id ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200') }, label);
+        };
         return h('div', { className: 'evolab-no-print bg-white border-2 ' + border + ' rounded-xl p-4' },
           h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
             h('div', null,
-              h('label', { htmlFor: noteId, className: 'block text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.my_field_note', '📝 My field note')),
-              h('p', { className: 'text-sm text-slate-700 mt-1' }, props.prompt || __alloT('stem.evolab.field_note_prompt_default', 'What surprised you here, and what would you test next?'))
+              h('label', { htmlFor: mode === 'cer' ? noteId + '-claim' : noteId, className: 'block text-xs font-bold uppercase tracking-wider ' + heading }, props.title || __alloT('stem.evolab.my_field_note', '📝 My field note')),
+              h('p', { className: 'text-sm text-slate-700 mt-1' }, prompt)
             ),
-            h(SpeakButton, { text: props.prompt || __alloT('stem.evolab.field_note_prompt_default', 'What surprised you here, and what would you test next?') })
+            h(SpeakButton, { text: prompt })
           ),
-          h('textarea', {
+          h('div', { role: 'group', 'aria-label': __alloT('stem.evolab.note_shape', 'Note shape'), className: 'mb-2 flex flex-wrap items-center gap-2' },
+            modeBtn('free', __alloT('stem.evolab.note_free', 'Free note')),
+            modeBtn('cer', __alloT('stem.evolab.note_cer', 'Claim · Evidence · Reasoning')),
+            mode === 'cer' && h('span', { className: 'text-xs text-slate-600' }, __alloT('stem.evolab.note_cer_hint', 'The shape scientists use to argue from data.'))),
+          mode === 'free' ? h('textarea', {
             id: noteId,
             value: draft,
             rows: 3,
@@ -835,9 +918,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             onBlur: commit,
             placeholder: __alloT('stem.evolab.field_note_placeholder', 'Write one or two sentences in your own words…'),
             className: 'w-full rounded-lg border border-slate-500 p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400'
-          }),
+          }) : h('div', { className: 'space-y-2' }, CER_FIELDS.map(function(f) {
+            var val = cer[f.key] || '';
+            var hasNumber = f.key === 'evidence' && /\d/.test(val);
+            return h('div', { key: f.key },
+              h('label', { htmlFor: noteId + '-' + f.key, className: 'block text-xs font-bold text-slate-800' }, f.label, f.key === 'evidence' && val.trim() ? h('span', { className: 'ml-2 font-bold ' + (hasNumber ? 'text-emerald-800' : 'text-amber-800') }, hasNumber ? '✓ ' + __alloT('stem.evolab.cer_has_number', 'includes a number') : __alloT('stem.evolab.cer_needs_number', 'add a number from your run')) : null),
+              h('textarea', {
+                id: noteId + '-' + f.key,
+                value: val,
+                rows: 2,
+                maxLength: 600,
+                onChange: function(e) { var next = Object.assign({}, cer); next[f.key] = e.target.value; setCer(next); if (status) setStatus(''); },
+                onBlur: commit,
+                placeholder: f.prompt,
+                className: 'w-full rounded-lg border border-slate-500 p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400'
+              }));
+          })),
           h('div', { className: 'mt-2 flex flex-wrap items-center justify-between gap-2 text-xs' },
-            h('span', { className: 'text-slate-500' }, draft.length + ' / 2000'),
+            h('span', { className: 'text-slate-600' }, mode === 'cer' ? __alloFill(__alloT('stem.evolab.cer_parts_done', '{value1} of 3 parts written'), { value1: CER_FIELDS.filter(function(f) { return String(cer[f.key] || '').trim(); }).length }) : draft.length + ' / 2000'),
             h('div', { className: 'flex items-center gap-2' },
               h('span', { role: 'status', className: 'text-emerald-800 font-bold' }, dirty ? __alloT('stem.evolab.unsaved_changes', 'Unsaved') : status),
               h('button', { type: 'button', onClick: commit, disabled: !dirty, className: 'rounded-lg px-3 py-1.5 font-bold ' + (dirty ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-100 text-slate-600 cursor-not-allowed') }, __alloT('stem.evolab.save_note', 'Save note'))
@@ -853,6 +951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         allele: { term: t('stem.evolab.g_allele', 'allele'), def: t('stem.evolab.g_allele_def', 'One of the alternative versions of a gene. A population\'s allele frequency (p) is the fraction of gene copies that are one version.') },
         variation: { term: t('stem.evolab.g_variation', 'variation'), def: t('stem.evolab.g_variation_def', 'Differences among individuals in a population. Selection can only act on variation that already exists.') },
         heritable: { term: t('stem.evolab.g_heritable', 'heritable'), def: t('stem.evolab.g_heritable_def', 'Passed from parent to offspring through genes. A trait built during life (bigger muscles, a tan) is not heritable.') },
+        heritability: { term: t('stem.evolab.g_heritability', 'heritability (h²)'), def: t('stem.evolab.g_heritability_def', 'The share of the trait differences among individuals that is genetic and so passed on; the slope of offspring on parents. Selection moves the next generation by h² × S, so at h² = 0 it moves nothing.') },
         naturalSelection: { term: t('stem.evolab.g_natsel', 'natural selection'), def: t('stem.evolab.g_natsel_def', 'Individuals with some heritable traits survive and reproduce more than others in a given environment, so those traits become more common. No goal, no foresight.') },
         fitness: { term: t('stem.evolab.g_fitness', 'fitness'), def: t('stem.evolab.g_fitness_def', 'Reproductive success: how many surviving offspring an individual leaves compared with others. Not strength, speed, or cleverness.') },
         directional: { term: t('stem.evolab.g_directional', 'directional selection'), def: t('stem.evolab.g_directional_def', 'One extreme of a trait is favoured, so the population mean shifts that way.') },
@@ -863,10 +962,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         mutation: { term: t('stem.evolab.g_mutation', 'mutation'), def: t('stem.evolab.g_mutation_def', 'A random change in DNA. The ultimate source of new variation; not aimed at what would be useful.') },
         geneFlow: { term: t('stem.evolab.g_geneflow', 'gene flow (migration)'), def: t('stem.evolab.g_geneflow_def', 'Movement of alleles between populations when individuals move and breed.') },
         bottleneck: { term: t('stem.evolab.g_bottleneck', 'bottleneck'), def: t('stem.evolab.g_bottleneck_def', 'A sharp drop in population size that leaves a random, smaller sample of the original variation.') },
+        effectiveSize: { term: t('stem.evolab.g_ne', 'effective population size (Ne)'), def: t('stem.evolab.g_ne_def', 'The size of an ideal, evenly breeding population that would lose variation as fast as the real one. Unequal sex ratios, unequal family sizes and past crashes all push Ne below the head count; Ne = 4·Nm·Nf / (Nm + Nf) for a skewed sex ratio.') },
         founder: { term: t('stem.evolab.g_founder', 'founder effect'), def: t('stem.evolab.g_founder_def', 'A new population started by a few individuals carries only the alleles they happened to bring.') },
         adaptation: { term: t('stem.evolab.g_adaptation', 'adaptation'), def: t('stem.evolab.g_adaptation_def', 'A heritable trait that raises fitness in a particular environment, and the process that produces it. Adaptation is local: what fits one environment can fail in another.') },
         population: { term: t('stem.evolab.g_population', 'population'), def: t('stem.evolab.g_population_def', 'All the individuals of one species living and breeding in an area. Populations evolve; individuals do not.') },
         generation: { term: t('stem.evolab.g_generation', 'generation'), def: t('stem.evolab.g_generation_def', 'The step from parents to offspring; the unit in which evolutionary change is counted.') },
+        inbreeding: { term: t('stem.evolab.g_inbreeding', 'inbreeding coefficient (F)'), def: t('stem.evolab.g_inbreeding_def', 'The chance that an individual\'s two alleles are copies of one ancestral allele. Inbreeding turns heterozygotes into homozygotes (Aa = 2pq(1 − F)) without changing p; it exposes recessive alleles, which is why it can be harmful.') },
         hwe: { term: t('stem.evolab.g_hwe', 'Hardy-Weinberg equilibrium'), def: t('stem.evolab.g_hwe_def', 'The null model: with no selection, mutation, migration or drift, allele frequencies stay constant and genotype frequencies are p², 2pq and q².') },
         genotypePhenotype: { term: t('stem.evolab.g_genophen', 'genotype / phenotype'), def: t('stem.evolab.g_genophen_def', 'Genotype is the set of alleles an individual carries; phenotype is the observable trait. Selection acts on phenotypes.') },
         speciation: { term: t('stem.evolab.g_speciation', 'speciation'), def: t('stem.evolab.g_speciation_def', 'One species splitting into two, marked by reproductive isolation: the populations no longer exchange genes.') },
@@ -874,6 +975,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         coevolution: { term: t('stem.evolab.g_coevo', 'coevolution'), def: t('stem.evolab.g_coevo_def', 'Two species evolving in response to each other, each forming part of the other\'s environment.') },
         redQueen: { term: t('stem.evolab.g_redqueen', 'Red Queen effect'), def: t('stem.evolab.g_redqueen_def', 'In an arms race both sides keep improving and neither gains a lasting advantage: run to stay in place.') },
         clade: { term: t('stem.evolab.g_clade', 'clade'), def: t('stem.evolab.g_clade_def', 'An ancestor together with all of its descendants.') },
+        parsimony: { term: t('stem.evolab.g_parsimony', 'parsimony'), def: t('stem.evolab.g_parsimony_def', 'Prefer the tree that needs the fewest evolutionary changes to explain the characters. It is how trees are chosen from data; it is not a claim that evolution takes short cuts.') },
         synapomorphy: { term: t('stem.evolab.g_synapomorphy', 'synapomorphy'), def: t('stem.evolab.g_synapomorphy_def', 'A shared derived trait inherited from a common ancestor, marking a clade.') },
         homologous: { term: t('stem.evolab.g_homologous', 'homologous'), def: t('stem.evolab.g_homologous_def', 'Structures with a common evolutionary origin, whatever job they do now.') },
         analogous: { term: t('stem.evolab.g_analogous', 'analogous'), def: t('stem.evolab.g_analogous_def', 'Structures with a similar job but separate origins; the product of convergent evolution.') },
@@ -881,25 +983,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         resistance: { term: t('stem.evolab.g_resistance', 'resistance'), def: t('stem.evolab.g_resistance_def', 'A heritable trait that lets an organism survive a treatment such as an antibiotic or pesticide. It spreads when the treatment removes everything else.') },
         selectionPressure: { term: t('stem.evolab.g_selpressure', 'selection pressure'), def: t('stem.evolab.g_selpressure_def', 'Any factor in the environment that changes which individuals survive and reproduce.') },
         camouflage: { term: t('stem.evolab.g_camouflage', 'camouflage'), def: t('stem.evolab.g_camouflage_def', 'Colouring or pattern that makes an organism harder to detect against its background. In this lab it emerges from selection; no individual changes.') },
-        theory: { term: t('stem.evolab.g_theory', 'theory (scientific)'), def: t('stem.evolab.g_theory_def', 'A well-tested explanation supported by many lines of evidence, such as the theory of evolution or the germ theory of disease. Not a guess.') }
+        theory: { term: t('stem.evolab.g_theory', 'theory (scientific)'), def: t('stem.evolab.g_theory_def', 'A well-tested explanation supported by many lines of evidence, such as the theory of evolution or the germ theory of disease. Not a guess.') },
+        vestigial: { term: t('stem.evolab.g_vestigial', 'vestigial structure'), def: t('stem.evolab.g_vestigial_def', 'A reduced body part that has lost most or all of its original function, such as whale pelvic bones: a leftover of ancestry.') },
+        fossilRecord: { term: t('stem.evolab.g_fossil_record', 'fossil record'), def: t('stem.evolab.g_fossil_record_def', 'The preserved remains and traces of past life in datable rock layers; its order of appearance is itself a test of evolution.') },
+        biogeography: { term: t('stem.evolab.g_biogeography', 'biogeography'), def: t('stem.evolab.g_biogeography_def', 'The study of where species live. Island species resemble their nearest mainland relatives, not species in similar habitats elsewhere.') }
       };
       var KEY_TERMS = {
         predatorVision: ['variation', 'heritable', 'naturalSelection', 'selectionPressure', 'camouflage', 'adaptation', 'population'],
         mateChoice: ['sexualSelection', 'fitness', 'heritable', 'naturalSelection', 'selectionPressure'],
         climatePressure: ['selectionPressure', 'adaptation', 'variation', 'generation', 'naturalSelection', 'population'],
-        selectionSandbox: ['directional', 'stabilizing', 'disruptive', 'drift', 'mutation', 'variation', 'fitness'],
-        beakLab: ['naturalSelection', 'heritable', 'variation', 'directional', 'fitness', 'generation'],
+        selectionSandbox: ['directional', 'stabilizing', 'disruptive', 'drift', 'mutation', 'variation', 'heritability', 'fitness'],
+        beakLab: ['naturalSelection', 'heritable', 'heritability', 'variation', 'directional', 'fitness', 'generation'],
         speciation: ['speciation', 'reproductiveIsolation', 'geneFlow', 'drift', 'population', 'adaptation'],
         coevolution: ['coevolution', 'redQueen', 'fitness', 'selectionPressure', 'naturalSelection'],
-        hardyWeinberg: ['allele', 'hwe', 'genotypePhenotype', 'mutation', 'geneFlow', 'population'],
-        geneticDrift: ['drift', 'allele', 'bottleneck', 'founder', 'population', 'generation'],
-        commonAncestry: ['homologous', 'analogous', 'commonAncestor', 'adaptation'],
+        hardyWeinberg: ['allele', 'hwe', 'genotypePhenotype', 'mutation', 'geneFlow', 'inbreeding', 'population'],
+        geneticDrift: ['drift', 'allele', 'bottleneck', 'effectiveSize', 'founder', 'population', 'generation'],
+        commonAncestry: ['homologous', 'analogous', 'commonAncestor', 'adaptation', 'vestigial', 'fossilRecord', 'biogeography'],
         antibioticLab: ['resistance', 'mutation', 'naturalSelection', 'variation', 'fitness', 'heritable'],
         discoveryTimeline: ['theory', 'naturalSelection', 'heritable', 'mutation', 'drift']
       };
       // KeyTerms — collapsible glossary for one module, with read-aloud.
       function KeyTerms(props) {
         var ids = (KEY_TERMS[props.moduleId] || []).filter(function(id) { return GLOSSARY[id]; });
+        var practiceState = useState(false), practice = practiceState[0], setPractice = practiceState[1];
         if (!ids.length) return null;
         var speech = ids.map(function(id) { return GLOSSARY[id].term + ': ' + GLOSSARY[id].def; }).join(' ');
         return h('details', { className: 'evolab-glossary bg-white border border-slate-300 rounded-xl p-4' },
@@ -913,8 +1019,435 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('dd', { className: 'text-slate-700 ml-4' }, g.def));
             })),
             h(SpeakButton, { text: speech })
+          ),
+          ids.length >= 4 && h('div', { className: 'evolab-no-print mt-3' },
+            practice ? h(TermSprint, { ids: ids, moduleId: props.moduleId }) : h('button', { type: 'button', onClick: function() { setPractice(true); }, className: 'rounded-lg bg-violet-700 px-3 py-1.5 text-xs font-black text-white hover:bg-violet-800 focus:outline-none focus:ring-2 focus:ring-violet-300' }, '🎯 ' + __alloT('stem.evolab.practice_these_terms', 'Practice these terms')))
+        );
+      }
+
+      // ── What each model leaves out (one card per lab, same shape everywhere).
+      // A simulation is evidence about the model's behaviour, not about the
+      // world; the card says what was simplified and what NOT to conclude.
+      var MODEL_LIMITS = {
+        predatorVision: { omits: [t('stem.evolab.lim_pv_1', 'Prey behaviour: real prey hide, freeze, and choose backgrounds; these only drift.'), t('stem.evolab.lim_pv_2', 'A modelled predator with a search image (the keyboard rule has none; by eye you supply your own, and the search-image card measures it), and more than one kind of predator.'), t('stem.evolab.lim_pv_3', 'Sex and recombination: offspring are copies of one parent plus noise, and the mutation step (σ 0.05 per generation) is far larger than real colour genetics.'), t('stem.evolab.lim_pv_4', 'Population size is pinned at 30, so drift is stronger than in a real moth population.')], dont: t('stem.evolab.lim_pv_dont', 'Do not read the number of rounds as years, or the camouflage score as a measurement of any real species.') },
+        mateChoice: { omits: [t('stem.evolab.lim_mc_1', 'Costs to the female of being choosy, and direct benefits of a mate (territory, food, care).'), t('stem.evolab.lim_mc_2', '\"Good genes\" signalling, where the ornament advertises health rather than just taste.'), t('stem.evolab.lim_mc_3', 'Male-male competition; here females do all the selecting.'), t('stem.evolab.lim_mc_4', 'Twelve pairs and a few dozen rounds: drift swamps the slow rise of preference that Fisher\'s theory predicts.')], dont: t('stem.evolab.lim_mc_dont', 'Do not conclude that preference does not evolve because the cyan line wandered; the population is too small and the run too short to show it.') },
+        climatePressure: { omits: [t('stem.evolab.lim_cp_1', 'Plasticity is one dial and one cap for everyone: real individuals differ in how far they can acclimatise, the capacity can itself be heritable and evolve, and acclimation usually costs energy; none of that is here.'), t('stem.evolab.lim_cp_2', 'Moving instead of adapting: range shifts toward cooler places are the commonest real response.'), t('stem.evolab.lim_cp_3', 'Generation time: one tick is one generation whether the species is a fly or a whale.'), t('stem.evolab.lim_cp_4', 'Gene flow is only the rescue kind (migrants always suit the current temperature); the swamping kind, where immigrants drag a local population away from its own optimum, is not here. Nor are the other stresses (drought, food, disease) that arrive with warming.')], dont: t('stem.evolab.lim_cp_dont', 'Do not map the model\'s rate limit (about 0.03 per generation at σ 0.02) onto any real species; the shape of the result, that rate and heritable variation decide survival, is the transferable part.') },
+        selectionSandbox: { omits: [t('stem.evolab.lim_ss_1', 'Genetics: the trait is one continuous number, not alleles at loci, so there are no dominance effects or recombination.'), t('stem.evolab.lim_ss_2', 'A changing environment: the fitness landscape stays where you put it.'), t('stem.evolab.lim_ss_3', 'Trade-offs between traits; only one trait exists.'), t('stem.evolab.lim_ss_4', 'Realistic selection strength: at 1.0 most of the population dies every generation, far harsher than most natural selection.'), t('stem.evolab.lim_ss_5', 'Lasting heritable variation: with no recombination to reshuffle genes, selection uses up genetic variance within a few generations and h² "now" falls. In the finch studies heritability stayed high across cohorts measured years apart.')], dont: t('stem.evolab.lim_ss_dont', 'Do not treat the preset labels (peppered moth, birth weight, snowshoe hare) as datasets; they are named fitness landscapes shaped to resemble the real cases.') },
+        beakLab: { omits: [t('stem.evolab.lim_bl_1', 'Everything but beak depth and seed hardness: weather, disease, predators, and competition with other finch species.'), t('stem.evolab.lim_bl_2', 'Immigration and emigration; Daphne Major is unusually isolated, which is why the Grants could count every bird.'), t('stem.evolab.lim_bl_3', 'A fixed 60 birds instead of a population that crashed from over a thousand to under two hundred.'), t('stem.evolab.lim_bl_4', 'Heritability is a dial you set (default 1); the Grants measured beak depth at roughly 0.7 to 0.9 in this species, and surviving adults here keep their own beaks unchanged, so the whole-flock mean moves a little more than the chicks alone.'), t('stem.evolab.lim_bl_5', 'One assumed rule for small-seed handling (deeper beaks take fewer tiny seeds a year) is what makes El Niño years favour small beaks here; the real trade-off was measured in the field, not assumed.')], dont: t('stem.evolab.lim_bl_dont', 'Do not compare your millimetres directly with the overlay; it is a classroom approximation of the record and the model exaggerates the shift so it is visible in a period.') },
+        speciation: { omits: [t('stem.evolab.lim_sp_1', 'Reproductive isolation itself: the simulated generations never mate across the line. The mating trial tests it, but under a rule the trial assumes (success falls with trait difference), not one the model discovered.'), t('stem.evolab.lim_sp_2', 'Hybrid fitness, behavioural and timing barriers, and chromosomal changes, which decide most real speciation.'), t('stem.evolab.lim_sp_3', 'More than one trait; real divergence involves many, often unlinked to the ecology you can see.'), t('stem.evolab.lim_sp_4', 'Asymmetric or seasonal gene flow; the slider swaps individuals evenly in both directions.')], dont: t('stem.evolab.lim_sp_dont', 'Do not call the two sides species when the overlap proxy crosses the milestone; say the traits diverged and name what you would still need to measure.') },
+        coevolution: { omits: [t('stem.evolab.lim_co_1', 'Any trait but speed: stealth, armour, toxins, group defence, and habitat use are all missing.'), t('stem.evolab.lim_co_2', 'Population dynamics: both sides refill to 30 each generation (prey lose 30% to other causes on top of predation), so booms and crashes are faked by re-seeding.'), t('stem.evolab.lim_co_3', 'Refuges and patchy habitat, which let prey escape without being fast.'), t('stem.evolab.lim_co_4', 'Learning within a lifetime, on either side.')], dont: t('stem.evolab.lim_co_dont', 'Do not conclude that arms races always balance; the Red Queen pattern here follows from the model\'s symmetric rules, and real pairs often settle very unevenly.') },
+        hardyWeinberg: { omits: [t('stem.evolab.lim_hw_1', 'Chance: the population is infinite, so there is no drift at all (see the Genetic Drift lab).'), t('stem.evolab.lim_hw_2', 'More than one gene, more than two alleles, and any linkage between them.'), t('stem.evolab.lim_hw_3', 'Selection that varies (only aa is penalised, always by the same amount) and fitness that depends on frequency.'), t('stem.evolab.lim_hw_4', 'Overlapping generations and age structure.'), t('stem.evolab.lim_hw_5', 'Inbreeding that grows on its own: here F is a dial you set, while in a real small population F rises every generation (by about 1/2N), which is why inbreeding and drift arrive together.')], dont: t('stem.evolab.lim_hw_dont', 'Do not read a smooth curve as a prediction for a real population; it is the expectation with all noise removed.') },
+        geneticDrift: { omits: [t('stem.evolab.lim_gd_1', 'Mutation and migration: nothing enters or leaves, and selection, when you turn it on, is one fixed advantage for A.'), t('stem.evolab.lim_gd_2', 'Family structure: every generation is a fresh random draw of 2·Ne alleles (the Wright-Fisher model). Ne here comes only from the sex ratio and the bottleneck; unequal family sizes and overlapping generations, which are why measured Ne is often a tenth of the census, are ignored.'), t('stem.evolab.lim_gd_3', 'A constant N except during the optional bottleneck; real populations fluctuate every year.'), t('stem.evolab.lim_gd_4', 'Migration as an island model: five equal islands, symmetric exchange, every migrant breeds. Real landscapes have stepping stones, one-way flows and migrants that never find a mate, which is why conservation counts effective migrants, not animals that crossed.')], dont: t('stem.evolab.lim_gd_dont', 'Do not conclude that drift is weak in large populations; it is slow, which over enough generations is a different thing.') },
+        commonAncestry: { omits: [t('stem.evolab.lim_ca_1', 'The developmental genetics underneath: the same gene toolkit patterns every one of these limbs, which is stronger evidence than the shapes alone.'), t('stem.evolab.lim_ca_2', 'Fossils that connect them, such as the fish-to-tetrapod and land-mammal-to-whale series.'), t('stem.evolab.lim_ca_3', 'Only five forelimbs, drawn schematically; bone counts and proportions are simplified.')], dont: t('stem.evolab.lim_ca_dont', 'Do not treat similarity alone as proof of ancestry; the Homology vs Analogy challenge shows why the ORIGIN of a structure, not its look, is what counts.') },
+        antibioticLab: { omits: [t('stem.evolab.lim_ab_1', 'Horizontal gene transfer is reduced to one slider: a plasmid jumps to a touching cell at a fixed rate. Real transfer also crosses species, carries several genes at once, and depends on contact, density and the plasmid\'s own cost.'), t('stem.evolab.lim_ab_2', 'The immune system, which finishes most infections after the drug has thinned them.'), t('stem.evolab.lim_ab_3', 'Pharmacokinetics: a real dose rises and falls between pills; here a tick is either on or off at one strength.'), t('stem.evolab.lim_ab_4', 'A continuous resistance number; real resistance is often all-or-nothing, and the dish holds 150 cells, not billions.'), t('stem.evolab.lim_ab_5', 'Two fixed guesses, chosen so that a cost of resistance can be seen to act: with the drug off 10% of cells are replaced each tick, and 5% of a resistant cell\'s divisions lose the plasmid.'), t('stem.evolab.lim_ab_6', 'Two drugs that share one dose dial and kill independently. Real combinations can help or hinder each other, one resistance mechanism can cover several drugs (cross-resistance), and the plasmid here carries resistance to drug A only.')], dont: t('stem.evolab.lim_ab_dont', 'Do not turn a schedule that looks good in this model into medical advice; take antibiotics exactly as prescribed and ask a clinician before changing anything.') },
+        phyloBuilder: { omits: [t('stem.evolab.lim_ph_1', 'Time and branch lengths: the tree shows order of branching only.'), t('stem.evolab.lim_ph_2', 'Uncertainty: real trees carry support values, and the two hypotheses here are simplified to two moving branches.'), t('stem.evolab.lim_ph_3', 'Thirteen organisms; the real tree of life has millions of tips, and every tip here stands for a whole group.'), t('stem.evolab.lim_ph_4', 'Parsimony only, on binary characters: real studies also fit likelihood and Bayesian models of how DNA changes, and the step-counter\'s DNA site counts are illustrative rather than the published numbers.')], dont: t('stem.evolab.lim_ph_dont', 'Do not read left-to-right as \"less to more evolved\"; every tip is equally old, and any node can be rotated without changing the tree.') }
+      };
+      function ModelLimits(props) {
+        var lim = MODEL_LIMITS[props.moduleId];
+        if (!lim) return null;
+        var speech = __alloT('stem.evolab.what_this_model_leaves_out_title', 'What this model leaves out') + '. ' + lim.omits.join(' ') + ' ' + lim.dont;
+        return h('div', { className: 'bg-slate-50 border border-slate-300 rounded-xl p-4' },
+          h('div', { className: 'flex items-start justify-between gap-2 mb-2' },
+            h('h3', { className: 'text-xs font-bold uppercase tracking-wider ' + (props.heading || 'text-slate-700') }, '⚠️ ' + __alloT('stem.evolab.what_this_model_leaves_out_title', 'What this model leaves out')),
+            h(SpeakButton, { text: speech })
+          ),
+          h('ul', { className: 'list-disc list-inside space-y-1 text-sm text-slate-800' }, lim.omits.map(function(o, i) { return h('li', { key: i }, o); })),
+          h('p', { className: 'mt-2 text-sm font-bold text-slate-900' }, lim.dont)
+        );
+      }
+
+      // DataTable — the numbers behind a chart. A real table for screen readers
+      // and for students who read rows better than lines, plus a tab-separated
+      // copy that pastes into Sheets or Excel as columns so they can graph the
+      // run themselves. columns: [{ key, label, digits, bool }].
+      function DataTable(props) {
+        var rows = Array.isArray(props.rows) ? props.rows : [];
+        var cols = Array.isArray(props.columns) ? props.columns : [];
+        var statusState = useState(''), status = statusState[0], setStatus = statusState[1];
+        var MAX_SHOWN = 40;
+        var cell = function(v, c, forCopy) {
+          if (v == null || v === '') return forCopy ? '' : '—';
+          if (typeof v === 'boolean' || c.bool) return v ? __alloT('stem.evolab.yes', 'yes') : __alloT('stem.evolab.no', 'no');
+          if (typeof v === 'number') return isFinite(v) ? (c.digits != null ? v.toFixed(c.digits) : String(v)) : (forCopy ? '' : '—');
+          return String(v).replace(/[\t\r\n]+/g, ' ');
+        };
+        var tableText = function() {
+          var lines = [cols.map(function(c) { return c.label; }).join('\t')];
+          rows.forEach(function(r) { lines.push(cols.map(function(c) { return cell(r[c.key], c, true); }).join('\t')); });
+          return lines.join('\n');
+        };
+        var copy = function() {
+          copyPlainText(tableText()).then(function(ok) {
+            var msg = ok ? __alloFill(__alloT('stem.evolab.table_copied_n', 'Copied {value1} rows. Paste into a spreadsheet: each column lands in its own cell.'), { value1: rows.length }) : __alloT('stem.evolab.table_copy_failed', 'Could not copy. Select the table and press Ctrl+C.');
+            setStatus(msg); announce(msg);
+          });
+        };
+        var shown = rows.length > MAX_SHOWN ? rows.slice(rows.length - MAX_SHOWN) : rows;
+        var title = props.title || __alloT('stem.evolab.data_table', 'Data table');
+        return h('details', { className: 'evolab-data-table bg-white border border-slate-300 rounded-xl p-3' },
+          h('summary', { className: 'cursor-pointer select-none text-xs font-bold uppercase tracking-wider ' + (props.heading || 'text-slate-700') },
+            '🔢 ' + title + ' (' + __alloFill(__alloT('stem.evolab.n_rows', '{value1} rows'), { value1: rows.length }) + ')'),
+          h('div', { className: 'evolab-no-print mt-2 flex flex-wrap items-center gap-2' },
+            h('button', { type: 'button', onClick: copy, disabled: !rows.length, className: 'rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-black text-white hover:bg-slate-900 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-slate-400' }, '📋 ' + __alloT('stem.evolab.copy_for_spreadsheet', 'Copy for Sheets / Excel')),
+            h('span', { className: 'text-xs text-slate-600' }, props.note || __alloT('stem.evolab.data_table_hint', 'Make your own graph, then check it against the one above.')),
+            status && h('span', { role: 'status', className: 'text-xs font-bold text-emerald-800' }, status)
+          ),
+          rows.length ? h('div', { className: 'mt-2 overflow-x-auto max-h-64 overflow-y-auto' },
+            h('table', { className: 'w-full text-xs' },
+              h('caption', { className: 'sr-only' }, title),
+              h('thead', null, h('tr', { className: 'text-left uppercase tracking-wider text-slate-600' }, cols.map(function(c) { return h('th', { key: c.key, scope: 'col', className: 'py-1 pr-3 whitespace-nowrap' }, c.label); }))),
+              h('tbody', null, shown.map(function(r, i) {
+                return h('tr', { key: i, className: 'border-t border-slate-200' }, cols.map(function(c, ci) {
+                  return ci === 0 ? h('th', { key: c.key, scope: 'row', className: 'py-1 pr-3 text-left font-bold text-slate-800 whitespace-nowrap' }, cell(r[c.key], c)) : h('td', { key: c.key, className: 'py-1 pr-3 text-slate-800 tabular-nums' }, cell(r[c.key], c));
+                }));
+              }))
+            ),
+            rows.length > MAX_SHOWN && h('p', { className: 'mt-1 text-[0.6875rem] text-slate-600' }, __alloFill(__alloT('stem.evolab.showing_last_rows', 'Showing the last {value1} of {value2} rows; the copy has all of them.'), { value1: MAX_SHOWN, value2: rows.length }))
+          ) : h('p', { className: 'mt-2 text-xs text-slate-600 italic' }, __alloT('stem.evolab.data_table_empty', 'Run the model and the rows appear here.'))
+        );
+      }
+
+      // TermSprint — retrieval practice on the glossary. Odd questions show a
+      // definition and ask for the term; even ones show the term and ask for
+      // the definition, so the student has to produce both directions. Missed
+      // terms are listed with their definitions at the end. Scoped to one
+      // module's key terms from a KeyTerms card (distractors preferred from the
+      // same module), or ten questions over the whole glossary from the menu.
+      function TermSprint(props) {
+        var scopeIds = (Array.isArray(props.ids) ? props.ids : []).filter(function(id) { return GLOSSARY[id]; });
+        var scoped = scopeIds.length >= 4;
+        var allIds = Object.keys(GLOSSARY);
+        var poolIds = scoped ? scopeIds : allIds;
+        var total = scoped ? scopeIds.length : 10;
+        var recordId = scoped ? 'best:' + (props.moduleId || 'module') : 'best';
+        var makeRun = function() {
+          return shuffle(poolIds).slice(0, total).map(function(id, i) {
+            var others = shuffle(poolIds.filter(function(x) { return x !== id; })).concat(shuffle(allIds.filter(function(x) { return x !== id && poolIds.indexOf(x) < 0; })));
+            return { id: id, dir: i % 2 === 0 ? 'term' : 'def', options: shuffle([id].concat(others.slice(0, 3))) };
+          });
+        };
+        var runState = useState(null), run = runState[0], setRun = runState[1];
+        var idxState = useState(0), idx = idxState[0], setIdx = idxState[1];
+        var pickState = useState(null), pick = pickState[0], setPick = pickState[1];
+        var scoreState = useState(0), score = scoreState[0], setScore = scoreState[1];
+        var missedState = useState([]), missed = missedState[0], setMissed = missedState[1];
+        var streakState = useState(0), streak = streakState[0], setStreak = streakState[1];
+        var best = getRecord('termSprint', recordId);
+        var start = function() {
+          setRun(makeRun()); setIdx(0); setPick(null); setScore(0); setMissed([]); setStreak(0);
+          announce(__alloFill(__alloT('stem.evolab.sr_sprint_started', 'Term sprint started: {value1} questions.'), { value1: total }));
+        };
+        var choose = function(optId) {
+          if (pick || !run) return;
+          var q = run[idx]; var ok = optId === q.id;
+          setPick(optId);
+          if (ok) { setScore(score + 1); setStreak(streak + 1); }
+          else { setStreak(0); setMissed(missed.concat([q.id])); }
+          announce(ok ? __alloT('stem.evolab.sr_sprint_correct', 'Correct.') : __alloFill(__alloT('stem.evolab.sr_sprint_wrong', 'Not quite. {value1}: {value2}'), { value1: GLOSSARY[q.id].term, value2: GLOSSARY[q.id].def }));
+        };
+        var finish = function() {
+          setIdx(run.length);
+          var label = scoped ? __alloFill(__alloT('stem.evolab.best_sprint_module', 'Best sprint on {value1} terms'), { value1: MODULE_TITLES[props.moduleId] || props.moduleId || '' }) : __alloT('stem.evolab.best_sprint', 'Best term sprint');
+          setRecord('termSprint', recordId, score, { better: 'max', label: label, unit: '/' + total });
+          if (!scoped && score === total) detectChallenge('termSprint', 'tenForTen', 'Ten for ten on the term sprint', score);
+          announce(__alloFill(__alloT('stem.evolab.sr_sprint_done', 'Sprint finished: {value1} of {value2}.'), { value1: score, value2: total }));
+        };
+        var next = function() { if (idx + 1 >= run.length) finish(); else { setIdx(idx + 1); setPick(null); } };
+        var wrap = function(children) {
+          return h('div', { className: 'evolab-term-sprint rounded-xl border-2 border-violet-300 bg-violet-50 p-4', 'aria-label': __alloT('stem.evolab.term_sprint', 'Term sprint') }, children);
+        };
+        var bestLine = best ? h('div', { className: 'text-xs text-slate-700' }, __alloFill(__alloT('stem.evolab.best_so_far', 'Best so far: {value1}/{value2}'), { value1: best.value, value2: total })) : null;
+        if (!run) {
+          return wrap([
+            h('div', { key: 'h', className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, '🎯 ' + __alloT('stem.evolab.term_sprint', 'Term sprint')),
+                h('p', { className: 'text-sm text-slate-800' }, scoped ? __alloFill(__alloT('stem.evolab.sprint_intro_scoped', '{value1} quick questions on this lab\'s terms: match a definition to its term, then a term to its definition. Recalling a word is what makes it stick.'), { value1: total }) : __alloT('stem.evolab.sprint_intro_global', 'Ten quick questions drawn from every term in EvoLab. Half ask for the term, half for the definition. A perfect ten is a challenge.')),
+                bestLine),
+              h('button', { type: 'button', onClick: start, className: 'rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300' }, __alloT('stem.evolab.start_sprint', 'Start sprint')))
+          ]);
+        }
+        if (idx >= run.length) {
+          var perfect = score === total;
+          return wrap([
+            h('div', { key: 'r', className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, '🎯 ' + __alloT('stem.evolab.sprint_result', 'Sprint result')),
+                h('div', { className: 'text-2xl font-black text-slate-900' }, score + ' / ' + total),
+                h('p', { className: 'text-sm text-slate-800' }, perfect ? __alloT('stem.evolab.sprint_perfect', 'Every one. Try the whole-glossary sprint from the menu next.') : missed.length === 1 ? __alloT('stem.evolab.sprint_one_missed', 'One to revisit. Read it below, then run again.') : __alloFill(__alloT('stem.evolab.sprint_n_missed', '{value1} to revisit. Read them below, then run again.'), { value1: missed.length })),
+                bestLine),
+              h('button', { type: 'button', onClick: start, className: 'rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300' }, __alloT('stem.evolab.sprint_run_again', 'Run it again'))),
+            missed.length > 0 && h('div', { key: 'm', className: 'mt-3' },
+              h('h4', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.evolab.terms_to_revisit', 'Terms to revisit')),
+              h('dl', { className: 'mt-1 space-y-2 text-sm' }, missed.map(function(id) {
+                return h('div', { key: id }, h('dt', { className: 'font-bold text-slate-900' }, GLOSSARY[id].term), h('dd', { className: 'ml-4 text-slate-800' }, GLOSSARY[id].def));
+              })))
+          ]);
+        }
+        var q = run[idx];
+        var g = GLOSSARY[q.id];
+        var askTerm = q.dir === 'term';
+        return wrap([
+          h('div', { key: 'p', className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-violet-900' },
+            h('span', null, __alloFill(__alloT('stem.evolab.question_n_of', 'Question {value1} of {value2}'), { value1: idx + 1, value2: run.length })),
+            h('span', null, __alloFill(__alloT('stem.evolab.score_streak', 'Score {value1} · streak {value2}'), { value1: score, value2: streak }))),
+          h('p', { key: 'q', className: 'mt-2 text-sm font-bold text-slate-900' }, askTerm ? __alloT('stem.evolab.which_term_fits', 'Which term fits this definition?') : __alloT('stem.evolab.which_definition_fits', 'Which definition fits this term?')),
+          h('p', { key: 'd', className: 'mt-1 text-base text-slate-900 ' + (askTerm ? '' : 'font-black') }, askTerm ? g.def : g.term),
+          h('div', { key: 'o', role: 'group', 'aria-label': __alloT('stem.evolab.answer_choices', 'Answer choices'), className: 'mt-3 grid grid-cols-1 ' + (askTerm ? 'sm:grid-cols-2 ' : '') + 'gap-2' },
+            q.options.map(function(optId) {
+              var og = GLOSSARY[optId];
+              var isRight = optId === q.id;
+              var cls = 'rounded-lg border-2 px-3 py-2 text-left text-sm font-bold focus:outline-none focus:ring-4 focus:ring-violet-300 ';
+              if (!pick) cls += 'border-slate-400 bg-white text-slate-900 hover:border-violet-500 hover:bg-violet-100';
+              else if (isRight) cls += 'border-emerald-700 bg-emerald-700 text-white';
+              else if (pick === optId) cls += 'border-rose-700 bg-rose-700 text-white';
+              else cls += 'border-slate-300 bg-slate-100 text-slate-600';
+              return h('button', { key: optId, type: 'button', onClick: function() { choose(optId); }, disabled: !!pick, 'aria-pressed': pick === optId, className: cls }, askTerm ? og.term : og.def);
+            })),
+          pick && h('div', { key: 'f', role: 'status', className: 'mt-3 flex flex-wrap items-center justify-between gap-2' },
+            h('p', { className: 'text-sm ' + (pick === q.id ? 'font-bold text-emerald-900' : 'text-slate-900') }, pick === q.id ? '✓ ' + __alloT('stem.evolab.sprint_correct', 'Correct.') : '✗ ' + __alloFill(__alloT('stem.evolab.sprint_it_was', 'It was {value1}: {value2}'), { value1: g.term, value2: g.def })),
+            h('button', { type: 'button', onClick: next, className: 'rounded-xl bg-violet-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300' }, idx + 1 >= run.length ? __alloT('stem.evolab.finish_sprint', 'Finish') : __alloT('stem.evolab.next_question', 'Next →')))
+        ]);
+      }
+      // Whole-glossary sprint as its own page (menu → Term sprint).
+      function TermSprintView() {
+        var best = getRecord('termSprint', 'best');
+        var byModule = Object.keys(KEY_TERMS).filter(function(m) { return getRecord('termSprint', 'best:' + m); });
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          h('div', { className: 'evolab-no-print' }, h(BackBar, { icon: '🎯', title: __alloT('stem.evolab.term_sprint', 'Term sprint') })),
+          h('div', { className: 'p-4 max-w-3xl mx-auto w-full space-y-3' },
+            h('div', { className: 'bg-gradient-to-br from-violet-700 to-purple-900 rounded-2xl p-5 text-white shadow-lg' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-[0.2em] text-violet-200 mb-1' }, __alloT('stem.evolab.retrieval_practice', 'Retrieval practice')),
+                  h('h1', { className: 'text-2xl font-black' }, __alloT('stem.evolab.term_sprint', 'Term sprint')),
+                  h('p', { className: 'text-sm text-violet-100 mt-1' }, __alloFill(__alloT('stem.evolab.term_sprint_page_intro', 'All {value1} EvoLab terms in one pool. Pulling a word out of memory is a better test than reading it again; a term you miss is listed with its definition at the end. Every lab\'s Key terms card has a shorter sprint on just that lab\'s words.'), { value1: Object.keys(GLOSSARY).length }))),
+                h('div', { className: 'rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-center' },
+                  h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-violet-100/80' }, __alloT('stem.evolab.sprint_best', 'Best')),
+                  h('div', { className: 'text-lg font-black' }, best ? best.value + '/10' : '—')))
+            ),
+            h(TermSprint, { ids: null }),
+            byModule.length > 0 && h('section', { className: 'bg-white rounded-2xl border border-slate-300 shadow-sm p-4' },
+              h('h2', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.evolab.sprints_by_lab', 'Sprints by lab')),
+              h('ul', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-1 text-sm text-slate-800' }, byModule.map(function(m) {
+                var r = getRecord('termSprint', 'best:' + m);
+                return h('li', { key: m }, h('button', { type: 'button', onClick: function() { goto(m); }, className: 'font-bold text-violet-900 underline decoration-violet-300 hover:decoration-violet-700' }, MODULE_TITLES[m] || m), ' · ' + r.value + r.unit);
+              })))
           )
         );
+      }
+
+      // MysteryRegime — read the distribution, name the regime. A hidden
+      // fitness landscape (same model as the Sandbox: survive with probability
+      // = fitness, refill with σ 0.04 mutation) runs 15 generations on 60
+      // individuals; the student sees start-vs-now histograms plus mean and
+      // SD, and names the regime. Each puzzle is regenerated until its
+      // fingerprint matches its regime, so every one is solvable from the tells.
+      var MYSTERY_REGIMES = {
+        up: { ideal: 0.8, width: 0.15, mode: 'gaussian' },
+        down: { ideal: 0.2, width: 0.15, mode: 'gaussian' },
+        stabilizing: { ideal: 0.5, width: 0.15, mode: 'gaussian' },
+        disruptive: { ideal: 0.5, width: 0.12, mode: 'bimodal' },
+        drift: { ideal: 0.5, width: 999, mode: 'gaussian' }
+      };
+      var MYSTERY_N = 60, MYSTERY_GENS = 15;
+      var mysteryStats = function(v) {
+        var m = v.reduce(function(a, b) { return a + b; }, 0) / v.length;
+        var sd = Math.sqrt(v.reduce(function(a, b) { return a + (b - m) * (b - m); }, 0) / v.length);
+        var share = function(lo, hi) { return v.filter(function(x) { return x >= lo && x < hi; }).length / v.length; };
+        return { mean: m, sd: sd, mid: share(0.4, 0.6), lo: share(0, 0.35), hi: share(0.65, 1.01) };
+      };
+      var mysteryFingerprint = function(s0, s1) {
+        var dm = s1.mean - s0.mean;
+        if (s1.lo >= 0.25 && s1.hi >= 0.25 && s1.mid <= 0.1) return 'disruptive';
+        if (dm >= 0.15) return 'up';
+        if (dm <= -0.15) return 'down';
+        if (s1.sd <= 0.15) return 'stabilizing';
+        return 'drift';
+      };
+      var mysteryRun = function(regimeId) {
+        var r = MYSTERY_REGIMES[regimeId];
+        var strength = 0.7 + Math.random() * 0.3;
+        var fit = function(x) {
+          var raw = r.mode === 'bimodal' ? Math.exp(-Math.pow(Math.min(Math.abs(x - 0.2), Math.abs(x - 0.8)) / r.width, 2)) : Math.exp(-Math.pow((x - r.ideal) / r.width, 2));
+          return lerp(1, raw, strength);
+        };
+        var pop = [];
+        for (var i = 0; i < MYSTERY_N; i++) pop.push(Math.random());
+        var start = pop.slice();
+        for (var g = 0; g < MYSTERY_GENS; g++) {
+          var surv = pop.filter(function(x) { return Math.random() < fit(x); });
+          if (!surv.length) surv = pop.slice().sort(function(a, b) { return fit(b) - fit(a); }).slice(0, Math.ceil(pop.length / 2));
+          var next = surv.slice();
+          while (next.length < MYSTERY_N) { var parent = surv[Math.floor(Math.random() * surv.length)]; next.push(clamp(parent + randNormal(0, 0.04), 0, 1)); }
+          pop = next;
+        }
+        return { regime: regimeId, start: start, end: pop, s0: mysteryStats(start), s1: mysteryStats(pop) };
+      };
+      var makeMystery = function(avoid) {
+        var ids = Object.keys(MYSTERY_REGIMES).filter(function(id) { return id !== avoid; });
+        var regimeId = ids[Math.floor(Math.random() * ids.length)];
+        var c = null;
+        for (var tries = 0; tries < 12; tries++) { c = mysteryRun(regimeId); if (mysteryFingerprint(c.s0, c.s1) === regimeId) break; }
+        return c;
+      };
+      function MysteryRegime() {
+        var caseState = useState(null), cs = caseState[0], setCase = caseState[1];
+        var pickState = useState(null), pick = pickState[0], setPick = pickState[1];
+        var streakState = useState(0), streak = streakState[0], setStreak = streakState[1];
+        var solvedState = useState(0), solved = solvedState[0], setSolved = solvedState[1];
+        var best = getRecord('selectionSandbox', 'mysteryStreak');
+        var LABELS = {
+          up: __alloT('stem.evolab.regime_up', 'Directional (toward high values)'),
+          down: __alloT('stem.evolab.regime_down', 'Directional (toward low values)'),
+          stabilizing: __alloT('stem.evolab.regime_stabilizing', 'Stabilizing'),
+          disruptive: __alloT('stem.evolab.regime_disruptive', 'Disruptive'),
+          drift: __alloT('stem.evolab.regime_drift', 'Drift only (no selection)')
+        };
+        var DIAG = {
+          up: __alloT('stem.evolab.regime_up_diag', 'Directional (up) would have dragged the mean toward 1.'),
+          down: __alloT('stem.evolab.regime_down_diag', 'Directional (down) would have dragged the mean toward 0.'),
+          stabilizing: __alloT('stem.evolab.regime_stab_diag', 'Stabilizing keeps the mean where it started and pulls the spread in.'),
+          disruptive: __alloT('stem.evolab.regime_disr_diag', 'Disruptive hollows out the middle and leaves two humps.'),
+          drift: __alloT('stem.evolab.regime_drift_diag', 'Drift alone leaves the spread wide and the mean close to where it started.')
+        };
+        var tellFor = function(c) {
+          var f = { value1: c.s0.mean.toFixed(2), value2: c.s1.mean.toFixed(2), value3: c.s0.sd.toFixed(2), value4: c.s1.sd.toFixed(2) };
+          if (c.regime === 'up') return __alloFill(__alloT('stem.evolab.tell_up', 'The mean climbed from {value1} to {value2} while the spread collapsed from {value3} to {value4}: one end of the range was favoured. Directional selection toward high values.'), f);
+          if (c.regime === 'down') return __alloFill(__alloT('stem.evolab.tell_down', 'The mean fell from {value1} to {value2} while the spread collapsed from {value3} to {value4}: one end of the range was favoured. Directional selection toward low values.'), f);
+          if (c.regime === 'stabilizing') return __alloFill(__alloT('stem.evolab.tell_stabilizing', 'The mean barely moved ({value1} → {value2}) but the spread fell from {value3} to {value4}: the middle was favoured and both tails were removed. Stabilizing selection.'), f);
+          if (c.regime === 'disruptive') return __alloFill(__alloT('stem.evolab.tell_disruptive', 'Two humps and an empty middle, with the spread still wide ({value4}): both extremes were favoured over the middle. Disruptive selection.'), f);
+          return __alloFill(__alloT('stem.evolab.tell_drift', 'Nothing was favoured: the mean wandered only from {value1} to {value2} and the spread stayed wide ({value3} → {value4}). The changes are sampling noise. Drift only.'), f);
+        };
+        var start = function() { setCase(makeMystery(cs ? cs.regime : null)); setPick(null); };
+        var choose = function(id) {
+          if (pick || !cs) return;
+          setPick(id);
+          var ok = id === cs.regime;
+          var nextStreak = ok ? streak + 1 : 0;
+          setStreak(nextStreak);
+          if (ok) { setSolved(solved + 1); setRecord('selectionSandbox', 'mysteryStreak', nextStreak, { label: 'Mystery regimes named in a row', unit: '', better: 'max' }); }
+          if (ok && nextStreak >= 5) detectChallenge('selectionSandbox', 'mystery5', 'Five mystery regimes in a row', nextStreak);
+          announce((ok ? __alloT('stem.evolab.sr_mystery_right', 'Correct. ') : __alloT('stem.evolab.sr_mystery_wrong', 'Not this time. ')) + tellFor(cs));
+        };
+        return h('div', { className: 'evolab-mystery bg-white border-2 border-emerald-400 rounded-xl p-4' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+            h('div', null,
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800' }, '🕵️ ' + __alloT('stem.evolab.mystery_regime', 'Mystery regime: read the distribution')),
+              h('p', { className: 'mt-1 text-sm text-slate-700' }, __alloT('stem.evolab.mystery_intro', 'A hidden fitness landscape ran for 15 generations on 60 individuals. Look at the start-vs-now histograms and the numbers, then name the regime. Two clues decide most cases: did the mean move, and did the spread shrink?')),
+              h('div', { className: 'mt-1 text-xs font-bold text-slate-700' }, __alloFill(__alloT('stem.evolab.mystery_score', 'Streak {value1} · solved {value2}{value3}'), { value1: streak, value2: solved, value3: best ? ' · ' + __alloFill(__alloT('stem.evolab.mystery_best', 'best streak {value1}'), { value1: best.value }) : '' }))),
+            h('button', { type: 'button', onClick: start, className: 'rounded-xl bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-300' }, cs ? __alloT('stem.evolab.next_mystery', 'Next mystery') : __alloT('stem.evolab.new_mystery', 'New mystery'))),
+          cs && h('div', { className: 'mt-3' },
+            h(TraitHistogram, {
+              title: __alloT('stem.evolab.mystery_hist_title', '📊 Start vs after 15 generations'),
+              series: [{ label: __alloT('stem.evolab.start', 'Start'), values: cs.start, color: '#94a3b8' }, { label: __alloT('stem.evolab.now', 'Now'), values: cs.end, color: '#059669' }],
+              caption: __alloFill(__alloT('stem.evolab.mystery_numbers', 'Mean {value1} → {value2} · SD {value3} → {value4} · share in the middle fifth {value5}% → {value6}%'), { value1: cs.s0.mean.toFixed(2), value2: cs.s1.mean.toFixed(2), value3: cs.s0.sd.toFixed(2), value4: cs.s1.sd.toFixed(2), value5: Math.round(cs.s0.mid * 100), value6: Math.round(cs.s1.mid * 100) })
+            }),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.evolab.name_the_regime', 'Name the regime'), className: 'mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2' }, Object.keys(LABELS).map(function(id) {
+              var cls = 'rounded-lg border-2 px-3 py-2 text-left text-sm font-bold focus:outline-none focus:ring-4 focus:ring-emerald-300 ';
+              if (!pick) cls += 'border-slate-400 bg-white text-slate-900 hover:border-emerald-600 hover:bg-emerald-50';
+              else if (id === cs.regime) cls += 'border-emerald-700 bg-emerald-700 text-white';
+              else if (pick === id) cls += 'border-rose-700 bg-rose-700 text-white';
+              else cls += 'border-slate-300 bg-slate-100 text-slate-600';
+              return h('button', { key: id, type: 'button', onClick: function() { choose(id); }, disabled: !!pick, 'aria-pressed': pick === id, className: cls }, LABELS[id]);
+            })),
+            pick && h('div', { role: 'status', className: 'mt-3 rounded-lg p-3 text-sm ' + (pick === cs.regime ? 'bg-emerald-50 text-emerald-900' : 'bg-rose-50 text-slate-900') },
+              h('span', { className: 'font-black' }, pick === cs.regime ? '✓ ' + __alloT('stem.evolab.mystery_right', 'Right: ') : '✗ ' + __alloFill(__alloT('stem.evolab.mystery_wrong', 'You said {value1}. {value2} '), { value1: LABELS[pick], value2: DIAG[pick] })),
+              tellFor(cs))
+          )
+        );
+      }
+
+      // EvidenceSort — the lines of evidence for common ancestry (HS-LS4-1) as a
+      // sorting game: one card at a time, name the line it belongs to, read why.
+      // Fifteen cards, three per line; misses are listed with their line at the end.
+      var EVIDENCE_LINES = [
+        { id: 'fossil', label: t('stem.evolab.ev_line_fossil', 'Fossils'), desc: t('stem.evolab.ev_line_fossil_d', 'Remains in rock, in datable layers: what lived when, and forms between forms.') },
+        { id: 'anatomy', label: t('stem.evolab.ev_line_anatomy', 'Anatomy & development'), desc: t('stem.evolab.ev_line_anatomy_d', 'Shared body plans, leftover structures, and shared embryonic programmes.') },
+        { id: 'molecular', label: t('stem.evolab.ev_line_molecular', 'Molecules'), desc: t('stem.evolab.ev_line_molecular_d', 'DNA and protein sequences, including shared mistakes.') },
+        { id: 'biogeography', label: t('stem.evolab.ev_line_biogeo', 'Biogeography'), desc: t('stem.evolab.ev_line_biogeo_d', 'Where species live, and which relatives live nearby.') },
+        { id: 'observed', label: t('stem.evolab.ev_line_observed', 'Observed directly'), desc: t('stem.evolab.ev_line_observed_d', 'Evolution measured while it happened, in the field or the lab.') }
+      ];
+      var EVIDENCE_CARDS = [
+        { id: 'tiktaalik', line: 'fossil', text: t('stem.evolab.ev_tiktaalik', 'Tiktaalik, about 375 million years old: a fish with a flat head, a neck and wrist-like bones, found in Arctic rocks of the age and type where a fish-to-land transition had been predicted.'), why: t('stem.evolab.ev_tiktaalik_why', 'A transitional form found where and when the theory said to look is a risky prediction that came true.') },
+        { id: 'whales', line: 'fossil', text: t('stem.evolab.ev_whales', 'A series of whale ancestors (Pakicetus, Ambulocetus, Rodhocetus, Basilosaurus) whose hind legs shrink over about ten million years.'), why: t('stem.evolab.ev_whales_why', 'Fossils record intermediate stages between land mammals and modern whales, in the order the theory expects.') },
+        { id: 'layers', line: 'fossil', text: t('stem.evolab.ev_layers', 'The fossil record is layered: mammals never appear below the first amphibians, and no rabbit has ever turned up in Precambrian rock.'), why: t('stem.evolab.ev_layers_why', 'The order of appearance matches the branching order. One badly out-of-place fossil would be a serious problem, and none has been found.') },
+        { id: 'forelimb', line: 'anatomy', text: t('stem.evolab.ev_forelimb', 'Bat wing, whale flipper, horse leg and human arm are built from the same set of bones doing different jobs.'), why: t('stem.evolab.ev_forelimb_why', 'Same parts, different uses (homology) is what descent with modification produces.') },
+        { id: 'pelvis', line: 'anatomy', text: t('stem.evolab.ev_pelvis', 'Modern whales carry small pelvic bones, remnants of hind limbs, with no legs attached.'), why: t('stem.evolab.ev_pelvis_why', 'Vestigial structures make sense as leftovers from legged ancestors, which the whale fossils confirm.') },
+        { id: 'arches', line: 'anatomy', text: t('stem.evolab.ev_arches', 'Human, chicken and fish embryos all form pharyngeal arches early in development; in fish they become gills, in us parts of the jaw, ear and throat.'), why: t('stem.evolab.ev_arches_why', 'Shared developmental programmes point to shared ancestry: the same early structures are reshaped for different ends.') },
+        { id: 'gulo', line: 'molecular', text: t('stem.evolab.ev_gulo', 'Humans and other primates carry the same broken vitamin C gene (GULO), disabled by the same mutations, which is why we all need vitamin C in our food.'), why: t('stem.evolab.ev_gulo_why', 'A shared broken gene with identical damage is inherited from a common ancestor, not reinvented.') },
+        { id: 'cytc', line: 'molecular', text: t('stem.evolab.ev_cytc', 'Cytochrome c, a protein every aerobic organism uses, is identical in humans and chimpanzees, differs by one amino acid from a rhesus monkey\'s, and by about a dozen from a dog\'s.'), why: t('stem.evolab.ev_cytc_why', 'Molecular differences pile up with time since a common ancestor, so they line up with the tree built from anatomy.') },
+        { id: 'code', line: 'molecular', text: t('stem.evolab.ev_code', 'All known life uses the same genetic code, with the same amino acids assigned to the same codons, apart from a few small variations.'), why: t('stem.evolab.ev_code_why', 'One inherited code across bacteria, plants and animals is what a single origin predicts.') },
+        { id: 'finches', line: 'biogeography', text: t('stem.evolab.ev_finches', 'The Galápagos finches fill many roles, yet all resemble a mainland South American finch more than they resemble birds filling the same roles on other islands.'), why: t('stem.evolab.ev_finches_why', 'Island species look like the nearest mainland species, not like species in matching habitats elsewhere: they descend from whoever arrived.') },
+        { id: 'marsupials', line: 'biogeography', text: t('stem.evolab.ev_marsupials', 'Australia\'s native mammals are almost all marsupials; placental mammals fill the same roles on other continents.'), why: t('stem.evolab.ev_marsupials_why', 'Isolation lets one lineage radiate into roles that unrelated lineages fill elsewhere.') },
+        { id: 'islands', line: 'biogeography', text: t('stem.evolab.ev_islands', 'Remote oceanic islands have native bats and birds but no native land mammals, amphibians or freshwater fish.'), why: t('stem.evolab.ev_islands_why', 'Only groups that can cross open ocean arrive; the pattern follows dispersal, not habitat.') },
+        { id: 'lenski', line: 'observed', text: t('stem.evolab.ev_lenski', 'In Lenski\'s long-term experiment, one of twelve E. coli lines evolved the ability to use citrate after about 31,000 generations, with frozen ancestors kept for comparison.'), why: t('stem.evolab.ev_lenski_why', 'A new metabolic ability evolving, watched directly, with the ancestors still in the freezer to prove it.') },
+        { id: 'daphne', line: 'observed', text: t('stem.evolab.ev_daphne', 'On Daphne Major the mean beak depth of medium ground finches rose after the 1977 drought and fell after the 1983 El Niño.'), why: t('stem.evolab.ev_daphne_why', 'Natural selection measured in the field, in both directions, on tagged birds.') },
+        { id: 'moths', line: 'observed', text: t('stem.evolab.ev_moths', 'The dark form of the peppered moth rose to near 100% around sooty industrial cities and fell again after clean-air laws.'), why: t('stem.evolab.ev_moths_why', 'A frequency change tracked over a century as the environment changed, and confirmed by field experiments.') }
+      ];
+      function EvidenceSort() {
+        var runState = useState(null), run = runState[0], setRun = runState[1];
+        var idxState = useState(0), idx = idxState[0], setIdx = idxState[1];
+        var pickState = useState(null), pick = pickState[0], setPick = pickState[1];
+        var scoreState = useState(0), score = scoreState[0], setScore = scoreState[1];
+        var missedState = useState([]), missed = missedState[0], setMissed = missedState[1];
+        var best = getRecord('commonAncestry', 'bestEvidence');
+        var lineOf = function(id) { return EVIDENCE_LINES.filter(function(l) { return l.id === id; })[0]; };
+        var start = function() { setRun(shuffle(EVIDENCE_CARDS)); setIdx(0); setPick(null); setScore(0); setMissed([]); announce(__alloFill(__alloT('stem.evolab.sr_evidence_started', 'Lines of evidence: {value1} cards to sort.'), { value1: EVIDENCE_CARDS.length })); };
+        var choose = function(lineId) {
+          if (pick || !run) return;
+          var card = run[idx]; var ok = lineId === card.line;
+          setPick(lineId);
+          if (ok) setScore(score + 1); else setMissed(missed.concat([card.id]));
+          announce((ok ? __alloT('stem.evolab.sr_evidence_right', 'Correct. ') : __alloFill(__alloT('stem.evolab.sr_evidence_wrong', 'Not quite: that is {value1}. '), { value1: lineOf(card.line).label })) + card.why);
+        };
+        var finish = function() {
+          setIdx(run.length);
+          setRecord('commonAncestry', 'bestEvidence', score, { better: 'max', label: 'Best lines-of-evidence sort', unit: ' / ' + EVIDENCE_CARDS.length });
+          if (score === run.length) detectChallenge('commonAncestry', 'evidence15', 'Every line of evidence, first pass', score);
+          markComplete('commonAncestry', 'Sorted ' + score + ' of ' + run.length + ' evidence cards into the right line.');
+        };
+        var next = function() { if (idx + 1 >= run.length) finish(); else { setIdx(idx + 1); setPick(null); } };
+        var head = h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+          h('div', null,
+            h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-yellow-800' }, '🧾 ' + __alloT('stem.evolab.lines_of_evidence', 'Lines of evidence: sort the cards')),
+            h('p', { className: 'text-sm text-slate-800 mt-1' }, __alloT('stem.evolab.evidence_intro', 'Common ancestry is not one argument but several independent ones that agree. Fifteen real findings, five lines of evidence: read each card and say which line it belongs to.')),
+            best ? h('div', { className: 'mt-1 text-xs font-bold text-slate-700' }, __alloFill(__alloT('stem.evolab.best_so_far', 'Best so far: {value1}/{value2}'), { value1: best.value, value2: EVIDENCE_CARDS.length })) : null),
+          h('button', { type: 'button', onClick: start, className: 'rounded-xl bg-yellow-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-yellow-300' }, run ? (idx >= run.length ? __alloT('stem.evolab.sort_again', 'Sort again') : __alloT('stem.evolab.restart_sort', 'Restart')) : __alloT('stem.evolab.start_sorting', 'Start sorting')));
+        var wrap = function(children) { return h('div', { className: 'evolab-evidence bg-white border-2 border-yellow-400 rounded-xl p-4' }, head, children); };
+        if (!run) {
+          return wrap(h('ul', { className: 'mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm' }, EVIDENCE_LINES.map(function(l) {
+            return h('li', { key: l.id, className: 'rounded-lg border border-yellow-200 bg-yellow-50 p-2' }, h('span', { className: 'font-bold text-slate-900' }, l.label + ': '), h('span', { className: 'text-slate-700' }, l.desc));
+          })));
+        }
+        if (idx >= run.length) {
+          return wrap(h('div', { className: 'mt-3' },
+            h('div', { className: 'text-2xl font-black text-slate-900' }, score + ' / ' + run.length),
+            h('p', { className: 'text-sm text-slate-800' }, score === run.length ? __alloT('stem.evolab.evidence_perfect', 'Every card in its line. Now say in one sentence why five independent lines agreeing matters more than any one of them.') : __alloFill(__alloT('stem.evolab.evidence_missed_n', '{value1} to revisit. Each is listed with its line and the reason.'), { value1: missed.length })),
+            missed.length > 0 && h('ul', { className: 'mt-2 space-y-2 text-sm' }, missed.map(function(id) {
+              var c = EVIDENCE_CARDS.filter(function(x) { return x.id === id; })[0];
+              return h('li', { key: id, className: 'rounded-lg border border-slate-200 p-2' }, h('span', { className: 'font-bold text-slate-900' }, lineOf(c.line).label + ': '), h('span', { className: 'text-slate-800' }, c.text), h('div', { className: 'mt-1 text-xs text-slate-700 italic' }, c.why));
+            }))));
+        }
+        var card = run[idx];
+        return wrap(h('div', { className: 'mt-3' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-yellow-900' },
+            h('span', null, __alloFill(__alloT('stem.evolab.card_n_of', 'Card {value1} of {value2}'), { value1: idx + 1, value2: run.length })),
+            h('span', null, __alloFill(__alloT('stem.evolab.score_n', 'Score {value1}'), { value1: score }))),
+          h('blockquote', { className: 'mt-2 rounded-lg border-l-4 border-yellow-500 bg-yellow-50 p-3 text-base text-slate-900' }, card.text),
+          h('p', { className: 'mt-2 text-sm font-bold text-slate-900' }, __alloT('stem.evolab.which_line', 'Which line of evidence is this?')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.evolab.lines_of_evidence_choices', 'Lines of evidence'), className: 'mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' }, EVIDENCE_LINES.map(function(l) {
+            var cls = 'rounded-lg border-2 px-3 py-2 text-left text-sm font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ';
+            if (!pick) cls += 'border-slate-400 bg-white text-slate-900 hover:border-yellow-600 hover:bg-yellow-50';
+            else if (l.id === card.line) cls += 'border-emerald-700 bg-emerald-700 text-white';
+            else if (pick === l.id) cls += 'border-rose-700 bg-rose-700 text-white';
+            else cls += 'border-slate-300 bg-slate-100 text-slate-600';
+            return h('button', { key: l.id, type: 'button', onClick: function() { choose(l.id); }, disabled: !!pick, 'aria-pressed': pick === l.id, className: cls }, l.label);
+          })),
+          pick && h('div', { role: 'status', className: 'mt-3 flex flex-wrap items-center justify-between gap-2' },
+            h('p', { className: 'text-sm ' + (pick === card.line ? 'text-emerald-900' : 'text-slate-900') }, h('span', { className: 'font-black' }, pick === card.line ? '✓ ' : '✗ ' + lineOf(card.line).label + '. '), card.why),
+            h('button', { type: 'button', onClick: next, className: 'rounded-xl bg-yellow-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-yellow-800 focus:outline-none focus:ring-4 focus:ring-yellow-300' }, idx + 1 >= run.length ? __alloT('stem.evolab.finish_sort', 'Finish') : __alloT('stem.evolab.next_card', 'Next card →')))
+        ));
       }
 
       // PredictCard — predict-observe-explain gate. The student commits to an
@@ -1179,7 +1712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           {
             id: 'commonAncestry', title: t('stem.evolab.common_ancestry', 'Common Ancestry'), icon: '🦴',
             subtitle: t('stem.evolab.homologous_bones_across_species', 'Homologous bones across species'),
-            desc: t('stem.evolab.click_any_bone_in_the_human_arm_see_th', 'Click any bone in the human arm — see the same bone in a bat wing, whale flipper, horse leg, and bird wing. Same skeleton, different jobs.'),
+            desc: t('stem.evolab.click_any_bone_in_the_human_arm_see_th', 'Click any bone in the human arm — see the same bone in a bat wing, whale flipper, horse leg, and bird wing. Same skeleton, different jobs. Then sort fifteen real findings into the five lines of evidence.'),
             color: 'from-yellow-500 to-amber-600',
             ring: 'ring-yellow-500/40'
           },
@@ -1518,7 +2051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', null,
                 h('div', { className: 'text-xs font-black uppercase tracking-widest text-amber-800' }, t('stem.evolab.suggested_next_challenge', 'Suggested next challenge')),
                 h('div', { className: 'font-black text-slate-900' }, nextChallenge.title),
-                h('div', { className: 'text-sm text-slate-700' }, (moduleById[nextChallenge.moduleId] ? moduleById[nextChallenge.moduleId].title : nextChallenge.moduleId) + ' · ' + __alloFill(t('stem.evolab.challenges_met_of', '{value1} of {value2} challenges met'), { value1: challengesMet, value2: CHALLENGE_INDEX.length }))
+                h('div', { className: 'text-sm text-slate-700' }, (moduleById[nextChallenge.moduleId] ? moduleById[nextChallenge.moduleId].title : MODULE_TITLES[nextChallenge.moduleId] || nextChallenge.moduleId) + ' · ' + __alloFill(t('stem.evolab.challenges_met_of', '{value1} of {value2} challenges met'), { value1: challengesMet, value2: CHALLENGE_INDEX.length }))
               )
             ),
             h('button', {
@@ -1555,7 +2088,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('button', {
                 onClick: function() { setView('exitTickets'); upd('view', 'exitTickets'); },
                 className: 'rounded-xl bg-amber-700 px-3 py-2 text-xs font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
-              }, '🎟️ ' + t('stem.evolab.exit_tickets', 'Exit Tickets'))
+              }, '🎟️ ' + t('stem.evolab.exit_tickets', 'Exit Tickets')),
+              h('button', {
+                onClick: function() { setView('termSprint'); upd('view', 'termSprint'); },
+                className: 'rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white shadow hover:bg-violet-800 focus:outline-none focus:ring-4 focus:ring-violet-300'
+              }, '🎯 ' + t('stem.evolab.term_sprint', 'Term sprint'))
             )
           ),
           capstoneDraft.scenarioId && h('section', {
@@ -1772,9 +2309,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // from the two-step reset; the print sheet hides the controls.
       function LearningJournal() {
         var p = progress;
-        var MODULE_TITLES = {
-          predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project'
-        };
         var titleOf = function(id) { var base = String(id).split(':')[0]; return MODULE_TITLES[base] || base; };
         var fmtDate = function(iso) { try { var dt = new Date(iso); return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString(); } catch (e) { return ''; } };
         var confirmResetState = useState(false), confirmReset = confirmResetState[0], setConfirmReset = confirmResetState[1];
@@ -1799,7 +2333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var checkRows = Object.keys(p.checks || {}).map(function(m) { var r = p.checks[m]; return r && typeof r === 'object' && r.choice ? Object.assign({ module: m }, r) : null; }).filter(Boolean);
         var ticketRows = EXIT_TICKETS.map(function(tk) { var r = getTicket(tk.day); return r && (r.text.trim() || r.confidence) ? { day: tk.day, theme: tk.theme, prompt: tk.prompt, text: r.text, confidence: r.confidence || '', at: r.at } : null; }).filter(Boolean);
         var confLabel = function(c) { return c === 'sure' ? t('stem.evolab.conf_sure', 'I could teach this') : c === 'mostly' ? t('stem.evolab.conf_mostly', 'Mostly sure') : c === 'unsure' ? t('stem.evolab.conf_unsure', 'Still shaky') : ''; };
-        var noteRows = Object.keys(p.notes || {}).map(function(m) { var r = p.notes[m]; return r && typeof r === 'object' && typeof r.text === 'string' && r.text.trim() ? { module: m, text: r.text, at: r.at } : null; }).filter(Boolean);
+        var noteRows = Object.keys(p.notes || {}).map(function(m) { var r = p.notes[m]; return r && typeof r === 'object' && typeof r.text === 'string' && r.text.trim() ? { module: m, text: r.text, at: r.at, cer: r.cer && typeof r.cer === 'object' ? r.cer : null } : null; }).filter(Boolean);
         var copyStatusState = useState(''), copyStatus = copyStatusState[0], setCopyStatus = copyStatusState[1];
         // Plain-text version for pasting into an LMS or email. Routed through the
         // shell's alloCopyText: Gemini Canvas refuses navigator.clipboard by
@@ -1843,40 +2377,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           predictionRows.forEach(function(r) { data.predictions[r.module] = { c: r.choice, o: r.outcome || null, m: r.matched === true }; });
           checkRows.forEach(function(r) { data.checks[r.module] = { ok: !!r.correct, tries: r.tries || 1, q: r.question || '', first: r.firstChoice || r.choice, firstLabel: r.firstChoiceLabel || r.choiceLabel || '', firstWrong: r.firstChoice ? !!r.firstWrong : !r.correct }; });
           challengeRows.forEach(function(r) { data.challenges.push(r.module + ':' + r.id); });
-          noteRows.forEach(function(r) { data.notes[r.module] = r.text.slice(0, 300); });
+          noteRows.forEach(function(r) { data.notes[r.module] = r.text.slice(0, r.cer ? 700 : 300); });
           data.tickets = {};
           ticketRows.forEach(function(r) { data.tickets[r.day] = { t: r.text.slice(0, 400), c: r.confidence }; });
+          if (p.quiz && p.quiz.first && p.quiz.latest) data.quiz = { n: p.quiz.passes || 1, f: { s: p.quiz.first.score, m: (p.quiz.first.missed || []).slice(0, 20) }, l: { s: p.quiz.latest.score, m: (p.quiz.latest.missed || []).slice(0, 20) } };
           lines.push('');
           lines.push('(The line below lets your teacher build a class snapshot. Leave it in.)');
           lines.push(encodeJournalData(data));
           return lines.join('\n');
         };
-        var legacyCopy = function(text) {
-          try {
-            var area = document.createElement('textarea');
-            area.value = text; area.setAttribute('readonly', 'readonly');
-            area.style.position = 'fixed'; area.style.top = '-1000px'; area.style.opacity = '0';
-            document.body.appendChild(area); area.select();
-            var ok = document.execCommand && document.execCommand('copy');
-            document.body.removeChild(area);
-            return !!ok;
-          } catch (e) { return false; }
-        };
         var copyJournal = function() {
-          var text = journalText();
-          var done = function(ok) {
-            setCopyStatus(ok ? __alloT('stem.evolab.journal_copied', 'Journal copied as text.') : __alloT('stem.evolab.journal_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.'));
-            announce(ok ? __alloT('stem.evolab.journal_copied', 'Journal copied as text.') : __alloT('stem.evolab.journal_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.'));
-          };
-          if (typeof window.alloCopyText === 'function') { Promise.resolve(window.alloCopyText(text)).then(function(ok) { done(ok !== false); }).catch(function() { done(legacyCopy(text)); }); return; }
-          var legacyOk = legacyCopy(text);
-          if (legacyOk) { done(true); return; }
-          if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function() { done(true); }).catch(function() { done(false); }); return; }
-          done(false);
+          copyPlainText(journalText()).then(function(ok) {
+            var msg = ok ? __alloT('stem.evolab.journal_copied', 'Journal copied as text.') : __alloT('stem.evolab.journal_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.');
+            setCopyStatus(msg); announce(msg);
+          });
         };
         var capstone = d.evoCapstone || {};
         var capstoneRuns = Array.isArray(capstone.runs) ? capstone.runs : [];
         var studentName = capstone.studentName || '';
+        // Next steps: the first few things not yet done, in a sensible order.
+        var nextSteps = [];
+        var openChecks = checkRows.filter(function(r) { return !r.correct; });
+        if (openChecks.length) nextSteps.push({ label: __alloFill(t('stem.evolab.next_open_checks', 'Retry {value1} open check{value2}: {value3}'), { value1: openChecks.length, value2: openChecks.length === 1 ? '' : 's', value3: openChecks.slice(0, 3).map(function(r) { return titleOf(r.module); }).join(', ') }), go: openChecks[0].module.split(':')[0] });
+        var pendingPreds = predictionRows.filter(function(r) { return !r.outcome; });
+        if (pendingPreds.length) nextSteps.push({ label: __alloFill(t('stem.evolab.next_pending_predictions', 'Run {value1} prediction{value2} you made but have not tested: {value3}'), { value1: pendingPreds.length, value2: pendingPreds.length === 1 ? '' : 's', value3: pendingPreds.slice(0, 3).map(function(r) { return titleOf(r.module); }).join(', ') }), go: pendingPreds[0].module });
+        var exploredNotDone = BADGE_IDS.filter(function(id) { return (d.evoBadges || {})[id] && !(p.completed && p.completed[id]); });
+        if (exploredNotDone.length) nextSteps.push({ label: __alloFill(t('stem.evolab.next_finish_explored', 'Finish what you opened: {value1}'), { value1: exploredNotDone.slice(0, 3).map(titleOf).join(', ') }), go: exploredNotDone[0] });
+        var unansweredTickets = EXIT_TICKETS.filter(function(tk) { return !ticketRows.some(function(r) { return r.day === tk.day && r.text.trim(); }); });
+        if (unansweredTickets.length && unansweredTickets.length < EXIT_TICKETS.length) nextSteps.push({ label: __alloFill(t('stem.evolab.next_tickets', 'Answer exit ticket{value1} for day{value2} {value3}'), { value1: unansweredTickets.length === 1 ? '' : 's', value2: unansweredTickets.length === 1 ? '' : 's', value3: unansweredTickets.map(function(tk) { return tk.day; }).join(', ') }), view: 'exitTickets' });
+        if (completedIds.length >= 3 && !getRecord('termSprint', 'best') && nextSteps.length < 3) nextSteps.push({ label: t('stem.evolab.next_term_sprint', 'Run a term sprint: ten quick questions on the words you have been using'), view: 'termSprint' });
+        var notStarted = BADGE_IDS.filter(function(id) { return !(d.evoBadges || {})[id] && !(p.completed && p.completed[id]); });
+        if (notStarted.length && nextSteps.length < 3) nextSteps.push({ label: __alloFill(t('stem.evolab.next_not_started', 'Not started yet: {value1}'), { value1: notStarted.slice(0, 3).map(titleOf).join(', ') }), go: notStarted[0] });
         var predictionsHeld = predictionRows.filter(function(r) { return r.matched === true; }).length;
         var predictionsJudged = predictionRows.filter(function(r) { return r.outcome; }).length;
         var checksRight = checkRows.filter(function(r) { return r.correct; }).length;
@@ -1924,6 +2455,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 })
               )
             ),
+            nextSteps.length > 0 && h('section', { className: 'evolab-no-print bg-white rounded-2xl border-2 border-emerald-300 shadow-sm p-4' },
+              h('h2', { className: 'text-sm font-black uppercase tracking-wider text-emerald-800 mb-2' }, t('stem.evolab.next_steps', '➡️ Next steps')),
+              h('ul', { className: 'space-y-2' }, nextSteps.slice(0, 4).map(function(st, i) {
+                return h('li', { key: i, className: 'flex flex-wrap items-center justify-between gap-2 text-sm text-slate-800' },
+                  h('span', null, st.label),
+                  h('button', { type: 'button', onClick: function() { if (st.view) { setView(st.view); upd('view', st.view); } else goto(st.go); }, className: 'rounded-lg bg-emerald-700 px-3 py-1 text-xs font-black text-white hover:bg-emerald-800' }, t('stem.evolab.go', 'Go →')));
+              }))
+            ),
             section(t('stem.evolab.modules_completed', '✅ Modules completed'),
               completedIds.length ? [h('ul', { className: 'space-y-2' }, completedIds.map(function(id) {
                 var rec = p.completed[id] || {};
@@ -1966,7 +2505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               noteRows.length ? h('ul', { className: 'space-y-3' }, noteRows.map(function(r) {
                 return h('li', { key: r.module, className: 'text-sm text-slate-800' },
                   h('div', { className: 'font-bold' }, titleOf(r.module), r.at ? h('span', { className: 'text-xs font-normal text-slate-500' }, ' · ' + fmtDate(r.at)) : null),
-                  h('p', { className: 'whitespace-pre-wrap text-slate-800 border-l-4 border-slate-300 pl-3 mt-1' }, r.text));
+                  r.cer ? h('dl', { className: 'border-l-4 border-emerald-300 pl-3 mt-1 space-y-1' }, ['claim', 'evidence', 'reasoning'].map(function(k) { return String(r.cer[k] || '').trim() ? h('div', { key: k }, h('dt', { className: 'text-xs font-black uppercase tracking-wider text-emerald-800' }, k === 'claim' ? t('stem.evolab.cer_claim', 'Claim') : k === 'evidence' ? t('stem.evolab.cer_evidence', 'Evidence') : t('stem.evolab.cer_reasoning', 'Reasoning')), h('dd', { className: 'text-slate-800 whitespace-pre-wrap' }, r.cer[k])) : null; })) : h('p', { className: 'whitespace-pre-wrap text-slate-800 border-l-4 border-slate-300 pl-3 mt-1' }, r.text));
               })) : null,
               t('stem.evolab.no_notes_yet', 'No field notes yet. Every simulator has a note box near the bottom; one honest sentence is enough.')),
             section(t('stem.evolab.experiments_logged', '🧪 Experiments logged'),
@@ -2038,9 +2577,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var parsed = parseJournalDump(pasted);
         var journals = parsed.journals;
         var N = journals.length;
-        var MODULE_TITLES = {
-          predatorVision: 'Predator Vision', mateChoice: 'Mate Choice Lab', climatePressure: 'Climate Pressure Lab', selectionSandbox: 'Selection Sandbox', beakLab: 'Galápagos Beak Lab', speciation: 'Trait Divergence Model', phyloBuilder: 'Phylogenetic Tree Builder', hardyWeinberg: 'Hardy-Weinberg', geneticDrift: 'Genetic Drift', commonAncestry: 'Common Ancestry', antibioticLab: 'Antibiotic Resistance', coevolution: 'Coevolution Lab', discoveryTimeline: 'Discovery Timeline', misconceptions: 'Misconceptions Quiz', selectionSleuth: 'Selection Sleuth', homologySleuth: 'Homology vs Analogy', capstone: 'Capstone Project'
-        };
         var titleOf = function(id) { var base = String(id).split(':')[0]; return MODULE_TITLES[base] || base; };
         var pct = function(a, b) { return b ? Math.round((a / b) * 100) + '%' : '—'; };
         // aggregates
@@ -2051,6 +2587,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var challengeCounts = {};
         var notesBy = {};
         var ticketsBy = {};   // day -> [{ name, text, conf }]
+        // Misconceptions quiz: who missed what on the first pass, and what survived a second pass.
+        var quizStats = { students: 0, twoPass: 0, firstMiss: MISCONCEPTION_LABELS.map(function() { return 0; }), stillMiss: MISCONCEPTION_LABELS.map(function() { return 0; }), started: 0, shed: 0 };
         var roster = journals.map(function(j, i) {
           var name = (j.name && String(j.name).trim()) || __alloFill(__alloT('stem.evolab.student_n', 'Student {value1}'), { value1: i + 1 });
           var completed = Array.isArray(j.completed) ? j.completed.filter(function(id) { return completedBy.hasOwnProperty(id); }) : [];
@@ -2072,6 +2610,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             if (r.firstWrong) { var fwKey = r.firstLabel || r.first || '?'; cs.firstWrong[fwKey] = (cs.firstWrong[fwKey] || 0) + 1; }
           });
           (Array.isArray(j.challenges) ? j.challenges : []).forEach(function(c) { challengeCounts[c] = (challengeCounts[c] || 0) + 1; });
+          var qz = j.quiz && typeof j.quiz === 'object' ? j.quiz : null;
+          if (qz && qz.f && Array.isArray(qz.f.m)) {
+            quizStats.students++;
+            qz.f.m.forEach(function(qi) { if (quizStats.firstMiss[qi] != null) quizStats.firstMiss[qi]++; });
+            if ((qz.n || 1) >= 2 && qz.l && Array.isArray(qz.l.m)) {
+              quizStats.twoPass++;
+              qz.f.m.forEach(function(qi) { quizStats.started++; if (qz.l.m.indexOf(qi) === -1) quizStats.shed++; else if (quizStats.stillMiss[qi] != null) quizStats.stillMiss[qi]++; });
+            }
+          }
           var noteCount = 0;
           Object.keys(j.notes || {}).forEach(function(m) { var txt = String(j.notes[m] || '').trim(); if (!txt) return; noteCount++; (notesBy[m] = notesBy[m] || []).push({ name: name, text: txt }); });
           var ticketCount = 0;
@@ -2089,9 +2636,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             }))
           ));
         };
+        // Reteach plan: concrete moves derived from the class data, most pressing first.
+        var reteachMoves = (function() {
+              var MOVES = {
+                predatorVision: t('stem.evolab.move_pv', 'Rerun Predator Vision on the projector with the histogram showing. After each round ask two questions: which prey changed colour (none) and which prey are missing (the visible ones).'),
+                mateChoice: t('stem.evolab.move_mc', 'Put the predator ON and fast-forward to round 40 together. Ask where showiness stopped and why a showier male would leave FEWER chicks there. Fitness counts chicks, not years.'),
+                'climatePressure:plast': t('stem.evolab.move_cp_plast', 'Run 0.040 a generation at acclimation 0 and then at 0.6 on the projector, and freeze on the Tolerance Lag card at the end. Ask which population is better adapted (the one with the smaller lag, which is the one that nearly died) and which is better off right now. Both answers are right; that is the point.'),
+                climatePressure: t('stem.evolab.move_cp', 'Run one trial at 0.010 and one at 0.040 side by side. Freeze on the generation the fast one collapses and count the survivors; adaptation is made of survivors.'),
+                'selectionSandbox:herit': t('stem.evolab.move_ss_herit', 'Moth preset, heritability 0, mutation 0, data table open on the projector. Step ten times, reading S and then the mean aloud each time. Ask who survived (the dark ones) and who was born (the same old spread). Then turn mutation on and wait for h² now to climb.'),
+                selectionSandbox: t('stem.evolab.move_ss', 'Show the stabilizing preset at strength 1.0 with the SD read aloud each generation. The mean holds while the spread shrinks; selection is about who breeds, not about the average moving.'),
+                'beakLab:h2': t('stem.evolab.move_bl_h2', 'Run one drought year at h² = 1 and one at 0.8 on the projector, data table open. Read S, the prediction and the chicks aloud for each. Ask where the missing 0.15 mm went: not into any bird, it was never in the genes.'),
+                'beakLab:reverse': t('stem.evolab.move_bl_reverse', 'Run drought, drought, then El Niño, El Niño on the projector with the seed panel showing. Ask which beak is best; the only honest answer is: best for which year?'),
+                beakLab: t('stem.evolab.move_bl', 'Run one drought year and then look at the bird grid: same birds, fewer of them. The average changed because the small-beaked birds are missing, not because any beak grew.'),
+                speciation: t('stem.evolab.move_sp', 'Ask the class what the overlap proxy actually measures (trait overlap of two histograms). Then ask what a field biologist would have to observe before using the word species.'),
+                coevolution: t('stem.evolab.move_co', 'Show the capture-rate line next to the two speed lines. Both sides are faster, nobody catches more: fitness is relative to the other side, not to the past.'),
+                'hardyWeinberg:chi': t('stem.evolab.move_hw_chi', 'Sample 500 newborns on the projector, then step 10 generations under selection and sample newborns again: both fit. Then sample the adults. The test sees only what happened before the count.'),
+                'hardyWeinberg:inbreed': t('stem.evolab.move_hw_inbreed', 'Set F = 0.5 with every force at 0 and step ten times on the projector while the class watches the bars. Ask what changed (Aa halved) and what did not (p). Then add selection against aa and ask why it now moves faster: selection can only remove what it can see.'),
+                'hardyWeinberg:balance': t('stem.evolab.move_hw_balance', 'Ask for a prediction first: with μ = 0.02 and s = 0.5, where will p stop? Then step 40 generations and compare with √(μ/s). Ask why cystic fibrosis is still with us.'),
+                hardyWeinberg: t('stem.evolab.move_hw', 'Set every force to zero and step twenty generations: nothing moves. Name it the null model, then turn one force on at a time and ask what changed.'),
+                'geneticDrift:corridor': t('stem.evolab.move_gd_corridor', 'Run N = 50 for 100 generations at Nm = 0 and count the islands that fixed. Set Nm = 1 (2% of an island) and run again. Ask the class why 2% can matter so much, then write both rates on the board: drift ~1/2N, migration Nm/N. N cancels.'),
+                'geneticDrift:ne': t('stem.evolab.move_gd_ne', 'Set N = 1000 with one breeding male and run it next to N = 10 on the projector. Same lurching lineages. Ask the class which number the sampling step can see (the parents, not the herd), then work Ne = 4·Nm·Nf/(Nm+Nf) for a real colony.'),
+                'geneticDrift:ns': t('stem.evolab.move_gd_ns', 'Set s = 0.05 and run N = 10 five times, then N = 200 once. Write the two tallies on the board next to Kimura\'s numbers (73% and ~100%) and ask what changed: not the allele, only N.'),
+                'geneticDrift:het': t('stem.evolab.move_gd_het', 'Run N = 10 three times with the heterozygosity chart showing. Three different sets of lineages, one dashed curve every time: ask what is random here and what is not.'),
+                geneticDrift: t('stem.evolab.move_gd', 'Run N = 10 three times and list the five endpoints each time. Identical rules, different fates; ask which lineage had the harmful allele (none did).'),
+                commonAncestry: t('stem.evolab.move_ca', 'Click the phalanges in every limb: same bones, five jobs. Then ask whether the wing is homologous with the flipper (yes) and whether the bat wing and bird wing are the same wing (no).'),
+                'commonAncestry:fused': t('stem.evolab.move_ca2', 'Have students turn their own forearm palm-up and palm-down while looking at the horse leg. Ask what a galloping leg gains by fusing the two bones.'),
+                'antibioticLab:combo': t('stem.evolab.move_ab_combo', 'On the projector run A alone to a resistant dish, Reset, then A + B from the same start. Ask what the second drug did that a bigger dose of the first could not. Then put the calculator on screen with N = 10⁸ and work the TB numbers together.'),
+                'antibioticLab:hgt': t('stem.evolab.move_ab_hgt', 'Run plasmid transfer with the drug OFF on the projector and ask who is reproducing more (nobody). Then switch the drug ON and ask again. Selection is the second run, not the first.'),
+                antibioticLab: t('stem.evolab.move_ab', 'Set starting resistance and mutation to zero and apply the drug: the dish dies. Then set starting resistance to 2%: the dish comes back resistant. The drug never made resistance; it revealed it.'),
+                discoveryTimeline: t('stem.evolab.move_dt', 'Put Darwin (1859), Mendel (1866) and the rediscovery (1900) on the board and ask what each one lacked that the next supplied. A theory that gains mechanism later is a theory that predicted well.'),
+                phyloBuilder: t('stem.evolab.move_ph', 'Build the amniote branch together and ask where the cardinal goes. A clade is an ancestor plus ALL descendants; a reptile group without birds is a group with a hole in it.'),
+                'phyloBuilder:parsimony': t('stem.evolab.move_ph_pars', 'Put the step-counter on the projector with skeletons only and ask which row decides (the skull). Then load the genome sample and ask why one character lost to twelve. Finish by unticking the skull row so the class sees it cost Tree B exactly one step: a reversal, not an error.'),
+                'phyloBuilder:fishClade': t('stem.evolab.move_ph2', 'Ask which is closer to a salmon: a lungfish or a trout. Then ask which is closer to a lungfish: a salmon or a cow. Fish is a lifestyle, not a clade.')
+              };
+              var moves = [];
+              Object.keys(checkStats).forEach(function(k) {
+                var cs = checkStats[k];
+                var wrongFirst = Object.keys(cs.firstWrong).reduce(function(sum, key) { return sum + cs.firstWrong[key]; }, 0);
+                if (cs.answered >= 2 && wrongFirst / cs.answered >= 0.34) moves.push({ score: wrongFirst / cs.answered, count: wrongFirst, title: __alloFill(t('stem.evolab.move_title_check', '{value1} of {value2} first answered "{value3}" ({value4})'), { value1: wrongFirst, value2: cs.answered, value3: topWrong(cs.firstWrong).replace(/ \(\d+\)$/, ''), value4: titleOf(k) }), body: MOVES[k] || t('stem.evolab.move_generic', 'Reopen the check as a class and argue the wrong answer out loud before revealing the feedback.') });
+              });
+              Object.keys(predStats).forEach(function(m) {
+                var ps = predStats[m];
+                if (ps.judged >= 2 && ps.held / ps.judged < 0.5) moves.push({ score: 0.5 + (1 - ps.held / ps.judged) * 0.4, count: ps.judged - ps.held, title: __alloFill(t('stem.evolab.move_title_pred', 'Predictions missed in {value1} ({value2} of {value3})'), { value1: titleOf(m), value2: ps.judged - ps.held, value3: ps.judged }), body: t('stem.evolab.move_pred_body', 'Run the module live and make the prediction together before pressing Start. Then run it twice more: missed predictions are usually about noise, not about the mechanism.') });
+              });
+              // Quiz items a third of the retakers still miss after a second pass.
+              if (quizStats.twoPass >= 2) MISCONCEPTION_LABELS.forEach(function(lab, qi) {
+                var still = quizStats.stillMiss[qi];
+                if (still / quizStats.twoPass >= 0.34) moves.push({ score: 0.55 + (still / quizStats.twoPass) * 0.4, count: still, title: __alloFill(t('stem.evolab.move_title_quiz', '{value1} of {value2} still miss "{value3}" after a second pass of the quiz'), { value1: still, value2: quizStats.twoPass, value3: lab }), body: t('stem.evolab.move_quiz', 'A misconception that survives a retry needs the mechanism, not the answer. Put the question on the projector, have students argue FOR the wrong answer they chose first, then take it apart together with the module that covers it.') });
+              });
+              Object.keys(ticketsBy).forEach(function(dk) {
+                var rows = ticketsBy[dk];
+                var shaky = rows.filter(function(r) { return r.conf === 'unsure'; }).length;
+                var tk = EXIT_TICKETS.filter(function(x) { return String(x.day) === String(dk); })[0];
+                if (rows.length >= 2 && shaky / rows.length >= 0.4) moves.push({ score: 0.6 + (shaky / rows.length) * 0.3, count: shaky, title: __alloFill(t('stem.evolab.move_title_ticket', 'Day {value1}: {value2} of {value3} still shaky'), { value1: dk, value2: shaky, value3: rows.length }), body: tk ? __alloFill(t('stem.evolab.move_ticket_body', 'Reopen {value1} with the shaky students at the controls, then have them rewrite the exit ticket in one sentence each.'), { value1: tk.modules.map(titleOf).join(' and ') }) : '' });
+              });
+              moves.sort(function(a, b) { return b.score - a.score || b.count - a.count; });
+              return moves.slice(0, 5);
+        })();
         var section = function(title, body) {
           return h('section', { className: 'bg-white rounded-2xl border border-slate-300 shadow-sm p-4' },
             h('h2', { className: 'text-sm font-black uppercase tracking-wider text-slate-700 mb-3' }, title), body);
+        };
+        // Plain-text snapshot for the teacher's own notes or a planning doc.
+        var snapCopyState = useState(''), snapCopyStatus = snapCopyState[0], setSnapCopyStatus = snapCopyState[1];
+        var snapshotText = function() {
+          var L = [];
+          L.push('EvoLab class snapshot — ' + new Date().toLocaleDateString() + ' — ' + N + ' journal' + (N === 1 ? '' : 's'));
+          L.push('');
+          L.push('RETEACH PLAN');
+          if (reteachMoves.length) reteachMoves.forEach(function(mv, i) { L.push((i + 1) + '. ' + mv.title); L.push('   ' + mv.body); });
+          else L.push('- nothing stands out yet');
+          L.push('');
+          L.push('ROSTER');
+          roster.forEach(function(r) { L.push('- ' + r.name + (r.date ? ' (' + r.date + ')' : '') + ': completed ' + r.completed + '/' + BADGE_IDS.length + '; predictions held ' + (r.judged ? r.held + '/' + r.judged : '—') + '; checks passed ' + (r.answered ? r.solved + '/' + r.answered : '—') + '; ' + r.experiments + ' experiments; ' + r.challenges + ' challenges; ' + r.notes + ' notes; ' + r.tickets + ' tickets'); });
+          L.push('');
+          L.push('COMPLETION BY MODULE');
+          BADGE_IDS.forEach(function(id) { L.push('- ' + titleOf(id) + ': ' + completedBy[id] + '/' + N + ' (' + pct(completedBy[id], N) + ')'); });
+          L.push('');
+          L.push('PREDICTIONS BY MODULE');
+          var pk = Object.keys(predStats);
+          if (pk.length) pk.forEach(function(m) { var ps = predStats[m]; L.push('- ' + titleOf(m) + ': made ' + ps.made + ', judged ' + ps.judged + ', held ' + ps.held + ' (' + pct(ps.held, ps.judged) + ')'); });
+          else L.push('- none yet');
+          L.push('');
+          L.push('MISCONCEPTION MAP');
+          var ck = Object.keys(checkStats);
+          if (ck.length) ck.forEach(function(k) { var cs = checkStats[k]; L.push('- ' + titleOf(k) + (cs.question ? ': ' + cs.question : '') + ' → answered ' + cs.answered + ', solved ' + cs.solved + ' (' + pct(cs.solved, cs.answered) + '); most common wrong first answer: ' + topWrong(cs.firstWrong)); });
+          else L.push('- none yet');
+          L.push('');
+          L.push('MISCONCEPTIONS QUIZ: FIRST PASS VS LATEST');
+          if (quizStats.students) { L.push('- ' + quizStats.students + ' with a first pass, ' + quizStats.twoPass + ' with two or more; of ' + quizStats.started + ' first-pass misconceptions among retakers, ' + quizStats.shed + ' were shed'); MISCONCEPTION_LABELS.forEach(function(lab, qi) { L.push('- ' + lab + ': missed first by ' + quizStats.firstMiss[qi] + '/' + quizStats.students + (quizStats.twoPass ? ', still missed after a retake by ' + quizStats.stillMiss[qi] + '/' + quizStats.twoPass : '')); }); }
+          else L.push('- none yet');
+          L.push('');
+          L.push('CHALLENGES MET');
+          var chk = Object.keys(challengeCounts).sort(function(a, b2) { return challengeCounts[b2] - challengeCounts[a]; });
+          if (chk.length) chk.forEach(function(k) { L.push('- ' + challengeCounts[k] + ' × ' + challengeTitle(k)); });
+          else L.push('- none yet');
+          L.push('');
+          L.push('EXIT TICKETS BY DAY');
+          var dks = Object.keys(ticketsBy).sort();
+          if (dks.length) dks.forEach(function(day) {
+            var rows = ticketsBy[day]; var tally = { sure: 0, mostly: 0, unsure: 0 };
+            rows.forEach(function(r) { if (tally.hasOwnProperty(r.conf)) tally[r.conf]++; });
+            L.push('Day ' + day + ' (' + rows.length + '): ' + tally.sure + ' could teach it, ' + tally.mostly + ' mostly sure, ' + tally.unsure + ' still shaky');
+            rows.forEach(function(r) { L.push('- ' + r.name + (r.conf ? ' [' + r.conf + ']' : '') + ': ' + (r.text || '(no written answer)')); });
+          });
+          else L.push('- none yet');
+          L.push('');
+          L.push('FIELD NOTES BY MODULE');
+          var nks = Object.keys(notesBy);
+          if (nks.length) nks.forEach(function(m) { L.push(titleOf(m) + ':'); notesBy[m].forEach(function(n2) { L.push('- ' + n2.name + ': ' + n2.text); }); });
+          else L.push('- none yet');
+          return L.join('\n');
+        };
+        var copySnapshot = function() {
+          copyPlainText(snapshotText()).then(function(ok) {
+            var msg = ok ? __alloT('stem.evolab.snapshot_copied', 'Snapshot copied as text.') : __alloT('stem.evolab.snapshot_copy_failed', 'Could not copy. Select the page text and press Ctrl+C.');
+            setSnapCopyStatus(msg); announce(msg);
+          });
         };
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h('div', { className: 'evolab-no-print' }, h(BackBar, { icon: '📊', title: t('stem.evolab.class_snapshot', 'Class Snapshot') })),
@@ -2113,9 +2774,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('span', { role: 'status' }, __alloFill(t('stem.evolab.journals_read_n', '{value1} journal{value2} read'), { value1: N, value2: N === 1 ? '' : 's' }) + (parsed.unreadable ? ' · ' + __alloFill(t('stem.evolab.unreadable_n', '{value1} data line{value2} could not be read'), { value1: parsed.unreadable, value2: parsed.unreadable === 1 ? '' : 's' }) : '')),
                 h('div', { className: 'flex gap-2' },
                   pasted && h('button', { type: 'button', onClick: function() { setPasted(''); }, className: 'rounded-lg bg-slate-200 px-3 py-1.5 font-bold text-slate-800 hover:bg-slate-300' }, t('stem.evolab.clear_pasted', 'Clear')),
+                  N > 0 && h('button', { type: 'button', onClick: copySnapshot, className: 'rounded-lg bg-slate-800 px-3 py-1.5 font-bold text-white hover:bg-slate-900' }, '📋 ' + t('stem.evolab.copy_snapshot', 'Copy as text')),
                   N > 0 && h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, className: 'rounded-lg bg-amber-700 px-3 py-1.5 font-bold text-white hover:bg-amber-800' }, '🖨️ ' + t('stem.evolab.print_snapshot', 'Print snapshot'))
                 )
-              )
+              ),
+              snapCopyStatus && h('div', { role: 'status', className: 'mt-2 text-sm font-bold text-emerald-800' }, snapCopyStatus)
             ),
             N === 0 && h('div', { className: 'rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center text-sm text-slate-600' }, t('stem.evolab.snapshot_empty', 'Paste at least one journal to see the class picture.')),
             N > 0 && section(__alloFill(t('stem.evolab.roster_n', '👩‍🎓 Roster ({value1})'), { value1: N }),
@@ -2164,12 +2827,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             N > 0 && section(t('stem.evolab.predictions_by_module', '🔮 Predictions by module'),
               Object.keys(predStats).length ? table(t('stem.evolab.predictions_caption', 'Predictions made, judged, and held per module'), [t('stem.evolab.module', 'Module'), t('stem.evolab.made', 'Made'), t('stem.evolab.judged', 'Judged'), t('stem.evolab.held', 'Held'), t('stem.evolab.hit_rate', 'Hit rate')],
                 Object.keys(predStats).map(function(m) { var ps = predStats[m]; return [titleOf(m), String(ps.made), String(ps.judged), String(ps.held), pct(ps.held, ps.judged)]; })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_predictions_in_journals', 'No predictions in these journals yet.'))),
+            N > 0 && section(t('stem.evolab.reteach_plan', '🧭 Reteach plan'),
+                reteachMoves.length ? h('ol', { className: 'space-y-3' }, reteachMoves.map(function(mv, i) {
+                  return h('li', { key: i, className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-slate-800' },
+                    h('div', { className: 'font-black text-amber-900' }, (i + 1) + '. ' + mv.title),
+                    h('p', { className: 'mt-1' }, mv.body));
+                })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_reteach_needed', 'Nothing stands out yet: no check has a third of the class starting wrong, no module has most predictions missing, and no exit-ticket day is 40% shaky. Paste more journals, or celebrate.'))),
             N > 0 && section(t('stem.evolab.misconception_map', '🧠 Misconception map: check-yourself questions'),
               Object.keys(checkStats).length ? h('div', null,
                 h('p', { className: 'text-xs text-slate-600 mb-2' }, t('stem.evolab.misconception_map_hint', 'The most common wrong FIRST answer is the misconception your class walked in with. Reteach that, not the whole topic.')),
                 table(t('stem.evolab.checks_caption', 'Check questions with solve counts and the most common wrong first answer'), [t('stem.evolab.check', 'Check'), t('stem.evolab.answered', 'Answered'), t('stem.evolab.solved', 'Solved'), t('stem.evolab.most_common_wrong_first', 'Most common wrong first answer')],
                   Object.keys(checkStats).map(function(k) { var cs = checkStats[k]; return [titleOf(k) + (cs.question ? ': ' + cs.question : ''), String(cs.answered), cs.solved + ' (' + pct(cs.solved, cs.answered) + ')', topWrong(cs.firstWrong)]; }))
               ) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_checks_in_journals', 'No check questions answered in these journals yet.'))),
+            N > 0 && section(t('stem.evolab.quiz_tvn_heading', '🪞 Misconceptions quiz: first pass vs latest'),
+              quizStats.students ? h('div', null,
+                h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloFill(t('stem.evolab.quiz_tvn_summary', '{value1} student{value2} with a first pass, {value3} with two or more. Among retakers, {value4} of {value5} first-pass misconceptions were shed. A misconception many still miss after a retake is the one to reteach by mechanism.'), { value1: quizStats.students, value2: quizStats.students === 1 ? '' : 's', value3: quizStats.twoPass, value4: quizStats.shed, value5: quizStats.started })),
+                table(t('stem.evolab.quiz_tvn_caption', 'Quiz items with first-pass misses and misses that survived a retake'), [t('stem.evolab.tvn_col_item', 'Misconception'), t('stem.evolab.quiz_col_first_miss', 'Missed on first pass'), t('stem.evolab.quiz_col_still', 'Still missed after a retake')],
+                  MISCONCEPTION_LABELS.map(function(lab, qi) { return [lab, quizStats.firstMiss[qi] + ' / ' + quizStats.students, quizStats.twoPass ? quizStats.stillMiss[qi] + ' / ' + quizStats.twoPass : '—']; }))
+              ) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_quiz_in_journals', 'No completed quiz passes in these journals yet.'))),
             N > 0 && section(t('stem.evolab.challenges_met_heading', '🏅 Challenges met'),
               Object.keys(challengeCounts).length ? h('ul', { className: 'grid grid-cols-1 md:grid-cols-2 gap-1 text-sm text-slate-800' }, Object.keys(challengeCounts).sort(function(a, b2) { return challengeCounts[b2] - challengeCounts[a]; }).map(function(k) { return h('li', { key: k }, h('span', { className: 'font-bold' }, challengeCounts[k] + ' × '), challengeTitle(k)); })) : h('p', { className: 'text-sm text-slate-500 italic' }, t('stem.evolab.no_challenges_in_journals', 'No challenges met yet.'))),
             N > 0 && section(t('stem.evolab.exit_tickets_by_day', '🎟️ Exit tickets by day'),
@@ -2206,6 +2881,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var selState = useState(0), selCoef = selState[0], setSelCoef = selState[1];
         var mutState = useState(0), mutRate = mutState[0], setMutRate = mutState[1];
         var migState = useState(0), migRate = migState[0], setMigRate = migState[1];
+        // Non-random mating: inbreeding coefficient F, the chance that an
+        // individual's two alleles are copies of one ancestral allele. Genotypes
+        // become AA = p² + Fpq, Aa = 2pq(1 − F), aa = q² + Fpq while p itself is
+        // untouched, so F alone is not an evolutionary force; it exposes aa to
+        // selection. Balance with F solves q² + Fpq = μ/s (exact for this update;
+        // scratchpad/evolab/hw_inbreed.mjs).
+        var inbreedState = useState(0), inbreed = inbreedState[0], setInbreed = inbreedState[1];
+        var hwGeno = function(pp, F) { var qq = 1 - pp; return { AA: pp * pp + F * pp * qq, Aa: 2 * pp * qq * (1 - F), aa: qq * qq + F * pp * qq }; };
+        var hwBalanceQ = function(mu, sc, F) { if (sc <= 0) return 1; if (F >= 1 - 1e-9) return clamp(mu / sc, 0, 1); return clamp((-F + Math.sqrt(F * F + 4 * (1 - F) * mu / sc)) / (2 * (1 - F)), 0, 1); };
+        var hwStepP = function(pp, sc, mu, m, F) {
+          var g = hwGeno(pp, F);
+          // Selection: aa is selected against by sc; mean fitness w̄ normalizes.
+          var wb = 1 - sc * g.aa; if (wb < 0.001) wb = 0.001;
+          var np = (g.AA + 0.5 * g.Aa) / wb;   // new p from genotype frequencies
+          np = np * (1 - mu);                    // mutation: A → a (one-way)
+          np = np * (1 - m) + 0.5 * m;           // migration: influx of A = 0.5
+          return clamp(np, 0, 1);
+        };
+        var hwGensUntil = function(pp, sc, mu, m, F, pred) { var cur = pp; for (var tt = 1; tt <= 500; tt++) { cur = hwStepP(cur, sc, mu, m, F); if (pred(cur)) return tt; } return null; };
         var genState = useState(0), gen = genState[0], setGen = genState[1];
         var historyState = useState([{ gen: 0, p: 0.5, AA: 0.25, Aa: 0.5, aa: 0.25 }]);
         var history = historyState[0], setHistory = historyState[1];
@@ -2213,35 +2907,138 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var hwSessionRef = useRef('');
         var hwStartRef = useRef(null);
         if (!hwSessionRef.current) hwSessionRef.current = newCapstoneSourceRunKey('hardyWeinberg');
+        // ── Sample and test. A field biologist never sees p; they count
+        // genotypes in a sample and ask whether the counts fit p², 2pq, q².
+        // Newborns are drawn from exact HW proportions for the current p, so
+        // about one sample in twenty "departs" by chance alone (the false
+        // alarm). Adults after selection are drawn from the survivors
+        // (AA p²/w̄, Aa 2pq/w̄, aa q²(1−s)/w̄), which a big enough sample catches.
+        var hwSampleNState = useState(100), hwSampleN = hwSampleNState[0], setHwSampleN = hwSampleNState[1];
+        var hwSampleState = useState(null), hwSample = hwSampleState[0], setHwSample = hwSampleState[1];
+        var hwTallyState = useState({ newborn: [0, 0], adults: [0, 0] }), hwTally = hwTallyState[0], setHwTally = hwTallyState[1];
+        var CHI_CRIT = 3.841; // df = 1, α = 0.05
+        var drawSample = function(adults, times) {
+          var reps = times || 1;
+          var n = hwSampleN;
+          var g0 = hwGeno(p, inbreed);
+          var fAA = g0.AA, fAa = g0.Aa, faa = g0.aa;
+          var useAdults = !!(adults && selCoef > 0);
+          if (useAdults) { var wbar = 1 - selCoef * faa; fAA = fAA / wbar; fAa = fAa / wbar; faa = (faa * (1 - selCoef)) / wbar; }
+          var last = null, sigCount = 0;
+          for (var r = 0; r < reps; r++) {
+            var O = { AA: 0, Aa: 0, aa: 0 };
+            for (var i = 0; i < n; i++) { var u = Math.random(); if (u < fAA) O.AA++; else if (u < fAA + fAa) O.Aa++; else O.aa++; }
+            var pHat = (2 * O.AA + O.Aa) / (2 * n), qHat = 1 - pHat;
+            var E = { AA: n * pHat * pHat, Aa: 2 * n * pHat * qHat, aa: n * qHat * qHat };
+            var chi = 0, terms = {};
+            ['AA', 'Aa', 'aa'].forEach(function(g) { terms[g] = E[g] > 1e-9 ? Math.pow(O[g] - E[g], 2) / E[g] : 0; chi += terms[g]; });
+            var sig = chi > CHI_CRIT;
+            if (sig) sigCount++;
+            last = { n: n, adults: useAdults, O: O, E: E, terms: terms, chi: chi, sig: sig, pHat: pHat, s: selCoef, p: p, F: inbreed };
+          }
+          setHwSample(last);
+          var key = useAdults ? 'adults' : 'newborn';
+          var tally = { newborn: hwTally.newborn.slice(), adults: hwTally.adults.slice() };
+          tally[key][0] += reps; tally[key][1] += sigCount;
+          setHwTally(tally);
+          if (!useAdults) {
+            detectExperiment('hardyWeinberg', 'sampleNewborns', 'Sample the newborns');
+            if (sigCount > 0 && inbreed === 0) detectChallenge('hardyWeinberg', 'falseAlarm', 'Catch a false alarm', tally.newborn[0]);
+            if (inbreed >= 0.2 && n >= 100 && last.sig) detectExperiment('hardyWeinberg', 'catchInbreeding', 'Catch inbreeding in a sample');
+          } else {
+            if (selCoef >= 0.5 && n >= 100 && last.sig) detectExperiment('hardyWeinberg', 'catchSelection', 'Catch selection in a big sample');
+            if (selCoef >= 0.5 && n <= 30 && !last.sig) detectExperiment('hardyWeinberg', 'smallSampleMiss', 'Miss it with a small sample');
+          }
+          announce(__alloFill(__alloT('stem.evolab.sr_sample_result', 'Sampled {value1} {value2}: chi-square {value3}, {value4}.'), { value1: n, value2: useAdults ? 'adults after selection' : 'newborns', value3: last.chi.toFixed(2), value4: last.sig ? 'departs from Hardy-Weinberg proportions' : 'no detectable departure' }));
+        };
+        var renderSampleTest = function() {
+          var smp = hwSample;
+          var btnCls = 'rounded-lg px-3 py-1.5 text-xs font-black text-white shadow focus:outline-none focus:ring-2 focus:ring-cyan-300 disabled:opacity-50 ';
+          var verdict = '';
+          if (smp) {
+            if (smp.sig) verdict = __alloFill(t('stem.evolab.sample_departs', 'χ² = {value1} > 3.84: this sample departs from Hardy-Weinberg proportions (p < 0.05).'), { value1: smp.chi.toFixed(2) }) + ' ' + (smp.adults ? t('stem.evolab.sample_departs_adults', 'Selection removed aa individuals before you counted, and the test caught it.') : smp.F > 0 ? __alloFill(t('stem.evolab.sample_departs_inbred', 'These newborns were produced with inbreeding F = {value1}: fewer heterozygotes than 2pq. The test detected non-random mating, which is real, but p did not change; only a later generation\'s p can show evolution.'), { value1: smp.F.toFixed(2) }) : t('stem.evolab.sample_departs_newborn', 'These newborns came from exact Hardy-Weinberg proportions, so this is a false alarm: the 5% threshold lets one sample in twenty through.'));
+            else verdict = __alloFill(t('stem.evolab.sample_fits', 'χ² = {value1} < 3.84: no detectable departure from Hardy-Weinberg proportions.'), { value1: smp.chi.toFixed(2) }) + ' ' + (smp.adults ? t('stem.evolab.sample_fits_adults', 'Selection WAS acting on these adults and this sample could not see it: too few individuals for an effect this size.') : smp.F > 0 ? __alloFill(t('stem.evolab.sample_fits_inbred', 'Inbreeding at F = {value1} hid in this sample. The statistic runs about n·F² = {value2}, under the 3.84 line; a sample needs n above 3.84/F² ≈ {value3} before the heterozygote deficit shows more often than not.'), { value1: smp.F.toFixed(2), value2: (smp.n * smp.F * smp.F).toFixed(1), value3: Math.ceil(3.841 / (smp.F * smp.F)) }) : t('stem.evolab.sample_fits_newborn', 'That is what newborns under random mating look like. It is not proof that nothing is evolving; p can still be changing between generations.'));
+          }
+          var speech = t('stem.evolab.sample_test_title', '🔬 Sample and test: is it in equilibrium?').replace(/^\S+\s/, '') + '. ' + t('stem.evolab.sample_test_intro', 'A field biologist never sees p. They catch some individuals, count genotypes, and ask whether the counts fit p², 2pq, q². Draw a sample from this population and run the chi-square test biologists use.') + (smp ? ' ' + verdict : '');
+          return h('div', { className: 'bg-white border-2 border-cyan-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('div', null,
+                h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-cyan-800' }, t('stem.evolab.sample_test_title', '🔬 Sample and test: is it in equilibrium?')),
+                h('p', { className: 'mt-1 text-sm text-slate-700' }, t('stem.evolab.sample_test_intro', 'A field biologist never sees p. They catch some individuals, count genotypes, and ask whether the counts fit p², 2pq, q². Draw a sample from this population and run the chi-square test biologists use.'))),
+              h(SpeakButton, { text: speech })),
+            h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+              h('span', { className: 'text-xs font-bold text-slate-700' }, t('stem.evolab.sample_size', 'Sample size')),
+              h('div', { role: 'group', 'aria-label': t('stem.evolab.sample_size', 'Sample size'), className: 'flex gap-1' }, [30, 100, 500].map(function(n) {
+                return h('button', { key: n, type: 'button', onClick: function() { setHwSampleN(n); }, 'aria-pressed': hwSampleN === n, className: 'px-3 py-1 rounded-lg text-xs font-bold ' + (hwSampleN === n ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200') }, String(n));
+              })),
+              h('button', { type: 'button', onClick: function() { drawSample(false, 1); }, className: btnCls + 'bg-cyan-700 hover:bg-cyan-800' }, t('stem.evolab.sample_newborns', 'Sample newborns')),
+              h('button', { type: 'button', onClick: function() { drawSample(true, 1); }, disabled: selCoef === 0, className: btnCls + 'bg-rose-700 hover:bg-rose-800' }, t('stem.evolab.sample_adults', 'Sample adults after selection')),
+              h('button', { type: 'button', onClick: function() { drawSample(smp ? smp.adults : false, 10); }, className: btnCls + 'bg-slate-700 hover:bg-slate-800', 'aria-label': t('stem.evolab.sample_ten_times', 'Repeat the last kind of sample ten times') }, '×10')
+            ),
+            selCoef === 0 && h('p', { className: 'mt-1 text-xs text-slate-600' }, t('stem.evolab.sample_adults_hint', 'With selection at 0 the adults are the newborns; raise s to sample the survivors.')),
+            smp && h('div', { className: 'mt-3' },
+              h('div', { className: 'text-xs text-slate-600' }, __alloFill(t('stem.evolab.sample_from', 'Sampled {value1} {value2} at p = {value3}. From the sample, p̂ = {value4}.'), { value1: smp.n, value2: smp.adults ? __alloFill(t('stem.evolab.adults_after_selection_s', 'adults after selection (s = {value1})'), { value1: smp.s.toFixed(2) }) : t('stem.evolab.newborns', 'newborns'), value3: smp.p.toFixed(2), value4: smp.pHat.toFixed(3) })),
+              h('div', { className: 'overflow-x-auto mt-1' }, h('table', { className: 'text-sm w-full max-w-md' },
+                h('caption', { className: 'sr-only' }, t('stem.evolab.chi_table_caption', 'Observed and expected genotype counts with chi-square terms')),
+                h('thead', null, h('tr', { className: 'text-left text-xs uppercase tracking-wider text-slate-600' }, [t('stem.evolab.col_genotype', 'Genotype'), t('stem.evolab.col_observed', 'Observed'), t('stem.evolab.col_expected', 'Expected'), '(O−E)²/E'].map(function(hd, i) { return h('th', { key: i, scope: 'col', className: 'py-1 pr-3' }, hd); }))),
+                h('tbody', null, ['AA', 'Aa', 'aa'].map(function(g) {
+                  return h('tr', { key: g, className: 'border-t border-slate-200' }, h('th', { scope: 'row', className: 'py-1 pr-3 text-left font-bold text-slate-800' }, g), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-800' }, String(smp.O[g])), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-800' }, smp.E[g].toFixed(1)), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-800' }, smp.terms[g].toFixed(2)));
+                }).concat([h('tr', { key: 'sum', className: 'border-t-2 border-slate-400 font-bold' }, h('th', { scope: 'row', className: 'py-1 pr-3 text-left text-slate-900' }, 'χ²'), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-900' }, String(smp.n)), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-900' }, smp.n.toFixed(1)), h('td', { className: 'py-1 pr-3 tabular-nums text-slate-900' }, smp.chi.toFixed(2)))])))),
+              h('p', { role: 'status', className: 'mt-2 text-sm font-bold ' + (smp.sig ? 'text-rose-800' : 'text-emerald-800') }, verdict),
+              h('p', { className: 'text-xs text-slate-600' }, t('stem.evolab.chi_df_note', 'df = 1 (three classes, minus one for the total, minus one for the estimated p̂); critical value 3.84 at α = 0.05.'))
+            ),
+            (hwTally.newborn[0] > 0 || hwTally.adults[0] > 0) && h('p', { className: 'mt-2 text-xs font-bold text-slate-700' }, __alloFill(t('stem.evolab.sample_tally', 'Departed: newborn samples {value1} of {value2} · adult samples {value3} of {value4}'), { value1: hwTally.newborn[1], value2: hwTally.newborn[0], value3: hwTally.adults[1], value4: hwTally.adults[0] }))
+          );
+        };
 
         var q = 1 - p;
-        var freqAA = p * p;
-        var freqAa = 2 * p * q;
-        var freqaa = q * q;
+        var hwNow = hwGeno(p, inbreed);
+        var freqAA = hwNow.AA;
+        var freqAa = hwNow.Aa;
+        var freqaa = hwNow.aa;
+        // Inbreeding card (F > 0): same p, fewer heterozygotes, recessives exposed.
+        // The purge comparison iterates the calculator's own update from the
+        // current p with F = 0 and with the current F (hw_inbreed.mjs: from
+        // q = 0.05 at s = 0.5, halving q takes 41 generations at F = 0 and 15
+        // at first-cousin F = 0.0625).
+        var renderInbreeding = function() {
+          if (inbreed <= 0) return null;
+          var rm = hwGeno(p, 0), ib = hwGeno(p, inbreed);
+          var ratio = rm.aa > 1e-9 ? ib.aa / rm.aa : null;
+          var halfQ = null;
+          if (selCoef > 0 && q > 0.001) {
+            var target = q / 2;
+            halfQ = { rm: hwGensUntil(p, selCoef, mutRate, migRate, 0, function(pp) { return 1 - pp <= target; }), ib: hwGensUntil(p, selCoef, mutRate, migRate, inbreed, function(pp) { return 1 - pp <= target; }) };
+          }
+          var fmtGens = function(n) { return n == null ? t('stem.evolab.never_500', 'never (500 generations)') : __alloFill(t('stem.evolab.n_generations', '{value1} generations'), { value1: n }); };
+          var lead = __alloFill(t('stem.evolab.inbreed_lead', 'F = {value1} is the chance that an individual\'s two alleles are copies of one ancestral allele. Heterozygotes are converted into homozygotes: Aa = 2pq(1 − F) = {value2} instead of {value3}, and aa = q² + Fpq = {value4} instead of q² = {value5}{value6}. p is still {value7}: inbreeding repackages the alleles without changing how many there are.'), { value1: inbreed.toFixed(2), value2: ib.Aa.toFixed(3), value3: rm.Aa.toFixed(3), value4: ib.aa.toFixed(3), value5: rm.aa.toFixed(3), value6: ratio != null && ratio > 1.05 ? ' (' + ratio.toFixed(1) + '×)' : '', value7: p.toFixed(3) });
+          var purge = halfQ ? __alloFill(t('stem.evolab.inbreed_purge', 'Selection against aa (s = {value1}) can now see more of the a alleles. From q = {value2}, halving q takes {value3} under random mating and {value4} at F = {value5}.'), { value1: selCoef.toFixed(2), value2: q.toFixed(3), value3: fmtGens(halfQ.rm), value4: fmtGens(halfQ.ib), value5: inbreed.toFixed(2) }) : t('stem.evolab.inbreed_purge_hint', 'Turn selection against aa on and this card will compare how fast q falls with and without inbreeding.');
+          var real = t('stem.evolab.inbreed_real', 'Inbreeding depression is this exposure at hundreds of genes at once. Children of first cousins (F ≈ 0.06) face roughly a 5% chance of a serious recessive condition against about 3% for the general population. The Florida panther fell to a few dozen animals by the early 1990s, with kinked tails, heart defects and failing sperm; eight female Texas cougars released in 1995 restored heterozygosity and the defects receded. That was migration undoing inbreeding, and slider 4 models it.');
+          return h('div', { className: 'bg-white border-2 border-violet-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-violet-800' }, t('stem.evolab.inbreed_title', '🧬 Inbreeding: same p, fewer heterozygotes')),
+              h(SpeakButton, { text: lead + ' ' + purge + ' ' + real })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, lead),
+            h('p', { className: 'mt-2 text-sm font-semibold text-slate-800' }, purge),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-violet-50 rounded-lg p-2' }, real)
+          );
+        };
 
         // Step `times` generations forward applying enabled forces. The allele frequency is THREADED
         // through each iteration: the old version read the stale closure p/freqAA every call, so the
         // "Step 10" loop computed all 10 steps from the same starting p and collapsed to ~1 generation.
         var stepGeneration = function(times) {
           times = (typeof times === 'number' && times > 0) ? times : 1; // onClick passes an event → default to 1
-          if (gen === 0) { hwStartRef.current = { p: p, sel: selCoef, mut: mutRate, mig: migRate }; hwSessionRef.current = newCapstoneSourceRunKey('hardyWeinberg'); }
+          if (gen === 0) { hwStartRef.current = { p: p, sel: selCoef, mut: mutRate, mig: migRate, F: inbreed }; hwSessionRef.current = newCapstoneSourceRunKey('hardyWeinberg'); }
           var curP = p;
           var snapshots = [];
           for (var t = 0; t < times; t++) {
-            // Genotype freqs for THIS generation (random mating), recomputed from the running p.
-            var fAA = curP * curP, fAa = 2 * curP * (1 - curP), faa = (1 - curP) * (1 - curP);
-            // Selection: aa is selected against by selCoef. Mean fitness w_bar normalizes.
-            var wAA = 1, wAa = 1, waa = 1 - selCoef;
-            var wBar = fAA * wAA + fAa * wAa + faa * waa;
-            if (wBar < 0.001) wBar = 0.001;
-            var newAA = fAA * wAA / wBar;
-            var newAa = fAa * wAa / wBar;
-            var newP = newAA + 0.5 * newAa;       // new p from genotype frequencies
-            newP = newP * (1 - mutRate);            // mutation: A → a (one-way)
-            newP = newP * (1 - migRate) + 0.5 * migRate; // migration: influx of A = 0.5
-            newP = clamp(newP, 0, 1);
-            var nq = 1 - newP;
-            snapshots.push({ gen: gen + t + 1, p: newP, AA: newP * newP, Aa: 2 * newP * nq, aa: nq * nq });
+            // Genotype freqs for THIS generation (with inbreeding F) are recomputed
+            // from the running p inside hwStepP, then selection, mutation, migration.
+            var newP = hwStepP(curP, selCoef, mutRate, migRate, inbreed);
+            var ng = hwGeno(newP, inbreed);
+            snapshots.push({ gen: gen + t + 1, p: newP, AA: ng.AA, Aa: ng.Aa, aa: ng.aa });
             curP = newP;
           }
           setP(curP);
@@ -2254,7 +3051,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (genNow >= 10 && selCoef >= 0.8) detectExperiment('hardyWeinberg', 'strongSelection', 'Strong selection');
           if (genNow >= 50 && mutRate >= 0.05 && selCoef === 0) detectExperiment('hardyWeinberg', 'mutationPressure', 'Mutation pressure');
           if (genNow >= 20 && migRate > 0 && selCoef > 0) detectExperiment('hardyWeinberg', 'migration', 'Migration overwhelms selection');
-          if (genNow <= 30 && selCoef > 0 && mutRate === 0 && migRate === 0 && curP >= 0.99 && p < 0.99) detectChallenge('hardyWeinberg', 'purge', 'Purge the allele', genNow);
+          if (genNow >= 20 && mutRate > 0 && selCoef > 0 && migRate === 0 && Math.abs(curP - (1 - hwBalanceQ(mutRate, selCoef, inbreed))) < 0.01) detectExperiment('hardyWeinberg', 'balance', 'Mutation-selection balance');
+          var st = hwStartRef.current;
+          if (genNow <= 30 && st && st.p <= 0.5 && st.mut === 0 && st.mig === 0 && !st.F && inbreed === 0 && selCoef > 0 && mutRate === 0 && migRate === 0 && curP >= 0.95 && p < 0.95) detectChallenge('hardyWeinberg', 'purge', 'Purge the allele as far as it will go', genNow);
+          // Inbreeding (hw_inbreed.mjs): p ≥ 0.99 from 0.5 at s = 1 takes 98 generations at F = 0, 22 at F = 0.1, 11 at F = 0.25.
+          if (genNow >= 10 && inbreed >= 0.3 && noForces && Math.abs(curP - p) < 1e-9) detectExperiment('hardyWeinberg', 'inbreedNoChange', 'Inbreeding alone leaves p alone');
+          if (genNow >= 10 && inbreed >= 0.25 && selCoef >= 0.5 && st && st.p >= 0.7 && mutRate === 0 && migRate === 0) detectExperiment('hardyWeinberg', 'inbreedPurge', 'Inbreeding exposes the recessive');
+          if (genNow <= 30 && st && st.p <= 0.5 && st.mut === 0 && st.mig === 0 && selCoef > 0 && mutRate === 0 && migRate === 0 && curP >= 0.99 && p < 0.99) detectChallenge('hardyWeinberg', 'finishPurge', 'Finish the purge', genNow);
           if (mutRate >= 0.05 && selCoef === 0 && migRate === 0 && curP < 0.5 && p > curP) detectChallenge('hardyWeinberg', 'mutationMelt', 'Mutation melts a fixed allele', genNow);
         };
 
@@ -2276,8 +3079,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: hwSessionRef.current,
             moduleLabel: 'Hardy-Weinberg Calculator',
             comparison: {
-              designKey: 'p0=' + start.p.toFixed(3) + '|s=' + selCoef.toFixed(2) + '|mu=' + mutRate.toFixed(3) + '|m=' + migRate.toFixed(2) + '|generations=' + gen,
-              designLabel: 'p₀ = ' + start.p.toFixed(2) + ', selection ' + selCoef.toFixed(2) + ', mutation ' + mutRate.toFixed(3) + ', migration ' + migRate.toFixed(2) + ', ' + gen + ' generations',
+              designKey: 'p0=' + start.p.toFixed(3) + '|s=' + selCoef.toFixed(2) + '|mu=' + mutRate.toFixed(3) + '|m=' + migRate.toFixed(2) + '|F=' + inbreed.toFixed(2) + '|generations=' + gen,
+              designLabel: 'p₀ = ' + start.p.toFixed(2) + ', selection ' + selCoef.toFixed(2) + ', mutation ' + mutRate.toFixed(3) + ', migration ' + migRate.toFixed(2) + ', inbreeding ' + inbreed.toFixed(2) + ', ' + gen + ' generations',
               primaryLabel: 'allele frequency change',
               primaryValue: delta,
               primaryDisplay: (delta >= 0 ? '+' : '') + delta.toFixed(3),
@@ -2288,11 +3091,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'selectionCoefficient', label: 'Selection against aa', value: Number(selCoef.toFixed(2)) },
                 { id: 'mutationRate', label: 'Mutation A→a', value: Number(mutRate.toFixed(3)) },
                 { id: 'migrationRate', label: 'Migration rate', value: Number(migRate.toFixed(2)) },
+                { id: 'inbreeding', label: 'Inbreeding (F)', value: Number(inbreed.toFixed(2)) },
                 { id: 'generations', label: 'Generations', value: gen }
               ]
             },
             baseline: 'Generation 0: p = ' + start.p.toFixed(3) + '; expected genotype proportions ' + (start.p * start.p).toFixed(3) + ' / ' + (2 * start.p * (1 - start.p)).toFixed(3) + ' / ' + ((1 - start.p) * (1 - start.p)).toFixed(3) + ' (AA / Aa / aa). Deterministic infinite-population model: no drift.',
-            settings: 'Selection against aa ' + selCoef.toFixed(2) + '; one-way mutation A→a ' + mutRate.toFixed(3) + '; migration ' + migRate.toFixed(2) + '; ' + gen + ' generations; settings shown at capture.',
+            settings: 'Selection against aa ' + selCoef.toFixed(2) + '; one-way mutation A→a ' + mutRate.toFixed(3) + '; migration ' + migRate.toFixed(2) + '; inbreeding F ' + inbreed.toFixed(2) + '; ' + gen + ' generations; settings shown at capture.',
             outcome: 'Generation ' + gen + ': p = ' + p.toFixed(3) + ' (Δ ' + (delta >= 0 ? '+' : '') + delta.toFixed(3) + '); expected genotype proportions ' + freqAA.toFixed(3) + ' / ' + freqAa.toFixed(3) + ' / ' + freqaa.toFixed(3) + '.',
             metrics: [
               { label: 'Starting p', value: start.p.toFixed(3) },
@@ -2304,7 +3108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
         var reset = function() {
           hwStartRef.current = null;
-          setP(0.5); setSelCoef(0); setMutRate(0); setMigRate(0); setGen(0);
+          setP(0.5); setSelCoef(0); setMutRate(0); setMigRate(0); setInbreed(0); setGen(0);
           setHistory([{ gen: 0, p: 0.5, AA: 0.25, Aa: 0.5, aa: 0.25 }]);
           announce(__alloT('stem.evolab.sr_hardy_weinberg_reset_to_equilibrium', 'Hardy-Weinberg reset to equilibrium.'));
         };
@@ -2360,7 +3164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               moduleId: 'hardyWeinberg',
               border: 'border-cyan-400', heading: 'text-cyan-800',
               question: __alloFill(t('stem.evolab.predict_hw_q', 'From p = {value1} with selection {value2}, mutation {value3}, migration {value4}: where will p be after 10 more generations?'), { value1: p.toFixed(2), value2: selCoef.toFixed(2), value3: mutRate.toFixed(3), value4: migRate.toFixed(2) }),
-              context: 'p ' + p.toFixed(2) + ', s ' + selCoef.toFixed(2) + ', μ ' + mutRate.toFixed(3) + ', m ' + migRate.toFixed(2),
+              context: 'p ' + p.toFixed(2) + ', s ' + selCoef.toFixed(2) + ', μ ' + mutRate.toFixed(3) + ', m ' + migRate.toFixed(2) + ', F ' + inbreed.toFixed(2),
               options: [
                 { id: 'up', label: t('stem.evolab.predict_hw_up', 'Higher (A becomes more common).') },
                 { id: 'same', label: t('stem.evolab.predict_hw_same', 'About the same (within 0.05).') },
@@ -2389,7 +3193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   h('li', null, h('strong', null, t('stem.evolab.selection_against_aa', 'Selection against aa')), t('stem.evolab.aa_individuals_leave_fewer_offspring_a', ': aa individuals leave fewer offspring. Allele q drops over generations.')),
                   h('li', null, h('strong', null, t('stem.evolab.mutation_rate', 'Mutation rate')), t('stem.evolab.one_way_mutation_model', ': this simplified control models A → a only. Reverse mutation is not included.')),
                   h('li', null, h('strong', null, t('stem.evolab.migration', 'Migration')), t('stem.evolab.new_alleles_arrive_from_outside_the_po', ': new alleles arrive from outside the population. Pushes p toward the migrant frequency.')),
-                  h('li', null, h('strong', null, t('stem.evolab.non_random_mating', 'Non-random mating')), t('stem.evolab.not_modeled_here_and_small_population_', ' (not modeled here) and small population size (genetic drift) are the other two.'))
+                  h('li', null, h('strong', null, t('stem.evolab.non_random_mating', 'Non-random mating')), t('stem.evolab.hw_primer_inbreeding', ' (inbreeding, F): converts heterozygotes into homozygotes without changing p. On its own it is not evolution, but it exposes recessives to selection. Small population size (genetic drift) is the fifth condition, left to the Genetic Drift lab.'))
                 ),
                 h('p', { className: 'leading-relaxed pt-1 border-t border-cyan-200' },
                   h('strong', null, t('stem.evolab.try_this', 'Try this: ')), t('stem.evolab.set_p_to_0_5_turn_selection_against_aa', 'set p to 0.5, turn selection against aa up to 0.3, press Step a few times. Watch q crash. Now reset, turn migration on instead. See how the curve looks different.'))
@@ -2403,7 +3207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.status', 'Status'), value: gen === 0 ? 'Ready' : alleleChanged ? 'p changed' : 'p unchanged', color: alleleChanged ? 'text-amber-600' : 'text-emerald-600' })
             ),
             // Expected genotype proportions for the current p and q
-            h('p', { className: 'text-xs text-slate-600' }, 'Bars show Hardy-Weinberg expectations after random mating; they are not sampled observed counts.'),
+            h('p', { className: 'text-xs text-slate-600' }, inbreed > 0 ? __alloFill(t('stem.evolab.bars_inbred', 'Bars show expected genotype proportions with inbreeding F = {value1}: AA = p² + Fpq, Aa = 2pq(1 − F), aa = q² + Fpq; they are not sampled observed counts.'), { value1: inbreed.toFixed(2) }) : 'Bars show Hardy-Weinberg expectations after random mating; they are not sampled observed counts.'),
             renderBars(),
             // Status banner
             h('div', { role: 'status', 'aria-live': 'polite', className: 'p-3 rounded-lg text-center font-bold ' + (alleleChanged ? 'bg-amber-50 border-2 border-amber-400 text-amber-800' : 'bg-emerald-50 border-2 border-emerald-400 text-emerald-800') },
@@ -2414,7 +3218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(LabeledSlider, {
                 label: t('stem.evolab.1_allele_frequency_p', '1. Allele Frequency p'),
                 value: p, min: 0, max: 1, step: 0.01,
-                onChange: function(v) { setP(v); setGen(0); setHistory([{ gen: 0, p: v, AA: v * v, Aa: 2 * v * (1 - v), aa: (1 - v) * (1 - v) }]); },
+                onChange: function(v) { setP(v); setGen(0); var gv = hwGeno(v, inbreed); setHistory([{ gen: 0, p: v, AA: gv.AA, Aa: gv.Aa, aa: gv.aa }]); },
                 valueText: 'p = ' + p.toFixed(2) + ', q = ' + q.toFixed(2),
                 accent: 'accent-cyan-500',
                 hint: t('stem.evolab.p_is_the_frequency_of_allele_a_q_frequ', 'p is the frequency of allele A. q (frequency of a) is automatically 1 - p.')
@@ -2445,6 +3249,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueColor: migRate > 0 ? 'text-cyan-700' : 'text-slate-600',
                 accent: 'accent-cyan-500',
                 hint: t('stem.evolab.each_generation_this_fraction_of_the_p', 'Each generation, this fraction of the population is replaced by immigrants with p = 0.5.')
+              }),
+              h(LabeledSlider, {
+                label: t('stem.evolab.5_inbreeding_f', '5. Inbreeding (F)'),
+                value: inbreed, min: 0, max: 1, step: 0.01,
+                onChange: function(v) { setInbreed(v); },
+                valueText: inbreed === 0 ? t('stem.evolab.random_mating', 'Random mating') : 'F = ' + inbreed.toFixed(2),
+                valueColor: inbreed > 0 ? 'text-violet-700' : 'text-slate-600',
+                accent: 'accent-violet-500',
+                hint: t('stem.evolab.inbreeding_hint', 'The chance that an individual\'s two alleles are copies of one ancestral allele: about 0.06 for children of first cousins, 0.25 for children of siblings, climbing toward 1 in self-fertilising plants. It changes genotype proportions, not p.')
               })
             ),
             // Step / reset buttons
@@ -2464,6 +3277,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
               }, t('stem.evolab.reset', '↺ Reset'))
             ),
+            renderInbreeding(),
+            mutRate > 0 && selCoef > 0 && (function() {
+              // Mutation-selection balance for a recessive: selection removes about
+              // s·q² of the a alleles a generation (only aa pays), mutation adds μ·p;
+              // setting them equal gives q̂ = √(μ/s), which is exact for this update.
+              var qHat = hwBalanceQ(mutRate, selCoef, inbreed);
+              var pHat = 1 - qHat;
+              var atBalance = gen >= 20 && Math.abs(p - pHat) < 0.01;
+              return h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 text-sm text-slate-800' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-cyan-800' }, t('stem.evolab.balance_title', '⚖️ Mutation-selection balance')),
+                h('p', { className: 'mt-1' }, inbreed > 0
+                  ? __alloFill(t('stem.evolab.balance_pred_inbred', 'Mutation keeps making a (μ = {value1}) and selection keeps removing it (s = {value2}), but only from aa, which inbreeding at F = {value3} makes commoner than q². They balance where q² + Fpq = μ/s: q̂ = {value4}, so p settles at {value5}; without inbreeding it would rest at q̂ = √(μ/s) = {value7}. Current p = {value6}{value8}'), { value1: mutRate.toFixed(3), value2: selCoef.toFixed(2), value3: inbreed.toFixed(2), value4: qHat.toFixed(3), value5: pHat.toFixed(3), value6: p.toFixed(3), value7: Math.sqrt(mutRate / selCoef).toFixed(3), value8: atBalance ? ' ' + t('stem.evolab.balance_reached', '(at balance).') : '.' })
+                  : __alloFill(t('stem.evolab.balance_pred', 'Mutation keeps making a (μ = {value1}) and selection keeps removing it (s = {value2}), but only from aa. They balance at q̂ = √(μ/s) = {value3}, so p settles at {value4}. Current p = {value5}{value6}'), { value1: mutRate.toFixed(3), value2: selCoef.toFixed(2), value3: qHat.toFixed(3), value4: pHat.toFixed(3), value5: p.toFixed(3), value6: atBalance ? ' ' + t('stem.evolab.balance_reached', '(at balance).') : '.' })),
+                h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.evolab.balance_why', 'This is why harmful recessive alleles never disappear: heterozygotes hide them from selection while mutation restocks them. With a real mutation rate of 10⁻⁵ and s = 1, q̂ ≈ 0.003 and about 1 person in 160 is a carrier.'))
+              );
+            })(),
+            renderSampleTest(),
+            hwSample && h(CheckCard, {
+              moduleId: 'hardyWeinberg', id: 'chi',
+              border: 'border-cyan-400', heading: 'text-cyan-800',
+              question: t('stem.evolab.check_chi_q', 'A sample of 500 newborns fits Hardy-Weinberg proportions (χ² = 0.4). What does that tell you?'),
+              options: [
+                { id: 'notEvolving', label: t('stem.evolab.check_chi_not_evolving', 'The population is not evolving.'), feedback: t('stem.evolab.check_chi_not_evolving_fb', 'p can be changing between generations while each generation\'s newborns still sit at p², 2pq, q². The test looks inside one generation, not across them.') },
+                { id: 'proportions', label: t('stem.evolab.check_chi_proportions', 'Genotypes are close to random-mating proportions for the current p; whether p is changing between generations is a separate question.'), correct: true, feedback: t('stem.evolab.check_chi_proportions_fb', 'Yes. A goodness-of-fit test checks one generation\'s genotype counts against p̂², 2p̂q̂, q̂². To see evolution you compare p across generations, which needs repeated sampling.') },
+                { id: 'noSelection', label: t('stem.evolab.check_chi_no_selection', 'Selection cannot be acting on this gene.'), feedback: t('stem.evolab.check_chi_no_selection_fb', 'Selection that acts after birth leaves the newborns untouched. Sample the adults after selection and test again; that is where the departure shows.') },
+                { id: 'noDrift', label: t('stem.evolab.check_chi_no_drift', 'The population is large enough that drift is absent.'), feedback: t('stem.evolab.check_chi_no_drift_fb', 'A goodness-of-fit test says nothing about drift. Drift changes p between generations; this test looks within one.') }
+              ]
+            }),
+            inbreed > 0 && gen >= 5 && h(CheckCard, {
+              moduleId: 'hardyWeinberg', id: 'inbreed',
+              border: 'border-violet-400', heading: 'text-violet-800',
+              question: t('stem.evolab.check_inbreed_q', 'F = 0.5 with selection, mutation and migration at 0, ten generations stepped. Heterozygotes fell from 50% to 25%, yet p stayed at 0.50. Is the population evolving?'),
+              options: [
+                { id: 'yes', label: t('stem.evolab.check_inbreed_yes', 'Yes: genotype frequencies changed, and that is evolution.'), feedback: t('stem.evolab.check_inbreed_yes_fb', 'Evolution at this scale is a change in allele frequencies. Inbreeding reshuffles the same alleles into different genotypes: the same p, differently packaged. Nothing was inherited differently.') },
+                { id: 'no', label: t('stem.evolab.check_inbreed_no', 'No: p did not change. Inbreeding only changed how the alleles are packaged into genotypes.'), correct: true, feedback: t('stem.evolab.check_inbreed_no_fb', 'Right. Non-random mating on its own is not an evolutionary force: it changes genotype proportions, not allele frequencies. It matters because it exposes recessive alleles; add selection against aa and p moves faster than it did under random mating.') },
+                { id: 'drift', label: t('stem.evolab.check_inbreed_drift', 'Yes: with fewer heterozygotes, drift must be stronger.'), feedback: t('stem.evolab.check_inbreed_drift_fb', 'This calculator has an infinite population, so there is no drift at all. Real inbred populations are often small, which adds drift, but that is a separate force; the slider by itself changed nothing about p.') },
+                { id: 'lost', label: t('stem.evolab.check_inbreed_lost', 'Yes: heterozygotes are being lost, so the a allele will disappear.'), feedback: t('stem.evolab.check_inbreed_lost_fb', 'Count the alleles: aa rose by exactly as much as Aa fell (Fpq went into each homozygote class), so a is as common as ever. Only selection, mutation, migration or drift can change that.') }
+              ]
+            }),
+            h(DataTable, { title: t('stem.evolab.dt_hw_title', 'Allele and genotype frequencies by generation'), heading: 'text-cyan-800', rows: history, columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }, { key: 'p', label: 'p', digits: 3 }, { key: 'AA', label: 'AA', digits: 3 }, { key: 'Aa', label: 'Aa', digits: 3 }, { key: 'aa', label: 'aa', digits: 3 }] }),
             h(CapstoneCapture, {
               moduleId: 'hardyWeinberg',
               moduleLabel: 'Hardy-Weinberg Calculator',
@@ -2486,8 +3339,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h(ExperimentList, {
               moduleId: 'hardyWeinberg',
               challenges: [
-                { id: 'purge', title: t('stem.evolab.ch_purge', 'Purge the allele: '), body: t('stem.evolab.ch_purge_body', 'Starting below p = 0.99, use selection alone (mutation and migration at 0) to reach p ≥ 0.99 within 30 generations. Notice how the last few percent of a recessive allele hide in heterozygotes.') },
-                { id: 'mutationMelt', title: t('stem.evolab.ch_melt', 'Melt a fixed allele: '), body: t('stem.evolab.ch_melt_body', 'Set p = 1.0, selection 0, mutation 0.05 or more, and step until p falls below 0.5. Mutation pressure alone is slow but relentless.') }
+                { id: 'purge', title: t('stem.evolab.ch_purge', 'Purge the allele: '), body: t('stem.evolab.ch_purge_body', 'Start at p = 0.50 with selection at 1.0 (aa never breeds), mutation and migration at 0, and reach p ≥ 0.95 within 30 generations. Then keep stepping: the last 5% never quite goes, because a recessive allele hides in heterozygotes where selection cannot see it.') + ' ' + t('stem.evolab.ch_purge_rm', 'Random mating only (F = 0).') },
+                { id: 'finishPurge', title: t('stem.evolab.ch_finish_purge', 'Finish the purge: '), body: t('stem.evolab.ch_finish_purge_body', 'Same start (p = 0.50, s = 1.0, no mutation or migration), but reach p ≥ 0.99 within 30 generations. Under random mating that takes 98; find the dial that drags the hidden a alleles into the open.') },
+                { id: 'mutationMelt', title: t('stem.evolab.ch_melt', 'Melt a fixed allele: '), body: t('stem.evolab.ch_melt_body', 'Set p = 1.0, selection 0, mutation 0.05 or more, and step until p falls below 0.5. Mutation pressure alone is slow but relentless.') },
+                { id: 'falseAlarm', title: t('stem.evolab.ch_false_alarm', 'Catch a false alarm: '), body: t('stem.evolab.ch_false_alarm_body', 'Sample NEWBORNS until one sample departs from Hardy-Weinberg proportions anyway. Nothing was wrong with the population; the test lets one false alarm in twenty through.') }
               ],
               border: 'border-cyan-400', heading: 'text-cyan-800',
               title: t('stem.evolab.try_these_experiments', '🧪 Try these experiments'),
@@ -2495,7 +3350,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'noForces', auto: true, title: t('stem.evolab.no_forces', 'No forces: '), body: t('stem.evolab.set_p_to_anything_e_g_0_7_leave_select', 'Set p to anything (e.g., 0.7), leave selection / mutation / migration at 0. Press Step 10. The bars don\'t move — equilibrium holds.') },
                 { id: 'strongSelection', auto: true, title: t('stem.evolab.strong_selection', 'Strong selection: '), body: t('stem.evolab.set_p_0_5_selection_0_8_aa_is_80_letha', 'Set p = 0.5, selection = 0.8 (aa is 80% lethal). Step 10. Watch the aa bar shrink and AA grow as a is purged from the population.') },
                 { id: 'mutationPressure', auto: true, title: t('stem.evolab.mutation_pressure', 'Mutation pressure: '), body: t('stem.evolab.set_p_1_0_all_a_mutation_0_05_step_50_', 'Set p = 1.0 (all A), mutation = 0.05. Step 50. Watch p slowly drift down as A → a mutations accumulate.') },
-                { id: 'migration', auto: true, title: t('stem.evolab.migration_overwhelms_selection', 'Migration overwhelms selection: '), body: t('stem.evolab.set_p_0_1_selection_0_5_migration_0_2_', 'Set p = 0.1, selection = 0.5, migration = 0.2. Step 20. The population can\'t purge a because immigrants keep restoring it.') }
+                { id: 'migration', auto: true, title: t('stem.evolab.migration_overwhelms_selection', 'Migration overwhelms selection: '), body: t('stem.evolab.set_p_0_1_selection_0_5_migration_0_2_', 'Set p = 0.1, selection = 0.5, migration = 0.2. Step 20. The population can\'t purge a because immigrants keep restoring it.') },
+                { id: 'sampleNewborns', auto: true, title: t('stem.evolab.exp_sample_newborns', 'Sample the newborns: '), body: t('stem.evolab.exp_sample_newborns_body', 'In Sample and test, draw a sample of newborns and read the chi-square table. Then press ×10 and watch the verdict wobble from sample to sample.') },
+                { id: 'catchSelection', auto: true, title: t('stem.evolab.exp_catch_selection', 'Catch selection: '), body: t('stem.evolab.exp_catch_selection_body', 'Set selection to 0.5 or more and sample 100 or 500 adults after selection. The survivors are short of aa, and a big sample says so.') },
+                { id: 'smallSampleMiss', auto: true, title: t('stem.evolab.exp_small_sample', 'Miss it with a small sample: '), body: t('stem.evolab.exp_small_sample_body', 'Same selection, sample size 30, adults after selection. The same effect is usually invisible; absence of evidence is not evidence of absence.') },
+                { id: 'balance', auto: true, title: t('stem.evolab.exp_balance', 'Mutation-selection balance: '), body: t('stem.evolab.exp_balance_body', 'Set selection to 0.50 and mutation to 0.020, then step until p stops moving. It stops at p = 0.80, exactly where q̂ = √(μ/s) says, however you start. Change μ or s and predict the new resting point before you step.') },
+                { id: 'inbreedNoChange', auto: true, title: t('stem.evolab.exp_inbreed_none', 'Inbreeding alone leaves p alone: '), body: t('stem.evolab.exp_inbreed_none_body', 'Every force at 0, inbreeding F = 0.5, Step 10. The Aa bar halves and both homozygote bars grow, but p does not move and the status banner says so. Non-random mating changes genotypes, not alleles.') },
+                { id: 'inbreedPurge', auto: true, title: t('stem.evolab.exp_inbreed_purge', 'Inbreeding exposes the recessive: '), body: t('stem.evolab.exp_inbreed_purge_body', 'Set p = 0.90 (a is rare, hiding in carriers), selection 0.5, and Step 10 with F = 0. Reset to the same p and repeat with F = 0.25: the inbreeding card shows how many generations halving q takes each way. Selection can only remove what it can see.') },
+                { id: 'catchInbreeding', auto: true, title: t('stem.evolab.exp_catch_inbreed', 'Catch inbreeding in a sample: '), body: t('stem.evolab.exp_catch_inbreed_body', 'F = 0.3, no forces. Sample 30 newborns: the test usually passes them. Sample 100 or 500: the heterozygote deficit shows. The statistic is about n·F², so the sample decides what you can see.') }
               ]
             }),
             // Cross-module suggestion — point to the next natural lab.
@@ -2517,6 +3379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'random', label: t('stem.evolab.check_hw_random', 'Random mating stops evolution.'), feedback: t('stem.evolab.check_hw_random_fb', 'Random mating keeps genotype proportions at p², 2pq, q² for whatever p is, but it does not stop p from changing: add selection and p moves every generation even though mating stays random.') }
               ]
             }),
+            h(ModelLimits, { moduleId: 'hardyWeinberg', heading: 'text-cyan-800' }),
             h(KeyTerms, { moduleId: 'hardyWeinberg', heading: 'text-cyan-800' }),
             h(FieldNote, { moduleId: 'hardyWeinberg', border: 'border-cyan-400', heading: 'text-cyan-800', prompt: t('stem.evolab.note_prompt_hw', 'Which force moved p fastest, and which one could never finish the job? Why is a model where nothing changes useful?') }),
             h(TeacherNotes, {
@@ -2525,7 +3388,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 'Hardy-Weinberg requires five conditions for equilibrium. Which one is hardest to meet in real populations? Why?',
                 'If a population is in HW equilibrium, is it evolving? Why or why not?',
                 'A class of 24 students has 6 non-tasters of PTC paper (the non-taster allele is recessive). What\'s the allele frequency? Use the calculator to check.',
-                'How would you tell, just by sampling a population, whether it\'s under selection vs in equilibrium?'
+                'How would you tell, just by sampling a population, whether it\'s under selection vs in equilibrium?',
+                'Inbreeding at F = 0.25 halves the heterozygotes but leaves p alone. Why do conservation biologists still treat it as an emergency?'
               ],
               misconceptions: [
                 'Students often think the dominant allele will increase in frequency over time. The HW equation shows this is false — allele frequencies stay stable without selection.',
@@ -2553,16 +3417,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // Optional bottleneck: N drops to 10 for 5 generations in the middle of the run.
         var bottleneckState = useState(false), bottleneck = bottleneckState[0], setBottleneck = bottleneckState[1];
         var bottleneckFor = function(gens) { return bottleneck ? { at: Math.floor(gens / 2), size: 10, duration: 5 } : null; };
+        // Optional selection for A: allele fitness 1 + s against 1 (genic), applied
+        // before the sampling step. Kimura (1962): a lineage starting at p = 0.5
+        // fixes A with probability (1 − e^(−2Ns)) / (1 − e^(−4Ns)); checked against
+        // this model at N 10-200 (fixation within 0.03 of the formula).
+        var selState = useState(0), selForA = selState[0], setSelForA = selState[1];
+        // Effective population size. The share of breeders that are male sets
+        // Ne = 4·Nm·Nf / (Nm + Nf); the sampling step draws 2·Ne alleles, so a
+        // skewed sex ratio makes a big census drift like a small one. Theory
+        // curves (heterozygosity, Kimura) use Ne. Over a run the population
+        // behaves like the HARMONIC mean of the generation sizes (ne_sim.mjs).
+        var maleShareState = useState(0.5), maleShare = maleShareState[0], setMaleShare = maleShareState[1];
+        var malesOf = function(n, share) { var sh = share == null ? maleShare : share; return Math.min(Math.max(1, Math.round(sh * n)), Math.max(1, n - 1)); };
+        var neOf = function(n, share) { var nm = malesOf(n, share), nf = Math.max(1, n - nm); return (4 * nm * nf) / (nm + nf); };
+        // Migration among the five lineages (island model): each generation every
+        // island's p moves toward the mean of all five by m = Nm / N before the
+        // sampling draw. Fst ≈ 1/(1 + 4Nm) at equilibrium (island_sim.mjs).
+        var migrantsState = useState(0), migrants = migrantsState[0], setMigrants = migrantsState[1];
+        var harmonicNe = function(meta) {
+          if (!meta) return null;
+          var inv = 0, bn = meta.bottleneck;
+          for (var g = 0; g < meta.generations; g++) { var nNow = (bn && g >= bn.at && g < bn.at + bn.duration) ? bn.size : meta.popSize; inv += 1 / neOf(nNow, meta.maleShare); }
+          return meta.generations / inv;
+        };
+        var kimuraFix = function(n, sel) { if (sel <= 0) return 0.5; return (1 - Math.exp(-2 * n * sel)) / (1 - Math.exp(-4 * n * sel)); };
+        // Tally of decided lineages per (N, s) setting across runs this visit.
+        var fixTallyRef = useRef({ key: '', fixedA: 0, lostA: 0, undecided: 0, runs: 0 });
 
         // Run ONE lineage of N generations starting at p=0.5. Returns array of p values.
-        var runOneLineage = function(n, gens, bn) {
+        var runOneLineage = function(n, gens, bn, sel) {
           var p = 0.5;
           var trace = [p];
           for (var g = 0; g < gens; g++) {
+            if (sel > 0) p = (p * (1 + sel)) / (1 + sel * p);
             // Binomial sampling: each of the 2N alleles is drawn from current p.
             // During a bottleneck the census is the bottleneck size instead.
             var nNow = (bn && g >= bn.at && g < bn.at + bn.duration) ? bn.size : n;
-            var alleles2N = 2 * nNow;
+            var alleles2N = Math.max(2, Math.round(2 * neOf(nNow)));
             var aCount = 0;
             for (var i = 0; i < alleles2N; i++) {
               if (Math.random() < p) aCount++;
@@ -2578,15 +3469,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return trace;
         };
 
+        // Five lineages in lockstep when they exchange migrants: no early stop on
+        // fixation, because an immigrant can bring a lost allele back.
+        var runLineagesTogether = function(n, gens, bn, sel, nm) {
+          var ps = [0.5, 0.5, 0.5, 0.5, 0.5];
+          var traces = ps.map(function(p) { return [p]; });
+          for (var g = 0; g < gens; g++) {
+            var nNow = (bn && g >= bn.at && g < bn.at + bn.duration) ? bn.size : n;
+            var m = Math.min(1, nm / nNow);
+            var mean = ps.reduce(function(a, b) { return a + b; }, 0) / ps.length;
+            var alleles2N = Math.max(2, Math.round(2 * neOf(nNow)));
+            for (var li = 0; li < ps.length; li++) {
+              var p = (1 - m) * ps[li] + m * mean;
+              if (sel > 0) p = (p * (1 + sel)) / (1 + sel * p);
+              var aCount = 0;
+              for (var i = 0; i < alleles2N; i++) { if (Math.random() < p) aCount++; }
+              ps[li] = aCount / alleles2N;
+              traces[li].push(ps[li]);
+            }
+          }
+          return traces;
+        };
         var runMany = function() {
           var traces = [];
-          for (var i = 0; i < 5; i++) {
-            traces.push(runOneLineage(popSize, generations, bottleneckFor(generations)));
+          if (migrants > 0) traces = runLineagesTogether(popSize, generations, bottleneckFor(generations), selForA, migrants);
+          else for (var i = 0; i < 5; i++) {
+            traces.push(runOneLineage(popSize, generations, bottleneckFor(generations), selForA));
           }
           setTrials(traces);
           var nextRunId = runId + 1;
           setRunId(nextRunId);
-          setLastRunMeta({ popSize: popSize, generations: generations, runId: nextRunId, bottleneck: bottleneckFor(generations), sourceRunKey: newCapstoneSourceRunKey('geneticDrift') });
+          setLastRunMeta({ popSize: popSize, generations: generations, runId: nextRunId, bottleneck: bottleneckFor(generations), selection: selForA, maleShare: maleShare, ne: neOf(popSize), migrants: migrants, sourceRunKey: newCapstoneSourceRunKey('geneticDrift') });
+          var tallyKey = Math.round(neOf(popSize)) + '|' + selForA.toFixed(2) + '|' + migrants;
+          var tally = fixTallyRef.current.key === tallyKey ? fixTallyRef.current : { key: tallyKey, fixedA: 0, lostA: 0, undecided: 0, runs: 0 };
+          // Decided = A essentially won (p ≥ 0.95) or lost (p ≤ 0.05): exact fixation at large N can take longer than the run.
+          traces.forEach(function(tr) { var last = tr[tr.length - 1]; if (last >= 0.95) tally.fixedA++; else if (last <= 0.05) tally.lostA++; else tally.undecided++; });
+          tally.runs++;
+          fixTallyRef.current = tally;
+          if (migrants === 0 && selForA >= 0.05 && popSize <= 10 && traces.some(function(tr) { return tr[tr.length - 1] === 0; })) detectExperiment('geneticDrift', 'selectionLoses', 'A favoured allele lost by chance');
+          if (migrants === 0 && selForA >= 0.05 && popSize >= 200 && traces.every(function(tr) { return tr[tr.length - 1] >= 0.95; })) detectExperiment('geneticDrift', 'selectionWins', 'Big numbers let selection decide');
+          var hsRun = hetStats(traces, { popSize: popSize, bottleneck: bottleneckFor(generations), maleShare: maleShare });
+          var neRun = neOf(popSize);
+          if (malesOf(popSize) === 1 && popSize >= 200 && generations >= 50 && selForA === 0 && traces.every(function(tr) { var v = tr[tr.length - 1]; return v >= 0.95 || v <= 0.05; })) detectExperiment('geneticDrift', 'harem', 'Census size lies: one breeding male');
+          if (migrants === 0 && selForA === 0 && popSize >= 1000 && neRun <= 12 && generations <= 100 && traces.every(function(tr) { var v = tr[tr.length - 1]; return v === 0 || v === 1; })) detectChallenge('geneticDrift', 'neTiny', 'Drift like ten with a thousand', Math.round(neRun));
+          if (hsRun && hsRun.obsHalf >= 0 && popSize <= 50 && selForA === 0) detectExperiment('geneticDrift', 'halfLife', 'Watch variation halve on schedule');
           // Compute fixation summary
           var fixed0 = traces.filter(function(t) { return t[t.length - 1] === 0; }).length;
           var fixed1 = traces.filter(function(t) { return t[t.length - 1] === 1; }).length;
@@ -2597,14 +3523,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (popSize >= 1000 && generations >= 100) detectExperiment('geneticDrift', 'big', 'Big population (N=1000)');
           if (popSize <= 10 && generations >= 500) detectExperiment('geneticDrift', 'longTerm', 'Long-term tiny population');
           if (driftRunsRef.current.small >= 3 && driftRunsRef.current.big >= 3) detectExperiment('geneticDrift', 'compare', 'Compare outcomes');
-          if (bottleneck && popSize >= 500) {
+          if (migrants === 0 && bottleneck && popSize >= 500 && selForA === 0) {
             detectExperiment('geneticDrift', 'bottleneck', 'Bottleneck in a big population');
             var finalsB = traces.map(function(tr) { return tr[tr.length - 1]; });
             if (finalsB.some(function(v) { return v >= 0.8 || v <= 0.2; })) detectChallenge('geneticDrift', 'bottleneckScar', 'Scar of a bottleneck', Math.max.apply(null, finalsB.map(function(v) { return Math.abs(v - 0.5); })));
           }
           var finalsNow = traces.map(function(tr) { return tr[tr.length - 1]; });
-          if (popSize <= 10 && generations <= 100 && finalsNow.every(function(v) { return v === 0 || v === 1; })) detectChallenge('geneticDrift', 'allFixed', 'Every lineage decided', generations);
-          if (popSize >= 1000 && generations >= 100 && finalsNow.every(function(v) { return v >= 0.45 && v <= 0.55; })) detectChallenge('geneticDrift', 'holdSteady', 'Big numbers hold steady', generations);
+          if (migrants === 0 && selForA === 0 && popSize <= 10 && generations <= 100 && finalsNow.every(function(v) { return v === 0 || v === 1; })) detectChallenge('geneticDrift', 'allFixed', 'Every lineage decided', generations);
+          if (migrants === 0 && selForA === 0 && popSize >= 1000 && generations >= 100 && finalsNow.every(function(v) { return v >= 0.3 && v <= 0.7; })) detectChallenge('geneticDrift', 'holdSteady', 'Big numbers hold steady', generations);
+          // Corridors (island_sim.mjs): at N = 50 with Nm = 1 no island is fixed after 100 generations in 92% of runs (4% with Nm = 0);
+          // all five within 0.2 of each other AND none fixed after 200 generations: 4% at Nm = 1, 13% at Nm = 2, 32% at Nm = 4.
+          if (migrants >= 1 && popSize <= 50 && generations >= 100 && selForA === 0 && finalsNow.every(function(v) { return v > 0 && v < 1; })) detectExperiment('geneticDrift', 'corridor', 'One migrant per generation holds the islands together');
+          if (migrants > 0 && popSize >= 50 && generations >= 200 && selForA === 0 && finalsNow.every(function(v) { return v > 0 && v < 1; }) && Math.max.apply(null, finalsNow) - Math.min.apply(null, finalsNow) <= 0.2) detectChallenge('geneticDrift', 'oneOfFive', 'Five islands, one population', Number((Math.max.apply(null, finalsNow) - Math.min.apply(null, finalsNow)).toFixed(3)));
           announce(__alloFill(__alloT('stem.evolab.sr_ran_5_lineages_at_population_size_for_generations', 'Ran 5 lineages at population size {value1} for {value2} generations. Fixed at A: {value3}, fixed at a: {value4}.'), { value1: popSize, value2: generations, value3: fixed1, value4: fixed0 }));
         };
 
@@ -2631,6 +3561,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         var fixedCount = trials.filter(function(t) { return t[t.length - 1] === 0 || t[t.length - 1] === 1; }).length;
+        // Heterozygosity 2p(1−p), averaged over the five lineages, against the
+        // Wright-Fisher expectation H_t = H_0 (1 − 1/2N)^t (bottleneck generations
+        // use the bottleneck size). One lineage is unpredictable; the average
+        // rate at which variation disappears is not.
+        var hetStats = function(traces, meta) {
+          if (!traces || !traces.length || !meta) return null;
+          var G = traces.reduce(function(m, tr) { return Math.max(m, tr.length); }, 0);
+          var obs = [], theory = [], Ht = 0.5, bn = meta.bottleneck;
+          for (var g = 0; g < G; g++) {
+            var sum = 0, cnt = 0;
+            traces.forEach(function(tr) { if (g < tr.length) { sum += 2 * tr[g] * (1 - tr[g]); cnt++; } });
+            obs.push(cnt ? sum / cnt : 0);
+            theory.push(Ht);
+            var nNow = (bn && g >= bn.at && g < bn.at + bn.duration) ? bn.size : meta.popSize;
+            Ht = Ht * (1 - 1 / (2 * neOf(nNow, meta.maleShare)));
+          }
+          var halfLife = Math.log(0.5) / Math.log(1 - 1 / (2 * neOf(meta.popSize, meta.maleShare)));
+          var obsHalf = -1;
+          for (var k = 0; k < obs.length; k++) if (obs[k] <= 0.25) { obsHalf = k; break; }
+          return { obs: obs, theory: theory, halfLife: halfLife, obsHalf: obsHalf, G: G };
+        };
+        var renderHeterozygosity = function() {
+          var hs = hetStats(trials, lastRunMeta);
+          if (!hs) return null;
+          var W = 600, H = 150, padL = 40, padR = 12, padT = 12, padB = 26;
+          var toX = function(g) { return padL + (g / Math.max(1, hs.G - 1)) * (W - padL - padR); };
+          var toY = function(v) { return padT + (1 - v / 0.5) * (H - padT - padB); };
+          var path = function(arr) { return arr.map(function(v, i) { return (i === 0 ? 'M ' : 'L ') + toX(i).toFixed(1) + ' ' + toY(v).toFixed(1); }).join(' '); };
+          var caption = __alloFill(t('stem.evolab.het_caption', 'Theory: at Ne = {value1} the average heterozygosity halves every ≈ {value2} generations. Observed five-lineage average: {value3}'), { value1: Math.round(neOf(lastRunMeta.popSize, lastRunMeta.maleShare)), value2: Math.round(hs.halfLife), value3: hs.obsHalf >= 0 ? __alloFill(t('stem.evolab.het_crossed', 'fell below 0.25 at generation {value1}.'), { value1: hs.obsHalf }) : __alloFill(t('stem.evolab.het_not_crossed', 'still above 0.25 after {value1} generations.'), { value1: hs.G - 1 }) });
+          return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.het_title', '📉 Variation lost on schedule: heterozygosity vs theory')),
+              h('div', { className: 'flex gap-3 text-[0.625rem]' },
+                h('span', { className: 'flex items-center gap-1' }, h('span', { style: { width: 12, height: 2, backgroundColor: '#e11d48', display: 'inline-block' } }), h('span', { className: 'text-slate-700' }, t('stem.evolab.het_observed', 'observed average of 5 lineages'))),
+                h('span', { className: 'flex items-center gap-1' }, h('span', { style: { width: 12, height: 0, borderTop: '2px dashed #334155', display: 'inline-block' } }), h('span', { className: 'text-slate-700' }, t('stem.evolab.het_theory', 'theory (1 − 1/2N) per generation'))))),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + H, className: 'w-full', role: 'img', 'aria-label': __alloFill(__alloT('stem.evolab.a11y_het_chart', 'Heterozygosity over {value1} generations: observed average of five lineages against the theoretical decay curve. {value2}'), { value1: hs.G - 1, value2: caption }) },
+              h('line', { x1: padL, y1: padT, x2: padL, y2: H - padB, stroke: '#94a3b8' }),
+              h('line', { x1: padL, y1: H - padB, x2: W - padR, y2: H - padB, stroke: '#94a3b8' }),
+              h('text', { x: 4, y: padT + 4, fontSize: '9', fill: '#475569' }, '0.5'),
+              h('text', { x: 4, y: toY(0.25) + 3, fontSize: '9', fill: '#475569' }, '0.25'),
+              h('text', { x: 4, y: H - padB + 3, fontSize: '9', fill: '#475569' }, '0'),
+              h('text', { x: padL, y: H - 8, fontSize: '9', fill: '#475569' }, t('stem.evolab.gen_0', 'gen 0')),
+              h('text', { x: W - padR - 40, y: H - 8, fontSize: '9', fill: '#475569' }, 'gen ' + (hs.G - 1)),
+              h('line', { x1: padL, y1: toY(0.25), x2: W - padR, y2: toY(0.25), stroke: '#cbd5e1', strokeDasharray: '3,3' }),
+              h('path', { d: path(hs.theory), fill: 'none', stroke: '#334155', strokeWidth: 2, strokeDasharray: '6,4' }),
+              h('path', { d: path(hs.obs), fill: 'none', stroke: '#e11d48', strokeWidth: 2 })
+            ),
+            h('p', { className: 'text-[0.6875rem] text-slate-700 mt-1' }, caption + ' ' + (lastRunMeta.migrants > 0 ? t('stem.evolab.het_migrants_note', 'The dashed curve assumes isolated islands; with migrants arriving, alleles lost on one island return from another, so the red line should stay above it.') + ' ' : '') + t('stem.evolab.het_note', 'Run it again: the red line wobbles differently every time, around the same dashed curve. Which allele wins is a coin toss; how fast variation drains away is set by N.'))
+          );
+        };
+        // Effective size card. Ne = 4·Nm·Nf / (Nm + Nf) from the breeding sex
+        // ratio; over a run with a bottleneck the population drifts like one of
+        // the HARMONIC mean size (five generations at 10 inside 100 at N = 100
+        // give Ne ≈ 69). Odds for the harem experiment and the neTiny challenge
+        // are in scratchpad/evolab/ne_sim.mjs.
+        var renderNe = function() {
+          var nm = malesOf(popSize), nf = Math.max(1, popSize - nm);
+          var ne = neOf(popSize);
+          var skewed = nm < nf;
+          var harm = lastRunMeta ? harmonicNe(lastRunMeta) : null;
+          var fRise = 1 / (2 * ne);
+          var fAfter = function(k) { return 1 - Math.pow(1 - fRise, k); };
+          var lead = skewed
+            ? __alloFill(t('stem.evolab.ne_lead_skew', 'Drift is set by how many individuals breed and how evenly, not by the head count. With {value1} breeding males and {value2} females, Ne = 4·Nm·Nf / (Nm + Nf) = {value3}: this population of {value4} drifts like an even-ratio population of {value3}. The rarer sex sets the pace, because half of every generation\'s genes come through it.'), { value1: nm, value2: nf, value3: Math.round(ne), value4: popSize })
+            : __alloFill(t('stem.evolab.ne_lead_even', 'With {value1} breeding males and {value1} females, Ne = 4·Nm·Nf / (Nm + Nf) = {value2}, the same as the census. Skew the sex ratio and watch Ne fall: the rarer sex sets the pace, because half of every generation\'s genes come through it.'), { value1: nm, value2: Math.round(ne) });
+          var harmLine = harm && lastRunMeta.bottleneck
+            ? __alloFill(t('stem.evolab.ne_harmonic', 'Over the last run the population drifted like one of Ne ≈ {value1}: the harmonic mean of the generation sizes, which the {value2} bottleneck generations at 10 dominate. One bad decade outweighs a century of plenty.'), { value1: Math.round(harm), value2: lastRunMeta.bottleneck.duration })
+            : null;
+          var fLine = __alloFill(t('stem.evolab.ne_inbreeding', 'Inbreeding rises by about 1/(2Ne) each generation: at Ne = {value1} that is {value2}% a generation, so after 10 generations F ≈ {value3} and after 50 F ≈ {value4} (the Hardy-Weinberg lab\'s slider 5 shows what that does to genotypes).'), { value1: Math.round(ne), value2: (100 * fRise).toFixed(1), value3: fAfter(10).toFixed(2), value4: fAfter(50).toFixed(2) });
+          var real = t('stem.evolab.ne_real', 'Northern elephant seals breed in harems where one bull can father most of a beach\'s pups, so their Ne sits far below the head count, and their 1890s crash to about twenty animals is still written in their DNA. Conservation biologists use a rule of thumb from this arithmetic: an Ne below about 50 risks inbreeding depression within a few generations, and below about 500 a population slowly loses the variation it would need to adapt.');
+          return h('div', { className: 'bg-white border-2 border-rose-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-rose-800' }, t('stem.evolab.ne_title', '👥 The size that matters: effective population size')),
+              h(SpeakButton, { text: lead + ' ' + (harmLine ? harmLine + ' ' : '') + fLine + ' ' + real })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, lead),
+            harmLine && h('p', { className: 'mt-2 text-sm font-semibold text-slate-800' }, harmLine),
+            h('p', { className: 'mt-2 text-sm text-slate-700' }, fLine),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-rose-50 rounded-lg p-2' }, real)
+          );
+        };
+        // Corridors card: migration among the five populations (Wright's island
+        // model). Drift pushes islands apart at a rate ~1/2N, migration pulls
+        // them together at rate m = Nm/N, so the balance depends on the NUMBER
+        // of migrants, not the fraction: Fst ≈ 1/(1 + 4Nm) at equilibrium.
+        // Replica (island_sim.mjs, N = 50, 100–200 generations): median Fst 0.19
+        // at Nm = 1, 0.10 at Nm = 2, 0.05 at Nm = 4, matching the formula; with
+        // Nm = 0 four runs in five lose or fix the allele in every island by
+        // generation 100, with Nm = 1 only one in twelve does.
+        var fstOf = function(finals) {
+          if (!finals || finals.length < 2) return null;
+          var mu = finals.reduce(function(a, b) { return a + b; }, 0) / finals.length;
+          if (mu <= 0 || mu >= 1) return null; // every island fixed on the same allele: no variation left to apportion
+          var v = finals.reduce(function(a, b) { return a + (b - mu) * (b - mu); }, 0) / (finals.length - 1);
+          return clamp(v / (mu * (1 - mu)), 0, 1);
+        };
+        var renderCorridor = function() {
+          var meta = lastRunMeta;
+          var nmNow = meta ? (meta.migrants || 0) : migrants;
+          var finals = trials.length ? trials.map(function(tr) { return tr[tr.length - 1]; }) : null;
+          var fst = finals ? fstOf(finals) : null;
+          var expected = nmNow > 0 ? 1 / (1 + 4 * nmNow) : 1;
+          var lead = t('stem.evolab.corridor_lead', 'Roads, farms and dams cut one population into islands, and each island then drifts on its own. A corridor, an overpass, or an animal moved by hand is a migrant. Drift pushes islands apart at a rate that shrinks with N; migration pulls them together at the rate m = Nm/N; so what decides the balance is the NUMBER of migrants a generation, Nm, not the fraction.');
+          var formula = nmNow > 0
+            ? __alloFill(t('stem.evolab.corridor_formula', 'Wright\'s island model: with Nm = {value1} the islands settle at Fst ≈ 1/(1 + 4Nm) = {value2}, where Fst is the share of the variation that sits BETWEEN islands (0 = one well-mixed population, 1 = every island fixed on its own allele). It takes about N generations to get there.'), { value1: nmNow, value2: expected.toFixed(2) })
+            : t('stem.evolab.corridor_none', 'With Nm = 0 nothing pulls the islands together: each drifts to 0 or 1 on its own schedule and Fst climbs toward 1.');
+          var reading = finals
+            ? __alloFill(t('stem.evolab.corridor_reading', 'Last run: {value1} of 5 islands ended fixed or lost; final Fst = {value2} (one locus, five islands: expect scatter around the formula).'), { value1: finals.filter(function(v) { return v === 0 || v === 1; }).length, value2: fst == null ? t('stem.evolab.corridor_no_variation', 'undefined, no variation left anywhere') : fst.toFixed(2) })
+            : t('stem.evolab.corridor_no_run', 'Run the lineages to measure Fst.');
+          var rule = t('stem.evolab.corridor_rule', 'The conservation rule of thumb that falls out of this arithmetic is "one migrant per generation": with Nm = 1, Fst ≈ 0.2, enough exchange to stop islands losing alleles one by one, yet little enough for local adaptation to persist. A migrant only counts if it breeds.');
+          var real = t('stem.evolab.corridor_real', 'Isle Royale, Lake Superior: the island\'s wolves were cut off and inbred until a single male crossed the ice in 1997. Within a decade most of the pack carried his genes and inbreeding fell; when his contribution faded the population collapsed again, and in 2018 managers began moving wolves in on purpose. One migrant did what this slider does.');
+          return h('div', { className: 'bg-white border-2 border-emerald-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800' }, t('stem.evolab.corridor_title', '🌉 Corridors: one migrant per generation')),
+              h(SpeakButton, { text: lead + ' ' + formula + ' ' + reading + ' ' + rule + ' ' + real })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, lead),
+            h('p', { className: 'mt-2 text-sm text-slate-800' }, formula),
+            h('p', { role: 'status', className: 'mt-2 text-sm font-semibold text-slate-900', 'data-drift-fst': fst == null ? '' : fst.toFixed(2) }, reading),
+            h('p', { className: 'mt-2 text-sm text-slate-700' }, rule),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-emerald-50 rounded-lg p-2' }, real)
+          );
+        };
         var driftOutcome = function() {
           if (!trials.length || !lastRunMeta) return null;
           if (fixedCount === 0) return 'none';
@@ -2656,8 +3709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: lastRunMeta.sourceRunKey,
             moduleLabel: 'Genetic Drift Simulator',
             comparison: {
-              designKey: 'N=' + lastRunMeta.popSize + '|generations=' + lastRunMeta.generations + '|bottleneck=' + (lastRunMeta.bottleneck ? 'on' : 'off'),
-              designLabel: 'N = ' + lastRunMeta.popSize + ' for ' + lastRunMeta.generations + ' generations' + (lastRunMeta.bottleneck ? ', bottleneck to N = 10 for 5 generations at generation ' + lastRunMeta.bottleneck.at : ''),
+              designKey: 'N=' + lastRunMeta.popSize + '|males=' + malesOf(lastRunMeta.popSize, lastRunMeta.maleShare) + '|Nm=' + (lastRunMeta.migrants || 0) + '|generations=' + lastRunMeta.generations + '|bottleneck=' + (lastRunMeta.bottleneck ? 'on' : 'off') + '|s=' + Number(lastRunMeta.selection || 0).toFixed(2),
+              designLabel: 'N = ' + lastRunMeta.popSize + (lastRunMeta.maleShare < 0.5 ? ' (' + malesOf(lastRunMeta.popSize, lastRunMeta.maleShare) + ' breeding males, Ne = ' + Math.round(neOf(lastRunMeta.popSize, lastRunMeta.maleShare)) + ')' : '') + ' for ' + lastRunMeta.generations + ' generations' + (lastRunMeta.bottleneck ? ', bottleneck to N = 10 for 5 generations at generation ' + lastRunMeta.bottleneck.at : ''),
               primaryLabel: 'mean absolute displacement from p(A) = 0.500',
               primaryValue: meanAbsoluteDisplacement,
               primaryDisplay: meanAbsoluteDisplacement.toFixed(3),
@@ -2665,15 +3718,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               unit: '',
               factors: [
                 { id: 'populationSize', label: 'Population size', value: lastRunMeta.popSize },
+                { id: 'breedingMales', label: 'Breeding males', value: malesOf(lastRunMeta.popSize, lastRunMeta.maleShare) },
+                { id: 'migrants', label: 'Migrants per generation (Nm)', value: lastRunMeta.migrants || 0 },
                 { id: 'generations', label: 'Generations', value: lastRunMeta.generations },
-                { id: 'bottleneck', label: 'Bottleneck', value: lastRunMeta.bottleneck ? 'On (N→10 for 5 generations)' : 'Off' }
+                { id: 'bottleneck', label: 'Bottleneck', value: lastRunMeta.bottleneck ? 'On (N→10 for 5 generations)' : 'Off' },
+                { id: 'selection', label: 'Selection for A (s)', value: Number(Number(lastRunMeta.selection || 0).toFixed(2)) }
               ]
             },
-            baseline: 'Generation 0: N = ' + lastRunMeta.popSize + ' diploid individuals; p(A) = 0.500 in all 5 lineages.',
-            settings: '5 independent lineages for ' + lastRunMeta.generations + ' generations; random sampling only (no selection, mutation, or migration).',
+            baseline: 'Generation 0: N = ' + lastRunMeta.popSize + ' diploid individuals (' + malesOf(lastRunMeta.popSize, lastRunMeta.maleShare) + ' breeding males, effective size Ne = ' + Math.round(neOf(lastRunMeta.popSize, lastRunMeta.maleShare)) + '); p(A) = 0.500 in all 5 lineages.',
+            settings: '5 ' + (lastRunMeta.migrants > 0 ? 'connected lineages (Nm = ' + lastRunMeta.migrants + ' migrants a generation)' : 'independent lineages') + ' for ' + lastRunMeta.generations + ' generations; random sampling' + (lastRunMeta.selection > 0 ? ' with selection for A (s = ' + Number(lastRunMeta.selection).toFixed(2) + ')' : ' only') + '; no mutation.',
             outcome: 'Final p(A): ' + finalText + '. Range ' + minFinal.toFixed(3) + '–' + maxFinal.toFixed(3) + '; A fixed in ' + fixedAtA + '/5, A lost in ' + lostA + '/5, and ' + polymorphic + '/5 remained polymorphic.',
             metrics: [
               { label: 'Population N', value: String(lastRunMeta.popSize) },
+              { label: 'Effective size Ne', value: String(Math.round(neOf(lastRunMeta.popSize, lastRunMeta.maleShare))) },
               { label: 'Generations', value: String(lastRunMeta.generations) },
               { label: 'Mean final p(A)', value: meanFinal.toFixed(3) },
               { label: 'Mean absolute displacement from 0.500', value: meanAbsoluteDisplacement.toFixed(3) },
@@ -2782,6 +3839,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 accent: 'accent-cyan-500'
               })
             ),
+            h(LabeledSlider, {
+              label: t('stem.evolab.selection_for_a', 'Selection for A (s)'),
+              value: selForA, min: 0, max: 0.2, step: 0.01,
+              onChange: function(v) { setSelForA(v); },
+              valueText: selForA === 0 ? t('stem.evolab.neutral_pure_drift', 'Neutral: pure drift') : 'A ' + Math.round(selForA * 100) + '% ' + t('stem.evolab.fitter_than_a', 'fitter than a'),
+              accent: 'accent-emerald-600',
+              hint: t('stem.evolab.selection_for_a_hint', 'Give allele A an advantage and see whether chance can still beat it. What decides is the product N × s: below about 1 drift dominates; above about 10 selection nearly always wins.')
+            }),
+            h(LabeledSlider, {
+              label: t('stem.evolab.breeding_males', 'Breeding males (of N)'),
+              value: malesOf(popSize), min: 1, max: Math.max(1, Math.floor(popSize / 2)), step: 1,
+              onChange: function(v) { setMaleShare(Math.min(0.5, Math.max(1 / popSize, Math.round(v) / popSize))); },
+              valueText: malesOf(popSize) + ' ♂ + ' + Math.max(1, popSize - malesOf(popSize)) + ' ♀ → Ne = ' + Math.round(neOf(popSize)),
+              valueColor: malesOf(popSize) < Math.floor(popSize / 2) ? 'text-rose-700' : 'text-slate-600',
+              accent: 'accent-rose-500',
+              hint: t('stem.evolab.breeding_males_hint', 'How many of the N breeders are male; the rest are female. An even ratio gives Ne = N. One harem bull among hundreds of females gives Ne ≈ 4, and the sampling step then draws 2·Ne alleles, so the census stops mattering.')
+            }),
+            h(LabeledSlider, {
+              label: t('stem.evolab.migrants_nm', 'Migrants between the five populations (Nm)'),
+              value: migrants, min: 0, max: 4, step: 0.25,
+              onChange: function(v) { setMigrants(v); },
+              valueText: migrants === 0 ? t('stem.evolab.nm_isolated', 'Isolated islands') : migrants + ' ' + t('stem.evolab.nm_per_gen', 'migrant(s) a generation each') + ' → Fst ≈ ' + (1 / (1 + 4 * migrants)).toFixed(2),
+              accent: 'accent-emerald-600',
+              hint: t('stem.evolab.migrants_nm_hint', 'Treat the five lineages as five islands and let this many breeding migrants a generation move between them (a corridor, a wildlife overpass, an animal moved by hand). Even one a generation changes everything; see the Corridors card.')
+            }),
+            selForA > 0 && (function() {
+              var neK = neOf(popSize);
+              var pred = kimuraFix(neK, selForA);
+              var tl = fixTallyRef.current.key === Math.round(neK) + '|' + selForA.toFixed(2) ? fixTallyRef.current : null;
+              var decided = tl ? tl.fixedA + tl.lostA : 0;
+              return h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-3 text-sm text-slate-800' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800' }, t('stem.evolab.kimura_title', '🎯 Will the better allele win?')),
+                h('p', { className: 'mt-1' }, __alloFill(t('stem.evolab.kimura_pred', 'Kimura\'s formula: with Ne = {value1} and s = {value2} (4·Ne·s = {value3}), a lineage starting at p = 0.5 fixes A with probability {value4}%; pure chance would give 50%.'), { value1: Math.round(neK), value2: selForA.toFixed(2), value3: (4 * neK * selForA).toFixed(1), value4: Math.round(pred * 100) })),
+                h('p', { className: 'mt-1 font-bold' }, tl ? __alloFill(t('stem.evolab.kimura_tally', 'Your runs at these settings: A won (p ≥ 0.95) in {value1} of {value2} decided lineages ({value3}%), {value4} still undecided, over {value5} run{value6}.'), { value1: tl.fixedA, value2: decided, value3: decided ? Math.round((100 * tl.fixedA) / decided) : '—', value4: tl.undecided, value5: tl.runs, value6: tl.runs === 1 ? '' : 's' }) : t('stem.evolab.kimura_no_runs', 'Run the lineages a few times at these settings and compare your tally with the prediction.')),
+                h('p', { className: 'mt-1 text-xs text-slate-700' }, t('stem.evolab.kimura_note', 'The neutral challenges and the heterozygosity curve assume s = 0; with selection on they are switched off.'))
+              );
+            })(),
             // Bottleneck toggle
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex flex-wrap items-center justify-between gap-3' },
               h('div', null,
@@ -2795,6 +3889,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-4 py-2 rounded-lg font-bold ' + (bottleneck ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-700')
               }, bottleneck ? '✓ ' + t('stem.evolab.bottleneck_enabled', 'Bottleneck on') : t('stem.evolab.bottleneck_disabled', 'Bottleneck off'))
             ),
+            renderNe(),
+            renderCorridor(),
+            trials.length > 0 && lastRunMeta && lastRunMeta.migrants > 0 && h(CheckCard, {
+              moduleId: 'geneticDrift', id: 'corridor',
+              border: 'border-emerald-400', heading: 'text-emerald-800',
+              question: t('stem.evolab.check_corridor_q', 'One migrant a generation is 2% of an island of 50, yet it keeps five islands from losing alleles one by one. Why does so little matter so much?'),
+              options: [
+                { id: 'stronger', label: t('stem.evolab.check_corridor_stronger', 'Because migration is always stronger than drift once any migrants arrive.'), feedback: t('stem.evolab.check_corridor_stronger_fb', 'It is a balance, not a knockout: drift separates the islands at a rate near 1/2N a generation and migration pulls them together at m = Nm/N. Their ratio is what Fst ≈ 1/(1 + 4Nm) measures, and at Nm = 0.25 drift still wins most of the way.') },
+                { id: 'number', label: t('stem.evolab.check_corridor_number', 'Because drift also weakens with N, so the number of migrants sets the balance: one a generation offsets drift in an island of any size.'), correct: true, feedback: t('stem.evolab.check_corridor_number_fb', 'Yes. Both rates carry a 1/N, so N cancels and Nm is what is left. That is why the conservation rule is stated in migrants, not in percentages, and why moving a single breeding wolf to Isle Royale could rescue a whole population.') },
+                { id: 'new', label: t('stem.evolab.check_corridor_new', 'Because each migrant brings a brand-new allele.'), feedback: t('stem.evolab.check_corridor_new_fb', 'The migrant carries the same two alleles the islands started with. What it brings is a different FREQUENCY: an allele lost on one island is still common on another, and one breeding immigrant reintroduces it.') },
+                { id: 'double', label: t('stem.evolab.check_corridor_double', 'Because one migrant doubles the effective population size.'), feedback: t('stem.evolab.check_corridor_double_fb', 'Ne of each island barely moves; the migrant changes the connection between islands, not their size. Turn the slider up to 4 and the five behave like one population of 250; turn it to 0 and each is on its own.') }
+              ]
+            }),
+            trials.length > 0 && lastRunMeta && lastRunMeta.maleShare < 0.5 && h(CheckCard, {
+              moduleId: 'geneticDrift', id: 'ne',
+              border: 'border-rose-400', heading: 'text-rose-800',
+              question: t('stem.evolab.check_ne_q', 'A colony of 200 elephant seals has 10 breeding bulls and 190 breeding females. Which number sets the pace of drift?'),
+              options: [
+                { id: 'census', label: t('stem.evolab.check_ne_census', '200: every animal in the colony counts.'), feedback: t('stem.evolab.check_ne_census_fb', 'Head count is not what the sampling step sees. Half of every pup\'s genes come through one of only 10 bulls, so those 10 act as a tiny bottleneck every single generation. Ne = 4 × 10 × 190 / 200 = 38.') },
+                { id: 'ne', label: t('stem.evolab.check_ne_ne', '38: the effective size, set mostly by the rarer sex.'), correct: true, feedback: t('stem.evolab.check_ne_ne_fb', 'Yes. Ne = 4·Nm·Nf / (Nm + Nf) = 38, so this colony of 200 drifts like an even-ratio colony of 38 and loses heterozygosity at about 1/76 a generation. Skew the slider to 10 of 200 and run it to see the lineages behave that way.') },
+                { id: 'males', label: t('stem.evolab.check_ne_males', '10: only the bulls matter.'), feedback: t('stem.evolab.check_ne_males_fb', 'The bulls set the pace but the females still carry half the genes: Ne is 38, not 10. The formula weights the rarer sex heavily without ignoring the other.') },
+                { id: 'half', label: t('stem.evolab.check_ne_half', '100: half the census, since only one sex breeds at a time.'), feedback: t('stem.evolab.check_ne_half_fb', 'Both sexes breed every generation. The loss comes from the skew: 4·10·190/200 = 38. With 100 bulls and 100 cows it would be the full 200.') }
+              ]
+            }),
             // Run / reset
             h('div', { className: 'flex gap-3 justify-center' },
               h('button', {
@@ -2806,6 +3924,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
               }, t('stem.evolab.clear', '↺ Clear'))
             ),
+            h(DataTable, { title: t('stem.evolab.dt_drift_title', 'Allele frequency of each lineage by generation'), heading: 'text-rose-800', rows: (function() { var n = trials.reduce(function(m, tr) { return Math.max(m, tr.length); }, 0); var out = []; for (var g = 0; g < n; g++) { var row = { gen: g }; trials.forEach(function(tr, i) { row['l' + (i + 1)] = tr[g]; }); out.push(row); } return out; })(), columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }].concat([1, 2, 3, 4, 5].map(function(i) { return { key: 'l' + i, label: t('stem.evolab.col_lineage', 'Lineage') + ' ' + i, digits: 3 }; })) }),
+            renderHeterozygosity(),
             h(CapstoneCapture, {
               moduleId: 'geneticDrift',
               moduleLabel: 'Genetic Drift Simulator',
@@ -2829,8 +3949,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               moduleId: 'geneticDrift',
               challenges: [
                 { id: 'allFixed', title: t('stem.evolab.ch_allfixed', 'Every lineage decided: '), body: t('stem.evolab.ch_allfixed_body', 'With N at 10 or less and 100 generations or fewer, get a run where all five lineages have fixed or lost the allele by the end.') },
-                { id: 'holdSteady', title: t('stem.evolab.ch_holdsteady', 'Big numbers hold steady: '), body: t('stem.evolab.ch_holdsteady_body', 'With N at 1000 or more for 100+ generations, get a run where all five lineages finish between 0.45 and 0.55.') },
-                { id: 'bottleneckScar', title: t('stem.evolab.ch_bottleneck', 'Scar of a bottleneck: '), body: t('stem.evolab.ch_bottleneck_body', 'With N at 500 or more and the bottleneck on, get at least one lineage to finish at or beyond 0.8 or 0.2. Cheetahs carry exactly this kind of scar.') }
+                { id: 'holdSteady', title: t('stem.evolab.ch_holdsteady', 'Big numbers hold steady: '), body: t('stem.evolab.ch_holdsteady_body', 'With N at 1000 or more for 100+ generations, get a run where all five lineages finish between 0.30 and 0.70. Then try the same at N = 10 and count how many even stay off the edges.') },
+                { id: 'bottleneckScar', title: t('stem.evolab.ch_bottleneck', 'Scar of a bottleneck: '), body: t('stem.evolab.ch_bottleneck_body', 'With N at 500 or more and the bottleneck on, get at least one lineage to finish at or beyond 0.8 or 0.2. Cheetahs carry exactly this kind of scar.') },
+                { id: 'oneOfFive', title: t('stem.evolab.ch_onefive', 'Five islands, one population: '), body: t('stem.evolab.ch_onefive_body', 'With N = 50 or more and migrants switched on, run 200 generations and finish with all five lineages within 0.2 of each other and none fixed. One migrant a generation almost never manages it; four migrants, about one run in three.') },
+                { id: 'neTiny', title: t('stem.evolab.ch_netiny', 'Drift like ten with a thousand: '), body: t('stem.evolab.ch_netiny_body', 'At N = 1000, choose a breeding sex ratio that brings Ne to 12 or below, then get all five lineages fixed at 0 or 1 within 100 generations. A thousand animals, and the sampling step never sees more than a dozen.') }
               ],
               border: 'border-rose-400', heading: 'text-rose-800',
               title: t('stem.evolab.try_these_experiments_2', '🧪 Try these experiments'),
@@ -2839,7 +3961,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'big', auto: true, title: t('stem.evolab.big_population_n_1000', 'Big population (N=1000): '), body: t('stem.evolab.same_100_generations_lineages_stay_nea', 'Same 100 generations. Lineages stay near p=0.5 — drift can\'t move them much because random sampling from many individuals smooths out.') },
                 { id: 'longTerm', auto: true, title: t('stem.evolab.long_term_tiny_population', 'Long-term tiny population: '), body: t('stem.evolab.long_term_drift_not_founder', 'Set N=10 and generations=500. Watch lineages drift toward loss or fixation. This is repeated random sampling, not a founder event by itself.') },
                 { id: 'bottleneck', auto: true, title: t('stem.evolab.exp_bottleneck', 'Bottleneck in a big population: '), body: t('stem.evolab.exp_bottleneck_body', 'Set N = 1000, turn the Bottleneck on, and run. Lineages that were flat for 50 generations lurch inside the shaded band and then freeze at their new level: five generations of small numbers did what a thousand individuals could not.') },
-                { id: 'compare', auto: true, title: t('stem.evolab.compare_outcomes', 'Compare outcomes: '), body: t('stem.evolab.drift_variance_scaling', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary widely; N=1000 trajectories usually fluctuate less. Per-generation sampling variance is p(1-p)/(2N), so typical fluctuation scales roughly with 1/√N.') }
+                { id: 'compare', auto: true, title: t('stem.evolab.compare_outcomes', 'Compare outcomes: '), body: t('stem.evolab.drift_variance_scaling', 'Run N=10 three times, then N=1000 three times. The N=10 outcomes vary widely; N=1000 trajectories usually fluctuate less. Per-generation sampling variance is p(1-p)/(2N), so typical fluctuation scales roughly with 1/√N.') },
+                { id: 'halfLife', auto: true, title: t('stem.evolab.exp_half_life', 'Variation halves on schedule: '), body: t('stem.evolab.exp_half_life_body', 'Run N = 10 or 50 for 100+ generations and read the heterozygosity chart: the five-lineage average should cross 0.25 near 1.4 × N generations. Run it again; the lineages differ, the schedule does not.') },
+                { id: 'selectionLoses', auto: true, title: t('stem.evolab.exp_selection_loses', 'A favoured allele lost by chance: '), body: t('stem.evolab.exp_selection_loses_body', 'N = 10, selection for A at 0.05, run 5 lineages. Kimura predicts A wins about 73% of the time, so expect it to be LOST in one or two lineages despite being better. Selection changes the odds; in small populations it does not decide.') },
+                { id: 'corridor', auto: true, title: t('stem.evolab.exp_corridor', 'One migrant per generation: '), body: t('stem.evolab.exp_corridor_body', 'N = 50, 100 generations, migrants at 0: most runs end with islands fixed or lost. Set migrants to 1 and run again: in nine runs out of ten no island loses the allele, and Fst settles near 0.2. Same islands, one breeding migrant a generation.') },
+                { id: 'harem', auto: true, title: t('stem.evolab.exp_harem', 'Census size lies: '), body: t('stem.evolab.exp_harem_body', 'N = 200 or 1000 with ONE breeding male, s = 0, 50 generations. Every lineage is decided within the run, exactly as N = 10 would be, because Ne = 4·1·(N−1)/N is about 4 whatever the head count. Elephant seals live this every breeding season.') },
+                { id: 'selectionWins', auto: true, title: t('stem.evolab.exp_selection_wins', 'Big numbers let selection decide: '), body: t('stem.evolab.exp_selection_wins_body', 'Same s = 0.05, N = 200: 4Ns = 40 and every lineage should end with A near 1 (exact fixation at large N can take longer than 100 generations). The same advantage that was a coin toss at N = 10 is a certainty at N = 200.') }
               ]
             }),
             // Cross-module suggestion
@@ -2861,6 +3988,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'biased', label: t('stem.evolab.check_drift_biased', 'The simulator\'s random numbers must be biased toward one allele.'), feedback: t('stem.evolab.check_drift_biased_fb', 'Run it again: across many lineages about half fix at A and half lose it. Fixation and loss are equally likely from p = 0.5, which is exactly what unbiased sampling predicts.') }
               ]
             }),
+            trials.length > 0 && lastRunMeta && lastRunMeta.selection > 0 && h(CheckCard, {
+              moduleId: 'geneticDrift', id: 'ns',
+              border: 'border-rose-400', heading: 'text-rose-800',
+              question: t('stem.evolab.check_ns_q', 'With N = 10 and A favoured by 5%, A was lost in two of five lineages. Which is right?'),
+              options: [
+                { id: 'tooWeak', label: t('stem.evolab.check_ns_tooweak', 'Selection was too weak to matter, so this was pure drift.'), feedback: t('stem.evolab.check_ns_tooweak_fb', 'It mattered: it moved the odds of A winning from 50% to about 73%. It just did not decide. Weak and decisive are different things.') },
+                { id: 'odds', label: t('stem.evolab.check_ns_odds', 'In a small population chance can overrule a real advantage; the advantage only changes the odds.'), correct: true, feedback: t('stem.evolab.check_ns_odds_fb', 'Yes. Kimura\'s formula says what decides is N × s. The same 5% edge is a near-certainty at N = 200, because sampling noise shrinks as N grows.') },
+                { id: 'hidden', label: t('stem.evolab.check_ns_hidden', 'The lineages that lost A must have had a hidden cost to A.'), feedback: t('stem.evolab.check_ns_hidden_fb', 'Every lineage used the same rule: A was 5% fitter in all of them. Only the random draws differed.') },
+                { id: 'threshold', label: t('stem.evolab.check_ns_threshold', 'Selection only works when s is above 10%.'), feedback: t('stem.evolab.check_ns_threshold_fb', 'There is no threshold on s alone. A tiny s wins reliably in a huge population; a large s can lose in a tiny one. The product N × s is what counts.') }
+              ]
+            }),
+            trials.length > 0 && h(CheckCard, {
+              moduleId: 'geneticDrift', id: 'het',
+              border: 'border-rose-400', heading: 'text-rose-800',
+              question: t('stem.evolab.check_het_q', 'Each of the five lineages wandered differently, yet their average heterozygosity tracked one smooth curve. What does that tell you?'),
+              options: [
+                { id: 'steer', label: t('stem.evolab.check_het_steer', 'The simulator secretly steers the average.'), feedback: t('stem.evolab.check_het_steer_fb', 'No: each lineage is an independent set of coin tosses. Averages of many random processes are predictable even when each one is not; that is the basis of all statistics.') },
+                { id: 'rate', label: t('stem.evolab.check_het_rate', 'Chance is unpredictable for one lineage but has a predictable average: variation is lost at a rate set by N.'), correct: true, feedback: t('stem.evolab.check_het_rate_fb', 'Yes. Heterozygosity falls by a factor (1 − 1/2N) each generation on average. Which allele wins is a coin toss; how fast variation drains away is not.') },
+                { id: 'unfit', label: t('stem.evolab.check_het_unfit', 'Heterozygosity falls because heterozygotes are less fit.'), feedback: t('stem.evolab.check_het_unfit_fb', 'There is no selection in this model at all. Heterozygosity falls because sampling pushes p toward 0 or 1, where 2p(1−p) is small.') },
+                { id: 'mutating', label: t('stem.evolab.check_het_mutating', 'Small populations must be mutating faster.'), feedback: t('stem.evolab.check_het_mutating_fb', 'No mutation here either. Smaller N means a bigger random jump each generation, so p reaches an edge sooner.') }
+              ]
+            }),
+            h(ModelLimits, { moduleId: 'geneticDrift', heading: 'text-rose-800' }),
             h(KeyTerms, { moduleId: 'geneticDrift', heading: 'text-rose-800' }),
             h(FieldNote, { moduleId: 'geneticDrift', border: 'border-rose-400', heading: 'text-rose-800', prompt: t('stem.evolab.note_prompt_drift', 'Two lineages with identical rules ended at 0 and 1. Explain that to someone who thinks evolution always has a reason.') }),
             h(TeacherNotes, {
@@ -2965,6 +4115,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var preset = PRESETS[presetId];
         var selStrengthState = useState(1.0), selStrength = selStrengthState[0], setSelStrength = selStrengthState[1];
         var mutSizeState = useState(0.04), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        // Heritability h²: the fraction of trait variation that is genetic. Each
+        // creature carries a breeding value (gene) and shows a phenotype
+        // (trait = gene + a fresh environmental deviation). Selection sees the
+        // phenotype; only the gene is passed on (± mutation). The dial re-splits
+        // the current phenotypes into gene + environment and fixes the
+        // environmental SD from then on, so the REALIZED h² (V_G / V_P) moves:
+        // selection removes genetic variance, mutation adds it. At h² = 1 the
+        // gene IS the trait and the model is exactly what it was before the dial
+        // existed. Replica: scratchpad/evolab/herit_sim2.mjs.
+        var heritState = useState(1), herit = heritState[0], setHerit = heritState[1];
+        var heritRef = useRef(herit);
+        var envSdRef = useRef(0);
+        var heritRangeRef = useRef({ min: 1, max: 1 }); // dial range since the last reset (challenge gating)
+        var breederRef = useRef({ sumS: 0, sumPred: 0 });
         var generationState = useState(0), generation = generationState[0], setGeneration = generationState[1];
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
         var popSizeState = useState(POP_SIZE), popSize = popSizeState[0], setPopSize = popSizeState[1];
@@ -2993,7 +4157,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         autoRunRef.current = autoRun;
         selStrengthRef.current = selStrength;
         mutSizeRef.current = mutSize;
+        heritRef.current = herit;
 
+        var realizedH2 = function(pop) {
+          var n = pop.length || 1, s1 = 0, s2 = 0, g1 = 0, g2 = 0;
+          for (var i = 0; i < pop.length; i++) { var c = pop[i]; var g = c.gene == null ? c.trait : c.gene; s1 += c.trait; s2 += c.trait * c.trait; g1 += g; g2 += g * g; }
+          var vp = s2 / n - (s1 / n) * (s1 / n), vg = g2 / n - (g1 / n) * (g1 / n);
+          return vp > 1e-9 ? clamp(vg / vp, 0, 1) : 0;
+        };
+        // Re-split the current phenotypes into gene + environment for a new h²:
+        // gene = μ + h²(P − μ) + N(0, σ_P·√(h²(1 − h²))), so V_G = h²·V_P and the
+        // environmental SD σ_P·√(1 − h²) is fixed until the next split.
+        var splitGenes = function(h2) {
+          var pop = creaturesRef.current;
+          var n = pop.length || 1, sum = 0, sumSq = 0;
+          for (var i = 0; i < pop.length; i++) { sum += pop[i].trait; sumSq += pop[i].trait * pop[i].trait; }
+          var mu = sum / n, sd = Math.sqrt(Math.max(0, sumSq / n - mu * mu));
+          var resid = sd * Math.sqrt(Math.max(0, h2 * (1 - h2)));
+          for (var k = 0; k < pop.length; k++) pop[k].gene = h2 >= 1 ? pop[k].trait : clamp(mu + h2 * (pop[k].trait - mu) + randNormal(0, resid), 0, 1);
+          envSdRef.current = h2 >= 1 ? 0 : sd * Math.sqrt(Math.max(0, 1 - h2));
+        };
         // Initialize / reset population. Each creature is randomly placed,
         // gets a random trait from [0,1] uniform, random velocity.
         var initPopulation = function() {
@@ -3001,7 +4184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var pop = [];
           var initialSum = 0, initialSumSq = 0;
           var census = popSizeRef.current;
-          runStartedAtRef.current = { preset: presetRef.current ? presetRef.current.label : '', strength: selStrengthRef.current, mutation: mutSizeRef.current, popSize: census, driftOnly: !!(presetRef.current && presetRef.current.width >= 900) };
+          runStartedAtRef.current = { preset: presetRef.current ? presetRef.current.label : '', strength: selStrengthRef.current, mutation: mutSizeRef.current, herit: heritRef.current, popSize: census, driftOnly: !!(presetRef.current && presetRef.current.width >= 900) };
           for (var i = 0; i < census; i++) {
             var initialTrait = Math.random();
             pop.push({
@@ -3010,6 +4193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               vx: (Math.random() - 0.5) * 30,
               vy: (Math.random() - 0.5) * 30,
               trait: initialTrait,
+              gene: initialTrait,
               alive: true,
               age: 0
             });
@@ -3020,8 +4204,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var initialVariance = (initialSumSq / census) - initialMean * initialMean;
           var initialStd = Math.sqrt(Math.max(0, initialVariance));
           creaturesRef.current = pop;
+          splitGenes(heritRef.current);
+          heritRangeRef.current = { min: heritRef.current, max: heritRef.current };
+          breederRef.current = { sumS: 0, sumPred: 0 };
           selectionBaselineRef.current = { mean: initialMean, std: initialStd, population: census };
-          historyRef.current = [{ gen: 0, mean: initialMean, std: initialStd, alive: census }];
+          historyRef.current = [{ gen: 0, mean: initialMean, std: initialStd, alive: census, h2: realizedH2(pop) }];
           generationRef.current = 0;
           autoRunRef.current = false;
           setAutoRun(false);
@@ -3054,6 +4241,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // readers get spammed every 1.5s).
         var stepGeneration = function(silent) {
           var pop = creaturesRef.current.slice();
+          var beforeSum = 0;
+          for (var b0 = 0; b0 < pop.length; b0++) beforeSum += pop[b0].trait;
+          var meanBefore = pop.length ? beforeSum / pop.length : 0.5;
+          var h2Before = realizedH2(pop);
           // Selection pass
           var survivors = [];
           for (var i = 0; i < pop.length; i++) {
@@ -3064,20 +4255,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (survivors.length === 0) {
             survivors = pop.sort(function(a, b) { return fitnessOf(b.trait) - fitnessOf(a.trait); }).slice(0, Math.max(2, Math.floor(pop.length / 2)));
           }
+          var selSum = 0;
+          for (var sv = 0; sv < survivors.length; sv++) selSum += survivors[sv].trait;
+          var selMean = survivors.length ? selSum / survivors.length : meanBefore;
           // Reproduce until population is back to POP_SIZE.
           // Discrete generations: sample a full offspring generation with
           // replacement from selected parents. Equal fitness can now drift.
+          // Offspring inherit the parent's GENE (± mutation) and draw a fresh
+          // environmental deviation; at h² = 1 that deviation is zero.
           var next = [];
           var mutNow = mutSizeRef.current;
+          var envSd = envSdRef.current;
           var census = popSizeRef.current;
           while (next.length < census) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
+            var childGene = clamp((parent.gene == null ? parent.trait : parent.gene) + randNormal(0, mutNow), 0, 1);
             next.push({
               x: parent.x + (Math.random() - 0.5) * 30,
               y: parent.y + (Math.random() - 0.5) * 30,
               vx: (Math.random() - 0.5) * 30,
               vy: (Math.random() - 0.5) * 30,
-              trait: clamp(parent.trait + randNormal(0, mutNow), 0, 1),
+              gene: childGene,
+              trait: envSd > 0 ? clamp(childGene + randNormal(0, envSd), 0, 1) : childGene,
               alive: true,
               age: 0
             });
@@ -3089,7 +4288,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var variance = (sumSq / next.length) - mean * mean;
           var std = Math.sqrt(Math.max(0, variance));
           var nextGen = generationRef.current + 1;
-          historyRef.current.push({ gen: nextGen, mean: mean, std: std, alive: survivors.length });
+          var selDiff = selMean - meanBefore;
+          breederRef.current.sumS += selDiff;
+          breederRef.current.sumPred += h2Before * selDiff;
+          historyRef.current.push({ gen: nextGen, mean: mean, std: std, alive: survivors.length, sel: selMean, S: selDiff, h2: h2Before, R: mean - meanBefore });
           if (historyRef.current.length > 80) historyRef.current.shift();
           creaturesRef.current = next;
           generationRef.current = nextGen;
@@ -3113,6 +4315,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (gen >= 10 && mutSizeRef.current === 0 && p.width < 900) detectExperiment('selectionSandbox', 'mutation', 'Mutation matters');
           if (gen >= 20 && p.width < 900 && p.ideal === 0.68) detectExperiment('selectionSandbox', 'snowshoe', 'Snowshoe hare scenario');
           if (gen >= 20 && p.width >= 900 && popSizeRef.current <= 20) detectExperiment('selectionSandbox', 'driftSize', 'Drift and population size');
+          // Heritability: all three gate on the dial range since the last reset so a
+          // run cannot be walked to the peak at h² = 1 and then re-labelled.
+          var hr = heritRangeRef.current, br = breederRef.current;
+          var total = meanNow - selectionBaselineRef.current.mean;
+          var directional = p.mode === 'gaussian' && p.width < 900 && Math.abs(p.ideal - 0.5) >= 0.15;
+          if (gen >= 10 && hr.max === 0 && mutSizeRef.current === 0 && directional && selStrengthRef.current >= 0.9 && Math.abs(total) < 0.1 && br.sumS >= 0.8) detectExperiment('selectionSandbox', 'noInheritance', 'Selection without inheritance');
+          if (gen >= 20 && hr.max === 0 && mutSizeRef.current >= 0.02 && p.mode === 'gaussian' && p.width < 900 && p.ideal > 0.7 && selStrengthRef.current >= 0.9 && total >= 0.1) detectExperiment('selectionSandbox', 'mutationRebuilds', 'Mutation rebuilds heritable variation');
+          if (gen >= 10 && hr.min >= 0.3 && hr.max <= 0.7 && directional && selStrengthRef.current >= 0.5 && br.sumS >= 0.3 && Math.abs(total - br.sumPred) < 0.5 * Math.abs(total - br.sumS)) detectExperiment('selectionSandbox', 'breeder', 'Only the heritable part responds');
+          if (gen <= 10 && hr.max <= 0.3 && p.mode === 'gaussian' && p.width < 900 && p.ideal > 0.7 && Math.abs(meanNow - p.ideal) < 0.05) detectChallenge('selectionSandbox', 'lowHerit', 'Peak on a low heritability budget', gen);
           if (gen <= 15 && p.mode === 'gaussian' && p.width < 900 && p.ideal === 0.5 && stdNow < 0.08) detectChallenge('selectionSandbox', 'tightStabilizing', 'Tight stabilizing selection', stdNow);
           if (p.mode === 'bimodal') {
             var lo2 = 0, mid2 = 0, hi2 = 0;
@@ -3312,6 +4523,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
         var latest = historyRef.current[historyRef.current.length - 1] || { mean: 0.5, std: 0.29, alive: popSize };
         var census = selectionBaselineRef.current.population || popSize;
+        // Breeder's equation card: R = h² × S, read off the live run. S is the
+        // survivors' mean minus the pre-selection mean; R is the next
+        // generation's mean minus the same. The prediction uses the REALIZED
+        // h² of each parental generation (V_G / V_P), which selection erodes
+        // and mutation rebuilds. Replica: scratchpad/evolab/herit_sim2.mjs.
+        var renderBreeder = function() {
+          if (generation <= 0 || preset.width >= 900 || selStrength <= 0) return null;
+          var hist = historyRef.current;
+          var last = hist[hist.length - 1];
+          if (!last || last.S == null) return null;
+          var br = breederRef.current;
+          var base = selectionBaselineRef.current;
+          var total = latest.mean - base.mean;
+          var h2Now = realizedH2(creaturesRef.current);
+          var sign = function(v) { return (v >= 0 ? '+' : '') + v.toFixed(3); };
+          var wobble = 2 * latest.std / Math.sqrt(census);
+          var story;
+          if (herit === 0 && mutSize === 0) story = t('stem.evolab.breeder_story_none', 'Nothing here is heritable, so each generation\'s survivors pass none of their advantage on: S keeps adding up while R stays near zero. Selection happened every generation; evolution did not.');
+          else if (herit === 0) story = __alloFill(t('stem.evolab.breeder_story_mut', 'You started with nothing heritable. Every generation, mutation (σ = {value1}) adds a little genetic variation, so h² now is {value2}; once it passes about 0.1 the population starts to follow the survivors. Mutation is where heritable variation comes from.'), { value1: mutSize.toFixed(2), value2: h2Now.toFixed(2) });
+          else if (herit >= 1) story = t('stem.evolab.breeder_story_full', 'With h² = 1 every difference between creatures is genetic, so the population moves by the whole selection differential each generation, give or take the luck of who gets drawn to breed.');
+          else story = __alloFill(t('stem.evolab.breeder_story_part', 'Only the heritable part of a survivor\'s advantage reaches its offspring; the rest was environment, and environment is not inherited. h² now is {value1} against the {value2} you set: selection keeps removing the genetic variation it acts on, and mutation puts some back.'), { value1: h2Now.toFixed(2), value2: herit.toFixed(1) });
+          var stat = function(label, value) {
+            return h('div', { className: 'rounded-lg bg-amber-50 border border-amber-200 p-2' },
+              h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-amber-800' }, label),
+              h('div', { className: 'text-lg font-black text-slate-900 tabular-nums' }, value));
+          };
+          var runLine = __alloFill(t('stem.evolab.breeder_run', 'Whole run, {value1} generations: selection pushed by ΣS = {value2}; with each generation\'s h², the equation predicts a total move of {value3}; the population moved {value4}.'), { value1: generation, value2: sign(br.sumS), value3: sign(br.sumPred), value4: sign(total) });
+          return h('div', { className: 'bg-white border-2 border-amber-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.breeder_title', '📐 The breeder\'s equation: R = h² × S')),
+              h(SpeakButton, { text: runLine + ' ' + story })
+            ),
+            h('p', { className: 'text-sm text-slate-700 mt-1' }, t('stem.evolab.breeder_intro', 'S is the selection differential: how far the survivors\' average sits above or below the whole population\'s. R is the response: how far the next generation actually moved. Heritability is the link between them.')),
+            h('div', { className: 'mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-center' },
+              stat(t('stem.evolab.breeder_last_s', 'Last S'), sign(last.S)),
+              stat(t('stem.evolab.breeder_h2_then', 'h² that generation'), last.h2.toFixed(2)),
+              stat(t('stem.evolab.breeder_pred', 'Predicted R'), sign(last.h2 * last.S)),
+              stat(t('stem.evolab.breeder_obs', 'Observed R'), sign(last.R))
+            ),
+            h('p', { className: 'text-sm text-slate-700 mt-2' }, runLine),
+            h('p', { className: 'text-sm text-slate-800 mt-2 font-semibold' }, story),
+            h('p', { className: 'text-xs text-slate-600 mt-2' }, __alloFill(t('stem.evolab.breeder_noise', 'Any single generation\'s R wobbles by about ±{value1} from the luck of the draw at N = {value2}, so judge the equation on the run totals, not on one row. Near the edges of the trait range (0 and 1) the observed move also falls short, because a trait cannot go past the edge.'), { value1: wobble.toFixed(2), value2: census })),
+            h('p', { className: 'text-xs text-slate-700 mt-2 bg-amber-50 rounded-lg p-2' }, t('stem.evolab.breeder_real', 'Real numbers: Boag and Grant measured the heritability of beak depth in Daphne Major\'s medium ground finches at roughly 0.7 to 0.8 by comparing chicks with their parents. After the 1977 drought the Grants used this equation, with the survivors\' S, to predict how much deeper the 1978 chicks\' beaks would be, and the chicks came in close to the prediction.'))
+          );
+        };
         // Predict-observe-explain: the histogram's shape after 20 generations.
         var sandboxOutcome = function() {
           if (generation < 20) return null;
@@ -3339,8 +4595,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: selectionSessionRef.current,
             moduleLabel: 'Selection Sandbox',
             comparison: {
-              designKey: preset.label + '|ideal=' + preset.ideal + '|width=' + preset.width + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|N=' + baseline.population + '|generations=' + generation,
-              designLabel: preset.label + ', strength ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', N = ' + baseline.population + ', ' + generation + ' generations',
+              designKey: preset.label + '|ideal=' + preset.ideal + '|width=' + preset.width + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|h2=' + herit.toFixed(1) + '|N=' + baseline.population + '|generations=' + generation,
+              designLabel: preset.label + ', strength ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', h² = ' + herit.toFixed(1) + ', N = ' + baseline.population + ', ' + generation + ' generations',
               primaryLabel: 'mean trait shift',
               primaryValue: traitShift,
               primaryDisplay: (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3),
@@ -3350,12 +4606,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'selectionPreset', label: 'Selection preset', value: preset.label },
                 { id: 'selectionStrength', label: 'Selection strength', value: Number(selStrength.toFixed(2)) },
                 { id: 'traitVariation', label: 'Offspring trait variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'heritability', label: 'Heritability (h²)', value: Number(herit.toFixed(1)) },
                 { id: 'populationSize', label: 'Population size', value: baseline.population },
                 { id: 'generations', label: 'Generations', value: generation }
               ]
             },
             baseline: 'Generation 0: ' + baseline.population + ' modeled organisms; mean trait ' + baseline.mean.toFixed(3) + ', SD ' + baseline.std.toFixed(3) + '.',
-            settings: preset.label + '; ' + targetText + '; selection strength ' + selStrength.toFixed(2) + '; offspring trait variation σ = ' + mutSize.toFixed(2) + '; settings shown at capture.',
+            settings: preset.label + '; ' + targetText + '; selection strength ' + selStrength.toFixed(2) + '; offspring trait variation σ = ' + mutSize.toFixed(2) + '; heritability h² = ' + herit.toFixed(1) + '; settings shown at capture.',
             outcome: 'Generation ' + generation + ': mean trait ' + latest.mean.toFixed(3) + ' (Δ ' + (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) + '), SD ' + latest.std.toFixed(3) + ' (Δ ' + (spreadShift >= 0 ? '+' : '') + spreadShift.toFixed(3) + '); ' + latest.alive + '/' + baseline.population + ' survived the last selection pass before reproduction restored the census to ' + baseline.population + '.',
             metrics: [
               { label: 'Preset', value: preset.label },
@@ -3425,6 +4682,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               renderHistogram(),
               renderGenerationChart()
             ),
+            renderBreeder(),
+            h(DataTable, { title: t('stem.evolab.dt_sandbox_title', 'Mean, spread and survivors by generation'), heading: 'text-emerald-800', rows: historyRef.current, columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }, { key: 'mean', label: t('stem.evolab.col_mean_trait', 'Mean trait'), digits: 3 }, { key: 'std', label: t('stem.evolab.col_sd', 'SD'), digits: 3 }, { key: 'alive', label: t('stem.evolab.col_survivors', 'Survivors') }, { key: 'sel', label: t('stem.evolab.col_survivors_mean', 'Survivors\' mean'), digits: 3 }, { key: 'S', label: t('stem.evolab.col_sel_diff', 'S'), digits: 3 }, { key: 'h2', label: t('stem.evolab.col_h2', 'h²'), digits: 2 }, { key: 'R', label: t('stem.evolab.col_response', 'R'), digits: 3 }], note: t('stem.evolab.dt_sandbox_note', 'S = survivors\' mean − mean before selection; R = next mean − mean before; h² = the heritable share of the variation that generation.') }),
             // Preset picker
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, t('stem.evolab.selection_mode', 'Selection Mode')),
@@ -3460,7 +4719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               })
             ),
             // Sliders
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3' },
               h(LabeledSlider, {
                 label: t('stem.evolab.population_size', 'Population Size'),
                 value: popSize, min: 10, max: 200, step: 10,
@@ -3484,6 +4743,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueText: mutSize === 0 ? 'No mutation (clonal)' : 'σ = ' + mutSize.toFixed(2),
                 accent: 'accent-violet-500',
                 hint: t('stem.evolab.standard_deviation_of_trait_change_bet', 'Standard deviation of trait change between parent and offspring. Higher = more variation each generation.')
+              }),
+              h(LabeledSlider, {
+                label: t('stem.evolab.heritability_h2', 'Heritability (h²)'),
+                value: herit, min: 0, max: 1, step: 0.1,
+                onChange: function(v) { setHerit(v); heritRef.current = v; splitGenes(v); var hr = heritRangeRef.current; heritRangeRef.current = { min: Math.min(hr.min, v), max: Math.max(hr.max, v) }; },
+                valueText: 'h² = ' + herit.toFixed(1) + (generation > 0 && Math.abs(realizedH2(creaturesRef.current) - herit) >= 0.05 ? ' · ' + t('stem.evolab.h2_now', 'now') + ' ' + realizedH2(creaturesRef.current).toFixed(2) : ''),
+                accent: 'accent-amber-600',
+                hint: t('stem.evolab.heritability_hint', 'How much of the differences between creatures is genetic. Survivors pass on only the heritable part of their advantage; at 0 it dies with them. Takes effect at once, and "now" shows the share that is still heritable after selection has used some up.')
               })
             ),
             // Controls
@@ -3523,7 +4790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'text-sm text-slate-700 space-y-2' },
                 h('p', null, h('strong', null, 'Variation: '), t('stem.evolab.each_generation_s_trait_distribution_t', 'Each generation\'s trait distribution (the histogram) shows variation among individuals. Without variation, there\'s nothing for selection to act on.')),
                 h('p', null, h('strong', null, 'Selection: '), t('stem.evolab.creatures_with_traits_closer_to_the_pr', 'Creatures with traits closer to the preset\'s "ideal" survive at higher rates. The fraction that dies before reproducing is the selection pressure.')),
-                h('p', null, h('strong', null, 'Inheritance: '), t('stem.evolab.survivors_offspring_inherit_the_parent', 'Survivors\' offspring inherit the parent\'s trait ± a small random change (mutation). Over generations, this shifts the population mean.'))
+                h('p', null, h('strong', null, 'Inheritance: '), t('stem.evolab.survivors_offspring_inherit_the_parent', 'Survivors\' offspring inherit the parent\'s trait ± a small random change (mutation). Over generations, this shifts the population mean.'), ' ', t('stem.evolab.seeing_inherit_h2', 'The Heritability dial sets how much of a parent\'s difference from the average is genetic; only that part reaches the offspring, and R = h² × S says how far the population moves.'))
               )
             ),
             generation > 0 && h(CheckCard, {
@@ -3537,12 +4804,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'mutation', label: t('stem.evolab.check_sandbox_mutation', 'No. The population had stopped mutating.'), feedback: t('stem.evolab.check_sandbox_mutation_fb', 'Mutation (σ) was unchanged the whole time; every chick still varied from its parent. The narrowing happened despite mutation constantly adding spread, which tells you how hard selection was pushing inward.') }
               ]
             }),
+            generation >= 5 && herit < 1 && h(CheckCard, {
+              moduleId: 'selectionSandbox', id: 'herit',
+              border: 'border-amber-400', heading: 'text-amber-800',
+              question: t('stem.evolab.check_herit_q', 'Peppered-moth preset, heritability 0, no mutation. Every generation the survivors averaged about 0.3 above the population, yet the mean never moved. Why?'),
+              options: [
+                { id: 'weak', label: t('stem.evolab.check_herit_weak', 'Selection was too weak; a stronger pressure would have moved it.'), feedback: t('stem.evolab.check_herit_weak_fb', 'Selection was as strong as the dial goes: most of the population died each generation and the survivors sat 0.3 above the average, which is exactly what S measures. Strength was not the problem; inheritance was.') },
+                { id: 'notHeritable', label: t('stem.evolab.check_herit_yes', 'The survivors\' advantage was environmental, not genetic, so their offspring were drawn from the same old distribution.'), correct: true, feedback: t('stem.evolab.check_herit_yes_fb', 'Yes. Each survivor was lucky in its environment, not different in its genes, and luck is not passed on. R = h² × S, and h² was zero. That is the difference between selection and evolution: selection is who survives; evolution is what the next generation inherits.') },
+                { id: 'mutation', label: t('stem.evolab.check_herit_mut', 'Without mutation there was no variation for selection to act on.'), feedback: t('stem.evolab.check_herit_mut_fb', 'There was plenty of variation: the histogram was as wide as ever and the survivors differed from the rest by 0.3. What was missing was HERITABLE variation. Mutation matters for a different reason: turn it on and it slowly builds genetic variation, and the response begins.') },
+                { id: 'gens', label: t('stem.evolab.check_herit_gens', 'Ten generations is not enough; it would have moved eventually.'), feedback: t('stem.evolab.check_herit_gens_fb', 'Run fifty. With h² = 0 and no mutation the population is redrawn from the same genes every generation, forever. Time cannot inherit what the genes do not carry.') }
+              ]
+            }),
             // Try-this experiments — concrete prompts mapped to the presets.
             h(ExperimentList, {
               moduleId: 'selectionSandbox',
               challenges: [
                 { id: 'tightStabilizing', title: t('stem.evolab.ch_tight', 'Tight middle: '), body: t('stem.evolab.ch_tight_body', 'Under the stabilizing preset, get the standard deviation below 0.08 within 15 generations. Selection strength and mutation size both matter.') },
-                { id: 'bimodal', title: t('stem.evolab.ch_bimodal', 'A clean split: '), body: t('stem.evolab.ch_bimodal_body', 'Under disruptive selection, reach a population with at least 40% in each extreme third and no more than 10% left in the middle.') }
+                { id: 'bimodal', title: t('stem.evolab.ch_bimodal', 'A clean split: '), body: t('stem.evolab.ch_bimodal_body', 'Under disruptive selection, reach a population with at least 40% in each extreme third and no more than 10% left in the middle.') },
+                { id: 'mystery5', title: t('stem.evolab.ch_mystery5', 'Five mysteries in a row: '), body: t('stem.evolab.ch_mystery5_body', 'In the Mystery regime game below, name five hidden regimes correctly in a row from the histograms alone.') },
+                { id: 'lowHerit', title: t('stem.evolab.ch_lowherit', 'Peak on a low heritability budget: '), body: t('stem.evolab.ch_lowherit_body', 'With Heritability at 0.3 or less from the start, bring the peppered-moth mean within 0.05 of 0.85 by generation 10. It fails more often than it succeeds at the default settings; one other dial changes that.') }
               ],
               border: 'border-emerald-400', heading: 'text-emerald-800',
               title: t('stem.evolab.try_these_experiments_3', '🧪 Try these experiments'),
@@ -3552,9 +4832,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'disruptive', auto: true, title: t('stem.evolab.disruptive_splits_the_population', 'Disruptive splits the population: '), body: t('stem.evolab.switch_to_disruptive_after_15_20_gener', 'Switch to disruptive. After 15-20 generations the histogram becomes BIMODAL — two peaks at 0.2 and 0.8 with a valley at 0.5. This is how one species can begin to split into two.') },
                 { id: 'mutation', auto: true, title: t('stem.evolab.mutation_matters', 'Mutation matters: '), body: t('stem.evolab.on_the_directional_preset_with_selecti', 'On the directional preset with selection ON, set Mutation Size to 0 (no variation introduced). After convergence the population stops changing — selection has nothing left to act on. Then bump Mutation Size up — convergence resumes faster.') },
                 { id: 'snowshoe', auto: true, title: t('stem.evolab.snowshoe_hare_scenario', 'Snowshoe hare scenario: '), body: t('stem.evolab.switch_to_the_snowshoe_hare_preset_the', 'Switch to the snowshoe hare preset. The "ideal" trait is 0.68 (later molt) — selection now pushes hares away from their ancestral early-molt genes. This is real ongoing Maine evolution.') },
-                { id: 'driftSize', auto: true, title: t('stem.evolab.drift_and_population_size', 'Drift and population size: '), body: t('stem.evolab.drift_and_population_size_body', 'Pick Drift Only, set Population Size to 10, Reset, and Auto-Run 20 generations. Then do the same at N = 200. The tiny population wanders far from 0.5; the large one barely moves. Same zero selection, different sampling noise.') }
+                { id: 'driftSize', auto: true, title: t('stem.evolab.drift_and_population_size', 'Drift and population size: '), body: t('stem.evolab.drift_and_population_size_body', 'Pick Drift Only, set Population Size to 10, Reset, and Auto-Run 20 generations. Then do the same at N = 200. The tiny population wanders far from 0.5; the large one barely moves. Same zero selection, different sampling noise.') },
+                { id: 'noInheritance', auto: true, title: t('stem.evolab.exp_noinherit', 'Selection without inheritance: '), body: t('stem.evolab.exp_noinherit_body', 'Peppered-moth preset, Heritability 0, Mutation 0, Reset, then Step 10. Open the data table: the survivors sit about 0.3 above the average every generation (S), and the mean does not move (R). Selection happened ten times; evolution did not happen once.') },
+                { id: 'mutationRebuilds', auto: true, title: t('stem.evolab.exp_mutrebuild', 'Mutation rebuilds heritable variation: '), body: t('stem.evolab.exp_mutrebuild_body', 'Same setup with Mutation back at 0.04 and 20 generations. For a while nothing happens; then h² "now" climbs as mutation builds new genetic variation, and the response begins. Mutation is where heritable variation comes from.') },
+                { id: 'breeder', auto: true, title: t('stem.evolab.exp_breeder', 'Only the heritable part responds: '), body: t('stem.evolab.exp_breeder_body', 'Snowshoe hare preset, Heritability 0.5, ten or more generations. In the equation card, selection pushed by ΣS, but the population followed by roughly the heritable fraction. Then read h² now: selection has been eating the variation it uses.') }
               ]
             }),
+            h(MysteryRegime),
             // Cross-module suggestion — invites learners to the next natural step.
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 text-sm text-slate-700 flex items-center gap-3' },
               h('span', { className: 'text-2xl' }, '🐦'),
@@ -3563,6 +4847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.see_selection_happen_in_real_data_the_', 'See selection happen in REAL data. The Galápagos Beak Lab reproduces the Grant 1977 drought study where finch beak depth shifted measurably in just one year.')
               )
             ),
+            h(ModelLimits, { moduleId: 'selectionSandbox', heading: 'text-emerald-800' }),
             h(KeyTerms, { moduleId: 'selectionSandbox', heading: 'text-emerald-800' }),
             h(FieldNote, { moduleId: 'selectionSandbox', border: 'border-emerald-400', heading: 'text-emerald-800', prompt: t('stem.evolab.note_prompt_sandbox', 'Which preset surprised you, and how did the histogram change shape? Say it without the word "evolve".') }),
             h(TeacherNotes, {
@@ -3611,8 +4896,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           { id: 'veryHard', label: t('stem.evolab.very_hard_palo_santo', 'Very hard (palo santo)'), hardness: 4, color: '#3f1d1d' }
         ];
         // Year 0 (baseline) seed availability. Drought removes the soft seeds.
-        var BASELINE_SEEDS = { small: 600, medium: 400, large: 200, veryHard: 80 };
+        var BASELINE_SEEDS = { small: 2000, medium: 400, large: 200, veryHard: 80 };
         var DROUGHT_SEEDS = { small: 30, medium: 60, large: 250, veryHard: 200 };
+        // El Niño aftermath (1984-85): tiny seeds carpet the ground, the hard-seeded
+        // plants were smothered by vines during the wet year.
+        var ELNINO_SEEDS = { small: 3000, medium: 100, large: 30, veryHard: 10 };
+        // Foraging constants. Small seeds are tiny, so a bird can take up to 36 of
+        // them a year, scaled by a handling efficiency that falls with beak depth
+        // (a deep beak is clumsy with tiny seeds: the trade-off behind the Grants'
+        // reversal). Birds stop at 40 and need 30 to survive. Calibrated headlessly:
+        // normal years are neutral, one drought year kills ~45/60 and lifts the
+        // mean ~0.75 mm, El Niño years after a drought bring it back ~0.4 mm.
+        var SMALL_SEED_CAP = 36, SATIATION = 40, FOOD_NEEDED = 30;
+        var smallSeedEfficiency = function(depth) { return clamp(1 - 0.25 * (depth - 9.5), 0.5, 1); };
 
         // Grant data overlay. These means are the classroom approximation of the
         // Daphne Major medium ground finch (Geospiza fortis) beak-depth record
@@ -3635,8 +4931,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var yearRef = useRef(year);
         yearRef.current = year;
         var droughtState = useState(false), drought = droughtState[0], setDrought = droughtState[1];
+        var elNinoState = useState(false), elNino = elNinoState[0], setElNino = elNinoState[1];
+        var weatherSeeds = function() { return drought ? DROUGHT_SEEDS : elNino ? ELNINO_SEEDS : BASELINE_SEEDS; };
         var showGrantState = useState(false), showGrant = showGrantState[0], setShowGrant = showGrantState[1];
         var mutSizeState = useState(0.25), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        // Heritability of beak depth. Chicks are drawn at
+        // before + h²·(midparent − before) + N(0, σ), so the chicks' mean follows
+        // the breeder's equation R = h²·S exactly in expectation; at h² = 1 this is
+        // the old midparent-plus-noise rule. The Grants measured h² for beak
+        // depth at about 0.8 (parent–offspring regression), and used R = h²·S to
+        // predict the 1978 chicks from the 1977 survivors (beak_h2_sim.mjs).
+        var beakH2State = useState(1), beakH2 = beakH2State[0], setBeakH2 = beakH2State[1];
+        var beakH2Ref = useRef(beakH2);
+        beakH2Ref.current = beakH2;
         var beakSessionRef = useRef('');
         var grantShownRef = useRef(false);
         if (showGrant) grantShownRef.current = true;
@@ -3655,63 +4962,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           yearRef.current = 0;
           setYear(0);
           setDrought(false);
+          setElNino(false);
         };
 
         // Run one annual cycle: seeds set by drought flag, birds eat what
         // they can crack, those who don't get enough food die.
         var stepYear = function(silent) {
-          var seeds = drought ? Object.assign({}, DROUGHT_SEEDS) : Object.assign({}, BASELINE_SEEDS);
-          var birds = birdsRef.current.slice();
-          // Each bird's "food eaten" — proportional to seeds it can access.
-          // Sort birds by depth descending so big-beaked birds eat first
-          // (they get all seeds; small-beaked birds get leftovers of soft seeds).
-          birds.sort(function(a, b) { return b.depth - a.depth; });
+          var seeds = Object.assign({}, weatherSeeds());
+          // Birds forage in random order, hardest crackable seed first (best
+          // payoff), and stop when satiated. See the foraging constants above.
+          var birds = shuffle(birdsRef.current);
+          var beforeSum = 0;
+          for (var b0 = 0; b0 < birds.length; b0++) beforeSum += birds[b0].depth;
+          var meanBefore = birds.length ? beforeSum / birds.length : 9.2;
+          var h2Now = beakH2Ref.current;
           var birdFood = new Array(birds.length);
           for (var i = 0; i < birds.length; i++) {
             var bird = birds[i];
             var crackability = depthToCrackLevel(bird.depth);
             var got = 0;
-            // Each bird eats some of every seed type it can crack.
-            // Eat proportional to availability; consume what's eaten.
-            for (var s = 0; s < SEED_TYPES.length; s++) {
+            for (var s = SEED_TYPES.length - 1; s >= 0; s--) {
+              if (got >= SATIATION) break;
               var seedId = SEED_TYPES[s].id;
               if (crackability >= SEED_TYPES[s].hardness && seeds[seedId] > 0) {
-                var portion = Math.min(seeds[seedId], 18);
+                var cap = seedId === 'small' ? SMALL_SEED_CAP * smallSeedEfficiency(bird.depth) : 18;
+                var portion = Math.min(seeds[seedId], cap, SATIATION - got);
                 seeds[seedId] -= portion;
                 got += portion;
               }
             }
             birdFood[i] = got;
           }
-          // Survival threshold: need at least 30 food units to survive the year.
-          // (Calibrated so drought wipes ~half the small-beak birds.)
+          // Survival threshold: at least FOOD_NEEDED units for the year.
           var survivors = [];
           for (var j = 0; j < birds.length; j++) {
-            if (birdFood[j] >= 30) survivors.push(birds[j]);
+            if (birdFood[j] >= FOOD_NEEDED) survivors.push(birds[j]);
           }
           // Edge case
           if (survivors.length < 4) {
             survivors = birds.slice().sort(function(a, b) { return b.depth - a.depth; }).slice(0, Math.max(4, Math.floor(birds.length / 4)));
           }
+          var selSum = 0;
+          for (var sv = 0; sv < survivors.length; sv++) selSum += survivors[sv].depth;
+          var selMean = survivors.length ? selSum / survivors.length : meanBefore;
           // Reproduction: pair up survivors, each pair has 1-3 offspring up to
-          // population cap. Offspring depth = mean of parents ± mutation noise.
+          // population cap. Offspring depth = the flock mean plus h² times the
+          // midparent's difference from it, ± mutation noise (h² = 1: midparent ± noise).
           var next = survivors.slice();
+          var chickSum = 0, chickCount = 0;
           while (next.length < POP_SIZE) {
             var p1 = survivors[Math.floor(Math.random() * survivors.length)];
             var p2 = survivors[Math.floor(Math.random() * survivors.length)];
-            var childDepth = clamp((p1.depth + p2.depth) / 2 + randNormal(0, mutSize), 6, 14);
+            var childDepth = clamp(meanBefore + h2Now * ((p1.depth + p2.depth) / 2 - meanBefore) + randNormal(0, mutSize), 6, 14);
             next.push({ depth: childDepth, alive: true });
+            chickSum += childDepth; chickCount++;
           }
           birdsRef.current = next;
           var sum = 0;
           for (var m = 0; m < next.length; m++) sum += next[m].depth;
           var nextYear = yearRef.current + 1;
           yearRef.current = nextYear;
-          historyRef.current.push({ year: nextYear, mean: sum / next.length, alive: survivors.length, drought: drought });
+          historyRef.current.push({ year: nextYear, mean: sum / next.length, alive: survivors.length, drought: drought, elNino: elNino, before: meanBefore, sel: selMean, S: selMean - meanBefore, h2: h2Now, chicks: chickCount ? chickSum / chickCount : null, chickCount: chickCount, R: sum / next.length - meanBefore });
           if (historyRef.current.length > 30) historyRef.current.shift();
           setYear(nextYear);
           checkBeakMilestones(nextYear, sum / next.length);
-          if (silent !== true) announce('Year ' + nextYear + (drought ? ' (drought)' : '') + '. Mean beak depth ' + (sum / next.length).toFixed(2) + 'mm. ' + survivors.length + ' of ' + birds.length + ' birds survived.');
+          if (silent !== true) announce('Year ' + nextYear + (drought ? ' (drought)' : elNino ? ' (El Niño aftermath)' : '') + '. Mean beak depth ' + (sum / next.length).toFixed(2) + 'mm. ' + survivors.length + ' of ' + birds.length + ' birds survived.');
         };
 
         // Completion at 5 years with at least one drought; experiments from the
@@ -3730,7 +5045,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           hist.forEach(function(hh) { if (hh.drought) { seenDrought++; if (seenDrought >= 5) { armed = true; normalAfter = 0; } } else if (armed) normalAfter++; });
           if (armed && normalAfter >= 5) detectExperiment('beakLab', 'reversal', 'Reversal when the rains return');
           if (meanNow > 10.5) detectChallenge('beakLab', 'bigBeaks', 'Deep beaks', meanNow);
-          if (armed && hist[hist.length - 1] && !hist[hist.length - 1].drought && meanNow < 9.6) detectChallenge('beakLab', 'recover', 'Bring the small beaks back', meanNow);
+          var lastRow = hist[hist.length - 1];
+          if (lastRow && lastRow.drought && lastRow.h2 <= 0.9 && lastRow.h2 >= 0.5 && lastRow.S >= 0.3 && lastRow.chicks != null && Math.abs(lastRow.chicks - (lastRow.before + lastRow.h2 * lastRow.S)) <= 0.15) detectExperiment('beakLab', 'predictChicks', 'The Grants\' test: predict the chicks');
+          var elNinoYears = hist.filter(function(hh) { return hh.elNino; }).length;
+          var peak = hist.reduce(function(mx, hh) { return Math.max(mx, hh.mean); }, 0);
+          if (droughtYears >= 1 && elNinoYears >= 2 && hist[hist.length - 1].elNino && meanNow <= peak - 0.15) detectExperiment('beakLab', 'elNino', 'Selection reverses after El Niño');
+          if (droughtYears >= 3 && peak >= 10.3 && hist[hist.length - 1] && !hist[hist.length - 1].drought && meanNow < 10.0) detectChallenge('beakLab', 'recover', 'Bring the small beaks back', meanNow);
           setRecord('beakLab', 'deepestMean', meanNow, { label: 'Deepest mean beak', unit: ' mm', better: 'max' });
         };
 
@@ -3751,6 +5071,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           initPopulation();
         }
 
+        // "Predict the chicks" card: the Grants' own test of the breeder's
+        // equation, run on this year's numbers. S = survivors' mean − the mean
+        // before the year's selection; the chicks are predicted at
+        // before + h²·S. Survivors also carry over into next year unchanged, so
+        // the whole-population mean moves more than the chicks alone. Replica
+        // (beak_h2_sim.mjs, drought year): |chicks − prediction| stays under
+        // 0.15 mm in 97–100% of years for h² 0.5–1.
+        var renderChickPrediction = function() {
+          var hist = historyRef.current;
+          var last = hist.length > 1 ? hist[hist.length - 1] : null;
+          if (!last || last.S == null) return null;
+          var pred = last.before + last.h2 * last.S;
+          var sign = function(v) { return (v >= 0 ? '+' : '') + v.toFixed(2); };
+          var lastLine = __alloFill(t('stem.evolab.chicks_last', 'Year {value1}{value2}: the flock averaged {value3} mm before the year; the {value4} survivors averaged {value5} mm, so S = {value6} mm. With h² = {value7} the breeder\'s equation predicts chicks at {value3} + {value7} × {value6} = {value8} mm. The {value9} chicks hatched at {value10} mm.'), { value1: last.year, value2: last.drought ? ' (' + t('stem.evolab.drought_word', 'drought') + ')' : last.elNino ? ' (El Niño)' : '', value3: last.before.toFixed(2), value4: last.alive, value5: last.sel.toFixed(2), value6: sign(last.S), value7: last.h2.toFixed(1), value8: pred.toFixed(2), value9: last.chickCount, value10: last.chicks == null ? '—' : last.chicks.toFixed(2) });
+          var miss = last.chicks == null ? null : last.chicks - pred;
+          var verdict = miss == null ? '' : Math.abs(miss) <= 0.15
+            ? __alloFill(t('stem.evolab.chicks_hit', 'Prediction and chicks agree within {value1} mm: the equation works because what the survivors pass on is the heritable share of their advantage, no more.'), { value1: Math.abs(miss).toFixed(2) })
+            : __alloFill(t('stem.evolab.chicks_miss', 'Off by {value1} mm this year; with a few dozen chicks the luck of who paired with whom shows. Run another year and compare again.'), { value1: sign(miss) });
+          var h2Line = beakH2 >= 1
+            ? t('stem.evolab.chicks_h2_full', 'At h² = 1 the chicks inherit the whole of their parents\' difference from the flock. Set h² to 0.8, the value the Grants measured from parent–chick comparisons, to run the model the way they ran their prediction.')
+            : __alloFill(t('stem.evolab.chicks_h2_part', 'At h² = {value1} only that share of the survivors\' advantage reaches the chicks; the rest was a good territory, a lucky first year, or measurement, none of which is inherited. The survivors themselves stay in the flock unchanged, which is why the whole-flock mean moves a little more than the chicks.'), { value1: beakH2.toFixed(1) });
+          var grants = t('stem.evolab.chicks_grants', 'What the Grants did: after the 1977 drought they knew the survivors\' S from measuring every bird on Daphne Major, and they had h² for beak depth (around 0.8) from comparing chicks with their parents in earlier years. They predicted the 1978 chicks with this equation before those chicks were measured, and the chicks came in close. A prediction made before the data is the strongest test a model can pass.');
+          return h('div', { className: 'bg-white border-2 border-amber-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.chicks_title', '🐣 Predict the chicks: the Grants\' test')),
+              h(SpeakButton, { text: lastLine + ' ' + verdict + ' ' + h2Line + ' ' + grants })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800', 'data-chick-pred': pred.toFixed(2), 'data-chick-obs': last.chicks == null ? '' : last.chicks.toFixed(2) }, lastLine),
+            verdict && h('p', { role: 'status', className: 'mt-2 text-sm font-semibold text-slate-900' }, verdict),
+            h('p', { className: 'mt-2 text-sm text-slate-700' }, h2Line),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-amber-50 rounded-lg p-2' }, grants)
+          );
+        };
         // Compute current population stats.
         var pop = birdsRef.current;
         var classCounts = [0, 0, 0, 0];
@@ -3775,13 +5128,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var start = hist[0];
           var latestYear = hist[hist.length - 1];
           var droughtYears = hist.filter(function(hh) { return hh.drought; }).length;
+          var elNinoYears = hist.filter(function(hh) { return hh.elNino; }).length;
           var shift = latestYear.mean - start.mean;
           return {
             sourceRunKey: beakSessionRef.current,
             moduleLabel: 'Galápagos Beak Lab',
             comparison: {
-              designKey: 'years=' + year + '|drought=' + droughtYears + '|variation=' + mutSize.toFixed(2),
-              designLabel: year + ' years, ' + droughtYears + ' drought year' + (droughtYears === 1 ? '' : 's') + ', inheritance σ = ' + mutSize.toFixed(2) + ' mm',
+              designKey: 'years=' + year + '|drought=' + droughtYears + '|elnino=' + elNinoYears + '|variation=' + mutSize.toFixed(2) + '|h2=' + beakH2.toFixed(1),
+              designLabel: year + ' years, ' + droughtYears + ' drought year' + (droughtYears === 1 ? '' : 's') + (elNinoYears ? ', ' + elNinoYears + ' El Niño year' + (elNinoYears === 1 ? '' : 's') : '') + ', inheritance σ = ' + mutSize.toFixed(2) + ', h² = ' + beakH2.toFixed(1) + ' mm',
               primaryLabel: 'mean beak depth shift',
               primaryValue: shift,
               primaryDisplay: (shift >= 0 ? '+' : '') + shift.toFixed(2) + ' mm',
@@ -3789,16 +5143,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               unit: ' mm',
               factors: [
                 { id: 'droughtYears', label: 'Drought years', value: droughtYears },
+                { id: 'elNinoYears', label: 'El Niño years', value: elNinoYears },
                 { id: 'totalYears', label: 'Years run', value: year },
-                { id: 'traitVariation', label: 'Offspring beak variation (mm)', value: Number(mutSize.toFixed(2)) }
+                { id: 'traitVariation', label: 'Offspring beak variation (mm)', value: Number(mutSize.toFixed(2)) },
+                { id: 'heritability', label: 'Heritability (h²)', value: Number(beakH2.toFixed(1)) }
               ]
             },
             baseline: 'Year 0: ' + POP_SIZE + ' finches; mean beak depth ' + start.mean.toFixed(2) + ' mm (model draws from N(9.2, 0.6)).',
-            settings: year + ' years; drought in ' + droughtYears + '; seeds per class fixed by the drought flag; survival needs 30 food units; offspring depth = parental mean ± σ ' + mutSize.toFixed(2) + ' mm; census refilled to ' + POP_SIZE + '.',
+            settings: year + ' years; drought in ' + droughtYears + ', El Niño aftermath in ' + elNinoYears + '; seeds set by the year type; birds forage hardest-seed-first and stop at 40 units; small-seed intake falls with beak depth; survival needs 30 food units; offspring depth = parental mean ± σ ' + mutSize.toFixed(2) + ' mm; census refilled to ' + POP_SIZE + '.',
             outcome: 'Year ' + year + ': mean beak depth ' + latestYear.mean.toFixed(2) + ' mm (Δ ' + (shift >= 0 ? '+' : '') + shift.toFixed(2) + '); ' + latestYear.alive + '/' + POP_SIZE + ' survived the last year' + (latestYear.drought ? ' (drought)' : '') + '.',
             metrics: [
               { label: 'Years', value: String(year) },
               { label: 'Drought years', value: String(droughtYears) },
+              { label: 'El Niño years', value: String(elNinoYears) },
               { label: 'Mean beak shift', value: (shift >= 0 ? '+' : '') + shift.toFixed(2) + ' mm' },
               { label: 'Last-year survivors', value: latestYear.alive + ' of ' + POP_SIZE }
             ]
@@ -3829,12 +5186,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
         // Seed availability bar chart
         var renderSeeds = function() {
-          var seeds = drought ? DROUGHT_SEEDS : BASELINE_SEEDS;
+          var seeds = weatherSeeds();
           var total = SEED_TYPES.reduce(function(s, st) { return s + seeds[st.id]; }, 0);
           return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.available_seeds_this_year', 'Available Seeds This Year')),
-              h('div', { className: 'text-[0.625rem] font-bold ' + (drought ? 'text-rose-700' : 'text-emerald-700') }, drought ? '🌵 DROUGHT' : '🌱 Normal year')
+              h('div', { className: 'text-[0.625rem] font-bold ' + (drought ? 'text-rose-700' : elNino ? 'text-sky-800' : 'text-emerald-700') }, drought ? '🌵 DROUGHT' : elNino ? '🌊 EL NIÑO AFTERMATH' : '🌱 Normal year')
             ),
             h('div', { className: 'space-y-1' },
               SEED_TYPES.map(function(st) {
@@ -3849,7 +5206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               })
             ),
             h('div', { className: 'text-[0.625rem] text-slate-600 mt-2' },
-              drought ? 'In drought, soft seeds are gone. Only birds with beaks ≥10mm can crack the remaining hard seeds.' : 'Normal year — abundant soft seeds favor small-beaked birds (cheaper to crack).')
+              drought ? t('stem.evolab.seeds_drought_desc', 'In drought the soft seeds are gone. Only birds that can crack the remaining hard seeds eat enough to live.') : elNino ? t('stem.evolab.seeds_elnino_desc', 'After an El Niño the ground is carpeted with tiny seeds and the big hard ones are scarce. Small beaks handle tiny seeds fast; a deep beak is clumsy with them and goes hungry.') : t('stem.evolab.seeds_normal_desc', 'Normal year: seeds of every size and enough for everyone, so there is little selection either way.'))
           );
         };
 
@@ -3946,7 +5303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               observedDetail: historyRef.current.filter(function(hh) { return hh.drought; }).length >= 3 ? 'Mean beak ' + historyRef.current[0].mean.toFixed(2) + ' → ' + meanDepth.toFixed(2) + ' mm after ' + historyRef.current.filter(function(hh) { return hh.drought; }).length + ' drought years.' : '',
               explain: {
                 increase: t('stem.evolab.explain_beak_increase', 'With the soft seeds gone, only birds that could crack hard seeds ate enough to survive, and they were the deep-beaked ones. Their offspring inherited deeper beaks (parental mean ± σ). No bird\'s beak grew; the average moved because the small-beaked birds were missing from the parents.'),
-                decrease: t('stem.evolab.explain_beak_decrease', 'The mean fell, which in this model happens only when soft seeds are abundant (normal years favour cheaper, smaller beaks) or when random variation ran against the trend for a year or two. Check the Mode card: was the drought actually on for those years?'),
+                decrease: t('stem.evolab.explain_beak_decrease', 'The mean fell. In this model that happens when tiny seeds dominate (El Niño years) or, more slowly, in normal years after a drought, because deep beaks handle tiny seeds badly. Check the Mode card: was the drought actually on for those years?'),
                 same: t('stem.evolab.explain_beak_same', 'Little change usually means too few drought years, or a very tight inheritance σ so there was little variation for the drought to sort. Run more drought years and watch the survivors column.')
               }
             }),
@@ -3955,11 +5312,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.year', 'Year'), value: year, color: 'text-amber-700' }),
               h(StatCard, { label: t('stem.evolab.mean_beak', 'Mean Beak'), value: meanDepth.toFixed(2), unit: 'mm', color: 'text-orange-700' }),
               h(StatCard, { label: t('stem.evolab.last_year', 'Last Year'), value: latest.alive + ' / ' + POP_SIZE, color: latest.alive < POP_SIZE * 0.6 ? 'text-rose-700' : 'text-emerald-700', unit: 'survived' }),
-              h(StatCard, { label: t('stem.evolab.mode', 'Mode'), value: drought ? 'Drought' : 'Normal', color: drought ? 'text-rose-700' : 'text-emerald-700' })
+              h(StatCard, { label: t('stem.evolab.mode', 'Mode'), value: drought ? 'Drought' : elNino ? 'El Niño' : 'Normal', color: drought ? 'text-rose-700' : elNino ? 'text-sky-800' : 'text-emerald-700' })
             ),
             renderBirds(),
             renderSeeds(),
             renderHistory(),
+            h(DataTable, { title: t('stem.evolab.dt_beak_title', 'Beak depth and survivors by year'), heading: 'text-amber-800', rows: historyRef.current, columns: [{ key: 'year', label: t('stem.evolab.col_year', 'Year') }, { key: 'mean', label: t('stem.evolab.col_mean_beak', 'Mean beak depth (mm)'), digits: 2 }, { key: 'alive', label: t('stem.evolab.col_survivors', 'Survivors') }, { key: 'drought', label: t('stem.evolab.col_drought', 'Drought year'), bool: true }, { key: 'elNino', label: t('stem.evolab.col_el_nino', 'El Niño year'), bool: true }, { key: 'sel', label: t('stem.evolab.col_survivors_mean', 'Survivors\' mean'), digits: 2 }, { key: 'S', label: t('stem.evolab.col_sel_diff', 'S'), digits: 2 }, { key: 'h2', label: t('stem.evolab.col_h2', 'h²'), digits: 1 }, { key: 'chicks', label: t('stem.evolab.col_chicks_mean', 'Chicks\' mean'), digits: 2 }], note: t('stem.evolab.dt_beak_note', 'S = survivors\' mean − the flock mean before the year; the chicks are predicted at before + h² × S.') }),
+            renderChickPrediction(),
             // Controls
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
               h('button', {
@@ -3971,10 +5330,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-amber-700 hover:bg-amber-800 text-white shadow-lg'
               }, t('stem.evolab.run_5_years', '⏭⏭ Run 5 Years')),
               h('button', {
-                onClick: function() { setDrought(!drought); },
+                onClick: function() { if (!drought) setElNino(false); setDrought(!drought); },
                 'aria-pressed': drought,
                 className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (drought ? 'transition-colors bg-rose-600 hover:bg-rose-700 text-white' : 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white')
               }, drought ? '🌵 Drought ON' : '🌧️ Trigger Drought'),
+              h('button', {
+                onClick: function() { if (!elNino) setDrought(false); setElNino(!elNino); },
+                'aria-pressed': elNino,
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (elNino ? 'transition-colors bg-sky-700 hover:bg-sky-800 text-white' : 'transition-colors bg-sky-100 hover:bg-sky-200 text-sky-900')
+              }, elNino ? '🌊 ' + t('stem.evolab.el_nino_on', 'El Niño ON') : '🌊 ' + t('stem.evolab.el_nino_aftermath', 'El Niño aftermath')),
               h('button', {
                 onClick: function() { setShowGrant(!showGrant); },
                 'aria-pressed': showGrant,
@@ -4015,6 +5379,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               accent: 'accent-amber-500',
               hint: t('stem.evolab.standard_deviation_of_offspring_beak_d', 'Standard deviation of offspring beak depth around the parental mean. Higher = faster evolution but also faster reversal.')
             }),
+            h(LabeledSlider, {
+              label: t('stem.evolab.beak_h2', 'Heritability of beak depth (h²)'),
+              value: beakH2, min: 0.2, max: 1, step: 0.1,
+              onChange: function(v) { setBeakH2(Math.round(v * 10) / 10); },
+              valueText: 'h² = ' + beakH2.toFixed(1) + (Math.abs(beakH2 - 0.8) < 0.01 ? ' · ' + t('stem.evolab.beak_h2_grants', 'the Grants\' value') : beakH2 >= 1 ? ' · ' + t('stem.evolab.beak_h2_all', 'everything inherited') : ''),
+              accent: 'accent-amber-600',
+              hint: t('stem.evolab.beak_h2_hint', 'How much of a pair\'s difference from the flock their chicks inherit. The Grants measured about 0.8 for beak depth by comparing chicks with their parents; at 1 the chicks copy their parents exactly (± σ). The challenges were set at 1.')
+            }),
+            historyRef.current.some(function(hh) { return hh.elNino; }) && h(CheckCard, {
+              moduleId: 'beakLab', id: 'reverse',
+              border: 'border-amber-400', heading: 'text-amber-800',
+              question: t('stem.evolab.check_reverse_q', 'After the El Niño years the average beak got smaller again. Which statement is right?'),
+              options: [
+                { id: 'harmful', label: t('stem.evolab.check_reverse_harmful', 'Deep beaks had become harmful, so the birds evolved back to normal.'), feedback: t('stem.evolab.check_reverse_harmful_fb', 'There is no normal to go back to. A deep beak was the best beak in the drought and the worst one in a year of tiny seeds; fitness is always relative to this year\'s food.') },
+                { id: 'tracks', label: t('stem.evolab.check_reverse_tracks', 'With tiny seeds everywhere, small-beaked birds fed better and left more chicks. Selection has no fixed direction; it tracks the environment.'), correct: true, feedback: t('stem.evolab.check_reverse_tracks_fb', 'Yes. The Grants watched selection push beaks up after 1977 and down after 1983. Direction is set by the seeds of the year, not by any goal.') },
+                { id: 'memory', label: t('stem.evolab.check_reverse_memory', 'The population remembered its original beak size and returned to it.'), feedback: t('stem.evolab.check_reverse_memory_fb', 'Populations have no memory. The mean fell only because deep-beaked birds went hungry on tiny seeds and left fewer chicks; had the drought continued, it would have kept rising.') },
+                { id: 'mutation', label: t('stem.evolab.check_reverse_mutation', 'The wet weather caused mutations for smaller beaks.'), feedback: t('stem.evolab.check_reverse_mutation_fb', 'Offspring beaks vary around their parents\' by the same σ in every year. The weather changed who survived, not what was born.') }
+              ]
+            }),
             // Maine sprinkle
             h('div', { className: 'bg-cyan-50 border border-cyan-300 rounded-xl p-3 text-sm text-slate-700' },
               h('strong', null, t('stem.evolab.connecting_to_maine', '🦆 Connecting to Maine: ')),
@@ -4028,23 +5411,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', null, h('strong', null, 'Drought: '), t('stem.evolab.85_of_all_the_soft_seeds_died_off_only', '~85% of all the soft seeds died off. Only the largest, hardest seeds remained.')),
                 h('p', null, h('strong', null, 'Mortality: '), t('stem.evolab.85_of_the_finch_population_died_and_th', '~85% of the finch population died — and the survivors were almost all large-beaked birds (the only ones who could crack the remaining seeds).')),
                 h('p', null, h('strong', null, t('stem.evolab.1978_mean', '1978 mean: ')), t('stem.evolab.10_05mm_a_0_84mm_shift_in_one_generati', '≈10.05mm in this lab\'s teaching approximation of the record: a shift of roughly a millimetre within ONE generation. It is one of the first cases of natural selection measured directly, bird by bird, in a wild vertebrate population.')),
+                h('p', null, h('strong', null, t('stem.evolab.el_nino_1983', '1982-83 El Niño: ')), t('stem.evolab.el_nino_1983_body', 'Months of rain carpeted the island with small soft seeds and smothered the hard-seeded plants. In the dry years that followed, small-beaked birds survived better and selection ran the other way (Gibbs & Grant 1987, Nature 327: 511-513). There is no best beak, only the best beak for this year\'s seeds.')),
                 h('p', { className: 'text-xs text-slate-600' }, '📚 ' + GRANT_SOURCE),
                 h('p', null, h('strong', null, t('stem.evolab.the_lesson', 'The lesson: ')), t('stem.evolab.evolution_is_not_slow_given_strong_sel', 'Evolution is not slow. Given strong selection, populations can shift dramatically within a single generation. The Grants\' work is now a textbook example of natural selection in action.'))
               )
             ),
             // Try-this experiments
+            historyRef.current.some(function(hh) { return hh.h2 != null && hh.h2 < 1 && hh.drought; }) && h(CheckCard, {
+              moduleId: 'beakLab', id: 'h2',
+              border: 'border-amber-400', heading: 'text-amber-800',
+              title: t('stem.evolab.check_yourself_h2', '🧠 Check yourself: the chicks'),
+              question: t('stem.evolab.check_beak_h2_q', 'The 1977 survivors\' beaks averaged about half a millimetre deeper than the flock before the drought. Why were the 1978 chicks not a full half-millimetre deeper?'),
+              options: [
+                { id: 'grow', label: t('stem.evolab.check_beak_h2_grow', 'The chicks had not finished growing when they were measured.'), feedback: t('stem.evolab.check_beak_h2_grow_fb', 'The Grants measured beaks at full size. The shortfall is systematic and predictable, which growth would not be.') },
+                { id: 'herit', label: t('stem.evolab.check_beak_h2_herit', 'Only the heritable share of the survivors\' advantage is passed on: with h² near 0.8 the chicks come in about 0.4 mm deeper, and the rest of the survivors\' edge was environment.'), correct: true, feedback: t('stem.evolab.check_beak_h2_herit_fb', 'Yes. R = h² × S. Part of why a survivor had a deep beak was its genes, and part was a good first year; only the genes reach the chicks. Set the slider to 0.8 and the model\'s chicks fall short by the same fraction.') },
+                { id: 'rain', label: t('stem.evolab.check_beak_h2_rain', 'The drought ended, so the chicks grew smaller beaks to match the new seeds.'), feedback: t('stem.evolab.check_beak_h2_rain_fb', 'Beaks do not grow to match the seeds available; the seeds decide who survives, not how anyone develops. The shortfall shows up even in the model, where nothing about the seeds reaches a chick\'s beak.') },
+                { id: 'chance', label: t('stem.evolab.check_beak_h2_chance', 'Pure chance in which birds happened to pair up.'), feedback: t('stem.evolab.check_beak_h2_chance_fb', 'Chance adds scatter of a few hundredths of a millimetre either way; it does not push the chicks short by a fixed fraction year after year. Heritability does.') }
+              ]
+            }),
             h(ExperimentList, {
               moduleId: 'beakLab',
               challenges: [
                 { id: 'bigBeaks', title: t('stem.evolab.ch_bigbeaks', 'Deep beaks: '), body: t('stem.evolab.ch_bigbeaks_body', 'Push the population mean past 10.5 mm. How many drought years does it take, and does the inheritance σ change that?'), record: { id: 'deepestMean', label: t('stem.evolab.deepest_mean_beak', 'deepest mean beak') } },
-                { id: 'recover', title: t('stem.evolab.ch_recover', 'Bring the small beaks back: '), body: t('stem.evolab.ch_recover_body', 'After five or more drought years, turn the drought off and bring the mean back below 9.6 mm. Reversal is slower than the shift; find out why.') }
+                { id: 'recover', title: t('stem.evolab.ch_recover', 'Bring the small beaks back: '), body: t('stem.evolab.ch_recover_body', 'After three or more drought years, bring the mean back under 10.0 mm. Normal years revert slowly, El Niño years faster. Find out why the way back is never as quick as the shift.') }
               ],
               border: 'border-amber-400', heading: 'text-amber-800',
               title: t('stem.evolab.try_these_experiments_4', '🧪 Try these experiments'),
               items: [
                 { id: 'reproduce1977', auto: true, title: t('stem.evolab.reproduce_the_1977_study', 'Reproduce the 1977 study: '), body: t('stem.evolab.start_fresh_reset_trigger_drought_then', 'Start fresh (Reset). Trigger Drought, then Run 1 Year. Look at the mean beak depth shift. Toggle "Show Real Grant Data" — your result should track the historical 1977 → 1978 jump (~0.5-1mm).') },
                 { id: 'droughtNoEnd', auto: true, title: t('stem.evolab.drought_without_an_end', 'Drought without an end: '), body: t('stem.evolab.keep_drought_on_and_run_5_more_years_t', 'Keep drought ON and run 5 more years. The population keeps shifting toward larger beaks until it hits the upper end of available variation — selection can\'t create new traits, only sort existing ones.') },
-                { id: 'reversal', auto: true, title: t('stem.evolab.reversal_when_the_rains_return', 'Reversal when the rains return: '), body: t('stem.evolab.after_5_drought_years_turn_drought_off', 'After 5 drought years, turn drought OFF and run 5 more years. Notice the mean drift back toward smaller — small beaks are cheaper to grow when soft seeds return.') },
+                { id: 'elNino', auto: true, title: t('stem.evolab.exp_el_nino', 'Selection reverses after El Niño: '), body: t('stem.evolab.exp_el_nino_body', 'After at least one drought year, switch on El Niño aftermath and run two or more years. The mean falls: with tiny seeds everywhere, the deep beaks are the clumsy ones now.') },
+                { id: 'reversal', auto: true, title: t('stem.evolab.reversal_when_the_rains_return', 'Reversal when the rains return: '), body: t('stem.evolab.after_5_drought_years_turn_drought_off', 'After 5 drought years, turn drought OFF and run 5 more years. The mean drifts back toward smaller, slowly: a drought-shifted population is mostly deep-beaked birds, and deep beaks take fewer of the tiny seeds that normal years are full of.') },
+                { id: 'predictChicks', auto: true, title: t('stem.evolab.exp_predict_chicks', 'The Grants\' test: '), body: t('stem.evolab.exp_predict_chicks_body', 'Set h² to 0.8, run a drought year, and read the Predict the chicks card: S from the survivors, the prediction before + 0.8 × S, and the chicks that actually hatched. This is the calculation the Grants published for 1978, made before the chicks were measured.') },
                 { id: 'mutation', title: t('stem.evolab.mutation_rate_matters', 'Mutation rate matters: '), body: t('stem.evolab.set_0_05_very_tight_inheritance_and_ru', 'Set σ = 0.05 (very tight inheritance) and run 5 drought years. Compare with σ = 0.40 (loose inheritance). Lower mutation = slower response to selection because there\'s less variation to work with.') },
                 { id: 'smallBeaks', title: t('stem.evolab.try_to_make_small_beaks_come_back', 'Try to make small beaks come back: '), body: t('stem.evolab.once_large_beaked_birds_dominate_turni', 'Once large-beaked birds dominate, turning off drought is not enough — the small-beak gene pool may already be too thin to recover quickly. This is why evolution often doesn\'t fully reverse even when conditions revert.') }
               ]
@@ -4057,6 +5455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_watched_one_species_change_the_spe', 'You watched one species CHANGE. The Trait Divergence Model shows what happens next — when an isolated population diverges far enough that it becomes a SECOND species. This is how the Galápagos got 14 finch species from one ancestor.')
               )
             ),
+            h(ModelLimits, { moduleId: 'beakLab', heading: 'text-amber-800' }),
             h(KeyTerms, { moduleId: 'beakLab', heading: 'text-amber-800' }),
             h(FieldNote, { moduleId: 'beakLab', border: 'border-amber-400', heading: 'text-amber-800', prompt: t('stem.evolab.note_prompt_beak', 'How did your drought compare with the Grants\' record, and why might a teaching model exaggerate? What would you measure on the island if you were there?') }),
             h(TeacherNotes, {
@@ -4264,6 +5663,139 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           gradesRef.current++;
         };
 
+        // ── Parsimony step-counter. Two hypotheses for the same four tips
+        // (mammal outgroup, squamate, turtle, bird): the skeletal tree
+        // (turtle, (squamate, bird)) and the DNA tree (squamate, (turtle, bird)).
+        // Fitch's algorithm counts the fewest state changes each character needs
+        // on each tree; the tree needing fewer changes overall is preferred. With
+        // skeletons alone the skull character decides (6 vs 7 steps); DNA sites
+        // uniting turtle and bird outvote it. The site counts are illustrative;
+        // genome-scale studies (2012 on) compare thousands of loci.
+        var PARS_TAXA = [
+          { id: 'mammal', label: t('stem.evolab.pars_mammal', 'Bear (mammal)'), icon: '🐻' },
+          { id: 'squamate', label: t('stem.evolab.pars_squamate', 'Snake (squamate)'), icon: '🐍' },
+          { id: 'turtle', label: t('stem.evolab.pars_turtle', 'Turtle'), icon: '🐢' },
+          { id: 'bird', label: t('stem.evolab.pars_bird', 'Cardinal (bird)'), icon: '🐦' }
+        ];
+        // Nested arrays of taxon indices (0 mammal, 1 squamate, 2 turtle, 3 bird).
+        var PARS_TREES = {
+          skeleton: { label: t('stem.evolab.pars_tree_a', 'Tree A · skeletons: turtle outside the diapsids'), shape: [0, [2, [1, 3]]], newick: '(bear, (turtle, (snake, cardinal)))' },
+          dna: { label: t('stem.evolab.pars_tree_b', 'Tree B · DNA: turtle beside the birds'), shape: [0, [1, [2, 3]]], newick: '(bear, (snake, (turtle, cardinal)))' }
+        };
+        var PARS_CHARACTERS = [
+          { id: 'scales', label: t('stem.evolab.pars_c_scales', 'Dry scales'), states: [0, 1, 1, 1] },
+          { id: 'feathers', label: t('stem.evolab.pars_c_feathers', 'Feathers'), states: [0, 0, 0, 1] },
+          { id: 'shell', label: t('stem.evolab.pars_c_shell', 'Bony shell'), states: [0, 0, 1, 0] },
+          { id: 'tongue', label: t('stem.evolab.pars_c_tongue', 'Forked tongue'), states: [0, 1, 0, 0] },
+          { id: 'skull', label: t('stem.evolab.pars_c_skull', 'Two openings behind each eye socket (diapsid skull)'), states: [0, 1, 0, 1] },
+          { id: 'amnion', label: t('stem.evolab.pars_c_amnion', 'Amniotic egg'), states: [1, 1, 1, 1] },
+          { id: 'hair', label: t('stem.evolab.pars_c_hair', 'Hair and milk'), states: [1, 0, 0, 0] }
+        ];
+        // Fitch (1971): leaves carry their state; an internal node keeps the
+        // intersection of its children's state sets, or their union plus one step.
+        var fitchSteps = function(shape, states) {
+          var steps = 0;
+          var visit = function(node) {
+            if (typeof node === 'number') return [states[node]];
+            var sets = node.map(visit);
+            var inter = sets[0].filter(function(v) { return sets[1].indexOf(v) !== -1; });
+            if (inter.length) return inter;
+            steps++;
+            return sets[0].concat(sets[1].filter(function(v) { return sets[0].indexOf(v) === -1; }));
+          };
+          visit(shape);
+          return steps;
+        };
+        var parsState = useState({ included: PARS_CHARACTERS.map(function(c) { return c.id; }), tb: 0, ts: 0 }), pars = parsState[0], setPars = parsState[1];
+        var parsSeenRef = useRef({ skeletonWon: false, flipped: false, tie: false });
+        var parsTotals = function(p) {
+          var rows = PARS_CHARACTERS.filter(function(c) { return p.included.indexOf(c.id) !== -1; }).map(function(c) {
+            return { id: c.id, label: c.label, states: c.states, a: fitchSteps(PARS_TREES.skeleton.shape, c.states), b: fitchSteps(PARS_TREES.dna.shape, c.states) };
+          });
+          var tbA = fitchSteps(PARS_TREES.skeleton.shape, [0, 0, 1, 1]), tbB = fitchSteps(PARS_TREES.dna.shape, [0, 0, 1, 1]);
+          var tsA = fitchSteps(PARS_TREES.skeleton.shape, [0, 1, 0, 1]), tsB = fitchSteps(PARS_TREES.dna.shape, [0, 1, 0, 1]);
+          var morphA = rows.reduce(function(s1, r) { return s1 + r.a; }, 0), morphB = rows.reduce(function(s1, r) { return s1 + r.b; }, 0);
+          return { rows: rows, morphA: morphA, morphB: morphB, dnaA: p.tb * tbA + p.ts * tsA, dnaB: p.tb * tbB + p.ts * tsB, totalA: morphA + p.tb * tbA + p.ts * tsA, totalB: morphB + p.tb * tbB + p.ts * tsB, tbA: tbA, tbB: tbB, tsA: tsA, tsB: tsB };
+        };
+        // Experiments and the challenge fire from the handlers, never from render.
+        var updateParsimony = function(next) {
+          setPars(next);
+          var tot = parsTotals(next), seen = parsSeenRef.current;
+          var allMorph = next.included.length === PARS_CHARACTERS.length;
+          if (next.tb === 0 && next.ts === 0 && tot.totalA < tot.totalB) seen.skeletonWon = true;
+          if (next.tb === 0 && next.ts === 0 && tot.totalA === tot.totalB && next.included.indexOf('skull') === -1 && next.included.length >= 4) { seen.tie = true; detectExperiment('phyloBuilder', 'parsimonyTie', 'Drop the skull character and the trees tie'); }
+          if (seen.skeletonWon && tot.totalB < tot.totalA) { seen.flipped = true; detectExperiment('phyloBuilder', 'parsimonyFlip', 'Count the steps and watch the tree flip'); }
+          if (allMorph && next.ts === 0 && next.tb === 2 && tot.totalB < tot.totalA) detectChallenge('phyloBuilder', 'flipWithTwo', 'Flip the tree with two sites', 2);
+        };
+        var renderParsimony = function() {
+          var tot = parsTotals(pars);
+          var winner = tot.totalA < tot.totalB ? 'a' : tot.totalB < tot.totalA ? 'b' : 'tie';
+          var fmtStates = function(st) { return st.map(function(v) { return v ? '1' : '0'; }); };
+          var verdict = winner === 'tie'
+            ? __alloFill(t('stem.evolab.pars_verdict_tie', 'Both trees need {value1} steps: the characters you included cannot tell them apart.'), { value1: tot.totalA })
+            : winner === 'a'
+              ? __alloFill(t('stem.evolab.pars_verdict_a', 'Tree A needs {value1} steps, Tree B {value2}: parsimony prefers the skeletal tree by {value3}. This is where turtles sat for most of the 20th century, on the strength of one skull character.'), { value1: tot.totalA, value2: tot.totalB, value3: tot.totalB - tot.totalA })
+              : __alloFill(t('stem.evolab.pars_verdict_b', 'Tree B needs {value1} steps, Tree A {value2}: parsimony prefers the DNA tree by {value3}. Many independent sites outvote one skull character, and the turtle\'s solid skull is read as a later LOSS of the openings, which costs one step on Tree B.'), { value1: tot.totalB, value2: tot.totalA, value3: tot.totalA - tot.totalB });
+          var intro = t('stem.evolab.pars_intro', 'Trees are not read off organisms; they are inferred by counting. Parsimony keeps the tree that needs the fewest evolutionary changes to explain the characters. Tick characters on and off, then add DNA sites, and watch the totals.');
+          var cellCls = 'py-1 px-2 text-center tabular-nums';
+          return h('div', { className: 'bg-white border-2 border-violet-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-violet-800' }, t('stem.evolab.pars_title', '🔢 Parsimony: count the steps')),
+              h(SpeakButton, { text: intro + ' ' + verdict })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-700' }, intro),
+            h('div', { className: 'mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs' },
+              ['skeleton', 'dna'].map(function(k) { var tr = PARS_TREES[k]; var isWin = (k === 'skeleton' && winner === 'a') || (k === 'dna' && winner === 'b'); return h('div', { key: k, className: 'rounded-lg border-2 p-2 ' + (isWin ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-slate-50') }, h('div', { className: 'font-bold text-slate-800' }, tr.label), h('div', { className: 'font-mono text-slate-700 mt-1' }, tr.newick), h('div', { className: 'mt-1 font-black text-violet-900', 'data-pars-total': k }, __alloFill(t('stem.evolab.pars_total', '{value1} steps'), { value1: k === 'skeleton' ? tot.totalA : tot.totalB }))); })
+            ),
+            h('div', { className: 'overflow-x-auto mt-3' }, h('table', { className: 'w-full text-xs' },
+              h('caption', { className: 'sr-only' }, t('stem.evolab.pars_table_caption', 'Character states for the four tips and the steps each character costs on each tree')),
+              h('thead', null, h('tr', { className: 'text-left uppercase tracking-wider text-slate-600' },
+                h('th', { scope: 'col', className: 'py-1 px-2' }, t('stem.evolab.pars_col_character', 'Character')),
+                PARS_TAXA.map(function(tx) { return h('th', { key: tx.id, scope: 'col', className: 'py-1 px-2 text-center', title: tx.label }, h('span', { 'aria-hidden': 'true' }, tx.icon), h('span', { className: 'sr-only' }, tx.label)); }),
+                h('th', { scope: 'col', className: 'py-1 px-2 text-center' }, t('stem.evolab.pars_col_a', 'Steps on A')),
+                h('th', { scope: 'col', className: 'py-1 px-2 text-center' }, t('stem.evolab.pars_col_b', 'Steps on B')))),
+              h('tbody', null,
+                PARS_CHARACTERS.map(function(c) {
+                  var on = pars.included.indexOf(c.id) !== -1;
+                  var a = fitchSteps(PARS_TREES.skeleton.shape, c.states), b = fitchSteps(PARS_TREES.dna.shape, c.states);
+                  var decides = a !== b;
+                  return h('tr', { key: c.id, className: 'border-t border-slate-200 ' + (on ? '' : 'opacity-50') + (decides && on ? ' bg-amber-50' : '') },
+                    h('th', { scope: 'row', className: 'py-1 px-2 text-left font-bold text-slate-800' },
+                      h('label', { className: 'flex items-center gap-2 cursor-pointer' },
+                        h('input', { type: 'checkbox', checked: on, 'aria-label': __alloFill(t('stem.evolab.pars_include', 'Include {value1}'), { value1: c.label }), onChange: function() { var inc = on ? pars.included.filter(function(id) { return id !== c.id; }) : pars.included.concat([c.id]); updateParsimony(Object.assign({}, pars, { included: inc })); } }),
+                        h('span', null, c.label), decides ? h('span', { className: 'text-[0.625rem] font-bold text-amber-800' }, t('stem.evolab.pars_decides', 'decides')) : (a === 0 ? h('span', { className: 'text-[0.625rem] text-slate-500' }, t('stem.evolab.pars_uninformative', 'shared by all')) : null))),
+                    fmtStates(c.states).map(function(v, i) { return h('td', { key: i, className: cellCls + ' text-slate-800' }, v); }),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, on ? String(a) : '—'),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, on ? String(b) : '—'));
+                }).concat([
+                  h('tr', { key: 'tb', className: 'border-t border-slate-200 bg-sky-50' },
+                    h('th', { scope: 'row', className: 'py-1 px-2 text-left font-bold text-slate-800' }, __alloFill(t('stem.evolab.pars_dna_tb', 'DNA sites shared by turtle and bird only × {value1}'), { value1: pars.tb })),
+                    ['0', '0', '1', '1'].map(function(v, i) { return h('td', { key: i, className: cellCls + ' text-slate-800' }, v); }),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, String(pars.tb * tot.tbA)),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, String(pars.tb * tot.tbB))),
+                  h('tr', { key: 'ts', className: 'border-t border-slate-200 bg-sky-50' },
+                    h('th', { scope: 'row', className: 'py-1 px-2 text-left font-bold text-slate-800' }, __alloFill(t('stem.evolab.pars_dna_ts', 'DNA sites shared by snake and bird only × {value1}'), { value1: pars.ts })),
+                    ['0', '1', '0', '1'].map(function(v, i) { return h('td', { key: i, className: cellCls + ' text-slate-800' }, v); }),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, String(pars.ts * tot.tsA)),
+                    h('td', { className: cellCls + ' font-bold text-slate-900' }, String(pars.ts * tot.tsB))),
+                  h('tr', { key: 'total', className: 'border-t-2 border-slate-400 font-black' },
+                    h('th', { scope: 'row', className: 'py-1 px-2 text-left text-slate-900' }, t('stem.evolab.pars_total_row', 'Total steps')),
+                    h('td', { colSpan: 4 }),
+                    h('td', { className: cellCls + ' text-slate-900' }, String(tot.totalA)),
+                    h('td', { className: cellCls + ' text-slate-900' }, String(tot.totalB)))
+                ])))),
+            h('div', { className: 'mt-3 grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h(LabeledSlider, { label: t('stem.evolab.pars_slider_tb', 'DNA sites: turtle + bird'), value: pars.tb, min: 0, max: 40, step: 1, onChange: function(v) { updateParsimony(Object.assign({}, pars, { tb: Math.round(v) })); }, valueText: pars.tb + ' ' + t('stem.evolab.pars_sites', 'sites'), accent: 'accent-sky-600', hint: t('stem.evolab.pars_slider_tb_hint', 'Each site is a DNA position where turtle and bird share a change the others lack. On Tree B it costs one step; on Tree A two.') }),
+              h(LabeledSlider, { label: t('stem.evolab.pars_slider_ts', 'DNA sites: snake + bird'), value: pars.ts, min: 0, max: 40, step: 1, onChange: function(v) { updateParsimony(Object.assign({}, pars, { ts: Math.round(v) })); }, valueText: pars.ts + ' ' + t('stem.evolab.pars_sites', 'sites'), accent: 'accent-sky-600', hint: t('stem.evolab.pars_slider_ts_hint', 'Sites where snake and bird share a change the turtle lacks: these back Tree A. Real data always carries some sites for each alternative, from chance and from ancestral variation sorting unevenly; parsimony weighs the majority.') })
+            ),
+            h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+              h('button', { type: 'button', onClick: function() { updateParsimony({ included: PARS_CHARACTERS.map(function(c) { return c.id; }), tb: 12, ts: 3 }); }, className: 'rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white hover:bg-sky-800' }, t('stem.evolab.pars_load_sample', '🧬 Load a genome sample (illustrative: 12 + 3)')),
+              h('button', { type: 'button', onClick: function() { updateParsimony({ included: PARS_CHARACTERS.map(function(c) { return c.id; }), tb: 0, ts: 0 }); }, className: 'rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-black text-slate-800 hover:bg-slate-300' }, t('stem.evolab.pars_skeletons_only', '🦴 Skeletons only'))
+            ),
+            h('p', { role: 'status', className: 'mt-2 text-sm font-semibold text-slate-900' }, verdict),
+            h('p', { className: 'mt-2 text-xs text-slate-600' }, t('stem.evolab.pars_note', 'Parsimony is a rule of evidence, not a claim that evolution is thrifty: the preferred tree is the one the data support best, and more data can change it. Real studies also use likelihood and Bayesian methods that model how DNA changes, and the site counts here are illustrative; the 2012 genome studies compared thousands of loci.'))
+          );
+        };
         var evidenceNote = mode === 'molecular'
           ? t('stem.evolab.evidence_molecular_note', 'DNA hypothesis: genome-scale comparisons (e.g. Crawford et al. 2012; Chiari et al. 2012) place turtles as the sister group of birds + crocodiles; the turtle\'s solid skull is now read as a later loss of the openings. DNA also nests whales inside the even-toed ungulates, closest to hippos (Cetartiodactyla); Eocene whale fossils described in 2001 turned out to carry the even-toed "double-pulley" ankle bone, so the skeletons agreed once the right bones were found.')
           : t('stem.evolab.evidence_morph_note', 'Skeletal hypothesis: for most of the 20th century turtles were placed outside the diapsids because their skulls lack the two temporal openings that lizards, snakes, crocodiles and birds share, and whales, with no ankle bones to compare, were kept as an order of their own. Toggle to DNA to see the same tips arranged by molecular evidence: two branches move.');
@@ -4486,6 +6018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               moduleId: 'phyloBuilder',
               items: [
                 { id: 'perfectFirst', title: t('stem.evolab.ch_perfectfirst', 'First time right: '), body: t('stem.evolab.ch_perfectfirst_body', 'Place all twelve correctly before your first grading. Start Over resets the attempt.') },
+                { id: 'flipWithTwo', title: t('stem.evolab.ch_fliptwo', 'Flip the tree with two sites: '), body: t('stem.evolab.ch_fliptwo_body', 'In the step-counter, keep every skeletal character and no snake + bird sites. Find the smallest number of turtle + bird DNA sites that makes Tree B win outright (one site only ties it).') },
                 { id: 'noHints', title: t('stem.evolab.ch_nohints', 'From observation alone: '), body: t('stem.evolab.ch_nohints_body', 'A perfect tree with the trait checklist switched off the whole way. Read each organism\'s note and reason down the tree yourself.') }
               ]
             }),
@@ -4520,6 +6053,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', null,
                   h('dt', { className: 'font-bold text-slate-800' }, t('stem.evolab.analogous_structures', 'Analogous structures')),
                   h('dd', { className: 'text-slate-700 ml-4' }, t('stem.evolab.body_parts_that_look_similar_and_do_si', 'Body parts that LOOK similar and do similar jobs but evolved INDEPENDENTLY — like a bird wing and a butterfly wing. Convergent evolution, NOT shared ancestry.'))
+                ),
+                h('div', null,
+                  h('dt', { className: 'font-bold text-slate-800' }, t('stem.evolab.parsimony_term', 'Parsimony')),
+                  h('dd', { className: 'text-slate-700 ml-4' }, t('stem.evolab.parsimony_def', 'The rule for choosing between trees: prefer the one that needs the fewest evolutionary changes (steps) to explain the characters. A rule of evidence, not a claim that evolution takes short cuts.'))
                 ),
                 h('div', null,
                   h('dt', { className: 'font-bold text-slate-800' }, t('stem.evolab.vertebrate', 'Vertebrate')),
@@ -4567,6 +6104,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'toomany', label: t('stem.evolab.check_fish_toomany', 'Because there are too many species of fish for one clade.'), feedback: t('stem.evolab.check_fish_toomany_fb', 'Clades can be any size: beetles alone number hundreds of thousands of species and form a perfectly good clade. Size is irrelevant; completeness (ancestor plus ALL descendants) is what matters.') }
               ]
             }),
+            renderParsimony(),
+            (pars.tb > 0 || pars.ts > 0) && h(CheckCard, {
+              moduleId: 'phyloBuilder', id: 'parsimony',
+              border: 'border-violet-400', heading: 'text-violet-800',
+              title: t('stem.evolab.check_yourself_3', '🧠 Check yourself (3)'),
+              question: t('stem.evolab.check_pars_q', 'With the genome sample, Tree B needs fewer steps than Tree A. What does that show?'),
+              options: [
+                { id: 'proof', label: t('stem.evolab.check_pars_proof', 'It proves turtles are closer to birds than to snakes.'), feedback: t('stem.evolab.check_pars_proof_fb', 'Parsimony ranks hypotheses by how well the data support them; it does not prove one. Tree B is the best-supported tree given these characters, and new data could in principle reorder them. What made the 2012 result stick is that thousands of loci agreed.') },
+                { id: 'support', label: t('stem.evolab.check_pars_support', 'Tree B is the hypothesis these data support best; adding data could change the ranking, which is why genome-scale studies mattered.'), correct: true, feedback: t('stem.evolab.check_pars_support_fb', 'Yes. A tree is an inference from counted evidence. The skull character still costs Tree B a step (the turtle lost its openings); the tree wins because many independent sites outweigh one reversal.') },
+                { id: 'thrifty', label: t('stem.evolab.check_pars_thrifty', 'Evolution takes the fewest steps, so the tree with fewer steps is the one that happened.'), feedback: t('stem.evolab.check_pars_thrifty_fb', 'Evolution is not thrifty; reversals and convergence happen all the time (the turtle skull is one). Parsimony is a rule for weighing evidence: unexplained coincidences count against a tree.') },
+                { id: 'skull', label: t('stem.evolab.check_pars_skull', 'Nothing, because the skull character still supports Tree A.'), feedback: t('stem.evolab.check_pars_skull_fb', 'One character does not outvote twelve independent ones. Untick the skull row and the DNA tree wins by even more; tick it back and it costs Tree B exactly one step.') }
+              ]
+            }),
+            h(ModelLimits, { moduleId: 'phyloBuilder', heading: 'text-violet-800' }),
             h(FieldNote, { moduleId: 'phyloBuilder', border: 'border-violet-400', heading: 'text-violet-800', prompt: t('stem.evolab.note_prompt_phylo', 'Which organism was hardest to place, and which trait finally decided it? What did the DNA toggle change, and what did it not?') }),
             h(TeacherNotes, {
               standards: ['HS-LS4-1', 'MS-LS4-1', 'MS-LS4-2', 'HS-LS4-2'],
@@ -4929,6 +6480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               )
             ),
             h('div', { className: 'text-xs text-slate-600' }, __alloFill(t('stem.evolab.bones_viewed_progress', 'Bone groups compared: {value1} of {value2}'), { value1: viewedBones.length, value2: BONES.length })),
+            h(EvidenceSort),
             // Bone detective mini-game
             h('div', { className: 'bg-white border-2 border-yellow-400 rounded-xl p-4' },
               h('div', { className: 'flex flex-wrap items-start justify-between gap-2 mb-2' },
@@ -4967,7 +6519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             h(ChallengeList, {
               moduleId: 'commonAncestry',
-              items: [{ id: 'detective5', title: t('stem.evolab.ch_detective5', 'Bone detective, five for five: '), body: t('stem.evolab.ch_detective5_body', 'Name all five animals from their bone modifications on one run of the clues.'), record: { id: 'bestDetective', label: t('stem.evolab.best_detective_score', 'best score') } }]
+              items: [{ id: 'evidence15', title: t('stem.evolab.ch_evidence15', 'Every line, first pass: '), body: t('stem.evolab.ch_evidence15_body', 'Sort all fifteen evidence cards into the right line of evidence on one pass. Then explain why five independent lines agreeing is stronger than any one of them.') }, { id: 'detective5', title: t('stem.evolab.ch_detective5', 'Bone detective, five for five: '), body: t('stem.evolab.ch_detective5_body', 'Name all five animals from their bone modifications on one run of the clues.'), record: { id: 'bestDetective', label: t('stem.evolab.best_detective_score', 'best score') } }]
             }),
             h(CheckCard, {
               moduleId: 'commonAncestry',
@@ -4992,6 +6544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'whale', label: t('stem.evolab.check_fused_whale', 'The whale: a flipper is a paddle.'), feedback: t('stem.evolab.check_fused_whale_fb', 'The whale\'s radius and ulna are shortened and flattened into a stiff platform, but they stay two bones; the flipper is stiffened by connective tissue around them. Fused into ONE bone describes the horse.') }
               ]
             }),
+            h(ModelLimits, { moduleId: 'commonAncestry', heading: 'text-yellow-800' }),
             h(KeyTerms, { moduleId: 'commonAncestry', heading: 'text-yellow-800' }),
             h(FieldNote, { moduleId: 'commonAncestry', border: 'border-yellow-400', heading: 'text-yellow-800', prompt: t('stem.evolab.note_prompt_ancestry', 'Pick one bone and describe its job in two different animals. What does the same bone doing different jobs tell you?') }),
             h(TeacherNotes, {
@@ -5247,8 +6800,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             markComplete('misconceptions', correctCount + ' of ' + ROUND_COUNT + ' misconceptions answered correctly.');
             if (correctCount === ROUND_COUNT && !reviewMode) detectChallenge('misconceptions', 'perfect12', 'All 12 on a single pass', correctCount);
             setRecord('misconceptions', 'bestScore', correctCount, { label: 'Best score', unit: ' / ' + ROUND_COUNT, better: 'max' });
+            // Record the pass (review rounds are retries, not passes). The answer
+            // set is the key, so a remount with the same answers does not count twice.
+            if (!reviewMode) {
+              var passKey = JSON.stringify(answers);
+              var qzCur = _progressRef.current && _progressRef.current.quiz;
+              if (!(qzCur && qzCur.lastKey === passKey)) {
+                var missedNow = missedIndices.slice();
+                writeProgress(function(p) {
+                  var qz = p.quiz && typeof p.quiz === 'object' ? Object.assign({}, p.quiz) : { passes: 0 };
+                  var pass = { at: new Date().toISOString(), score: correctCount, missed: missedNow };
+                  qz.passes = (qz.passes || 0) + 1;
+                  if (!qz.first) qz.first = pass;
+                  qz.latest = pass;
+                  qz.lastKey = passKey;
+                  p.quiz = qz;
+                });
+                if (qzCur && qzCur.first) { var shedNow = qzCur.first.missed.filter(function(i) { return missedNow.indexOf(i) === -1; }).length; announce(__alloFill(__alloT('stem.evolab.sr_quiz_pass', 'Pass {value1} recorded: {value2} of the {value3} misconceptions from your first pass are gone.'), { value1: (qzCur.passes || 0) + 1, value2: shedNow, value3: qzCur.first.missed.length })); }
+              }
+            }
           }
         }, [allDone, correctCount]); // eslint-disable-line
+        var quizProg = progress && progress.quiz && progress.quiz.first ? progress.quiz : null;
+        // Then vs now: the first full pass against the latest one, item by item.
+        var renderThenVsNow = function() {
+          if (!allDone || !quizProg || !quizProg.latest || (quizProg.passes || 0) < 2) return null;
+          var first = quizProg.first.missed || [], latest = quizProg.latest.missed || [];
+          var shed = first.filter(function(i) { return latest.indexOf(i) === -1; });
+          var still = first.filter(function(i) { return latest.indexOf(i) !== -1; });
+          var slipped = latest.filter(function(i) { return first.indexOf(i) === -1; });
+          var summary = __alloFill(t('stem.evolab.tvn_summary', 'First pass {value1}/{value2}, this pass {value3}/{value2}. You shed {value4} of the {value5} misconceptions you started with{value6}{value7}.'), { value1: quizProg.first.score, value2: ROUND_COUNT, value3: quizProg.latest.score, value4: shed.length, value5: first.length, value6: still.length ? '; ' + __alloFill(t('stem.evolab.tvn_still', '{value1} still with you'), { value1: still.length }) : '', value7: slipped.length ? '; ' + __alloFill(t('stem.evolab.tvn_slipped', '{value1} slipped'), { value1: slipped.length }) : '' });
+          var status = function(i) { var f = first.indexOf(i) !== -1, l = latest.indexOf(i) !== -1; return f && !l ? { k: 'shed', label: t('stem.evolab.tvn_shed', 'shed'), cls: 'bg-emerald-100 text-emerald-900' } : f && l ? { k: 'still', label: t('stem.evolab.tvn_still_here', 'still here'), cls: 'bg-rose-100 text-rose-900' } : !f && l ? { k: 'slipped', label: t('stem.evolab.tvn_slipped_word', 'slipped'), cls: 'bg-amber-100 text-amber-900' } : { k: 'kept', label: t('stem.evolab.tvn_kept', 'kept'), cls: 'bg-slate-100 text-slate-700' }; };
+          return h('div', { className: 'bg-white border-2 border-slate-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.tvn_title', '🪞 Then vs now')),
+              h(SpeakButton, { text: summary })),
+            h('p', { role: 'status', className: 'mt-1 text-sm font-semibold text-slate-900', 'data-tvn-shed': shed.length }, summary),
+            h('p', { className: 'text-xs text-slate-600 mt-1' }, t('stem.evolab.tvn_hint', 'A misconception you shed is one you can now explain away; the ones still here are worth a field note in the module that covers them.')),
+            h('div', { className: 'overflow-x-auto mt-2' }, h('table', { className: 'w-full text-xs' },
+              h('caption', { className: 'sr-only' }, t('stem.evolab.tvn_caption', 'Each misconception on the first pass and on the latest pass')),
+              h('thead', null, h('tr', { className: 'text-left uppercase tracking-wider text-slate-600' }, [t('stem.evolab.tvn_col_item', 'Misconception'), t('stem.evolab.tvn_col_first', 'First pass'), t('stem.evolab.tvn_col_now', 'Now'), t('stem.evolab.tvn_col_status', 'Status')].map(function(hd, i) { return h('th', { key: i, scope: 'col', className: 'py-1 pr-3' }, hd); }))),
+              h('tbody', null, QUESTIONS.map(function(qq, i) { var st = status(i); return h('tr', { key: i, className: 'border-t border-slate-200', 'data-tvn-status': st.k }, h('th', { scope: 'row', className: 'py-1 pr-3 text-left font-bold text-slate-800' }, MISCONCEPTION_LABELS[i] || qq.q), h('td', { className: 'py-1 pr-3' }, first.indexOf(i) === -1 ? '✓' : '✗'), h('td', { className: 'py-1 pr-3' }, latest.indexOf(i) === -1 ? '✓' : '✗'), h('td', { className: 'py-1 pr-3' }, h('span', { className: 'rounded-full px-2 py-0.5 font-bold ' + st.cls }, st.label))); }))))
+          );
+        };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '❓', title: t('stem.evolab.evolution_misconceptions_quiz', 'Evolution Misconceptions Quiz') }),
@@ -5263,7 +6857,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'text-right' },
                   h('div', { className: 'text-[0.6875rem] opacity-80' }, t('stem.evolab.score_2', 'Score')),
                   h('div', { className: 'text-2xl font-black' }, correctCount + ' / ' + totalAnswered),
-                  d.misconQuizBest && h('div', { className: 'text-[0.625rem] opacity-80' }, 'Best: ' + d.misconQuizBest)
+                  d.misconQuizBest && h('div', { className: 'text-[0.625rem] opacity-80' }, 'Best: ' + d.misconQuizBest),
+                  quizProg && h('div', { className: 'text-[0.625rem] opacity-80' }, __alloFill(t('stem.evolab.quiz_pass_line', 'Pass {value1} · first pass {value2}/{value3}'), { value1: (quizProg.passes || 0) + (allDone ? 0 : 1), value2: quizProg.first.score, value3: ROUND_COUNT }))
                 )
               ),
               // Progress bar
@@ -5356,6 +6951,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 }, '↻ Restart All ' + ROUND_COUNT)
               )
             ),
+            renderThenVsNow(),
             h(ChallengeList, {
               moduleId: 'misconceptions',
               items: [{ id: 'perfect12', title: t('stem.evolab.ch_perfect12', 'Clean sweep: '), body: t('stem.evolab.ch_perfect12_body', 'All 12 correct on a single pass, no review round.'), record: { id: 'bestScore', label: t('stem.evolab.best_score', 'best score') } }]
@@ -5405,6 +7001,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var resCostState = useState(0), resCost = resCostState[0], setResCost = resCostState[1];
         var resCostRef = useRef(resCost);
         resCostRef.current = resCost;
+        // Plasmid transfer (horizontal gene transfer): each tick, a susceptible
+        // cell (r < 0.5) that touches a resistant neighbour (r ≥ 0.6, within
+        // HGT_RADIUS) receives its resistance with probability hgtRate. It spreads
+        // resistance sideways between LIVING cells, with no drug and no
+        // differential reproduction: not selection, and the check below asks that.
+        var hgtRateState = useState(0), hgtRate = hgtRateState[0], setHgtRate = hgtRateState[1];
+        var hgtRef = useRef(hgtRate);
+        hgtRef.current = hgtRate;
+        var HGT_RADIUS = 30;
+        // Second drug (B). Each cell carries an independent resistance rB; the
+        // two drugs kill independently, so with both on a cell survives a tick
+        // with probability pA(r)·pB(rB). Combination therapy works when no cell
+        // resists both before the first dose: at 2% starting resistance the
+        // expected number of double-resistant cells is 150·0.02² = 0.06, and
+        // A + B clears the dish 92% of the time where A alone leaves it resistant
+        // 85% of the time; at 20% (≈6 double-resistant cells) the combination
+        // fails 95% of the time (scratchpad/evolab/ab2_sim.mjs).
+        var drugBState = useState(false), drugB = drugBState[0], setDrugB = drugBState[1];
+        var drugBRef = useRef(drugB);
+        drugBRef.current = drugB;
+        var drugBEverRef = useRef(false);
+        var TURNOVER = 0.10;      // share of cells replaced each drug-free tick
+        var PLASMID_LOSS = 0.05;  // divisions of a resistant parent that lose the plasmid
         // Dosing schedules drive the antibiotic toggle during Auto-Run so
         // "complete the course" vs "stop early" is a reproducible comparison.
         var SCHEDULES = {
@@ -5412,7 +7031,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           continuous: { label: t('stem.evolab.sched_continuous', 'Continuous'), desc: t('stem.evolab.sched_continuous_d', 'Antibiotic on every tick.') },
           course: { label: t('stem.evolab.sched_course', 'Complete course (15 on)'), desc: t('stem.evolab.sched_course_d', 'On for 15 ticks from when you start, then off.') },
           early: { label: t('stem.evolab.sched_early', 'Stopped early (5 on)'), desc: t('stem.evolab.sched_early_d', 'On for 5 ticks, then off: the patient felt better and stopped.') },
-          pulsed: { label: t('stem.evolab.sched_pulsed', 'Pulsed (3 on / 3 off)'), desc: t('stem.evolab.sched_pulsed_d', 'Repeating 3 ticks on, 3 ticks off: missed doses.') }
+          pulsed: { label: t('stem.evolab.sched_pulsed', 'Pulsed (3 on / 3 off)'), desc: t('stem.evolab.sched_pulsed_d', 'Repeating 3 ticks on, 3 ticks off: missed doses.') },
+          combo: { label: t('stem.evolab.sched_combo', 'A + B together (15 on)'), desc: t('stem.evolab.sched_combo_d', 'Both drugs on for 15 ticks from when you start, then off: combination therapy.') },
+          sequential: { label: t('stem.evolab.sched_sequential', 'A then B (15 + 15)'), desc: t('stem.evolab.sched_sequential_d', 'Drug A alone for 15 ticks, then drug B alone for 15: one drug at a time.') }
         };
         var scheduleState = useState('manual'), schedule = scheduleState[0], setSchedule = scheduleState[1];
         var scheduleRef = useRef(schedule);
@@ -5423,7 +7044,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (sched === 'course') return sinceStart < 15;
           if (sched === 'early') return sinceStart < 5;
           if (sched === 'pulsed') return (sinceStart % 6) < 3;
+          if (sched === 'combo' || sched === 'sequential') return sinceStart < 15;
           return null;
+        };
+        var scheduledOnB = function(sched, sinceStart) {
+          if (sched === 'manual') return null;
+          if (sched === 'combo') return sinceStart < 15;
+          if (sched === 'sequential') return sinceStart >= 15 && sinceStart < 30;
+          return false;
         };
         var chooseSchedule = function(id) {
           setSchedule(id);
@@ -5432,6 +7060,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (id !== 'manual') {
             var on = scheduledOn(id, 0);
             antibioticRef.current = on; setAntibiotic(on);
+            var onB = !!scheduledOnB(id, 0);
+            drugBRef.current = onB; setDrugB(onB);
             announce(__alloFill(__alloT('stem.evolab.sr_schedule_chosen', 'Dosing schedule: {value1}. Press Auto-Run to follow it.'), { value1: SCHEDULES[id].label }));
           }
         };
@@ -5469,12 +7099,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           for (var i = 0; i < POP_CAP; i++) {
             // startRes fraction begin partially resistant; rest are susceptible.
             var r = Math.random() < startRes ? clamp(0.6 + Math.random() * 0.3, 0, 1) : clamp(Math.random() * 0.1, 0, 1);
+            // Resistance to drug B is drawn independently: double resistance is the product.
+            var rB = Math.random() < startRes ? clamp(0.6 + Math.random() * 0.3, 0, 1) : clamp(Math.random() * 0.1, 0, 1);
             pop.push({
               x: 50 + Math.random() * 700,
               y: 30 + Math.random() * 200,
               vx: (Math.random() - 0.5) * 12,
               vy: (Math.random() - 0.5) * 12,
               r: r,
+              rB: rB,
               alive: true
             });
             initialResistanceSum += r;
@@ -5483,9 +7116,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           tickRef.current = 0;
           autoRunRef2.current = false;
           antibioticRef.current = false;
-          exposureRef.current = { ticks: 0, blocks: 0, wasOn: false };
+          drugBRef.current = false;
+          drugBEverRef.current = false;
+          exposureRef.current = { ticks: 0, blocks: 0, wasOn: false, ticksB: 0, ticksBoth: 0 };
           setAutoRun(false);
           setAntibiotic(false);
+          setDrugB(false);
           setTick(0);
           var resCount = pop.filter(function(b) { return b.r > 0.5; }).length;
           antibioticBaselineRef.current = {
@@ -5495,7 +7131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             meanResistance: pop.length ? initialResistanceSum / pop.length : null,
             configuredStart: startRes
           };
-          var initialHistory = [{ tick: 0, pop: pop.length, resistant: resCount, anti: false }];
+          var initialHistory = [{ tick: 0, pop: pop.length, resistant: resCount, resistantB: pop.filter(function(b) { return b.rB > 0.5; }).length, both: pop.filter(function(b) { return b.r > 0.5 && b.rB > 0.5; }).length, anti: false, antiB: false, hgt: 0 }];
           historyRef.current = initialHistory;
           setHistory(initialHistory);
         };
@@ -5506,7 +7142,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         //                    so resistant cells survive; susceptible die
         var stepOne = function() {
           var pop = bacteriaRef.current.slice();
+          if (!pop.length) return; // eradicated: nothing to step until Reset
           var antiOn = antibioticRef.current;
+          var onB = drugBRef.current;
+          if (onB) drugBEverRef.current = true;
           var dose = doseRef.current;
           var mut = mutRef.current;
           var survivors;
@@ -5515,36 +7154,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             if (!exposureRef.current.wasOn) exposureRef.current.blocks++;
           }
           exposureRef.current.wasOn = antiOn;
-          if (antiOn) {
+          if (onB) exposureRef.current.ticksB = (exposureRef.current.ticksB || 0) + 1;
+          if (antiOn && onB) exposureRef.current.ticksBoth = (exposureRef.current.ticksBoth || 0) + 1;
+          if (antiOn || onB) {
             survivors = [];
             for (var i = 0; i < pop.length; i++) {
               var b = pop[i];
-              // Survival probability rises with resistance.
-              var survival = 1 - dose * (1 - b.r);
-              if (Math.random() < Math.max(0.02, survival)) survivors.push(b);
+              // Survival probability rises with resistance; each drug is a separate
+              // test, so with both on the cell must pass both.
+              var survival = 1;
+              if (antiOn) survival *= Math.max(0.02, 1 - dose * (1 - b.r));
+              if (onB) survival *= Math.max(0.02, 1 - dose * (1 - (b.rB == null ? 0.05 : b.rB)));
+              if (Math.random() < survival) survivors.push(b);
             }
           } else {
-            // No antibiotic — everyone survives the step.
-            survivors = pop.slice();
+            // No antibiotic: cells still die of other causes and are replaced
+            // (10% a tick), which is what lets a cost of resistance act at capacity.
+            survivors = pop.filter(function() { return Math.random() >= TURNOVER; });
+          }
+          // Plasmid transfer among the survivors (one transfer per recipient per tick).
+          var transfers = 0;
+          if (hgtRef.current > 0) {
+            var donors = survivors.filter(function(c) { return c.r >= 0.6; });
+            for (var hi = 0; hi < survivors.length && donors.length; hi++) {
+              var cell = survivors[hi];
+              if (cell.r >= 0.5) continue;
+              for (var di = 0; di < donors.length; di++) {
+                var ddx = donors[di].x - cell.x, ddy = donors[di].y - cell.y;
+                if (ddx * ddx + ddy * ddy <= HGT_RADIUS * HGT_RADIUS) { if (Math.random() < hgtRef.current) { cell.r = donors[di].r; transfers++; } break; }
+              }
+            }
           }
           // Reproduction back to cap (antibiotic-free conditions allow regrowth;
           // antibiotic conditions reproduce more slowly because most are dying).
-          var growthCap = antiOn ? Math.min(POP_CAP, survivors.length + 8) : POP_CAP;
+          var growthCap = (antiOn || onB) ? Math.min(POP_CAP, survivors.length + 8) : POP_CAP;
           var next = survivors.slice();
           var attempts = 0;
           while (next.length < growthCap && survivors.length > 0 && attempts < 500) {
             attempts++;
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
             // Cost of resistance: resistant parents reproduce less often.
-            if (resCostRef.current > 0 && Math.random() < resCostRef.current * parent.r) continue;
-            // Offspring resistance: parent's value plus random small mutation.
+            if (resCostRef.current > 0 && Math.random() < resCostRef.current * Math.max(parent.r, parent.rB || 0)) continue;
+            // Offspring resistance: parent's value plus random small mutation;
+            // occasionally a resistant parent's plasmid is not passed on.
             var newR = clamp(parent.r + randNormal(0, mut), 0, 1);
+            if (parent.r >= 0.5 && Math.random() < PLASMID_LOSS) newR = clamp(randNormal(0.05, 0.03), 0, 1);
+            var newRB = clamp((parent.rB == null ? 0.05 : parent.rB) + randNormal(0, mut), 0, 1);
             next.push({
               x: parent.x + (Math.random() - 0.5) * 20,
               y: parent.y + (Math.random() - 0.5) * 20,
               vx: (Math.random() - 0.5) * 12,
               vy: (Math.random() - 0.5) * 12,
               r: newR,
+              rB: newRB,
               alive: true
             });
           }
@@ -5554,15 +7216,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // always appending to the stale initial snapshot (tick stuck at 1).
           var t = tickRef.current + 1;
           var resistantCount = next.filter(function(b) { return b.r > 0.5; }).length;
+          var resistantB = next.filter(function(b) { return (b.rB || 0) > 0.5; }).length;
+          var bothCount = next.filter(function(b) { return b.r > 0.5 && (b.rB || 0) > 0.5; }).length;
           tickRef.current = t; setTick(t);
-          var newHist = historyRef.current.concat([{ tick: t, pop: next.length, resistant: resistantCount, anti: antiOn }]).slice(-80);
+          var newHist = historyRef.current.concat([{ tick: t, pop: next.length, resistant: resistantCount, resistantB: resistantB, both: bothCount, anti: antiOn, antiB: onB, hgt: transfers }]).slice(-80);
+          if (hgtRef.current >= 0.05 && exposureRef.current.ticks === 0 && next.length && resistantCount / next.length >= 0.5) detectExperiment('antibioticLab', 'plasmidSpread', 'Resistance spreads with no drug at all');
           historyRef.current = newHist; setHistory(newHist);
           if (next.length === 0) setAutoRun(false); // population extinct
-          checkAntibioticMilestones(t, next.length, resistantCount, antiOn);
+          checkAntibioticMilestones(t, next.length, resistantCount, antiOn, onB, bothCount);
         };
 
         // Completion at 20 ticks with some exposure; experiments from the record.
-        var checkAntibioticMilestones = function(t, popNow, resistantNow, antiOn) {
+        var checkAntibioticMilestones = function(t, popNow, resistantNow, antiOn, onB, bothNow) {
           var ms = abMilestoneRef.current;
           var share = popNow > 0 ? resistantNow / popNow : 0;
           if (share > ms.peakShare) ms.peakShare = share;
@@ -5572,15 +7237,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           if (antiOn) ms.offAfterPeak = ms.offAfterPeak; // unchanged while on
           if (t === 20 && exposureRef.current.ticks >= 1) markComplete('antibioticLab', '20 ticks, antibiotic active for ' + exposureRef.current.ticks + '; resistant share now ' + Math.round(share * 100) + '%.');
           if (exposureRef.current.ticks >= 20 && share >= 0.8) detectExperiment('antibioticLab', 'watchResistance', 'Watch resistance evolve');
-          if (exposureRef.current.blocks >= 1 && exposureRef.current.ticks >= 10 && ms.offStreak >= 5 && popNow > 0) detectExperiment('antibioticLab', 'regimen', 'Follow the prescribed regimen');
+          if (exposureRef.current.blocks >= 1 && exposureRef.current.ticks >= 5 && ms.offStreak >= 5 && popNow > 0) detectExperiment('antibioticLab', 'regimen', 'Follow the prescribed regimen');
           if (ms.peakShare >= 0.9 && ms.offAfterPeak >= 15 && resCostRef.current > 0) detectExperiment('antibioticLab', 'stopUsing', 'Stop using it altogether');
           if (popNow === 0 && mutRef.current === 0 && antiOn) detectExperiment('antibioticLab', 'mutation', 'Mutation rate matters');
-          if (popNow === 0 && antiOn) detectChallenge('antibioticLab', 'eradicate', 'Eradicate the infection', t);
+          if (popNow === 0 && antiOn && !onB) detectChallenge('antibioticLab', 'eradicate', 'Eradicate the infection', t);
+          // Second drug (odds from ab2_sim.mjs): A + B from a fresh dish at 2% clears it 92% of the time, 82% within 5 ticks;
+          // at 20% starting resistance about 6 cells resist both and the combination fails 95% of the time.
+          if (popNow === 0 && antiOn && onB) detectExperiment('antibioticLab', 'comboEradicate', 'Two drugs at once');
+          if (popNow === 0 && antiOn && onB && t <= 5 && (exposureRef.current.ticksBoth || 0) === t) detectChallenge('antibioticLab', 'comboIn5', 'Two drugs, gone in five', t);
+          if (popNow > 0 && antiOn && onB && (exposureRef.current.ticksBoth || 0) >= 20 && bothNow / popNow >= 0.5 && antibioticBaselineRef.current.configuredStart >= 0.15) detectExperiment('antibioticLab', 'preexisting', 'Double resistance was already there');
           if (ms.peakShare >= 0.9 && !antiOn && share < 0.2 && popNow > 0 && resCostRef.current > 0) detectChallenge('antibioticLab', 'rollback', 'Roll resistance back', share);
         };
 
-        // Init synchronously to avoid empty-canvas flicker.
-        if (bacteriaRef.current.length === 0) initPopulation();
+        // Init synchronously to avoid empty-canvas flicker. Once only: an
+        // eradicated dish must STAY empty (tick, history and the extinct outcome
+        // intact) until Reset, instead of silently refilling on the next render.
+        var abInitRef = useRef(false);
+        if (!abInitRef.current) { abInitRef.current = true; initPopulation(); }
 
         // Long-lived RAF loop — bouncing motion + auto-run tick.
         useEffect(function() {
@@ -5611,6 +7284,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               if (scheduleRef.current !== 'manual') {
                 var wantOn = scheduledOn(scheduleRef.current, tickRef.current - scheduleStartRef.current);
                 if (wantOn !== null && wantOn !== antibioticRef.current) { antibioticRef.current = wantOn; setAntibiotic(wantOn); }
+                var wantB = scheduledOnB(scheduleRef.current, tickRef.current - scheduleStartRef.current);
+                if (wantB !== null && wantB !== drugBRef.current) { drugBRef.current = wantB; setDrugB(wantB); }
               }
               stepOne();
             }
@@ -5625,7 +7300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var drawCanvas = function(ctx, W, H) {
           // Petri dish background — slightly different color when antibiotic is on
           // (subtle wash of pink) so the user has a constant ambient cue.
-          ctx.fillStyle = antibioticRef.current ? '#fdf2f8' : '#f0fdf4';
+          ctx.fillStyle = antibioticRef.current && drugBRef.current ? '#f5f3ff' : antibioticRef.current ? '#fdf2f8' : drugBRef.current ? '#eff6ff' : '#f0fdf4';
           ctx.fillRect(0, 0, W, H);
           // Dish circle decoration
           ctx.strokeStyle = '#cbd5e1';
@@ -5643,22 +7318,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ctx.beginPath();
             ctx.arc(b.x, b.y, 5, 0, 2 * Math.PI);
             ctx.fill();
+            // Blue ring: resistant to drug B (fill still shows resistance to A).
+            if ((b.rB || 0) > 0.5) { ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(b.x, b.y, 7, 0, 2 * Math.PI); ctx.stroke(); }
           }
           // Antibiotic indicator
-          if (antibioticRef.current) {
+          if (antibioticRef.current || drugBRef.current) {
             ctx.fillStyle = 'rgba(236, 72, 153, 0.8)';
             ctx.font = 'bold 12px monospace';
-            ctx.fillText('💊 ANTIBIOTIC ACTIVE — dose ' + Math.round(doseRef.current * 100) + '%', 16, 28);
+            ctx.fillText((antibioticRef.current && drugBRef.current ? '💊 DRUG A + 🧪 DRUG B ACTIVE' : antibioticRef.current ? '💊 ANTIBIOTIC ACTIVE' : '🧪 DRUG B ACTIVE') + ' — dose ' + Math.round(doseRef.current * 100) + '%', 16, 28);
           }
           // Population watermark
           ctx.font = 'bold 11px monospace';
           ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
-          ctx.fillText('Pop ' + pop.length + ' · ' + pop.filter(function(b) { return b.r > 0.5; }).length + ' resistant', 16, H - 10);
+          var bCount = pop.filter(function(b) { return (b.rB || 0) > 0.5; }).length;
+          ctx.fillText('Pop ' + pop.length + ' · ' + pop.filter(function(b) { return b.r > 0.5; }).length + ' resistant' + (drugBEverRef.current || bCount ? ' to A · ' + bCount + ' to B · ' + pop.filter(function(b) { return b.r > 0.5 && (b.rB || 0) > 0.5; }).length + ' both' : ''), 16, H - 10);
         };
 
         var pop = bacteriaRef.current;
         var resistantCount = pop.filter(function(b) { return b.r > 0.5; }).length;
         var resistantPct = pop.length > 0 ? Math.round((resistantCount / pop.length) * 100) : 0;
+        // Combination therapy card: live counts for the dish plus the arithmetic
+        // that decides whether a regimen can be beaten before the first dose:
+        // cells already resistant to all k drugs ≈ N·f^k. The dish is 150 cells,
+        // far too small to show sequential monotherapy breeding double resistance
+        // (a real lesion has 10⁸), so that part lives in the calculator.
+        var calcNState = useState(8), calcN = calcNState[0], setCalcN = calcNState[1];
+        var calcFState = useState(6), calcF = calcFState[0], setCalcF = calcFState[1];
+        var calcKState = useState(2), calcK = calcKState[0], setCalcK = calcKState[1];
+        var renderCombination = function() {
+          var n = pop.length;
+          var countA = resistantCount, countB = pop.filter(function(b) { return (b.rB || 0) > 0.5; }).length, countBoth = pop.filter(function(b) { return b.r > 0.5 && (b.rB || 0) > 0.5; }).length;
+          var expectedDouble = POP_CAP * startRes * startRes;
+          var expo = calcN - calcK * calcF;
+          var expected = Math.pow(10, expo);
+          var fmtPow = function(e) { return e >= 0 ? Math.pow(10, e).toLocaleString() : '1 in ' + Math.pow(10, -e).toLocaleString(); };
+          var chance = expected < 1 ? 100 * (1 - Math.exp(-expected)) : null;
+          var pick = function(label, value, options, setter, fmt) {
+            return h('div', { role: 'group', 'aria-label': label, className: 'flex flex-wrap items-center gap-1' },
+              h('span', { className: 'text-xs font-bold text-slate-700 mr-1' }, label),
+              options.map(function(o) { return h('button', { key: o, type: 'button', onClick: function() { setter(o); }, 'aria-pressed': value === o, className: 'px-2 py-1 rounded-lg text-xs font-bold ' + (value === o ? 'bg-fuchsia-700 text-white' : 'bg-slate-100 text-slate-800 hover:bg-slate-200') }, fmt(o)); }));
+          };
+          var sup = function(e) { return '10' + String(e).split('').map(function(ch) { return ({ '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻' })[ch] || ch; }).join(''); };
+          var verdict = expected >= 1
+            ? __alloFill(t('stem.evolab.combo_verdict_present', 'About {value1} cells resistant to the whole regimen are there before the first dose. The drugs will select them; resistance is not created by treatment, it is revealed by it.'), { value1: fmtPow(expo) })
+            : __alloFill(t('stem.evolab.combo_verdict_absent', 'Fewer than one such cell is expected ({value1}), so only about {value2}% of patients start with any. For the rest, the regimen meets no cell that can survive it.'), { value1: fmtPow(expo), value2: chance >= 1 ? chance.toFixed(0) : chance >= 0.005 ? chance.toFixed(2) : t('stem.evolab.combo_under', 'under 0.01') });
+          var live = __alloFill(t('stem.evolab.combo_live', 'In the dish now: {value1} of {value2} cells resistant to drug A, {value3} to drug B, {value4} to both. With {value5}% starting resistance to each drug, the expected number of double-resistant cells at the start is 150 × {value6}² = {value7}: {value8}'), { value1: countA, value2: n, value3: countB, value4: countBoth, value5: Math.round(startRes * 100), value6: startRes.toFixed(2), value7: expectedDouble.toFixed(2), value8: expectedDouble < 0.5 ? t('stem.evolab.combo_live_none', 'usually none, which is why the combination clears the dish.') : t('stem.evolab.combo_live_some', 'some, and the combination will find them.') });
+          var seq = t('stem.evolab.combo_sequential', 'One drug at a time is the trap. After drug A alone, the survivors are the N × f cells that resisted it; they regrow to N. Drug B alone then meets N × f B-resistant cells among THEM, resistance to both is assembled one step at a time, and an interrupted course can act the same way.');
+          var tb = t('stem.evolab.combo_tb', 'Real numbers: a tuberculosis lung cavity holds about 10⁸ bacilli. Roughly 1 in 10⁶ is already resistant to isoniazid and 1 in 10⁸ to rifampicin, so a cavity holds about a hundred of the first and one of the second, but only 1 in 10¹⁴ resists both. That is why TB is never treated with a single drug, and why an interrupted course breeds multidrug-resistant TB.');
+          return h('div', { className: 'bg-white border-2 border-fuchsia-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800' }, t('stem.evolab.combo_title', '🧪 Why doctors combine drugs')),
+              h(SpeakButton, { text: live + ' ' + verdict + ' ' + seq + ' ' + tb })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, live),
+            h('p', { className: 'mt-2 text-xs text-slate-600' }, t('stem.evolab.combo_how', 'Drug B kills by the same rule as drug A but tests a separate resistance trait, so a cell survives both only if it resists both. Switch Drug B on with the antibiotic, or pick the A + B or A then B schedule.')),
+            h('div', { className: 'mt-3 rounded-lg bg-fuchsia-50 border border-fuchsia-200 p-3 space-y-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800' }, t('stem.evolab.combo_calc_title', 'Calculator: is the regimen already beaten?')),
+              pick(t('stem.evolab.combo_calc_n', 'Bacteria in the patient, N = 10^'), calcN, [6, 7, 8, 9, 10], setCalcN, function(o) { return String(o); }),
+              pick(t('stem.evolab.combo_calc_f', 'Already resistant to any one drug, 1 in 10^'), calcF, [5, 6, 7, 8], setCalcF, function(o) { return String(o); }),
+              pick(t('stem.evolab.combo_calc_k', 'Drugs in the regimen'), calcK, [1, 2, 3, 4], setCalcK, function(o) { return String(o); }),
+              h('p', { className: 'text-sm font-semibold text-slate-900' }, __alloFill(t('stem.evolab.combo_calc_result', 'Cells already resistant to all {value1} drug{value2}: N × f^{value1} = {value3} × ({value4})^{value1} = {value5}'), { value1: calcK, value2: calcK === 1 ? '' : 's', value3: sup(calcN), value4: sup(-calcF), value5: fmtPow(expo) })),
+              h('p', { className: 'text-sm text-slate-800' }, verdict)
+            ),
+            h('p', { className: 'mt-2 text-sm text-slate-800' }, seq),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-slate-50 rounded-lg p-2' }, tb)
+          );
+        };
         var antibioticOutcome = function() {
           if (tick < 20) return null;
           if (pop.length === 0) return 'extinct';
@@ -5678,7 +7403,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: antibioticSessionRef.current,
             moduleLabel: 'Antibiotic Resistance Lab',
             comparison: {
-              designKey: 'start=' + baseline.configuredStart.toFixed(3) + '|ticks=' + tick + '|exposure=' + exposureRef.current.ticks + '|blocks=' + exposureRef.current.blocks + '|dose=' + doseStrength.toFixed(2) + '|variation=' + mutRate.toFixed(2) + '|cost=' + resCost.toFixed(2),
+              designKey: 'start=' + baseline.configuredStart.toFixed(3) + '|ticks=' + tick + '|exposure=' + exposureRef.current.ticks + '|blocks=' + exposureRef.current.blocks + '|drugB=' + (drugBEverRef.current ? 1 : 0) + '|exposureB=' + (exposureRef.current.ticksB || 0) + '|dose=' + doseStrength.toFixed(2) + '|variation=' + mutRate.toFixed(2) + '|cost=' + resCost.toFixed(2) + '|hgt=' + hgtRate.toFixed(2),
               designLabel: Math.round(baseline.configuredStart * 100) + '% starting-resistance setting, antibiotic active ' + exposureRef.current.ticks + '/' + tick + ' ticks, dose ' + doseStrength.toFixed(2) + ', variation σ = ' + mutRate.toFixed(2),
               primaryLabel: 'resistant-share change',
               primaryValue: pctDelta,
@@ -5693,6 +7418,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'doseStrength', label: 'Dose strength', value: Number(doseStrength.toFixed(2)) },
                 { id: 'traitVariation', label: 'Offspring resistance variation', value: Number(mutRate.toFixed(2)) },
                 { id: 'resistanceCost', label: 'Cost of resistance', value: Number(resCost.toFixed(2)) },
+                { id: 'plasmidRate', label: 'Plasmid transfer rate', value: Number(hgtRate.toFixed(2)) },
+                { id: 'secondDrug', label: 'Second drug', value: drugBEverRef.current ? 'On (' + (exposureRef.current.ticksB || 0) + ' ticks)' : 'Off' },
                 { id: 'schedule', label: 'Dosing schedule', value: SCHEDULES[schedule].label }
               ]
             },
@@ -5808,7 +7535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.population', 'Population'), value: pop.length, color: 'text-fuchsia-700' }),
               h(StatCard, { label: t('stem.evolab.resistant_2', '% Resistant'), value: resistantPct + '%', color: resistantPct > 70 ? 'text-rose-700' : resistantPct > 30 ? 'text-amber-700' : 'text-emerald-700' }),
               h(StatCard, { label: t('stem.evolab.tick', 'Tick'), value: tick, color: 'text-cyan-700' }),
-              h(StatCard, { label: t('stem.evolab.mode_2', 'Mode'), value: antibiotic ? '💊 ON' : 'Off', color: antibiotic ? 'text-rose-700' : 'text-slate-600' })
+              h(StatCard, { label: t('stem.evolab.mode_2', 'Mode'), value: antibiotic && drugB ? '💊 A + B' : antibiotic ? '💊 ON' : drugB ? '🧪 B only' : 'Off', color: antibiotic || drugB ? 'text-rose-700' : 'text-slate-600' })
             ),
             // Petri dish canvas
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
@@ -5818,11 +7545,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'w-full block',
                 tabIndex: 0,
                 role: 'img',
-                'aria-label': 'Petri dish with ' + pop.length + ' bacteria. ' + resistantPct + ' percent resistant. Antibiotic ' + (antibiotic ? 'active' : 'off') + '.'
+                'aria-label': 'Petri dish with ' + pop.length + ' bacteria. ' + resistantPct + ' percent resistant. Antibiotic ' + (antibiotic ? 'active' : 'off') + '.' + (drugB ? ' Drug B active.' : '')
               })
             ),
             // History chart
             renderHistoryChart(),
+            h(DataTable, { title: t('stem.evolab.dt_antibiotic_title', 'Population and resistant count by tick'), heading: 'text-fuchsia-800', rows: history, columns: [{ key: 'tick', label: t('stem.evolab.col_tick', 'Tick') }, { key: 'pop', label: t('stem.evolab.col_population', 'Population') }, { key: 'resistant', label: t('stem.evolab.col_resistant', 'Resistant to A') }, { key: 'resistantB', label: t('stem.evolab.col_resistant_b', 'Resistant to B') }, { key: 'both', label: t('stem.evolab.col_both_drugs', 'Both') }, { key: 'anti', label: t('stem.evolab.col_antibiotic_on', 'Antibiotic on'), bool: true }, { key: 'antiB', label: t('stem.evolab.col_drug_b_on', 'Drug B on'), bool: true }, { key: 'hgt', label: t('stem.evolab.col_plasmid_transfers', 'Plasmid transfers') }] }),
             // Controls
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
               h('button', {
@@ -5846,6 +7574,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (antibiotic ? 'transition-colors bg-pink-700 hover:bg-pink-800 text-white' : 'transition-colors bg-pink-200 hover:bg-pink-300 text-pink-900')
               }, antibiotic ? '💊 Antibiotic ON' : '💊 Apply Antibiotic'),
               h('button', {
+                onClick: function() { if (schedule !== 'manual') chooseSchedule('manual'); setDrugB(!drugB); },
+                'aria-pressed': drugB,
+                'aria-label': drugB ? t('stem.evolab.aria_drug_b_on', 'Drug B on; press to switch it off') : t('stem.evolab.aria_drug_b_off', 'Apply drug B, a second antibiotic with its own resistance'),
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (drugB ? 'transition-colors bg-blue-700 hover:bg-blue-800 text-white' : 'transition-colors bg-blue-100 hover:bg-blue-200 text-blue-900')
+              }, drugB ? '🧪 Drug B ON' : '🧪 Add Drug B'),
+              h('button', {
                 onClick: initPopulation,
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.reset_dish', '↺ Reset Dish'))
@@ -5854,11 +7588,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3' },
               h(LabeledSlider, {
                 label: t('stem.evolab.cost_of_resistance', 'Cost of Resistance'),
-                value: resCost, min: 0, max: 0.1, step: 0.01,
+                value: resCost, min: 0, max: 0.5, step: 0.05,
                 onChange: function(v) { setResCost(v); },
                 valueText: resCost === 0 ? t('stem.evolab.no_cost_resistance_is_free', 'None: resistance is free') : Math.round(resCost * 100) + '% ' + t('stem.evolab.fewer_offspring_at_full_resistance', 'fewer offspring at full resistance'),
                 accent: 'accent-emerald-600',
-                hint: t('stem.evolab.cost_of_resistance_hint', 'Resistance often carries a growth cost (a pump or altered enzyme to maintain). With a cost, resistance erodes once the drug is gone; without one it stays. Real bacteria show both, and compensatory mutations can erase a cost over time.')
+                hint: t('stem.evolab.cost_of_resistance_hint', 'Resistance often carries a growth cost (a pump or altered enzyme to maintain). With the drug off, cells keep dying and dividing (10% a tick) and 5% of a resistant cell\'s divisions lose the plasmid, so a cost of 0.30 or more rolls resistance back over about a hundred ticks; at zero cost it barely moves. Real bacteria show both, and compensatory mutations can erase a cost over time.')
+              }),
+              h(LabeledSlider, {
+                label: t('stem.evolab.plasmid_transfer', 'Plasmid Transfer (HGT)'),
+                value: hgtRate, min: 0, max: 0.25, step: 0.01,
+                onChange: function(v) { setHgtRate(v); },
+                valueText: hgtRate === 0 ? t('stem.evolab.no_plasmid_transfer', 'Off: genes pass only parent to child') : Math.round(hgtRate * 100) + '% ' + t('stem.evolab.per_contact_per_tick', 'per contact per tick'),
+                accent: 'accent-fuchsia-600',
+                hint: t('stem.evolab.plasmid_transfer_hint', 'Real bacteria also pass resistance genes sideways, by horizontal gene transfer: a plasmid copies itself into a neighbouring cell. Here a susceptible cell touching a resistant one (within 30 px) picks up its resistance at this rate. Try it with the antibiotic OFF.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.antibiotic_dose', 'Antibiotic Dose'),
@@ -5891,7 +7633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.dosing_schedule', '💊 Dosing schedule (followed during Auto-Run)')),
                 h('div', { className: 'text-xs text-slate-600' }, SCHEDULES[schedule].desc)
               ),
-              h('div', { role: 'group', 'aria-label': t('stem.evolab.dosing_schedule_short', 'Dosing schedule'), className: 'grid grid-cols-1 sm:grid-cols-5 gap-2' },
+              h('div', { role: 'group', 'aria-label': t('stem.evolab.dosing_schedule_short', 'Dosing schedule'), className: 'grid grid-cols-1 sm:grid-cols-4 gap-2' },
                 Object.keys(SCHEDULES).map(function(id) {
                   var active = schedule === id;
                   return h('button', {
@@ -5903,6 +7645,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               schedule !== 'manual' && h('div', { className: 'mt-2 text-xs text-slate-700' }, __alloFill(t('stem.evolab.schedule_status', 'Schedule started at tick {value1}; antibiotic is {value2} now. Reset the dish and pick a different schedule to compare, then capture both.'), { value1: scheduleStartRef.current, value2: antibiotic ? 'ON' : 'OFF' }))
             ),
+            renderCombination(),
+            (drugBEverRef.current || history.some(function(hh) { return hh.antiB; })) && tick > 0 && h(CheckCard, {
+              moduleId: 'antibioticLab', id: 'combo',
+              border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
+              question: t('stem.evolab.check_combo_q', 'Drug A alone left the dish 90% resistant. Drug B alone would do the same. Yet A and B together cleared it. Why?'),
+              options: [
+                { id: 'stronger', label: t('stem.evolab.check_combo_stronger', 'Two drugs are simply twice as strong.'), feedback: t('stem.evolab.check_combo_stronger_fb', 'Strength is not it. A cell resistant to A shrugs A off however much of it there is; doubling the dose of A would change nothing. B works because it asks a DIFFERENT question, one that cell cannot answer.') },
+                { id: 'both', label: t('stem.evolab.check_combo_both', 'A cell must resist both at once, and with 2% resistant to each, double resistance is about 0.04%: none in a dish of 150.'), correct: true, feedback: t('stem.evolab.check_combo_both_fb', 'Yes. Each drug alone had a few resistant cells to select from the start; together they had none, so there was nothing to select. That is the whole logic of combination therapy, and the calculator shows the same arithmetic at the scale of a real infection.') },
+                { id: 'targets', label: t('stem.evolab.check_combo_targets', 'Drug B kills the A-resistant cells specifically.'), feedback: t('stem.evolab.check_combo_targets_fb', 'B knows nothing about A. It kills any cell with low resistance to B, and nearly all the A-resistant cells happen to be such cells because the two resistances are independent. Run A alone first and B alone second and B still kills them.') },
+                { id: 'mutation', label: t('stem.evolab.check_combo_mutation', 'Mutation stopped once the second drug was added.'), feedback: t('stem.evolab.check_combo_mutation_fb', 'Mutation went on exactly as before. It had no double-resistant cell to start from and too few survivors to build one before the dish was empty. Raise starting resistance to 20% and the combination fails: double-resistant cells are there from tick 0.') }
+              ]
+            }),
             h(CapstoneCapture, {
               moduleId: 'antibioticLab',
               moduleLabel: 'Antibiotic Resistance Lab',
@@ -5927,17 +7681,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h(ExperimentList, {
               moduleId: 'antibioticLab',
               challenges: [
-                { id: 'eradicate', title: t('stem.evolab.ch_eradicate', 'Eradicate the infection: '), body: t('stem.evolab.ch_eradicate_body', 'Drive the dish to zero bacteria while the drug is on. Which settings make that possible, and which make it hopeless?') },
-                { id: 'rollback', title: t('stem.evolab.ch_rollback', 'Roll resistance back: '), body: t('stem.evolab.ch_rollback_body', 'Let resistance reach 90%, then bring it back under 20% with the drug OFF. Impossible at zero cost; try a cost of 0.05 or more and be patient.') }
+                { id: 'eradicate', title: t('stem.evolab.ch_eradicate', 'Eradicate the infection: '), body: t('stem.evolab.ch_eradicate_body', 'Drive the dish to zero bacteria while the drug is on. Which settings make that possible, and which make it hopeless?') + ' ' + t('stem.evolab.ch_eradicate_single', 'Drug A on its own.') },
+                { id: 'comboIn5', title: t('stem.evolab.ch_combo5', 'Two drugs, gone in five: '), body: t('stem.evolab.ch_combo5_body', 'From a fresh dish, switch on drug A and drug B together and empty it within 5 ticks. At the default 2% start it works about four times in five; the dose dial changes the odds.') },
+                { id: 'rollback', title: t('stem.evolab.ch_rollback', 'Roll resistance back: '), body: t('stem.evolab.ch_rollback_body', 'Let resistance reach 90%, then bring it back under 20% with the drug OFF. Practically impossible at zero cost; set a cost of 0.30 or more, auto-run, and be patient (about a hundred ticks).') }
               ],
               border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
               title: t('stem.evolab.try_these_experiments_5', '🧪 Try these experiments'),
               items: [
                 { id: 'watchResistance', auto: true, title: t('stem.evolab.watch_resistance_evolve', 'Watch resistance evolve: '), body: t('stem.evolab.reset_apply_antibiotic_auto_run_for_30', 'Reset. Apply Antibiotic. Auto-Run for ~30 ticks. Watch the population crash, then rebuild from the few resistant survivors. By tick 30 the dish is mostly red.') },
-                { id: 'regimen', auto: true, title: t('stem.evolab.follow_prescribed_regimen', 'Follow the prescribed regimen: '), body: t('stem.evolab.interrupted_exposure_model_limit', 'Apply Antibiotic for 10 ticks, turn it off, and watch survivors regrow. This demonstrates interrupted exposure inside this model, not a universal treatment rule. Real patients should take antibiotics exactly as prescribed and ask their clinician before changing duration.') },
+                { id: 'regimen', auto: true, title: t('stem.evolab.follow_prescribed_regimen', 'Follow the prescribed regimen: '), body: t('stem.evolab.interrupted_exposure_model_limit', 'Pick the Complete course schedule and Auto-Run to tick 25; note the resistant share and population. Reset, pick Stopped early, repeat; then Pulsed. This compares interrupted exposure inside this model, not a universal treatment rule. Real patients should take antibiotics exactly as prescribed and ask their clinician before changing duration.') },
                 { id: 'dose', title: t('stem.evolab.dose_makes_the_poison', 'Dose makes the poison: '), body: t('stem.evolab.compare_dose_without_clinical_generalization', 'Compare Dose = 0.4 with Dose = 1.0. In this model, stronger exposure often enriches resistant survivors faster, but it can also drive the small population extinct. Do not generalize this slider directly to clinical dosing.') },
                 { id: 'stopUsing', auto: true, title: t('stem.evolab.stop_using_it_altogether', 'Stop using it altogether: '), body: t('stem.evolab.after_resistance_reaches_100_turn_anti', 'After resistance reaches ~100%, turn the antibiotic OFF and Auto-Run 15+ ticks with Cost of Resistance at 0: resistance stays. Reset, repeat with the cost at 0.05 or more: now resistance slowly erodes as susceptible cells out-reproduce resistant ones. Real bacteria show both patterns, and compensatory mutations can cancel a cost over time.') },
-                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_rate_matters_2', 'Mutation rate matters: '), body: t('stem.evolab.reset_set_mutation_rate_to_0_apply_ant', 'Reset. Set Mutation Rate to 0. Apply Antibiotic. Population goes extinct — no resistance can evolve from scratch. Now set Mutation Rate to 0.15. Resistance evolves nearly instantly. Real-world: bacteria with higher mutation rates evolve resistance faster.') }
+                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_rate_matters_2', 'Mutation rate matters: '), body: t('stem.evolab.reset_set_mutation_rate_to_0_apply_ant', 'Reset. Set Mutation Rate to 0. Apply Antibiotic. Population goes extinct — no resistance can evolve from scratch. Now set Mutation Rate to 0.15. Resistance evolves nearly instantly. Real-world: bacteria with higher mutation rates evolve resistance faster.') },
+                { id: 'comboEradicate', auto: true, title: t('stem.evolab.exp_combo', 'Two drugs at once: '), body: t('stem.evolab.exp_combo_body', 'Reset, switch on Drug B together with the antibiotic (or pick the A + B schedule) and Auto-Run. Drug A alone leaves a resistant dish more than eight times in ten; the same dose of two drugs usually clears it, because no cell was resistant to both.') },
+                { id: 'preexisting', auto: true, title: t('stem.evolab.exp_preexisting', 'When the combination fails: '), body: t('stem.evolab.exp_preexisting_body', 'Set Starting Resistance to 20%, Reset, and run A + B for 20 ticks. Now about six cells resist both drugs from the start, and they take over. Combination therapy only works when double resistance is absent before the first dose; the calculator says when that is.') },
+                { id: 'plasmidSpread', auto: true, title: t('stem.evolab.exp_plasmid_spread', 'Resistance with no drug at all: '), body: t('stem.evolab.exp_plasmid_spread_body', 'Reset, leave the antibiotic OFF, set plasmid transfer to 0.10 or more and auto-run. Resistance spreads to half the dish without a single dose. Then ask whether that was selection.') }
               ]
             }),
             // Real-world callout
@@ -5959,6 +7717,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_evolution_happening_in_day', 'You\'ve seen evolution happening in days. The Misconceptions Quiz tackles the deeper conceptual errors people still make about how all of this works.')
               )
             ),
+            history.some(function(hh) { return hh.hgt > 0; }) && h(CheckCard, {
+              moduleId: 'antibioticLab', id: 'hgt',
+              border: 'border-fuchsia-400', heading: 'text-fuchsia-800',
+              question: t('stem.evolab.check_hgt_q', 'With the drug OFF and plasmid transfer ON, resistance spread through the dish. Was that natural selection?'),
+              options: [
+                { id: 'outcompeted', label: t('stem.evolab.check_hgt_outcompeted', 'Yes: the resistant cells out-competed the others.'), feedback: t('stem.evolab.check_hgt_outcompeted_fb', 'With the drug off, a resistant cell survives and divides exactly like a susceptible one. Nothing out-competed anything; the gene moved sideways into cells that were already alive.') },
+                { id: 'sideways', label: t('stem.evolab.check_hgt_sideways', 'No: the trait spread sideways between living cells. Selection needs differences in survival or reproduction, and there were none.'), correct: true, feedback: t('stem.evolab.check_hgt_sideways_fb', 'Yes. Horizontal transfer changes what cells carry without anyone leaving more offspring. Selection starts the moment the drug arrives and the carriers survive it.') },
+                { id: 'mutation', label: t('stem.evolab.check_hgt_mutation', 'Yes: the plasmid is a kind of mutation.'), feedback: t('stem.evolab.check_hgt_mutation_fb', 'A mutation makes a new variant in one cell\'s DNA. Transfer copies an existing gene from one cell to another; no new variant appeared.') },
+                { id: 'noDrug', label: t('stem.evolab.check_hgt_nodrug', 'No, because bacteria cannot evolve without a drug present.'), feedback: t('stem.evolab.check_hgt_nodrug_fb', 'They can: mutation, drift and selection on other traits go on with or without an antibiotic. The reason this was not selection is that nobody reproduced differently.') }
+              ]
+            }),
+            h(ModelLimits, { moduleId: 'antibioticLab', heading: 'text-fuchsia-800' }),
             h(KeyTerms, { moduleId: 'antibioticLab', heading: 'text-fuchsia-800' }),
             h(FieldNote, { moduleId: 'antibioticLab', border: 'border-fuchsia-400', heading: 'text-fuchsia-800', prompt: t('stem.evolab.note_prompt_antibiotic', 'Where did the resistant bacteria come from, in your own words? What would you tell a friend who wants to stop a course early?') }),
             h(TeacherNotes, {
@@ -6000,6 +7770,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var idealRightState = useState(0.7), idealRight = idealRightState[0], setIdealRight = idealRightState[1];
         var selStrengthState = useState(0.7), selStrength = selStrengthState[0], setSelStrength = selStrengthState[1];
         var mutSizeState = useState(0.05), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        // Gene flow: this fraction of each side swaps places with the other side
+        // every generation (symmetric). 0 = the barrier is complete.
+        var migrationState = useState(0), migration = migrationState[0], setMigration = migrationState[1];
+        var migrationRef = useRef(migration);
+        migrationRef.current = migration;
+        var minCompatRef = useRef(1);
         var generationState = useState(0), generation = generationState[0], setGeneration = generationState[1];
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
         var speciatedState = useState(false), speciated = speciatedState[0], setSpeciated = speciatedState[1];
@@ -6026,6 +7802,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         mutSizeRef.current = mutSize;
         autoRunRef3.current = autoRun;
 
+        // Mating trial. The simulated generations never mate across the divide,
+        // so isolation is otherwise never tested. This trial ASSUMES one rule
+        // (a pair mates with probability exp(−(Δtrait/0.15)²): assortative
+        // mating on a signal) and applies it to 50 cross pairs and 50 within-
+        // side pairs; the isolation index is 1 − cross/within.
+        var MATE_SIGMA = 0.15, MATE_PAIRS = 50;
+        var matingState = useState(null), mating = matingState[0], setMating = matingState[1];
+        var runMatingTrial = function() {
+          var L = leftPopRef.current, R = rightPopRef.current;
+          if (!L.length || !R.length) return;
+          var pick = function(pop) { return pop[Math.floor(Math.random() * pop.length)].trait; };
+          var mates = function(a, b) { var d = a - b; return Math.random() < Math.exp(-(d * d) / (MATE_SIGMA * MATE_SIGMA)); };
+          var cross = 0, within = 0;
+          for (var i = 0; i < MATE_PAIRS; i++) {
+            if (mates(pick(L), pick(R))) cross++;
+            if (i % 2 === 0 ? mates(pick(L), pick(L)) : mates(pick(R), pick(R))) within++;
+          }
+          var ri = within > 0 ? clamp(1 - cross / within, 0, 1) : 0;
+          setMating({ gen: generation, cross: cross, within: within, ri: ri });
+          detectExperiment('speciation', 'matingTrial', 'Run a mating trial');
+          setRecord('speciation', 'isolationIndex', ri, { label: 'Highest isolation index in a mating trial', unit: '', better: 'max' });
+          if (ri >= 0.8) detectChallenge('speciation', 'isolated80', 'Isolation index 0.8 in a mating trial', ri);
+          announce(__alloFill(__alloT('stem.evolab.sr_mating_trial', 'Mating trial at generation {value1}: {value2} of {value3} cross-side pairs mated, {value4} of {value5} within-side pairs. Isolation index {value6}.'), { value1: generation, value2: cross, value3: MATE_PAIRS, value4: within, value5: MATE_PAIRS, value6: ri.toFixed(2) }));
+        };
+        var renderMatingTrial = function() {
+          var m = mating;
+          var verdict = '';
+          if (m) {
+            if (m.ri >= 0.8) verdict = t('stem.evolab.mating_isolated', 'Largely isolated under this rule. A field biologist would still ask whether the few hybrids are fertile, and whether the rule holds outside the model.');
+            else if (m.ri >= 0.3) verdict = t('stem.evolab.mating_partial', 'Partly isolated: the sides still interbreed often. Trait divergence is running ahead of reproductive isolation.');
+            else verdict = t('stem.evolab.mating_not', 'Not isolated: the two sides mate about as readily across the divide as within it. Looking different is not the same as being different species.');
+          }
+          return h('div', { className: 'bg-white border-2 border-indigo-400 rounded-xl p-4' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+              h('div', null,
+                h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-indigo-800' }, t('stem.evolab.mating_trial_title', '💞 Mating trial: test isolation instead of eyeballing it')),
+                h('p', { className: 'mt-1 text-sm text-slate-700' }, t('stem.evolab.mating_trial_intro', 'The overlap proxy compares histograms. A species question needs a mating test. This trial pairs 50 random cross-side couples and 50 within-side couples under one stated rule: a pair mates with probability exp(−(Δtrait / 0.15)²), i.e. mating success falls as the traits differ, as if the trait were a courtship signal. That rule is an assumption of the trial, not a discovery.'))),
+              h('div', { className: 'flex items-center gap-2' },
+                h('button', { type: 'button', onClick: runMatingTrial, disabled: generation === 0, className: 'rounded-xl bg-indigo-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-indigo-800 disabled:opacity-50 focus:outline-none focus:ring-4 focus:ring-indigo-300' }, t('stem.evolab.run_mating_trial', 'Run mating trial')),
+                h(SpeakButton, { text: t('stem.evolab.mating_trial_intro', 'The overlap proxy compares histograms. A species question needs a mating test. This trial pairs 50 random cross-side couples and 50 within-side couples under one stated rule: a pair mates with probability exp(−(Δtrait / 0.15)²), i.e. mating success falls as the traits differ, as if the trait were a courtship signal. That rule is an assumption of the trial, not a discovery.') + (m ? ' ' + verdict : '') }))),
+            generation === 0 && h('p', { className: 'mt-1 text-xs text-slate-600' }, t('stem.evolab.mating_trial_hint', 'Step at least one generation first.')),
+            m && h('div', { role: 'status', className: 'mt-3 rounded-lg bg-indigo-50 border border-indigo-200 p-3' },
+              h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-indigo-800' }, t('stem.evolab.cross_side_pairs', 'Cross-side pairs mated')), h('div', { className: 'text-lg font-black text-slate-900 tabular-nums' }, m.cross + ' / ' + MATE_PAIRS)),
+                h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-indigo-800' }, t('stem.evolab.within_side_pairs', 'Within-side pairs mated')), h('div', { className: 'text-lg font-black text-slate-900 tabular-nums' }, m.within + ' / ' + MATE_PAIRS)),
+                h('div', null, h('div', { className: 'text-[0.625rem] font-black uppercase tracking-wider text-indigo-800' }, t('stem.evolab.isolation_index', 'Isolation index')), h('div', { className: 'text-lg font-black text-slate-900 tabular-nums' }, m.ri.toFixed(2)))),
+              h('p', { className: 'mt-2 text-xs text-slate-700' }, __alloFill(t('stem.evolab.isolation_formula', 'Isolation index = 1 − cross/within = 1 − {value1}/{value2} = {value3}, measured at generation {value4}. 0 means the divide makes no difference; 1 means no cross-side pair mated.'), { value1: m.cross, value2: m.within, value3: m.ri.toFixed(2), value4: m.gen })),
+              h('p', { className: 'mt-1 text-sm font-bold ' + (m.ri >= 0.8 ? 'text-indigo-900' : 'text-slate-900') }, verdict))
+          );
+        };
         var initPopulations = function() {
           var makeOne = function() {
             return {
@@ -6055,6 +7881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           speciationBaselineRef.current = { lMean: lSum / POP_PER_SIDE, rMean: rSum / POP_PER_SIDE, compat: 1.0 };
           speciationSessionRef.current = newCapstoneSourceRunKey('speciation');
           historyRef.current = [{ gen: 0, lMean: lSum / POP_PER_SIDE, rMean: rSum / POP_PER_SIDE, compat: 1.0 }];
+          minCompatRef.current = 1;
           setGeneration(0);
           setSpeciated(false);
           setSpeciatedAt(null);
@@ -6115,6 +7942,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var stepGeneration = function(silent) {
           var nextL = stepOneSide(leftPopRef.current, idealLeftRef.current);
           var nextR = stepOneSide(rightPopRef.current, idealRightRef.current);
+          // Migration: swap `m` random individuals across the barrier (positions re-homed to the new canvas).
+          var m = Math.round(migrationRef.current * POP_PER_SIDE);
+          for (var mi = 0; mi < m; mi++) {
+            var li = Math.floor(Math.random() * nextL.length), ri = Math.floor(Math.random() * nextR.length);
+            var tmp = nextL[li]; nextL[li] = nextR[ri]; nextR[ri] = tmp;
+            nextL[li].x = 30 + Math.random() * 320; nextR[ri].x = 410 + Math.random() * 320;
+          }
           leftPopRef.current = nextL;
           rightPopRef.current = nextR;
           var l = meanStd(nextL);
@@ -6126,6 +7960,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           generationRef.current = nextGen;
           setGeneration(nextGen);
           if (nextGen === 20) markComplete('speciation', '20 generations; trait-overlap proxy ' + Math.round(compat * 100) + '%.');
+          if (compat < minCompatRef.current) minCompatRef.current = compat;
+          if (migrationRef.current >= 0.05 && minCompatRef.current < 0.5 && compat > minCompatRef.current + 0.2) detectExperiment('speciation', 'secondaryContact', 'Secondary contact');
+          if (migrationRef.current >= 0.05 && compat < 0.5 && nextGen >= 30 && selStrengthRef.current >= 0.7) detectChallenge('speciation', 'holdWithFlow', 'Divergence against gene flow', compat);
           if (compat < 0.3 && Math.abs(idealLeftRef.current - idealRightRef.current) >= 0.3) detectExperiment('speciation', 'defaultFast', 'Default fast divergence');
           if (nextGen >= 30 && Math.abs(idealLeftRef.current - idealRightRef.current) < 0.05 && selStrengthRef.current > 0) detectExperiment('speciation', 'sameIdeal', 'Same ideal, no divergence');
           if (nextGen >= 80 && selStrengthRef.current === 0) detectExperiment('speciation', 'driftOnly', 'Drift-only divergence');
@@ -6303,8 +8140,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: speciationSessionRef.current,
             moduleLabel: 'Trait Divergence Model',
             comparison: {
-              designKey: 'left=' + idealLeft.toFixed(2) + '|right=' + idealRight.toFixed(2) + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
-              designLabel: 'ideals ' + idealLeft.toFixed(2) + ' / ' + idealRight.toFixed(2) + ', selection ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
+              designKey: 'left=' + idealLeft.toFixed(2) + '|right=' + idealRight.toFixed(2) + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|flow=' + migration.toFixed(2) + '|generations=' + generation,
+              designLabel: 'ideals ' + idealLeft.toFixed(2) + ' / ' + idealRight.toFixed(2) + ', selection ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', gene flow ' + migration.toFixed(2) + ', ' + generation + ' generations',
               primaryLabel: 'trait-overlap proxy',
               primaryValue: latestS.compat,
               primaryDisplay: Math.round(latestS.compat * 100) + '%',
@@ -6315,11 +8152,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'idealRight', label: 'Right ideal', value: Number(idealRight.toFixed(2)) },
                 { id: 'selectionStrength', label: 'Selection strength', value: Number(selStrength.toFixed(2)) },
                 { id: 'traitVariation', label: 'Offspring trait variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'migrationRate', label: 'Gene flow (fraction crossing per generation)', value: Number(migration.toFixed(2)) },
                 { id: 'generations', label: 'Generations', value: generation }
               ]
             },
             baseline: 'Generation 0: two populations of ' + POP_PER_SIDE + ' from one source; means ' + base.lMean.toFixed(3) + ' (left) and ' + base.rMean.toFixed(3) + ' (right); overlap proxy 100%.',
-            settings: 'Left ideal ' + idealLeft.toFixed(2) + ', right ideal ' + idealRight.toFixed(2) + '; selection strength ' + selStrength.toFixed(2) + ' on both sides; offspring variation σ = ' + mutSize.toFixed(2) + '; no migration; model refills each population to 30 after each generation.',
+            settings: 'Left ideal ' + idealLeft.toFixed(2) + ', right ideal ' + idealRight.toFixed(2) + '; selection strength ' + selStrength.toFixed(2) + ' on both sides; offspring variation σ = ' + mutSize.toFixed(2) + '; gene flow ' + (migration === 0 ? 'none (complete barrier)' : Math.round(migration * POP_PER_SIDE) + ' individuals cross per generation') + '; model refills each population to 30 after each generation.',
             outcome: 'Generation ' + generation + ': means ' + latestS.lMean.toFixed(3) + ' vs ' + latestS.rMean.toFixed(3) + ' (gap ' + gap.toFixed(3) + '); trait-overlap proxy ' + Math.round(latestS.compat * 100) + '%' + (speciated ? '; 30% teaching milestone reached at generation ' + speciatedAt : '') + '. The proxy is trait overlap, not a mating test.',
             metrics: [
               { label: 'Generations', value: String(generation) },
@@ -6366,7 +8204,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               outcomeId: speciationOutcome(),
               observedDetail: generation >= 30 && historyRef.current.length ? 'Generation ' + generation + ': overlap proxy ' + Math.round(historyRef.current[historyRef.current.length - 1].compat * 100) + '%; means ' + historyRef.current[historyRef.current.length - 1].lMean.toFixed(2) + ' vs ' + historyRef.current[historyRef.current.length - 1].rMean.toFixed(2) + '.' : '',
               explain: {
-                diverge: t('stem.evolab.explain_speciation_diverge', 'Each side was pulled toward its own ideal, and with no migration nothing pulled them back together, so the trait distributions separated until they barely overlap. Remember what the proxy is: trait overlap, not a mating test. Divergence like this is a precondition for speciation, not proof of it.'),
+                diverge: t('stem.evolab.explain_speciation_diverge', 'Each side was pulled toward its own ideal, and with gene flow at zero nothing pulled them back together, so the trait distributions separated until they barely overlap. Remember what the proxy is: trait overlap, not a mating test. Divergence like this is a precondition for speciation, not proof of it.'),
                 partial: t('stem.evolab.explain_speciation_partial', 'The sides separated but still overlap. Weaker selection, closer ideals, or high offspring variation all slow divergence. Given more generations they would likely keep separating; given migration (not modelled here) they might not.'),
                 same: t('stem.evolab.explain_speciation_same', 'Little divergence. With the same ideal on both sides, or selection near 0, only random sampling separates the means, and that is slow at N = 30 per side. Set the ideals apart and watch the difference.')
               }
@@ -6398,6 +8236,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // History chart
             renderHistoryChart(),
+            h(DataTable, { title: t('stem.evolab.dt_speciation_title', 'Trait means and overlap by generation'), heading: 'text-indigo-800', rows: historyRef.current, columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }, { key: 'lMean', label: t('stem.evolab.col_left_mean', 'Left mean'), digits: 3 }, { key: 'rMean', label: t('stem.evolab.col_right_mean', 'Right mean'), digits: 3 }, { key: 'compat', label: t('stem.evolab.col_overlap', 'Overlap proxy'), digits: 3 }] }),
+            renderMatingTrial(),
             // Sliders for each side's selection ideal
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h(LabeledSlider, {
@@ -6423,6 +8263,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 valueText: selStrength === 0 ? 'Off (drift only)' : 'Strength = ' + selStrength.toFixed(2),
                 accent: 'accent-emerald-500',
                 hint: t('stem.evolab.selection_off_trait_drift_limit', 'How strongly each side selects toward its ideal. With selection off, random sampling may still separate the modeled trait means. That alone does not establish speciation.')
+              }),
+              h(LabeledSlider, {
+                label: t('stem.evolab.gene_flow_migration', 'Gene flow (migration)'),
+                value: migration, min: 0, max: 0.2, step: 0.01,
+                onChange: function(v) { setMigration(v); },
+                valueText: migration === 0 ? t('stem.evolab.barrier_complete', 'Barrier complete (0)') : Math.round(migration * POP_PER_SIDE) + ' ' + t('stem.evolab.cross_per_generation', 'cross per generation'),
+                accent: 'accent-cyan-600',
+                hint: t('stem.evolab.gene_flow_hint', 'The fraction of each side that crosses the barrier every generation. Even a little gene flow fights divergence; strong selection can hold it off. Try letting the sides diverge, then open the barrier.')
               }),
               h(LabeledSlider, {
                 label: t('stem.evolab.mutation_size_2', 'Mutation Size'),
@@ -6480,7 +8328,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               moduleId: 'speciation',
               challenges: [
                 { id: 'milestone20', title: t('stem.evolab.ch_milestone20', 'Milestone in 20: '), body: t('stem.evolab.ch_milestone20_body', 'Reach the 30% overlap milestone within 20 generations. Which of the three sliders gets you there fastest?') },
-                { id: 'holdTogether', title: t('stem.evolab.ch_holdtogether', 'Same pressure, same shape: '), body: t('stem.evolab.ch_holdtogether_body', 'With both ideals within 0.05 of each other, run 40 generations and keep the overlap proxy above 70%. Drift will try to separate them anyway.') }
+                { id: 'holdTogether', title: t('stem.evolab.ch_holdtogether', 'Same pressure, same shape: '), body: t('stem.evolab.ch_holdtogether_body', 'With both ideals within 0.05 of each other, run 40 generations and keep the overlap proxy above 70%. Drift will try to separate them anyway.') },
+                { id: 'holdWithFlow', title: t('stem.evolab.ch_holdwithflow', 'Divergence against gene flow: '), body: t('stem.evolab.ch_holdwithflow_body', 'With gene flow at 0.05 or more and selection at 0.70 or more, reach generation 30 with the overlap proxy still under 50%. Selection holding a line against migration is how real species stay distinct across a leaky barrier.') },
+                { id: 'isolated80', title: t('stem.evolab.ch_isolated80', 'Isolation 0.8: '), body: t('stem.evolab.ch_isolated80_body', 'Reach an isolation index of 0.80 or more in a mating trial. Then try to get there WITH gene flow at 0.05.') }
               ],
               border: 'border-indigo-400', heading: 'text-indigo-800',
               title: t('stem.evolab.try_these_experiments_6', '🧪 Try these experiments'),
@@ -6488,8 +8338,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'defaultFast', auto: true, title: t('stem.evolab.default_fast_speciation', 'Default fast divergence: '), body: t('stem.evolab.default_trait_divergence_experiment', 'Left ideal = 0.3, right = 0.7, selection = 0.7. Auto-run and note when the arbitrary overlap milestone is reached.') },
                 { id: 'sameIdeal', auto: true, title: t('stem.evolab.same_ideal_no_divergence', 'Same ideal, no divergence: '), body: t('stem.evolab.same_optimum_trait_experiment', 'Set both ideals to 0.5. The trait means usually remain closer, although random sampling can still separate them.') },
                 { id: 'driftOnly', auto: true, title: t('stem.evolab.drift_only_speciation', 'Drift-only divergence: '), body: t('stem.evolab.drift_only_trait_divergence_limit', 'Set selection to 0 on both sides. Auto-run for 80+ generations. Random sampling can separate trait means, but the model cannot show whether reproductive isolation evolves.') },
-                { id: 'reverse', title: t('stem.evolab.reverse_a_near_speciation', 'Reverse trait divergence: '), body: t('stem.evolab.reverse_trait_divergence_no_mixing', 'Run until the overlap proxy is about 40%, then set both ideals to 0.5. The means may converge independently; no migration or population mixing occurs in this model.') },
-                { id: 'slowVsFast', title: t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast divergence: '), body: t('stem.evolab.selection_strength_trait_divergence', 'Compare selection = 1.0 with 0.3. Stronger selection usually moves this modeled trait toward different optima faster; it does not by itself prove faster speciation.') }
+                { id: 'reverse', title: t('stem.evolab.reverse_a_near_speciation', 'Reverse trait divergence: '), body: t('stem.evolab.reverse_trait_divergence_no_mixing', 'Run until the overlap proxy is about 40%, then set both ideals to 0.5 with gene flow still at 0. The means may converge independently, with nothing crossing the barrier; compare that with the Secondary contact experiment, where they mix.') },
+                { id: 'secondaryContact', auto: true, title: t('stem.evolab.secondary_contact', 'Secondary contact: '), body: t('stem.evolab.secondary_contact_body', 'Let the sides diverge below 50% overlap with gene flow at 0, then open the barrier to 0.05 or more and keep running. Watch the overlap climb back: gene flow undoes divergence unless selection is strong enough to hold it.') },
+                { id: 'slowVsFast', title: t('stem.evolab.slow_vs_fast_speciation', 'Slow vs fast divergence: '), body: t('stem.evolab.selection_strength_trait_divergence', 'Compare selection = 1.0 with 0.3. Stronger selection usually moves this modeled trait toward different optima faster; it does not by itself prove faster speciation.') },
+                { id: 'matingTrial', auto: true, title: t('stem.evolab.exp_mating_trial', 'Test it, do not eyeball it: '), body: t('stem.evolab.exp_mating_trial_body', 'After the milestone, run a mating trial. Compare the isolation index with the overlap proxy: they measure different things, and only one of them is about mating.') }
               ]
             }),
             // Real-world examples
@@ -6510,6 +8362,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_one_species_become_two_now', 'You\'ve seen one species become two. Now scale up: the Phylogenetic Tree Builder shows the full branching pattern of life — every species today descended from a chain of speciation events going back billions of years.')
               )
             ),
+            h(ModelLimits, { moduleId: 'speciation', heading: 'text-indigo-800' }),
             h(KeyTerms, { moduleId: 'speciation', heading: 'text-indigo-800' }),
             h(FieldNote, { moduleId: 'speciation', border: 'border-indigo-400', heading: 'text-indigo-800', prompt: t('stem.evolab.note_prompt_speciation', 'The overlap proxy fell. What would you need to observe in the field before calling these two species?') }),
             h(TeacherNotes, {
@@ -6559,6 +8412,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var huntRef = useRef(huntPressure);
         var mutRef2 = useRef(mutSize);
         var costRef = useRef(costEnabled);
+        // Predator crash: no hunting for CRASH_GENERATIONS; predators re-seed slow,
+        // prey face only the cost of speed. Models relaxed selection.
+        // Calibrated headlessly (coevo_sim.mjs). Prey that nobody eats still die of
+        // other causes and are replaced; without that, a predator crash froze the
+        // prey (no deaths, no births, no cost) and relaxed selection could never
+        // show. With turnover 0.3 and cost 0.4 a 20-generation crash lowers prey
+        // speed by ~0.02-0.04 (the challenge asks for 0.04: ~40% of crashes); the
+        // arms race and Red Queen still appear in ~80% of runs; in ~8% the prey
+        // lose the race outright and stay slow.
+        var CRASH_GENERATIONS = 20;
+        var PREY_TURNOVER = 0.3;   // prey that die of other causes each generation
+        var PREY_COST = 0.4;       // reproduction attempts lost per unit speed, cost on
+        var crashState = useState(null), crash = crashState[0], setCrash = crashState[1]; // { start, until, preyMeanBefore }
+        var crashRef = useRef(crash);
+        crashRef.current = crash;
         var autoRunRef4 = useRef(autoRun);
         generationRef.current = generation;
         huntRef.current = huntPressure;
@@ -6615,8 +8483,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var preyAlive = prey.map(function() { return true; });
           var captures = 0;
           var fedPredators = [];
-          // Each predator gets one hunt attempt.
-          for (var i = 0; i < preds.length; i++) {
+          var crashing = !!(crashRef.current && generationRef.current < crashRef.current.until);
+          // Each predator gets one hunt attempt (none during a predator crash).
+          for (var i = 0; i < (crashing ? 0 : preds.length); i++) {
             var pred = preds[i];
             // Pick a random LIVING prey. If none left, this pred starves.
             var aliveIdxs = [];
@@ -6660,11 +8529,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
           // Prey reproduction: surviving prey reproduce back to cap.
           var preySurvivors = [];
-          for (var s = 0; s < prey.length; s++) if (preyAlive[s]) preySurvivors.push(prey[s]);
+          // Uneaten prey can still die of other causes; that turnover is what lets
+          // the cost of speed act when nobody is hunting (a predator crash).
+          for (var s = 0; s < prey.length; s++) if (preyAlive[s] && Math.random() >= PREY_TURNOVER) preySurvivors.push(prey[s]);
           var preyNext = preySurvivors.slice();
           while (preyNext.length < POP_PER_SIDE && preySurvivors.length > 0) {
             var pp = preySurvivors[Math.floor(Math.random() * preySurvivors.length)];
-            // Cost: very fast prey expend more energy, slightly fewer offspring (modeled via mutation toward smaller speed).
+            // Cost of speed for prey: fast prey leave slightly fewer offspring, so
+            // speed relaxes when predation stops. (Was a comment only until 2026-09-13.)
+            if (costOn && Math.random() < PREY_COST * pp.speed) continue;
             var inheritedSpeed = pp.speed + randNormal(0, mut);
             preyNext.push({
               x: pp.x + (Math.random() - 0.5) * 24,
@@ -6693,14 +8566,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var predMean = pSum / predNext.length;
           var preyMean = ySum / preyNext.length;
           var nextGen = generationRef.current + 1;
-          historyRef.current.push({ gen: nextGen, predMean: predMean, preyMean: preyMean, gap: predMean - preyMean, capture: captures / POP_PER_SIDE });
+          historyRef.current.push({ gen: nextGen, predMean: predMean, preyMean: preyMean, gap: predMean - preyMean, capture: captures / POP_PER_SIDE, crash: crashing });
+          if (crashRef.current && nextGen >= crashRef.current.until && crashRef.current.until > 0) {
+            var drop = crashRef.current.preyMeanBefore - preyMean;
+            detectExperiment('coevolution', 'crash', 'Predator crash');
+            if (drop >= 0.04) detectChallenge('coevolution', 'relaxed', 'Relaxed selection', drop);
+            announce(__alloFill(__alloT('stem.evolab.sr_crash_over', 'Predators are back. Prey mean speed went from {value1} to {value2} during the crash.'), { value1: crashRef.current.preyMeanBefore.toFixed(2), value2: preyMean.toFixed(2) }));
+            var ended = Object.assign({}, crashRef.current, { until: 0, preyMeanAfter: preyMean });
+            crashRef.current = ended; setCrash(ended);
+          }
           if (historyRef.current.length > 80) historyRef.current.shift();
           generationRef.current = nextGen;
           setGeneration(nextGen);
           var base = coevolutionBaselineRef.current;
           if (nextGen === 20) markComplete('coevolution', '20 generations; predator speed ' + predMean.toFixed(2) + ', prey speed ' + preyMean.toFixed(2) + '.');
           if (nextGen >= 30 && costRef.current && predMean - base.predatorMean > 0.2 && preyMean - base.preyMean > 0.2 && Math.abs(predMean - preyMean) < 0.2) detectExperiment('coevolution', 'armsRace', 'Watch the arms race');
-          if (nextGen >= 50 && !costRef.current && predMean >= 0.95 && preyMean >= 0.95) detectExperiment('coevolution', 'costOff', 'Cost OFF, runaway');
+          if (nextGen >= 50 && !costRef.current && predMean >= 0.9 && preyMean >= 0.9) detectExperiment('coevolution', 'costOff', 'Cost OFF, runaway');
           if (nextGen >= 20 && huntRef.current <= 0.2 && predMean < 0.45 && preyMean < 0.45) detectExperiment('coevolution', 'huntOff', 'Hunt pressure off');
           var firstCapture = null;
           for (var fc = 0; fc < historyRef.current.length; fc++) { if (typeof historyRef.current[fc].capture === 'number') { firstCapture = historyRef.current[fc].capture; break; } }
@@ -6843,7 +8724,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'generations', label: 'Generations', value: generation },
                 { id: 'huntPressure', label: 'Hunt pressure', value: Number(huntPressure.toFixed(2)) },
                 { id: 'traitVariation', label: 'Offspring speed variation', value: Number(mutSize.toFixed(2)) },
-                { id: 'predatorCost', label: 'Predator speed cost', value: costEnabled ? 'On' : 'Off' }
+                { id: 'predatorCost', label: 'Predator speed cost', value: costEnabled ? 'On' : 'Off' },
+                { id: 'predatorCrash', label: 'Predator crash', value: crash ? 'Yes (' + CRASH_GENERATIONS + ' generations from ' + crash.start + ')' : 'No' }
               ]
             },
             baseline: 'Generation 0: predators n=' + baseline.predatorPopulation + ', mean model speed ' + baseline.predatorMean.toFixed(3) + '; prey n=' + baseline.preyPopulation + ', mean model speed ' + baseline.preyMean.toFixed(3) + '; gap ' + (baseline.predatorMean - baseline.preyMean).toFixed(3) + '.',
@@ -6893,6 +8775,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(1) + 4, fontSize: '10', fill: '#475569' }, '1.0'),
               h('text', { x: 4, y: toY(0.5) + 4, fontSize: '10', fill: '#475569' }, '0.5'),
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
+              hist.map(function(pt, i) { return pt.crash ? h('rect', { key: 'c' + i, x: toX(i) - (toX(1) - toX(0)) / 2, y: padT, width: Math.max(1, toX(1) - toX(0)), height: H - padT - padB, fill: 'rgba(14,165,233,0.14)' }) : null; }),
               hist.length > 1 && h('path', { d: predPath, stroke: '#dc2626', strokeWidth: 2, fill: 'none' }),
               hist.length > 1 && h('path', { d: preyPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' })
             )
@@ -6953,6 +8836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 'aria-label': __alloFill(__alloT('stem.evolab.a11y_predator_prey_simulation_red_predators_chasing', 'Predator-prey simulation. {value1} red predators chasing {value2} blue prey. Mean predator speed {value3}, prey {value4}.'), { value1: predRef.current.length, value2: preyRef.current.length, value3: predMean.toFixed(2), value4: preyMean.toFixed(2) })})
             ),
             renderHistoryChart(),
+            h(DataTable, { title: t('stem.evolab.dt_coevo_title', 'Speeds, gap and capture rate by generation'), heading: 'text-red-800', rows: historyRef.current, columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }, { key: 'predMean', label: t('stem.evolab.col_predator_speed', 'Predator speed'), digits: 3 }, { key: 'preyMean', label: t('stem.evolab.col_prey_speed', 'Prey speed'), digits: 3 }, { key: 'gap', label: t('stem.evolab.col_gap', 'Gap'), digits: 3 }, { key: 'capture', label: t('stem.evolab.col_capture_rate', 'Capture rate'), digits: 2 }, { key: 'crash', label: t('stem.evolab.col_predator_crash', 'Predator crash'), bool: true }] }),
             // Sliders
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h(LabeledSlider, {
@@ -6976,7 +8860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex items-center justify-between gap-3' },
               h('div', null,
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.cost_of_speed', 'Cost of Speed')),
-                h('div', { className: 'text-sm text-slate-600' }, costEnabled ? 'ON — Very fast predators tire easily (mild fitness penalty). This stabilizes the arms race at a finite speed.' : 'OFF — No cost. Speeds keep rising forever, hitting the simulation\'s [0, 1] cap.')
+                h('div', { className: 'text-sm text-slate-600' }, costEnabled ? 'ON — Very fast predators tire easily (mild capture penalty) and very fast prey leave slightly fewer offspring. This stabilizes the arms race at a finite speed, and lets prey speed relax when predators disappear.' : 'OFF — No cost on either side. Speeds keep rising forever, hitting the simulation\'s [0, 1] cap, and nothing pulls them back down.')
               ),
               h('button', {
                 onClick: function() { setCostEnabled(!costEnabled); },
@@ -7006,6 +8890,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.reset_4', '↺ Reset'))
             ),
+            // Predator crash event
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex flex-wrap items-center justify-between gap-3' },
+              h('div', null,
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.predator_crash', '🦦 Predator crash')),
+                h('div', { className: 'text-sm text-slate-600' },
+                  crash && crash.until > 0
+                    ? __alloFill(t('stem.evolab.crash_running', 'No hunting until generation {value1}. Prey face only the cost of speed; predators re-seed slow. Watch the blue line.'), { value1: crash.until })
+                    : crash && crash.preyMeanAfter != null
+                      ? __alloFill(t('stem.evolab.crash_done', 'Last crash: prey mean speed {value1} → {value2}. Keep running to watch the arms race restart from the predators\' side.'), { value1: crash.preyMeanBefore.toFixed(2), value2: crash.preyMeanAfter.toFixed(2) })
+                      : t('stem.evolab.crash_idle', 'Remove the predators for 20 generations (a disease, a hunt, a lost habitat). With the cost of speed on, prey speed relaxes a little: a few hundredths, because selection can only work with the variation there is. With it off, nothing pulls speed back down.'))
+              ),
+              h('button', {
+                type: 'button',
+                onClick: function() { var preyNow = preyRef.current; var sumP = 0; for (var i = 0; i < preyNow.length; i++) sumP += preyNow[i].speed; var c = { start: generation, until: generation + CRASH_GENERATIONS, preyMeanBefore: preyNow.length ? sumP / preyNow.length : 0 }; crashRef.current = c; setCrash(c); announce(__alloFill(__alloT('stem.evolab.sr_crash_started', 'Predator crash: no hunting for {value1} generations.'), { value1: CRASH_GENERATIONS })); },
+                disabled: !!(crash && crash.until > 0),
+                className: 'px-4 py-2 rounded-lg font-bold transition-colors ' + (crash && crash.until > 0 ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-sky-700 hover:bg-sky-800 text-white')
+              }, crash && crash.until > 0 ? '⏳ ' + t('stem.evolab.crash_in_progress', 'Crash in progress') : '🦦 ' + t('stem.evolab.start_predator_crash', 'Start a predator crash'))
+            ),
             h(CapstoneCapture, {
               moduleId: 'coevolution',
               moduleLabel: 'Coevolution Lab',
@@ -7030,15 +8932,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             h(ExperimentList, {
               moduleId: 'coevolution',
               challenges: [
-                { id: 'redQueen', title: t('stem.evolab.ch_redqueen', 'Run in place: '), body: t('stem.evolab.ch_redqueen_body', 'Over 40 generations, get both mean speeds up by 0.3 or more while the capture rate ends within 0.1 of where it started. Everyone faster, nobody ahead.') }
+                { id: 'redQueen', title: t('stem.evolab.ch_redqueen', 'Run in place: '), body: t('stem.evolab.ch_redqueen_body', 'Over 40 generations, get both mean speeds up by 0.3 or more while the capture rate ends within 0.1 of where it started. Everyone faster, nobody ahead.') },
+                { id: 'relaxed', title: t('stem.evolab.ch_relaxed', 'Relaxed selection: '), body: t('stem.evolab.ch_relaxed_body', 'Build the arms race up first, then run a predator crash in which prey mean speed falls by 0.04 or more. Use it or lose it, slowly: real relaxed selection takes far longer than twenty generations, and sometimes the prey lose the race outright and stay slow.') }
               ],
               border: 'border-red-400', heading: 'text-red-800',
               title: t('stem.evolab.try_these_experiments_7', '🧪 Try these experiments'),
               items: [
                 { id: 'armsRace', auto: true, title: t('stem.evolab.watch_the_arms_race', 'Watch the arms race: '), body: t('stem.evolab.default_settings_auto_run_for_30_gener', 'Default settings, Auto-Run for 30 generations. Both lines climb together — neither gets meaningfully ahead. The GAP stays small even though absolute speeds rise dramatically.') },
-                { id: 'costOff', auto: true, title: t('stem.evolab.cost_off_runaway', 'Cost OFF — runaway: '), body: t('stem.evolab.disable_cost_of_speed_auto_run_for_50_', 'Disable Cost of Speed. Auto-Run for 50 generations. Speeds hit the simulation cap (1.0) and stay there. In nature, real costs (energy, predation visibility, joint stress) prevent this — which is why cheetahs aren\'t infinitely fast.') },
+                { id: 'costOff', auto: true, title: t('stem.evolab.cost_off_runaway', 'Cost OFF — runaway: '), body: t('stem.evolab.disable_cost_of_speed_auto_run_for_50_', 'Disable Cost of Speed. Auto-Run for 50 generations. Both speeds climb toward the simulation cap (1.0) and sit near it. In nature, real costs (energy, predation visibility, joint stress) prevent this, which is why cheetahs aren\'t infinitely fast.') },
                 { id: 'huntCrash', title: t('stem.evolab.hunt_pressure_crash', 'Hunt pressure crash: '), body: t('stem.evolab.reset_set_hunt_pressure_to_1_0_max_wit', 'Reset, set Hunt Pressure to 1.0 (max). Within ~10 generations one side often crashes — usually prey, since they\'re selected harder. Population recovery takes many generations.') },
                 { id: 'huntOff', auto: true, title: t('stem.evolab.hunt_pressure_off', 'Hunt pressure off: '), body: t('stem.evolab.reset_set_hunt_pressure_to_0_2_low_bot', 'Reset, set Hunt Pressure to 0.2 (low). Both populations stay at low speed — without selection pressure, there\'s no arms race.') },
+                { id: 'crash', auto: true, title: t('stem.evolab.exp_crash', 'Predator crash: '), body: t('stem.evolab.exp_crash_body', 'Run 20 generations with the cost on, then Start a predator crash. For 20 generations nobody hunts: prey speed drifts DOWN a little (fast prey pay a cost and gain nothing; the drop is small because the population has little variation left), predators re-seed slow. When hunting resumes, watch which side climbs first.') },
                 { id: 'highMutation', title: t('stem.evolab.high_mutation', 'High mutation: '), body: t('stem.evolab.set_mutation_size_to_0_12_high_the_dyn', 'Set Mutation Size to 0.12 (high). The dynamics get noisier but the arms race speeds up. Real mutation rates are lower; here exaggerated to be visible on the timescale of a classroom session.') }
               ]
             }),
@@ -7060,6 +8964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_just_saw_two_species_evolving_agai', 'You just saw two species evolving against each other. The Antibiotic Resistance Lab shows the SAME dynamic on a much faster timescale: bacteria vs antibiotics is just predator-prey at the molecular level.')
               )
             ),
+            h(ModelLimits, { moduleId: 'coevolution', heading: 'text-red-800' }),
             h(KeyTerms, { moduleId: 'coevolution', heading: 'text-red-800' }),
             h(FieldNote, { moduleId: 'coevolution', border: 'border-red-400', heading: 'text-red-800', prompt: t('stem.evolab.note_prompt_coevo', 'Who was winning the arms race at the end, and what evidence on the chart says so? Where else does "run to stay in place" apply?') }),
             h(TeacherNotes, {
@@ -7135,6 +9040,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             short: 'Wallace independently arrived at the theory of evolution by natural selection while collecting specimens in the Malay Archipelago. He sent his manuscript to Darwin in 1858. They presented jointly at the Linnean Society in 1858; Darwin\'s "On the Origin of Species" came in 1859.',
             why: 'Wallace usually gets pushed out of the textbook. But in 1858, two scientists — working independently from opposite hemispheres — converged on the same explanation. That convergent insight is itself evidence the theory was capturing something real about nature, not just one person\'s pet idea. Wallace\'s contribution included some ideas Darwin missed (notably the role of geography in speciation).',
             tag: 'foundations'
+          },
+          {
+            id: 'darwinmoth', year: 1862, name: t('stem.evolab.darwins_moth', 'Darwin\'s predicted moth'), portrait: '🌺', country: 'Madagascar / England',
+            headline: 'A moth predicted from a flower',
+            short: 'In 1862 Darwin examined the Madagascar star orchid, whose nectar sits at the bottom of a spur about 30 cm long, and predicted a moth with a tongue long enough to reach it. Wallace agreed in 1867. The moth, Xanthopan morganii praedicta, was described in 1903, and it was finally filmed feeding on the orchid in 1992.',
+            why: 'A risky prediction: the theory said such an insect had to exist, decades before anyone had seen one. Predictions that could have failed and did not are how a theory earns trust, and the Lines of Evidence sort in Common Ancestry has more of them.',
+            tag: 'predicted'
           },
           {
             id: 'mendel', year: 1866, name: t('stem.evolab.gregor_mendel', 'Gregor Mendel'), portrait: '🌱', country: 'Austrian Empire',
@@ -7235,6 +9147,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             tag: 'molecular'
           },
           {
+            id: 'tiktaalik', year: 2004, name: t('stem.evolab.shubin_daeschler_jenkins', 'Shubin · Daeschler · Jenkins'), portrait: '🐟', country: 'Canadian Arctic',
+            headline: 'A fossil found by prediction',
+            short: 'Lobe-finned fish were known from rocks about 380 million years old and the first four-legged animals from about 365. The team reasoned that the transition must lie between, in shallow freshwater deposits of that age, and went to Ellesmere Island where such rocks are exposed. In 2004 they found Tiktaalik: a flat-headed fish with a neck, ribs and a wrist inside its fin (published 2006).',
+            why: 'The fossil record can be searched with a prediction: right age, right environment, a form between forms. Finding it there is the theory doing work, not just describing.',
+            tag: 'predicted'
+          },
+          {
             id: 'modern', year: 2025, name: t('stem.evolab.today', 'Today'), portrait: '🔬', country: 'Global',
             headline: 'Where we are now',
             short: 'Active research areas: how the gut microbiome shapes host evolution, ancient-DNA studies (Neanderthals, mammoths), CRISPR as both a tool and a window into bacterial evolution, the role of regulatory genes (evo-devo), epigenetics and trans-generational effects, evolution of behavior, evolution of language, evolution of disease.',
@@ -7249,7 +9168,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           synthesis: { label: t('stem.evolab.synthesis', 'Synthesis'), color: 'bg-emerald-200 text-emerald-800' },
           molecular: { label: t('stem.evolab.molecular', 'Molecular'), color: 'bg-cyan-200 text-cyan-800' },
           modern: { label: t('stem.evolab.modern', 'Modern'), color: 'bg-rose-200 text-rose-800' },
-          observed: { label: t('stem.evolab.observed_evolution', 'Observed evolution'), color: 'bg-lime-200 text-lime-900' }
+          observed: { label: t('stem.evolab.observed_evolution', 'Observed evolution'), color: 'bg-lime-200 text-lime-900' },
+          predicted: { label: t('stem.evolab.prediction_confirmed', 'Prediction confirmed'), color: 'bg-amber-200 text-amber-900' }
         };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
@@ -7439,12 +9359,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var generationState = useState(0), generation = generationState[0], setGeneration = generationState[1];
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
         var extinctState = useState(false), extinct = extinctState[0], setExtinct = extinctState[1];
-        var mutSizeState = useState(0.04), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
+        var mutSizeState = useState(0.02), mutSize = mutSizeState[0], setMutSize = mutSizeState[1];
         // Warming trial: the RATE of change as a number the student sets, applied
         // by Auto-Run over a fixed 0.50 → 0.90 rise so trials are comparable.
         var TRIAL_START = 0.5, TRIAL_TARGET = 0.9;
         var warmRateState = useState(0.01), warmRate = warmRateState[0], setWarmRate = warmRateState[1];
         var trialState = useState(null), trial = trialState[0], setTrial = trialState[1];
+        // Migrants from an already-warm region: two arrive each generation with a
+        // tolerance near the current temperature. Evolutionary rescue by gene flow
+        // (assisted gene flow in conservation). The replica (climate_sim.mjs) puts
+        // survival at ~100% for every rate on the slider, so the rate challenges and
+        // the fastest-rate record only count trials run WITHOUT migrants.
+        var rescueState = useState(false), rescue = rescueState[0], setRescue = rescueState[1];
+        var rescueRef = useRef(rescue);
+        rescueRef.current = rescue;
+        var MIGRANTS_PER_GEN = 2;
+        // Acclimation (phenotypic plasticity): an individual shifts part of its
+        // inherited tolerance toward the current temperature within its lifetime,
+        // plasticity × gap, capped at PLAST_CAP; survival is judged on what is
+        // left. It buys time (faster warming survived) and hides the signal (the
+        // inherited tolerance lags further behind the climate). Replica:
+        // scratchpad/evolab/plast_sim.mjs. Rate challenges and the fastest-rate
+        // record only count trials run without it.
+        var plasticityState = useState(0), plasticity = plasticityState[0], setPlasticity = plasticityState[1];
+        var plastRef = useRef(plasticity);
+        plastRef.current = plasticity;
+        var PLAST_CAP = 0.08;
         var trialsLogRef = useRef([]);    // finished trials: { rate, status, gens, mutSize }
         var climateSessionRef = useRef('');
         var bestRateRef = useRef(null);
@@ -7501,14 +9441,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var temp = temperatureRef.current;
           var mut = mutRef.current;
           var pop = popRef.current.slice();
-          // Survival: Gaussian falloff from |tolerance - temp|
-          // Sharper than Selection Sandbox so rate-of-change actually bites.
+          // Survival: Gaussian falloff from |tolerance - temp|, width 0.10.
+          // Calibrated headlessly (climate_sim.mjs) so that the RATE of warming
+          // decides survival at low offspring variation: at σ 0.02 a rise of 0.01
+          // per generation is always survived, 0.03 about half the time, 0.05
+          // rarely; at σ 0.04 or more the population tracks any rate on the slider.
           var survivors = [];
           for (var i = 0; i < pop.length; i++) {
             var c = pop[i];
-            var d = Math.abs(c.tolerance - temp);
-            // Death increases steeply when d > 0.15
-            var survivalP = Math.exp(-Math.pow(d / 0.18, 2));
+            var gap = Math.abs(c.tolerance - temp);
+            var d = gap - Math.min(plastRef.current * gap, PLAST_CAP); // acclimation covers part of the gap
+            var survivalP = Math.exp(-Math.pow(d / 0.10, 2));
             if (Math.random() < survivalP) survivors.push(c);
           }
           // Check for extinction
@@ -7521,6 +9464,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             if (trialRef.current && trialRef.current.status === 'running') finishTrial('extinct', generationRef.current + 1);
             else if (generationRef.current + 1 >= 5) markComplete('climatePressure', 'Population went extinct at generation ' + (generationRef.current + 1) + ' under manual temperature change.');
             return;
+          }
+          if (rescueRef.current) {
+            for (var mg = 0; mg < MIGRANTS_PER_GEN; mg++) survivors.push({ id: 'm' + (generationRef.current + 1) + '_' + mg, x: 30 + Math.random() * 720, y: 30 + Math.random() * 220, vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.5) * 14, tolerance: clamp(temp + 0.05 + randNormal(0, 0.03), 0, 1), age: 0, migrant: true });
+            if (trialRef.current && trialRef.current.status === 'running') detectExperiment('climatePressure', 'rescue', 'Evolutionary rescue by gene flow');
           }
           // Reproduce back to cap
           var next = survivors.slice();
@@ -7567,13 +9514,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           trialRef.current = done;
           setTrial(done);
           setAutoRun(false);
-          trialsLogRef.current.push({ rate: tr.rate, status: status, gens: gen - tr.startGen, mutSize: tr.mutSize });
+          trialsLogRef.current.push({ rate: tr.rate, status: status, gens: gen - tr.startGen, mutSize: tr.mutSize, rescue: !!tr.rescue, plast: tr.plast || 0 });
           var log = trialsLogRef.current;
           announce(status === 'survived'
             ? __alloFill(__alloT('stem.evolab.sr_trial_survived', 'Warming trial survived: {value1} per generation, {value2} generations, {value3} creatures alive.'), { value1: tr.rate.toFixed(3), value2: gen - tr.startGen, value3: pop.length })
             : __alloFill(__alloT('stem.evolab.sr_trial_extinct', 'Warming trial ended in extinction at {value1} per generation after {value2} generations.'), { value1: tr.rate.toFixed(3), value2: gen - tr.startGen }));
           markComplete('climatePressure', 'Warming trial at ' + tr.rate.toFixed(3) + '/generation: ' + status + ' after ' + (gen - tr.startGen) + ' generations.');
-          if (status === 'survived') {
+          if (status === 'survived' && !tr.rescue && !tr.plast) {
             var best = bestRateRef.current;
             if (!best || tr.rate > best.rate) {
               var record = { rate: tr.rate, mutSize: tr.mutSize, gens: gen - tr.startGen, at: new Date().toISOString() };
@@ -7584,12 +9531,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             if (tr.rate <= 0.015) detectExperiment('climatePressure', 'slowWarming', 'Slow gradual warming');
             setRecord('climatePressure', 'bestRate', tr.rate, { label: 'Fastest warming survived', unit: ' per generation', better: 'max' });
             if (tr.rate >= 0.03) detectChallenge('climatePressure', 'survive03', 'Survive 0.030 per generation', tr.rate);
-            if (tr.rate >= 0.03 && tr.mutSize <= 0.04) detectChallenge('climatePressure', 'survive03lowVar', 'Survive 0.030 with low variation', tr.rate);
+            if (tr.rate >= 0.04 && tr.mutSize <= 0.02) detectChallenge('climatePressure', 'survive03lowVar', 'Survive 0.040 with low variation', tr.rate);
             if (tr.rate >= 0.03 && tr.mutSize >= 0.08) detectExperiment('climatePressure', 'mutation', 'Mutation matters');
           }
           var survivedRates = log.filter(function(x) { return x.status === 'survived'; }).map(function(x) { return x.rate; });
           var extinctRates = log.filter(function(x) { return x.status === 'extinct'; }).map(function(x) { return x.rate; });
           if (survivedRates.length && extinctRates.length) detectExperiment('climatePressure', 'findRate', 'Find the survivable rate');
+          // Acclimation (plast_sim.mjs, cap 0.08): 0.04/gen at σ 0.02 survived 26% without, 89-94% with plasticity ≥ 0.4;
+          // a survived trial at ≥ 0.02/gen with plasticity ≥ 0.4 ends with the genes ≥ 0.12 behind the climate 95-99% of the time.
+          if (status === 'survived' && tr.plast >= 0.4 && tr.rate >= 0.04 && tr.mutSize <= 0.02) detectExperiment('climatePressure', 'acclimation', 'Acclimation buys time');
+          if (status === 'survived' && tr.plast >= 0.4 && tr.rate >= 0.02 && (temperatureRef.current - meanNow) >= 0.12) detectExperiment('climatePressure', 'hiddenLag', 'Acclimation hides the lag');
         };
 
         var startTrial = function() {
@@ -7597,7 +9548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           temperatureRef.current = TRIAL_START;
           setTemperature(TRIAL_START);
           historyRef.current[0].temp = TRIAL_START;
-          var tr = { startTemp: TRIAL_START, targetTemp: TRIAL_TARGET, rate: warmRateRef.current, mutSize: mutRef.current, startGen: 0, status: 'running' };
+          var tr = { startTemp: TRIAL_START, targetTemp: TRIAL_TARGET, rate: warmRateRef.current, mutSize: mutRef.current, rescue: rescueRef.current, plast: plastRef.current, startGen: 0, status: 'running' };
           trialRef.current = tr;
           setTrial(tr);
           lastTickRef.current = performance.now();
@@ -7756,6 +9707,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var sum = 0; for (var i = 0; i < pop.length; i++) sum += pop[i].tolerance;
         var mean = pop.length > 0 ? sum / pop.length : 0;
         var lag = Math.abs(mean - temperature);
+        // Acclimation card: what plasticity covers right now, and the two-sided
+        // lesson measured in plast_sim.mjs (cap 0.08, σ 0.02): a rise of 0.04 a
+        // generation is survived 26% of the time without acclimation and 93% with
+        // 0.6; the genetic lag at the end of a survived 0.02 trial is ~0.09 without
+        // and ~0.17 with. Populations that die with acclimation die carrying a
+        // bigger hidden lag (0.20 vs 0.13).
+        var renderAcclimation = function() {
+          var gap = Math.max(0, temperature - mean);
+          var covered = Math.min(plasticity * gap, PLAST_CAP);
+          var exposed = Math.max(0, gap - covered);
+          var live = plasticity > 0
+            ? __alloFill(t('stem.evolab.accl_live', 'Right now the flock\'s genetic tolerance sits {value1} below the temperature. Acclimation covers {value2} of that (each individual can shift up to {value3} within its lifetime), leaving {value4} exposed, and survival is judged on the exposed part only.'), { value1: gap.toFixed(3), value2: covered.toFixed(3), value3: PLAST_CAP.toFixed(2), value4: exposed.toFixed(3) })
+            : t('stem.evolab.accl_off', 'Acclimation is off: every individual is judged on the full gap between its inherited tolerance and the temperature. Turn it up to let individuals shift part of the way within their lifetimes, up to a cap.');
+          var lesson = t('stem.evolab.accl_lesson', 'Two things happen at once. Buying time: at σ = 0.02 a rise of 0.040 a generation is survived about one run in four without acclimation and nine in ten with acclimation at 0.6. Hiding the signal: acclimated individuals differ less in what selection can see, so the inherited tolerance evolves more slowly, and a survived trial ends with the genes further behind the climate (about 0.17 instead of 0.09 at 0.020 a generation). The cap is where the bill comes due: a lag can be hidden up to the cap and no further, and a population that fails with acclimation fails carrying a bigger hidden lag than one without.');
+          var real = t('stem.evolab.accl_real', 'Reef corals acclimatise to about a degree of extra heat by shuffling their algal partners and making heat-shock proteins; past that threshold whole reefs bleach at once, which is why bleaching arrives as a cliff rather than a slope. Biologists still debate whether plasticity mostly shields genes from selection or mostly keeps populations alive long enough for selection to work (the Baldwin effect); this model shows both at the same time.');
+          return h('div', { className: 'bg-white border-2 border-orange-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, t('stem.evolab.accl_title', '🧥 Acclimation: buying time, hiding the signal')),
+              h(SpeakButton, { text: live + ' ' + lesson + ' ' + real })
+            ),
+            h('p', { className: 'mt-1 text-sm text-slate-800', 'data-accl-exposed': exposed.toFixed(3) }, live),
+            h('p', { className: 'mt-2 text-sm text-slate-700' }, lesson),
+            h('p', { className: 'mt-2 text-xs text-slate-700 bg-orange-50 rounded-lg p-2' }, real)
+          );
+        };
         var stressed = pop.filter(function(c) { return Math.abs(c.tolerance - temperature) > 0.2; }).length;
 
         var climateOutcome = function() {
@@ -7776,7 +9752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             sourceRunKey: climateSessionRef.current,
             moduleLabel: 'Climate Pressure Lab',
             comparison: {
-              designKey: 'rate=' + (tr ? tr.rate.toFixed(3) : 'manual') + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
+              designKey: 'rate=' + (tr ? tr.rate.toFixed(3) : 'manual') + '|variation=' + mutSize.toFixed(2) + '|migrants=' + ((tr ? !!tr.rescue : rescue) ? 1 : 0) + '|plast=' + (tr ? (tr.plast || 0) : plasticity).toFixed(1) + '|generations=' + generation,
               designLabel: 'warming ' + rateLabel + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
               primaryLabel: 'final population size',
               primaryValue: pop.length,
@@ -7786,6 +9762,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               factors: [
                 { id: 'warmingRate', label: 'Warming per generation', value: tr ? Number(tr.rate.toFixed(3)) : 'manual' },
                 { id: 'traitVariation', label: 'Offspring tolerance variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'migrants', label: 'Migrants from a warmer region', value: (tr ? !!tr.rescue : rescue) ? 'On' : 'Off' },
+                { id: 'acclimation', label: 'Acclimation (plasticity)', value: Number((tr ? (tr.plast || 0) : plasticity).toFixed(1)) },
                 { id: 'generations', label: 'Generations', value: generation },
                 { id: 'temperatureRise', label: 'Temperature rise', value: tr ? Number((tr.targetTemp - tr.startTemp).toFixed(2)) : Number((temperature - start.temp).toFixed(2)) }
               ]
@@ -7897,7 +9875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 onChange: function(v) { if (!(trial && trial.status === 'running')) setWarmRate(v); },
                 valueText: warmRate.toFixed(3) + ' / gen · ' + __alloFill(t('stem.evolab.about_n_generations_for_the_rise', '~{value1} generations for the 0.40 rise'), { value1: Math.ceil((TRIAL_TARGET - TRIAL_START) / warmRate) }) + (trial && trial.status === 'running' ? ' · ' + t('stem.evolab.locked_during_trial', 'locked during the trial') : ''),
                 accent: 'accent-orange-500',
-                hint: t('stem.evolab.warming_rate_hint', 'Compare with your creatures\' tolerance spread (σ ≈ 0.08 at the start). A rise smaller than that each generation leaves survivors; a rise larger than it does not.')
+                hint: t('stem.evolab.warming_rate_hint', 'Compare with how far the population can shift in one generation, which depends on Mutation Size. At σ 0.02 about 0.03 per generation is the edge; raise σ and the edge moves.')
               }),
               h('div', { className: 'mt-3 flex flex-wrap items-center gap-3' },
                 h('button', {
@@ -7918,7 +9896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               trialsLogRef.current.length > 0 && h('div', { className: 'mt-2 text-xs text-slate-700' },
                 h('span', { className: 'font-bold' }, t('stem.evolab.trials_this_session', 'Trials this visit: ')),
-                trialsLogRef.current.map(function(x, i) { return h('span', { key: i, className: 'inline-block mr-2 rounded px-1.5 ' + (x.status === 'survived' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900') }, x.rate.toFixed(3) + ' ' + (x.status === 'survived' ? '✓' : '✗') + ' (σ ' + x.mutSize.toFixed(2) + ')'); })
+                trialsLogRef.current.map(function(x, i) { return h('span', { key: i, className: 'inline-block mr-2 rounded px-1.5 ' + (x.status === 'survived' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900') }, x.rate.toFixed(3) + ' ' + (x.status === 'survived' ? '✓' : '✗') + ' (σ ' + x.mutSize.toFixed(2) + (x.rescue ? ' + ' + t('stem.evolab.migrants_short', 'migrants') : '') + (x.plast ? ' + ' + t('stem.evolab.acclimation_short', 'acclimation') + ' ' + x.plast.toFixed(1) : '') + ')'); })
               )
             ),
             // Mutation rate slider
@@ -7929,6 +9907,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               valueText: 'σ = ' + mutSize.toFixed(2),
               accent: 'accent-violet-500',
               hint: t('stem.evolab.higher_mutation_rate_faster_adaptation', 'Higher mutation rate = faster adaptation. Population can survive faster temperature changes when offspring vary more from parents.')
+            }),
+            h(LabeledSlider, {
+              label: t('stem.evolab.acclimation_label', 'Acclimation (plasticity within a lifetime)'),
+              value: plasticity, min: 0, max: 0.6, step: 0.1,
+              onChange: function(v) { setPlasticity(Math.round(v * 10) / 10); },
+              valueText: plasticity === 0 ? t('stem.evolab.acclimation_none', 'None: tolerance is fixed for life') : __alloFill(t('stem.evolab.acclimation_value', 'Each individual closes {value1}% of its gap, up to {value2}'), { value1: Math.round(plasticity * 100), value2: PLAST_CAP.toFixed(2) }),
+              accent: 'accent-orange-600',
+              hint: t('stem.evolab.acclimation_hint', 'How far an individual can shift its tolerance toward the current temperature within its own lifetime, capped at 0.08. Not inherited. Rate challenges and the record count only trials run with this at 0.')
+            }),
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex flex-wrap items-center justify-between gap-3' },
+              h('div', null,
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, t('stem.evolab.assisted_gene_flow', '🧳 Migrants from a warmer region')),
+                h('div', { className: 'text-sm text-slate-600' }, rescue
+                  ? t('stem.evolab.rescue_on_desc', 'ON: two individuals already suited to the current temperature arrive each generation and breed. Gene flow from an adapted neighbour can rescue a population that could not adapt fast enough on its own; conservation biologists call moving them on purpose assisted gene flow. Rate challenges and the record ignore trials with migrants.')
+                  : t('stem.evolab.rescue_off_desc', 'OFF: the population must adapt from its own variation. Turn on to see whether gene flow from an already-adapted neighbour rescues a rate that went extinct.'))),
+              h('button', {
+                type: 'button', onClick: function() { setRescue(!rescue); }, 'aria-pressed': rescue, disabled: !!(trial && trial.status === 'running'),
+                className: 'px-4 py-2 rounded-lg font-bold disabled:opacity-50 ' + (rescue ? 'transition-colors bg-sky-700 hover:bg-sky-800 text-white' : 'transition-colors bg-slate-200 hover:bg-slate-300 text-slate-800')
+              }, rescue ? '✓ ' + t('stem.evolab.migrants_on', 'Migrants on') : t('stem.evolab.migrants_off', 'Migrants off'))
+            ),
+            renderAcclimation(),
+            trial && trial.status !== 'running' && trial.plast > 0 && h(CheckCard, {
+              moduleId: 'climatePressure', id: 'plast',
+              border: 'border-orange-400', heading: 'text-orange-800',
+              question: t('stem.evolab.check_plast_q', 'With acclimation at 0.6 the population came through a rise its genes could not have kept up with. Has it adapted?'),
+              options: [
+                { id: 'yes', label: t('stem.evolab.check_plast_yes', 'Yes: it survived, so its tolerance must have evolved to match the climate.'), feedback: t('stem.evolab.check_plast_yes_fb', 'Read the Tolerance Lag card: the inherited tolerance is further behind the climate than in a run without acclimation. Surviving and adapting are not the same thing; here the individuals coped and the genes fell behind.') },
+                { id: 'partly', label: t('stem.evolab.check_plast_partly', 'Partly: individuals coped within their lifetimes, that shielding slowed the genetic change, and the population is alive but carrying a hidden lag.'), correct: true, feedback: t('stem.evolab.check_plast_partly_fb', 'Yes. Acclimation is not inherited, so what it covers is invisible to selection and the genetic response is smaller. The population is fine until the gap exceeds what acclimation can cover; then it fails from a worse position than a population that never had the cushion.') },
+                { id: 'no', label: t('stem.evolab.check_plast_no', 'No: acclimation is not heritable, so nothing about the population changed.'), feedback: t('stem.evolab.check_plast_no_fb', 'The genes did move, just less. Selection still saw the exposed part of each gap, and the survivors\' inherited tolerance rose; compare the chart with a run at acclimation 0.') },
+                { id: 'evolved', label: t('stem.evolab.check_plast_evolved', 'Yes, and the acclimation itself evolved as the adaptation.'), feedback: t('stem.evolab.check_plast_evolved_fb', 'In this model plasticity is a dial you set, the same for every individual, and it never changes. In nature the capacity to acclimatise can itself be heritable and evolve; that is where this model stops, and the limits card says so.') }
+              ]
             }),
             // Controls
             h('div', { className: 'flex flex-wrap gap-3 justify-center' },
@@ -7950,6 +9959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // History chart
             renderChart(),
+            h(DataTable, { title: t('stem.evolab.dt_climate_title', 'Temperature, tolerance and population by generation'), heading: 'text-orange-800', rows: historyRef.current, columns: [{ key: 'gen', label: t('stem.evolab.col_generation', 'Generation') }, { key: 'temp', label: t('stem.evolab.col_temperature', 'Temperature'), digits: 3 }, { key: 'mean', label: t('stem.evolab.col_mean_tolerance', 'Mean tolerance'), digits: 3 }, { key: 'popSize', label: t('stem.evolab.col_population', 'Population') }, { key: 'survivors', label: t('stem.evolab.col_survivors', 'Survivors') }] }),
             h(CapstoneCapture, {
               moduleId: 'climatePressure',
               moduleLabel: 'Climate Pressure Lab',
@@ -7974,7 +9984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               moduleId: 'climatePressure',
               challenges: [
                 { id: 'survive03', title: t('stem.evolab.ch_survive03', 'Fast climate, living population: '), body: t('stem.evolab.ch_survive03_body', 'Survive a warming trial at 0.030 per generation or faster. Hint: more offspring variation widens the spread selection can work with.'), record: { id: 'bestRate', label: t('stem.evolab.fastest_warming_survived', 'fastest warming survived') } },
-                { id: 'survive03lowVar', title: t('stem.evolab.ch_survive03lowvar', 'Hard mode: '), body: t('stem.evolab.ch_survive03lowvar_body', 'Survive 0.030 per generation with Mutation Size at 0.04 or less. Expect several extinctions first; that is the point.') }
+                { id: 'survive03lowVar', title: t('stem.evolab.ch_survive03lowvar', 'Hard mode: '), body: t('stem.evolab.ch_survive03lowvar_body', 'Survive 0.040 per generation with Mutation Size at 0.02 or less. About one trial in four makes it; expect extinctions first, that is the point.') }
               ],
               border: 'border-orange-400', heading: 'text-orange-800',
               title: t('stem.evolab.try_these_experiments_8', '🧪 Try these experiments'),
@@ -7982,8 +9992,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'slowWarming', auto: true, title: t('stem.evolab.slow_gradual_warming_adaptation', 'Slow gradual warming (adaptation): '), body: t('stem.evolab.reset_auto_run_then_move_temp_slider_f', 'Set the warming rate to 0.010 or less and run a trial. The mean tolerance tracks the temperature line, lagging slightly. The population survives: it ADAPTED.') },
                 { id: 'rapidJump', auto: true, title: t('stem.evolab.rapid_temperature_jump_extinction', 'Rapid temperature change (extinction): '), body: t('stem.evolab.reset_pause_auto_run_drag_temp_from_0_', 'Set the rate to 0.050 and run a trial, or drag the slider from 0.5 to 0.95 in one move and Auto-Run. Within a few generations the population crashes. Extinction.') },
                 { id: 'findRate', auto: true, title: t('stem.evolab.find_the_survivable_rate', 'Find the survivable rate: '), body: t('stem.evolab.reset_try_moving_the_slider_at_differe', 'Run trials at several rates until you have one that survived and one that went extinct. The boundary between them is this population\'s "adaptive capacity", and the Best rate survived card keeps your record.') },
-                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_matters_2', 'Mutation matters: '), body: t('stem.evolab.reset_set_mutation_size_to_0_10_high_t', 'Set Mutation Size to 0.10 and rerun a rate that went extinct at σ = 0.04 (0.030 or faster). The population may now survive: more variation gives selection more to work with. Real species with short generation times (insects, bacteria) adapt faster than slow ones (whales, humans).') },
-                { id: 'compare', title: t('stem.evolab.compare_with_predator_vision', 'Compare with Predator Vision: '), body: t('stem.evolab.both_labs_put_you_in_control_of_select', 'Both labs put YOU in control of selection. Predator Vision: you applied a static pressure. Climate Pressure: you apply a CHANGING pressure. The dynamic introduces extinction as a possibility — selection pressure can outpace adaptation.') }
+                { id: 'mutation', auto: true, title: t('stem.evolab.mutation_matters_2', 'Mutation matters: '), body: t('stem.evolab.reset_set_mutation_size_to_0_10_high_t', 'Set Mutation Size to 0.10 and rerun a rate that went extinct at σ = 0.02 (0.040 or faster). The population now survives almost every time: more variation gives selection more to work with each generation.') },
+                { id: 'compare', title: t('stem.evolab.compare_with_predator_vision', 'Compare with Predator Vision: '), body: t('stem.evolab.both_labs_put_you_in_control_of_select', 'Both labs put YOU in control of selection. Predator Vision: you applied a static pressure. Climate Pressure: you apply a CHANGING pressure. The dynamic introduces extinction as a possibility — selection pressure can outpace adaptation.') },
+                { id: 'acclimation', auto: true, title: t('stem.evolab.exp_acclimation', 'Acclimation buys time: '), body: t('stem.evolab.exp_acclimation_body', 'At σ = 0.02, run 0.040 a generation with acclimation at 0 (it fails about three runs in four), then at 0.6 (it survives nine in ten). Same genes, same climate; the individuals bent instead of breaking.') },
+                { id: 'hiddenLag', auto: true, title: t('stem.evolab.exp_hidden_lag', 'Acclimation hides the lag: '), body: t('stem.evolab.exp_hidden_lag_body', 'Survive 0.020 a generation twice, once at acclimation 0 and once at 0.6, and compare the Tolerance Lag at the end: roughly 0.09 against 0.17. The cushioned population is alive with its genes further behind, which is the position a population fails from when the cushion runs out.') },
+                { id: 'rescue', auto: true, title: t('stem.evolab.exp_rescue', 'Rescue by gene flow: '), body: t('stem.evolab.exp_rescue_body', 'Take a rate that went extinct at σ = 0.02, turn Migrants on, and run it again. Two suited immigrants a generation are enough; then ask what happens to a locally adapted population when the immigrants are NOT suited to it.') }
               ]
             }),
             // Real-world callout
@@ -8004,6 +10017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_been_the_predator_camouflage_th', 'You\'ve been the predator (camouflage), the climate (extinction). Be the mate-chooser next — the third major selection pressure that drives evolution. Mate Choice Lab shows runaway sexual selection.')
               )
             ),
+            h(ModelLimits, { moduleId: 'climatePressure', heading: 'text-orange-800' }),
             h(KeyTerms, { moduleId: 'climatePressure', heading: 'text-orange-800' }),
             h(FieldNote, { moduleId: 'climatePressure', border: 'border-orange-400', heading: 'text-orange-800', prompt: t('stem.evolab.note_prompt_climate', 'What was the fastest warming your population survived, and what decided it? Name one real species you think is near that edge.') }),
             h(TeacherNotes, {
@@ -8469,6 +10483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ),
             // History chart
             historyRef.current.length > 1 && renderChart(),
+            h(DataTable, { title: t('stem.evolab.dt_mate_title', 'Showiness, preference and predation by round'), heading: 'text-pink-800', rows: historyRef.current, columns: [{ key: 'round', label: t('stem.evolab.col_round', 'Round') }, { key: 'mean', label: t('stem.evolab.col_mean_showiness', 'Mean showiness'), digits: 3 }, { key: 'max', label: t('stem.evolab.col_max_showiness', 'Max showiness'), digits: 3 }, { key: 'pref', label: t('stem.evolab.col_mean_preference', 'Mean preference'), digits: 3 }, { key: 'eaten', label: t('stem.evolab.col_eaten', 'Eaten by predator') }] }),
             // Female choosiness (starting preference) — locked while a run is live
             h(LabeledSlider, {
               label: t('stem.evolab.female_choosiness_at_start', 'Female choosiness at start'),
@@ -8485,7 +10500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('div', { className: 'text-sm text-slate-600' },
                   predatorCost
                     ? t('stem.evolab.predator_cost_on_desc', 'ON — before each round, a male survives with probability 1 − 1.6 × showiness². A male at 0.5 survives 60% of the time; above ~0.8 almost none reach the display ground. Sexual selection vs natural selection in tension.')
-                    : t('stem.evolab.predator_cost_off_desc', 'OFF — no penalty for being showy. Runaway selection: ornament and preference escalate together.')
+                    : t('stem.evolab.predator_cost_off_desc', 'OFF — no penalty for being showy. The ornament runs away on the strength of the preference already in the flock; a full Fisherian runaway, with the preference climbing too, needs far more than 24 birds (see the chart caption).')
                 )
               ),
               h('button', {
@@ -8581,7 +10596,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('p', null, h('strong', null, t('stem.evolab.birds_of_paradise', 'Birds of paradise: ')), t('stem.evolab.40_species_in_new_guinea_all_descended', '~40 species in New Guinea, all descended from a crow-like ancestor. Each species has a different bizarre display: spinning ribbons, head shaking, capes that flip up, dance moves. All driven by female mate preference operating in isolation on different islands.')),
                 h('p', null, h('strong', null, 'Guppies: '), t('stem.evolab.trinidad_guppies_have_vivid_spots_in_s', 'Trinidad guppies have vivid spots in safe streams (mate choice wins) but dull spots in predator-rich streams (natural selection wins). Same species, different equilibria — exactly the dynamic the predator cost toggle models.')),
                 h('p', null, h('strong', null, t('stem.evolab.why_this_matters_3', 'Why this matters: ')), t('stem.evolab.sexual_selection_is_one_of_the_major_e', 'Sexual selection is one of the major engines of evolution. It drives speciation, ornamentation, song, courtship dances. It also explains why some traits seem maladaptive — they\'re not optimizing survival; they\'re optimizing reproduction.')),
-                h('p', null, h('strong', null, t('stem.evolab.what_this_model_leaves_out', 'What this model leaves out: ')), t('stem.evolab.mate_model_limits', 'Real preference and ornament are polygenic, condition-dependent, and shaped by \"good genes\" signalling as well as Fisherian feedback. Twelve birds and twelve rounds exaggerate every effect so it is visible in a class period.'))
               )
             ),
             // Cross-module suggestion
@@ -8592,6 +10606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_ve_seen_sexual_selection_within_a_', 'You\'ve seen sexual selection within a population. The Coevolution Lab shows what happens when TWO populations evolve in response to each other — natural selection\'s answer to sexual selection.')
               )
             ),
+            h(ModelLimits, { moduleId: 'mateChoice', heading: 'text-pink-800' }),
             h(KeyTerms, { moduleId: 'mateChoice', heading: 'text-pink-800' }),
             h(FieldNote, { moduleId: 'mateChoice', border: 'border-pink-400', heading: 'text-pink-800', prompt: t('stem.evolab.note_prompt_mate', 'Where did showiness settle with the predator on, and why there? What would a female peahen "want" if she could want anything?') }),
             h(TeacherNotes, {
@@ -8662,6 +10677,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var startEnvRef = useRef('forest');
         var huntSessionRef = useRef('');
         var keyboardHuntsRef = useRef(0);
+        // By-eye kill order this round, and one search-image reading per by-eye round.
+        var eyeLogRef = useRef([]);
+        var searchImageRef = useRef([]);
         // Two saved hunts for side-by-side comparison (the partner / strategy experiments).
         var savedRunsState = useState({}), savedRuns = savedRunsState[0], setSavedRuns = savedRunsState[1];
         var RUN_COLORS = { A: '#0284c7', B: '#7c3aed' };
@@ -8713,6 +10731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           popRef.current = pop;
           var sum = 0; for (var k = 0; k < pop.length; k++) sum += pop[k].trait;
           historyRef.current = [{ round: 0, mean: sum / pop.length, time: 0, kills: 0 }];
+          eyeLogRef.current = []; searchImageRef.current = [];
           initialTraitsRef.current = pop.map(function(p) { return p.trait; });
           envSwitchesRef.current = [];
           startEnvRef.current = envIdRef.current;
@@ -8749,6 +10768,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             for (var s = 0; s < survivors.length; s++) sumS += survivors[s].trait;
             var meanSurvivors = survivors.length > 0 ? sumS / survivors.length : 0.5;
             historyRef.current.push({ round: round + 1, mean: meanSurvivors, time: time, kills: KILLS_PER_ROUND });
+            // Search image: only for a round where every kill was a click. Baseline = the
+            // share of prey pairs in this population that are within 0.10 of each other.
+            if (eyeLogRef.current.length === KILLS_PER_ROUND) {
+              var seq = eyeLogRef.current, runs = 0, close = 0, pairs = 0;
+              for (var si = 1; si < seq.length; si++) if (Math.abs(seq[si] - seq[si - 1]) < 0.1) runs++;
+              for (var pa = 0; pa < pop.length; pa++) for (var pb = pa + 1; pb < pop.length; pb++) { pairs++; if (Math.abs(pop[pa].trait - pop[pb].trait) < 0.1) close++; }
+              var expected = pairs ? (seq.length - 1) * (close / pairs) : 0;
+              var popMean = pop.reduce(function(acc, q) { return acc + q.trait; }, 0) / pop.length;
+              var killMean = seq.reduce(function(acc, b) { return acc + b; }, 0) / seq.length;
+              searchImageRef.current.push({ round: round + 1, runs: runs, expected: expected, killMean: killMean, popMean: popMean });
+              if (runs - expected >= 3) detectExperiment('predatorVision', 'searchImage', 'Catch your own search image');
+            }
+            eyeLogRef.current = [];
             var camoNow = Math.max(0, Math.round((1 - Math.abs(meanSurvivors - envRef.current.idealTrait)) * 100));
             // By eye only: the keyboard rule removes the most visible prey algorithmically, which makes these trivial.
             if (keyboardHuntsRef.current === 0 && camoNow >= 90 && round + 1 <= 8) detectChallenge('predatorVision', 'camo90in8', 'Sharp eyes: 90% camouflage by round 8', round + 1);
@@ -8927,7 +10959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var d = Math.sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y));
             if (d < closestDist) { closestDist = d; closestIdx = i; }
           }
-          if (closestIdx >= 0) killPrey(pop[closestIdx].id);
+          if (closestIdx >= 0) { eyeLogRef.current.push(pop[closestIdx].trait); killPrey(pop[closestIdx].id); }
         };
 
         // Keyboard-equivalent selection pressure: remove the live prey whose
@@ -9076,6 +11108,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return 'same';
         };
 
+        // Your search image. In a by-eye round the ten kills come in an order;
+        // consecutive kills that are alike (within 0.10) are the signature of a
+        // search image. The baseline is what random picks from THIS population
+        // would give, so a converged population is not mistaken for one.
+        var renderSearchImage = function() {
+          var log = searchImageRef.current;
+          if (!log.length) return null;
+          var last = log[log.length - 1];
+          var bias = last.killMean - last.popMean;
+          var end = bias > 0.03 ? t('stem.evolab.si_lighter', 'the lighter end') : bias < -0.03 ? t('stem.evolab.si_darker', 'the darker end') : t('stem.evolab.si_even', 'the whole range about evenly');
+          var excess = last.runs - last.expected;
+          var reading = excess >= 3 ? t('stem.evolab.si_strong', 'That is a clear search image.') : excess >= 1.5 ? t('stem.evolab.si_some', 'That is a mild search image.') : t('stem.evolab.si_none', 'No search image showing: you hunted about as a random picker would.');
+          var line1 = __alloFill(t('stem.evolab.si_round', 'Round {value1}: {value2} of your 9 consecutive kills were within 0.10 of the one before; random picks from this population would give about {value3}. Your kills averaged {value4} against a population mean of {value5}, so you were hunting {value6}.'), { value1: last.round, value2: last.runs, value3: last.expected.toFixed(1), value4: last.killMean.toFixed(2), value5: last.popMean.toFixed(2), value6: end });
+          var why = t('stem.evolab.si_why', 'Runs of similar kills are a search image: once you find one prey type you keep finding that type. Real predators do the same, which makes the common form pay and lets rare forms slip through (apostatic selection). Bond and Kamil showed it with blue jays hunting virtual moths (Nature 415:609, 2002); it is one way a population stays polymorphic.');
+          return h('div', { className: 'evolab-search-image bg-white border-2 border-lime-400 rounded-xl p-4' },
+            h('div', { className: 'flex items-start justify-between gap-2' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-lime-800' }, '🔎 ' + t('stem.evolab.your_search_image', 'Your search image')),
+              h(SpeakButton, { text: line1 + ' ' + reading + ' ' + why })),
+            h('p', { className: 'mt-1 text-sm text-slate-800' }, line1, ' ', h('span', { className: 'font-bold' }, reading)),
+            log.length > 1 && h('p', { className: 'mt-1 text-xs text-slate-700' }, __alloFill(t('stem.evolab.si_history', 'By-eye rounds so far: {value1}'), { value1: log.map(function(r) { return r.round + ': ' + r.runs + ' (' + r.expected.toFixed(1) + ')'; }).join(' · ') })),
+            h('p', { className: 'mt-2 text-xs text-slate-700' }, why),
+            h('p', { className: 'mt-1 text-xs text-slate-600 italic' }, t('stem.evolab.si_try', 'Try it: next round, hunt on purpose for whichever colour you have NOT been taking, and watch the number drop.'))
+          );
+        };
         var predatorSnapshot = function() {
           if (round <= 0 || historyRef.current.length < 2) return null;
           var start = historyRef.current[0];
@@ -9242,6 +11298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               renderHistoryChart(),
               renderTimeChart() || h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 flex items-center justify-center text-slate-600 text-sm italic' }, t('stem.evolab.round_times_will_appear_after_round_1', '⏱️ Round times will appear after Round 1.'))
             ),
+            h(DataTable, { title: t('stem.evolab.dt_predator_title', 'Mean colour and hunt time by round'), heading: 'text-lime-800', rows: historyRef.current, columns: [{ key: 'round', label: t('stem.evolab.col_round', 'Round') }, { key: 'mean', label: t('stem.evolab.col_mean_trait', 'Mean trait'), digits: 3 }, { key: 'time', label: t('stem.evolab.col_hunt_time', 'Time to eat 10 (s)'), digits: 1 }, { key: 'kills', label: t('stem.evolab.col_kills', 'Kills') }] }),
             // Variation is the point: the whole distribution, start vs now.
             h(TraitHistogram, {
               title: t('stem.evolab.colour_distribution_start_vs_now', '📊 Colour distribution: start vs now'),
@@ -9272,6 +11329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'text-xs text-slate-600 mt-2 italic' }, env.description),
               phase === 'hunting' && h('div', { className: 'text-xs text-lime-800 font-semibold mt-1' }, t('stem.evolab.env_switch_keeps_population', 'Switching during a hunt keeps the population. The prey do not change colour; only the background does.'))
             ),
+            renderSearchImage(),
             // Phase controls
             phase === 'intro' && h('div', { className: 'flex justify-center' },
               h('button', {
@@ -9346,7 +11404,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 { id: 'switchEnv', auto: true, title: t('stem.evolab.switch_environments_mid_evolution', 'Switch environments mid-evolution: '), body: t('stem.evolab.after_5_rounds_in_forest_switch_to_sno', 'After 5 rounds in Forest, switch to Snow while the hunt is still running. The prey keep the colours they evolved for leaves, so they now stand out against snow and the camouflage score drops. They have to evolve again, from where they are.') },
                 { id: 'strategy', auto: true, title: t('stem.evolab.hunt_strategically_vs_randomly', 'Hunt strategically vs randomly: '), body: t('stem.evolab.in_round_1_click_only_the_brightest_pr', 'Run one hunt clicking only the most VISIBLE prey and save it as Run A; then hunt again clicking whatever is nearest your cursor and save it as Run B. The comparison table shows the camouflage gain of each. Selective hunting produces faster camouflage evolution.') },
                 { id: 'partner', title: t('stem.evolab.compare_with_a_partner', 'Compare with a partner: '), body: t('stem.evolab.two_students_one_screen_take_turns_hun', 'Two students, one screen — take turns hunting one round each. Notice how each person\'s "predator profile" subtly differs and shapes the prey differently.') },
-                { id: 'chart', auto: true, title: t('stem.evolab.check_the_chart', 'Check the chart: '), body: t('stem.evolab.the_red_line_on_the_trait_chart_approa', 'The red line on the trait chart approaches the green dashed "camouflage ideal" line. That\'s natural selection in action — the population converging on the trait you\'re NOT selecting against.') }
+                { id: 'chart', auto: true, title: t('stem.evolab.check_the_chart', 'Check the chart: '), body: t('stem.evolab.the_red_line_on_the_trait_chart_approa', 'The red line on the trait chart approaches the green dashed "camouflage ideal" line. That\'s natural selection in action — the population converging on the trait you\'re NOT selecting against.') },
+                { id: 'searchImage', auto: true, title: t('stem.evolab.exp_search_image', 'Catch your own search image: '), body: t('stem.evolab.exp_search_image_body', 'Hunt a round by eye and read the search-image card. If your consecutive kills are far more alike than random picks would be, you formed one. Then break it on purpose next round.') }
               ]
             }),
             // Real-world tie-in
@@ -9367,6 +11426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 t('stem.evolab.you_just_felt_selection_happening_the_', 'You just felt selection happening. The Selection Sandbox lets you adjust selection pressure as a slider rather than as your own clicks — see how the same dynamic plays out under different settings.')
               )
             ),
+            h(ModelLimits, { moduleId: 'predatorVision', heading: 'text-lime-800' }),
             h(KeyTerms, { moduleId: 'predatorVision', heading: 'text-lime-800' }),
             h(FieldNote, { moduleId: 'predatorVision', border: 'border-lime-400', heading: 'text-lime-800', prompt: t('stem.evolab.note_prompt_predator', 'What did the prey look like at the start and at the end? Where did the new colours come from, if no prey ever changed colour?') }),
             h(TeacherNotes, {
@@ -9937,7 +11997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             problem: 'Garlic mustard, an invasive plant from Europe, is taking over Maine forests. Native plants haven\'t evolved defenses against its allelopathic chemicals (it poisons soil for competing plants). Over 200 years of coexistence, how will native plants and garlic mustard coevolve?',
             module: 'coevolution',
             moduleLabel: '🐆 Coevolution Lab',
-            moduleHint: 'Use the Coevolution Lab as a model. Treat predator = invasive species, prey = native plant. Apply Hunt Pressure for the invasive\'s strong selection. Try with and without "Cost of Speed" enabled.',
+            moduleHint: 'Use the Coevolution Lab as a model. Treat predator = invasive species, prey = native plant. Apply Hunt Pressure for the invasive\'s strong selection. Try with and without "Cost of Speed" enabled. For the sea-otter reflection, run a predator crash and watch what the prey do when the pressure lifts.',
             trialPlan: { version: 1, strategy: 'change-one', factor: 'predatorCost', factorLabel: 'Predator speed cost', levelA: 'On', levelB: 'Off', targetRuns: 2 },
             mechanismCue: 'Coevolution requires reciprocal selection: each population changes the selective environment experienced by the other. A one-sided response is adaptation, but not necessarily coevolution.',
             dataMission: [
@@ -10165,19 +12225,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var scenario = scenarioId ? SCENARIOS.find(function(s) { return s.id === scenarioId; }) : null;
         var CAPSTONE_FACTOR_OPTIONS = {
           geneticDrift: [
+            { id: 'selection', label: 'Selection for A (s)', levelA: '0.00', levelB: '0.05' },
             { id: 'populationSize', label: 'Population size', levelA: '10', levelB: '100' },
+            { id: 'breedingMales', label: 'Breeding males', levelA: '1', levelB: '50' },
+            { id: 'migrants', label: 'Migrants per generation (Nm)', levelA: '0', levelB: '1' },
             { id: 'generations', label: 'Generations', levelA: '50', levelB: '100' }
           ],
           selectionSandbox: [
             { id: 'selectionStrength', label: 'Selection strength', levelA: '0.40', levelB: '1.00' },
             { id: 'traitVariation', label: 'Offspring trait variation', levelA: '0.02', levelB: '0.08' },
+            { id: 'heritability', label: 'Heritability (h²)', levelA: '0.3', levelB: '1.0' },
             { id: 'generations', label: 'Generations', levelA: '30', levelB: '60' }
           ],
           antibioticLab: [
             { id: 'doseStrength', label: 'Dose strength', levelA: '0.55', levelB: '0.85' },
             { id: 'startingResistance', label: 'Starting resistance', levelA: '1%', levelB: '10%' },
             { id: 'traitVariation', label: 'Offspring resistance variation', levelA: '0.02', levelB: '0.08' },
-            { id: 'schedule', label: 'Dosing schedule', levelA: 'Complete course (15 on)', levelB: 'Stopped early (5 on)' }
+            { id: 'schedule', label: 'Dosing schedule', levelA: 'Complete course (15 on)', levelB: 'Stopped early (5 on)' },
+            { id: 'plasmidRate', label: 'Plasmid transfer rate', levelA: '0.00', levelB: '0.15' },
+            { id: 'secondDrug', label: 'Second drug', levelA: 'Off', levelB: 'On' }
           ],
           coevolution: [
             { id: 'huntPressure', label: 'Hunt pressure', levelA: '0.35', levelB: '0.75' },
@@ -10195,20 +12261,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           ],
           climatePressure: [
             { id: 'warmingRate', label: 'Warming per generation', levelA: '0.010', levelB: '0.030' },
-            { id: 'traitVariation', label: 'Offspring tolerance variation', levelA: '0.04', levelB: '0.10' }
+            { id: 'traitVariation', label: 'Offspring tolerance variation', levelA: '0.04', levelB: '0.10' },
+            { id: 'migrants', label: 'Migrants from a warmer region', levelA: 'Off', levelB: 'On' },
+            { id: 'acclimation', label: 'Acclimation (plasticity)', levelA: '0.0', levelB: '0.6' }
           ],
           beakLab: [
             { id: 'droughtYears', label: 'Drought years', levelA: '0', levelB: '3' },
-            { id: 'traitVariation', label: 'Offspring beak variation (mm)', levelA: '0.10', levelB: '0.40' }
+            { id: 'elNinoYears', label: 'El Niño years', levelA: '0', levelB: '3' },
+            { id: 'traitVariation', label: 'Offspring beak variation (mm)', levelA: '0.10', levelB: '0.40' },
+            { id: 'heritability', label: 'Heritability (h²)', levelA: '0.5', levelB: '1.0' }
           ],
           speciation: [
             { id: 'selectionStrength', label: 'Selection strength', levelA: '0.30', levelB: '1.00' },
+            { id: 'migrationRate', label: 'Gene flow (fraction crossing per generation)', levelA: '0.00', levelB: '0.10' },
             { id: 'traitVariation', label: 'Offspring trait variation', levelA: '0.02', levelB: '0.08' },
             { id: 'generations', label: 'Generations', levelA: '30', levelB: '60' }
           ],
           hardyWeinberg: [
             { id: 'selectionCoefficient', label: 'Selection against aa', levelA: '0.05', levelB: '0.15' },
             { id: 'startP', label: 'Starting p', levelA: '0.05', levelB: '0.20' },
+            { id: 'inbreeding', label: 'Inbreeding (F)', levelA: '0.00', levelB: '0.25' },
             { id: 'generations', label: 'Generations', levelA: '20', levelB: '40' }
           ]
         };
@@ -11199,7 +13271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var STANDARDS = [
           {
             id: 'HS-LS4-1', title: t('stem.evolab.communicate_scientific_information_abo', 'Communicate scientific information about evidence for evolution'),
-            plain: 'Students explain the multiple lines of evidence that support evolution: anatomical, molecular, fossil, biogeographic.',
+            plain: 'Students explain the multiple lines of evidence that support evolution: anatomical, molecular, fossil, biogeographic, and directly observed. The Lines of Evidence sort in Common Ancestry puts fifteen real findings into those five lines.',
             modules: ['commonAncestry', 'phyloBuilder', 'discoveryTimeline', 'misconceptions']
           },
           {
@@ -11615,6 +13687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'journal') return h(stableType('LearningJournal', LearningJournal));
       if (view === 'classSnapshot') return h(stableType('ClassSnapshot', ClassSnapshot));
       if (view === 'exitTickets') return h(stableType('ExitTickets', ExitTickets));
+      if (view === 'termSprint') return h(stableType('TermSprintView', TermSprintView));
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
       if (view === 'standardsCrosswalk') return h(StandardsCrosswalk);

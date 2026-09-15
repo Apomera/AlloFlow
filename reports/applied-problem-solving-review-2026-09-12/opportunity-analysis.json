@@ -1,0 +1,569 @@
+{
+  "purpose": "Read-only UI and completion-rule analysis of pass 7; authored fixture, mocked AI and search.",
+  "states": [
+    {
+      "label": "Understand",
+      "viewport": 1280,
+      "query": "",
+      "pageHeight": 1376,
+      "width": 1280,
+      "firstTextareaTop": 777,
+      "firstTextareaId": "applied-workspace-workingQuestion",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-workingQuestion",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Use or adapt a suggested question",
+        "People and constraints",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1. Understand",
+        "2. Explore",
+        "3. Build",
+        "4. Check",
+        "5. Reflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Explore",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1. Understand\n2. Explore\n3. Build\n4. Check\n5. Reflect\n\n0 of 10 sections started\n\nShow all steps\nUnderstand\n\nIn this fictional classroom scenario, a school garden team wants to reduce water waste while keeping its plants healthy. Compare two possible approaches before recommending a plan. The school has not collected local measurements yet.\n\nUse or adapt a suggested question\nFrame the challenge\n\nWrite the exact question or challenge you will answer. Make it specific enough to guide your work.\n\nRead my writing\nPeople and constraints\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Explore\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Understand",
+      "viewport": 390,
+      "query": "",
+      "pageHeight": 2139,
+      "width": 390,
+      "firstTextareaTop": 964,
+      "firstTextareaId": "applied-workspace-workingQuestion",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-workingQuestion",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Use or adapt a suggested question",
+        "People and constraints",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Explore",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nUnderstand\n\nIn this fictional classroom scenario, a school garden team wants to reduce water waste while keeping its plants healthy. Compare two possible approaches before recommending a plan. The school has not collected local measurements yet.\n\nUse or adapt a suggested question\nFrame the challenge\n\nWrite the exact question or challenge you will answer. Make it specific enough to guide your work.\n\nRead my writing\nPeople and constraints\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Explore\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Explore",
+      "viewport": 390,
+      "query": "",
+      "pageHeight": 2177,
+      "width": 390,
+      "firstTextareaTop": 752,
+      "firstTextareaId": "applied-workspace-possibilities",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-possibilities",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Connect a lesson idea",
+        "Compare the options",
+        "Evidence, assumptions, and tradeoffs",
+        "Find outside evidence",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Build",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nExplore\nOptions worth considering\n\nGenerate multiple options worth considering before choosing a direction.\n\nRead my writing\nConnect a lesson idea\nCompare the options\nEvidence, assumptions, and tradeoffs\nFind outside evidence\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Build\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Build",
+      "viewport": 390,
+      "query": "",
+      "pageHeight": 2021,
+      "width": 390,
+      "firstTextareaTop": 752,
+      "firstTextareaId": "applied-workspace-response",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-response",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Add a sketch, model, or recorded explanation",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Check",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nBuild\nRecommendation and rationale\n\nCreate your recommendation and rationale. Make the reasoning visible.\n\nRead my writing\nAdd a sketch, model, or recorded explanation\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Check\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Check",
+      "viewport": 390,
+      "query": "",
+      "pageHeight": 2671,
+      "width": 390,
+      "firstTextareaTop": 848,
+      "firstTextareaId": "applied-workspace-testReflection",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-testReflection",
+          "label": ""
+        },
+        {
+          "id": "applied-workspace-revision",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Check against the success criteria",
+        "Plan and record a detailed check",
+        "Ask AI to challenge my reasoning",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Reflect",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nCheck\n\nCompare a strong alternative, ask for feedback, or try a small test. Record what you found, or what remains unchecked.\n\nChallenge the recommendation with the strongest alternative\n\nChallenge the recommendation with the strongest alternative.\n\nRead my writing\nCheck against the success criteria\nPlan and record a detailed check\nAsk AI to challenge my reasoning\n\nA check may support your current direction. Explain what you changed or why keeping it makes sense.\n\nKeep or revise after checking\n\nExplain what you will change after checking, or why the evidence supports keeping your current direction.\n\nRead my writing\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Reflect\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Reflect",
+      "viewport": 390,
+      "query": "",
+      "pageHeight": 1909,
+      "width": 390,
+      "firstTextareaTop": 752,
+      "firstTextareaId": "applied-workspace-transferReflection",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-transferReflection",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Review my response",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nReflect\nExplain the transfer\n\nWhich lesson idea did you apply, and where else could the same reasoning move help?\n\nRead my writing\n\nExplain where the same lesson idea could help in a new situation. Your final review brings your reasoning together.\n\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nReview my response\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Understand",
+      "viewport": 320,
+      "query": "",
+      "pageHeight": 2341,
+      "width": 320,
+      "firstTextareaTop": 1094,
+      "firstTextareaId": "applied-workspace-workingQuestion",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-workingQuestion",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Use or adapt a suggested question",
+        "People and constraints",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Explore",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 10 sections started\n\nShow all steps\nUnderstand\n\nIn this fictional classroom scenario, a school garden team wants to reduce water waste while keeping its plants healthy. Compare two possible approaches before recommending a plan. The school has not collected local measurements yet.\n\nUse or adapt a suggested question\nFrame the challenge\n\nWrite the exact question or challenge you will answer. Make it specific enough to guide your work.\n\nRead my writing\nPeople and constraints\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Explore\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Understand",
+      "viewport": 390,
+      "query": "compact",
+      "pageHeight": 2045,
+      "width": 390,
+      "firstTextareaTop": 964,
+      "firstTextareaId": "applied-workspace-workingQuestion",
+      "visibleTextareas": [
+        {
+          "id": "applied-workspace-workingQuestion",
+          "label": ""
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Copy to prepare\nStudent task\nMy response\nPaper organizer",
+          "value": "response"
+        }
+      ],
+      "disclosures": [
+        "Read or listen",
+        "Use or adapt a suggested question",
+        "Lesson ideas",
+        "What your response needs",
+        "Limits and unknowns",
+        "Full challenge brief"
+      ],
+      "buttons": [
+        "Download my work",
+        "Restore text backup",
+        "Start writing",
+        "1.\nUnderstand",
+        "2.\nExplore",
+        "3.\nBuild",
+        "4.\nCheck",
+        "5.\nReflect",
+        "Show all steps",
+        "Read my writing",
+        "Show a thinking prompt",
+        "See a parallel example",
+        "Ask for one hint",
+        "Back",
+        "Continue to Explore",
+        "Open print / PDF preview"
+      ],
+      "text": "Learner workspace\nDownload my work\nRestore text backup\n\nSaving on this device does not submit your work to your teacher.\n\nText backup: writing and feedback only. Images and recordings are not included. This does not submit your work.\n\nApplied Problem Solving\n\nChoose a water-saving plan for a school garden\n\nA short recommendation with reasons, one tradeoff, and a plan for a small check.\n\nStart writing\nRead or listen\n1.\nUnderstand\n2.\nExplore\n3.\nBuild\n4.\nCheck\n5.\nReflect\n\n0 of 8 sections started\n\nShow all steps\nUnderstand\n\nIn this fictional classroom scenario, a school garden team wants to reduce water waste while keeping its plants healthy. Compare two possible approaches before recommending a plan. The school has not collected local measurements yet.\n\nUse or adapt a suggested question\nFrame the challenge\n\nWrite the exact question or challenge you will answer. Make it specific enough to guide your work.\n\nRead my writing\nShow a thinking prompt\nSee a parallel example\nAsk for one hint\nBack\nContinue to Explore\nChallenge reference\n\nApply infiltration and runoff to compare options.\n\nLesson ideas\nWhat your response needs\nLimits and unknowns\nFull challenge brief\nCopy to prepare\nStudent task\nMy response\nPaper organizer\nOpen print / PDF preview"
+    },
+    {
+      "label": "Teacher setup",
+      "viewport": 1280,
+      "query": "setup",
+      "pageHeight": 900,
+      "width": 1280,
+      "firstTextareaTop": 114,
+      "firstTextareaId": "",
+      "visibleTextareas": [
+        {
+          "id": "",
+          "label": "LESSON IDEA TO APPLY"
+        },
+        {
+          "id": "",
+          "label": "Custom instructions for applied challenge"
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Applied challenge selection mode",
+          "value": "auto"
+        },
+        {
+          "label": "Applied challenge AI role",
+          "value": "progressive"
+        },
+        {
+          "label": "STARTING SUPPORT\nThinking prompts available\nStart with a parallel example\nIndependent start; help stays available",
+          "value": "prompt"
+        },
+        {
+          "label": "Applied challenge depth",
+          "value": "standard"
+        }
+      ],
+      "disclosures": [
+        "Time, materials, and lesson selection"
+      ],
+      "buttons": [
+        "Build Applied Challenge Studio"
+      ],
+      "text": "Build a teacher-editable challenge draft, review its facts and product, then try Student preview before sharing.\n\nLESSON IDEA TO APPLY\nTime, materials, and lesson selection\nCHALLENGE MATCH\nAuto Match - choose the strongest application\nChoose a challenge family\nAI ROLE\nSee, build, then own it\nAI frames the challenge\nFrame it with me\nCoach me while I frame it\nAI shows a parallel example, offers a starter, then fades to coaching questions.\nThe student always owns the response. Coaching never fills student fields.\nSTARTING SUPPORT\nThinking prompts available\nStart with a parallel example\nIndependent start; help stays available\nOffer an editable organizer matched to this challenge\nCHALLENGE DEPTH\nQuick application\nFull challenge\nExtended project\nA complete challenge with evidence, tradeoffs, testing, and revision.\nTEACHER INSTRUCTIONS (optional)\nBuild Applied Challenge Studio"
+    },
+    {
+      "label": "Teacher setup",
+      "viewport": 390,
+      "query": "setup",
+      "pageHeight": 1018,
+      "width": 390,
+      "firstTextareaTop": 188,
+      "firstTextareaId": "",
+      "visibleTextareas": [
+        {
+          "id": "",
+          "label": "LESSON IDEA TO APPLY"
+        },
+        {
+          "id": "",
+          "label": "Custom instructions for applied challenge"
+        }
+      ],
+      "visibleSelects": [
+        {
+          "label": "Applied challenge selection mode",
+          "value": "auto"
+        },
+        {
+          "label": "Applied challenge AI role",
+          "value": "progressive"
+        },
+        {
+          "label": "STARTING SUPPORT\nThinking prompts available\nStart with a parallel example\nIndependent start; help stays available",
+          "value": "prompt"
+        },
+        {
+          "label": "Applied challenge depth",
+          "value": "standard"
+        }
+      ],
+      "disclosures": [
+        "Time, materials, and lesson selection"
+      ],
+      "buttons": [
+        "Build Applied Challenge Studio"
+      ],
+      "text": "Build a teacher-editable challenge draft, review its facts and product, then try Student preview before sharing.\n\nLESSON IDEA TO APPLY\nTime, materials, and lesson selection\nCHALLENGE MATCH\nAuto Match - choose the strongest application\nChoose a challenge family\nAI ROLE\nSee, build, then own it\nAI frames the challenge\nFrame it with me\nCoach me while I frame it\nAI shows a parallel example, offers a starter, then fades to coaching questions.\nThe student always owns the response. Coaching never fills student fields.\nSTARTING SUPPORT\nThinking prompts available\nStart with a parallel example\nIndependent start; help stays available\nOffer an editable organizer matched to this challenge\nCHALLENGE DEPTH\nQuick application\nFull challenge\nExtended project\nA complete challenge with evidence, tradeoffs, testing, and revision.\nTEACHER INSTRUCTIONS (optional)\nBuild Applied Challenge Studio"
+    }
+  ],
+  "errors": [],
+  "singleResponseCoverage": {
+    "response": "I recommend comparing slow watering and faster watering. The lesson connects infiltration and runoff: if water arrives faster than it soaks in, more may run off. Slow watering takes more time. No local trial has happened; this remains an assumption about our soil. Keep the comparison as the next step because local conditions are unknown. The same idea could help choose drainage approaches for a sports field.",
+    "review": [
+      {
+        "id": "question",
+        "label": "Working question",
+        "stage": 0,
+        "recorded": true
+      },
+      {
+        "id": "response",
+        "label": "My response",
+        "stage": 2,
+        "recorded": true
+      },
+      {
+        "id": "evidence",
+        "label": "Lesson connection",
+        "stage": 1,
+        "recorded": false
+      },
+      {
+        "id": "check",
+        "label": "What I checked",
+        "stage": 3,
+        "recorded": false
+      },
+      {
+        "id": "decision",
+        "label": "Keep or revise, and why",
+        "stage": 3,
+        "recorded": false
+      },
+      {
+        "id": "transfer",
+        "label": "Where else this could help",
+        "stage": 4,
+        "recorded": false
+      }
+    ],
+    "followups": [
+      {
+        "id": "evidence",
+        "message": "Explain how a lesson idea supports or challenges your response.",
+        "target": {
+          "phase": "evidence",
+          "elementId": "applied-workspace-evidence"
+        }
+      },
+      {
+        "id": "check",
+        "message": "Describe what you checked, or say what remains untested. A plan alone is not a result.",
+        "target": {
+          "phase": "testReflection",
+          "elementId": "applied-workspace-testReflection"
+        }
+      },
+      {
+        "id": "decision",
+        "message": "Explain what you will keep or revise after checking, and why.",
+        "target": {
+          "phase": "revision",
+          "elementId": "applied-workspace-revision"
+        }
+      },
+      {
+        "id": "transfer",
+        "message": "Name another situation where this lesson idea could help.",
+        "target": {
+          "phase": "transferReflection",
+          "elementId": "applied-workspace-transferReflection"
+        }
+      }
+    ]
+  },
+  "calls": {
+    "ai": 0,
+    "search": 0
+  }
+}

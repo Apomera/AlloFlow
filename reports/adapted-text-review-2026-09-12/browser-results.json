@@ -1,0 +1,41 @@
+[
+  {
+    "width": 320,
+    "studentControls": true,
+    "teacherBoundaries": true,
+    "keyboardExplain": true,
+    "popupBounds": true,
+    "focusRestored": true,
+    "largeTextReflow": true,
+    "explicitAdjustment": true,
+    "bilingualRtl": true,
+    "seriousAxeViolations": [],
+    "errors": []
+  },
+  {
+    "width": 390,
+    "studentControls": true,
+    "teacherBoundaries": true,
+    "keyboardExplain": true,
+    "popupBounds": true,
+    "focusRestored": true,
+    "largeTextReflow": true,
+    "explicitAdjustment": true,
+    "bilingualRtl": true,
+    "seriousAxeViolations": [],
+    "errors": []
+  },
+  {
+    "width": 1280,
+    "studentControls": true,
+    "teacherBoundaries": true,
+    "keyboardExplain": true,
+    "popupBounds": true,
+    "focusRestored": true,
+    "largeTextReflow": true,
+    "explicitAdjustment": true,
+    "bilingualRtl": true,
+    "seriousAxeViolations": [],
+    "errors": []
+  }
+]

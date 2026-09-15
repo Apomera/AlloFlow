@@ -1,0 +1,64 @@
+{
+  "layouts": [
+    {
+      "viewport": 1280,
+      "width": 1280,
+      "height": 1428,
+      "firstFieldTop": 829.25,
+      "visibleFields": 1
+    },
+    {
+      "viewport": 390,
+      "width": 390,
+      "height": 2307,
+      "firstFieldTop": 1160,
+      "visibleFields": 1
+    },
+    {
+      "viewport": 320,
+      "width": 320,
+      "height": 2578,
+      "firstFieldTop": 1378.5,
+      "visibleFields": 1
+    }
+  ],
+  "checks": [
+    {
+      "name": "Understand 1280",
+      "accessibility": []
+    },
+    {
+      "name": "Understand 390",
+      "accessibility": []
+    },
+    {
+      "name": "Understand 320",
+      "accessibility": []
+    },
+    {
+      "name": "Explore with linked evidence 390",
+      "accessibility": []
+    },
+    {
+      "name": "Check and revise 390",
+      "accessibility": []
+    },
+    {
+      "name": "Student five-stage flow, artifact, source-linked evidence, retained feedback, template isolation",
+      "passed": true
+    },
+    {
+      "name": "Compact local check 320",
+      "accessibility": []
+    },
+    {
+      "name": "Teacher authoring with reviewed illustration 390",
+      "accessibility": []
+    },
+    {
+      "name": "Teacher multiline editing and illustration review",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

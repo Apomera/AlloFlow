@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "implementedLocally": true,
+  "deployed": false,
+  "regression": {
+    "testFiles": 28,
+    "tests": 458,
+    "passed": 458,
+    "failed": 0,
+    "report": "regressions.json"
+  },
+  "finalFocused": {
+    "testFiles": 3,
+    "tests": 55,
+    "passed": 55,
+    "report": "focused-tests.json",
+    "overlapsRegression": true
+  },
+  "browser": {
+    "widths": [
+      1280,
+      390,
+      320
+    ],
+    "scans": 20,
+    "report": "browser-verification.json"
+  },
+  "classroom": {
+    "browsers": 4,
+    "scans": 20,
+    "supportChars": 26234,
+    "completedDocumentChars": 35272,
+    "report": "live/verification.json"
+  },
+  "limitations": [
+    "Configured in-app image provider was mocked with real generated sample assets.",
+    "Classroom transport used the production adapter and a local Code.gs sandbox.",
+    "No deployment or learner pilot was performed."
+  ]
+}

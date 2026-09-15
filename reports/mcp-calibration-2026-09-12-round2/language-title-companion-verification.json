@@ -1,0 +1,24 @@
+{
+  "sourceSha256": "8018c9c074b609d5dd7a94a50e516a0d886ead8b375cb052c80f77e90188dfd6",
+  "moduleSha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3",
+  "desktopModuleSha256": "1c8dbf4558d93a1d19d768863bc93f259a903143f7505c35398bcd65ab7b94e3",
+  "sourceBabelParse": true,
+  "generatedSyntaxParse": true,
+  "shippingMirrorsEqual": true,
+  "sourceLfOnly": true,
+  "existingNulBytes": 3,
+  "beforeCompanion": {
+    "passed": 8,
+    "failed": 2,
+    "total": 10
+  },
+  "afterCompanion": {
+    "passed": 53,
+    "failed": 0,
+    "total": 53
+  },
+  "buildCommand": "node _build_doc_pipeline_module.js",
+  "integrityCommand": "node check-pipeline-integrity.js",
+  "testCommand": "node node_modules/vitest/vitest.mjs run tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js tests/ell_language.test.js tests/structural_foundations_advisory.test.js tests/foundation_batch_fix.test.js --maxWorkers=1",
+  "companionScope": "Two attribute-aware title predicates only: structural inventory and requested structural title fallback. Existing nonempty-title semantics, labels, thresholds and source prose preserved."
+}

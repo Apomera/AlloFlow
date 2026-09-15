@@ -1,0 +1,15 @@
+{
+  "verifiedAt": "2026-09-12T15:48:07.555Z",
+  "unit": {
+    "passed": 84,
+    "failed": 0,
+    "report": "final-unit.json"
+  },
+  "browser": {
+    "passed": 8,
+    "status": "passed",
+    "failedTests": [],
+    "report": "final-browser/.last-run.json"
+  },
+  "runtimeMirrorsIdentical": true
+}

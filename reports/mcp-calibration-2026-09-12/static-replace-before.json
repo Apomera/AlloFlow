@@ -1,0 +1,24 @@
+{
+  "evidenceClass": "Historical baseline isolated-DOM reproduction of the production export sanitizer; not a live MCP verdict, real-browser rendering result, or human acceptance.",
+  "capturedAt": "2026-09-12T22:57:05.081Z",
+  "sourcePath": "doc_pipeline_source.jsx",
+  "sourceSha256": "7b6391a04185b9f0da51430fd5041d97ec6623d8aef443182c5f97695fe24a2a",
+  "candidatePath": "reports/mcp-calibration-2026-09-12/continuation-replayed-candidate.html",
+  "candidateSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+  "sanitizer": "_alloSanitizeRemediationHtml",
+  "method": "Extract the actual sanitizer and CSS helpers from the captured source; sanitize candidate; assign a test File to the retained generated input; dispatch change while spying on FileReader; compare image source.",
+  "beforeInputCount": 1,
+  "afterInputCount": 1,
+  "beforeChangeHandlerPresent": true,
+  "afterChangeHandler": null,
+  "visibleLabel": "Replace",
+  "fileReaderCalls": 0,
+  "imageSourceUnchanged": true,
+  "remainingCropButtons": 1,
+  "runtimeLimitations": [
+    "jsdom cannot establish real-browser visual layout or native file-picker behavior; this verifies event-handler removal and resulting image-update behavior."
+  ],
+  "consoleMessages": [
+    "Could not parse CSS stylesheet"
+  ]
+}

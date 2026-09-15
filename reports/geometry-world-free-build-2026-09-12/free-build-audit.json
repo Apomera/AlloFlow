@@ -1,0 +1,853 @@
+{
+  "scope": "Current local production; Free Build native entry and controls, fixture model for selection/showcase; one WebGL page at a time",
+  "checks": {
+    "desktopEntry": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 0 placed\n⭐ 0/0\n📝\nEstimate\n📋\nObjectives\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 0 Y 16 Z -2\nN\n16°\n🔇 SR OFF\nMatch\nFly\nHome\nClear\n!\nLook down at the nearby ground or a block face, then press B or tap Place.\nAim at build area\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nSANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at the ground and press B to add your first block. Then choose Select build to inspect your creation.\n\nBuilding with\nMaterial\n🪨 Stone\nShape\n⬜ Cube\n0° rotation\nMatch aimed block\nI\n\nAim at a block to reuse its material, shape, and rotation.\n\nYour creation\n0\nPlaced\n—\nSelected\n—\nBlock bounds\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options\nFree Build Sandbox opened. Aim at the ground and press B to add your first block.",
+      "controls": [
+        {
+          "text": "Geometry World home",
+          "class": "gw-home-brand-button",
+          "disabled": false,
+          "rect": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open volume estimate drawer",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1118,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open lesson objectives",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1210.40625,
+            "y": 7,
+            "w": 95.6875,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open game settings and tools",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Hide the Geometry World game bar",
+          "class": "gw-compact-action gw-toolbar-collapse gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Next shape. Shortcut Q",
+          "class": "gw-shape-heading gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Rotate selected shape. Current rotation 0 degrees",
+          "class": "gw-focusable gw-shape-rotate",
+          "disabled": true,
+          "rect": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Cube shape, 1 cubic unit, currently selected",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Position",
+          "class": "",
+          "rect": {
+            "x": 19,
+            "y": 813.5,
+            "w": 71.5,
+            "h": 15
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Toggle coordinate screen-reader announcements (key C)",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Match aimed block",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 577,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Toggle fly mode",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 655.375,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Return to spawn point",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 716.375,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Clear my placed blocks",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 793.625,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Aim at the build area",
+          "class": "gw-placement-aim gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 518,
+            "y": 678,
+            "w": 108.90625,
+            "h": 28
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Enter fullscreen for the Geometry World workspace",
+          "class": "gw-viewport-control gw-viewport-control--fullscreen gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Collapse Free Build Studio",
+          "class": "gwe-collapse",
+          "disabled": false,
+          "rect": {
+            "x": 1368,
+            "y": 133,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select and measure aimed build",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Send selected build to Print Lab",
+          "class": "gwe-primary",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Match aimed block",
+          "class": "gwe-match-block",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 478.671875,
+            "w": 314,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "💾 Save editable world",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 707.671875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": true
+        },
+        {
+          "text": "📂 Open editable world",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 707.671875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Workspace options",
+          "class": "",
+          "rect": {
+            "x": 1098,
+            "y": 776.859375,
+            "w": 314,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "📘 Choose guided lesson",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 822.859375,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": false
+        },
+        {
+          "text": "✨ Start a fresh sandbox",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 822.859375,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": false
+        }
+      ],
+      "overflow": false,
+      "world": {
+        "x": 10,
+        "y": 63,
+        "w": 1420,
+        "h": 827
+      },
+      "center": "<canvas aria-hidden=\"true\" style=\"width: 100%; height: 100%; display: block; touch-action: none; user-select: none;\" width=\"1418\" height=\"825\"></canvas>",
+      "state": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 625,
+        "studentBlocks": 0,
+        "studentShapes": {},
+        "npcCount": 0,
+        "camera": {
+          "x": 0,
+          "y": 16.053158083801492,
+          "z": -1.2365579966873597
+        },
+        "yaw": -0.1669211404108807
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": false,
+          "code": "no_target",
+          "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+          "aim": true
+        },
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 0,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": false,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "inventory"
+      },
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.\" aria-describedby=\"geoworld-instructions\" tabindex=\"0\" class=\"gw-viewport\" style=\"flex: 1 1 0%; position: relati"
+    },
+    "firstNativeB": {
+      "text": "Geometry World\nFree Build Sandbox\n🧱 1 placed\n⭐ 0/0\n📝\nEstimate\n📋\nObjectives\n⚙️\nMenu\n▲\nShape\nQ\n↻\n0°\nR\n1\n½\n½\n¼\nStone\n1\nGrass\n2\nWood\n3\nDiamond\n4\nGold\n5\nSand\n6\nGlass\n7\nWater\n8\nBrick\n9\nIce\n0\nLava\n-\nTorch\n=\nPosition\nX 0 Y 3 Z -2\nN\n16°\nTARGETX 0 Y 0 Z -1\n🔇 SR OFF\nMatch\nFly\nUndo\n1\nHome\nClear\n!\nThis cell already has a block\nClick the world to look\nInteractive 3D world. W A S D to move, Space to jump, arrow keys to look around without a mouse. B builds a block where you are facing and X breaks one. E talks to the character you are facing, M measures the structure you are facing, T is the ruler, N unfolds a net for surface area, Q changes block shape, R rotates it, L gives directions to your tracked guide, or nearby characters when nothing is tracked, H returns to the start, C toggles spoken coordinates. Click the world to capture the mouse for looking; Escape releases it and closes overlays.\n⛶\nSANDBOX MODE\nFree Build Studio\n−\n1\nSelect\n2\nInspect\n3\nPrint Lab\nSelect build\nSend to Print Lab\n\nAim at the ground and press B to add your first block. Then choose Select build to inspect your creation.\n\nBuilding with\nMaterial\n🪨 Stone\nShape\n⬜ Cube\n0° rotation\nMatch aimed block\nI\n\nAim at a block to reuse its material, shape, and rotation.\n\nYour creation\n1\nPlaced\n—\nSelected\n—\nBlock bounds\nKeep your work\n💾 Save editable world\n📂 Open editable world\nWorkspace options\nFree Build Sandbox opened. Aim at the ground and press B to add your first block.",
+      "controls": [
+        {
+          "text": "Geometry World home",
+          "class": "gw-home-brand-button",
+          "disabled": false,
+          "rect": {
+            "x": 52,
+            "y": 10.875,
+            "w": 110.4375,
+            "h": 17.25
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open volume estimate drawer",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1118,
+            "y": 7,
+            "w": 86.40625,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open lesson objectives",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1210.40625,
+            "y": 7,
+            "w": 95.6875,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Open game settings and tools",
+          "class": "gw-compact-action gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1312.09375,
+            "y": 7,
+            "w": 71.90625,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Hide the Geometry World game bar",
+          "class": "gw-compact-action gw-toolbar-collapse gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1390,
+            "y": 7,
+            "w": 40,
+            "h": 40
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Next shape. Shortcut Q",
+          "class": "gw-shape-heading gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 566.265625,
+            "y": 789,
+            "w": 72.46875,
+            "h": 24
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Rotate selected shape. Current rotation 0 degrees",
+          "class": "gw-focusable gw-shape-rotate",
+          "disabled": true,
+          "rect": {
+            "x": 641.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Cube shape, 1 cubic unit, currently selected",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 688.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Half (diagonal) shape, Cut diagonally = ½ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 735.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Half (horizontal) shape, Cut horizontally = ½ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 782.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select Quarter wedge shape, Cut into quarters = ¼ cubic unit",
+          "class": "gw-focusable gw-shape-item",
+          "disabled": false,
+          "rect": {
+            "x": 829.734375,
+            "y": 779,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Position",
+          "class": "",
+          "rect": {
+            "x": 19,
+            "y": 791.5,
+            "w": 99.390625,
+            "h": 15
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Toggle coordinate screen-reader announcements (key C)",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 19,
+            "y": 866,
+            "w": 59.78125,
+            "h": 18
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Match aimed block",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 528.8203125,
+            "y": 720,
+            "w": 75.375,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Toggle fly mode",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 607.1953125,
+            "y": 720,
+            "w": 58,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Undo last action",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 668.1953125,
+            "y": 720,
+            "w": 93.359375,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Return to spawn point",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 764.5546875,
+            "y": 720,
+            "w": 74.25,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Clear my placed blocks",
+          "class": "gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 841.8046875,
+            "y": 720,
+            "w": 69.375,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Enter fullscreen for the Geometry World workspace",
+          "class": "gw-viewport-control gw-viewport-control--fullscreen gw-focusable",
+          "disabled": false,
+          "rect": {
+            "x": 1383,
+            "y": 74,
+            "w": 36,
+            "h": 36
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Collapse Free Build Studio",
+          "class": "gwe-collapse",
+          "disabled": false,
+          "rect": {
+            "x": 1368,
+            "y": 133,
+            "w": 44,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Select and measure aimed build",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Send selected build to Print Lab",
+          "class": "gwe-primary",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 232,
+            "w": 153,
+            "h": 48
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Match aimed block",
+          "class": "gwe-match-block",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 478.671875,
+            "w": 314,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "💾 Save editable world",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 707.671875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": true
+        },
+        {
+          "text": "📂 Open editable world",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 707.671875,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": true
+        },
+        {
+          "text": "Workspace options",
+          "class": "",
+          "rect": {
+            "x": 1098,
+            "y": 776.859375,
+            "w": 314,
+            "h": 44
+          },
+          "atCenter": true
+        },
+        {
+          "text": "📘 Choose guided lesson",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1098,
+            "y": 822.859375,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": false
+        },
+        {
+          "text": "✨ Start a fresh sandbox",
+          "class": "",
+          "disabled": false,
+          "rect": {
+            "x": 1259,
+            "y": 822.859375,
+            "w": 153,
+            "h": 51.1875
+          },
+          "atCenter": false
+        }
+      ],
+      "overflow": false,
+      "world": {
+        "x": 10,
+        "y": 63,
+        "w": 1420,
+        "h": 827
+      },
+      "center": "<canvas aria-hidden=\"true\" style=\"width: 100%; height: 100%; display: block; touch-action: none; user-select: none;\" width=\"1418\" height=\"825\"></canvas>",
+      "state": {
+        "lessonTitle": "Free Build Sandbox",
+        "totalBlocks": 626,
+        "studentBlocks": 1,
+        "studentShapes": {
+          "cube": 1
+        },
+        "npcCount": 0,
+        "camera": {
+          "x": 0,
+          "y": 3.6,
+          "z": -1.2365579966873597
+        },
+        "yaw": -0.1669211404108807
+      },
+      "data": {
+        "_introShownOnce": true,
+        "worldActive": true,
+        "renderQuality": "saver",
+        "autoCycle": false,
+        "showGeometryHome": false,
+        "geometryHomePage": "build",
+        "_geometryHomeInitial": false,
+        "showLessonIntro": false,
+        "showSandboxLauncher": false,
+        "showGameSettings": false,
+        "showPredictionPanel": false,
+        "objectivesOpen": false,
+        "showNpcDialog": false,
+        "showHelp": false,
+        "showReflection": false,
+        "showMyLessons": false,
+        "showLessonEditor": false,
+        "showCreatorPanel": false,
+        "creatorMode": false,
+        "showGrowthNudge": false,
+        "showTeacherView": false,
+        "showPeerWorlds": false,
+        "placementHint": {
+          "allowed": true,
+          "code": "ready",
+          "reason": "Ready to build"
+        },
+        "totalQ": 0,
+        "score": 0,
+        "answeredNpcs": {},
+        "npcFollowUpStep": {},
+        "npcChatHistory": {},
+        "blocksPlaced": 1,
+        "measureResult": null,
+        "measureHistory": [],
+        "volumePrediction": "",
+        "volumeEstimateCommitment": null,
+        "volumeEstimateObservedTargets": [],
+        "volumeEstimateCommitError": "",
+        "predictionStrategy": "",
+        "predictionReason": "",
+        "predictionResult": null,
+        "predictionRevision": "",
+        "predictionRevisionResult": null,
+        "predictionReflection": "",
+        "builderPrintContext": null,
+        "builderPrintCheck": null,
+        "builderPanel": "build",
+        "sandboxDockCollapsed": false,
+        "activeLesson": "builderSandbox",
+        "tutorialDismissed": true,
+        "hudPreset": "builder",
+        "hudPanel": "inventory"
+      },
+      "active": "<div id=\"geoworld-fs-wrap\" role=\"application\" aria-label=\"Free Build Sandbox — interactive 3D world. 0 of 0 questions answered.\" aria-describedby=\"geoworld-instructions\" tabindex=\"0\" class=\"gw-viewport\" style=\"flex: 1 1 0%; position: relati",
+      "toasts": [
+        {
+          "message": "Free Build Sandbox opened. Aim at the ground and press B to add your first block.",
+          "kind": "success"
+        },
+        {
+          "message": "🎉 Your first block! Keep building!",
+          "kind": "success"
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "failure": "page.waitForFunction: Timeout 90000ms exceeded.\n    at eval (<anonymous>:51:14)"
+}

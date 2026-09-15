@@ -1,0 +1,44 @@
+{
+  "scenarios": [
+    "Regulator, positive output probes, reverse-breakdown package state, current-range warnings and read-only curve exploration",
+    "Editable knee and slope, forward/reverse polarity, undo and existing silicon/Schottky models",
+    "Time-varying line regulation with shared held/live operating markers and load/source scope comparison",
+    "Opposed Zeners exchange forward and reverse-breakdown roles across both signal polarities",
+    "Failed circuits retain editable models and curves while hiding invalid operating points",
+    "Saved curve settings, desktop/phone labels, model assumptions and zero scoped accessibility violations"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "examples": [
+    {
+      "id": "zener-regulator",
+      "solved": true,
+      "clearRoutes": true,
+      "clearLabels": true
+    },
+    {
+      "id": "zener-line",
+      "solved": true,
+      "clearRoutes": true,
+      "clearLabels": true
+    },
+    {
+      "id": "zener-limiter",
+      "solved": true,
+      "clearRoutes": true,
+      "clearLabels": true
+    }
+  ]
+}

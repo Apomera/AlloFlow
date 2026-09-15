@@ -1,0 +1,165 @@
+{
+  "passed": true,
+  "transport": "Production Class Mailbox adapter and Code.gs sandbox",
+  "mailboxVersion": 23,
+  "browsers": 4,
+  "visuals": {
+    "compactSupportChars": 27297,
+    "uniqueAssets": 3,
+    "imagesOmitted": 0,
+    "learnerEditsRejected": true,
+    "hidePicturesReloadPreservesRun": true,
+    "reviewedActivities": 3,
+    "guidePrivate": true,
+    "guideReload": true,
+    "pictureAnswerUsesExistingResponse": true,
+    "reviewOnlyDefinitions": true,
+    "lateJoinSupport": true,
+    "restartPreservesSupport": true,
+    "noImagesInMoveHistory": true
+  },
+  "sharing": {
+    "privateNoSharedWrites": true,
+    "optionalNameBlank": true,
+    "otherLearnersExcluded": true,
+    "separateTeacherDemonstration": true,
+    "htmlAndTextDownloads": true,
+    "restartClearsView": true
+  },
+  "adaptiveReplay": {
+    "draftReload": true,
+    "feedbackReload": true,
+    "privateNoSharedWrites": true,
+    "pausedControls": true,
+    "finalePreserved": true,
+    "restartClearsView": true
+  },
+  "world": {
+    "beforeComparison": true,
+    "builtLandmarks": true
+  },
+  "finale": {
+    "completed": true,
+    "studentReload": true,
+    "privateNoSharedWrites": true,
+    "separateTeacherPlan": true,
+    "pausedEditsDisabled": true,
+    "export": true,
+    "restartClearsView": true
+  },
+  "constructionGoals": {
+    "selectionsPrivate": true,
+    "studentReload": true,
+    "teacherRemount": true
+  },
+  "ai": "Fixture provider; invalid then repaired JSON",
+  "writes": 37,
+  "completedDocumentChars": 36335,
+  "scans": [
+    {
+      "label": "import review",
+      "violations": []
+    },
+    {
+      "label": "replace saved confirmation",
+      "violations": []
+    },
+    {
+      "label": "teacher setup",
+      "violations": []
+    },
+    {
+      "label": "expanded board editor",
+      "violations": []
+    },
+    {
+      "label": "illustrated shared board",
+      "violations": []
+    },
+    {
+      "label": "shared picture challenge and guide",
+      "violations": []
+    },
+    {
+      "label": "shared vocabulary review",
+      "violations": []
+    },
+    {
+      "label": "resolved class learning",
+      "violations": []
+    },
+    {
+      "label": "late join settings mobile",
+      "violations": []
+    },
+    {
+      "label": "waiting for responses",
+      "violations": []
+    },
+    {
+      "label": "order 320",
+      "violations": []
+    },
+    {
+      "label": "order 390",
+      "violations": []
+    },
+    {
+      "label": "order 768",
+      "violations": []
+    },
+    {
+      "label": "order 1280",
+      "violations": []
+    },
+    {
+      "label": "order dark",
+      "violations": []
+    },
+    {
+      "label": "200 percent text",
+      "violations": []
+    },
+    {
+      "label": "text spacing",
+      "violations": []
+    },
+    {
+      "label": "forced colors",
+      "violations": []
+    },
+    {
+      "label": "teacher activity",
+      "violations": []
+    },
+    {
+      "label": "completion",
+      "violations": []
+    },
+    {
+      "label": "completed class learning",
+      "violations": []
+    },
+    {
+      "label": "private completed finale restored",
+      "violations": []
+    },
+    {
+      "label": "private adaptive route restored",
+      "violations": []
+    },
+    {
+      "label": "private learning summary preview",
+      "violations": []
+    },
+    {
+      "label": "separate learner learning summary",
+      "violations": []
+    },
+    {
+      "label": "teacher demonstration summary",
+      "violations": []
+    }
+  ],
+  "consoleErrors": []
+}

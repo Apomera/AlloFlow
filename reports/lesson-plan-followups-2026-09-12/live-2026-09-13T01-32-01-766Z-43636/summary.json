@@ -1,0 +1,33 @@
+{
+  "mode": "prepare-browser",
+  "startedAt": "2026-09-13T01:32:01.766Z",
+  "status": "prepared",
+  "providerCalls": 0,
+  "validationRequests": 0,
+  "checks": {
+    "promptPrepared": true
+  },
+  "limitations": [
+    "Headless synthetic fixture; actual app navigation, browser controls, and operating-system clipboard are not exercised."
+  ],
+  "artifacts": {
+    "research.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lesson-plan-followups-2026-09-12\\live-2026-09-13T01-32-01-766Z-43636\\research.json",
+    "bundle.json": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lesson-plan-followups-2026-09-12\\live-2026-09-13T01-32-01-766Z-43636\\bundle.json",
+    "prompt.txt": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\lesson-plan-followups-2026-09-12\\live-2026-09-13T01-32-01-766Z-43636\\prompt.txt"
+  },
+  "generationPath": "not-run",
+  "researchOrigin": "actual public guidance reader, matched catalog directly",
+  "research": {
+    "status": "retrieved",
+    "sources": 1,
+    "recommendationCount": 6,
+    "warnings": [
+      "Could not use \"Developing Effective Fractions Instruction for Kindergarten Through 8th Grade\": Public guidance retrieval timed out.",
+      "Retrieved guidance supports the teaching approach; the generated script has not been evaluated as an intervention."
+    ]
+  },
+  "directProviderIntegration": "not-tested",
+  "finishedAt": "2026-09-13T01:32:29.037Z",
+  "elapsedMs": 27271,
+  "statuses": []
+}

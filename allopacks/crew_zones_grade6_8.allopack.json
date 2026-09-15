@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "Where Am I Right Now?",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Where Am I Right Now?\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility HOWL asks you to **participate** fully and **mindfully**. Fully means you are in the room, not just your body. Mindfully means you notice what is going on inside you and make a choice about it. You cannot do either one if you do not know where you are right now.\n\nYour body and brain are always in some **state**. Sometimes you are calm and ready. Sometimes you are buzzing, restless, or on edge. Sometimes you are heavy, foggy, or checked out. None of these states is bad. They are information. The problem is not being in a state. The problem is not knowing it, and then trying to do hard learning from a state that cannot do hard learning.\n\nOne way to name your state is to use **zones**. Green is calm and ready. Yellow is revved up: excited, nervous, frustrated, silly. Red is overwhelmed: too much to think. Blue is low: tired, sad, bored, foggy. You do not need to be green all the time. You need to know which zone you are in so you can pick a move.\n\nAnother way to picture the same idea is a **window**. Inside your window, you can think, listen, and try things. Above the window, you are too **activated** to take in anything. Below it, you are too shut down. Every person's window is a different size, and it changes with sleep, food, stress, and what happened in the hallway two minutes ago. The goal is not a bigger window by Friday. The goal is to notice when you have left it and to know one thing that brings you back.\n\nHere is a fictional Crew moment. It is Tuesday. Priya walks into Crew after a hallway argument. Her jaw is tight. Her leg is bouncing. When the Crew leader asks the group to name a zone in one word, Priya says \"yellow.\" That one word does two things. It tells Priya what is true. And it tells the Crew leader that Priya may need a minute before she is asked to share. Nobody makes it a big deal. Priya takes three slow breaths, drops her shoulders, and by the time it is her turn to share, she is closer to green.\n\nNaming your state is not an excuse. \"I am in red\" does not mean you get to leave. It means you know what you need to do first. A two-minute **reset**, a drink of water, a **sensory** move, a quiet check-in with the Crew leader. Then you come back and participate. That is the mindful part of \"fully and mindfully.\" You are responsible for knowing where you are, and for the first move back.\n\nThis week you practice the one-word check-in. Not because Crew wants to know your business, but because knowing where you are is the first responsibility of a learner.",
+      "data": "## Where Am I Right Now?\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nThe Responsibility **HOWL** asks you to **participate** fully and **mindfully**. Fully means you are in the room, not just your body. Mindfully means you notice what is going on inside you and make a choice about it. You cannot do either one if you do not know where you are right now.\n\nYour body and brain are always in some **state**. Sometimes you are calm and ready. Sometimes you are buzzing, restless, or on edge. Sometimes you are heavy, foggy, or checked out. None of these states is bad. They are information. The problem is not being in a state. The problem is not knowing it, and then trying to do hard learning from a state that cannot do hard learning.\n\nOne way to name your state is to use **zones**. Green is calm and ready. Yellow is revved up: excited, nervous, frustrated, silly. Red is overwhelmed: too much to think. Blue is low: tired, sad, bored, foggy. You do not need to be green all the time. You need to know which zone you are in so you can pick a move.\n\nAnother way to picture the same idea is a **window**. Inside your window, you can think, listen, and try things. Above the window, you are too **activated** to take in anything. Below it, you are too shut down. Every person's window is a different size, and it changes with sleep, food, stress, and what happened in the hallway two minutes ago. The goal is not a bigger window by Friday. The goal is to notice when you have left it and to know one thing that brings you back.\n\nHere is a fictional **Crew** moment. It is Tuesday. Priya walks into Crew after a hallway argument. Her jaw is tight. Her leg is bouncing. When the Crew leader asks the group to name a zone in one word, Priya says \"yellow.\" That one word does two things. It tells Priya what is true. And it tells the Crew leader that Priya may need a minute before she is asked to share. Nobody makes it a big deal. Priya takes three slow breaths, drops her shoulders, and by the time it is her turn to share, she is closer to green.\n\nNaming your state is not an excuse. \"I am in red\" does not mean you get to leave. It means you know what you need to do first. A two-minute **reset**, a drink of water, a **sensory** move, a quiet check-in with the Crew leader. Then you come back and participate. That is the mindful part of \"fully and mindfully.\" You are responsible for knowing where you are, and for the first move back.\n\nThis week you practice the one-word check-in. Not because Crew wants to know your business, but because knowing where you are is the first responsibility of a learner.",
       "meta": "6th-8th Grade • Leveled reading • ~500 words"
     },
     {
@@ -105,9 +105,19 @@
           "term": "Participate",
           "def": "To take part. Fully means your attention is in the room, not just your body.",
           "tier": "Academic"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
         }
       ],
-      "meta": "6th-8th Grade • 10 terms • Tiered"
+      "meta": "6th-8th Grade • 12 terms • Tiered"
     },
     {
       "id": "cz-anchor",
@@ -361,6 +371,14 @@
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": [
         {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
           "question": "Do I have to tell the Crew why I am in yellow?",
           "answer": "No. The one-word check-in is the word, not the story. You can always pass."
         },
@@ -381,7 +399,7 @@
           "answer": "The Responsibility HOWL says you participate fully and mindfully. Knowing your state and making the first move back is the mindful part. Teachers see it as being in the room."
         }
       ],
-      "meta": "5 questions"
+      "meta": "7 questions"
     },
     {
       "id": "cz-memory",

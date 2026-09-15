@@ -1,0 +1,994 @@
+[
+  {
+    "id": "bridge",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      }
+    ]
+  },
+  {
+    "id": "shared",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 8.673617379884035e-18
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 8.673617379884035e-18
+      }
+    ]
+  },
+  {
+    "id": "sources",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      }
+    ]
+  },
+  {
+    "id": "current",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      }
+    ]
+  },
+  {
+    "id": "rc-charge",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 391,
+        "iterations": 0,
+        "maxKCL": 1.5048726154098802e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 109,
+        "iterations": 0,
+        "maxKCL": 8.001412032943023e-17
+      }
+    ]
+  },
+  {
+    "id": "rl-start",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 397,
+        "iterations": 0,
+        "maxKCL": 2.0139055353918245e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 110,
+        "iterations": 0,
+        "maxKCL": 1.3877787807814457e-17
+      }
+    ]
+  },
+  {
+    "id": "rlc-ring",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 1963,
+        "iterations": 0,
+        "maxKCL": 1.4280243654241076e-14
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 206,
+        "iterations": 0,
+        "maxKCL": 2.831068712794149e-15
+      }
+    ]
+  },
+  {
+    "id": "bridge-settle",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 383,
+        "iterations": 0,
+        "maxKCL": 2.8086257278236992e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 108,
+        "iterations": 0,
+        "maxKCL": 3.91928243331785e-15
+      }
+    ]
+  },
+  {
+    "id": "lc-energy",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 3897,
+        "iterations": 0,
+        "maxKCL": 1.3992279557228926e-14
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 372,
+        "iterations": 0,
+        "maxKCL": 2.08080080943418e-14
+      }
+    ]
+  },
+  {
+    "id": "sine-filter",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2429,
+        "iterations": 0,
+        "maxKCL": 1.835554278017959e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 409,
+        "iterations": 0,
+        "maxKCL": 5.4752209710517974e-17
+      }
+    ]
+  },
+  {
+    "id": "pulse-smooth",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 1829,
+        "iterations": 0,
+        "maxKCL": 1.0026701691145945e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 440,
+        "iterations": 0,
+        "maxKCL": 1.2918268885164785e-15
+      }
+    ]
+  },
+  {
+    "id": "triangle-current",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2109,
+        "iterations": 0,
+        "maxKCL": 3.627740469136498e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 430,
+        "iterations": 0,
+        "maxKCL": 2.25730892311482e-16
+      }
+    ]
+  },
+  {
+    "id": "switch-hold",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 393,
+        "iterations": 0,
+        "maxKCL": 1.5048726154098802e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 112,
+        "iterations": 0,
+        "maxKCL": 1.5308934675495323e-16
+      }
+    ]
+  },
+  {
+    "id": "switch-discharge",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 494,
+        "iterations": 0,
+        "maxKCL": 1.8257964584655895e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 112,
+        "iterations": 0,
+        "maxKCL": 1.97758476261356e-16
+      }
+    ]
+  },
+  {
+    "id": "switch-flyback",
+    "dcOK": false,
+    "dcMessage": "No consistent DC solution. Check for conflicting ideal voltage sources, a wire shorting a voltage source, or a current source without a return path.",
+    "baselineDCOK": false,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 280,
+        "iterations": 0,
+        "maxKCL": 2.7755575615628914e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 104,
+        "iterations": 0,
+        "maxKCL": 2.7755575615628914e-17
+      }
+    ]
+  },
+  {
+    "id": "diode-half-wave",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 5,
+        "maxKCL": 4.750540238962486e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 5,
+        "maxKCL": 4.750540238962486e-15
+      }
+    ]
+  },
+  {
+    "id": "diode-bridge",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 256,
+        "iterations": 5,
+        "maxKCL": 7.144892316679474e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 256,
+        "iterations": 5,
+        "maxKCL": 7.144892316679474e-15
+      }
+    ]
+  },
+  {
+    "id": "diode-filter",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 1309,
+        "iterations": 3,
+        "maxKCL": 1.3973544543688377e-13
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 463,
+        "iterations": 3,
+        "maxKCL": 1.57818202950466e-13
+      }
+    ]
+  },
+  {
+    "id": "diode-flyback",
+    "dcOK": false,
+    "dcMessage": "The diode network did not converge. Check source return paths and add series resistance where needed. No approximate readings are shown.",
+    "baselineDCOK": false,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 100,
+        "iterations": 13,
+        "maxKCL": 2.579533808777512e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 100,
+        "iterations": 13,
+        "maxKCL": 2.7131075164277263e-15
+      }
+    ]
+  },
+  {
+    "id": "zener-regulator",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 3,
+        "maxKCL": 5.2909066017292616e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 3,
+        "maxKCL": 5.2909066017292616e-17
+      }
+    ]
+  },
+  {
+    "id": "zener-line",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 3,
+        "maxKCL": 1.6219664500383146e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 3,
+        "maxKCL": 1.6219664500383146e-16
+      }
+    ]
+  },
+  {
+    "id": "zener-limiter",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 8,
+        "maxKCL": 4.094814765043253e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 8,
+        "maxKCL": 4.094814765043253e-15
+      }
+    ]
+  },
+  {
+    "id": "diode-resistance",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 11,
+        "maxKCL": 1.734723475976807e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 11,
+        "maxKCL": 1.734723475976807e-17
+      }
+    ]
+  },
+  {
+    "id": "diode-resistance-sweep",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 256,
+        "iterations": 11,
+        "maxKCL": 4.688090193827321e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 256,
+        "iterations": 11,
+        "maxKCL": 4.688090193827321e-16
+      }
+    ]
+  },
+  {
+    "id": "zener-resistance",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 3,
+        "maxKCL": 2.949029909160572e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 3,
+        "maxKCL": 2.949029909160572e-17
+      }
+    ]
+  },
+  {
+    "id": "controlled-amplifier",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "controlled-current",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 2.168404344971009e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 2.168404344971009e-19
+      }
+    ]
+  },
+  {
+    "id": "controlled-sense",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 0,
+        "maxKCL": 0
+      }
+    ]
+  },
+  {
+    "id": "controlled-feedback",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 2.981555974335137e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 2.981555974335137e-19
+      }
+    ]
+  },
+  {
+    "id": "opamp-buffer",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "opamp-inverting",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "opamp-clipping",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 7.047314121155779e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 7.047314121155779e-19
+      }
+    ]
+  },
+  {
+    "id": "opamp-filter",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2387,
+        "iterations": 0,
+        "maxKCL": 7.274996577377735e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 405,
+        "iterations": 0,
+        "maxKCL": 3.924811864397526e-17
+      }
+    ]
+  },
+  {
+    "id": "opamp-bandwidth",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2051,
+        "iterations": 0,
+        "maxKCL": 2.710505431213761e-20
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 2051,
+        "iterations": 0,
+        "maxKCL": 2.710505431213761e-20
+      }
+    ]
+  },
+  {
+    "id": "opamp-gain-bandwidth",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2216,
+        "iterations": 0,
+        "maxKCL": 5.421010862427522e-20
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 2216,
+        "iterations": 0,
+        "maxKCL": 5.421010862427522e-20
+      }
+    ]
+  },
+  {
+    "id": "opamp-slew",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 589,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 589,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "opamp-startup",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 146,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 146,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "harmonic-triangle",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 4.336808689942018e-19
+      }
+    ]
+  },
+  {
+    "id": "harmonic-clipping",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 1.0842021724855044e-19
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 0,
+        "maxKCL": 1.0842021724855044e-19
+      }
+    ]
+  },
+  {
+    "id": "harmonic-smoothing",
+    "dcOK": true,
+    "baselineDCOK": true,
+    "unchanged": true,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 2292,
+        "iterations": 0,
+        "maxKCL": 2.418204525511669e-15
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 457,
+        "iterations": 0,
+        "maxKCL": 1.2107285660145628e-15
+      }
+    ]
+  },
+  {
+    "id": "bjt-npn-switch",
+    "dcOK": true,
+    "baselineDCOK": null,
+    "unchanged": null,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 390,
+        "iterations": 17,
+        "maxKCL": 2.0816681711721685e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 390,
+        "iterations": 17,
+        "maxKCL": 2.0816681711721685e-16
+      }
+    ]
+  },
+  {
+    "id": "bjt-pnp-switch",
+    "dcOK": true,
+    "baselineDCOK": null,
+    "unchanged": null,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 390,
+        "iterations": 23,
+        "maxKCL": 3.859759734048396e-16
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 390,
+        "iterations": 23,
+        "maxKCL": 3.859759734048396e-16
+      }
+    ]
+  },
+  {
+    "id": "bjt-follower",
+    "dcOK": true,
+    "baselineDCOK": null,
+    "unchanged": null,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 16,
+        "maxKCL": 5.312590645178972e-18
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 16,
+        "maxKCL": 5.312590645178972e-18
+      }
+    ]
+  },
+  {
+    "id": "bjt-amplifier",
+    "dcOK": true,
+    "baselineDCOK": null,
+    "unchanged": null,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 384,
+        "iterations": 15,
+        "maxKCL": 9.259086553026208e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 384,
+        "iterations": 15,
+        "maxKCL": 9.259086553026208e-17
+      }
+    ]
+  },
+  {
+    "id": "bjt-mirror",
+    "dcOK": true,
+    "baselineDCOK": null,
+    "unchanged": null,
+    "runs": [
+      {
+        "integration": "backward-euler",
+        "ok": true,
+        "steps": 0,
+        "iterations": 18,
+        "maxKCL": 3.8163916471489756e-17
+      },
+      {
+        "integration": "trapezoidal",
+        "ok": true,
+        "steps": 0,
+        "iterations": 18,
+        "maxKCL": 3.8163916471489756e-17
+      }
+    ]
+  }
+]

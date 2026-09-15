@@ -1,0 +1,19 @@
+{
+  "childrenAtStop": [
+    {
+      "ProcessId": 16792,
+      "Name": "conhost.exe"
+    },
+    {
+      "ProcessId": 25980,
+      "Name": "chrome-headless-shell.exe"
+    }
+  ],
+  "serverStopped": true,
+  "commandLineVerified": true,
+  "connectionRemoved": true,
+  "serverPid": 29968,
+  "terminalPoll": "poll-17.json",
+  "pendingRequests": 0,
+  "method": "Stop-Process on exact owned idle server after completed run; no broad process kill"
+}

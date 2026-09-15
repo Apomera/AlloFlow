@@ -1,0 +1,52 @@
+{
+  "skeletal": [
+    ["Why can the number of separate bones change as a child grows?", "Some developing bones fuse as the skeleton matures. The familiar adult count of 206 is a conventional reference, not a count to apply unchanged to every age.", "7-1-divisions-of-the-skeletal-system"],
+    ["Is a bone living tissue or just a hard support?", "Bone contains living cells and a blood supply. Cells build, maintain, and remove bone tissue, allowing the skeleton to grow, repair, and remodel.", "6-3-bone-structure"],
+    ["Why does bone need both minerals and collagen?", "Minerals give bone hardness, while collagen helps it resist pulling without being excessively brittle. Bone's shape and internal organization also influence how it bears a load.", "6-3-bone-structure"]
+  ],
+  "muscular": [
+    ["Why does walking need muscles that stabilize as well as muscles that move?", "Movement depends on coordinated muscle activity. Some muscles produce a movement, others oppose or control it, and others stabilize a joint or body segment. Which muscles contribute depends on the movement and how it is performed.", "11-1-interactions-of-skeletal-muscles-their-fascicle-arrangement-and-their-lever-systems"],
+    ["Does heart muscle stay contracted between beats?", "Each heartbeat includes contraction and relaxation, which allow pumping and filling. At a constant 70 beats per minute, the arithmetic gives 100,800 beats per day; actual heart rate changes with activity and other conditions.", "19-3-cardiac-cycle"],
+    ["Can a muscle produce force without visibly shortening?", "Yes. During an isometric contraction, muscle tension develops without an overall change in muscle length or joint position. Holding an object still requires force even when there is no visible movement.", "10-4-nervous-system-control-of-muscle-tension"]
+  ],
+  "circulatory": [
+    ["Why are capillary walls much thinner than arterial walls?", "Arteries carry blood under pressure and have substantial supporting walls. Capillaries have very thin walls that support exchange with tissues. Their short diffusion distance helps substances move between blood and surrounding tissues.", "20-1-structure-and-function-of-blood-vessels"],
+    ["How can heart rate and blood volume per beat tell you flow per minute?", "Cardiac output equals heart rate multiplied by stroke volume. For example, 70 beats per minute × 70 mL per beat = 4.9 L per minute. This is an illustrative calculation, not a fixed value for every person.", "19-4-cardiac-physiology"],
+    ["Why must the body keep making red blood cells?", "Red blood cells wear out and are removed, while red bone marrow produces replacements. About 120 days is a typical lifespan estimate, not an exact lifetime for every red cell.", "18-3-erythrocytes"]
+  ],
+  "nervous": [
+    ["Are neurons the only cells that help the nervous system work?", "Neurons communicate through electrical and chemical signals. Glial cells also matter: they support neurons, regulate their surroundings, and in some cases form myelin. Different cell types work together within neural circuits.", "12-2-nervous-tissue"],
+    ["Do all nerve signals travel at the same speed?", "Conduction speed varies with properties such as axon diameter and myelination. In myelinated axons, action potentials are regenerated at gaps called nodes of Ranvier. One maximum speed does not describe every nerve fiber.", "12-4-the-action-potential"],
+    ["Why do neurons need energy even between signals?", "Neurons maintain unequal ion concentrations across their membranes. ATP-powered pumps help maintain these gradients, which make electrical signaling possible. Metabolic energy use is different from electricity delivered by a battery to a light bulb.", "12-4-the-action-potential"]
+  ],
+  "lymphatic": [
+    ["Do lymph nodes and the spleen filter the same fluid?", "Lymph nodes filter lymph and bring it into contact with immune cells. The spleen monitors blood. Both support immune defense, but their fluid pathways differ.", "21-1-anatomy-of-the-lymphatic-and-immune-systems"],
+    ["What does the spleen do with aging red blood cells?", "The spleen helps remove old or damaged red blood cells and supports immune responses to material in the blood. Components of the removed cells can be recycled.", "21-1-anatomy-of-the-lymphatic-and-immune-systems"],
+    ["How can lymph move without a central pump like the heart?", "Lymph flow is helped by body movement, breathing-related pressure changes, and contractions of lymphatic vessel walls. Valves limit backward flow as fluid returns toward the venous circulation.", "21-1-anatomy-of-the-lymphatic-and-immune-systems"]
+  ],
+  "organs": [
+    ["Is the liver's only job to remove harmful substances?", "The liver processes nutrients, makes important blood proteins, produces bile, and transforms many substances. Many of these functions occur at the same time.", "23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"],
+    ["How can the small intestine increase contact with digested nutrients?", "Circular folds, villi, and microscopic microvilli increase the small intestine's absorptive surface. A fold, a villus, and a microvillus are different levels of this structure.", "23-5-the-small-and-large-intestines"],
+    ["Why is the volume of kidney filtrate much greater than the volume of urine?", "An adult reference estimate is about 180 L of filtrate per day. Kidney tubules return most filtered water and many useful solutes to the blood. Only a small fraction of the filtered fluid becomes urine.", "25-4-microscopic-anatomy-of-the-kidney"]
+  ],
+  "integumentary": [
+    ["How does the epidermis receive nutrients if it has no blood vessels?", "Nutrients diffuse to the epidermis from blood vessels in the underlying dermis. Skin has multiple layers with different structures; the outer layer does not contain its own blood vessels.", "5-1-layers-of-the-skin"],
+    ["Does the entire skin replace itself on one fixed schedule?", "Cells formed in deeper epidermal layers move toward the surface and are eventually shed. Renewal is gradual, and timing varies. The whole skin, including its dermis, does not all become new at once.", "5-1-layers-of-the-skin"],
+    ["Why can skin stretch and then partly recover its shape?", "Dermal collagen helps resist pulling, and elastic fibers help skin recoil. Stretching has limits: these tissues can be injured, and recovery depends on factors such as age and the extent of damage.", "5-1-layers-of-the-skin"]
+  ],
+  "respiratory": [
+    ["How do breathing rate and breath size determine air moved per minute?", "Minute ventilation equals breathing rate × tidal volume. For example, 12 breaths per minute × 0.5 L per breath = 6 L per minute. Some inhaled air stays in conducting airways, so not all of it reaches gas-exchange surfaces.", "22-3-the-process-of-breathing"],
+    ["Why do many small alveoli help gas exchange?", "Alveoli provide a large surface with a thin barrier between air and blood. Oxygen and carbon dioxide diffuse down their own partial-pressure gradients; air does not normally flow directly into blood vessels.", "22-4-gas-exchange"],
+    ["What pushes air out during a quiet breath?", "After inspiratory muscles relax, elastic recoil helps reduce lung volume and raise alveolar pressure above atmospheric pressure. Quiet exhalation is mainly passive; forceful exhalation recruits additional muscles.", "22-3-the-process-of-breathing"]
+  ],
+  "endocrine": [
+    ["Does the pituitary directly control every endocrine gland?", "The hypothalamus and pituitary regulate many endocrine pathways, but not every hormonal response starts there. Pancreatic islet cells, for example, respond to changes in blood nutrients as well as other signals.", "17-9-the-endocrine-pancreas"],
+    ["Do adrenaline and cortisol come from the same part of the adrenal gland?", "The adrenal medulla releases catecholamines such as adrenaline. The outer adrenal cortex produces steroid hormones, including cortisol. Different tissues and signals contribute to the body's stress response.", "17-6-the-adrenal-glands"],
+    ["Does the endocrine pancreas release only insulin?", "Pancreatic islets contain several cell types. Beta cells release insulin, and alpha cells release glucagon. These hormones have different effects that contribute to regulating blood glucose.", "17-9-the-endocrine-pancreas"]
+  ],
+  "reproductive": [
+    ["Is an ovarian follicle the same thing as an egg cell?", "An ovarian follicle contains an oocyte and surrounding supporting cells. The follicle and the oocyte are different structures, and their sizes change during development.", "27-2-anatomy-and-physiology-of-the-ovarian-reproductive-system"],
+    ["Why does a sperm cell have a head and a long tail?", "The sperm head contains the nucleus and an acrosome that contributes to fertilization. Its flagellum supports movement. Comparing cell sizes requires specifying length, width, or volume.", "27-1-anatomy-and-physiology-of-the-testicular-reproductive-system"],
+    ["Does placental exchange require maternal and fetal blood to mix directly?", "Maternal and fetal circulations normally remain separate, with exchange across placental tissues. Oxygen and nutrients pass toward the fetus, while carbon dioxide and other wastes pass toward the maternal circulation.", "28-2-embryonic-development"]
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "evidenceClass": "Real Chromium and production MCP stdio failure/recovery calibration with scripted replies; no live provider calls.",
+  "observations": [
+    {
+      "mode": "cancel",
+      "maxRunMinutes": 5,
+      "pendingRequestsBeforeInterruption": 1,
+      "firstPendingAfterMs": 13811,
+      "deadlineObservationOrigin": "first published request: the driver wall-clock timer is already armed",
+      "observedStatus": "cancelled",
+      "observedError": "Agent-bridge run cancelled",
+      "pendingAtSettlement": 0,
+      "elapsedMs": 13996,
+      "persistedStatus": "cancelled",
+      "lateReplyRejected": true,
+      "laneReleasedForResume": true,
+      "freshRequestIds": true,
+      "invalidBatchWasAtomic": true,
+      "resumedStatus": "completed",
+      "scriptedRepliesAfterResume": 11,
+      "verificationHtmlBound": true,
+      "durableCompletedStatus": "completed"
+    },
+    {
+      "mode": "deadline",
+      "maxRunMinutes": 1
+    },
+    {
+      "mode": "folder-file-deadline",
+      "maxRunMinutes": 1,
+      "pendingBeforeDeadline": 1,
+      "statusAfterDeadline": "running",
+      "failedFilesAfterDeadline": 1,
+      "oldRequestsStillPending": 0,
+      "failedFileLateReplyRejected": true,
+      "partialOutcome": "completed_with_failures",
+      "completedSiblingVerified": true,
+      "resumedCompleted": 2,
+      "resumedFailed": 0,
+      "completedSiblingReusedUnchanged": true,
+      "scriptedRepliesOnResume": 11
+    }
+  ]
+}

@@ -1,0 +1,629 @@
+{
+  "aiPromptStudent": "Eagle",
+  "aiAfterSwitch": {
+    "selected": "Falcon",
+    "visible": true,
+    "falconSummary": "EAGLE ONLY SUMMARY — audit delayed response",
+    "eagleSummary": ""
+  },
+  "frequencyButtons": [
+    {
+      "label": "Close",
+      "text": "◇"
+    },
+    {
+      "label": null,
+      "text": "Save"
+    },
+    {
+      "label": "Add one to unlabeled behavior",
+      "text": "+1"
+    },
+    {
+      "label": "Subtract one from unlabeled behavior",
+      "text": "-1"
+    },
+    {
+      "label": "+ Add",
+      "text": "+ Add"
+    },
+    {
+      "label": "Start recording",
+      "text": "▶ Start"
+    },
+    {
+      "label": "Reset all counts and timer",
+      "text": "↺ Reset"
+    }
+  ],
+  "frequencyFocus": {
+    "text": "📂 Load Workspace",
+    "label": "Load workspace from file",
+    "dialog": null
+  },
+  "frequencyCountBeforeEscape": "◇\nEAGLE\nFrequency Counter\nSave\n1\n0.0 / min\n+1\n-1\n+ Add\n⏸ Pause\n↺ Reset\n0:00\nElapsed",
+  "frequencyEscape": {
+    "stillOpen": false,
+    "observationSessions": 0
+  },
+  "toolCount": 101,
+  "panelChecks": [
+    {
+      "id": "abc",
+      "text": "Opened abc panel◇◇BehaviorLensObserve–Describe–Respond Logging(ABC Data Collection)🟡 59%💾 Local only🤖 AI: ON📤◇📋 ABC Data CollectionFor: Eagle — 3",
+      "buttons": 37,
+      "errors": []
+    },
+    {
+      "id": "datasheet",
+      "text": "Opened datasheet panel◇◇BehaviorLensData Sheet Generator🟡 59%💾 Local only🤖 AI: ON📤◇📋 Data Sheet GeneratorCollection Method🔢 Frequency Count⏱️ Du",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "sessiontracker",
+      "text": "Opened sessiontracker panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📋Session Data TrackerSystematic behavioral measurement across sessions🎯 Targ",
+      "buttons": 14,
+      "errors": []
+    },
+    {
+      "id": "ioacalc",
+      "text": "Opened ioacalc panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📊 Traditional IOA🧠 AI Coding Consistency (Experimental)🎥 Interaction Analysis📐 Se",
+      "buttons": 24,
+      "errors": []
+    },
+    {
+      "id": "taskanalysis",
+      "text": "Opened taskanalysis panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📝Task Analysis?Break skills into teachable steps with chaining and prompt track",
+      "buttons": 16,
+      "errors": []
+    },
+    {
+      "id": "dtt",
+      "text": "Opened dtt panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎯DTT Data SheetDiscrete Trial Training with mastery tracking and auto-advanceUnnamed+Pro",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "prefassess",
+      "text": "Opened prefassess panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🏆Preference Assessment Wizard?Systematically identify potent reinforcers🎯Multipl",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "latency",
+      "text": "Opened latency panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇⏱️Latency RecorderMeasure time between stimulus presentation and behavioral responseB",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "nlabc",
+      "text": "Opened nlabc panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇✏️Natural Language ABC EntryType or paste your observation notes in everyday English. A",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "batchimport",
+      "text": "Opened batchimport panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📂Batch ImportImport student profiles or historical ABC data from CSV files. Onbo",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "voiceabc",
+      "text": "Opened voiceabc panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎙️Voice-to-ABCSpeak your observations naturally. AI will extract structured ABC ent",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "opdef",
+      "text": "Opened opdef panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔬Operational Definition BuilderTurn vague descriptions into observable, measurable beh",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "overview",
+      "text": "Opened overview panel◇◇BehaviorLensBehavior Overview🟡 59%💾 Local only🤖 AI: ON📤◇📅 Date Range7 days14 days30 daysAll📋3ABC Entries🔍0Observations📅",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "hypothesis",
+      "text": "Opened hypothesis panel◇◇BehaviorLensHypothesis Diagram🟡 59%💾 Local only🤖 AI: ON📤◇🧠 Generate Hypothesis from Data🔗 Functional Hypothesis Diagram",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "triangulation",
+      "text": "Opened triangulation panel◇◇BehaviorLensData Triangulation🟡 59%💾 Local only🤖 AI: ON📤◇🔺 Data Triangulation📋ABC Data3🔍Observations0🧠AI Analysis0",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "impact",
+      "text": "Opened impact panel◇◇BehaviorLensImpact Calculator🟡 59%💾 Local only🤖 AI: ON📤◇⏱️ Impact Analysis CalculatorIncidents per dayAvg duration (min)Schoo",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "qualitycheck",
+      "text": "Opened qualitycheck panel◇◇BehaviorLensData Quality Check🟡 59%💾 Local only🤖 AI: ON📤◇Data Quality CheckerDeterministic validation first; optional A",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "trends",
+      "text": "Opened trends panel◇◇BehaviorLensTrend Dashboard🟡 59%💾 Local only🤖 AI: ON📤◇Behavior Trend Dashboard3 canonical incidents visualizedTarget behavior",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "predict",
+      "text": "Opened predict panel◇◇BehaviorLensPredictive Insights🟡 59%💾 Local only🤖 AI: ON📤◇🔮Predictive InsightsAI-powered pattern analysis with proactive pr",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "alloBotChat",
+      "text": "Opened allo Bot Chat panel◇◇BehaviorLensAsk AlloBot🟡 59%💾 Local only🤖 AI: ON📤◇🤖Ask AlloBotAI-powered behavioral analysis assistant🤖Ask me anythi",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "bcbahandoff",
+      "text": "Opened bcbahandoff panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📋BCBA Consultation & HandoffPrepare data for BCBA, school psych, or behavioral s",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "abagraph",
+      "text": "Opened abagraph panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📈ABA Graph EnginePublication-standard single-case design graphs📊 Session Data✏️ Ma",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "scdmanager",
+      "text": "Opened scdmanager panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔬Single-Case Design ManagerSelect a research design to structure your data collec",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "scatterplot",
+      "text": "Opened scatterplot panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📅Scatterplot AnalysisIdentify temporal patterns in behavior occurrence🔄 Auto-fi",
+      "buttons": 69,
+      "errors": []
+    },
+    {
+      "id": "socialvalidity",
+      "text": "Opened socialvalidity panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📋Social ValidityTreatment acceptability with AI interpretation & pre/post com",
+      "buttons": 82,
+      "errors": []
+    },
+    {
+      "id": "cumrecord",
+      "text": "Opened cumrecord panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📈Cumulative RecordSkinner-style cumulative frequency display with phase analysisMa",
+      "buttons": 7,
+      "errors": []
+    },
+    {
+      "id": "condprob",
+      "text": "Opened condprob panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📐Conditional ProbabilityFull 3-term contingency analysis with heatmap matrixNeed at",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "caseload",
+      "text": "Opened caseload panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇👥Caseload DashboardBird's-eye view of your caseload with status indicators, trends,",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "compare",
+      "text": "Opened compare panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📊Cross-Student ComparisonLoad multiple student workspace files to compare behavior p",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "effectsize",
+      "text": "Opened effectsize panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📐Effect Size CalculatorCalculate Tau-U, NAP, and PND to quantify intervention eff",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "progressmonitor",
+      "text": "Opened progressmonitor panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📈Progress Monitoring DashboardTrack behavior frequency over time with aim li",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "competingpathways",
+      "text": "Opened competingpathways panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔀Competing Pathways ModelMap the relationship between problem, replacement",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "cantdowontdo",
+      "text": "Opened cantdowontdo panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔍Can't Do / Won't Do AssessmentDetermine whether a behavior is a skill deficit ",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "heatmap",
+      "text": "Opened heatmap panel◇◇BehaviorLensBehavior Timeline Heatmap🟡 59%💾 Local only🤖 AI: ON📤◇📅Behavior Timeline HeatmapIncident density across the past ",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "goals",
+      "text": "Opened goals panel◇◇BehaviorLensSMART Goal Builder🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Suggest Goals🎯 SMART Goal BuilderSSpecificMMeasurableAAchievab",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "contract",
+      "text": "Opened contract panel◇◇BehaviorLensStudent–Teacher Agreement(Behavior Contract)🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Draft Contract💾 SaveStatus:active",
+      "buttons": 14,
+      "errors": []
+    },
+    {
+      "id": "fidelity",
+      "text": "Opened fidelity panel◇◇BehaviorLensFidelity Checklist🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Generate Checklist from BIP⚡ Quick Fill📅 7-Day Fidelity Str",
+      "buttons": 17,
+      "errors": []
+    },
+    {
+      "id": "feasibility",
+      "text": "Opened feasibility panel◇◇BehaviorLensFeasibility Check🟡 59%💾 Local only🤖 AI: ON📤◇⚖️ Contextual Fit AssessmentBased on Horner, Salentine, & Albin ",
+      "buttons": 34,
+      "errors": []
+    },
+    {
+      "id": "gas",
+      "text": "Opened gas panel◇◇BehaviorLensGAS Rubric🟡 59%💾 Local only🤖 AI: ON📤◇📐 Goal Attainment Scale🧠 AI Generate GAS Descriptors🖨️ Print GAS Rubric📎 Re",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "pocket",
+      "text": "Opened pocket panel◇◇BehaviorLensPocket BIP🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Generate Pocket BIP📇 Pocket BIPEagle🎯 Target Behavior🔍 Function✅ Re",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "intervention",
+      "text": "Opened intervention panel◇◇BehaviorLensIntervention Plan🟡 59%💾 Local only🤖 AI: ON📤◇📋 AI Intervention Plan GeneratorGenerate a multi-week interven",
+      "buttons": 19,
+      "errors": []
+    },
+    {
+      "id": "progress",
+      "text": "Opened progress panel◇◇BehaviorLensProgress Narrative🟡 59%💾 Local only🤖 AI: ON📤◇📈 Progress Narrative GeneratorGenerate IEP-ready progress monitor",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "iepprep",
+      "text": "Opened iepprep panel◇◇BehaviorLensIEP Meeting Prep🟡 59%💾 Local only🤖 AI: ON📤◇📄IEP Meeting PrepAI-generated meeting preparation packet from your b",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "riskscreen",
+      "text": "Opened riskscreen panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🛡️Risk Screening ChecklistSafety reflection checklist — not a validated threat as",
+      "buttons": 38,
+      "errors": []
+    },
+    {
+      "id": "bipgen",
+      "text": "Opened bipgen panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📄Behavior Intervention Plan (BIP) Generator?Synthesizes ABC & Preference data into a ",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "drstrategy",
+      "text": "Opened drstrategy panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎯Positive Reinforcement Planner(DR Strategy Selector)Choose the right differentia",
+      "buttons": 18,
+      "errors": []
+    },
+    {
+      "id": "fcttemplate",
+      "text": "Opened fcttemplate panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇💬Communication Skills Planner(FCT Template)Functional Communication Training pla",
+      "buttons": 26,
+      "errors": []
+    },
+    {
+      "id": "maintenance",
+      "text": "Opened maintenance panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔄Maintenance & GeneralizationTrack skill retention with scheduled probes, sparkl",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "treatintegrity",
+      "text": "Opened treatintegrity panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇✅Treatment IntegrityDocument whether interventions are implemented as designed",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "iepgoals",
+      "text": "Opened iepgoals panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📄IEP Behavior Goal GeneratorGenerate compliant IEP behavioral goals from observatio",
+      "buttons": 14,
+      "errors": []
+    },
+    {
+      "id": "mtss",
+      "text": "Opened mtss panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🏗️MTSS/RTI Tier ManagerVisual multi-tiered system of supports. Assign students to tiers",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "progressreport",
+      "text": "Opened progressreport panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📄Progress Report GeneratorGenerate a professional, print-ready progress repor",
+      "buttons": 14,
+      "errors": []
+    },
+    {
+      "id": "token",
+      "text": "Opened token panel◇◇BehaviorLensPositive Behavior Tracker(Token Board)🟡 59%💾 Local only🤖 AI: ON📤◇📋 Reinforcement Schedule⭐ Token EconomySimple: e",
+      "buttons": 29,
+      "errors": []
+    },
+    {
+      "id": "cycle",
+      "text": "Opened cycle panel◇◇BehaviorLensEmotional Regulation Cycle(Escalation Cycle)🟡 59%💾 Local only🤖 AI: ON📤◇🧠 Personalize for This Student💾 Save✏️ Ed",
+      "buttons": 19,
+      "errors": []
+    },
+    {
+      "id": "reinforcer",
+      "text": "Opened reinforcer panel◇◇BehaviorLensPreference & Motivation Finder(Reinforcer Assessment)🟡 59%💾 Local only🤖 AI: ON📤◇💾 Save Ratings📸 Snapshot🧠 ",
+      "buttons": 152,
+      "errors": []
+    },
+    {
+      "id": "traffic",
+      "text": "Opened traffic panel◇◇BehaviorLensTraffic Light🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Generate Expectations🚦 My Self-Regulation PlanFor: Eagle🟢•Sittin",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "selfcheck",
+      "text": "Opened selfcheck panel◇◇BehaviorLensStudent Self-Check🟡 59%💾 Local only🤖 AI: ON📤◇🪞 My Self-CheckThis is your space. Tell us how you're feeling an",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "gamify",
+      "text": "Opened gamify panel◇◇BehaviorLensMy Progress Quest🟡 59%💾 Local only🤖 AI: ON📤◇🎮My Progress QuestTrack your feelings, earn badges, and build streak",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "deescalate",
+      "text": "Opened deescalate panel◇◇BehaviorLensCalming & Co-Regulation Toolkit(De-escalation Toolkit)🟡 59%💾 Local only🤖 AI: ON📤◇🧘Calming & Co-Regulation To",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "replacebehavior",
+      "text": "Opened replacebehavior panel◇◇BehaviorLensSelf-Regulation Strategy Builder(Replacement Behavior Planner)🟡 59%💾 Local only🤖 AI: ON📤◇🔄Self-Regulati",
+      "buttons": 21,
+      "errors": []
+    },
+    {
+      "id": "reinforcement",
+      "text": "Opened reinforcement panel◇◇BehaviorLensMotivation & Preferences Survey(Reinforcement Inventory)🟡 59%💾 Local only🤖 AI: ON📤◇⭐Motivation & Preferenc",
+      "buttons": 174,
+      "errors": []
+    },
+    {
+      "id": "replacementbehavior",
+      "text": "Opened replacementbehavior panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🔄Replacement Behavior TrackerTrack teaching trials and monitor acquisiti",
+      "buttons": 6,
+      "errors": []
+    },
+    {
+      "id": "audit",
+      "text": "Opened audit panel◇◇BehaviorLensEnvironment Audit🟡 59%💾 Local only🤖 AI: ON📤◇🏫 Classroom Environment AuditClassroom StructureClear physical layout",
+      "buttons": 50,
+      "errors": []
+    },
+    {
+      "id": "cultural",
+      "text": "Opened cultural panel◇◇BehaviorLensCultural Context Reflection🟡 59%💾 Local only🤖 AI: ON📤◇🌍Cultural Context ReflectionPause and reflect before int",
+      "buttons": 32,
+      "errors": []
+    },
+    {
+      "id": "reframe",
+      "text": "Opened reframe panel◇◇BehaviorLensStrength-Based Reframe🟡 59%💾 Local only🤖 AI: ON📤◇✨Strength-Based ReframeTransform deficit-based language into as",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "biascheck",
+      "text": "Opened biascheck panel◇◇BehaviorLensEquity & Self-Awareness Check(Bias Reflection Monitor)🟡 59%💾 Local only🤖 AI: ON📤◇🪞Equity & Self-Awareness Che",
+      "buttons": 8,
+      "errors": []
+    },
+    {
+      "id": "restorative",
+      "text": "Opened restorative panel◇◇BehaviorLensRestorative Conversation Guide🟡 59%💾 Local only🤖 AI: ON📤◇🤝Restorative Conversation GuideStep-by-step script",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "homenote",
+      "text": "Opened homenote panel◇◇BehaviorLensHome Note🟡 59%💾 Local only🤖 AI: ON📤◇📝 Home Note Generator😊Warm, encouraging tone📄Professional, structured⚡Co",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "snapshot",
+      "text": "Opened snapshot panel◇◇BehaviorLensStudent Snapshot Exchange🟡 59%💾 Local only🤖 AI: ON📤◇📦Student Snapshot ExchangeShare behavioral data with famil",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "consent",
+      "text": "Opened consent panel◇◇BehaviorLensFERPA Consent Manager🟡 59%💾 Local only🤖 AI: ON📤◇📋FERPA Consent ManagerCustomize and share a FERPA-compliant con",
+      "buttons": 19,
+      "errors": []
+    },
+    {
+      "id": "homelog",
+      "text": "Opened homelog panel◇◇BehaviorLensHome Behavior Log🟡 59%💾 Local only🤖 AI: ON📤◇🏠 Home Behavior LogTrack behaviors at home using simple, everyday l",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "familyvoice",
+      "text": "Opened familyvoice panel◇◇BehaviorLensFamily Voice🟡 59%💾 Local only🤖 AI: ON📤◇👪Family VoiceFamily observations and insights for Eagle — centering ",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "commlog",
+      "text": "Opened commlog panel◇◇BehaviorLensCommunication Log🟡 59%💾 Local only🤖 AI: ON📤◇📞Communication LogTwo-way family contact tracker for Eagle📋 Log a ",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "hotspot",
+      "text": "Opened hotspot panel◇◇BehaviorLensRoutine Hotspot Matrix🟡 59%💾 Local only🤖 AI: ON📤◇🗓️ Routine Hotspot MatrixMorning Arrival—−Circle Time—−Reading",
+      "buttons": 33,
+      "errors": []
+    },
+    {
+      "id": "crisis",
+      "text": "Opened crisis panel◇◇BehaviorLensCrisis Plan🟡 59%💾 Local only🤖 AI: ON📤◇🧠 AI Draft Crisis Plan💾 Save Plan⚠️ Planning aid for education — not a su",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "relmap",
+      "text": "Opened relmap panel◇◇BehaviorLensRelationship Map🟡 59%💾 Local only🤖 AI: ON📤◇🗺️Relationship MapConnection ecosystem for Eagle➕ Add a Connection+💛",
+      "buttons": 17,
+      "errors": []
+    },
+    {
+      "id": "antecedentmod",
+      "text": "Opened antecedentmod panel◇◇BehaviorLensProactive Environment Planner(Antecedent Modification Planner)🟡 59%💾 Local only🤖 AI: ON📤◇🛠️Proactive Envi",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "export",
+      "text": "Opened export panel◇◇BehaviorLensExport Reports🟡 59%💾 Local only🤖 AI: ON📤◇📥 Export ReportsFormat📦 JSON📊 CSV📝 Text📦 Full data export including",
+      "buttons": 19,
+      "errors": []
+    },
+    {
+      "id": "record",
+      "text": "Opened record panel◇◇BehaviorLensRecord Review🟡 59%💾 Local only🤖 AI: ON📤◇📄 Record ReviewPaste IEP goals, evaluation reports, or progress notes fo",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "abaguide",
+      "text": "Opened abaguide panel◇◇BehaviorLensABA Quick Guide🟡 59%💾 Local only🤖 AI: ON📤◇📖 Glossary📋 Schedules🌲 Decision Tree⚠️ Common MistakesAbout the pl",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "counseling",
+      "text": "Opened counseling panel◇◇BehaviorLensSupportive Conversation Practice(Counseling Simulation)🟡 59%💾 Local only🤖 AI: ON📤◇🎭 Choose a Scenario🏃Escap",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "sandbox",
+      "text": "Opened sandbox panel◇◇BehaviorLensPractice Sandbox🟡 59%💾 Local only🤖 AI: ON📤◇🎓Practice SandboxLoad realistic but FICTIONAL student data to practi",
+      "buttons": 18,
+      "errors": []
+    },
+    {
+      "id": "glossary",
+      "text": "Opened glossary panel◇◇BehaviorLensABA Concept Glossary🟡 59%💾 Local only🤖 AI: ON📤◇📖ABA Concept Glossary73 essential terms for understanding Appli",
+      "buttons": 80,
+      "errors": []
+    },
+    {
+      "id": "fbaworkflow",
+      "text": "Opened fbaworkflow panel◇◇BehaviorLensFBA Workflow Guide🟡 59%💾 Local only🤖 AI: ON📤◇🧭Guided WorkflowsChoose a step-by-step guide for your clinical",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "teamnotes",
+      "text": "Opened teamnotes panel◇◇BehaviorLensTeam Notes🟡 59%💾 Local only🤖 AI: ON📤◇🤝Team Collaboration NotesShared notes for Eagle — all team members contr",
+      "buttons": 16,
+      "errors": []
+    },
+    {
+      "id": "sessionnotes",
+      "text": "Opened sessionnotes panel◇◇BehaviorLensSession Notes🟡 59%💾 Local only🤖 AI: ON📤◇📝 Session Notes🎤➕📝No session notes yetAdd notes above or use the",
+      "buttons": 10,
+      "errors": []
+    },
+    {
+      "id": "pdpath",
+      "text": "Opened pdpath panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎓PD Learning PathBuild your behavior analysis skills step by stepProgress: 0/8 module",
+      "buttons": 16,
+      "errors": []
+    },
+    {
+      "id": "abaquiz",
+      "text": "Opened abaquiz panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🧪ABA Knowledge QuizTest your behavioral analysis knowledge — 80% to earn your badgeQ",
+      "buttons": 12,
+      "errors": []
+    },
+    {
+      "id": "functionquiz",
+      "text": "Opened functionquiz panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇Question 1 of 5What's the Function??Read the scenario and identify the likely be",
+      "buttons": 13,
+      "errors": []
+    },
+    {
+      "id": "practicum",
+      "text": "Opened practicum panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎬Virtual Practicum?Interactive training for data collection accuracy📋 Scenario 1:",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "casestudy",
+      "text": "Opened casestudy panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎓ABA Case Study TrainingPractice clinical reasoning with AI-generated case studies",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "obscoach",
+      "text": "Opened obscoach panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🎓AI Observation CoachGet AI coaching on data collection quality. Identifies gaps, s",
+      "buttons": 9,
+      "errors": []
+    },
+    {
+      "id": "sharing",
+      "text": "Opened sharing panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🤝Workspace SharingShare workspace data with team members. Role-based views filter da",
+      "buttons": 15,
+      "errors": []
+    },
+    {
+      "id": "printreport",
+      "text": "Opened printreport panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇📄Progress Report GeneratorGenerate a professional, print-ready progress report w",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "mipractice",
+      "text": "Opened mipractice panel◇◇BehaviorLens🟡 59%💾 Local only🤖 AI: ON📤◇🗣️MI Practice SimulatorPractice Motivational Interviewing skills with an AI-power",
+      "buttons": 11,
+      "errors": []
+    },
+    {
+      "id": "skilltracker",
+      "text": "Opened skilltracker panel◇◇BehaviorLensSkill Tracker & Mentorship🟡 59%💾 Local only🤖 AI: ON📤◇🏅Skill Tracker & MentorshipTrack your ABA competency ",
+      "buttons": 16,
+      "errors": []
+    }
+  ],
+  "errors": []
+}

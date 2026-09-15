@@ -1,0 +1,657 @@
+{
+  "title": "The Geometry Garden — A Place to Discover",
+  "description": "An ungraded garden of eight discoveries: follow a level path from one unit cube to layers, equal volumes, composite shapes, nested cubes, and a hidden stepped monument. Use Activities for optional hints, travel, and a reflection journal. No quiz answers or scores are required. Explore at your own pace.",
+  "spawnPoint": [
+    0,
+    2.6,
+    0
+  ],
+  "objectives": [
+    "Follow eight optional discoveries at your own pace",
+    "Measure real blocks and distinguish length, area, and volume",
+    "Compare shapes, layers, and materials using evidence",
+    "Walk around the screen wall to find the hidden stepped monument"
+  ],
+  "ground": {
+    "xMin": -6,
+    "xMax": 54,
+    "zMin": -10,
+    "zMax": 20,
+    "y": 0,
+    "type": "grass"
+  },
+  "structures": [
+    {
+      "type": "fill",
+      "x1": -2,
+      "y1": 0,
+      "z1": 4,
+      "x2": 45,
+      "y2": 0,
+      "z2": 6,
+      "block": "stone",
+      "id": "garden-main-path",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 3,
+      "y1": 1,
+      "z1": 2,
+      "x2": 3,
+      "y2": 1,
+      "z2": 2,
+      "block": "diamond",
+      "id": "garden-structure-2"
+    },
+    {
+      "type": "fill",
+      "x1": 3,
+      "y1": 1,
+      "z1": 0,
+      "x2": 3,
+      "y2": 2,
+      "z2": 0,
+      "block": "wood",
+      "id": "garden-structure-3"
+    },
+    {
+      "type": "fill",
+      "x1": 8,
+      "y1": 1,
+      "z1": 2,
+      "x2": 12,
+      "y2": 1,
+      "z2": 2,
+      "block": "diamond",
+      "id": "garden-structure-4"
+    },
+    {
+      "type": "fill",
+      "x1": 16,
+      "y1": 1,
+      "z1": 1,
+      "x2": 20,
+      "y2": 1,
+      "z2": 3,
+      "block": "gold",
+      "id": "garden-structure-5"
+    },
+    {
+      "type": "fill",
+      "x1": 24,
+      "y1": 1,
+      "z1": 1,
+      "x2": 28,
+      "y2": 3,
+      "z2": 3,
+      "block": "diamond",
+      "id": "garden-structure-6"
+    },
+    {
+      "type": "fill",
+      "x1": 32,
+      "y1": 1,
+      "z1": 0,
+      "x2": 43,
+      "y2": 2,
+      "z2": 0,
+      "block": "gold",
+      "id": "garden-structure-7"
+    },
+    {
+      "type": "fill",
+      "x1": 32,
+      "y1": 1,
+      "z1": 8,
+      "x2": 35,
+      "y2": 2,
+      "z2": 10,
+      "block": "gold",
+      "id": "garden-structure-8"
+    },
+    {
+      "type": "fill",
+      "x1": 38,
+      "y1": 1,
+      "z1": 8,
+      "x2": 39,
+      "y2": 6,
+      "z2": 9,
+      "block": "gold",
+      "id": "garden-structure-9"
+    },
+    {
+      "type": "fill",
+      "x1": 33,
+      "y1": 0,
+      "z1": 1,
+      "x2": 33,
+      "y2": 0,
+      "z2": 7,
+      "block": "glass",
+      "id": "garden-structure-10",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 34,
+      "y1": 0,
+      "z1": 7,
+      "x2": 38,
+      "y2": 0,
+      "z2": 7,
+      "block": "glass",
+      "id": "garden-structure-11",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 35,
+      "y1": 1,
+      "z1": 4,
+      "x2": 35,
+      "y2": 1,
+      "z2": 4,
+      "block": "diamond",
+      "id": "garden-structure-12"
+    },
+    {
+      "type": "fill",
+      "x1": 32,
+      "y1": 1,
+      "z1": -7,
+      "x2": 36,
+      "y2": 3,
+      "z2": -5,
+      "block": "diamond",
+      "id": "garden-structure-13"
+    },
+    {
+      "type": "fill",
+      "x1": 32,
+      "y1": 1,
+      "z1": -4,
+      "x2": 34,
+      "y2": 3,
+      "z2": -2,
+      "block": "gold",
+      "id": "garden-structure-14"
+    },
+    {
+      "id": "nested-shell-bottom",
+      "type": "fill",
+      "x1": 42,
+      "y1": 1,
+      "z1": -8,
+      "x2": 46,
+      "y2": 1,
+      "z2": -4,
+      "block": "glass"
+    },
+    {
+      "id": "nested-shell-top",
+      "type": "fill",
+      "x1": 42,
+      "y1": 5,
+      "z1": -8,
+      "x2": 46,
+      "y2": 5,
+      "z2": -4,
+      "block": "glass"
+    },
+    {
+      "id": "nested-shell-left",
+      "type": "fill",
+      "x1": 42,
+      "y1": 2,
+      "z1": -8,
+      "x2": 42,
+      "y2": 4,
+      "z2": -4,
+      "block": "glass"
+    },
+    {
+      "id": "nested-shell-right",
+      "type": "fill",
+      "x1": 46,
+      "y1": 2,
+      "z1": -8,
+      "x2": 46,
+      "y2": 4,
+      "z2": -4,
+      "block": "glass"
+    },
+    {
+      "id": "nested-shell-back",
+      "type": "fill",
+      "x1": 43,
+      "y1": 2,
+      "z1": -8,
+      "x2": 45,
+      "y2": 4,
+      "z2": -8,
+      "block": "glass"
+    },
+    {
+      "id": "nested-shell-front",
+      "type": "fill",
+      "x1": 43,
+      "y1": 2,
+      "z1": -4,
+      "x2": 45,
+      "y2": 4,
+      "z2": -4,
+      "block": "glass"
+    },
+    {
+      "type": "fill",
+      "x1": 43,
+      "y1": 2,
+      "z1": -7,
+      "x2": 45,
+      "y2": 4,
+      "z2": -5,
+      "block": "gold",
+      "id": "nested-gold-cube"
+    },
+    {
+      "type": "fill",
+      "x1": 46,
+      "y1": 1,
+      "z1": 2,
+      "x2": 46,
+      "y2": 4,
+      "z2": 8,
+      "block": "wood",
+      "id": "garden-structure-17"
+    },
+    {
+      "type": "fill",
+      "x1": 48,
+      "y1": 1,
+      "z1": 1,
+      "x2": 52,
+      "y2": 1,
+      "z2": 9,
+      "block": "sand",
+      "id": "garden-structure-18"
+    },
+    {
+      "type": "fill",
+      "x1": 49,
+      "y1": 2,
+      "z1": 2,
+      "x2": 51,
+      "y2": 2,
+      "z2": 8,
+      "block": "sand",
+      "id": "garden-structure-19"
+    },
+    {
+      "type": "fill",
+      "x1": 49,
+      "y1": 3,
+      "z1": 3,
+      "x2": 51,
+      "y2": 3,
+      "z2": 7,
+      "block": "gold",
+      "id": "garden-structure-20"
+    },
+    {
+      "type": "fill",
+      "x1": 50,
+      "y1": 4,
+      "z1": 4,
+      "x2": 50,
+      "y2": 4,
+      "z2": 6,
+      "block": "gold",
+      "id": "garden-structure-21"
+    },
+    {
+      "type": "fill",
+      "x1": 50,
+      "y1": 5,
+      "z1": 5,
+      "x2": 50,
+      "y2": 5,
+      "z2": 5,
+      "block": "diamond",
+      "id": "garden-structure-22"
+    },
+    {
+      "type": "fill",
+      "x1": 5,
+      "y1": 1,
+      "z1": 7,
+      "x2": 7,
+      "y2": 1,
+      "z2": 7,
+      "block": "sand",
+      "id": "garden-structure-23"
+    },
+    {
+      "type": "fill",
+      "x1": 14,
+      "y1": 1,
+      "z1": 7,
+      "x2": 15,
+      "y2": 1,
+      "z2": 8,
+      "block": "sand",
+      "id": "garden-structure-24"
+    },
+    {
+      "type": "fill",
+      "x1": 22,
+      "y1": 1,
+      "z1": 7,
+      "x2": 23,
+      "y2": 1,
+      "z2": 7,
+      "block": "sand",
+      "id": "garden-structure-25"
+    },
+    {
+      "type": "fill",
+      "x1": 28,
+      "y1": 1,
+      "z1": 10,
+      "x2": 29,
+      "y2": 1,
+      "z2": 11,
+      "block": "sand",
+      "id": "garden-structure-26"
+    },
+    {
+      "type": "fill",
+      "x1": 10,
+      "y1": 1,
+      "z1": 7,
+      "x2": 12,
+      "y2": 1,
+      "z2": 7,
+      "block": "wood",
+      "id": "garden-structure-27"
+    },
+    {
+      "type": "fill",
+      "x1": 28,
+      "y1": 1,
+      "z1": 7,
+      "x2": 30,
+      "y2": 1,
+      "z2": 7,
+      "block": "wood",
+      "id": "garden-structure-28"
+    },
+    {
+      "id": "hidden-garden-turn",
+      "type": "fill",
+      "x1": 43,
+      "y1": 0,
+      "z1": 7,
+      "x2": 45,
+      "y2": 0,
+      "z2": 12,
+      "block": "stone",
+      "measurementLayer": "ground"
+    },
+    {
+      "id": "hidden-garden-approach",
+      "type": "fill",
+      "x1": 46,
+      "y1": 0,
+      "z1": 10,
+      "x2": 54,
+      "y2": 0,
+      "z2": 12,
+      "block": "stone",
+      "measurementLayer": "ground"
+    }
+  ],
+  "npcs": [
+    {
+      "position": [
+        0,
+        1,
+        3
+      ],
+      "name": "Garden Keeper",
+      "color": 1483594,
+      "dialogue": "Welcome to the Geometry Garden. No quizzes or scores are required. Follow the stone path, measure what interests you, and use Activities for eight optional discovery stops. Your journal is for observations and self-review. Near the far screen wall, the path turns around its end into the hidden garden. Take your time.",
+      "question": null
+    },
+    {
+      "position": [
+        4,
+        1,
+        0
+      ],
+      "name": "Station 1 Guide",
+      "color": 2450411,
+      "dialogue": "This is a single unit cube — the building block of everything. Volume = 1 cubic unit. Press M to measure it!",
+      "question": null
+    },
+    {
+      "position": [
+        10,
+        1,
+        0
+      ],
+      "name": "Station 2 Guide",
+      "color": 2450411,
+      "dialogue": "This row highlights length: five unit cubes sit side by side. It is still a three-dimensional block model, with length 5, width 1, and height 1. Measure it to find volume 5 cubic units. What would happen if you added another row?",
+      "question": null
+    },
+    {
+      "position": [
+        18,
+        1,
+        0
+      ],
+      "name": "Station 3 Guide",
+      "color": 16096779,
+      "dialogue": "The top surface of this model is a 5 by 3 rectangle, with area 15 square units. The model is also one cube thick, so its volume is 15 cubic units. The numbers match here, but square units describe a surface and cubic units describe the solid. Compare both ideas as you measure.",
+      "question": null
+    },
+    {
+      "position": [
+        26,
+        1,
+        0
+      ],
+      "name": "Station 4 Guide",
+      "color": 16096779,
+      "dialogue": "This prism stacks three layers of 15 cubes. Its dimensions are 5 by 3 by 3, and its volume is 45 cubic units. Compare it with the one-layer gold model. What changes when you add layers while keeping the same base?",
+      "question": null
+    },
+    {
+      "position": [
+        36,
+        1,
+        4
+      ],
+      "name": "Convergence Guide",
+      "color": 8141549,
+      "dialogue": "Three gold shapes have volume 24: a 12 by 1 by 2 long slab, a 4 by 3 by 2 compact block, and a 2 by 2 by 6 tower. Measure each separately. Different dimensions can produce the same amount of occupied space. Which would you choose for a narrow site, and why?",
+      "question": null
+    },
+    {
+      "position": [
+        37,
+        1,
+        -5
+      ],
+      "name": "Composition Guide",
+      "color": 2450411,
+      "dialogue": "The cyan part of this L-shaped model is 5 by 3 by 3: 45 cubic units. The gold part is 3 by 3 by 3: 27 cubic units. They touch without overlapping, so the whole has volume 72. Measure the connected structure and use the material breakdown to compare the two parts.",
+      "question": null
+    },
+    {
+      "position": [
+        47,
+        1,
+        -6
+      ],
+      "name": "Nested Cube Guide",
+      "color": 16096779,
+      "dialogue": "A 5 by 5 by 5 glass shell surrounds a gold 3 by 3 by 3 cube. The outside bounding cube contains 125 unit positions. Its inner cube uses 27, leaving 98 glass cubes in the shell. The gold now fills the cavity. Measure the touching glass-and-gold model as one structure: 125 total, with 98 glass and 27 gold in the material breakdown.",
+      "question": null
+    },
+    {
+      "position": [
+        53,
+        1,
+        10
+      ],
+      "name": "Hidden Garden Sage",
+      "color": 14427686,
+      "dialogue": "You followed the path around the wall and found the stepped monument. Its five layers contain 45, 21, 15, 3, and 1 cubes, for a total of 85 cubic units. This stepped solid is an approximation, not an exact pyramid. Measure its occupied volume, then compare it with the larger bounding box. Why does the bounding box include so much empty space?",
+      "question": null
+    }
+  ],
+  "depth": "discovery",
+  "estimatedMinutes": 35,
+  "activities": [
+    {
+      "id": "garden-unit",
+      "title": "One cube, one unit",
+      "npcName": "Station 1 Guide",
+      "position": [
+        5,
+        2.6,
+        4
+      ],
+      "challenge": "Find the single cyan cube. Predict its dimensions, then measure it. Explain what one cubic unit means.",
+      "hint": "The separate wooden sign is scenery. Aim at the cyan cube itself. One unit of length runs along each of its three edges.",
+      "successCriteria": [
+        "I found length, width, and height of 1.",
+        "I connected one cube with one cubic unit."
+      ],
+      "reflection": "What makes this cube a useful unit for comparing all the larger models?"
+    },
+    {
+      "id": "garden-row",
+      "title": "A row highlights length",
+      "npcName": "Station 2 Guide",
+      "position": [
+        10,
+        2.6,
+        4
+      ],
+      "challenge": "Measure the five-cube cyan row. Compare it with the single cube, then imagine a second identical row beside it.",
+      "hint": "The row has dimensions 5 by 1 by 1. It models length clearly, but still has width, height, and volume.",
+      "successCriteria": [
+        "I found volume 5 cubic units.",
+        "I predicted 10 cubes in two adjacent rows."
+      ],
+      "reflection": "Which dimensions would change when you added a second row, and which would stay the same?"
+    },
+    {
+      "id": "garden-area",
+      "title": "A surface and a solid",
+      "npcName": "Station 3 Guide",
+      "position": [
+        18,
+        2.6,
+        5
+      ],
+      "challenge": "Study the top of the gold 5 by 3 model. Compare its 15-square-unit top surface with the volume of the one-layer solid.",
+      "hint": "Area counts covering squares. Volume counts unit cubes. This model is one cube thick, so its area and volume have the same numerical value but different units.",
+      "successCriteria": [
+        "I identified area 15 square units.",
+        "I identified volume 15 cubic units.",
+        "I explained the different units."
+      ],
+      "reflection": "When do the same numbers describe different measurements?"
+    },
+    {
+      "id": "garden-layers",
+      "title": "Layers make volume",
+      "npcName": "Station 4 Guide",
+      "position": [
+        26,
+        2.6,
+        5
+      ],
+      "challenge": "Compare the three-layer cyan prism with the one-layer gold rectangle. Predict, then measure, how the volume changes.",
+      "hint": "Each layer contains 5 times 3 = 15 cubes. Stack three equal layers to make 45.",
+      "successCriteria": [
+        "I compared one layer with three layers.",
+        "I found volume 45 cubic units."
+      ],
+      "reflection": "How can you calculate the volume without counting all 45 cubes individually?"
+    },
+    {
+      "id": "garden-equal",
+      "title": "Three shapes, equal volume",
+      "npcName": "Convergence Guide",
+      "position": [
+        37,
+        2.6,
+        5
+      ],
+      "challenge": "Find all three gold models near the crossing. Measure each separately and record a different set of dimensions for each.",
+      "hint": "The models are 12 by 1 by 2, 4 by 3 by 2, and 2 by 2 by 6. Each product is 24.",
+      "successCriteria": [
+        "I measured three different shapes with volume 24.",
+        "I compared the footprints and heights."
+      ],
+      "reflection": "Which model suits a narrow space, and which suits a height limit? Explain your choice."
+    },
+    {
+      "id": "garden-composite",
+      "title": "Add the parts of an L",
+      "npcName": "Composition Guide",
+      "position": [
+        38,
+        2.6,
+        -3
+      ],
+      "challenge": "Predict the volume of the cyan-and-gold L-shaped solid. Calculate each colored part, add them, then measure the whole.",
+      "hint": "The cyan part contains 45 cubes and the gold part contains 27. Touching parts with no overlap add to 72; the enclosing box includes empty space.",
+      "successCriteria": [
+        "I calculated 45 + 27 = 72.",
+        "I matched the material counts to the colored parts."
+      ],
+      "reflection": "Why would multiplying only the whole bounding dimensions overcount this L-shaped solid?"
+    },
+    {
+      "id": "garden-nested",
+      "title": "Look inside nested cubes",
+      "npcName": "Nested Cube Guide",
+      "position": [
+        48,
+        2.6,
+        -5
+      ],
+      "challenge": "Look through the glass shell at the gold cube. Calculate the outer cube, inner cube, and glass-only shell; then compare with Measure.",
+      "hint": "The outer 5-cube side gives 125 positions. The inner 3-cube side gives 27. Subtract to find 98 glass cubes. Since the gold touches the glass, Measure counts them together and lists both materials.",
+      "successCriteria": [
+        "I found 125 outer positions, 27 gold cubes, and 98 glass cubes.",
+        "I distinguished the shell from the filled model."
+      ],
+      "reflection": "What would the occupied volume become if the inner gold cube were removed? Explain without changing the protected model."
+    },
+    {
+      "id": "garden-hidden",
+      "title": "Discover the stepped monument",
+      "npcName": "Hidden Garden Sage",
+      "position": [
+        53,
+        2.6,
+        12
+      ],
+      "challenge": "Follow the stone turn around the screen wall. Count the five layer areas of the hidden stepped monument and compare their sum with Measure.",
+      "hint": "From bottom to top, the layers are 5 by 9, 3 by 7, 3 by 5, 1 by 3, and 1 by 1. Add 45 + 21 + 15 + 3 + 1.",
+      "successCriteria": [
+        "I found five layers and total occupied volume 85.",
+        "I explained why the 5 by 9 by 5 bounding box is larger than the solid."
+      ],
+      "reflection": "What did this final discovery show you about measuring a shape with empty corners?"
+    }
+  ]
+}

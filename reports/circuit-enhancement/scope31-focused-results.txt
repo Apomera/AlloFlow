@@ -1,0 +1,287 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_network_scope_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > defaults to the full run and bounds maximum zoom without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":0.9,"end":0.1}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":null,"end":null}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > recovers malformed viewport {"start":-1,"end":3}
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > centers a bounded viewport at either end of the run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > clips a linear segment at both edges without changing its slope
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > keeps vertical switching segments at a viewport boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > does not interpolate or join across an unknown region
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > scope time viewport and clipping > returns no path when the viewport has no data
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > interpolates rising and falling edges at nonuniform sample times
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters rising edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > filters falling edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > recognizes an exact sample at the level once
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > does not count a touch, a flat trace, or an incomplete boundary as a crossing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > reports the interval spent at threshold before crossing to the other side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > preserves the exact time and after snapshot of a switch jump
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > never bridges an unknown trace segment
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > rejects unknown traces, failed runs and nonfinite levels
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > measures spacing between like directions rather than alternate edges
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > finds sine crossings without counting floating-point zero noise at endpoints
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > resolves small signals with a relative level tolerance
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > event-aware level crossings > uses amperes for current levels and exported readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > does not infer same-direction spacing across an unknown gap
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > finds a real simulated switch jump and resolves its after state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > renders named navigation controls, zoom extent and an exact event marker
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_scope_navigation.test.js > crossing navigation safeguards and rendering > hides navigation and crossings when the simulation fails
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+······························stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all fifteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_measurements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > integrates a ramp exactly despite highly uneven sample spacing
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > clips interval boundaries by linear interpolation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant 0 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant 3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > distinguishes mean and RMS for a constant -3 V
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > keeps tiny ripple on a large offset numerically resolved
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > respects both sides of switch discontinuities without inventing a ramp
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > refuses an unknown interval without erasing independent known voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0.5 to 0.5
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0.8 to 0.2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds -0.1 to 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds 0 to 2
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects invalid bounds NaN to 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects a failed run, missing part, and gaps at the run boundary
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > uses the last complete source cycle and bounds custom fractions without mutation
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > fits gain, offset, and lag with uneven samples and a non-integer-cycle window
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > preserves phase sign -1 relative to a phase-shifted reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > preserves phase sign 1 relative to a phase-shifted reference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > reports inversion as a half-cycle phase difference
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > reports a DC-only output with no invented phase or residual percentage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > separates a known third harmonic as sine-fit residual
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > rejects short windows, sparse data, and a non-sine comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > uses current units for a current-source comparison
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > measures an actual bandwidth-limited follower against its analytical steady response
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+························stdout | tests/circuit_network_measurements.test.js > time-weighted scope measurements > exports SI measurements and preserves unavailable metrics as blanks
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > renders interval statistics, accessible markers, and separate fit units
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > keeps measurement controls optional and suppresses invalid-interval values
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_measurements.test.js > scope measurement presentation > keeps failed runs from exposing stale statistics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_switching.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > keeps DC and disabled schedules at their initial switch settings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > normalizes eight sorted actions with unique stable IDs without mutating input
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > rejects duplicate times for one enabled switch and recovers when disabled
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > matches capacitor charge, isolated hold, and recharge analytically
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_switching.test.js > timed switch topology > preserves capacitor energy through simultaneous break/make actions regardless of part order
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > matches a switched RC discharge throughout the full run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > carries inductor current above the initial-input limit and shows flyback voltage
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > carries capacitor voltage above the initial-input limit without clamping it
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+····stdout | tests/circuit_network_switching.test.js > timed switch topology > satisfies Kirchhoff current and signed power balance on both sides of events
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > rejects opening an energized inductor without a return path at the named event
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > rejects shorting a charged capacitor without inventing an impulse or resetting energy
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > allows a zero-energy capacitor to be shorted and a zero-current inductor to be isolated
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > includes the after-event snapshot when a switch changes exactly at the window end
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > retains future actions without executing them outside the window
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > never integrates across a switch event, including very narrow on/off intervals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > fails instead of silently merging distinct events below time resolution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > uses the source waveform at a coincident signal corner and switching event
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·········stdout | tests/circuit_network_switching.test.js > timed switch topology > selects the after side by default and keeps nearby samples on the correct side
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > timed switch topology > exports actual switch state, initial state, schedule, and both event sides
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_switching.test.js > timed switch topology > supports eight actions on each switch in a bounded resistive run
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > switching presentation > renders the schedule editor with distinct initial and cursor state
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > switching presentation > renders keyboard-accessible event sides and continuity evidence
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > switching presentation > names actions outside the window and explains DC semantics
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_switching.test.js > switching presentation > keeps the editor available and hides stale traces when a schedule is inconsistent
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·····
+
+ Test Files  4 passed (4)
+      Tests  86 passed (86)
+   Start at  11:13:44
+   Duration  9.19s (transform 58ms, setup 85ms, import 221ms, tests 3.92s, environment 4.10s)
+

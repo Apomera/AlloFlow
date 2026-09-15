@@ -135,4 +135,28 @@ describe('source hyperlinks are re-attached, never invented', () => {
     const r = reattach(html, [NVDA]);
     expect(r.count).toBe(1);
   });
+
+  // The visible copy of an image description is aria-hidden because the alt already carries it.
+  // A link inside it is reachable by keyboard but never announced (axe aria-hidden-focus, IBM
+  // aria_hidden_nontabbable) — seen on the NCES tables pilot, 2026-09-13.
+  it('never links text inside an aria-hidden subtree, and still links the same text outside it', () => {
+    const html = '<figcaption><span aria-hidden="true">See the NVDA on-line user guide</span></figcaption><p>NVDA on-line user guide</p>';
+    const r = reattach(html, [{ ...NVDA, occurrences: 2 }]);
+    expect(r.count).toBe(1);
+    expect(r.html).toBe('<figcaption><span aria-hidden="true">See the NVDA on-line user guide</span></figcaption><p><a href="https://www.nvaccess.org/files/nvda/documentation/userGuide.html">NVDA on-line user guide</a></p>');
+  });
+
+  it('leaves the hidden subtree once its element closes, even across nested same-name tags and void tags', () => {
+    const html = '<span aria-hidden="true"><span>x</span><br>NVDA on-line user guide</span> NVDA on-line user guide';
+    const r = reattach(html, [{ ...NVDA, occurrences: 2 }]);
+    expect(r.count).toBe(1);
+    expect(r.html.indexOf('<a href')).toBeGreaterThan(r.html.indexOf('</span></span>'));
+  });
+
+  it("treats aria-hidden='true' with single quotes or no quotes the same way", () => {
+    for (const attr of ["aria-hidden='true'", 'aria-hidden=true']) {
+      const r = reattach(`<div ${attr}>NVDA on-line user guide</div>`, [NVDA]);
+      expect(r.count, attr).toBe(0);
+    }
+  });
 });

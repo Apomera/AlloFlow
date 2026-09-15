@@ -1,0 +1,18 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),parser=require('@babel/parser');
+function change(file,pairs){let source=fs.readFileSync(file,'utf8');for(const [a,b]of pairs){assert.ok(source.includes(a),file+': missing '+a.slice(0,70));source=source.replace(a,b);}fs.writeFileSync(file,source);return source;}
+const file='stem_lab/stem_tool_anatomy.js';const source=change(file,[
+  ["setTimeout(function(){if(accepted&&typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));},0);", "setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));var panel=document.querySelector('[data-anatomy-spotter-panel]');if(panel)panel.focus();},0);"],
+  ["var expected=spotterQuestionKey(d);\n            setLabToolData", "var expected=spotterQuestionKey(d),ended=false;\n            setLabToolData"],
+  ["if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterActive:false", "if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;ended=true;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterActive:false"],
+  ["          }},t('stem.anatomy.end_test_2','End Test'));", "            setTimeout(function(){if(!ended)return;var start=document.querySelector('[data-anatomy-spotter-start]');if(start)start.focus();},0);\n          }},t('stem.anatomy.end_test_2','End Test'));"],
+  ["h('button', { 'aria-label': t('stem.anatomy.start_spotter_test', 'Start Spotter Test'),", "h('button', { 'data-anatomy-spotter-start':true,'aria-label': t('stem.anatomy.start_spotter_test', 'Start Spotter Test'),"],
+  ["                  ) : h('div', { className: 'space-y-3' },\n                    h('div', { className: 'bg-cyan-50", "                  ) : h('div', { className: 'space-y-3' },\n                    h('p',{'data-anatomy-spotter-mode':true},spotterRoundTimed?t('stem.anatomy.spot_ref_timed','Timing enabled'):t('stem.anatomy.spot_ref_untimed','Untimed practice')),\n                    h('div', { className: 'bg-cyan-50"]
+]);parser.parse(source,{sourceType:'script'});fs.writeFileSync('desktop/web-app/public/'+file,source);
+change('tests/anatomy_lab_science.test.js',[
+  ["expect(source).toContain(\"className: 'space-y-2', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'\");", "expect(source).toContain(\"'data-anatomy-spotter-feedback':true\");\n    expect(source).toContain(\"announceToSR((correct?t('stem.anatomy.spot_ref_correct'\");"],
+  ["_spotterElapsed: '1.25',\n      _spotterBestTime: '2.5',", "_spotterElapsed: 1.25,\n      _spotterTimed: true,\n      _spotterRoundTimed: true,\n      _spotterTimedBestTime: 2.5,"],
+  ["expect(html).toContain('Best: 2.5s');", "expect(html).toContain('Best timed response: 2.5 s');"],
+  ["expect(html).toContain('Correct! (1.3s)');", "expect(html).toContain('Response time: 1.3 s');"],
+  ["expect(source).toContain('var spotterUpdate = { _spotterFeedback: opt.id, _spotterElapsed: elapsed, _spotterTotal: spotterTotal + 1 };');", "expect(source).toContain('var patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};');"],
+  ["expect(source).toContain('updMulti(Object.assign(spotterUpdate, confidenceEvidencePatch(spotterTarget, isRightAnswer)));');", "expect(source).toContain('Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current))');"]
+]);

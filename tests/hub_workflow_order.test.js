@@ -25,7 +25,9 @@ describe('hub workflow ordering', () => {
       // Research Suite standalone tool (2026-08-25 sweep).
       'research-suite', 'professional-development', 'leadership-hub',
       // School Rewards & Store gained a staff-facing door (2026-09-02).
-      'school-rewards'
+      'school-rewards',
+      // Communications Studio: family/staff drafts from teacher notes (2026-09-13).
+      'communications-studio'
     ]);
   });
 

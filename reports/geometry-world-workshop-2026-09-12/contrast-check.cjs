@@ -1,0 +1,1 @@
+const fs=require('fs'),p='reports/geometry-world-workshop-2026-09-12/browser-final.cjs';let s=fs.readFileSync(p,'utf8');s=s.replace("contrast.background==='rgb(17, 17, 17)'","['rgb(0, 0, 0)','rgb(17, 17, 17)'].includes(contrast.background)");fs.writeFileSync(p,s);console.log('Contrast check accepts both opaque near-black backgrounds with white text.');

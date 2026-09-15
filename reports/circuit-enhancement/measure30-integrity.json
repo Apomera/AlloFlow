@@ -1,0 +1,35 @@
+{
+  "pass": 30,
+  "checkedAt": "2026-09-12T14:44:58.485Z",
+  "sourceSha256": "8321b731b12b2bb9f9d1fe7e4a24b242a9ecf628c3cb3ad8a781e30dd9ca71dc",
+  "sourcePublicByteParity": true,
+  "javascriptSyntax": true,
+  "scopedWhitespace": true,
+  "newTestWhitespace": true,
+  "existingSolverAndIntegrationUnchanged": true,
+  "outsideConnectedWorkspaceOnlyMeasurementCssAndWhitespace": true,
+  "regression": {
+    "files": 18,
+    "tests": 347,
+    "newMeasurementTests": 28,
+    "finalMeasurementTestsAfterReview": 28
+  },
+  "browser": {
+    "host": "Isolated local React 18 circuit host; Playwright Chromium",
+    "measurementScenarios": 8,
+    "priorTimingPassed": true,
+    "axeWidths": [
+      1280,
+      390,
+      320
+    ],
+    "scopedAxeViolations": 0,
+    "pageErrors": 0,
+    "horizontalPageOverflow": false
+  },
+  "visualReview": [
+    "measure30-bandwidth-panel.jpg",
+    "measure30-slew-plot.jpg",
+    "measure30-panel-320.jpg"
+  ]
+}

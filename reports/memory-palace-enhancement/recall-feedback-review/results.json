@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "targetedFollowUp": true,
+  "firstTryExcluded": true,
+  "unselectedMasteryPreserved": true,
+  "persistentFeedback": true,
+  "revealWaitsForContinue": true,
+  "keyboardFocus": true,
+  "selfCheckKeyboard": true,
+  "respectsFocusElsewhere": true,
+  "widths": [
+    1280,
+    390,
+    320
+  ],
+  "pageErrors": []
+}

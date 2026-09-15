@@ -1,0 +1,16 @@
+{
+  "archived": [
+    "combined-build-checks-before-continuation-fix.json",
+    "calibration-final-before-continuation-fix.json",
+    "calibration-final-summary-before-continuation-fix.json",
+    "remediation-unit-final-before-continuation-fix.json",
+    "remediation-unit-final-summary-before-continuation-fix.json",
+    "calibration-selection-checks-before-continuation-fix.json",
+    "calibration-workflow-tests-before-continuation-fix.json"
+  ],
+  "reason": "Preserve first green 532-test remediation and 97-test calibration evidence before the continuation boundary/focus fixes.",
+  "addedSuites": [
+    "tests/aifix_chunk_boundary_whitespace.test.js",
+    "tests/doc_pipeline_focus_wrap_browser.test.js"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "id": "pdf.document-title",
+      "status": "passed",
+      "observed": "Resource links",
+      "expected": "Resource links"
+    },
+    {
+      "id": "pdf.tagged-reading-order",
+      "status": "passed",
+      "observed": {
+        "untaggedPages": 0,
+        "anchorsInOrder": true
+      },
+      "expected": [
+        "Resource links",
+        "Course schedule",
+        "Tutoring support"
+      ]
+    },
+    {
+      "id": "pdf.heading-navigation-semantics",
+      "status": "passed",
+      "observed": [
+        {
+          "level": 1,
+          "name": "Resource links"
+        }
+      ],
+      "expected": [
+        {
+          "level": 1,
+          "name": "Resource links"
+        }
+      ]
+    },
+    {
+      "id": "pdf.table-count",
+      "status": "passed",
+      "observed": 0,
+      "expected": 0
+    },
+    {
+      "id": "pdf.link-1",
+      "status": "failed",
+      "observed": {
+        "matchingTags": 1,
+        "bindings": [
+          {
+            "page": 1,
+            "references": [],
+            "unresolvedReferences": [],
+            "annotationUrls": []
+          }
+        ]
+      },
+      "expected": {
+        "name": "Course schedule",
+        "url": "https://example.invalid/schedule"
+      }
+    },
+    {
+      "id": "pdf.link-2",
+      "status": "failed",
+      "observed": {
+        "matchingTags": 1,
+        "bindings": [
+          {
+            "page": 1,
+            "references": [],
+            "unresolvedReferences": [],
+            "annotationUrls": []
+          }
+        ]
+      },
+      "expected": {
+        "name": "Tutoring support",
+        "url": "https://example.invalid/tutoring"
+      }
+    }
+  ],
+  "reader": "PDF.js 3.11.174",
+  "pages": 1,
+  "limitations": [
+    "Text is followed through PDF.js structure/marked-content associations; this is not a screen-reader session.",
+    "Native PDF viewer keyboard/form behavior, spoken headers, alternative-text usefulness, OCR correctness, and visual layout require human checks."
+  ]
+}

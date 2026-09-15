@@ -1,0 +1,1 @@
+const fs=require('fs');const prefix=fs.readFileSync('tests/geometry_world_workshop.test.js','utf8').split("describe('architectural starter recipes'")[0];fs.writeFileSync('tests/geometry_world_direct_build.test.js',prefix+fs.readFileSync(__dirname+'/tests.txt','utf8'));

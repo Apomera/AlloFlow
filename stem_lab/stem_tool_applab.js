@@ -28,7 +28,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _applabAC = null;
-  function getApplabAC() { if (!_applabAC) { try { _applabAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_applabAC && _applabAC.state === "suspended") { try { _applabAC.resume(); } catch(e) {} } return _applabAC; }
+  function getApplabAC() { if (!_applabAC) { try { _applabAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_applabAC && _applabAC.state === "suspended") { try { _applabAC.resume(); } catch(e) {} } return _applabAC; }
   function applabTone(f,d,tp,v) { var ac = getApplabAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxApplabClick() { applabTone(600, 0.03, "sine", 0.04); }
 

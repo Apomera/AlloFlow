@@ -19,7 +19,12 @@ account *is* the credential, and the server fails closed without one.
 
 1. **Copy the package** — `Code.gs`, `Portal.html`, `Index.html`,
    `appsscript.json` — into a NEW Apps Script project owned by a district
-   account (never personal).
+   account (never personal). The manifest lists every scope the script
+   calls (Sheets, Docs, Drive, mail, the signed-in address); only the
+   deploying account ever sees the consent screen, because the web app
+   executes as that account. Narrowing `drive` to `drive.file` is possible
+   once setup no longer accepts a pre-existing folder ID; until then the
+   full Drive scope stays.
 2. **Run setup once** from the editor as that account:
    `setupEvaluationRepository({...})` with your domain, bootstrap admin,
    educators, members, and evaluator assignments (full example below).

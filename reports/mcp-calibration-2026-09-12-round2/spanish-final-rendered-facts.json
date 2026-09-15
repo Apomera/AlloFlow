@@ -1,0 +1,139 @@
+{
+  "evidenceClass": "Actual immutable live HTML rendered in real Chromium; no screen-reader or PDF/UA acceptance claim.",
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12-round2\\spanish-udhr-live\\out\\ohchr-udhr-spanish-accessible.html",
+  "sha256": "e4888cd4bf48a17ed0fdb78e733790c2d16329987be1d62fa2da404a2c1f25d0",
+  "observations": [
+    {
+      "width": 320,
+      "lang": "es",
+      "title": "Accessible Document — ohchr-udhr-spanish",
+      "titles": [
+        {
+          "text": "Accessible Document — ohchr-udhr-spanish",
+          "lang": "en"
+        },
+        {
+          "text": "Declaración Universal de Derechos Humanos",
+          "lang": ""
+        }
+      ],
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "headings": [
+        "Preámbulo",
+        "Artículo 1",
+        "Artículo 2",
+        "Artículo 3",
+        "Artículo 4",
+        "Artículo 5",
+        "Artículo 6",
+        "Artículo 7",
+        "Artículo 8",
+        "Artículo 9",
+        "Artículo 10",
+        "Artículo 11",
+        "Artículo 12",
+        "Artículo 13",
+        "Artículo 14",
+        "Artículo 15",
+        "Artículo 16",
+        "Artículo 17",
+        "Artículo 18",
+        "Artículo 19",
+        "Artículo 20",
+        "Artículo 21",
+        "Artículo 22",
+        "Artículo 23",
+        "Artículo 24",
+        "Artículo 25",
+        "Artículo 26",
+        "Artículo 27",
+        "Artículo 28",
+        "Artículo 29",
+        "Artículo 30"
+      ],
+      "orderedLists": 13,
+      "listItems": 32,
+      "images": 0,
+      "controls": 0,
+      "keyboard": {
+        "tag": "A",
+        "text": "Skip to main content",
+        "focusVisible": true,
+        "outline": "rgb(255, 255, 255) solid 2px",
+        "shadow": "rgb(0, 0, 0) 0px 0px 0px 4px"
+      },
+      "errors": [],
+      "screenshots": [
+        "spanish-final-320-top.png",
+        "spanish-final-320-article29.png"
+      ]
+    },
+    {
+      "width": 1000,
+      "lang": "es",
+      "title": "Accessible Document — ohchr-udhr-spanish",
+      "titles": [
+        {
+          "text": "Accessible Document — ohchr-udhr-spanish",
+          "lang": "en"
+        },
+        {
+          "text": "Declaración Universal de Derechos Humanos",
+          "lang": ""
+        }
+      ],
+      "scrollWidth": 1000,
+      "clientWidth": 1000,
+      "headings": [
+        "Preámbulo",
+        "Artículo 1",
+        "Artículo 2",
+        "Artículo 3",
+        "Artículo 4",
+        "Artículo 5",
+        "Artículo 6",
+        "Artículo 7",
+        "Artículo 8",
+        "Artículo 9",
+        "Artículo 10",
+        "Artículo 11",
+        "Artículo 12",
+        "Artículo 13",
+        "Artículo 14",
+        "Artículo 15",
+        "Artículo 16",
+        "Artículo 17",
+        "Artículo 18",
+        "Artículo 19",
+        "Artículo 20",
+        "Artículo 21",
+        "Artículo 22",
+        "Artículo 23",
+        "Artículo 24",
+        "Artículo 25",
+        "Artículo 26",
+        "Artículo 27",
+        "Artículo 28",
+        "Artículo 29",
+        "Artículo 30"
+      ],
+      "orderedLists": 13,
+      "listItems": 32,
+      "images": 0,
+      "controls": 0,
+      "keyboard": {
+        "tag": "A",
+        "text": "Skip to main content",
+        "focusVisible": true,
+        "outline": "rgb(255, 255, 255) solid 2px",
+        "shadow": "rgb(0, 0, 0) 0px 0px 0px 4px"
+      },
+      "errors": [],
+      "screenshots": [
+        "spanish-final-1000-top.png",
+        "spanish-final-1000-article29.png"
+      ]
+    }
+  ]
+}

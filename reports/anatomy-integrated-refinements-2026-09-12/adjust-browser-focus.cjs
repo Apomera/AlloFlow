@@ -1,0 +1,1 @@
+const fs=require('fs'),file=__dirname+'/browser.cjs';let s=fs.readFileSync(file,'utf8');s=s.replace("await page.keyboard.press('Enter');results.keyboard=", "await page.keyboard.press('Enter');await page.waitForFunction(()=>document.activeElement.hasAttribute('data-anatomy-quiz-panel'));results.keyboard=");fs.writeFileSync(file,s);

@@ -1,0 +1,51 @@
+{
+  "before": {
+    "cropButtons": 1,
+    "ownedFilePickers": 1
+  },
+  "rawFacts": {
+    "cropButtons": 0,
+    "ownedFilePickers": 1,
+    "replaceHasOnchange": true,
+    "sourceBlocksPreserved": true,
+    "sourceBlockCount": 23,
+    "linksPreserved": true,
+    "imagesAndAltPreserved": true,
+    "imageCount": 1,
+    "visibleTextMatchesWithoutRemovedRendererLabels": true,
+    "eventHandlerCount": 1
+  },
+  "canonicalFacts": {
+    "cropButtons": 0,
+    "ownedFilePickers": 0,
+    "replaceHasOnchange": false,
+    "sourceBlocksPreserved": true,
+    "sourceBlockCount": 23,
+    "linksPreserved": true,
+    "imagesAndAltPreserved": true,
+    "imageCount": 1,
+    "visibleTextMatchesWithoutRemovedRendererLabels": true,
+    "eventHandlerCount": 0
+  },
+  "rawIdempotent": true,
+  "canonicalIdempotent": true,
+  "schema": 1,
+  "verifiedAt": "2026-09-12T23:08:33.704Z",
+  "evidenceClass": "Targeted real-Chromium cleanup replay of the historical continuation candidate; not a new live MCP run, verdict, or human acceptance.",
+  "sourceSha256": "48163c2357dbb6053bb3ed7bbd5f7da07bcc631039caa082044fab0f9e18a5d7",
+  "historicalCandidate": "continuation-replayed-candidate.html",
+  "historicalCandidateSha256": "eb0588e1d67572543a3ca23f45920ea621e0717cf0ba8599fa238e7e97c05eb5",
+  "historicalEvidenceUnchanged": true,
+  "rawOutput": {
+    "file": "static-crop-replayed-candidate.html",
+    "sha256": "95c6f3f99ebe1c6f0fe56e330799efcf5a29e0763217bea690808ed9a098e934",
+    "entryPoint": "_stripExecutableScripts",
+    "scope": "Remove unsupported owned crop control; retain raw Replace input handler."
+  },
+  "canonicalOutput": {
+    "file": "static-browser-export-candidate.html",
+    "sha256": "d7062eac912782485240b0e7120e6be9082dbc2523b23c1b426f6859d225bd7b",
+    "entryPoint": "_alloSanitizeRemediationHtml",
+    "scope": "Remove owned image editor controls before canonical sanitization strips event handlers."
+  }
+}

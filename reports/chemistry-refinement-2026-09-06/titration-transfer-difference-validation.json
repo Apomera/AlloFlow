@@ -1,0 +1,21 @@
+{
+  "passedTests": 77,
+  "passedSuites": 7,
+  "browserScans": 54,
+  "forcedColorStructuralScans": 4,
+  "forcedColorContrast": "Visual review; axe contrast rule excluded only for forced-color scans (dequelabs/axe-core#3978).",
+  "browserPageErrors": 0,
+  "horizontalOverflowCases": 0,
+  "missingAriaReferences": 0,
+  "browserReports": [
+    "titration-transfer-difference-browser-results.json",
+    "titration-transfer-browser-results.json"
+  ],
+  "unitReport": "titration-transfer-difference-tests.json",
+  "sourceReport": "titration-transfer-difference-source-checks.json",
+  "visualReview": [
+    "gross desktop 1200",
+    "solid-only phone 320",
+    "forced-colors gross phone 320"
+  ]
+}

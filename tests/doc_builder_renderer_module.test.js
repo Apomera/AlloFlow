@@ -57,3 +57,33 @@ describe('dedicated document-block renderer module', () => {
     expect(module).toBe(deployed);
   });
 });
+
+// The banner card is the document's h1. Models routinely emit an h1 block with the same title
+// right after it; the single-h1 net used to demote that duplicate to an h2, so screen-reader
+// users heard the title twice (NCES tables pilot, 2026-09-13).
+describe('banner title is not repeated as an h1 block', () => {
+  const render = makeRenderer();
+  const count = (html, re) => (html.match(re) || []).length;
+  it('drops an h1 block whose text repeats the banner title, ignoring case, spacing and trailing punctuation', () => {
+    const html = render([
+      { type: 'banner', title: 'Report on the Condition of Education 2023', subtitle: 'Chapter 2' },
+      { type: 'h1', text: '  report on the  Condition of Education 2023.', id: 'report' },
+      { type: 'h2', text: 'Preprimary Education', id: 'preprimary' },
+    ]);
+    expect(count(html, /<h1[\s>]/g)).toBe(1);
+    expect(html).toContain('Report on the Condition of Education 2023</h1>');
+    expect(html).not.toContain('id="report"');
+    expect(html).toContain('<h2 id="preprimary"');
+  });
+  it('keeps an h1 that differs from the banner title, and keeps every h1 when there is no banner', () => {
+    const withBanner = render([{ type: 'banner', title: 'Unit 4 Study Guide' }, { type: 'h1', text: 'Photosynthesis', id: 'photo' }]);
+    expect(count(withBanner, /<h1[\s>]/g)).toBe(2);
+    expect(withBanner).toContain('id="photo"');
+    const noBanner = render([{ type: 'h1', text: 'Photosynthesis', id: 'photo' }, { type: 'p', text: 'Plants make sugar.' }]);
+    expect(count(noBanner, /<h1[\s>]/g)).toBe(1);
+  });
+  it('is idempotent on the same block list', () => {
+    const blocks = [{ type: 'banner', title: 'Title' }, { type: 'h1', text: 'Title' }, { type: 'p', text: 'Body.' }];
+    expect(render(blocks)).toBe(render(blocks));
+  });
+});

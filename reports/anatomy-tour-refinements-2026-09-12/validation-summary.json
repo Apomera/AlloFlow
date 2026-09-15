@@ -1,0 +1,11 @@
+{
+  "source": "stem_lab/stem_tool_anatomy.js",
+  "sha256": "57e5c6683fcd9c1f7fcbe8b84a6a301596ad6c21edcedf5a72de11ee68bd419a",
+  "mirrorIdentical": true,
+  "syntax": "pass",
+  "localizedNewStrings": 106,
+  "validatedPacks": 6,
+  "tours": 10,
+  "authoredSteps": 42,
+  "linkedSources": 30
+}

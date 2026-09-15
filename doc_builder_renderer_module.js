@@ -31,6 +31,15 @@ function createDocBuilderRenderer(deps) {
   }
 const renderJsonToHtml = (blocks) => {
         if (!Array.isArray(blocks)) return '';
+        // The banner card already renders the document title as the h1, and models routinely emit an
+        // h1 block with the same title right after it (NCES tables pilot, 2026-09-13). The single-h1
+        // net then demotes that duplicate to an h2, so a screen-reader user heard the title twice, as
+        // h1 then h2. Drop an h1 block whose text repeats a banner title in this same block list.
+        const _headingKey = (value) => String(value == null ? '' : value).replace(/\s+/g, ' ').trim().replace(/[.:!?\s]+$/, '').toLowerCase();
+        const _bannerTitleKeys = new Set(blocks
+          .filter((b) => b && typeof b === 'object' && (b.type === 'banner' || (!b.type && b.title)) && b.title)
+          .map((b) => _headingKey(b.title))
+          .filter(Boolean));
         return blocks.map((block, blockIdx) => {
           // Guard: skip invalid blocks
           if (!block || typeof block !== 'object') return '';
@@ -140,7 +149,9 @@ const renderJsonToHtml = (blocks) => {
           const _safeId = block.id ? String(block.id).replace(/[^a-zA-Z0-9_-]/g, '') : '';
           const id = _safeId ? ` id="${_safeId}"` : '';
           switch (block.type) {
-            case 'h1': return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
+            case 'h1':
+              if (_bannerTitleKeys.size && _bannerTitleKeys.has(_headingKey(block.text))) return '';
+              return `<h1${id} style="color:${docStyle.headingColor};font-size:1.75rem;font-weight:bold;border-bottom:3px solid ${docStyle.accentColor};padding-bottom:0.5rem;margin:1.5em 0 0.5em">${escapeTextField(block.text)}</h1>`;
             case 'h2': return `<h2${id} style="color:${docStyle.headingColor};font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;${docStyle.hasSidebarAccents ? 'border-left:4px solid ' + docStyle.accentColor + ';padding-left:12px;' : ''}">${escapeTextField(block.text)}</h2>`;
             case 'h3': return `<h3${id} style="color:${docStyle.headingColor};font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em">${escapeTextField(block.text)}</h3>`;
             // h4/h5/h6 (2026-06-19): the Vision pass legitimately emits deep headings (a single run logged
@@ -298,10 +309,10 @@ const renderJsonToHtml = (blocks) => {
                 + `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
                 + `<span style="font-size:13px;color:#334155;font-weight:600">Image placeholder</span>`
                 + `<span style="font-size:12px;color:#475569;max-width:90%">${escapeTextField(_imgDesc.substring(0, 140))}${_imgDesc.length > 140 ? '…' : ''}</span>`
-                + `<span style="font-size:11px;color:#64748b;font-style:italic">Drag an extracted image here, or:</span>`
+                + `<span style="font-size:11px;color:#475569;font-style:italic">Drag an extracted image here, or:</span>`
                 + `<div style="display:flex;gap:6px;margin-top:0.25rem;flex-wrap:wrap;justify-content:center">`
                 + `<label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff !important;border:1px solid #1e3a8a;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span style="color:#ffffff !important">Upload image</span><input type="file" accept="image/*" style="display:none" onchange="${_uploadHandler}"></label>`
-                + `<button type="button" onclick="${_pickHandler}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick from extracted images"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
+                + `<button type="button" onclick="${_pickHandler}" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" aria-label="Pick extracted image from this document"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span style="color:#ffffff !important">Pick extracted</span></button>`
                 + `</div>`
                 + `</div>`
                 + (_captionText ? `<figcaption style="font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5rem">${escapeTextField(_captionText)}</figcaption>` : '')

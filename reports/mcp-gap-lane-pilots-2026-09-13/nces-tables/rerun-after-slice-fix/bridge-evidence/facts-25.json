@@ -1,0 +1,202 @@
+[
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-33",
+  "section": 4,
+  "of": 6,
+  "htmlChars": 16000,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [
+   {
+    "tag": "h3",
+    "text": "Racial/Ethnic Enrollment in Public and Private Schools",
+    "id": "racial-ethnic-enrollment-in-public-and-private-schools"
+   }
+  ],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [],
+  "tables": [],
+  "linkCount": 4,
+  "links": [
+   {
+    "text": "Characteristics of Elementary and",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cla",
+    "ariaLabel": null
+   },
+   {
+    "text": "Public Charter School Enrollment",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cgb?tid=4",
+    "ariaLabel": null
+   },
+   {
+    "text": "School Enrollment",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cgc",
+    "ariaLabel": null
+   },
+   {
+    "text": "Racial/Ethnic",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cge",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 0,
+   "ol": 0,
+   "li": 0,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [],
+  "buttons": [
+   {
+    "text": "×",
+    "ariaLabel": "Remove this image placeholder",
+    "labelled": true
+   }
+  ],
+  "inlineColors": [
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569",
+   "color:#4a6675;font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em",
+   "position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "function(c, dataUrl, altText){var pk=c.querySelector('[data-alloflow-picker]');if(pk)pk.remove();var target=null;var kids=c.children;for(var ii=0;ii Figure 4. Line chart with markers titled Enrollment in elementary and secondary schools, by",
+  "textChars": 4578
+ },
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-34",
+  "section": 5,
+  "of": 6,
+  "htmlChars": 16014,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [],
+  "tables": [],
+  "linkCount": 0,
+  "links": [],
+  "badLinks": [],
+  "lists": {
+   "ul": 2,
+   "ol": 0,
+   "li": 6,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [
+   {
+    "type": "file",
+    "id": null,
+    "labelled": true
+   }
+  ],
+  "buttons": [
+   {
+    "text": "Pick extracted",
+    "ariaLabel": "Pick from extracted images",
+    "labelled": true
+   },
+   {
+    "text": "✨ Generate (AI)",
+    "ariaLabel": "Generate an AI illustration from the description",
+    "labelled": true
+   }
+  ],
+  "inlineColors": [
+   "font-size:13px;color:#334155;font-weight:600",
+   "font-size:11px;color:#475569;font-style:italic",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #1e3a8a",
+   "color:#ffffff !important",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0f766e;color:#e9e9e9;border:1px solid #115e59;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer",
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "reventDefault();f();};return b;};_bar.appendChild(_mk('−',function(){_cur=Math.max(25,_cur-25);_apply();}));_bar.appendChild(_lab);_bar.appendChild(_mk('+',function(){_cur=Math.min(100,_cur+25);_apply();}));_apply();if(target.parentNode===c",
+  "textChars": 4101
+ },
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-35",
+  "section": 6,
+  "of": 6,
+  "htmlChars": 2072,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 1,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [],
+  "tables": [],
+  "linkCount": 2,
+  "links": [
+   {
+    "text": "Enrollment in Public Schools",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cge",
+    "ariaLabel": null
+   },
+   {
+    "text": "Elementary and Secondary Schools",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cla",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 2,
+   "ol": 0,
+   "li": 6,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [],
+  "buttons": [],
+  "inlineColors": [
+   "margin-top:3rem;padding-top:1rem;border-top:1px solid #e2e8f0;font-size:0.75rem;color:#475569;"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "ublic school student population changed (figure 5). Specifically, between fall 2010 and fall 2021, there was a decrease in the percentages of students who were White (from 52 to 45 percent);Black (from 16 to 15 percent); andAmerican Indian/",
+  "textChars": 1324
+ }
+]

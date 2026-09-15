@@ -1,0 +1,10 @@
+{
+  "passed": 153,
+  "failed": 0,
+  "browserCombinations": 12,
+  "reports": [
+    "tests.json",
+    "tests-retry.json"
+  ],
+  "runnerNotes": "Three fork workers timed out at startup. Retried only those files using threads; all 65 retry tests passed. The runner also reported a timeout terminating one completed thread worker."
+}

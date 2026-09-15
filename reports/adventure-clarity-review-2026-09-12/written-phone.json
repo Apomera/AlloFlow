@@ -1,0 +1,93 @@
+{
+  "name": "written-phone",
+  "errors": [],
+  "text": "Adventure Mode\nLvl 2\n35/150 XP\nEnergy\n75\n💰\nGold\n20\n🔑\nConcepts\n2\n\nExplore the topic. Earn XP to increase the challenge.\n\nRestart\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\n\nNo Scene Image\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nYour next action\n\nDescribe what you want to do and why.\n\nEnter to send · Shift + Enter for a new line.\n\nDictate\nSend action\n💡 Give me a clue\nOne clue per scene. You still decide what happens.",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar",
+      "height": 217,
+      "scrollHeight": 720
+    },
+    {
+      "tag": "DIV",
+      "role": "region",
+      "label": "Available actions",
+      "class": "p-4 bg-[var(--av-surface)] border-t border-[var(--av-line)] shrink-0 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto overscroll-contain",
+      "height": 404,
+      "scrollHeight": 502
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "View Narrative Ledger (AI Memory)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Enter Immersive Mode",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Turn on Auto-Read (DM Voice)",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Start new adventure",
+      "disabled": false,
+      "top": 208,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "TEXTAREA",
+      "label": "Your next action",
+      "disabled": false,
+      "top": 628,
+      "height": 130,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Dictate",
+      "disabled": false,
+      "top": 797,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Send action",
+      "disabled": true,
+      "top": 849,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "💡 Give me a clue",
+      "disabled": false,
+      "top": 918,
+      "height": 44,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

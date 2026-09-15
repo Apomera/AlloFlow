@@ -7840,7 +7840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             // Popup blocker fallback: copy to clipboard.
             try {
               if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(html);
+                (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(html);
                 addToast('Pop-up blocked — HTML copied to clipboard. Paste into a doc + print.');
               } else {
                 addToast('Pop-up blocked. Allow pop-ups for this site to use Print Pack.');

@@ -1,0 +1,6 @@
+const fs=require('node:fs'),assert=require('node:assert/strict');
+for(const file of ['stem_lab/stem_tool_anatomy.js','desktop/web-app/public/stem_lab/stem_tool_anatomy.js',__dirname+'/english.json',__dirname+'/french.txt',__dirname+'/spanish_latin_america.txt',__dirname+'/arabic.txt']){
+  const source=fs.readFileSync(file,'utf8');assert.ok(source.includes('chosenFunction'),file);fs.writeFileSync(file,source.replaceAll('chosenFunction','chosenfunction').replaceAll('targetFunction','targetfunction'));
+}
+const test='tests/anatomy_spotter_practice.test.js';let source=fs.readFileSync(test,'utf8');source=source.replace("expect(s.spoken[1]).toContain('Skull');", "expect(s.spoken[1]).toContain('Skull');const feedback=s.html().querySelector('[data-anatomy-spotter-feedback]').textContent;expect(feedback).not.toMatch(/\\{[a-zA-Z]+\\}/);expect(feedback).toContain(s.spoken[1].slice(s.spoken[1].indexOf(': ')+2));");fs.writeFileSync(test,source);
+const browser=__dirname+'/browser.cjs';source=fs.readFileSync(browser,'utf8');source=source.replace('async function capture(name){', "async function capture(name){assert.equal(/\\{[a-zA-Z]+\\}/.test(await panel().innerText()),false,name+' unresolved placeholder');");fs.writeFileSync(browser,source);

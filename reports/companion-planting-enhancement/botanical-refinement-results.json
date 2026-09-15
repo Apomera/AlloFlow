@@ -1,0 +1,14 @@
+{
+  "viewports": [],
+  "assertions": [
+    "Harvest-ready scene count excludes immature and unhealthy crops and structures",
+    "Growth easing reaches the measured endpoint",
+    "Watering effect expires",
+    "Motion preferences stop the animation loop",
+    "Day and night transition continuously",
+    "Seedling artwork hides mature flowers, fruit, and supports",
+    "Seed and mature art retain their distinct stages",
+    "Species detail and mobile garden visually captured"
+  ],
+  "errors": []
+}

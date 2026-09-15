@@ -1,0 +1,43 @@
+{
+  "checks": [
+    {
+      "label": "Harbor initially offers the quick tour",
+      "pass": true
+    },
+    {
+      "label": "Native Skip tutorial clears the gallery view",
+      "pass": true
+    },
+    {
+      "label": "Final ground rendering change preserves the complete2673-cell world",
+      "pass": true
+    },
+    {
+      "label": "Final rendered ground preserves all teaching measurements",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "screenshots": [
+    "harbor-overview-final.png",
+    "harbor-gardens-final.png",
+    "harbor-reservoir-final.png"
+  ],
+  "sources": {
+    "stem_tool_geometryworld.js": "0a15a0f685e3539cf3c91ea58fafb820e7782edd74d825e5b3cf56203e518e0d",
+    "stem_tool_geometryworld_builder.js": "7dbe1b32f7c03179e2bb13e897009878940958569654dcaa8687b8c4fb1bb87a"
+  },
+  "world": {
+    "count": 2673,
+    "truncated": false,
+    "measures": [
+      6,
+      24,
+      24,
+      24,
+      24
+    ]
+  },
+  "pass": true
+}

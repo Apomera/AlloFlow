@@ -1,0 +1,18 @@
+{
+  "createdAt": "2026-09-13T01:33:40.728Z",
+  "status": "applied-awaiting-regression",
+  "changed": [
+    {
+      "file": "desktop/mcp/remediation_headless_driver.cjs",
+      "beforeSha256": "127c8ac8d46577c2089ec79f3daad75130dc677bae5fac41e52a2569c813b4ed",
+      "afterSha256": "c944fd623c7a7d5121d6034a2a67b4b67f8437f6a41272c89680a5dd97b85c86",
+      "newline": "LF"
+    },
+    {
+      "file": "desktop/mcp/alloflow-remediation-mcp-stdio.cjs",
+      "beforeSha256": "9427256d9cba8265a2401102576b3a9d7d52a710a31d1bd3617e40c38f41b110",
+      "afterSha256": "9ed8ec48ead117d0ac6d422fde6b82ad4801b09abae397571598c64f5fa8327e",
+      "newline": "LF"
+    }
+  ]
+}

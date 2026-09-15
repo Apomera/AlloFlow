@@ -1,0 +1,87 @@
+La circulation pulmonaire rapproche le sang de l’air alvéolaire. L’oxygène et le dioxyde de carbone diffusent à travers une fine barrière tissulaire selon leurs gradients de pression partielle. Le sang et l’air restent normalement séparés.
+Pendant l’exercice, la ventilation et le débit sanguin pulmonaire peuvent augmenter pour soutenir les échanges gazeux.
+Si la barrière air–sang s’épaissit, que devient la diffusion lorsque les autres conditions restent identiques ?
+La diffusion des gaz ralentit.
+Le sang doit entrer dans les alvéoles.
+L’oxygène se transforme en dioxyde de carbone.
+Une barrière plus épaisse augmente la distance de diffusion. La ventilation déplace l’air et la circulation déplace le sang ; les échanges entre eux dépendent de la diffusion.
+À la jonction neuromusculaire d’un muscle squelettique, un neurone moteur libère de l’acétylcholine. Celle-ci active la fibre musculaire et entraîne une libération de calcium à l’intérieur. Les muscles cardiaque et lisses ont d’autres mécanismes de contrôle.
+Pour étendre le genou, les neurones moteurs activent les fibres du quadriceps. Les tendons transmettent leur force au squelette.
+Si les récepteurs à l’acétylcholine d’une jonction neuromusculaire squelettique sont bloqués, quel est l’effet immédiat ?
+Le signal nerveux active moins efficacement la fibre musculaire.
+Le tendon produit un signal nerveux plus fort.
+L’os se contracte à la place du muscle.
+L’acétylcholine doit agir sur les récepteurs de la fibre musculaire pour déclencher une transmission neuromusculaire normale. Cet exemple concerne le muscle squelettique, pas tous les types de muscles.
+Les muscles squelettiques transmettent des forces de traction par les tendons. Lorsque cette force agit de part et d’autre d’une articulation, elle peut faire tourner les os ; son effet dépend de la position articulaire et du bras de levier du muscle.
+La force du biceps atteint le radius par son tendon et contribue à la flexion du coude. D’autres muscles participent aussi à cette flexion.
+Pourquoi le biceps peut-il faire tourner l’avant-bras autour du coude ?
+Son tendon transmet une force à distance de l’axe de l’articulation.
+Ses fibres poussent le radius pour l’éloigner de l’humérus.
+Le radius raccourcit lorsque le muscle se contracte.
+Une force de traction possédant un bras de levier produit un moment de force autour de l’articulation. L’os ne raccourcit pas pendant ce mouvement.
+La GnRH hypothalamique stimule la libération de FSH et de LH par l’hypophyse antérieure. Ces hormones agissent sur les gonades ; les hormones gonadiques exercent un rétrocontrôle sur le cerveau et l’hypophyse. Ce rétrocontrôle varie selon le contexte reproductif.
+Lors d’un cycle ovulatoire, un taux élevé et prolongé d’estradiol peut produire un rétrocontrôle positif favorisant un pic de LH.
+Quel organe libère la FSH et la LH dans le sang ?
+L’hypophyse antérieure.
+L’hypothalamus, FSH et LH étant d’autres noms de la GnRH.
+Uniquement les ovaires et les testicules.
+La GnRH provient de l’hypothalamus. La FSH et la LH proviennent de l’hypophyse antérieure et agissent sur les tissus gonadiques.
+Les vaisseaux lymphatiques recueillent l’excès de liquide tissulaire et le ramènent au sang veineux. Les ganglions mettent la lymphe en contact avec les cellules immunitaires. Circulation sanguine et flux lymphatique soutiennent l’équilibre hydrique et la surveillance immunitaire.
+Pendant une réponse immunitaire, un ganglion drainant la région peut grossir. Une petite coupure ne provoque pas toujours un gonflement perceptible des ganglions.
+Si le drainage lymphatique d’un tissu est obstrué, que risque-t-il de se produire ?
+Du liquide s’accumule dans ce tissu.
+Le tissu cesse immédiatement de recevoir tout sang artériel.
+La lymphe se transforme en air.
+Un drainage lymphatique bloqué réduit le retour du liquide interstitiel vers le sang et peut contribuer au gonflement. Les vaisseaux lymphatiques et les artères ont des rôles différents.
+L’hypothalamus relie l’information nerveuse à la régulation endocrine. Il contrôle de nombreuses fonctions hypophysaires ; certains tissus endocrines répondent aussi directement à la composition du sang ou à d’autres signaux.
+Dans l’axe du stress, la CRH hypothalamique favorise la libération d’ACTH hypophysaire. L’ACTH stimule la production de cortisol par le cortex surrénalien, et le cortisol contribue au rétrocontrôle négatif.
+Dans cet exemple de l’axe du stress, quel effet l’augmentation du cortisol exerce-t-elle généralement sur la libération de CRH et d’ACTH en amont ?
+Elle contribue à réduire leur libération par rétrocontrôle négatif.
+Elle augmente toujours les deux sans limite.
+Elle transforme le cortex surrénalien en tissu nerveux.
+Le cortisol exerce un rétrocontrôle sur l’hypothalamus et l’hypophyse. Ce mécanisme régule la voie ; cela ne signifie pas que l’hypophyse contrôle tous les processus endocrines.
+Pendant une inspiration calme, le diaphragme et les intercostaux externes agrandissent le thorax. L’expiration calme repose surtout sur le relâchement et le recul élastique. Les parois des voies aériennes contiennent du muscle lisse qui ajuste leur diamètre.
+Lorsque les muscles inspiratoires agrandissent le thorax, la pression alvéolaire devient brièvement inférieure à la pression atmosphérique et l’air entre.
+Qu’est-ce qui fait normalement sortir l’air pendant une expiration calme ?
+Le recul élastique après le relâchement des muscles inspiratoires augmente la pression alvéolaire.
+Le diaphragme pousse activement l’air à travers les poumons à chaque respiration calme.
+Le muscle lisse des voies aériennes pompe chaque respiration comme un cœur.
+L’air va d’une pression plus élevée vers une pression plus faible. L’expiration calme est surtout passive ; l’expiration forcée recrute d’autres muscles. Le muscle lisse des voies aériennes régule la résistance.
+Les récepteurs cutanés convertissent les stimuli mécaniques, thermiques ou potentiellement nocifs en signaux nerveux. Différents récepteurs et leurs connexions contribuent aux perceptions du toucher, de la température et de la douleur.
+Les récepteurs du bout des doigts fournissent des informations tactiles détaillées. Percevoir une forme ou une texture exige aussi un traitement par le système nerveux.
+Pourquoi un seul récepteur tactile ne suffit-il pas pour identifier la forme d’un objet ?
+Des circuits nerveux doivent traiter ses signaux avec d’autres informations sensorielles.
+La forme est transmise par le sang plutôt que par les nerfs.
+Tous les récepteurs cutanés détectent exactement le même stimulus.
+Les récepteurs commencent la transduction sensorielle. La perception dépend du traitement nerveux et d’informations provenant de populations de récepteurs, pas d’une terminaison isolée.
+Une grande partie du sang veineux des organes digestifs atteint le foie par le système porte hépatique avant de retourner au cœur. Le foie traite les nutriments absorbés. De nombreux lipides alimentaires à longue chaîne entrent d’abord dans la lymphe.
+Après un repas, le glucose absorbé atteint le foie dans le sang portal. Le foie peut stocker du glucose sous forme de glycogène ; d’autres tissus et hormones participent aussi à la régulation de la glycémie.
+Quelle matière absorbée entre généralement dans la lymphe intestinale avant d’atteindre le sang ?
+Les chylomicrons transportant des lipides alimentaires à longue chaîne.
+Tout le glucose absorbé.
+Tous les acides aminés absorbés.
+Les entérocytes regroupent de nombreux lipides à longue chaîne dans des chylomicrons qui entrent dans les vaisseaux chylifères. Les monosaccharides et les acides aminés passent surtout dans les capillaires sanguins intestinaux.
+Chez l’adulte, la moelle osseuse rouge est un site majeur de production des cellules sanguines. Les cellules souches hématopoïétiques donnent plusieurs lignées ; les plaquettes sont des fragments libérés par les mégacaryocytes. Certaines cellules immunitaires mûrissent ailleurs.
+La moelle d’os comme le bassin et le sternum soutient la production des cellules sanguines. Les lymphocytes T en développement accomplissent des étapes importantes de maturation dans le thymus.
+Quelle proposition décrit correctement les plaquettes ?
+Ce sont des fragments cellulaires libérés par les mégacaryocytes.
+Ce sont des globules rouges entièrement formés.
+Ce sont des hormones sécrétées par le thymus.
+Les mégacaryocytes libèrent des plaquettes qui participent à l’hémostase. Une origine médullaire commune ne fait pas de tous les éléments figurés un même type de cellule.
+Dans chaque rangée, lis du côté du pouce vers le petit doigt. Rangée proximale : scaphoïde, lunatum, triquétrum, pisiforme. Rangée distale : trapèze, trapézoïde, capitatum, hamatum. Le pisiforme se trouve sur la face palmaire du triquétrum.
+Occipital, pariétal, frontal, temporal, ethmoïde, sphénoïde : six types d’os, huit os crâniens. Les pariétaux et les temporaux sont pairs ; cette liste ne suit pas un ordre spatial.
+Sept vertèbres cervicales, douze thoraciques et cinq lombaires : les 24 vertèbres habituellement séparées chez l’adulte. Le sacrum et le coccyx fusionnés constituent des régions supplémentaires.
+Supra-épineux, infra-épineux, petit rond et subscapulaire forment la coiffe des rotateurs. Ils contribuent à stabiliser la tête humérale et ont des actions motrices différentes.
+De latéral à médial : iliocostal, longissimus, épineux. Ce sont les colonnes des érecteurs du rachis, pas le trapèze. Les repères de ce catalogue ne les représentent pas individuellement.
+Droit fémoral, vaste latéral, vaste intermédiaire, vaste médial. Tous étendent le genou ; le droit fémoral traverse aussi la hanche. Les lettres regroupent les quatre noms sans décrire un ordre spatial.
+Tricuspide, pulmonaire, mitrale, aortique : ordre des valves sur le trajet sanguin. Des cavités, des vaisseaux pulmonaires et les poumons séparent certaines étapes ; les valves ne sont pas toutes voisines.
+Branches habituelles de la crosse aortique : tronc brachiocéphalique, artère carotide commune gauche, artère subclavière gauche. Il existe des variantes de ramification.
+Nerfs crâniens I–XII : olfactif, optique, oculomoteur, trochléaire, trijumeau, abducens, facial, vestibulocochléaire, glossopharyngien, vague, accessoire, hypoglosse. Cet indice nomme les nerfs sans décrire toutes leurs fonctions.
+Racines, troncs, divisions, faisceaux, branches : principaux niveaux d’organisation du plexus brachial. Ses racines sont les rameaux antérieurs, généralement C5–T1, et non les racines dorsales et ventrales de la moelle épinière.
+Neutrophiles, lymphocytes, monocytes, éosinophiles, basophiles : ordre d’abondance fréquent dans le sang périphérique adulte. Les proportions varient avec l’âge et la santé ; ce classement n’est ni universel ni une liste de toutes les cellules immunitaires.
+Le schéma de Couinaud divise le foie en huit segments fonctionnels ayant des territoires d’apport portal. Les principales veines hépatiques passent entre de nombreux territoires. Il s’agit de segments fonctionnels, pas des lobes visibles en surface.
+De la lumière vers l’extérieur : muqueuse, sous-muqueuse, musculeuse externe, puis séreuse ou adventice. Le revêtement externe dépend de la région de l’organe ; l’estomac possède aussi une couche musculaire oblique.
+Dans la peau épaisse, de la surface vers la profondeur : couches cornée, claire, granuleuse, épineuse et basale. La couche claire caractérise la peau épaisse des paumes et des plantes ; la peau fine n’a pas de couche claire distincte.
+Cavité nasale, pharynx, larynx, trachée, bronches, bronchioles, alvéoles : trajet simplifié de l’air entrant. Le second B inclut les petites bronchioles ; les conduits et sacs alvéolaires se raccordent aux alvéoles.
+Hypophyse antérieure : FSH, LH, ACTH, TSH, prolactine, hormone de croissance. Cet indice énumère six hormones majeures ; il exclut la libération d’ocytocine et de vasopressine par l’hypophyse postérieure.
+Prophase I, métaphase I, anaphase I, télophase I. L’enjambement se produit en prophase I ; les chromosomes homologues se séparent en anaphase I. Les chromatides sœurs se séparent normalement en méiose II.

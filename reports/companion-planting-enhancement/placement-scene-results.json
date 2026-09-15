@@ -1,0 +1,59 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "keyboardRoundTrip": true,
+      "focusTop": 875.59375,
+      "stable": true,
+      "fresh": true,
+      "identity": true,
+      "alpha": 1,
+      "preview": "4",
+      "selected": "-1"
+    },
+    {
+      "width": 320,
+      "keyboardRoundTrip": true,
+      "focusTop": 709.5,
+      "stable": true,
+      "fresh": true,
+      "identity": true,
+      "alpha": 1,
+      "preview": "4",
+      "selected": "-1"
+    }
+  ],
+  "assertions": [
+    "Preview identity, dashed outline, and future-shape label remain distinct from planted crops",
+    "Keyboard preview-to-garden round trip preserves state and exits maximized view",
+    "First planting keeps a visible return route",
+    "Only confirmed planting spends funds and keeps seed growth at zero",
+    "Seed descent and soil settling expire after 1.4 seconds",
+    "Changed crop, growth, day, preview, reduced motion, and unmount cancel effects",
+    "Desktop, phone, large text, night, habitat, caches, and accessibility pass"
+  ],
+  "errors": [],
+  "previewGuards": [
+    "-1",
+    "-1",
+    "-1",
+    "-1"
+  ],
+  "moment": {
+    "starts": true,
+    "seedStage": true,
+    "settles": true,
+    "expires": true,
+    "changedCrop": true,
+    "removed": true,
+    "dayAdvanced": true,
+    "growthAdvanced": true,
+    "preview": true,
+    "reduced": true,
+    "structure": true,
+    "identity": true,
+    "alpha": 1
+  },
+  "liveConfirmation": true,
+  "accessibility": []
+}

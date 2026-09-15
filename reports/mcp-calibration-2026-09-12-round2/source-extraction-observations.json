@@ -1,0 +1,51 @@
+{
+  "evidenceClass": "Original production MCP extraction calls, independently inspected source metadata; not OCR success or remediation effectiveness.",
+  "sourceMetadata": "selection-provenance.json",
+  "observations": [
+    {
+      "name": "form",
+      "file": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/form-extract-result.json",
+      "sha256": "6b6a4114b63f8d8163a89a7dcc6d4db43aeff6a43b7c899624bf60914ddcdfb6",
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\forms\\irs-f1040.pdf",
+      "textCharacters": 10113,
+      "reportedCharacters": 10113,
+      "method": null,
+      "mediaImages": 0
+    },
+    {
+      "name": "scan",
+      "file": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/scan-extract-result.json",
+      "sha256": "84f85acc4d14762c9b24deaee41a7649d4108294ffe013e1b7a801abf1df5b02",
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1954-scan.pdf",
+      "textCharacters": 0,
+      "reportedCharacters": 0,
+      "method": null,
+      "mediaImages": 0
+    },
+    {
+      "name": "spanish",
+      "file": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/spanish-extract-result.json",
+      "sha256": "8b45ca972a4b17e15dae0a2b6270187ca6dd4be12e97a191a76bd7c7ba43d92d",
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\born-digital\\ohchr-udhr-spanish.pdf",
+      "textCharacters": 12067,
+      "reportedCharacters": 12067,
+      "method": null,
+      "mediaImages": 0
+    },
+    {
+      "name": "text-bearing-scan",
+      "file": "mcp-testing/refinement-study/private/calibration-2026-09-12-round2/text-bearing-scan-extract-result.json",
+      "sha256": "07899d1433a22fe3bd098de079f593d469f423d9341609d490cad0008d738910",
+      "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\corpus\\scanned\\irs-f1040-1913-scan.pdf",
+      "textCharacters": 13989,
+      "reportedCharacters": 13989,
+      "method": null,
+      "mediaImages": 0
+    }
+  ],
+  "limits": [
+    "mediaImages is the extractor payload count, not a PDF image inventory: the 1954 scan has four page images in the source oracle.",
+    "The 1913 scanned-category file already has extractable text; text extraction does not demonstrate OCR.",
+    "No scanner security-gate exception or PDF/UA conformance claim was introduced."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "mode": "Built-in image_gen, generate mode, no input image references. Generated assets copied into this project.",
+  "assets": [
+    {
+      "file": "assets/waterworks-setting.png",
+      "prompt": "Create a polished, friendly, wide landscape illustration for a cooperative educational board game called a waterworks learning expedition. The image itself must contain absolutely no text, labels, numbers, symbols, interface panels, route lines, board cells, or arrows. A small imaginative outdoor water research world with a winding river, a lake, a modest wooden observation bridge, a glass-roofed cloud observation hut, and a few simple scientific field stations among green hills. Light airy watercolor and gouache illustration with a restrained teal, sage, warm cream, and soft violet palette. Slightly elevated three-quarter viewpoint, coherent natural geography, warm daylight, welcoming and age-flexible rather than babyish. Focus on a calm illustrated setting, not a scientific diagram or answer key. Large readable shapes, uncluttered composition. Wide 16:9 composition. This will be a supplementary banner above a separately rendered interactive map. No people are necessary. Produce the single illustration."
+    },
+    {
+      "file": "assets/evaporation-glossary.png",
+      "prompt": "Create a single clear educational glossary illustration of evaporation, suitable for children and older learners. A shallow bowl of liquid water warmed by gentle sunlight, with a subtle transition to dispersed water vapor represented by sparse translucent rising wisps. Show that liquid water becomes vapor; do not show boiling bubbles or imply boiling is required. Friendly watercolor and gouache style, simple shapes, restrained blue, teal and warm cream colors, uncluttered pale background, square composition. Absolutely no written text, labels, letters, numbers, symbols, arrows, or UI. The illustration will sit alongside the visible glossary term and a complete text definition, so it does not need to explain everything on its own. Avoid decorative characters or distracting objects."
+    }
+  ]
+}

@@ -47,7 +47,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
   // ── Audio ──
   var _absAC = null;
-  function getAC() { if (!_absAC) { try { _absAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
+  function getAC() { if (!_absAC) { try { _absAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
   function absTone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCastReady() { absTone(660, 0.08, 'sine', 0.05); setTimeout(function() { absTone(880, 0.1, 'sine', 0.06); }, 70); }
   function sfxCastHit()   { absTone(440, 0.05, 'sawtooth', 0.05); setTimeout(function() { absTone(220, 0.15, 'sawtooth', 0.06); }, 50); }

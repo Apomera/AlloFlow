@@ -1480,6 +1480,8 @@ function MathPanel(props) {
                                         <option value="Step-by-Step">{t('math.modes.step_by_step')}</option>
                                         <option value="Conceptual">{t('math.modes.conceptual')}</option>
                                         <option value="Real-World Application">{t('math.modes.real_world')}</option>
+                                        <option value="Spiral Review">🔁 {t('math.modes.spiral_review') || 'Spiral Review (mixed skills)'}</option>
+                                        <option value="Difficulty Ladder">🪜 {t('math.modes.difficulty_ladder') || 'Difficulty Ladder (easy to hard)'}</option>
                                         <option value="Fluency Probes">⏱️ {t('math.modes.fluency_probe') || 'Fluency Probe'}</option>
                                         <option value="Fluency Maze">🎯 {t('math.modes.fluency_maze') || 'Fluency Maze'}</option>
                                     </select>
@@ -1604,7 +1606,7 @@ function MathPanel(props) {
           setCubeDims, setCubeFeedback, setCubeNotch, setCubeRotation, setCubeScale,
           setCubeShape, setCubeShowLayers, setExploreDifficulty, t
 })}
-                        {(mathMode === 'Problem Set Generator' || mathMode === 'Word Problems from Source' || mathMode === 'Freeform Builder') && (
+                        {(mathMode === 'Problem Set Generator' || mathMode === 'Spiral Review' || mathMode === 'Difficulty Ladder' || mathMode === 'Word Problems from Source' || mathMode === 'Freeform Builder') && (
                             <div>
                                 <label className={SIDEBAR_PANEL_UI.label}>{t('math.quantity')}</label>
                                 <div className="relative">
@@ -1625,7 +1627,7 @@ function MathPanel(props) {
                         )}
                         <div>
                             <label className={SIDEBAR_PANEL_UI.label}>
-                                {mathMode === 'Problem Set Generator'
+                                {(mathMode === 'Problem Set Generator' || mathMode === 'Spiral Review' || mathMode === 'Difficulty Ladder')
                                     ? t('math.labels.topic_skill')
                                     : mathMode === 'Word Problems from Source'
                                         ? t('math.labels.instructions_opt')
@@ -1643,6 +1645,8 @@ function MathPanel(props) {
                                     onChange={(e) => setMathInput(e.target.value)}
                                     placeholder={
                                         mathMode === 'Problem Set Generator' ? t('math.placeholder_topic') :
+                                        mathMode === 'Spiral Review' ? (t('math.placeholder_spiral') || 'Skills to mix, e.g. "adding fractions, area of rectangles, one-step equations" (10 problems)') :
+                                        mathMode === 'Difficulty Ladder' ? (t('math.placeholder_ladder') || 'One skill to climb, e.g. "two-step equations" (8 problems, easy to hard)') :
                                         mathMode === 'Word Problems from Source' ? t('math.placeholder_focus') :
                                         t('math.placeholder_eq')
                                     }

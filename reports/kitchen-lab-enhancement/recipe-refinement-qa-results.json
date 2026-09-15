@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Stirring visibly redistributes 3D food and moves the utensil without advancing time.",
+    "A developing problem remains observable in Demonstrate mode; actionable coaching requires a recorded hint.",
+    "An imperfect dish receives a specific next practice after evidence submission, with a readable cooking sequence."
+  ],
+  "accessibility": [
+    {
+      "label": "320px developing-problem monitor",
+      "issues": []
+    },
+    {
+      "label": "320px imperfect dish review",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

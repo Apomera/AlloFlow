@@ -256,13 +256,25 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
       const alert = page.getByRole('alert');
       await alert.waitFor({ timeout: 20000 });
       expect(await alert.textContent()).toContain('3D engine unavailable');
-      expect(await page.locator('#particle-stage').getAttribute('aria-busy')).toBe('true');
-      expect(await page.locator('#particle-viewport canvas').getAttribute('tabindex')).toBe('-1'); // not a focus trap while dead
+      // The chamber is not dead: the flat 2D fallback runs the same physics on a plain canvas, so the stage is live,
+      // the canvas is focusable, Run produces collisions and the pump adds particles, all before Retry.
+      expect(await page.locator('#particle-stage').getAttribute('aria-busy')).toBe('false');
+      expect(await page.locator('#particle-viewport canvas[role="application"]').getAttribute('tabindex')).toBe('0');
+      expect(await page.locator('#particle-viewport canvas[role="application"]').getAttribute('aria-roledescription')).toBe('Interactive flat 2D particle chamber');
+      await page.locator('#particle-essential-controls button').first().click(); // Run
+      await page.waitForFunction(() => document.querySelector('#particle-stage-activity')?.textContent.includes('Live simulation'));
+      await page.waitForFunction(() => Number((document.body.textContent.match(/(\d+) \/ sample/) || [])[1]) > 0, null, { timeout: 20000 });
+      await page.getByRole('button', { name: /^Pump in 8 A\./ }).click();
+      await page.waitForFunction(() => document.body.textContent.includes('72 particles in the chamber'), null, { timeout: 15000 });
+      const litFallback = await page.evaluate(() => { const c = document.querySelector('#particle-viewport canvas[data-flat-fallback]'); const g = c.getContext('2d'); const d = g.getImageData(0, 0, c.width, c.height).data; let bright = 0; for (let i = 0; i < d.length; i += 16) if (d[i] + d[i + 1] + d[i + 2] > 300) bright++; return bright / (d.length / 16); });
+      expect(litFallback).toBeGreaterThan(0.002); // the 2D canvas really paints particles
       await page.getByRole('button', { name: 'Retry', exact: true }).click();
+      await page.waitForFunction(() => window.engineAttempts === 2);
       await page.waitForSelector('#particle-stage[aria-busy="false"]', { timeout: 20000 });
-      expect(await page.evaluate(() => window.engineAttempts)).toBe(2);
-      expect(await page.getByRole('alert').count()).toBe(0);
-      expect(await page.locator('#particle-viewport canvas').getAttribute('tabindex')).toBe('0');
+      await page.waitForFunction(() => document.querySelectorAll('[role="alert"]').length === 0, null, { timeout: 20000 });
+      expect(await page.locator('#particle-viewport canvas[role="application"]').getAttribute('aria-roledescription')).toBe('Interactive 3D particle chamber');
+      expect(await page.locator('#particle-viewport canvas[role="application"]').getAttribute('tabindex')).toBe('0');
+      expect(await page.locator('#particle-viewport canvas[data-flat-fallback]').count()).toBe(0); // the overlay canvas leaves with the fallback
       expect(errors).toEqual([]);
     } finally { await page.close(); }
   }, 60000);
@@ -599,19 +611,50 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
     try {
       const before = await page.evaluate(() => window.rendererBuilds);
       expect(before).toBe(1);
-      const slider = page.getByLabel('Container edge length and volume', { exact: true });
+      const slider = page.getByLabel('Particle collision diameter', { exact: true });
       // Ticks are dispatched from inside the page 25 ms apart so harness round-trips cannot stretch the gaps.
       await slider.evaluate(async (el) => {
         const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-        for (const v of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
+        for (const v of [0.42, 0.48, 0.54, 0.6, 0.66, 0.72, 0.78, 0.84, 0.9]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
       });
-      await page.waitForFunction(() => window.savedParticleData.boxSize === 18, null, { timeout: 20000 });
+      await page.waitForFunction(() => window.savedParticleData.particleDiameter === 0.9, null, { timeout: 20000 });
       await page.waitForSelector('#particle-stage[aria-busy="false"]');
       expect(await page.evaluate(() => window.rendererBuilds)).toBe(2);
-      expect(await slider.inputValue()).toBe('18');
+      expect(await slider.inputValue()).toBe('0.9');
       expect(errors).toEqual([]);
     } finally { await page.close(); }
   }, 60000);
+
+  it('squeezes the running chamber as a live piston that heats the gas, and the heat bath brings it back', async () => {
+    // The container slider used to tear the scene down and re-seed it (isothermal by accident). Now the walls move
+    // while the chamber runs and do work on the gas, so with the heat bath off a squeeze warms it; with the bath
+    // on, the walls exchange heat and the measured temperature settles back to the setpoint. No rebuild either way.
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { count: 72 }, 'default', {}, () => {
+      const Orig = THREE.WebGLRenderer; window.rendererBuilds = 0;
+      THREE.WebGLRenderer = function (options) { window.rendererBuilds += 1; return new Orig(options); };
+      THREE.WebGLRenderer.prototype = Orig.prototype;
+    });
+    try {
+      const measured = () => page.evaluate(() => Number((document.querySelector('#particle-readouts').textContent.match(/(\d+) K/) || [])[1]));
+      await page.locator('#particle-essential-controls button').first().click(); // Run
+      await page.waitForFunction(() => document.querySelector('#particle-stage-activity')?.textContent.includes('Live simulation'));
+      await page.waitForTimeout(800);
+      const before = await measured();
+      expect(Math.abs(before - 300)).toBeLessThan(40);
+      const slider = page.getByLabel('Container edge length and volume', { exact: true });
+      await slider.evaluate(async (el) => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        for (const v of [10, 9, 8, 7]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
+      });
+      await page.waitForFunction(() => window.savedParticleData.boxSize === 7, null, { timeout: 20000 });
+      await page.waitForFunction(() => Number((document.querySelector('#particle-readouts').textContent.match(/(\d+) K/) || [])[1]) > 400, null, { timeout: 20000 });
+      expect(await page.evaluate(() => window.rendererBuilds)).toBe(1); // a squeeze is not a rebuild
+      await page.getByRole('button', { name: '♨ Heat bath off', exact: true }).click();
+      await page.waitForFunction(() => Math.abs(Number((document.querySelector('#particle-readouts').textContent.match(/(\d+) K/) || [])[1]) - 300) < 25, null, { timeout: 20000 });
+      expect(await page.evaluate(() => window.rendererBuilds)).toBe(1);
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 90000);
 
   it('idles cheaply while paused and saves a slider drag once', async () => {
     // Before: 14 whole-tree renders in 3 s while PAUSED (the metrics publish never checked whether anything moved),
@@ -757,6 +800,64 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
       expect(errors).toEqual([]);
     } finally { await page.close(); }
   }, 60000);
+
+  it('expands the container when the gas is warmed under a pressure hold, without a rebuild', async () => {
+    // Charles's law: with the heat bath and the hold on, raising the setpoint must grow the container until the
+    // gauge returns to the held value. The container change is the gas's response, driven from the publish step.
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { count: 72, boxSize: 9, temperature: 200, thermostat: true, holdPressure: true }, 'default', {}, () => {
+      const Orig = THREE.WebGLRenderer; window.rendererBuilds = 0;
+      THREE.WebGLRenderer = function (options) { window.rendererBuilds += 1; return new Orig(options); };
+      THREE.WebGLRenderer.prototype = Orig.prototype;
+    });
+    try {
+      await page.locator('#particle-essential-controls button').first().click(); // Run
+      // Two simulated seconds of gauge samples; under the full suite's load the frame rate drops and simulated time
+      // runs slower than the clock, so each wait gets a generous budget.
+      await page.waitForFunction(() => /Held at [\d.]+ model units/.test(document.body.textContent), null, { timeout: 45000 });
+      const held = await page.evaluate(() => Number(document.body.textContent.match(/Held at ([\d.]+) model units/)[1]));
+      expect(held).toBeGreaterThan(0);
+      const temperature = page.getByLabel('Temperature in kelvin', { exact: true });
+      await temperature.evaluate((el) => { const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(el, '400'); el.dispatchEvent(new Event('input', { bubbles: true })); });
+      await page.waitForFunction(() => window.savedParticleData.boxSize >= 10.5, null, { timeout: 60000 });
+      // The walls move at most 0.3 units per gauge sample, so the gauge overshoots first; once the container has caught
+      // up it must come back to the held value (the readout is a noisy 400 ms sample, hence the tolerance).
+      await page.waitForFunction((target) => Math.abs(Number(document.querySelector('#particle-readouts').textContent.match(/P ([\d.]+)/)[1]) - target) / target < 0.45, held, { timeout: 60000 });
+      expect(await page.evaluate(() => window.savedParticleData.boxSize)).toBeGreaterThanOrEqual(10.5);
+      expect(await page.evaluate(() => window.rendererBuilds)).toBe(1);
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 180000);
+
+  it('keeps PV over NT constant across a Boyle trial pair recorded in the running chamber', async () => {
+    // The whole point of the model's pressure: squeeze the running chamber with the heat bath on, record before and
+    // after, and the ideal-gas ratio must come back to the same number (the check card says so in words).
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { count: 72, boxSize: 13, temperature: 320, thermostat: true });
+    try {
+      const wallRate = () => page.evaluate(() => { const cell = Array.from(document.querySelectorAll('.rounded-xl.bg-slate-100')).find((el) => el.textContent.startsWith('Wall hits')); return Number(cell.textContent.match(/(\d+) \/ s/)[1]); });
+      await page.locator('#particle-essential-controls button').first().click(); // Run
+      await page.waitForFunction(() => Number((document.querySelector('#particle-readouts').textContent.match(/P ([\d.]+)/) || [])[1]) > 0.3, null, { timeout: 30000 });
+      await page.waitForTimeout(2500); // let the gauge and the wall-hit window fill
+      const rateBefore = await wallRate();
+      await page.getByRole('button', { name: 'Record this trial', exact: true }).click();
+      const slider = page.getByLabel('Container edge length and volume', { exact: true });
+      await slider.evaluate(async (el) => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        for (const v of [12, 11, 10, 9]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
+      });
+      await page.waitForFunction(() => window.savedParticleData.boxSize === 9, null, { timeout: 20000 });
+      await page.waitForTimeout(7000); // the piston travels 4 units at 1 unit per second, then the gas settles
+      await page.getByRole('button', { name: 'Record this trial', exact: true }).click();
+      const check = page.locator('#particle-gas-law-check');
+      await check.waitFor({ timeout: 10000 });
+      const text = await check.textContent();
+      const spread = Number((text.match(/\((\d+)% apart\)/) || [])[1]);
+      expect(spread, text).toBeLessThan(35);
+      expect(text).toMatch(/held constant|nearly constant/);
+      const rateAfter = await wallRate();
+      expect(rateAfter, 'wall hits per second before ' + rateBefore + ' after ' + rateAfter).toBeGreaterThan(rateBefore * 1.15); // a smaller box: more wall hits per second
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 120000);
 
   it('supports native fullscreen, preserves the renderer, and captures desktop layouts', async () => {
     const { page, errors } = await mount({ width: 1440, height: 900 }, { preset: 'diffusion', trace: true, systemProbe: true });

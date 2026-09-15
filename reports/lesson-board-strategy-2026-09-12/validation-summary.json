@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "distinctTests": 412,
+  "suites": 25,
+  "method": "Latest result per file, test name, and parameterized occurrence. The complete regression run passed; affected workspace and gameplay suites were rerun after the classroom reload fix.",
+  "reports": [
+    "regression-tests.json",
+    "final-focused-tests.json"
+  ],
+  "unresolved": []
+}

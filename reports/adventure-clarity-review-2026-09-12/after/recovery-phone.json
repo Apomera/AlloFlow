@@ -1,0 +1,61 @@
+{
+  "name": "recovery-phone",
+  "errors": [],
+  "text": "Adventure Mode\nStory summary\nReading view\nAuto-read: OFF\nStory status & more tools\nJourney notebook\nRecorded decisions: 3\n+\nCURRENT SCENE\nGo to choices ↓\n\nThe river runs low beside the town. Maya shows you two jars: one holds clear water from the wetland, and the other holds cloudy water from the farm. The mayor wants a plan before the next dry season. You remember that heat makes water evaporate and plants release water into the air. A farmer says more trees will use too much water. What evidence would help you decide how to protect the town’s supply?\n\nEpisode progress\n3 completed · 9 remaining\nAdventure Interrupted\n\nThe storyteller lost connection or generated an invalid response.\n\nRetry Action",
+  "scrollAreas": [
+    {
+      "tag": "DIV",
+      "role": null,
+      "label": null,
+      "class": "flex-grow min-h-0 overflow-y-auto overscroll-contain custom-scrollbar",
+      "height": 691,
+      "scrollHeight": 772
+    }
+  ],
+  "height": 900,
+  "width": 375,
+  "overflow": false,
+  "controls": [
+    {
+      "tag": "BUTTON",
+      "label": "Open story summary",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Open reading view",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Read each scene automatically",
+      "disabled": false,
+      "top": 76,
+      "height": 50,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Go to choices ↓",
+      "disabled": false,
+      "top": 260,
+      "height": 44,
+      "value": ""
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Retry adventure turn",
+      "disabled": false,
+      "top": 820,
+      "height": 46,
+      "value": ""
+    }
+  ],
+  "violations": []
+}

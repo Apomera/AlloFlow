@@ -60,4 +60,18 @@ describe('header language selector control behavior',()=>{
  it('keeps toolbar actions named and prevents form submission',async()=>{
   await mount();for(const button of host.querySelectorAll('button')){expect(button.type).toBe('button');expect(button.getAttribute('aria-label')?.trim()).toBeTruthy();}
  });
+ // 2026-09-13 welcome-screen review: the custom-language box was 80 px wide and clipped its own
+ // placeholder to "Enter Languag"; the import button carried the SOURCE upload help key, so help
+ // mode titled it "Source Upload Button", and the hidden file input held the language key where
+ // no click or tour step could ever land.
+ it('gives the custom-language box room for its placeholder and puts the import help key on the visible button',async()=>{
+  await mount();
+  const manual=host.querySelector('input[type="text"]');
+  expect(manual.className).toContain('w-28');expect(manual.className).not.toContain('w-20');expect(manual.className).toContain('text-xs');
+  const importButton=host.querySelector('button[aria-label="Import Language Pack"]');
+  expect(importButton.getAttribute('data-help-key')).toBe('ui_lang_import_btn');
+  expect(host.querySelector('input[type="file"]').hasAttribute('data-help-key')).toBe(false);
+  expect(host.querySelectorAll('[data-help-key="ui_lang_import_btn"]')).toHaveLength(1);
+  expect(host.querySelector('[data-help-key="source_upload_btn"]')).toBeNull();
+ });
 });

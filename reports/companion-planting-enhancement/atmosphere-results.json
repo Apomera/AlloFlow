@@ -1,0 +1,76 @@
+{
+  "viewports": [
+    {
+      "width": 1280,
+      "seasons": 4,
+      "night": true,
+      "empty": true,
+      "reducedMotionStable": true
+    },
+    {
+      "width": 320,
+      "seasons": 4,
+      "night": true,
+      "empty": true,
+      "reducedMotionStable": true
+    }
+  ],
+  "assertions": [
+    "Four seasons, night, and an empty garden captured at desktop and 320px",
+    "Reduced motion produces identical frames at different times",
+    "Enabled ambient motion changes the artwork",
+    "Scene drawing preserves saved garden state and canvas context",
+    "Maximized garden fits all 16 beds",
+    "Scene cache remains bounded",
+    "Cached bed artwork matches fresh painting after care, selection, placement, and view changes",
+    "Cached bitmap released on unmount"
+  ],
+  "errors": [],
+  "zeroSize": true,
+  "bedCache": [
+    {
+      "name": "normal",
+      "matchesFresh": true
+    },
+    {
+      "name": "dry soil",
+      "matchesFresh": true
+    },
+    {
+      "name": "watered beds",
+      "matchesFresh": true
+    },
+    {
+      "name": "winter edges",
+      "matchesFresh": true
+    },
+    {
+      "name": "selected bed",
+      "matchesFresh": true
+    },
+    {
+      "name": "placement outline",
+      "matchesFresh": true
+    },
+    {
+      "name": "empty beds",
+      "matchesFresh": true
+    },
+    {
+      "name": "care lens",
+      "matchesFresh": true
+    },
+    {
+      "name": "updated care tones",
+      "matchesFresh": true
+    }
+  ],
+  "paintTiming": {
+    "medianMs": 9.199999999254942,
+    "p95Ms": 34.5,
+    "width": 2256,
+    "height": 1160,
+    "nodeCache": 16,
+    "pathCache": 111
+  }
+}

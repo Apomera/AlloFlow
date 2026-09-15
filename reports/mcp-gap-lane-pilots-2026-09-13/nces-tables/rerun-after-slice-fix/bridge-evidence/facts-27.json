@@ -1,0 +1,263 @@
+[
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-36",
+  "section": 1,
+  "of": 6,
+  "htmlChars": 16000,
+  "isDocument": true,
+  "lang": "en",
+  "title": "Accessible Document — nces-condition-of-education",
+  "skipLink": [
+   {
+    "text": "Skip to main content",
+    "href": "#main-content",
+    "targetExists": true
+   }
+  ],
+  "landmarks": {
+   "main": 1,
+   "header": 1,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [
+   {
+    "tag": "h1",
+    "text": "Report on the Condition of Education 2023",
+    "id": null
+   },
+   {
+    "tag": "h2",
+    "text": "Report on the Condition of Education 2023",
+    "id": "report-on-the-condition-of-education-2023"
+   },
+   {
+    "tag": "h2",
+    "text": "Preprimary, Elementary, and Secondary Education",
+    "id": "preprimary-elementary-and-secondary-education"
+   },
+   {
+    "tag": "h3",
+    "text": "Key Findings From This Chapter",
+    "id": "key-findings-from-this-chapter"
+   },
+   {
+    "tag": "h3",
+    "text": "Preprimary Education",
+    "id": "preprimary-education"
+   }
+  ],
+  "headingSkips": [],
+  "h1Count": 1,
+  "images": [],
+  "tables": [],
+  "linkCount": 3,
+  "links": [
+   {
+    "text": "Skip to main content",
+    "href": "#main-content",
+    "ariaLabel": null
+   },
+   {
+    "text": "Report on the Condition of Education",
+    "href": "https://nces.ed.gov/pubs2023/2023144.pdf",
+    "ariaLabel": null
+   },
+   {
+    "text": "Characteristics of",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cla",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 3,
+   "ol": 0,
+   "li": 10,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [],
+  "buttons": [
+   {
+    "text": "×",
+    "ariaLabel": "Remove this image placeholder",
+    "labelled": true
+   }
+  ],
+  "inlineColors": [
+   "position:relative;background:#ffffff;color:#1f2937 !important;padding:36px 40px;border-radius:14px;margin-bottom:28px;overflow:hidden;border-left:6px solid #1c7c45;box-shadow:0 6px 20px rgba(15,23,42,0.18)",
+   "color:#1f2937 !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;margin:0;text-shadow:0 1px 2px rgba(255,255,255,0.35)",
+   "color:#1f2937 !important;font-size:1.1em;font-weight:500;margin:10px 0 0;text-shadow:0 1px 1px rgba(255,255,255,0.3)",
+   "color:#4a6675;font-size:1.75rem;font-weight:bold;border-bottom:3px solid #1c7c45;padding-bottom:0.5rem;margin:1.5em 0 0.5em",
+   "color:#4a6675;font-size:1.35rem;font-weight:bold;margin:1.5em 0 0.5em;",
+   "color:#4a6675;font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em",
+   "position:absolute;top:6px;right:6px;z-index:2;width:24px;height:24px;border-radius:50%;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-weight:700;font-size:14px;line-height:1;cursor:pointer"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": false,
+  "textHead": "Skip to main content Report on the Condition of Education 2023Preprimary, Elementary, and Secondary Education (pages 19 through 23) Report on the Condition of Education 2023 Preprimary, Elementary, and Secondary Education Key Findings From ",
+  "textChars": 4937
+ },
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-37",
+  "section": 2,
+  "of": 6,
+  "htmlChars": 16115,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [],
+  "tables": [],
+  "linkCount": 1,
+  "links": [
+   {
+    "text": "Digest of Education Statistics",
+    "href": "https://nces.ed.gov/programs/digest/current_tables.asp",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 1,
+   "ol": 0,
+   "li": 1,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [
+   {
+    "type": "file",
+    "id": null,
+    "labelled": true
+   }
+  ],
+  "buttons": [
+   {
+    "text": "Pick extracted",
+    "ariaLabel": "Pick from extracted images",
+    "labelled": true
+   },
+   {
+    "text": "✨ Generate (AI)",
+    "ariaLabel": "Generate an AI illustration from the description",
+    "labelled": true
+   }
+  ],
+  "inlineColors": [
+   "font-size:13px;color:#334155;font-weight:600",
+   "font-size:12px;color:#475569;font-style:italic",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#1d4ed8;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #1e3a8a",
+   "color:#ffffff !important",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#7c3aed;color:#ffffff !important;border:1px solid #5b21b6;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#0f766e;color:#e9e9e9;border:1px solid #115e59;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer",
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "ull;var kids=c.children;for(var ii=0;ii Image from page 20 Drag an extracted image here, or: Upload image Pick extracted ✨ Generate (AI) Figure 2. Line chart titled Percentage of 3- to 4-year-olds and 5-year-olds enrolled in school: October",
+  "textChars": 2036
+ },
+ {
+  "requestId": "mreq-52fa801c-5a81-451b-8d2b-fc55c031a0ce-38",
+  "section": 3,
+  "of": 6,
+  "htmlChars": 16000,
+  "isDocument": false,
+  "lang": null,
+  "title": null,
+  "skipLink": [],
+  "landmarks": {
+   "main": 0,
+   "header": 0,
+   "nav": 0,
+   "footer": 0,
+   "aside": 0,
+   "region": 0
+  },
+  "headings": [
+   {
+    "tag": "h3",
+    "text": "Elementary and Secondary Education and School Choice",
+    "id": "elementary-and-secondary-education-and-school-choice"
+   }
+  ],
+  "headingSkips": [],
+  "h1Count": 0,
+  "images": [
+   {
+    "alt": "Figure 3. Line chart titled Enrollment in public elementary and secondary schools, by level: Fall 2010 through fall 2021. The vertical axis is Enrollment, in millions, from 0.0 to 60.0 and the horizontal axis is Year from 2010 to 2021. A black line labelled Total runs from about 49.5 million in 2010 up to about 50.8 million in 2019, then drops to about 49.4 million in 2020 and 2021. A dark green line labelled Prekindergarten through grade 8 runs from about 34.5 million to about 35.6 million in 2019, then falls to about 34.1 million in 2020 and 34.0 million in 2021. A pale green line labelled Grades 9 through 12 rises slowly from about 15 million to an all-time high of about 15.4 million in 2021. Footnote 1 says grades 9 through 12 include students reported as enrolled in grade 13; notes explain that totals cover the 50 states and the District of Columbia, include traditional public and public charter schools, prorate ungraded counts and include imputations for California and Oregon. Source: NCES Common Core of Data, State Nonfiscal Survey of Public Elementary/Secondary Education, 2010-11 through 2021-22, Digest of Education Statistics 2022, table 203.10.",
+    "hasAlt": true,
+    "inFigure": true,
+    "figcaption": "Figure 3. Line chart titled Enrollment in public elementary and secondary school",
+    "src": "__ALLOFLOW_DATAURL_FINAL_2__"
+   },
+   {
+    "alt": "Figure 4. Line chart with markers titled Enrollment in elementary and secondary schools, by school type: Selected years, fall 2010 through fall 2021. The vertical axis is Enrollment, in millions, from 0.0 to 50.0 and the horizontal axis is Year from Fall 2010 to Fall 2021. A solid dark green line with square markers labelled Traditional public stays near 47 million from 2010 through 2019 (47.4 million in 2010) and drops to about 45.4 million in 2020 and 2021. A dashed dark green line with triangle markers labelled Private, plotted for odd years 2011 through 2019, stays near 4.5 to 4.7 million. A pale green line with diamond markers labelled Public charter rises steadily from about 1.8 million in 2010 to about 3.7 million in 2021. Notes explain that traditional public and public charter enrollments include prekindergarten while private school enrollment covers kindergarten through grade 12 only. Source: NCES Common Core of Data Public Elementary/Secondary School Universe Survey 2010-11 through 2021-22 and Private School Universe Survey 2011-12 through 2019-20, Digest of Education Statistics 2021 table 205.20 and Digest 2022 table 216.20.",
+    "hasAlt": true,
+    "inFigure": true,
+    "figcaption": "",
+    "src": "__ALLOFLOW_DATAURL_FINAL_3__"
+   }
+  ],
+  "tables": [],
+  "linkCount": 2,
+  "links": [
+   {
+    "text": "Enrollment Rates of Young Children",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cfa",
+    "ariaLabel": null
+   },
+   {
+    "text": "Public School Enrollment",
+    "href": "https://nces.ed.gov/programs/coe/indicator/cga",
+    "ariaLabel": null
+   }
+  ],
+  "badLinks": [],
+  "lists": {
+   "ul": 1,
+   "ol": 0,
+   "li": 4,
+   "dl": 0
+  },
+  "bulletParas": [],
+  "inputs": [
+   {
+    "type": "file",
+    "id": null,
+    "labelled": true
+   }
+  ],
+  "buttons": [],
+  "inlineColors": [
+   "color:#4a6675;font-size:1.1rem;font-weight:bold;margin:1.2em 0 0.4em",
+   "display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#475569;color:#ffffff !important;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155",
+   "color:#ffffff !important",
+   "font-size:0.9em;color:#475569;font-style:italic;margin-top:0.5em",
+   "font-size:0.85em;color:#475569"
+  ],
+  "langSpans": 0,
+  "contrastFails": [],
+  "startsMidTag": true,
+  "textHead": "ensus Bureau, Current Population Survey (CPS), October, 2010 through 2021. See Digest of Education Statistics 2022, table 202.20. Formal schooling, such as kindergarten and preschool programs, is an important component of early childhood ed",
+  "textChars": 6333
+ }
+]

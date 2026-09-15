@@ -1,0 +1,3249 @@
+{
+  "startedAt": "2026-09-13T02:11:56.371Z",
+  "head": "815d948165363182edfd776694c371dc64602080",
+  "node": "v24.11.1",
+  "platform": "win32",
+  "release": {
+    "version": "1.5",
+    "canvas_url": "https://share.gemini.google/qTPQLK0kok07",
+    "released": "2026-09-11T04:53:38.661Z",
+    "notes": "Titration Lab rebuilt: the 3D bench sits in a lit room with a real glass flask and an endpoint colour bloom, the buffer tab shows the pH shift on a bar, the parallax lesson magnifies the reading error, and every screen now passes contrast checks in default, dark and high-contrast themes. School Store: the Store tab explains who completes a purchase and when, and the register confirms each sale where the cashier clicked. New Scale Explorer tool. Zoom Gallery images load again, Geography Explorer and GIS Studio no longer depend on keyed map tiles, Geometry World characters speak in the app voice, Dino Lab and Architecture Studio gained 3D detail, the auto mechanic workshop added guided repair routes, and SEL goals, habits and journals keep dated records. Shared tool links open straight to the tool."
+  },
+  "selection": "Top-level tests whose filename contains wcag, a11y, or accessibility",
+  "files": [
+    {
+      "file": "tests/a11y_static_timer_heuristic.test.js",
+      "sha256": "ce7635b645bcc7fba4aa84241250c2377e05207c78621bf600f300a315ae2af0"
+    },
+    {
+      "file": "tests/a11y_static_ui_heuristics.test.js",
+      "sha256": "4acfd2b67ca4bf7efe36b23d3d5d790991f62f9df18a5988d1ef3599dd0b60e3"
+    },
+    {
+      "file": "tests/a11yauditor_linter.test.js",
+      "sha256": "f0b0f8d71d68fc8b7a30d422afffc3c2ad6ea3614f9f062c6b7b849c179df64f"
+    },
+    {
+      "file": "tests/accessibility_evidence_shared.test.js",
+      "sha256": "683d7886f60aef843ddbdf007fb570ba31ffa8a607dd750b93ed7e7ad6a3c1cf"
+    },
+    {
+      "file": "tests/accessibility_lab_allosheet_handoff.test.js",
+      "sha256": "f6cb1e13c62b296f9caff8064dea52bcc6009d507c98fc7215674b354b74c5a9"
+    },
+    {
+      "file": "tests/accessibility_lab_golden.test.js",
+      "sha256": "6aa8877cd73567465e4b4882a37dab9c10ee1bed4939b9fdb5b6e263168df5a1"
+    },
+    {
+      "file": "tests/accesslens_tabs_a11y.test.js",
+      "sha256": "36b5d879f3df8027982a1faa2b40464dc6919631467aa2ff33f703ce005045d2"
+    },
+    {
+      "file": "tests/admin_hub_shell_a11y.test.js",
+      "sha256": "7b5d7b02da6e22264bbae671d097cb5c98a4325b4a49896da19012de62fe7414"
+    },
+    {
+      "file": "tests/advanced_math_wcag_browser.test.js",
+      "sha256": "6015320b2637fec811f814bcbf25b6c13c0c8c56a59af6a012ab7da7b3524a8e"
+    },
+    {
+      "file": "tests/adventure_cast_lobby_a11y.test.js",
+      "sha256": "21fcb33454c850ad69a2db3c2bb7d77a52f944cce59aae8effb6f2f74f6dedab"
+    },
+    {
+      "file": "tests/adventure_detail_dialogs_a11y.test.js",
+      "sha256": "18b43bc9be878f7dcadce7ed5568f6b3fbd5af02cb9249b882dbfd77808b78a8"
+    },
+    {
+      "file": "tests/adventure_hud_a11y.test.js",
+      "sha256": "1ac9a43635a226acabcceca23edb1992962e6ff502a8e448b40e29ebd42b7b73"
+    },
+    {
+      "file": "tests/adventure_modals_a11y.test.js",
+      "sha256": "dadb503da9ffa78136a6f4d996b2eb06b0c8f2065b62d6bb02a44cbe1a819e3b"
+    },
+    {
+      "file": "tests/adventure_portrait_upload_a11y.test.js",
+      "sha256": "add595ac327e0427cccdcdbad11799471e7f698694867ba7bb19dd6a0c02dbd3"
+    },
+    {
+      "file": "tests/adventure_scene_media_a11y.test.js",
+      "sha256": "8e7dce3342ef46032c6d811659381cc1d4d48fbf749bbdaae91f1f7dcbb6d761"
+    },
+    {
+      "file": "tests/adventure_setup_a11y.test.js",
+      "sha256": "f1c41ef8886073d2a9e972ac4ba01d349ff134682e845a0cdedc89b85832458e"
+    },
+    {
+      "file": "tests/ai_backend_modal_guided_a11y.test.js",
+      "sha256": "0ee00ddddf38fba3b7802645140d1af8d22d13994ca369532aac220ece5994b9"
+    },
+    {
+      "file": "tests/algebracas_canvas_a11y.test.js",
+      "sha256": "49ea669248da266e6ffe8d5fc73b9fc21ef6215f98cc8f8c80a4dc50228b38bc"
+    },
+    {
+      "file": "tests/algebracas_tabs_a11y.test.js",
+      "sha256": "c2577ee89ee5b67abe06fd220a15e8e134841853f919b2a5fbb52fcacc682920"
+    },
+    {
+      "file": "tests/allo_commands_palette_focus_a11y.test.js",
+      "sha256": "a6ec792681ac46d2652455ba14e020616c69406f866b1bd09330846e3607551f"
+    },
+    {
+      "file": "tests/allo_commands_palette_modal_a11y.test.js",
+      "sha256": "2a633f77788f8197ead8b9902bd0425483a6912223f774ce95190c1f5bcbf3cd"
+    },
+    {
+      "file": "tests/allo_device_storage_a11y.test.js",
+      "sha256": "4b7003342600d96790e55ff8c791b5a0c72ec4720373800a5e9174ad96b66053"
+    },
+    {
+      "file": "tests/allobot_keyboard_movement_a11y.test.js",
+      "sha256": "d431d214e276c22298f253838c3c096316c95674b566dd0bc7663a9b5db9ff63"
+    },
+    {
+      "file": "tests/allobot_motion_a11y.test.js",
+      "sha256": "a76c734dcf8a161cdea2bfab9e312319c9f25a498d8d2713a2306cad53590302"
+    },
+    {
+      "file": "tests/allobot_targets_smil_a11y.test.js",
+      "sha256": "588530ad4227339d532d656d012d9b9fa1fd7c037d9c1efb42e00d3928480cac"
+    },
+    {
+      "file": "tests/allobotsage_form_controls_a11y.test.js",
+      "sha256": "bf3a9782f432d3d9c3fe004688c24ae7e2f5246f709ceb69bce2e19eb7607cd4"
+    },
+    {
+      "file": "tests/allobotsage_svg_a11y.test.js",
+      "sha256": "7e641bac6f6dfc979937580138c3de6f7071e12ea591fa022de8fa2308cfae9d"
+    },
+    {
+      "file": "tests/allohaven_backup_confirmations_a11y.test.js",
+      "sha256": "20284ac7a934eeebd71942a033be610693346e5bf71320c12e05d6d195561fea"
+    },
+    {
+      "file": "tests/allohaven_content_confirmations_a11y.test.js",
+      "sha256": "5dd8634796d57d4d5eca2f3e0fcc0cd5ae158fa6eea2f85f36b31e2336136cbc"
+    },
+    {
+      "file": "tests/allohaven_drag_keyboard_a11y.test.js",
+      "sha256": "feb0d55ebef50969c68a13d2cdec47193e9e13e28d4da03c8cd01ff7822b817f"
+    },
+    {
+      "file": "tests/allohaven_memory_confirmations_a11y.test.js",
+      "sha256": "7d6f1d241a7bfe2db6a877e1c5c81c4a31431d006f53197d6e62b4e9cec694b1"
+    },
+    {
+      "file": "tests/allohaven_peer_table_a11y.test.js",
+      "sha256": "26ad52a130e3b851caa8f60cea76ac3be7001ec18dcb20ab4f2f8f74f163efa2"
+    },
+    {
+      "file": "tests/allohaven_textarea_labels_a11y.test.js",
+      "sha256": "d632d009d2a3d72bf58fdc52fa75b74fb33bde05ff9e8af8c3cafa33509a26a9"
+    },
+    {
+      "file": "tests/allohaven_validation_notices_a11y.test.js",
+      "sha256": "944890034094f89726488a7b977e5e105317faab3698dfa888e2aaca40d0477e"
+    },
+    {
+      "file": "tests/allosheet_companion_a11y.test.js",
+      "sha256": "392e44380cf10857f9f8031d02ae945383c626da8bdb6492820c71ed0879262d"
+    },
+    {
+      "file": "tests/allosheet_local_workspace_a11y.test.js",
+      "sha256": "82c55fe200a43d76a86c5efbd7ea3ee4d202a67424f5b6330d578ea2b42364c9"
+    },
+    {
+      "file": "tests/analysis_formatting_toolbar_a11y.test.js",
+      "sha256": "efd34d815561ad1600ac9ab57e17ea6d7a2dff83f324cd751b46e6b957b825ac"
+    },
+    {
+      "file": "tests/anatomy_mobile_a11y_polish.test.js",
+      "sha256": "289828799c1be65fb447e84e89cd0d13bc6302dd6abc4ebc8a5e4075c7a51d4e"
+    },
+    {
+      "file": "tests/anchor_charts_dialog_targets_a11y.test.js",
+      "sha256": "a2f0db43202248e6c566c462025cdbb9a0043634ef554475888fc3c528e7c5c6"
+    },
+    {
+      "file": "tests/anchor_charts_reorder_focus_a11y.test.js",
+      "sha256": "29d01d41b44132bd0aae03239e9b9484d78f9d1cade3ac1e0028a1c31659b7ac"
+    },
+    {
+      "file": "tests/angles_a11y.test.js",
+      "sha256": "382936be3f605ed2f0b4d5e321990a799709060894802478dff68c3bde755537"
+    },
+    {
+      "file": "tests/angles_tabs_a11y.test.js",
+      "sha256": "b4681f76effcec6974b70780929259bf9cb83a3c11ad3ea84737804aa5637260"
+    },
+    {
+      "file": "tests/annotation_focus_motion_a11y.test.js",
+      "sha256": "d3a35bab7df5b695baa6a293140c3244928c0e12efb6cf0710838df09a48cfb3"
+    },
+    {
+      "file": "tests/annotation_keyboard_movement_a11y.test.js",
+      "sha256": "99ffa674a7abf22a0a3f3b540dddc5094d546296d5c12a3bfba49f444bfbf18b"
+    },
+    {
+      "file": "tests/annotation_sidebar_semantics_a11y.test.js",
+      "sha256": "2b7ac3832454ad9289153c09d1fdb70ab013569892caa2952d363426322bc8f2"
+    },
+    {
+      "file": "tests/annotation_target_size_a11y.test.js",
+      "sha256": "b80eb42c3d1b4a826b17c7c2bc33e0f2dce048d57766f4171d32729c568d60c8"
+    },
+    {
+      "file": "tests/app_lab_accessibility.test.js",
+      "sha256": "78e1b052cc6bfa2b5ad507c069d1efe2a17546f79920dd38818852eec67dc582"
+    },
+    {
+      "file": "tests/app_shell_runtime_a11y.test.js",
+      "sha256": "1ce75b88de031278466745df5d8e2faf16ee98606ee51d4e1faa0c1c4c835e16"
+    },
+    {
+      "file": "tests/app_styles_high_contrast_hover_a11y.test.js",
+      "sha256": "e46b5b5a75f3e32351d072d0e291a23f72f56941e08ebd96bd96959a4cdfa4a2"
+    },
+    {
+      "file": "tests/applab_focus_a11y.test.js",
+      "sha256": "687afff2e23bee12b6844758ba8e7b70ad480a474777ea5a99b1ae7f77124357"
+    },
+    {
+      "file": "tests/applab_tabs_a11y.test.js",
+      "sha256": "363806080ac9ed299006e1de7485d57fcbfc5ba550f26590cebb67e460fa4a4d"
+    },
+    {
+      "file": "tests/aquaculture_3d_accessibility.test.js",
+      "sha256": "cbbf4d5c6e8e0e4953b15bd9bcea4a7197c204253dc81a5ccab7dcf6fa49e485"
+    },
+    {
+      "file": "tests/arcade_boss_timer_pause_a11y.test.js",
+      "sha256": "eb0fc24e44d8a12655ced84065b44bb670ea8a2f16a9039da28add9ae3443daf"
+    },
+    {
+      "file": "tests/arcade_concept_atlas_svg_a11y.test.js",
+      "sha256": "aac9f249a39188a828bcba3aedca8fd1972a6132739711deb25ebedece74db19"
+    },
+    {
+      "file": "tests/arcade_concept_pictionary_response_modes_a11y.test.js",
+      "sha256": "790a77e68e40393094dc76231ff10718721cd02746fb156360fb1ec1a5323578"
+    },
+    {
+      "file": "tests/arcade_sage_launcher_a11y.test.js",
+      "sha256": "745cac32dbf0e13f276c92043da02829c03ccb8344bdd53baee809d77a475b23"
+    },
+    {
+      "file": "tests/arcade_session_timer_a11y.test.js",
+      "sha256": "de015c8d54f27c13b3de64d12637f03b4ebed2ea4e9f22766025dd25b868b7bf"
+    },
+    {
+      "file": "tests/archstudio_a11y.test.js",
+      "sha256": "6bb645cb5706ce455e0dc25d06ad9b8e00ef4fbda181a594cf00702cc80f5d6c"
+    },
+    {
+      "file": "tests/areamodel_form_controls_a11y.test.js",
+      "sha256": "cac48c0d19744f5f920917d9dbcfb93692171b45aa9628859908b50607523a66"
+    },
+    {
+      "file": "tests/areamodel_tabs_a11y.test.js",
+      "sha256": "8bfc93b21ba3a15ce330d3b3eb3f5db3a867abaf7fcdac26ad68d6b23a4dbed3"
+    },
+    {
+      "file": "tests/artstudio_animated_stereogram_a11y.test.js",
+      "sha256": "d8be77a9e6e51dcc45caa8284bbde236e7b677c89e0e3cebfe08c5bbba86d302"
+    },
+    {
+      "file": "tests/artstudio_color_wheel_keyboard_a11y.test.js",
+      "sha256": "0c674b8d8286596e8337a6f59adf8581c2b94dc1fb255a60d47a13565f9ce436"
+    },
+    {
+      "file": "tests/artstudio_contrast_a11y.test.js",
+      "sha256": "022394e1626a01bc5d50eac8f450df457ecfc264f761b41f37146baf209379d3"
+    },
+    {
+      "file": "tests/artstudio_fourth_pass_a11y.test.js",
+      "sha256": "93d7df8787e8fb26c51bd3062a032ab083345d1f3c5da53be67840621063f07c"
+    },
+    {
+      "file": "tests/artstudio_fractal_a11y.test.js",
+      "sha256": "b1443e0279b97ecdc733da35aba40b15bd05404fb02a94ab77432831d86f804b"
+    },
+    {
+      "file": "tests/artstudio_generative_keyboard_a11y.test.js",
+      "sha256": "b56ffcb855024f120d2cb984f3948f7bc2d9bc459bd45dd02831470f0b26e555"
+    },
+    {
+      "file": "tests/artstudio_gradient_a11y.test.js",
+      "sha256": "00a5a37a95bfd75ced55b32d7c40759d641139aec4efb3612ffb7a40ae52e9f6"
+    },
+    {
+      "file": "tests/artstudio_opart_a11y.test.js",
+      "sha256": "b2b426a18161fd26795d9a3845264d027b23931962710d73674cd17703312035"
+    },
+    {
+      "file": "tests/artstudio_pixel_keyboard_a11y.test.js",
+      "sha256": "d998ae11883809f35ee4fefdd81637f42a789623efb841b289ea059440e4b5f5"
+    },
+    {
+      "file": "tests/artstudio_sculpt3d_keyboard_a11y.test.js",
+      "sha256": "d9989548c7a802b4e4fee6adc6cc2843a8b8c5c8e542c3aa2d34f05254115826"
+    },
+    {
+      "file": "tests/artstudio_semantics_a11y.test.js",
+      "sha256": "10b2809c4c632b665ba3c75dce4446bcac351fd680e282d988ddee94cb944dc1"
+    },
+    {
+      "file": "tests/artstudio_spin_keyboard_a11y.test.js",
+      "sha256": "ed0e9f0381cede09f597d0c117f20120ad8590689a69fd22db8ddf471ce61dc2"
+    },
+    {
+      "file": "tests/artstudio_spirograph_a11y.test.js",
+      "sha256": "f5d8dcf9966f0f2609a01e29c1a2d2aee9301ff3b3e254e83f164b3540c7c277"
+    },
+    {
+      "file": "tests/artstudio_static_stereogram_keyboard_a11y.test.js",
+      "sha256": "0ed2664df693b2a70122e2bac2c86e7f359ebeecab5ad60003596f2a3f8e20be"
+    },
+    {
+      "file": "tests/artstudio_stringart_a11y.test.js",
+      "sha256": "fd1ced31820312c6df77cfff3f3e7191b113891ef70cdaa3bccbb2edafbbc927"
+    },
+    {
+      "file": "tests/artstudio_studio_home_a11y.test.js",
+      "sha256": "9fec77114505f14c00c2793d05e3570fa57098bce5ff5f0b5d04dd3ef48575f6"
+    },
+    {
+      "file": "tests/artstudio_symmetry_keyboard_a11y.test.js",
+      "sha256": "c9f318f622f088dccc6857cac83126ec170551e01b34a68219281f522a709201"
+    },
+    {
+      "file": "tests/artstudio_tabs_a11y.test.js",
+      "sha256": "d9e364b1eef0c507bef6b9199065e8f82abb5f083638d213e8ad1ea1320a028e"
+    },
+    {
+      "file": "tests/artstudio_tessellation_keyboard_a11y.test.js",
+      "sha256": "5612f86a0039db12b1d6619a2c0b8ab1667106d57070b1000855aef98acb7baa"
+    },
+    {
+      "file": "tests/assessmentliteracy_form_labels_a11y.test.js",
+      "sha256": "db15a2f9a53ba21b0ba454589547ae095454f9742027f4cc9f524dcfd8b8e6c8"
+    },
+    {
+      "file": "tests/assessmentliteracy_svg_alternatives_a11y.test.js",
+      "sha256": "cdc3b4735f9149a0b75d7fe44a5fbeea483cf4fea3ed2c6e6a85642e5e06610f"
+    },
+    {
+      "file": "tests/assessmentliteracy_table_semantics_a11y.test.js",
+      "sha256": "23f07738a54c64c0bb6865bca3210b140f4d5c51886ff5fe95dd9286b43424ab"
+    },
+    {
+      "file": "tests/assignment_center_a11y.test.js",
+      "sha256": "71de179938ddfd702e1cb5b8a5b46a7998cd53cb37ad304825a2d21a2feb1df7"
+    },
+    {
+      "file": "tests/astronomy_tables_a11y.test.js",
+      "sha256": "41a6dfcf95e5d5f0de88004c5722bc80423cc622366684763176b6c67ad58d96"
+    },
+    {
+      "file": "tests/atctower_a11y.test.js",
+      "sha256": "a44d2020a27053b4f784a4ead33d687584a84591a858810afd9c977f6111fad1"
+    },
+    {
+      "file": "tests/atctower_form_controls_a11y.test.js",
+      "sha256": "1bf510ebc206194f9482f8d7bcabc3136725ab176784377b2df0a8f3df670ef4"
+    },
+    {
+      "file": "tests/atctower_tabs_a11y.test.js",
+      "sha256": "93612641e5e067f2112eaf306b97eda6d48e8d4b5dd76805b92637ddab279d74"
+    },
+    {
+      "file": "tests/autorepair_career_tabs_a11y.test.js",
+      "sha256": "7d8b3a1c3cc454d7a5d3f9513354af3017b6d45c27a6471071cab4ea8bea1bce"
+    },
+    {
+      "file": "tests/autorepair_diagnose_tabs_a11y.test.js",
+      "sha256": "fe907c03829848753e63b607a2f47d1698c95cac802fdf2becc874613ff2f521"
+    },
+    {
+      "file": "tests/autorepair_ev_tabs_a11y.test.js",
+      "sha256": "458e7c72f28b85694b70ae50fa82b705336710189e5c6455e791cc89c92fb7ca"
+    },
+    {
+      "file": "tests/autorepair_tools_tabs_a11y.test.js",
+      "sha256": "0bdf86b910b23578ed24d3b973e50664e831e7eae2c8c7c1f41efdc4c4731143"
+    },
+    {
+      "file": "tests/autorepair_usedcar_tabs_a11y.test.js",
+      "sha256": "d44fb2307ce62e26d6f86b68fe7ef2049eb8e09d5a800b6576c8d407b299d19c"
+    },
+    {
+      "file": "tests/bakingscience_form_controls_a11y.test.js",
+      "sha256": "d36d76cec492d864b102013c36f78cc2f1bd316a3b126843f52c2ac4427d9f14"
+    },
+    {
+      "file": "tests/bakingscience_oven_a11y.test.js",
+      "sha256": "f1422bec303c78cef35eac67886f97fcae5c2d4413396ac8471b040559f883ff"
+    },
+    {
+      "file": "tests/base10_accessibility.test.js",
+      "sha256": "2f6fa4c0927893035e73bd382bc5f3bc4a8fb371f14e5e758d59e5de5955e739"
+    },
+    {
+      "file": "tests/basic_math_wcag_browser.test.js",
+      "sha256": "7afb76f0dc4315328e85dccb919d17c9666ee512b26241898b4199df83372e2d"
+    },
+    {
+      "file": "tests/beehive_wcag_a11y.test.js",
+      "sha256": "de671e55b7152efa469c9a338d49f2c61a1f303f5de77b54f60c1a2342ac4c98"
+    },
+    {
+      "file": "tests/behavior_lens_abc_modal_a11y.test.js",
+      "sha256": "b8c4c4ce29885c3ef53fa73b6ec4e62247b565794c2e0bb2d8efabdcaf56a6ba"
+    },
+    {
+      "file": "tests/behavior_lens_ai_consent_a11y.test.js",
+      "sha256": "2aaff226d58261dfb41f9644fb38776abbc8aa54b432944115ff216fe0bd1794"
+    },
+    {
+      "file": "tests/behavior_lens_app_shell_visualizations_a11y.test.js",
+      "sha256": "7a8629223795866198dd67092c77d5d4f4184be46ddbd36a451436ba8f2c03bc"
+    },
+    {
+      "file": "tests/behavior_lens_case_inputs_a11y.test.js",
+      "sha256": "5d7d8359297784615d69b0783ea1a268b8edf400fa5caa531a3e4d556032cd07"
+    },
+    {
+      "file": "tests/behavior_lens_confirmations_a11y.test.js",
+      "sha256": "b9e18f063feabd06af52c37c32c91588b03a4422184f1204b24bdf2883718e86"
+    },
+    {
+      "file": "tests/behavior_lens_custom_dates_a11y.test.js",
+      "sha256": "187304ee77a44a5e7fc1e316693bfa4ff7994fa57c60a6435c51e4739b3eeb70"
+    },
+    {
+      "file": "tests/behavior_lens_glossary_tooltip_a11y.test.js",
+      "sha256": "90e2e8c778ed192d0a5a812813dc0cd8d1d72415e8875f529e3cea1d77aa82f7"
+    },
+    {
+      "file": "tests/behavior_lens_graph_inputs_a11y.test.js",
+      "sha256": "1af5163eea37306e12e243a681a4033e039d5114fc5768ebbec4dd7af940a7ff"
+    },
+    {
+      "file": "tests/behavior_lens_info_tooltip_a11y.test.js",
+      "sha256": "33e5b8842bf9aa354b0c916e4e86a69f7073f0e961abe234185aa6a10d202a28"
+    },
+    {
+      "file": "tests/behavior_lens_native_controls_a11y.test.js",
+      "sha256": "a8381f550817cbc28f447aa64125741b372e8889b78836471d9fc3b8a7c4a550"
+    },
+    {
+      "file": "tests/behavior_lens_remaining_text_a11y.test.js",
+      "sha256": "43ec0b6cc0707dea526bd3691980f6837348c89621672eb1ecad7b007f980eda"
+    },
+    {
+      "file": "tests/behavior_lens_tool_cards_a11y.test.js",
+      "sha256": "eb298d5d744784a16b659de890c1b2aa5bd86d7d55f443793abe7a590997b430"
+    },
+    {
+      "file": "tests/behaviorlab_a11y_names.test.js",
+      "sha256": "774f41b425d933ffc7548d1fe40bf7a3f438dcd1695ac96c315f859ac25410d1"
+    },
+    {
+      "file": "tests/bird_lab_accessibility.test.js",
+      "sha256": "d8cd84618398bcae412ee35f08d54618bc5561eba3a2e2ed3b26916bfc18400b"
+    },
+    {
+      "file": "tests/brainatlas_a11y.test.js",
+      "sha256": "e7161051c7441b70f68b7dd59a7d87637cd8f62c6b8d60429d940e91d53ed6bc"
+    },
+    {
+      "file": "tests/brand_profile_editor_a11y.test.js",
+      "sha256": "adf040a7d23a94e59413cc705b6bf0b9b1b89c363ae9347776aaa016deb21eef"
+    },
+    {
+      "file": "tests/brand_profile_editor_semantics_a11y.test.js",
+      "sha256": "af3c01dc91d5e1b90595b18af4cd86fe8c563569e7e729f888beeb55b99ff208"
+    },
+    {
+      "file": "tests/bridgelab_explanation_a11y.test.js",
+      "sha256": "6232dd8ac3516d0c682bc5abe518fa09518b733276f033059fbcd3d9a6acdeb3"
+    },
+    {
+      "file": "tests/bridgelab_form_controls_a11y.test.js",
+      "sha256": "9adb15a64f04036be75d4c261dfcc25d9b6c25f949ef806bfe6adacc336268b5"
+    },
+    {
+      "file": "tests/bridgelab_scope_a11y.test.js",
+      "sha256": "5bd2ecd851fc1480d98a5d49d7577ab515e317573a25af28804daccc07cb2b05"
+    },
+    {
+      "file": "tests/bridgelab_tabs_a11y.test.js",
+      "sha256": "5fdb9e58ba82779ceac9b95660a819edaa737453167c4152ba5fe4df8077a3a5"
+    },
+    {
+      "file": "tests/calculus_a11y.test.js",
+      "sha256": "596503e719a7959be018c1b99804efb8c868df335589bbd945ec339f4019c37b"
+    },
+    {
+      "file": "tests/calculus_accessibility.test.js",
+      "sha256": "a15031e95c3eccd467d3f5d4e2b81cb119463ff970ae33bc9d077400576dd338"
+    },
+    {
+      "file": "tests/calculus_mission_inputs_a11y.test.js",
+      "sha256": "c5342d0423326927c168fc462436352e942522c191d31870a0bd8b2e8252e6ea"
+    },
+    {
+      "file": "tests/calculus_tabs_a11y.test.js",
+      "sha256": "ec80f9159bb3f22a525fafd20da1eaa24508e60adfd6a25278ff88acc483426f"
+    },
+    {
+      "file": "tests/calculus_visualization_tabs_a11y.test.js",
+      "sha256": "459236b8acacaa25d32d7b498a45045ad9c4dcb3e45b6368ea65409a11d46b0e"
+    },
+    {
+      "file": "tests/cause_effect_game_dialog_a11y.test.js",
+      "sha256": "a5c3a0374f46380d9f6c26a3cb53c8621626d8adcea2d18ad44f5923fd5b0b0f"
+    },
+    {
+      "file": "tests/cellular_tabs_a11y.test.js",
+      "sha256": "2c00d1e8dcc4560ed7ef9daced0bf21305043f882d8249613f99796c24033dd3"
+    },
+    {
+      "file": "tests/cephalopod_bioluminescence_tabs_a11y.test.js",
+      "sha256": "42313ea513ad264181792fa2ec7988689c77a9645cc6bbaf347e0ec49e258d1a"
+    },
+    {
+      "file": "tests/cephalopod_root_tabs_a11y.test.js",
+      "sha256": "e37331a32b75eb891478eb0bd99865540b93ec8fe6e1e1a3d201d763b6520ff2"
+    },
+    {
+      "file": "tests/cephalopodlab_canvas_focus_a11y.test.js",
+      "sha256": "dfce97a2966fc1b67a95e787f5348796f7eda973138b41e78f9005802f9f3029"
+    },
+    {
+      "file": "tests/cephalopodlab_confirmation_a11y.test.js",
+      "sha256": "d770b641f7ff0aabff2f4a40e81f250b742fd4fc722d9c1278f9bbd806d2e110"
+    },
+    {
+      "file": "tests/cephalopodlab_form_labels_a11y.test.js",
+      "sha256": "b4450eacdce8a641ce63c3c4ddf15891612d171abc8ffcf1404122f265408c70"
+    },
+    {
+      "file": "tests/cephalopodlab_svg_alternatives_a11y.test.js",
+      "sha256": "58b155ca9dc172b59e41063e12a17b02e6e3d398b5c93bb2699a65ea5154453b"
+    },
+    {
+      "file": "tests/cephalopodlab_table_semantics_a11y.test.js",
+      "sha256": "595712a73ae80b1461edc062dac48b22a9fa9537006f38b3b26ff8ab6f0b4799"
+    },
+    {
+      "file": "tests/chembalance_browser_a11y_regressions.test.js",
+      "sha256": "e16c539b88c83c9f8197fdabd75245188523ed9046bc9f2efcd6fcd5b7e2f702"
+    },
+    {
+      "file": "tests/chembalance_form_labels_a11y.test.js",
+      "sha256": "1058a8e2ce1eb16db75f418a15e664490bc41f94f786c65a727272a06dbb0c2c"
+    },
+    {
+      "file": "tests/chembalance_reduced_motion_a11y.test.js",
+      "sha256": "5417d1c00a2a94a082966e4a10f93e8043c0ce7da9dc1c169564e6ad96245593"
+    },
+    {
+      "file": "tests/chembalance_svg_alternatives_a11y.test.js",
+      "sha256": "624753733133b9255a9950b6fdb2b523264ba676c0bf450be422cda50bbe00a0"
+    },
+    {
+      "file": "tests/chembalance_table_semantics_a11y.test.js",
+      "sha256": "1c59e824c2866b8da9e41f63c8adcd3f46e23522e29b0db85751a3d055b89bcf"
+    },
+    {
+      "file": "tests/chembalance_timing_a11y.test.js",
+      "sha256": "14ff820d014af36be6bbb327a3c46bcdafcd863e77b5972b137f8156114ed628"
+    },
+    {
+      "file": "tests/chemistry_particle_wcag_browser.test.js",
+      "sha256": "2dc49028549849c0cc1b7ad0063ecb94ed562ace7f1d500755bf4dbbc3b62c37"
+    },
+    {
+      "file": "tests/cinematic_studio_a11y.test.js",
+      "sha256": "bb8543f30e48eb15face41cdc3af92a694c74103e8da8735efe7832d02693f12"
+    },
+    {
+      "file": "tests/circuit_a11y.test.js",
+      "sha256": "348c1eb93e00743188e5e06d6acf195f8155396a37c8dad6b144952a4d33b7ab"
+    },
+    {
+      "file": "tests/circuit_canvas_alternative_a11y.test.js",
+      "sha256": "524dd26c5397cb431c8d8c7a6a7a83640939ce3d894bdb87fabff0ff2375481d"
+    },
+    {
+      "file": "tests/circuit_confirmation_dialog_a11y.test.js",
+      "sha256": "0e033e7f76edc92bb79e0dca9ca9c58f3c644d35cfeb9999bc4a3be635ea54c6"
+    },
+    {
+      "file": "tests/circuit_form_labels_a11y.test.js",
+      "sha256": "ef46d00d4dcfb3bf6ac96a045526b8a7526eaaeea338d30331183602941973eb"
+    },
+    {
+      "file": "tests/circuit_reduced_motion_a11y.test.js",
+      "sha256": "26d42b6a231a60e76ca40ded0f5bd22107bda00e687be983d744e485558a7d58"
+    },
+    {
+      "file": "tests/circuit_svg_alternatives_a11y.test.js",
+      "sha256": "aebcf4eb628c59b6ea86307f1c5af5da54910c7db6ce1bcde229c9817258eb40"
+    },
+    {
+      "file": "tests/circuit_table_semantics_a11y.test.js",
+      "sha256": "c0a0383d5b9f3db49461521f30b5416173d3706746dd091b94b5fd327c92716b"
+    },
+    {
+      "file": "tests/circuit_workspace_tabs_a11y.test.js",
+      "sha256": "f655aa368e7c0fb49b62c74e25364571324ea47a36ff5f6ab59dbe1757720ba9"
+    },
+    {
+      "file": "tests/climate_explorer_accessibility.test.js",
+      "sha256": "bf756d220e9797a0475336d6734745b12633171797c9697a87fbc323cd19425a"
+    },
+    {
+      "file": "tests/climate_explorer_inline_regions_a11y.test.js",
+      "sha256": "386bb43f89ac7c798a52620f2fad413967311d020e0f0b3ab55bc6a6e5b3389f"
+    },
+    {
+      "file": "tests/climate_explorer_motion_a11y.test.js",
+      "sha256": "d12fd36988347fb1a7bfbc784ee825fd0637d71514edacccc1f6e33579b997a9"
+    },
+    {
+      "file": "tests/coasterlab_dialog_a11y.test.js",
+      "sha256": "015627dd5b197febab29cd82f7dd4eab0d591bb165da4865ba3c3d171bfac7d3"
+    },
+    {
+      "file": "tests/coding_block_reorder_a11y.test.js",
+      "sha256": "264974c0318e1005680258f680a8561bd0ad505f0022bab558114d60317eab3b"
+    },
+    {
+      "file": "tests/coding_complexity_svg_a11y.test.js",
+      "sha256": "a625f5d3ff9a01cd7c9fad37268ba722b3a3a5ff5c8bdb39d8fe5ba38605e748"
+    },
+    {
+      "file": "tests/coding_form_controls_a11y.test.js",
+      "sha256": "ae69da1855b0488c44c59474f53d7bee049dec2c29d6256c77bb2118123d72d9"
+    },
+    {
+      "file": "tests/coding_playback_controls_a11y.test.js",
+      "sha256": "b21a96eafbc2d00d7bf13aa907c67dbdf24cb178ccdd0fea200f9fd94c1d5fee"
+    },
+    {
+      "file": "tests/coding_reduced_motion_a11y.test.js",
+      "sha256": "f61437948c5c2fd87ad143829572812c8194a982be97517b2ec73775ae19e20d"
+    },
+    {
+      "file": "tests/coding_replacement_dialog_a11y.test.js",
+      "sha256": "d42d0c87bb4b0d5e7913fe6fcc9c255f05cb1ab101551da91834d7b3fefe5908"
+    },
+    {
+      "file": "tests/concept_atlas_justification_a11y.test.js",
+      "sha256": "c65c89fe650a54f670aa4441a4d021e29f6829ed900545a82614fcfd39c1ce2a"
+    },
+    {
+      "file": "tests/concept_pictionary_pause_a11y.test.js",
+      "sha256": "cacdd069238a2bac2e6e2fc69af2b1d4d579c1c68b06b3c9d1bbc9650ca67db3"
+    },
+    {
+      "file": "tests/concept_sort_dialog_a11y.test.js",
+      "sha256": "422800f1642ff272bfc7e91850b0f98da7bb9b0e381500da04f6ad4641039226"
+    },
+    {
+      "file": "tests/confirm_dialog_a11y.test.js",
+      "sha256": "17f38acf079faffa05698dba93e98c2342e1aa95cc47a0a460db3d7f95287683"
+    },
+    {
+      "file": "tests/confirm_dialog_runtime_a11y.test.js",
+      "sha256": "ba88069b76ea85fbd7cb92c3465d9824c6770b81a10d93b764046216a47f70b2"
+    },
+    {
+      "file": "tests/coordinate_accessibility.test.js",
+      "sha256": "7bdbb137ac981d9c526d3e92d573d2136f5b3b28ec51dd43443293c94e555363"
+    },
+    {
+      "file": "tests/crossword_game_dialog_a11y.test.js",
+      "sha256": "5f84e60fa3180f66f26cb5c21ce6b7ac4dd310dd5923a9abf45e19f656c00add"
+    },
+    {
+      "file": "tests/cyberdefense_confirmations_a11y.test.js",
+      "sha256": "f27d3083523a0b4e7e5e103ada8bedbe0ed25e9eaa3c3363cf96e0eb5bc35b6e"
+    },
+    {
+      "file": "tests/cyberdefense_inline_regions_a11y.test.js",
+      "sha256": "b0db581edaaf85647e4bbcc46515b6c3c4836139d08b8f31e232ec31253fd643"
+    },
+    {
+      "file": "tests/data_lab_companion_a11y.test.js",
+      "sha256": "96641310cf45a093010740431d31b97bb353c28cce39ee9ce38cbec890be76d3"
+    },
+    {
+      "file": "tests/decomposer_form_controls_a11y.test.js",
+      "sha256": "e10edda35d97eeebdbf85cb6cd9599323874107e27f09b1b3e0cd94b301848b5"
+    },
+    {
+      "file": "tests/decomposer_tabs_a11y.test.js",
+      "sha256": "c1e4a45f712074d0726687bbbbad910d47341748d237015c67e3985b8ffe1d6a"
+    },
+    {
+      "file": "tests/definition_detective_accessibility.test.js",
+      "sha256": "7df093d0ef9c5c5d4d8a66929cf599d5273ec139d1602da9cc791d62386adc29"
+    },
+    {
+      "file": "tests/desktop_command_center_a11y.test.js",
+      "sha256": "e5996c2aa99b37295ff31b416af470f342cf1954f29084e0fdcd7b0b8e1a24d5"
+    },
+    {
+      "file": "tests/dinolab_3d_accessibility.test.js",
+      "sha256": "c38ac13685e4b4f35b483aefef7c8f317b76d21c1dbb2d2b77752177a08f0146"
+    },
+    {
+      "file": "tests/dna_a11y_semantics.test.js",
+      "sha256": "4a96a9c560c501c1d010e87a583788c79f63763b543f164c4ae00c176db4aacb"
+    },
+    {
+      "file": "tests/dna_inquiry_form_controls_a11y.test.js",
+      "sha256": "db9d61c7132c5af3128fc93d0bb8a5d141da90c836fa65035eb3d21246708996"
+    },
+    {
+      "file": "tests/dna_motion_a11y.test.js",
+      "sha256": "36aa7329d95bd6520c546b0c80c99651605512c3b6dfc47be1464d9e0374ee47"
+    },
+    {
+      "file": "tests/doc_pipeline_annotation_confirm_a11y.test.js",
+      "sha256": "683150073926d2bc2f1b8fb856b836362ab082920d81ae3c00a793ff542e5f1b"
+    },
+    {
+      "file": "tests/doc_pipeline_annotation_sidebar_a11y.test.js",
+      "sha256": "3c089ed157dd0250399840bc94d7655a7ee95d66b45cf9b7f6bc94b31bc0be12"
+    },
+    {
+      "file": "tests/doc_pipeline_crop_dialog_a11y.test.js",
+      "sha256": "0390a05e6dc170daafbe16fa85ec4383cd13d93a66fb6aa06a92a2974d2a8a30"
+    },
+    {
+      "file": "tests/doc_pipeline_export_a11y_gate.test.js",
+      "sha256": "0fe596053e2ef61bcd6f4b5c4c5e16ec4bb75a2e47168f83323f1a09f342c6b5"
+    },
+    {
+      "file": "tests/doc_pipeline_export_dialogs_a11y.test.js",
+      "sha256": "e0bf32e117fe82baf5ffa8b5569662e6d54e6fb3a9bb64360952964a50627aac"
+    },
+    {
+      "file": "tests/doc_pipeline_note_popover_a11y.test.js",
+      "sha256": "6ded731c4e0bd60bee06b57237e1f6d692ab1f44d058a53b9db092687b968cdf"
+    },
+    {
+      "file": "tests/doc_pipeline_wcag.test.js",
+      "sha256": "4196e3206f3f5c896dfd49575df0b7b8ea89ff337800bc7bd063c73ffea71b22"
+    },
+    {
+      "file": "tests/document_builder_export_inspector_editor_a11y.test.js",
+      "sha256": "3fdbcc4c042f65e30c8d396b2729da47140aaa15ca11e4013028a478a367cf65"
+    },
+    {
+      "file": "tests/document_builder_export_notice_a11y.test.js",
+      "sha256": "745814ad2aa146f790722c92027de36e6a7cc6cd5bbeff9f67d6d07f402c6237"
+    },
+    {
+      "file": "tests/document_builder_ui_a11y.test.js",
+      "sha256": "ce265cb45b7084d2ef85ecc47dc84675e063a34dc5006524f576d93f8e69d2f1"
+    },
+    {
+      "file": "tests/dynamic_assessment_form_semantics_a11y.test.js",
+      "sha256": "399fb485d53174352ae36ed7bf4ba38166c0ad933931e667809b5f656e0923c2"
+    },
+    {
+      "file": "tests/earth_space_wcag_browser.test.js",
+      "sha256": "d91d966cb1572ee28a266fb2a80ebc2cd5b6c3be3e4b51f72bf43a1bacd0a0e9"
+    },
+    {
+      "file": "tests/echolocation_biology_subtabs_a11y.test.js",
+      "sha256": "d2701985f31c4378475ef6c69145cd9a02fd91944e1ba68870b1152145906bff"
+    },
+    {
+      "file": "tests/echolocation_cave_canvas_a11y.test.js",
+      "sha256": "c53d3460e070f4d3beba9a155cf24e32ee3a410614628088b71aeea9f47c9a13"
+    },
+    {
+      "file": "tests/echolocation_ecology_subtabs_a11y.test.js",
+      "sha256": "0c9fb0b78858b66fcbc38ba5c2c9689814e041c06707617f72910664c2e153da"
+    },
+    {
+      "file": "tests/echolocation_inquiry_form_controls_a11y.test.js",
+      "sha256": "71ec38665df48f343eba7c0c1c45b865ec8bc4dca61b0959d55f987307d7fd8c"
+    },
+    {
+      "file": "tests/echolocation_tabs_a11y.test.js",
+      "sha256": "a9a46cc4cdd27a84106c46849ddc7aa8661aebe46055a10e13d545f4deba6148"
+    },
+    {
+      "file": "tests/echotrainer_a11y.test.js",
+      "sha256": "e878d2dfe151e918a464d4999424bed86cbcec9bba0f7cd4408266b91fdbce18"
+    },
+    {
+      "file": "tests/echotrainer_inline_regions_a11y.test.js",
+      "sha256": "ad4b923cc626bd1213df58f165ac42498b8cf380e469e4b8e9c88850a544710f"
+    },
+    {
+      "file": "tests/echotrainer_inquiry_form_controls_a11y.test.js",
+      "sha256": "dc5325f48a67001abb64cd5bed48bf593f4563a309000a95443b7b09ac809d8d"
+    },
+    {
+      "file": "tests/economicslab_a11y_names.test.js",
+      "sha256": "33573f9561ecb82851ac8ac1f35a7007380a3a5617708b586cb4e03498c2139b"
+    },
+    {
+      "file": "tests/economicslab_panel_a11y.test.js",
+      "sha256": "e52b01cadd835a3d73f57aad41d91083b54ab923f99266f25a703f18180d0d9c"
+    },
+    {
+      "file": "tests/ecosystem_accessibility_notebook.test.js",
+      "sha256": "dec7459316596fce7c663a7e097beb9fdd5f3647a4f83d66f0c4739fbd6c6370"
+    },
+    {
+      "file": "tests/ecosystem_inline_regions_a11y.test.js",
+      "sha256": "329f5d4942b54f26fc447b51bdac4bc0496364d14f1e1aad10b4218ff736e266"
+    },
+    {
+      "file": "tests/ecosystem_inquiry_a11y.test.js",
+      "sha256": "9a9eaf9f2f6237a7fa1313cebc2e3ac24ad9f49e87c7a9e1b33027c5c9250f49"
+    },
+    {
+      "file": "tests/ecosystem_reduced_motion_a11y.test.js",
+      "sha256": "0fb1072408688c038c21b0640b72f540c677b276dea0c2942821d045cbd402a0"
+    },
+    {
+      "file": "tests/ecosystem_tabs_a11y.test.js",
+      "sha256": "b315aa8df65588c7f884d2909766649f21ad8f4d4b6d3e19334ccd587281e014"
+    },
+    {
+      "file": "tests/ecosystem_tutorial_dialog_a11y.test.js",
+      "sha256": "f7b6e625e2ed4dde64928252abd2b693593418d4ad5eee0562890b906e9a086b"
+    },
+    {
+      "file": "tests/educator_hub_modal_runtime_a11y.test.js",
+      "sha256": "58acf21a497c8c43f7d1c86c55a24d10eb84616b363b9eb8bf5e14b54de3419b"
+    },
+    {
+      "file": "tests/end_session_preview_a11y.test.js",
+      "sha256": "8f2d534cb9a8bcbb5cd668e3d4c8a4328fb52349686ce84b845759ec3892f877"
+    },
+    {
+      "file": "tests/epidemic_deepdive_a11y.test.js",
+      "sha256": "1f2d908f00975298ad0761b41466336b7bafe52a10e7b309df2ae6e3220ff9db"
+    },
+    {
+      "file": "tests/epidemic_tabs_a11y.test.js",
+      "sha256": "a68a734f829a2e1a8fa204fe6f49fdd108beb8d94da302d6a883cb9ae35be818"
+    },
+    {
+      "file": "tests/escape_room_editor_a11y.test.js",
+      "sha256": "eeec8900b72d4f92768fc08999b4f8286cfaacc7e5e89d3263ebb93f6db63c26"
+    },
+    {
+      "file": "tests/export_flashcards_alert_a11y.test.js",
+      "sha256": "6b561078b39384640e886dd5eb34014ad8345ed132f25d1b8895d457e811e23c"
+    },
+    {
+      "file": "tests/export_preview_a11y_consensus.test.js",
+      "sha256": "327b7264509fb77a65246a0b3149107b42db1e4246361fad301e38902cd073ca"
+    },
+    {
+      "file": "tests/export_preview_dialogs_a11y.test.js",
+      "sha256": "5b2bcd36d41b412214df811abaa7583d96f436f7eb1b2c0ce8468f07aea7deb4"
+    },
+    {
+      "file": "tests/export_preview_prompt_a11y.test.js",
+      "sha256": "0c276a4e7002ff6ede18dd3f931da30c707471519f7506f9e0d9f1b3b41cb579"
+    },
+    {
+      "file": "tests/export_preview_wcag_a11y.test.js",
+      "sha256": "56a67f8c365ff251d36406a00a99cbbf0dc01e4092757a7f3d131aa4e455d3f5"
+    },
+    {
+      "file": "tests/fab_stack_a11y.test.js",
+      "sha256": "bf45c8d7549e83c2f9d3dabbaf446be71566b2559f340304a576a6f4f43cd006"
+    },
+    {
+      "file": "tests/fab_stack_dictation_status_runtime_a11y.test.js",
+      "sha256": "4efc96483ffa2ac45288023e853f4103a841b2bd24d90505f23b823a8ccd593f"
+    },
+    {
+      "file": "tests/fab_stack_student_tools_runtime_a11y.test.js",
+      "sha256": "b816c5d3b47d760844af3df8f6fbb17a0ad24ac3c81a3663161d528ab1908256"
+    },
+    {
+      "file": "tests/faq_controls_a11y.test.js",
+      "sha256": "864a7eab11efb37e4ad25b2541247c057fbd9216f1b37ca8ac5046a965027b5a"
+    },
+    {
+      "file": "tests/fireecology_ai_input_a11y.test.js",
+      "sha256": "57ef97461008e08514bb1d167cc0218676b41c98bf2eebd4838e811ef6151fa4"
+    },
+    {
+      "file": "tests/fireecology_canvas_a11y.test.js",
+      "sha256": "58f4dcabea00b5824286fb9520750ef061de9a9cd0aa0b5d25e27d12767169a8"
+    },
+    {
+      "file": "tests/fireecology_inline_regions_a11y.test.js",
+      "sha256": "af5f78210589113fdb4e47e83374b21acb1c431338bcfd296c9465468653256c"
+    },
+    {
+      "file": "tests/fireecology_simulator_wcag.test.js",
+      "sha256": "194813c5aacc37af6d29bdeb91870324d3723edc14d15957c2e91949daf8e5a9"
+    },
+    {
+      "file": "tests/firstresponse_ai_tabs_a11y.test.js",
+      "sha256": "bf4cfb6813132de9d5091e6621b37c30bbdff5e4bd27eb165f12852691422028"
+    },
+    {
+      "file": "tests/firstresponse_bleed_tabs_a11y.test.js",
+      "sha256": "dee96a3ebd7c24e90907e34127d50b70e67d1b710b871d6781e3b5b333846c66"
+    },
+    {
+      "file": "tests/firstresponse_call_tabs_a11y.test.js",
+      "sha256": "781e36213ebfb7dc38d09249cada9e0ded288a5963a3246b9636888cfeaea510"
+    },
+    {
+      "file": "tests/firstresponse_choking_tabs_a11y.test.js",
+      "sha256": "e203051a59a5857a27069041dde0c4e74fd3113286c3d44bdb2b0587895900ba"
+    },
+    {
+      "file": "tests/firstresponse_cpr_tabs_a11y.test.js",
+      "sha256": "3d48a169e852471d7b65dff2891c56b71b17780c779389cbca40c50c0f6916d7"
+    },
+    {
+      "file": "tests/firstresponse_cpr_wcag_browser.test.js",
+      "sha256": "4c95ca72a27d79336ac73bf61c15fbcb1695f78c783d712b7c935b2eec088214"
+    },
+    {
+      "file": "tests/firstresponse_disability_tabs_a11y.test.js",
+      "sha256": "81cfc79a0d0b24505c10f6638df28daa1e98d4f2d6f4eca423502f5e49af35bd"
+    },
+    {
+      "file": "tests/fisherlab_panel_a11y.test.js",
+      "sha256": "7964c2de0e1b07c5d8c453129479f5ab53686477637439343da3105a84b90478"
+    },
+    {
+      "file": "tests/forge_export_ctx_a11y.test.js",
+      "sha256": "18b8b7cefaff1c978e9c40f3784d6e570cf70115bd9caa2adcc4f897c49b6880"
+    },
+    {
+      "file": "tests/foundational_math_tabs_a11y.test.js",
+      "sha256": "01eaa094e9ebd0a39c87e8af85463bd87641d31167494d84603b784141fc8df5"
+    },
+    {
+      "file": "tests/foundational_math_wcag_browser.test.js",
+      "sha256": "4f6c3a513424cbd930934f355d82fead5c691b853394b3c4ced704b9186a7b8b"
+    },
+    {
+      "file": "tests/funcgrapher_a11y.test.js",
+      "sha256": "49a756eb9c62c177e1d5559fc4ac6fd396aa675c624c7cf89bad0f3ab2103ad4"
+    },
+    {
+      "file": "tests/galaxy_wcag_a11y.test.js",
+      "sha256": "8a5fbd70a5bfb37a64d0d785fa70eb731b1b136d129f7e427e5e872980230db1"
+    },
+    {
+      "file": "tests/games_button_semantics_a11y.test.js",
+      "sha256": "98568d7afb05427e693c5995311ab782526fb9166d341311efa0293935c1acaf"
+    },
+    {
+      "file": "tests/games_native_alert_a11y.test.js",
+      "sha256": "1afca8f3807cadea7df6d9497636db9ea790dc62e3130d2a8089b1c432c0dae9"
+    },
+    {
+      "file": "tests/games_shared_focus_styles_a11y.test.js",
+      "sha256": "939c443fe3f29c751c595763c6b376cb77bfb5534fbc7c3970e7a031fe996a70"
+    },
+    {
+      "file": "tests/games_wcag_a11y.test.js",
+      "sha256": "f454cb642a2fd19511b8349b538d20139283854a372e06811700c1d27d048dca"
+    },
+    {
+      "file": "tests/gemini_bridge_a11y.test.js",
+      "sha256": "2675056a81d67ed10f03db058e9d0a24dedb645e87f1eefc17a310995212b776"
+    },
+    {
+      "file": "tests/gemini_bridge_responsive_a11y.test.js",
+      "sha256": "8c75f55f419bf7530fbf6c941d938661d1052ed79d4282ebe474b9717b56cba9"
+    },
+    {
+      "file": "tests/gemini_bridge_theme_contrast_a11y.test.js",
+      "sha256": "d44dadc437c5d90f3e671a65c24ab67d78ee3804962a3501794630f456ec4fdb"
+    },
+    {
+      "file": "tests/geology_accessibility.test.js",
+      "sha256": "ee8d504ad9ebce7bdd6e1b4e910e8f53225b50ec787ad6f4f99d6aa6eee1010f"
+    },
+    {
+      "file": "tests/geology_canvas_semantics_a11y.test.js",
+      "sha256": "f7dda14390419610c5f9b1e198470fceb3ced93d57b7e4eefa3186c6992707da"
+    },
+    {
+      "file": "tests/geology_focus_visible_a11y.test.js",
+      "sha256": "3657c0d5928ebf74be81444458ff8ee5e9470d8efea555156332c16592e4b92a"
+    },
+    {
+      "file": "tests/geology_fullscreen_dialog_a11y.test.js",
+      "sha256": "8b9748f97dc51877c0f5651fc03525dad87e953379d2b26c867af654b78ce427"
+    },
+    {
+      "file": "tests/geology_reduced_motion_a11y.test.js",
+      "sha256": "085cbfa1d92b2989cac1fce06841aa00e2ef1f730eb6c22f89fef2f42efb1e53"
+    },
+    {
+      "file": "tests/geology_tabs_a11y.test.js",
+      "sha256": "5e776f36558a82ac6ca8da0569da04f1a5e830877f1db13d333f8d4b6282c5bc"
+    },
+    {
+      "file": "tests/geometry_data_tabs_a11y.test.js",
+      "sha256": "9f41f1ff48a9e3ec10449648b12e0a58c68a7e0c9b4341214b5fdc0fb3084ba9"
+    },
+    {
+      "file": "tests/geometry_data_wcag_browser.test.js",
+      "sha256": "b92fa62a838ea55d13e80a6059f3760613fa383848d911bf8d2cfe2096542048"
+    },
+    {
+      "file": "tests/gisstudio_input_a11y.test.js",
+      "sha256": "b76553c84880ab25390cc128176d4d2f5527b22687a0d6eb23ad05db34ea4534"
+    },
+    {
+      "file": "tests/global_level_up_modal_a11y.test.js",
+      "sha256": "47a3a92c60c2ef1d48a3eeb68ddc987aec5577b96a5976943c7e8f7c94f1524b"
+    },
+    {
+      "file": "tests/global_level_up_modal_runtime_a11y.test.js",
+      "sha256": "aaa1afb9071b05cf3245fd133039d239c2dd8b2116c7fdfe4b690449525e6315"
+    },
+    {
+      "file": "tests/glossary_flashcard_heading_a11y.test.js",
+      "sha256": "6f9f9ad0af9418e3c4af67375e4235018deab1d519839502797d17601c0905c1"
+    },
+    {
+      "file": "tests/glossary_flashcard_text_a11y.test.js",
+      "sha256": "e60159f7e7585505855b1b922f829bfaa51f8c03cc9ca9bb5d4eb6a6f1d07458"
+    },
+    {
+      "file": "tests/glossary_health_check_a11y.test.js",
+      "sha256": "7a4a26e1de80a929db8ba93f0bcfcf6a27873c4db89fc96315f00ddbd384819e"
+    },
+    {
+      "file": "tests/guided_full_lesson_a11y.test.js",
+      "sha256": "62888a115df6b97985d75434d6813df6a265609337a03e92819abdb68947ed51"
+    },
+    {
+      "file": "tests/guided_mode_banner_a11y.test.js",
+      "sha256": "07425153a71630f293a3f5800c17ba4261a7a20ac74ebfb78a8b384d5dd10e6d"
+    },
+    {
+      "file": "tests/header_controls_a11y.test.js",
+      "sha256": "1d18da53e6d108630ab38ff9fe79e8fbc2f409b5172f1ceec3bb873abc643b27"
+    },
+    {
+      "file": "tests/header_popovers_a11y.test.js",
+      "sha256": "316114c97f6c392a6bffc4b536ec1f9e4e1e1b38c303ce2b1c7f693e10bbb9e3"
+    },
+    {
+      "file": "tests/hints_modal_a11y.test.js",
+      "sha256": "3f189bd63442c1c76102ba722d74086ef53cd0925337ce5c6175fcf524bb9f00"
+    },
+    {
+      "file": "tests/hints_modal_runtime_a11y.test.js",
+      "sha256": "d679fd7f9cd3b84cc2763e1377a0f4b7bfb38bbc94b68c1e4ac9cfdfab4b5213"
+    },
+    {
+      "file": "tests/history_panel_move_to_unit_a11y.test.js",
+      "sha256": "53e0cd440c3deca8c1a1153d39d75a5d7b1f59587703a2e003674f2abbd09ec3"
+    },
+    {
+      "file": "tests/history_panel_reorder_a11y.test.js",
+      "sha256": "9e537d01e05e198a90903ebe9005701293720387c1ef7c48c3896127f9d91ad2"
+    },
+    {
+      "file": "tests/hub_modals_a11y.test.js",
+      "sha256": "04c8743736f694fecc77e142e28694d1ede3d1bdc6b4ef6204da6bd741536464"
+    },
+    {
+      "file": "tests/immersive_reader_dialog_a11y.test.js",
+      "sha256": "baa31bd53f6383f77e8fcc30bbdb6ee89be294af74318580a27fd36e1b8bec27"
+    },
+    {
+      "file": "tests/immersive_reader_target_size_a11y.test.js",
+      "sha256": "bc271d9ba5a3b8607f05b3bd168693d8abe5318258f76f0d1a9c32c392ed5ee8"
+    },
+    {
+      "file": "tests/inequality_accessibility.test.js",
+      "sha256": "c66ba82955543971691903015791390748c02c86193cae681153ed4772f93d7b"
+    },
+    {
+      "file": "tests/inequality_form_controls_a11y.test.js",
+      "sha256": "3841ba0931691ff77b24ebef77a9e664a2874a0ed22e4aa050a435e2ec725260"
+    },
+    {
+      "file": "tests/inequality_tabs_a11y.test.js",
+      "sha256": "2671041e26a2e1aa1399a192b52dfd0069eaa1edaaa67bed60b1408793afad76"
+    },
+    {
+      "file": "tests/info_modal_a11y.test.js",
+      "sha256": "7ea85dbf0b12e573780f6212b7f51f0d4388ae8727e79a379b503c83f4e1ee0f"
+    },
+    {
+      "file": "tests/info_modal_feature_navigation_a11y.test.js",
+      "sha256": "21dab440118b173059cd323414cd843827e0b712a16475fecadc0238de81ce3f"
+    },
+    {
+      "file": "tests/key_concept_map_spine_a11y.test.js",
+      "sha256": "bfafe832b84390525a380751c51683ad37ea523bfdfefb80a18c293e49053803"
+    },
+    {
+      "file": "tests/kitchenlab_tabs_a11y.test.js",
+      "sha256": "65b3b1e46ad2624a8dd76757a5dc27be30b3814207f608f67692397fbc71b0d2"
+    },
+    {
+      "file": "tests/kokoro_offer_modal_a11y.test.js",
+      "sha256": "65ec138f0aff540a9f533bfeb20fb83e8008fb5c7011bfe53cc0dbb60a5d0b2e"
+    },
+    {
+      "file": "tests/kokoro_offer_modal_runtime_a11y.test.js",
+      "sha256": "be88cf9fa4923dbf0f7d9606b1b468d6fbc7292843af5eafd2bf40c3f6b13117"
+    },
+    {
+      "file": "tests/large_file_modal_a11y.test.js",
+      "sha256": "43c1e88b948ae2278fe08d225dbf121ea8787b2933a12ea69ea5d4600deb66b7"
+    },
+    {
+      "file": "tests/large_file_modal_runtime_a11y.test.js",
+      "sha256": "9075a0ba329d32cbde608ba83f4f6a034535ee6be7e80dba2b08127260fb1634"
+    },
+    {
+      "file": "tests/launch_pad_cards_a11y.test.js",
+      "sha256": "a7b8526a15b311aa42a988e4dc745bcd7e8e20957a411f42b74efce82ff0d380"
+    },
+    {
+      "file": "tests/launch_pad_utilities_a11y.test.js",
+      "sha256": "727ff7ae05f2a2e7976310c01aa1a958f0ed6cc63990d6f729e0f7401b4df92a"
+    },
+    {
+      "file": "tests/learner_progress_panel_a11y.test.js",
+      "sha256": "0d025da62b02567932dc0ac5e88d4a82ff27ccc56f7e5e668f0eb742b601eb8d"
+    },
+    {
+      "file": "tests/learning_hub_modal_runtime_a11y.test.js",
+      "sha256": "d01e3446602a68cdfc19b3840bb79bfd44f329b7ff4ee8abf94ea79a0a76984e"
+    },
+    {
+      "file": "tests/learning_lab_accommodation_builder_a11y.test.js",
+      "sha256": "89f6231a1bbb5ac7f4b27e3044e0600780d64a5efba417e69726e29bff47c3aa"
+    },
+    {
+      "file": "tests/learning_lab_accommodation_card_a11y.test.js",
+      "sha256": "7bef869ef132a01dcc7a2df87e15aaca492a86f5917e390f216542bddfff07de"
+    },
+    {
+      "file": "tests/learning_lab_accommodation_card_render_a11y.test.js",
+      "sha256": "61988b6b9c5931c1cbd10506310873e5a70c5f25911271fe336ef1ed1afa6510"
+    },
+    {
+      "file": "tests/learning_lab_achievement_wall_a11y.test.js",
+      "sha256": "cf37f758f5df9d6bf803f6daa29e4dcc171baca566b87a4d864a3668c98d6877"
+    },
+    {
+      "file": "tests/learning_lab_achievement_wall_render_a11y.test.js",
+      "sha256": "5cb3bd425ce0abd45b020b92834487103e385271868e445933794bb8ae5f828f"
+    },
+    {
+      "file": "tests/learning_lab_affirmations_a11y.test.js",
+      "sha256": "3015d7a69cadbced1809b5e2b0533716c76fa8d83f5d22e6737fb569d1924dbb"
+    },
+    {
+      "file": "tests/learning_lab_affirmations_render_a11y.test.js",
+      "sha256": "fc61aa4afbf8e70a834e9e7867bf2a316c60d268220deb20629d0174ae80d42e"
+    },
+    {
+      "file": "tests/learning_lab_anxiety_toolkit_a11y.test.js",
+      "sha256": "ec4cf21ec11e4e34ef7cb3fe498771346cd1bb0bf1b209c064010ca6ee478e74"
+    },
+    {
+      "file": "tests/learning_lab_anxiety_toolkit_render_a11y.test.js",
+      "sha256": "cb2b0c6f9c4720170fe5ae0ac08fa31d5143f85c4adf93669d3e45309aa0f2db"
+    },
+    {
+      "file": "tests/learning_lab_ask_tracker_a11y.test.js",
+      "sha256": "011e24b84cc15d19ee36e0ecf92a9a256e4b85e0bf37b23fd585ce4c237b1a2d"
+    },
+    {
+      "file": "tests/learning_lab_ask_tracker_render_a11y.test.js",
+      "sha256": "d36c0b4881ccd54663f7936c5d9ebd899a5593cad87517c1f3cb2346dedad671"
+    },
+    {
+      "file": "tests/learning_lab_body_awareness_a11y.test.js",
+      "sha256": "1d9401ff206a2191829393291ddcb25e2e1f9fd682acb4143c1e9bc823e64e0c"
+    },
+    {
+      "file": "tests/learning_lab_body_awareness_render_a11y.test.js",
+      "sha256": "7254ac51414367605d60e4189941f8d4d5bfa2517d3f2d2d1836e8b921104531"
+    },
+    {
+      "file": "tests/learning_lab_brain_dump_a11y.test.js",
+      "sha256": "1f209234a6eb7ce8b47e50c881f7befaae83b0edded398fe54b73fee25ab4b52"
+    },
+    {
+      "file": "tests/learning_lab_brain_dump_render_a11y.test.js",
+      "sha256": "f413d70937bfe4327da346fd125359636da5463388d24909077abf12b1a77d72"
+    },
+    {
+      "file": "tests/learning_lab_career_explorer_a11y.test.js",
+      "sha256": "b21fb04884d2966dee71cb2cbd6f446235c924ce3ceb8f2d632aaa96d7882d85"
+    },
+    {
+      "file": "tests/learning_lab_career_explorer_render_a11y.test.js",
+      "sha256": "ad53d405cd758b3fb3d5c6e49fcf19214d930bc513820a00befa0d704e8a2a22"
+    },
+    {
+      "file": "tests/learning_lab_challenge_board_a11y.test.js",
+      "sha256": "add284565c187619aee56ae2868669e48b0b292af6456221829e837b308ca75d"
+    },
+    {
+      "file": "tests/learning_lab_challenge_board_render_a11y.test.js",
+      "sha256": "e48089a3c3cea9274992865bfcc0332b23321988623beae18b99065e7e523690"
+    },
+    {
+      "file": "tests/learning_lab_cheat_sheets_a11y.test.js",
+      "sha256": "d4b44674d4eb9901688d46a34acc6008465d702592dc8629a888d44c0f4f5012"
+    },
+    {
+      "file": "tests/learning_lab_cheat_sheets_render_a11y.test.js",
+      "sha256": "e9fa0b78764b3bce0951282da346b6697129cbf2c6e21e05f0f84f0de874b019"
+    },
+    {
+      "file": "tests/learning_lab_circle_support_a11y.test.js",
+      "sha256": "3541d4c4a7439493f1b723ecfdf33ea05c4c5d3b026015060f83e16cb410201b"
+    },
+    {
+      "file": "tests/learning_lab_class_roster_a11y.test.js",
+      "sha256": "f924d2855e274ba2b798e686431b10c9e7a2bf896e743fe9d45cd87188745deb"
+    },
+    {
+      "file": "tests/learning_lab_class_roster_render_a11y.test.js",
+      "sha256": "8b4e5d5136af521f4b7bc03cd35ab359da11948fb1245111eadbeaf7a346999c"
+    },
+    {
+      "file": "tests/learning_lab_cognitive_load_monitor_a11y.test.js",
+      "sha256": "e74c6093ef145271ed6c764c3c7887817b249b586dcc889529b7913af1e16d3e"
+    },
+    {
+      "file": "tests/learning_lab_cognitive_load_monitor_render_a11y.test.js",
+      "sha256": "e78958aa475d252ff7792f51bd75c7254cc9eb9732faad2e48490c73eb5a49c5"
+    },
+    {
+      "file": "tests/learning_lab_communication_style_a11y.test.js",
+      "sha256": "beb011fb7c22fc5564713ad5fdfa9a37506ad8798bcf734267a23255a621ab2b"
+    },
+    {
+      "file": "tests/learning_lab_community_resources_a11y.test.js",
+      "sha256": "28b28e52d5afc09541d5d836cfc29a59d78d04b7284819e4ed89c36136368e74"
+    },
+    {
+      "file": "tests/learning_lab_concept_map_a11y.test.js",
+      "sha256": "beaa2cf27b27f051319baaa48fb6143cc3b178c868a7ab6b26d0a15e56a023cb"
+    },
+    {
+      "file": "tests/learning_lab_concept_map_render_a11y.test.js",
+      "sha256": "a2d93826bc19dddc0c3421b857ac587a192c0558af92031a6fbb73cec1747a35"
+    },
+    {
+      "file": "tests/learning_lab_confidence_builder_a11y.test.js",
+      "sha256": "ae712390ffa1d01a11e1f6b1b0bc56069e7da2855e3cfd023b8f679178458265"
+    },
+    {
+      "file": "tests/learning_lab_confirmations_part1_a11y.test.js",
+      "sha256": "6e3164ff973c26e3e61f4e8b0036324438fbfad38f46d00e7d612149d60f4115"
+    },
+    {
+      "file": "tests/learning_lab_crisis_plan_a11y.test.js",
+      "sha256": "e775f0b5b1f9df9bf27577febaa6664e18108063cdde70cd450fbe4dc0e2c6b5"
+    },
+    {
+      "file": "tests/learning_lab_crisis_plan_render_a11y.test.js",
+      "sha256": "de066c2f49e0a3d71281fe9864aa525b44c445e6829e2d98f1f7f76518324feb"
+    },
+    {
+      "file": "tests/learning_lab_current_reading_a11y.test.js",
+      "sha256": "e85bb0877700c5194a4411172d470538aedd73430957c808a5c9891d0a46da2a"
+    },
+    {
+      "file": "tests/learning_lab_curriculum_builder_a11y.test.js",
+      "sha256": "d93631c2cb774a6022fdbb8a1a797690e19f7e1b537b22b93b18ebb71340ce71"
+    },
+    {
+      "file": "tests/learning_lab_daily3_a11y.test.js",
+      "sha256": "19b41fd0dd30a19f84e132e9462f498eb7ef3ae3c3b17cd2c15029be98d2207b"
+    },
+    {
+      "file": "tests/learning_lab_daily_agenda_a11y.test.js",
+      "sha256": "41c071a6b8dcc524077586fa642bccd4d084ccac642ad2cbed7a85b4e8bfdc6a"
+    },
+    {
+      "file": "tests/learning_lab_daily_agenda_render_a11y.test.js",
+      "sha256": "2dae94032177641302681db2cc671e167295649e546b87c48eb94b42bd94a1a1"
+    },
+    {
+      "file": "tests/learning_lab_daily_highlights_a11y.test.js",
+      "sha256": "53f04424085fecea3a5552e8517cbc566a0a75d03265efc0624b15970ffadd74"
+    },
+    {
+      "file": "tests/learning_lab_decision_maker_a11y.test.js",
+      "sha256": "ae5d915277d395c425eaf4eca5fbf8f25a3f6f18c2408e95f332c90088e9a65b"
+    },
+    {
+      "file": "tests/learning_lab_decision_maker_render_a11y.test.js",
+      "sha256": "18ca7c5edd095aa35613a0db30f26e61189b1d63e2392f55a522e8cb2e4dc5fd"
+    },
+    {
+      "file": "tests/learning_lab_disclosure_render_a11y.test.js",
+      "sha256": "bed260a395945fc8158f8d01ecefae1ed215ccd739de2aedb85b6b78223c5d9f"
+    },
+    {
+      "file": "tests/learning_lab_disclosure_wizard_a11y.test.js",
+      "sha256": "8dd5908ffb54ad47d18105129e6aa7cc4a8a133d3e4ec999cf8f52a2bec04ad4"
+    },
+    {
+      "file": "tests/learning_lab_distraction_log_a11y.test.js",
+      "sha256": "6db031f2b38358c65854bb8e790726fd2e73d59abf9d82a550b298f19718be11"
+    },
+    {
+      "file": "tests/learning_lab_distraction_log_render_a11y.test.js",
+      "sha256": "179e55d05c30a360480a18e3d4594d5631c5e512f8bba951a9d270e032a349dc"
+    },
+    {
+      "file": "tests/learning_lab_ef_dashboard_a11y.test.js",
+      "sha256": "70d00b49828ae421260339f635aaa604e80649892872cbd7f64165d0b836d90b"
+    },
+    {
+      "file": "tests/learning_lab_ef_dashboard_render_a11y.test.js",
+      "sha256": "92faca955ab3e4ae2ac7280a9ec97075c7757c5a27cf53f8135b6bf3eecaad28"
+    },
+    {
+      "file": "tests/learning_lab_emotion_grounding_render_a11y.test.js",
+      "sha256": "c5f98d579dec39550f7be34bc0d07805166822ecb3a7dffbb720ff1c7d82d591"
+    },
+    {
+      "file": "tests/learning_lab_emotion_regulator_a11y.test.js",
+      "sha256": "6c80916cbc2a147f6bfee83f2bdec77cdd554b9e665e18cf36e54a06000f010b"
+    },
+    {
+      "file": "tests/learning_lab_energy_tracker_a11y.test.js",
+      "sha256": "c3e752531f6b898fdefbcc796b9497f8837d50ffa0c82ce3f49d3bac61e024cc"
+    },
+    {
+      "file": "tests/learning_lab_energy_tracker_render_a11y.test.js",
+      "sha256": "e3049c64e416d96229d4089a2d61de4fdc1b6af2196e108b53bb3d569a72afbd"
+    },
+    {
+      "file": "tests/learning_lab_ethical_reflection_a11y.test.js",
+      "sha256": "b0dbc90cabf44f83302db7c85efab62dac24d219a6b370ccf23b660a3d322629"
+    },
+    {
+      "file": "tests/learning_lab_exam_prep_a11y.test.js",
+      "sha256": "af14399764f2f383b9bf5dbdf5bc2882330f377f1242558c4eb0ab17ae8e557b"
+    },
+    {
+      "file": "tests/learning_lab_exam_prep_render_a11y.test.js",
+      "sha256": "b779bd6631c51a32da8e8b5477a68886244588757695f7a371301b020d9b3c41"
+    },
+    {
+      "file": "tests/learning_lab_exam_prep_revision_a11y.test.js",
+      "sha256": "9c4a7fa630bc883fc4c2e582b4504edcb92efb5166fb31d578f9d8c9ea2c585a"
+    },
+    {
+      "file": "tests/learning_lab_flashcard_deck_a11y.test.js",
+      "sha256": "f6d7c49eb4180681e7f5ab2058d56b045d56d924154a21efb6fda667b2e62029"
+    },
+    {
+      "file": "tests/learning_lab_flashcard_deck_render_a11y.test.js",
+      "sha256": "5d496098a872f247dd752e56098cfb58cc34541769939bb48e07b473345734a5"
+    },
+    {
+      "file": "tests/learning_lab_flashcards_a11y.test.js",
+      "sha256": "0ba6c3e0a69e35edc3cd2a40ee0651703a96721a9e0219e8e5e0be3ec250add2"
+    },
+    {
+      "file": "tests/learning_lab_focus_audio_a11y.test.js",
+      "sha256": "98fa46abe576995f678e321d9b90326a60ff9bb1856934cd7a3ddb60951c255c"
+    },
+    {
+      "file": "tests/learning_lab_focus_binding_a11y.test.js",
+      "sha256": "da73dbce4e34606ff3526754d18a8cc49aec4dee391137535ca7545c8e2b7da5"
+    },
+    {
+      "file": "tests/learning_lab_focus_labels_a11y.test.js",
+      "sha256": "a263b75ba42b2fc9617b8b0b4785eda0ffafe3b314ad6f0ca683981496898cd8"
+    },
+    {
+      "file": "tests/learning_lab_focus_timer_a11y.test.js",
+      "sha256": "9070913cf81c71a50f25b85974152003c65f873671ea6888ef05815f0ee86121"
+    },
+    {
+      "file": "tests/learning_lab_focus_timer_render_a11y.test.js",
+      "sha256": "f998f2b6ea5127dc02443cb50f5810c6ec2d12f607e1c1018f5a7caa6239ecd6"
+    },
+    {
+      "file": "tests/learning_lab_friendship_tracker_a11y.test.js",
+      "sha256": "fd29a0fe02b298dba21a20a02e26ce691f4b1223fd041570255b075f14ea5d0b"
+    },
+    {
+      "file": "tests/learning_lab_future_self_a11y.test.js",
+      "sha256": "c1df22bb3191fd96e7fc15384d779d797e082e03a765ca091cb0628242ff846d"
+    },
+    {
+      "file": "tests/learning_lab_future_self_render_a11y.test.js",
+      "sha256": "99f4cdb53c97f6353efd18a014d92877705ab446f296512cb5c39f68e6878544"
+    },
+    {
+      "file": "tests/learning_lab_goal_tracker_a11y.test.js",
+      "sha256": "86519fd53152a98e8de4522b111eda8cf5d9fb2d62d8e88186228d7a829a90b6"
+    },
+    {
+      "file": "tests/learning_lab_goal_tracker_render_a11y.test.js",
+      "sha256": "5ff8d933d734afc64f8254021ed68d32704ca2efa2a88465b02284ffd2dc3f2d"
+    },
+    {
+      "file": "tests/learning_lab_gratitude_log_a11y.test.js",
+      "sha256": "0a4f39d574e3ac6cd6edde252275db80d19f02c464fb267b136eb94137613e6e"
+    },
+    {
+      "file": "tests/learning_lab_gratitude_log_render_a11y.test.js",
+      "sha256": "7475906c3995db819e906145f4b495c7c53385b9acd2774746a4e7e4abb7fb1e"
+    },
+    {
+      "file": "tests/learning_lab_great_day_pattern_a11y.test.js",
+      "sha256": "65bae67cd55f51389ad1e733a33ac6f0d41d55a916106f824aaa95c275340570"
+    },
+    {
+      "file": "tests/learning_lab_habit_tracker_a11y.test.js",
+      "sha256": "349ce9dcd55d512a574c1ac5181677a2fd48f20c4f96790a9932f9d9059f3b6a"
+    },
+    {
+      "file": "tests/learning_lab_habit_tracker_render_a11y.test.js",
+      "sha256": "098ddf9a17f82d827556ffd2794f1758491eee6db463f5fa22fd86f8ac22ce16"
+    },
+    {
+      "file": "tests/learning_lab_habit_tracker_revision_a11y.test.js",
+      "sha256": "e0068060ed7d5f352b43588e59f4ddf6b906ba6acc16a2831d778c87aecf274d"
+    },
+    {
+      "file": "tests/learning_lab_hope_library_a11y.test.js",
+      "sha256": "5a1762c3901bf33169044f5b2382deaa98ffd95d8f610d3201f2f3c5a5f449ad"
+    },
+    {
+      "file": "tests/learning_lab_identity_map_a11y.test.js",
+      "sha256": "efc5eab1db4b5e65b61179ad95df300e050c446a7be4d54b9a08d0f4f79a030e"
+    },
+    {
+      "file": "tests/learning_lab_identity_map_render_a11y.test.js",
+      "sha256": "7ce99a1e075ee99162ccd8a7a9b8d0ad8a33005f1e1167f56d7d4d1e66597c36"
+    },
+    {
+      "file": "tests/learning_lab_iep_tracker_a11y.test.js",
+      "sha256": "c2fdfaef3895b7d79db48f3fb9453232ff2bc2b9e4bbfda0dc2a590d646b7678"
+    },
+    {
+      "file": "tests/learning_lab_iep_tracker_render_a11y.test.js",
+      "sha256": "fcbfaae96dc84641e6c3a20b706daeaf7dc994e26be37e0531a2a5eb42c19755"
+    },
+    {
+      "file": "tests/learning_lab_if_then_planner_a11y.test.js",
+      "sha256": "58a81464a7e3bdd5f0fafa7ea76f27809dce5be92e65ad54e3ff1b450d7a9544"
+    },
+    {
+      "file": "tests/learning_lab_if_then_planner_render_a11y.test.js",
+      "sha256": "8f511a301c9c1011c4004dbe92c7721de79c0d2aa6c29debeb4907602a36be00"
+    },
+    {
+      "file": "tests/learning_lab_knowledge_map_a11y.test.js",
+      "sha256": "d6cc062c75e4665e0be66417de6bee143a25784aa58cd6375ed17948f41bd6b3"
+    },
+    {
+      "file": "tests/learning_lab_learning_contracts_a11y.test.js",
+      "sha256": "7a5ea06a98df49d7d7d61e80d9249be54e4f4949699c977bd15c50d8c5bc2cb3"
+    },
+    {
+      "file": "tests/learning_lab_learning_contracts_render_a11y.test.js",
+      "sha256": "6f9a1ce47186e4c26ced6423d94e5e3b41fcc64d23d2232ca5844a870e493b69"
+    },
+    {
+      "file": "tests/learning_lab_learning_journal_a11y.test.js",
+      "sha256": "735f0c288420eee4022c1ae4fe45b9d4e2e8785d9045c911b8d9cefdeab1a403"
+    },
+    {
+      "file": "tests/learning_lab_learning_journal_render_a11y.test.js",
+      "sha256": "a3fe83372299eaaa134b1cc6d04e13210b8d8df8fe9e6c6f0ac704e1257b94e8"
+    },
+    {
+      "file": "tests/learning_lab_learning_profile_a11y.test.js",
+      "sha256": "045c72e931f836e6ec8c013b5f34a44194c4ac317e54106c3c1a6412c0f3282f"
+    },
+    {
+      "file": "tests/learning_lab_learning_profile_render_a11y.test.js",
+      "sha256": "14e0680ff3fd84b0fab448486763c9c088b55593eefd6d3e72368425713994f2"
+    },
+    {
+      "file": "tests/learning_lab_life_deck_a11y.test.js",
+      "sha256": "2803222239104c58cf0d74a8042ece8f2aacca29141e22374709c8fe1dbc5f52"
+    },
+    {
+      "file": "tests/learning_lab_life_map_a11y.test.js",
+      "sha256": "f1e90b6dd102f88b442cca909966dce048c66ab4ffe114736dd7d223fe5b570f"
+    },
+    {
+      "file": "tests/learning_lab_life_skills_a11y.test.js",
+      "sha256": "c22e314a13922d1bbd051f0eab885bb018cc6461d959c10f8b3ac95efd50c757"
+    },
+    {
+      "file": "tests/learning_lab_memory_palace_a11y.test.js",
+      "sha256": "7d2572c9f42b3a33513d442e9ade127e47c6ee101741b46a91c2b11e6e9ee1f1"
+    },
+    {
+      "file": "tests/learning_lab_memory_palace_render_a11y.test.js",
+      "sha256": "ca49242e6c95102826615f8d01a048bf854351e39ebf05ee070b6aada8b85a9e"
+    },
+    {
+      "file": "tests/learning_lab_mindfulness_a11y.test.js",
+      "sha256": "55c878e4b5ad71352a5ece581fc0fc701ff6f92a494484abd7cc3120e733254c"
+    },
+    {
+      "file": "tests/learning_lab_mindfulness_render_a11y.test.js",
+      "sha256": "b159f12f7cf68cd3e84ca895ac61f5f84ef8d2af9f51b74ed58d06560b67af7d"
+    },
+    {
+      "file": "tests/learning_lab_momentum_calendar_a11y.test.js",
+      "sha256": "04c1d5461fbaffaf6d9b0824f39e2a326d97749fb38a211c5a0396056bdab754"
+    },
+    {
+      "file": "tests/learning_lab_mood_tracker_a11y.test.js",
+      "sha256": "9038d17d68f32fd42e5339b13fe808b549d5e7b99e150c3d321151f5ab98137a"
+    },
+    {
+      "file": "tests/learning_lab_mood_tracker_render_a11y.test.js",
+      "sha256": "022f6740a2321903840f576d5479c0eefa2a958d1475ef18bef20422422708ff"
+    },
+    {
+      "file": "tests/learning_lab_motivation_audit_a11y.test.js",
+      "sha256": "f0813e951b5f4248f6b9b4de6507b9ee742e7d502640ee3f79b49fcd482e39c7"
+    },
+    {
+      "file": "tests/learning_lab_motivation_audit_render_a11y.test.js",
+      "sha256": "7a79ac7c40ff8974b24aff6ab1af6aed2057aeeeeb00fef6d76772c059389812"
+    },
+    {
+      "file": "tests/learning_lab_nd_journal_a11y.test.js",
+      "sha256": "3052b5ea5f38dee77004f9f826d3696622cb1b0ba69c90b0cc901a22cbd15ebc"
+    },
+    {
+      "file": "tests/learning_lab_notes_workbench_a11y.test.js",
+      "sha256": "4a6eb25bce7b4ad106cf690fc70357a39ed166c212011e98bab4ec63b47e324a"
+    },
+    {
+      "file": "tests/learning_lab_notes_workbench_render_a11y.test.js",
+      "sha256": "cf208f7466f51d87597f903f7924988b49f45a424f9a952fe62f1a75141365d1"
+    },
+    {
+      "file": "tests/learning_lab_open_letter_a11y.test.js",
+      "sha256": "ff6037680822e9eb69590eb6c1b4781538b62e198a8037ec975109c7c0ada2b5"
+    },
+    {
+      "file": "tests/learning_lab_parent_message_a11y.test.js",
+      "sha256": "435412b73a1c1f9fb98dc90996b95b5f595165a40293b3686bdc948440fe4c1b"
+    },
+    {
+      "file": "tests/learning_lab_parent_message_render_a11y.test.js",
+      "sha256": "3aafbd78399c5a61e939ef6c14d738e40b052784389eba49a9396b7cafc1053d"
+    },
+    {
+      "file": "tests/learning_lab_priorities_matrix_a11y.test.js",
+      "sha256": "7dcd011eaaac7198c90096ef2f2e5c84991becd11a222be781f40af7397824e7"
+    },
+    {
+      "file": "tests/learning_lab_progress_dashboard_a11y.test.js",
+      "sha256": "1bc95a6cf8fd2c8bb7721fadc0a0f9e84f6e7e7721ec1886ae093da1f030de28"
+    },
+    {
+      "file": "tests/learning_lab_progress_dashboard_render_a11y.test.js",
+      "sha256": "a4825e6908c5f4ab0272fb2c9f43d8c7549034ea65abea639fda1248b7ae9cb4"
+    },
+    {
+      "file": "tests/learning_lab_question_log_a11y.test.js",
+      "sha256": "ff15d34c68fa6d21d9ba7ecbfbfe97d7f21cb968e41cb7b49e4753436ff26177"
+    },
+    {
+      "file": "tests/learning_lab_question_log_render_a11y.test.js",
+      "sha256": "d9581a9427d9205ae3e7ff105c33d657bc1b4ce90da0b23860feb85c7ce18b27"
+    },
+    {
+      "file": "tests/learning_lab_quote_collector_a11y.test.js",
+      "sha256": "e849bd903d44bb39c6c8f4afc24e5b2fa7766c5c2932d358e19ebce30b303f31"
+    },
+    {
+      "file": "tests/learning_lab_quote_collector_render_a11y.test.js",
+      "sha256": "1aa11ca9e38ae71c68ba89fe19df8f5aa077180a893278aa4b3a8ea24b9fc743"
+    },
+    {
+      "file": "tests/learning_lab_reading_tracker_a11y.test.js",
+      "sha256": "912023099df6a3318b3d559be7390a5821147606ba2e0b5c7a5d15dbff3b7107"
+    },
+    {
+      "file": "tests/learning_lab_reading_tracker_render_a11y.test.js",
+      "sha256": "d120d31226e6f78a6530d6987af00422e6d3096be43150ce5cb18b1d0e4e321e"
+    },
+    {
+      "file": "tests/learning_lab_recovery_kit_a11y.test.js",
+      "sha256": "eede5b62b0f36bd244dd94bfd68bd2a43cdfc66462d45c94e0c3ae6cd4bf89f9"
+    },
+    {
+      "file": "tests/learning_lab_reflection_prompts_a11y.test.js",
+      "sha256": "625434df0f65e4c5cd5780eaec8706975ad2a52e3a1f2088577bd9661ecf8891"
+    },
+    {
+      "file": "tests/learning_lab_reflection_prompts_render_a11y.test.js",
+      "sha256": "7dbeb291e453f449c5ea42492916afc151e15ca3d1d58d94b8ef7f7b700b2f94"
+    },
+    {
+      "file": "tests/learning_lab_role_models_a11y.test.js",
+      "sha256": "8930541affe4c628e7547f70ae65f4d00bb69d88343d69a38e05f0e802287839"
+    },
+    {
+      "file": "tests/learning_lab_role_models_render_a11y.test.js",
+      "sha256": "f1426fce5d4dbbf324de7784a8412df0bf4b40cbaed8b2c1c2a51e007ee62a90"
+    },
+    {
+      "file": "tests/learning_lab_routine_builder_a11y.test.js",
+      "sha256": "0538a8e6b110d944393a80ebbe7a667679a8277749654b51a5dc5e166fc5c4fa"
+    },
+    {
+      "file": "tests/learning_lab_screen_time_a11y.test.js",
+      "sha256": "eedca26ece578df8774bfa7bc7ae9d5c5daf0540175a1292768c77d77b59d892"
+    },
+    {
+      "file": "tests/learning_lab_script_library_a11y.test.js",
+      "sha256": "30b040164cc5638344bfeae5f80bedb37558eb382b1364b79536f319706f24be"
+    },
+    {
+      "file": "tests/learning_lab_search_hub_a11y.test.js",
+      "sha256": "8aa9c076bcd7a3dd67bde3feb287103729f2b13a823af3f227e76585939741a8"
+    },
+    {
+      "file": "tests/learning_lab_search_hub_render_a11y.test.js",
+      "sha256": "b1fb7c1db559775e4f8997b64a1cf86ec8c20b8ee868cd0ef910800bf9bc6b41"
+    },
+    {
+      "file": "tests/learning_lab_self_assessment_a11y.test.js",
+      "sha256": "d14e1ac95fc0a918509d080eff578cf3183244dd616864019efdb6c790e475e1"
+    },
+    {
+      "file": "tests/learning_lab_self_assessment_render_a11y.test.js",
+      "sha256": "8482a9fc79810f369bf984d5db06337f49581cad2873f0ab83d42164b6605f6c"
+    },
+    {
+      "file": "tests/learning_lab_self_compassion_a11y.test.js",
+      "sha256": "a2e6a746922c8f4623770c4ea959443ed10fe5be73ebf4a1ad4833ea0c976493"
+    },
+    {
+      "file": "tests/learning_lab_self_compassion_render_a11y.test.js",
+      "sha256": "fa6f23c251cd142e3dffb251bd0deaf16178c5257ff4f1792c8f7f04d94542f5"
+    },
+    {
+      "file": "tests/learning_lab_sensory_profile_a11y.test.js",
+      "sha256": "fe8c4e53edecb9af5e108162c643b5d9f63146de1f5daa45d23e2a47524b3823"
+    },
+    {
+      "file": "tests/learning_lab_shell_a11y.test.js",
+      "sha256": "3b910bf25fe309b0dda847adfb56a8db449f231f0ffed84e9ca923d6af69aabd"
+    },
+    {
+      "file": "tests/learning_lab_sleep_log_a11y.test.js",
+      "sha256": "72d8941d2321c96a5176d1f6b28817949da04482d1ec412462adb56f15011f20"
+    },
+    {
+      "file": "tests/learning_lab_sleep_log_render_a11y.test.js",
+      "sha256": "69837b76110475ad8f50487fb9f03d355dec6ed49667c50a65e464633973e7cf"
+    },
+    {
+      "file": "tests/learning_lab_strategy_wizard_a11y.test.js",
+      "sha256": "a28b9cc6be263bd3c8b5ab9cafa715ae880e55597337d402429b31e5427acda3"
+    },
+    {
+      "file": "tests/learning_lab_strategy_wizard_render_a11y.test.js",
+      "sha256": "950269d76c2408168c4bbfad85beb5ca8b98791db2c399322167591d36f5fef9"
+    },
+    {
+      "file": "tests/learning_lab_study_planner_a11y.test.js",
+      "sha256": "d3df720fe54b936cbd38d3c7221a535fc76a1a9f451ef099159607e2a51f8d85"
+    },
+    {
+      "file": "tests/learning_lab_study_planner_render_a11y.test.js",
+      "sha256": "3f34dfc300407fc0f49d561273a0c655095d5caea3838aa3fead6ca8297ee90b"
+    },
+    {
+      "file": "tests/learning_lab_subject_mastery_a11y.test.js",
+      "sha256": "534e17f55fd680fe435ba2aa14529a4e25cd44cbc32590bb8baaf62fb5798f39"
+    },
+    {
+      "file": "tests/learning_lab_subject_mastery_render_a11y.test.js",
+      "sha256": "219d33b42dddb827a9b8cedc5e9363ce78603276bcd8f85682e6f52371b36c4a"
+    },
+    {
+      "file": "tests/learning_lab_success_log_a11y.test.js",
+      "sha256": "1942c8732404e0b129d6e424423b134bb4cda54c1df85e134084fc5f8c175b87"
+    },
+    {
+      "file": "tests/learning_lab_success_log_render_a11y.test.js",
+      "sha256": "cd9462971b6e38f8506cdde39769aa487bfcb43e101b75866af53052927afc95"
+    },
+    {
+      "file": "tests/learning_lab_sunday_plan_a11y.test.js",
+      "sha256": "014976692234873630236a3a603a9eede4fa3db05aac3605435b0a5a5a811e9a"
+    },
+    {
+      "file": "tests/learning_lab_task_breaker_a11y.test.js",
+      "sha256": "a48cfbb8f696dfae95a41e26ba627845d270f47bee76d6977ef057169154b358"
+    },
+    {
+      "file": "tests/learning_lab_task_breaker_render_a11y.test.js",
+      "sha256": "f374262c2ae70281e178e8e74123daef6f2ac4f462d873a7aa140f601d045adf"
+    },
+    {
+      "file": "tests/learning_lab_task_breaker_revision_a11y.test.js",
+      "sha256": "0b4a40de359f84b67aaf8c8fbecdf74dae615bd005ef907f1f40acfbd201bc09"
+    },
+    {
+      "file": "tests/learning_lab_teacher_email_a11y.test.js",
+      "sha256": "d7521ddded14ff94a76e1b09015c826143183dd45fd03d1ff37c6f109ed6a33d"
+    },
+    {
+      "file": "tests/learning_lab_teacher_email_render_a11y.test.js",
+      "sha256": "76f2c9cead4e21b0f354225072e905336b1bc3d0b038b23cf46ebe62aad91f7f"
+    },
+    {
+      "file": "tests/learning_lab_time_estimator_a11y.test.js",
+      "sha256": "c29303bd18b99985bd2ef16c70d35956202cc3a89127e3c83f758d95400f3c6a"
+    },
+    {
+      "file": "tests/learning_lab_time_estimator_render_a11y.test.js",
+      "sha256": "7e08a952db4334540ca56611fad6709a974d6946a1596107e36f3ccce6de27e5"
+    },
+    {
+      "file": "tests/learning_lab_toolkit_data_management_a11y.test.js",
+      "sha256": "b1423f3fe335621d30e2a3a05bdf071d1c6017311f74927c6d2b05343d09442a"
+    },
+    {
+      "file": "tests/learning_lab_toolkit_helpers_foundation_a11y.test.js",
+      "sha256": "2c15b205776a9162cd2dde8396e6b848851c5a077c42a924d08479d675e6588d"
+    },
+    {
+      "file": "tests/learning_lab_toolkit_hub_a11y.test.js",
+      "sha256": "8b2648f4ea2c6136baa8460f9dfb012d8c52860965657f774afd96b16db3f899"
+    },
+    {
+      "file": "tests/learning_lab_transition_planner_a11y.test.js",
+      "sha256": "2faa0e5ea78894e0476545bb1c1bc7a82c33ce071f4dc866bfc5ef91353b44a4"
+    },
+    {
+      "file": "tests/learning_lab_values_compass_a11y.test.js",
+      "sha256": "cec58b472a5ef91f7c5cede4b8a9142aaf393eafd631d17f4bc2824ee2977ec8"
+    },
+    {
+      "file": "tests/learning_lab_vocab_builder_a11y.test.js",
+      "sha256": "edd0f96a0c1b3ac00da313f8c03791dd90067bc5a364301e8b6b1e7fb6bdb80f"
+    },
+    {
+      "file": "tests/learning_lab_vocab_builder_render_a11y.test.js",
+      "sha256": "becfd34ab62cd6a55899a378b75adad8c37133b539019511987dd6856a3f4937"
+    },
+    {
+      "file": "tests/learning_lab_weekly_reflection_a11y.test.js",
+      "sha256": "cce5e9e00402213aabd532dac17b88df6913e678002d6a5dcb0173d0d4abafcf"
+    },
+    {
+      "file": "tests/learning_lab_weekly_reflection_render_a11y.test.js",
+      "sha256": "fa9412d0682eb84351c0f229361e667a6f695b45b5a641e9cb47b38ce12a5458"
+    },
+    {
+      "file": "tests/learning_lab_worry_time_a11y.test.js",
+      "sha256": "3349a0e941f1c9c999d190dd7f799fa4996720f0e46fe2b1b7bc8ce346bbd201"
+    },
+    {
+      "file": "tests/learning_lab_worry_time_render_a11y.test.js",
+      "sha256": "9849c03563839ffebd9db95ac555fea1655bbf85815b746d23d7236dabefce1b"
+    },
+    {
+      "file": "tests/life_science_wcag_browser.test.js",
+      "sha256": "6cb725111782645af824c827f1e854a9b7f37c72b6cfa00554f9d668ddc44199"
+    },
+    {
+      "file": "tests/lifeskills_tabs_a11y.test.js",
+      "sha256": "16986709f7a2f7517261509a8ff8d84ea18eeb7fa7595da82eb1c5a19072921f"
+    },
+    {
+      "file": "tests/lingua_practice_a11y.test.js",
+      "sha256": "a26cf98a2a618db51886d9936bc36c41ad671b2a225f259d43cee7bbd8ab9624"
+    },
+    {
+      "file": "tests/live_polling_host_dialog_a11y.test.js",
+      "sha256": "59d795970f55f7e6018ddfaf3c316dc5352531bc1a4f51c95201d8fda7c5508c"
+    },
+    {
+      "file": "tests/llm_literacy_form_controls_a11y.test.js",
+      "sha256": "eef2c0374fb753fc2a55eb2f152f8077fda5470f869981f8ee9406c824a44354"
+    },
+    {
+      "file": "tests/lumen_dialog_a11y.test.js",
+      "sha256": "12d9ea39bdd441280af7bec014f31d422411235985d704420ec26094cbb5f2d3"
+    },
+    {
+      "file": "tests/machinelab_a11y.test.js",
+      "sha256": "b28748e3b3606bca2461c4fc323b8405eac6b5dd491a2b3c466255eed6a772a3"
+    },
+    {
+      "file": "tests/matching_game_dialog_a11y.test.js",
+      "sha256": "3bc8de31d70be64282138117e56a435c02bfecf8ed5c0d9ff720386d0820859d"
+    },
+    {
+      "file": "tests/math_answer_input_a11y.test.js",
+      "sha256": "137d1cf473e313693a70c3bb24eaff02fdc36433b7ce366da8da94c2e9c4e951"
+    },
+    {
+      "file": "tests/memory_game_a11y.test.js",
+      "sha256": "c8153e1c3044da0f088f10678c2c0db3d845b3c77081a14d8bb56afd79778a67"
+    },
+    {
+      "file": "tests/memory_mode_dialog_a11y.test.js",
+      "sha256": "ef387afd1556cee43034650fc2366d70ce4591299c4be19e01449eb7f4070d0c"
+    },
+    {
+      "file": "tests/migration_inquiry_form_controls_a11y.test.js",
+      "sha256": "1698c7aaf15fdf1be9548b774e84aa05f5ac90a4605292994202cff86ee9b2fd"
+    },
+    {
+      "file": "tests/migration_svg_a11y.test.js",
+      "sha256": "fbdcf3e123b5536c3073bdcaa04f4d0808a7be026870edc7fe1d79167bed12ba"
+    },
+    {
+      "file": "tests/migration_world_flyways_a11y.test.js",
+      "sha256": "c2ac47e7c88538e042fc520b59661d5b23d4cdade61a7a82bc1128e53466b42e"
+    },
+    {
+      "file": "tests/mind_map_confirmations_a11y.test.js",
+      "sha256": "7dc25eabee220857706c9a3bce588f472a3b843a4c779e49fe54445201828b86"
+    },
+    {
+      "file": "tests/mind_map_input_labels_a11y.test.js",
+      "sha256": "f0530194a18a3bec53d8d9ab0e48b8bd82fcca85d1f21dd8a888f14c18b2e57e"
+    },
+    {
+      "file": "tests/misc_components_native_alert_a11y.test.js",
+      "sha256": "99d6e24f600b017c2a7dc85981756abbf958d7828c8e0ad5b181a8853963e35d"
+    },
+    {
+      "file": "tests/misc_components_review_a11y.test.js",
+      "sha256": "45c545ee435ddfdf099af2984327d962e6be4cc609b6753c51970993ea36061e"
+    },
+    {
+      "file": "tests/misc_components_wcag_a11y.test.js",
+      "sha256": "f3bcd8d1ba20851466277ab0c085e32718f2e8328c7ff4d02672d85bd1e07c32"
+    },
+    {
+      "file": "tests/misc_handlers_encrypted_prompt_a11y.test.js",
+      "sha256": "d4148ec5e29e05b570a3d8ce6ae27b017da84223d66c8ebd9386c1c0958060bd"
+    },
+    {
+      "file": "tests/misc_handlers_error_alerts_a11y.test.js",
+      "sha256": "5b36e218e78919d385230319d14944450fd55f3de9d8bf484b41a1881b2eb848"
+    },
+    {
+      "file": "tests/misc_image_phoneme_a11y.test.js",
+      "sha256": "2a2a67e58064a6457af187eca837c364a3e4567677d4cf077271c847f92cb3b9"
+    },
+    {
+      "file": "tests/modal_focus_trap_stack_a11y.test.js",
+      "sha256": "c4cc51d0d6b0efed739cd2e829b4fcebccb656e4b31896f144cb1655c66be1ac"
+    },
+    {
+      "file": "tests/model_un_confirmations_a11y.test.js",
+      "sha256": "bc0c87f8b828576fcd0f03c0832e349e43d1ad69927636e25a926ff2b34f8445"
+    },
+    {
+      "file": "tests/modelun_crisis_timer_a11y.test.js",
+      "sha256": "89d30b19c0516fcddbcf8bd457b1e5a2589456400bb2110c8518fb388d9ceeda"
+    },
+    {
+      "file": "tests/modelun_form_labels_a11y.test.js",
+      "sha256": "884537221a93d8dc9fc57fe5283a266bb0efffd5ec0281d9714fcb168bbf3ce7"
+    },
+    {
+      "file": "tests/module_scope_error_boundary_a11y.test.js",
+      "sha256": "20f392378c6b2343669704a600c4421762f534733396d3bb2930054f5d411228"
+    },
+    {
+      "file": "tests/molecule_builder_controls_a11y.test.js",
+      "sha256": "93f755ffb2f5191248bfec6930becfa68c855b8bd648078cb77b1ac61eea1f69"
+    },
+    {
+      "file": "tests/molecule_camera_controls_a11y.test.js",
+      "sha256": "0cbccdaf35ee92c4b759aefd1aa8b62f2bc0e7810069663cbdeab2ba06ea61f3"
+    },
+    {
+      "file": "tests/molecule_canvas_alternatives_a11y.test.js",
+      "sha256": "e88ee0278b758caf175909b52190476b1cfa1a408d567a4ddfe0eb00b377e90e"
+    },
+    {
+      "file": "tests/molecule_form_labels_a11y.test.js",
+      "sha256": "88d1f1c315bdf8d9e2d0cffb81b90890755533fbc5b9fe95eb655f98fb9f716a"
+    },
+    {
+      "file": "tests/molecule_inputs_a11y.test.js",
+      "sha256": "551a83451390c661034805ab2e7980bc20996db680cd6e9bdff1edc6f787be17"
+    },
+    {
+      "file": "tests/molecule_reduced_motion_a11y.test.js",
+      "sha256": "d20c4680b3eb4d592e50583e733a7c358454102eb510ca002921c069a6b1d4ba"
+    },
+    {
+      "file": "tests/molecule_svg_alternatives_a11y.test.js",
+      "sha256": "4f10fbe61ba440683b335d52b47118cfa955203f7bdfd5aa827a5b099c28ea4a"
+    },
+    {
+      "file": "tests/molecule_table_semantics_a11y.test.js",
+      "sha256": "1cc65ca9dfedbbd60e07fc5dac247f0781cd6b236085dfa6fa6ac92fd640977d"
+    },
+    {
+      "file": "tests/molecule_tutorial_dialog_a11y.test.js",
+      "sha256": "d7f5d03d27bdf8a38cfc46e37685935b4cacd73e2d927ddae1720bfebfedbed7"
+    },
+    {
+      "file": "tests/moonmission_form_controls_a11y.test.js",
+      "sha256": "4fc93274ab486d70a40cb43aa4cac3ecd85425c2f08c8abbfc674d64f3c8ea6b"
+    },
+    {
+      "file": "tests/multi_bucket_game_dialog_a11y.test.js",
+      "sha256": "d228b6c867e7ad69d6e7ac3b6329e1d464c15768f6161a04105bf4b3266bf1f8"
+    },
+    {
+      "file": "tests/multi_bucket_shared_motion_a11y.test.js",
+      "sha256": "062c2f052bce08cbf57aac564d592339112861caa3f5717b1db4f4842e123486"
+    },
+    {
+      "file": "tests/multi_zone_sort_shared_a11y.test.js",
+      "sha256": "2b15c78b9ee0fcc9a76f3e1a45c468c8865b24e33bd503e9963a9078eb80fc28"
+    },
+    {
+      "file": "tests/multi_zone_win_dialog_a11y.test.js",
+      "sha256": "148043f6024761e32979f7cc7989b6d8ecf44f2815892a2b00e9a1888a9e1362"
+    },
+    {
+      "file": "tests/multtable_accessibility.test.js",
+      "sha256": "099d64fe5d4c4eef016e15ea0c94243a11b1c60b25f13d1e6390536c81a9272b"
+    },
+    {
+      "file": "tests/multtable_dialog_a11y.test.js",
+      "sha256": "c81e6c5beba109f718065bdb695e6ec815ddf0425c4fde3f918c1b1dd7d18b33"
+    },
+    {
+      "file": "tests/multtable_form_controls_a11y.test.js",
+      "sha256": "9b2870db66878278c508ddd3b153cc08f3223ae688a412d27786c16b446083df"
+    },
+    {
+      "file": "tests/multtable_tabs_a11y.test.js",
+      "sha256": "9c2d5649baecf686001209d75cfaf51613519e306429248b4b4bda1603072e58"
+    },
+    {
+      "file": "tests/note_taking_focus_motion_a11y.test.js",
+      "sha256": "6f90cf5e7d5c9c7514e7b7318fbe944deeeb6bf3ccc800922374a0bde701d748"
+    },
+    {
+      "file": "tests/notebook_dialogs_a11y.test.js",
+      "sha256": "ae4537362932066fb893598981e064de2b6a8b5c93671f59a02ba547fa10fa53"
+    },
+    {
+      "file": "tests/nuclearlab_axe_a11y.test.js",
+      "sha256": "5f0cd44faefd69349158a4331e07223b2aa1455d93916eaf47bc6d2bbf2fa782"
+    },
+    {
+      "file": "tests/nuclearlab_chart_data_a11y.test.js",
+      "sha256": "40d6582ade456efdd9b4a7e6edbd7074f8038d4a6cd42ebb50ea4d738d102265"
+    },
+    {
+      "file": "tests/nuclearlab_contrast_a11y.test.js",
+      "sha256": "8bc7f51c09da1746916ccad50254aa913fcf3d93e2b3badf65a8cac6d6d81545"
+    },
+    {
+      "file": "tests/numberline_form_controls_a11y.test.js",
+      "sha256": "0d79d190187210a77d430ea7505bd54bf6241f927a89c02e9f40686dd6f3f7df"
+    },
+    {
+      "file": "tests/numberline_tabs_a11y.test.js",
+      "sha256": "4a7131c96d427f098bdcf6cbd866f45f4ec8f18e0191cb12d6925ef9930e218c"
+    },
+    {
+      "file": "tests/nutritionlab_career_tabs_a11y.test.js",
+      "sha256": "bd9f7e7658f2983bd667696446b8dc269f378644fe3678d68e9d86c170539c12"
+    },
+    {
+      "file": "tests/nutritionlab_dialog_a11y.test.js",
+      "sha256": "2644eaba298155b743dac385221d719bc78f1b2a3fcdc95068f33436a2b7c072"
+    },
+    {
+      "file": "tests/nutritionlab_digestion_tabs_a11y.test.js",
+      "sha256": "864cf094a8c04af0dc01755c63835a20374967ff143605e223f23b70c66af45b"
+    },
+    {
+      "file": "tests/nutritionlab_dinner_roulette_a11y.test.js",
+      "sha256": "a7810314512cd3f409761ea0b9755bb7d0e47c259d76a580b371964ca238e4f7"
+    },
+    {
+      "file": "tests/nutritionlab_energy_tabs_a11y.test.js",
+      "sha256": "df544f88ce2ce0789867ef4202bbacd149c0a85332c53c4cfd02c20cf0944fc1"
+    },
+    {
+      "file": "tests/nutritionlab_form_controls_a11y.test.js",
+      "sha256": "99ba58576d0eb39cb08d03caa1d7ab20b2b6b498b016af645da1ec7e8cdf52a1"
+    },
+    {
+      "file": "tests/nutritionlab_hydration_tabs_a11y.test.js",
+      "sha256": "de3446492859f0687f2f0ee97f8164bda4c018490d5f06ed38c2bd35624a72e0"
+    },
+    {
+      "file": "tests/nutritionlab_maine_tabs_a11y.test.js",
+      "sha256": "5a5b9fe848f8a941b0d90ca4f2cc1e22d92c949a705b01e6e8113a78aa534508"
+    },
+    {
+      "file": "tests/nutritionlab_micronutrient_tabs_a11y.test.js",
+      "sha256": "025cdaa0ef95780f52b60d93f049bb5fa4b5bd5c4216b2455a7435faa5761b47"
+    },
+    {
+      "file": "tests/nutritionlab_sections_tabs_a11y.test.js",
+      "sha256": "55f184692e2131d8694566dafa13728ae356f5f004231fccf6e15f355b9ca672"
+    },
+    {
+      "file": "tests/onboarding_coach_dialogs_a11y.test.js",
+      "sha256": "8bf8358042daa7444215d6b437fa11ebfe9027560789db5d9d0daf3d33836ba3"
+    },
+    {
+      "file": "tests/oratory_inquiry_form_controls_a11y.test.js",
+      "sha256": "c2f99fe3b012ad54aeb65ff68de432d20c8ae333f310a1d6ca14a0f43f7004a5"
+    },
+    {
+      "file": "tests/oratory_motion_a11y.test.js",
+      "sha256": "1e4ca60bbadaa4e7816eb6f06a7b74e19e5208ff05d511d2b0fa51f04ea0baa6"
+    },
+    {
+      "file": "tests/particle_lab_3d_accessibility.test.js",
+      "sha256": "a497ea20b04ddbe4a3056282aec436626ef020d14725b88f0797d3d1efb2c84a"
+    },
+    {
+      "file": "tests/particle_lab_3d_render_a11y.test.js",
+      "sha256": "7a3f515e1cb0e7441c3529a722090ed1e5f4539f1139f1ba2caac1219b8ba9ea"
+    },
+    {
+      "file": "tests/pd_wcag_render.test.js",
+      "sha256": "08d9d6208840ff9f603496481c18da181a6168d36744a835c3b018dac67971da"
+    },
+    {
+      "file": "tests/pdf_audit_confirmations_a11y.test.js",
+      "sha256": "4b1b91b1abdde7ad2417b2c035197ab4a03d097ce65b5ec82c61ae97f7f9cbdb"
+    },
+    {
+      "file": "tests/pdf_audit_image_review_a11y.test.js",
+      "sha256": "fcc2c1a51134c5a9e3ed557eeea3765c5f740ccb86faf29a2aa859a81a2eaf2c"
+    },
+    {
+      "file": "tests/pdf_audit_media_instructions_a11y.test.js",
+      "sha256": "cc7238aff0f7817063ea435874ed3d80c04fc1870074db8d1eb63d13e5818ac7"
+    },
+    {
+      "file": "tests/pdf_audit_prompt_a11y.test.js",
+      "sha256": "b21ee7804aca48fd95da0844bb024ecaa9923331461053b87644ed09ffec1bf3"
+    },
+    {
+      "file": "tests/pdf_builder_confirmations_a11y.test.js",
+      "sha256": "a6c7d6cce90f78b10bcbf92ab5b1ba17c2bed621f0128b0cd92131326149e460"
+    },
+    {
+      "file": "tests/persona_blueprint_dragging_a11y.test.js",
+      "sha256": "14f88894f633081f43707b5cee0d4f61ba2ac83798df87f8616b1938f87b3f41"
+    },
+    {
+      "file": "tests/persona_chat_a11y.test.js",
+      "sha256": "31c7a3a52764066dc0dcbbc063a4ea217e5570eb5cf60527953a61f8ddc276bd"
+    },
+    {
+      "file": "tests/pets_diagram_tabs_a11y.test.js",
+      "sha256": "133fb06af59cfd4c2cdefa1994820d6ffdc4620a6196e3ca7a7c74eb9efa7474"
+    },
+    {
+      "file": "tests/pets_inline_regions_a11y.test.js",
+      "sha256": "38812afb7d2822145b4df2da503993a423db6aeee167a624c6b39c5d0c4d8e5a"
+    },
+    {
+      "file": "tests/pets_inquiry_form_controls_a11y.test.js",
+      "sha256": "a6c3c5164ef330162debbd0b1f664d473210cf43003bc8d2dcb63ac6ede40fe7"
+    },
+    {
+      "file": "tests/phase_n_formatted_links_a11y.test.js",
+      "sha256": "e6a8817d03d815e8b5ab1964ccf2ea0093bbdff69adbf58a1899499dcdc96036"
+    },
+    {
+      "file": "tests/physical_science_target_size_wcag_browser.test.js",
+      "sha256": "a6c3eb5ac0290aeb6d5d9be4d7d02f83400cea5cd6c0f4c28a137c328df6a942"
+    },
+    {
+      "file": "tests/physical_science_wcag_browser.test.js",
+      "sha256": "60bf5374df252775e89278be2c530b99bea835104e80840d0a78280da512d57f"
+    },
+    {
+      "file": "tests/physics_focus_scope_a11y.test.js",
+      "sha256": "5d37cc77afd269e1bbb1dc577779ee195cf18fd09c8289b38e612592ffcdac1b"
+    },
+    {
+      "file": "tests/physics_form_controls_a11y.test.js",
+      "sha256": "6ce8b976a18f2d8828de2a45e8ffddb4d18067c0406d1b2722f164f609d355c4"
+    },
+    {
+      "file": "tests/pipeline_game_dialog_a11y.test.js",
+      "sha256": "cf9404e99b5cecb98ce4496d22a888c31cbd79d5d08b64cb093d4afe2b601ecc"
+    },
+    {
+      "file": "tests/platetectonics_a11y.test.js",
+      "sha256": "ca6a75644927b911ff6cbfe37cd1c712f7fafac0f4420250cbe47685bbf187ce"
+    },
+    {
+      "file": "tests/platetectonics_form_controls_a11y.test.js",
+      "sha256": "b324e239ee39da01f4f76cbb1ec4ea5dff1d7be823a51363b99156f129b7a5ab"
+    },
+    {
+      "file": "tests/playlab_canvas_a11y.test.js",
+      "sha256": "24c5e7fc54a01199c8cd86de510d36bc0735f32b4935c4faaad5a7338c4f2d3a"
+    },
+    {
+      "file": "tests/playlab_dialog_a11y.test.js",
+      "sha256": "dfc67737bd002164dfd8714545beecb2d2ac048043fd41ec7673a6c1db6f3226"
+    },
+    {
+      "file": "tests/playlab_sport_tabs_a11y.test.js",
+      "sha256": "003841a202df608ee21a2ed9de9d74b95fc468f53701874acdd13ae4d43a9832"
+    },
+    {
+      "file": "tests/playlab_workspace_tabs_a11y.test.js",
+      "sha256": "b1555fc6016241c7690f01d10f8f9bde7bd840f7670bd43135db980f61300a41"
+    },
+    {
+      "file": "tests/poet_tree_delete_dialog_a11y.test.js",
+      "sha256": "f852eeec46d67445799046d194a124b32f088d8a820f9aea2f949974d70bbdea"
+    },
+    {
+      "file": "tests/poet_tree_focus_visibility_a11y.test.js",
+      "sha256": "3eaec2467b0c9395deece62d8adb9aedad4d2e81fcb2812091fb3bd72892c76d"
+    },
+    {
+      "file": "tests/printingpress_confirmation_dialogs_a11y.test.js",
+      "sha256": "71d083371a101270bd4674cf3bdcf0702ffb701dc22dffa96923914486b278ee"
+    },
+    {
+      "file": "tests/printingpress_focus_visibility_a11y.test.js",
+      "sha256": "68b4bb741e5cb1af765fd833082df379cf2b2539d4d2a1ff9aed3f7ef522b6f9"
+    },
+    {
+      "file": "tests/printingpress_form_labels_a11y.test.js",
+      "sha256": "c198c27c47fd63fba0e86de74981d478d0e744251632503423db822f8f78d226"
+    },
+    {
+      "file": "tests/printingpress_svg_alternatives_a11y.test.js",
+      "sha256": "55b7dea9d5c20cb2542dcce6cb206b5f29921fff8e9c9e5dc33d42de54f46b9a"
+    },
+    {
+      "file": "tests/printingpress_table_semantics_a11y.test.js",
+      "sha256": "d61a3e52419badc4dedd3945c8958e19e48b8238608489ae9cb060255ac6e180"
+    },
+    {
+      "file": "tests/project_settings_a11y.test.js",
+      "sha256": "32a064a52f0a213a1a971e8d315f515e758e66f5c7b0a5a3bf9db927efb1cbcb"
+    },
+    {
+      "file": "tests/prompt_dialog_frayer_a11y.test.js",
+      "sha256": "d79bb6a7faf96b69320a404010dc39d9cbe031df5d4de7128a96616dceb093bf"
+    },
+    {
+      "file": "tests/protractor_accessibility.test.js",
+      "sha256": "49465a138a0749ded102aa3451ac3e57827847683e1cd95badad64980fa7afc0"
+    },
+    {
+      "file": "tests/punnett_inquiry_a11y.test.js",
+      "sha256": "1c0a125cea6db356d183c11724014b165ff17ae93914368734cea584a29aefbf"
+    },
+    {
+      "file": "tests/quickstart_wizard_a11y.test.js",
+      "sha256": "ed9b13f6cfda24154c2621c9256465f72fd5e355aacbd1c04da2beb2193e347e"
+    },
+    {
+      "file": "tests/reading_library_support_accessibility.test.js",
+      "sha256": "cf57a90927af2bfbd076d97614d364b45dcc31a70a84f17c206b821bcea9c991"
+    },
+    {
+      "file": "tests/realm_builder_justification_a11y.test.js",
+      "sha256": "7693539c62c078fb0ec1c11751f6b17a5fc4aa6fa34068972f7f6233acd8d74d"
+    },
+    {
+      "file": "tests/remediation_wcag22_upgrade.test.js",
+      "sha256": "70a892fb0f8ff5abd93d948a5fb1bc4e6e59c262260c2761f3256446fa008b09"
+    },
+    {
+      "file": "tests/renewables_diagram_tabs_a11y.test.js",
+      "sha256": "8a54f03666880c1e622770b123f8ee4f15286ca8aa04ef8106fdced49faa5193"
+    },
+    {
+      "file": "tests/renewables_form_controls_a11y.test.js",
+      "sha256": "62750c5341207f7cb54f061743706e86f614ef95826b3ea0da63ae4cf30e210b"
+    },
+    {
+      "file": "tests/renewables_table_a11y.test.js",
+      "sha256": "eb2528337b804b5d2faf83f2841d98fdcba29117eb5e4b3488834aeb2651382c"
+    },
+    {
+      "file": "tests/research_hub_allosheet_runtime_a11y.test.js",
+      "sha256": "5945a9fa194cc784edc0dfc5bb1b121a32a28fb7300a09f4f9039a70623c7dcb"
+    },
+    {
+      "file": "tests/research_hub_modal_a11y.test.js",
+      "sha256": "06926595198a5d4bb69b396f3f877f3521a061a75610776974451de13ab811c5"
+    },
+    {
+      "file": "tests/research_hub_voice_note_a11y.test.js",
+      "sha256": "8fd5637c3f1f1947d655c5a655da384deea7613ca2851e5a187be01b768a1409"
+    },
+    {
+      "file": "tests/research_hub_workbench_runtime_a11y.test.js",
+      "sha256": "ebe88dba52a3894bf8e2ab78201977af6d4dc85b9548cead37f81479ccd928da"
+    },
+    {
+      "file": "tests/research_lane_humanities_validation_a11y.test.js",
+      "sha256": "7d5a1066dd2906c0ad225c008edd73a63841f188ca257727577f82d025a8b9fa"
+    },
+    {
+      "file": "tests/roadready_canvas_alternatives_a11y.test.js",
+      "sha256": "dcd0f79e7120064e837b2ba8e7c6c6905c8959275dbea753c656e88b1d8825ce"
+    },
+    {
+      "file": "tests/roadready_form_labels_a11y.test.js",
+      "sha256": "4f60f0a18077cb90f3ae96c9145c03551006e8a0cb4f4150823c566ec2c4f881"
+    },
+    {
+      "file": "tests/roadready_svg_alternatives_a11y.test.js",
+      "sha256": "0bbe03e73aedc412ab080fb6037a0efabadadf4a819437acad6e3f8bf42e34d1"
+    },
+    {
+      "file": "tests/roadready_table_semantics_a11y.test.js",
+      "sha256": "e77a2dc95bd9f61a0433ef868dec5457be929a1f773e71664e259fea9858f6a1"
+    },
+    {
+      "file": "tests/rocks_inquiry_form_controls_a11y.test.js",
+      "sha256": "58f191448c3dcd66d36f856007552d66132ee864f2d5592d19b4c761d8392dc0"
+    },
+    {
+      "file": "tests/rocks_wcag.test.js",
+      "sha256": "6647406bcf87a0fae362fc81867c1f275ecb3c0dbe0ef27a498c091270928b4f"
+    },
+    {
+      "file": "tests/school_behavior_inquiry_a11y.test.js",
+      "sha256": "5f0f242139b3f5c4a38113ad97d6e608bc49911f8060ec772250903187aad882"
+    },
+    {
+      "file": "tests/schoolbehaviortoolkit_tabs_a11y.test.js",
+      "sha256": "a054b11b0aa8bfe3f238b3cf580bfa7d86cc5064d75738c565bd044ef2bd8009"
+    },
+    {
+      "file": "tests/seating_chart_map_a11y.test.js",
+      "sha256": "660d23e4a3439d06d0d394457b4f9f21d149e6ec8066f9a75b59b937e7d8e91c"
+    },
+    {
+      "file": "tests/sel_advocacy_badge_dialog_a11y.test.js",
+      "sha256": "3d26a7f6c78f3c214687b4c9869ede3a4f3c1b87415fc1071fb9a50f38be7e5c"
+    },
+    {
+      "file": "tests/sel_advocacy_confirm_dialog_a11y.test.js",
+      "sha256": "3f6bb0162f2b288a25851394834d702223b728e72902ccf5a1e809a48e9f8936"
+    },
+    {
+      "file": "tests/sel_advocacy_field_labels_a11y.test.js",
+      "sha256": "dacf6cb37e964b90e552756a124012db55fc0c8c12bcf8226fae3f4ca6aa941b"
+    },
+    {
+      "file": "tests/sel_advocacy_focus_visible_a11y.test.js",
+      "sha256": "5f457b4dca82e9a7170768c685a99922a8c7469f30105d21f43d696c4d348ba5"
+    },
+    {
+      "file": "tests/sel_advocacy_inline_validation_a11y.test.js",
+      "sha256": "e82e67b5cce37a411c6f6c18d154544781c40e316fd0868113bcdec8fdeccb5c"
+    },
+    {
+      "file": "tests/sel_advocacy_vocabulary_a11y.test.js",
+      "sha256": "ca8284831067eed0ef3f350efd25f024f6d88bcf6dca0dfa07ee31fbe5cc96f4"
+    },
+    {
+      "file": "tests/sel_anxietytoolkit_controls_a11y.test.js",
+      "sha256": "7d7b6563c4da897d7322889511cecccd8426e22b0b4ca81b05f20bc6cf75f4de"
+    },
+    {
+      "file": "tests/sel_careconstellations_labels_a11y.test.js",
+      "sha256": "692373e70c123b25bcb731380c414ca0e32f82985e9087e51bbc280dcf8c5daa"
+    },
+    {
+      "file": "tests/sel_civicaction_field_labels_a11y.test.js",
+      "sha256": "05b723e53fa57ad500d282d19a031cdbc906ffcb47dee5bc7d751c5868b29424"
+    },
+    {
+      "file": "tests/sel_civicaction_form_dialog_a11y.test.js",
+      "sha256": "d3fdf32dfd092dd062b70e0fd4277cd9e9d87b6f1da226546b3e5fc6ab7a3879"
+    },
+    {
+      "file": "tests/sel_community_badge_dialog_a11y.test.js",
+      "sha256": "103cb2941196998483ca9919f5c1dc0bdd8dc5ea976fda423205507136807aec"
+    },
+    {
+      "file": "tests/sel_compassion_field_label_a11y.test.js",
+      "sha256": "3fd4c8ed46cca77ee840d9a0fda25997b381e43c54c4f879c1540be5631670bb"
+    },
+    {
+      "file": "tests/sel_conflict_badge_dialog_a11y.test.js",
+      "sha256": "d8c4e3bd69874d9a52cef04e2b461d38288ce535689025e92783e9a87b3826cc"
+    },
+    {
+      "file": "tests/sel_conflicttheater_controls_a11y.test.js",
+      "sha256": "e43dc1e1e43fa116532457f6a34300a61f3022a61f510b5c05469b5403eb9ae1"
+    },
+    {
+      "file": "tests/sel_coping_controls_a11y.test.js",
+      "sha256": "a969eb00f995a39973d422c8789a2340c406ea71c8ca5d290487444f8aff5889"
+    },
+    {
+      "file": "tests/sel_costbenefit_table_a11y.test.js",
+      "sha256": "262dd3a58ef54b519536b30b82f805384e904907070ceb41185e5dd17b90c9e8"
+    },
+    {
+      "file": "tests/sel_crisiscompanion_confirm_focus_a11y.test.js",
+      "sha256": "4c55c83bb517b624e16dd97a2f2cb75f51122e8b80a535559599590029ab1946"
+    },
+    {
+      "file": "tests/sel_cultureexplorer_loading_a11y.test.js",
+      "sha256": "fbc8cd95f9c399b748706a0ee1dd9d5430d48801ca84bdfeda766e4e2e5d94ed"
+    },
+    {
+      "file": "tests/sel_decisions_dialog_table_a11y.test.js",
+      "sha256": "ae5206ad4f78e53ed1bf236619d2ad7c263713d3d351a7982fd524d3b704d3e3"
+    },
+    {
+      "file": "tests/sel_digitalwellbeing_rings_a11y.test.js",
+      "sha256": "b4d066bbaeb9269aee723002aba14df044c1d65645071bae5e2488a0c3c111a3"
+    },
+    {
+      "file": "tests/sel_emotions_visual_input_a11y.test.js",
+      "sha256": "c7daca1a6ad4aca3b86d0c4668a02099584aba79616a19e97d3adb78ba2adc4f"
+    },
+    {
+      "file": "tests/sel_ethicalreasoning_field_labels_a11y.test.js",
+      "sha256": "3ebd11052a5e263e6938237abaf4594343511a2caa251c1caed9e5e4f065e63f"
+    },
+    {
+      "file": "tests/sel_execfunction_confirm_dialog_a11y.test.js",
+      "sha256": "32fc0ff2cd53c0432a1cc90bcd216bc502374455e881d13598437921a4a38cdb"
+    },
+    {
+      "file": "tests/sel_execfunction_controls_a11y.test.js",
+      "sha256": "d1f8699aef1989578fbdb6da43151d72c97e69e6dea6dc7ba71a21100d7c0abe"
+    },
+    {
+      "file": "tests/sel_execfunction_form_dialog_a11y.test.js",
+      "sha256": "8d052a7d090f388eb6481fa67c0a374b8743e995027efaac456070c93b19304e"
+    },
+    {
+      "file": "tests/sel_focus_visibility_wcag_browser.test.js",
+      "sha256": "efb77c707c4ba2b2d1e5fa02a37dbf82019051e7b3980d129f46854f8ed4ab58"
+    },
+    {
+      "file": "tests/sel_friendship_controls_a11y.test.js",
+      "sha256": "e85582ac9f73494bbe2090259cf13b630cdee0ecbf847fcc99cb9051b135dccf"
+    },
+    {
+      "file": "tests/sel_goals_controls_a11y.test.js",
+      "sha256": "e847a6389744f5ca519e32242eca9732fcf55f37697a5d03567406c1a9425a30"
+    },
+    {
+      "file": "tests/sel_growthmindset_fields_a11y.test.js",
+      "sha256": "bc7ff4f35135bfd4428c64dad57a5e80326831752d206335821dfb9eb6e66308"
+    },
+    {
+      "file": "tests/sel_howl_visual_controls_a11y.test.js",
+      "sha256": "4a1de0787bebb61f6a01447b37d4eaf4ff960c4189fc3a988f5f494b86fbfd73"
+    },
+    {
+      "file": "tests/sel_hub_clear_data_dialog_a11y.test.js",
+      "sha256": "58c0f2dda2549f8d16163baa1d99979e11f9f03a0870bb0845c2057bbf9296bb"
+    },
+    {
+      "file": "tests/sel_hub_controls_a11y.test.js",
+      "sha256": "600c59775648bcf107adba7fe7f77853a68ba1d7511e9333eee81dbefed1ecd3"
+    },
+    {
+      "file": "tests/sel_landplace_acknowledgment_labels_a11y.test.js",
+      "sha256": "fb307113abe8d096f2f4351c6437bdb0e9cf9780b17e9886986a355683c412fb"
+    },
+    {
+      "file": "tests/sel_mindfulness_visual_input_a11y.test.js",
+      "sha256": "380f947e18b137c5a210c78a2f1a41cac47e63a868468b7c235d21ca23aed259"
+    },
+    {
+      "file": "tests/sel_peersupport_controls_a11y.test.js",
+      "sha256": "e09b3e3c0bef6bdee343a6cf3761cbb19c36c6e1130ff3ae33542f68607e3744"
+    },
+    {
+      "file": "tests/sel_restorativecircle_field_labels_a11y.test.js",
+      "sha256": "ec0a25505efd172189310835b9ee8d59b744442b971f8cb59b5ba255f600595b"
+    },
+    {
+      "file": "tests/sel_safety_navigation_a11y.test.js",
+      "sha256": "f8ed83cece7688e2c41e0ac18b0b61e93958f8c683feca40f83adf4cf6a8a31c"
+    },
+    {
+      "file": "tests/sel_selfadvocacy_confirm_dialog_a11y.test.js",
+      "sha256": "c6a5abc9447e9f2e43a53853668468974812fc3a7f2b0d5e1190a02783c62467"
+    },
+    {
+      "file": "tests/sel_selfadvocacy_tabs_a11y.test.js",
+      "sha256": "4972d4676e302bde80bee4c2d3bc790f1fe956eeddce02b2b7d50c4ff965de40"
+    },
+    {
+      "file": "tests/sel_sleep_table_a11y.test.js",
+      "sha256": "3323cab6ba4d5681c2e0e3dd6c03f2e44a43f05f2342ded779022673e9058d3e"
+    },
+    {
+      "file": "tests/sel_sociallab_controls_a11y.test.js",
+      "sha256": "c155e1bef28d87e89219d2d698d1ce6e562e1597a7b3167f36785af8a38b520d"
+    },
+    {
+      "file": "tests/sel_strengths_controls_chart_a11y.test.js",
+      "sha256": "36bf560b7512a8c41416216ec0fcb25058a29109fa031d08127514b802693eee"
+    },
+    {
+      "file": "tests/sel_stressbucket_controls_a11y.test.js",
+      "sha256": "b29ce5fcd48175a653917b335752499bf142f09a21e60023a380f631c07503f1"
+    },
+    {
+      "file": "tests/sel_teamwork_clipboard_a11y.test.js",
+      "sha256": "df96d89d0d0954ae59eab62de8ded38f3fb3ddc72fbe5134286171c86a1eb9d0"
+    },
+    {
+      "file": "tests/sel_transitions_controls_a11y.test.js",
+      "sha256": "e6e953ade369277ab9f33409ef92aed3f5528906a861e8e95478af022231c88f"
+    },
+    {
+      "file": "tests/sel_upstander_controls_a11y.test.js",
+      "sha256": "932b8f5222417565741959b65085648960ff1f3f047ac71788d9a7da4337fbff"
+    },
+    {
+      "file": "tests/sel_viastrengths_navigation_a11y.test.js",
+      "sha256": "4030a521200cfff2b37e49fd99c8f2d8009a1661796652da3ded9df6a98be20c"
+    },
+    {
+      "file": "tests/sel_voicedetective_table_a11y.test.js",
+      "sha256": "f7d8c484c0ce6dcaff9a096eb73819ce6b1f89ae1be5e23b0dc73bf036b04fe4"
+    },
+    {
+      "file": "tests/sel_windowoftolerance_controls_a11y.test.js",
+      "sha256": "d07e747cb3e5de50c5dd1eaee9be7ee350f8629d2ea24ddc8714d4402b225686"
+    },
+    {
+      "file": "tests/sel_windowoftolerance_navigation_a11y.test.js",
+      "sha256": "e115462d554ef5b47678f3ebad5a88ca070591c1c108c4872674b5ea316b8d45"
+    },
+    {
+      "file": "tests/sel_zones_navigation_a11y.test.js",
+      "sha256": "4250db4ad3df9e9dc814dd9fd4c5d2e230011bbb60ea24422f5f6ce2d55e90bb"
+    },
+    {
+      "file": "tests/sel_zones_visual_fields_a11y.test.js",
+      "sha256": "70222f317a657c30816e9d62b64af0a46f3805733ea31e2807b6f3fac0c47e8b"
+    },
+    {
+      "file": "tests/semiconductor_canvas_alternatives_a11y.test.js",
+      "sha256": "7ba161217bca644f3378b76f65704584afe955498d5f1bef0499e6e4e1a8499f"
+    },
+    {
+      "file": "tests/semiconductor_inquiry_a11y.test.js",
+      "sha256": "766516070ca61f3eab46097a8f33555fbb159df9452f3efd4ee0af45f763c049"
+    },
+    {
+      "file": "tests/semiconductor_tabs_a11y.test.js",
+      "sha256": "2a3c9e54984f7177127d74d6df5e0c5befffcfb7dedace6689b5464a5b89f66e"
+    },
+    {
+      "file": "tests/session_modal_a11y.test.js",
+      "sha256": "be10179a2693be9d1394da33fa1de00ca556bee0cb918f245e6d4be351fb6fe2"
+    },
+    {
+      "file": "tests/session_modal_runtime_a11y.test.js",
+      "sha256": "0221cd245be58fcd040e85589f235cd79243ca899bc8e4b10fb3e60063306761"
+    },
+    {
+      "file": "tests/share_session_surfaces_a11y.test.js",
+      "sha256": "969c195915b40bc80bf89c86479e1afc46735d4d992845f9f3fdcf6e41b5f218"
+    },
+    {
+      "file": "tests/shared_game_controls_a11y.test.js",
+      "sha256": "f1e588e8316fdcbd83a75ffa5eb98518ce38328f654bafb29b126e01a776ce43"
+    },
+    {
+      "file": "tests/singing_a11y.test.js",
+      "sha256": "8c1967968362d146ea81de024a65a8778a74752dd6854375138a610915b0fb5b"
+    },
+    {
+      "file": "tests/singing_resonance_a11y.test.js",
+      "sha256": "3f14d43e4dd70e0add4d3ed8ab88765916a3740660a5c6e1ebbd1facda835d00"
+    },
+    {
+      "file": "tests/skatelab_axe_a11y.test.js",
+      "sha256": "8ac81eb5b61ba785877d7d736f60160a0680df8d75f8a4be4430715d108b613d"
+    },
+    {
+      "file": "tests/skatelab_canvas_a11y.test.js",
+      "sha256": "f85e3e800fd88fdd03fb8a1a5126adc0dd03d4744338d7268210b370f7a888c7"
+    },
+    {
+      "file": "tests/skatelab_inquiry_a11y.test.js",
+      "sha256": "fe6825913521b4058f43b84454a0e486108d8e9fea858d061f0819591b8048a1"
+    },
+    {
+      "file": "tests/solar_system_canvas_alternatives_a11y.test.js",
+      "sha256": "f49733c26345dc6fa086500055e326c6887037ae20bba4a4fbfbee37362224fc"
+    },
+    {
+      "file": "tests/solar_system_control_names_a11y.test.js",
+      "sha256": "5a30f57a0955dc61217c02b470794f2b72c67d41f296442a43a0fbb02adbf133"
+    },
+    {
+      "file": "tests/solar_system_focus_targets_a11y.test.js",
+      "sha256": "ddf84ee81d08f2b672a9e3c164ae183a800381d067709a8fe36e14a48ad47b58"
+    },
+    {
+      "file": "tests/solar_system_svg_keyboard_a11y.test.js",
+      "sha256": "4230d6355da430dab8a913af8afadbe132b120d55310000e1f0ae7da5f33b73a"
+    },
+    {
+      "file": "tests/solar_system_svg_names_a11y.test.js",
+      "sha256": "ee8cfb2a85dc31026587300548117052f9e749becd082a8815a4188b597bb9ea"
+    },
+    {
+      "file": "tests/solar_system_table_semantics_a11y.test.js",
+      "sha256": "d4d60c72ca29809eeea4dc68fee617daee51470930394d3ed8029ec6ca0d0b57"
+    },
+    {
+      "file": "tests/solar_system_tutorial_dialog_a11y.test.js",
+      "sha256": "3b843d44d6fabf4128be146ea18b37458325007b862a8714c4b74a3c53f29d2f"
+    },
+    {
+      "file": "tests/spacecolony_a11y.test.js",
+      "sha256": "f93cbbe6eaca27dc1e4f2639602b2018ccb5bb3cd4ddcb5c7b609fd656095442"
+    },
+    {
+      "file": "tests/spotlight_help_runtime_a11y.test.js",
+      "sha256": "b2c155d240281131e1f0fcae561e875f99ab55b8a198f5a6db952c679dd68ca0"
+    },
+    {
+      "file": "tests/statslab_form_controls_a11y.test.js",
+      "sha256": "c3a8a7f10b7aba7ae6646b52904551921b32a01fddc9e55bdb52b2eab5b3de78"
+    },
+    {
+      "file": "tests/statslab_tabs_a11y.test.js",
+      "sha256": "e7f932d27b2801b171103d260c1b7b953e087ca2a93e243f9dff716a59629b09"
+    },
+    {
+      "file": "tests/stem_allobotsage_dialog_a11y.test.js",
+      "sha256": "d03c36bffdb43ccbc98a75f881ccf1c9601021cf544901fb2f20a9e5dbc81fce"
+    },
+    {
+      "file": "tests/stem_atctower_dialog_a11y.test.js",
+      "sha256": "e41db9d82a1de7f5c7e0335e2d8d91d58cb5ff1c9c79918520351c00365ff479"
+    },
+    {
+      "file": "tests/stem_bikelab_accessibility.test.js",
+      "sha256": "74ff11a3b064d1a584eba1eeddf7d2f1462e185602136709ee62102dc1491efd"
+    },
+    {
+      "file": "tests/stem_cellular_accessibility.test.js",
+      "sha256": "366a13b7a0e32237b8f5a64f11b82ac7e4d4634c020e3f1b0885a60300d3f261"
+    },
+    {
+      "file": "tests/stem_epidemic_contact_trace_a11y.test.js",
+      "sha256": "2207edf6e556957dd55376ba3a86953f590d2af9a94a12fbb455ff0427be31b2"
+    },
+    {
+      "file": "tests/stem_epidemic_map_a11y.test.js",
+      "sha256": "3a8d376b7073f37fcd1f85161be12ddd548cd2c07ad5eff9dc9cd25287dc70f9"
+    },
+    {
+      "file": "tests/stem_focus_visibility_wcag_browser.test.js",
+      "sha256": "6f80c2dd31b487bb1debb96eece4c86ad1c58f0e9006bde9fdf6c92d468fd732"
+    },
+    {
+      "file": "tests/stem_funcgrapher_accessibility.test.js",
+      "sha256": "76a17480451a9a0fbc7bbeef8e2d643da1df5c6f53d551539cb10f0c4698d6fc"
+    },
+    {
+      "file": "tests/stem_host_accessibility_contract.test.js",
+      "sha256": "743147d74bd472455fe6acfa30a1ed1a553a7e11de99e18c09e479ae40e4da5a"
+    },
+    {
+      "file": "tests/stem_kitchenlab_accessibility.test.js",
+      "sha256": "f6108d54428e22988c69e6808670c4a91c3883dab35c2e7e61771b74714c9593"
+    },
+    {
+      "file": "tests/stem_probability_accessibility.test.js",
+      "sha256": "153b773f33cca46ce802ce5a31f2587ad21e75db5288f3f577b64108c33a4f4a"
+    },
+    {
+      "file": "tests/stem_static_canvas_a11y.test.js",
+      "sha256": "acb30ba92e4825a172fc26de81337e50b0fc0363d14bd8d151555f831011ce01"
+    },
+    {
+      "file": "tests/stem_throwlab_prompt_a11y.test.js",
+      "sha256": "a863579ec4e01034236503de8f4b0d58d8746b65dd056af012611f8a7b717a53"
+    },
+    {
+      "file": "tests/stem_volume_accessibility.test.js",
+      "sha256": "a893cb58174e3ec85930eeb23615515e80a4eb615037be49989061e94e3fd5f5"
+    },
+    {
+      "file": "tests/stem_volume_prompt_a11y.test.js",
+      "sha256": "e8ec1a1b7b55cfdd11eeb4e59d741abb3faa3c5a64a3199fd51af94b7b093ae9"
+    },
+    {
+      "file": "tests/stem_worldbuilder_prompt_a11y.test.js",
+      "sha256": "c05981e62e07897bf78d3e66c2032e631812b1569c88ea78e6b4aa7239835c6b"
+    },
+    {
+      "file": "tests/stewardship_form_controls_a11y.test.js",
+      "sha256": "b4e352371797969825492778d04e01e574abdfaac52c6fdb7468366a1cb79e6d"
+    },
+    {
+      "file": "tests/stewardship_svg_a11y.test.js",
+      "sha256": "7ba28a59c86e7d923ba01b46f09cd51d9f01b701b799ba4c39d559cd15e39b82"
+    },
+    {
+      "file": "tests/story_forge_controls_a11y.test.js",
+      "sha256": "20a0fc5436d633d00f648952ed8e2ed3b520e402698023d19f2b735d1d1d39f0"
+    },
+    {
+      "file": "tests/story_forge_dialogs_a11y.test.js",
+      "sha256": "b8cd0ae89a2af7c041eafed91175e25d4097e024426d9843aabc6309583552d8"
+    },
+    {
+      "file": "tests/story_forge_export_a11y.test.js",
+      "sha256": "632ec9f2675f94ffaf71db0c49c3096cca6fbeeb5051ec51dd111394a01bd2ce"
+    },
+    {
+      "file": "tests/story_forge_targets_motion_a11y.test.js",
+      "sha256": "bd9fc3f9203338c767bd8e78dd386b999393f23999e00479122e970b3ed44537"
+    },
+    {
+      "file": "tests/story_forge_wcag_a11y.test.js",
+      "sha256": "5702775367b6c875cefb9e1dfea13c6194911f2d64f2fa3029c3dd5c1a208eec"
+    },
+    {
+      "file": "tests/story_stage_dialog_a11y.test.js",
+      "sha256": "e7809ed4b496b6065d6ed952b4469584289b53271027f701733f49fcf1d5cc5d"
+    },
+    {
+      "file": "tests/storybook_export_modal_a11y.test.js",
+      "sha256": "aaf91805dd75b42396a6d39d155ba6aca7dac9b4cd4f78d444f302cd25591bc6"
+    },
+    {
+      "file": "tests/student_accessibility_contracts.test.js",
+      "sha256": "3bee59d2f941bd2c73ac9d4cac818942507e8becd252bedd6835172c01dff2d4"
+    },
+    {
+      "file": "tests/student_analytics_chart_names_a11y.test.js",
+      "sha256": "097771943788b753655c98a2ed1b4b016e4750954fc0e1728b6f51fa4681f36e"
+    },
+    {
+      "file": "tests/student_analytics_ferpa_confirmations_a11y.test.js",
+      "sha256": "ff6624e3372995571e954855cf56b08ee465fd2a99a912c6f118a90925b78d9e"
+    },
+    {
+      "file": "tests/student_analytics_noninteractive_containers_a11y.test.js",
+      "sha256": "993476cc77abf3b79731342195d583c1b72811397615b9d8b18ffd57bca524ae"
+    },
+    {
+      "file": "tests/student_analytics_orf_controls_a11y.test.js",
+      "sha256": "1d6d46cd76b0d25182184d08d7aac565e6353f47d453ea8bb6545108c0ae00cc"
+    },
+    {
+      "file": "tests/student_analytics_probe_confirmations_a11y.test.js",
+      "sha256": "7efbf57ca5f306c6f3939eddec6526956b1e8b484fbc5ea0116dcb84c99adaf2"
+    },
+    {
+      "file": "tests/student_analytics_probe_overlay_a11y.test.js",
+      "sha256": "fcfdf28d3d519b2527a3f4c8a367c6c89a6cf420da84d8df6e454a752b670a8a"
+    },
+    {
+      "file": "tests/student_analytics_probe_progress_a11y.test.js",
+      "sha256": "5f32cf9ad19d5c9c1790012f3875c0061d8e9a3f7c2638a68229fb409804bfb4"
+    },
+    {
+      "file": "tests/student_analytics_row_actions_a11y.test.js",
+      "sha256": "3e4ac4e34cf5aa9a4d2d00abbce1ed626052f111a472ba550dd09091a255add8"
+    },
+    {
+      "file": "tests/student_analytics_scatter_name_a11y.test.js",
+      "sha256": "9c26708bf4ba7510e48e2c3e40f8ea189eb8ab08bb2163bffcb13c1bf186020d"
+    },
+    {
+      "file": "tests/student_analytics_sort_controls_a11y.test.js",
+      "sha256": "eab018a1e8e3ffc76790ff38a1708373996d2687b3fa316874b6607c3f6c1285"
+    },
+    {
+      "file": "tests/student_analytics_subdialogs_a11y.test.js",
+      "sha256": "51bbb22a5ae835571d5bb4a7fc8482d7a22832bcd57c2cb5f5bfc8017b23bf37"
+    },
+    {
+      "file": "tests/student_analytics_table_scopes_a11y.test.js",
+      "sha256": "8a4fb7c9b8fa370bec4b0a780ecad06ccab1258cf17560be648ece55bb4e5918"
+    },
+    {
+      "file": "tests/student_bingo_a11y.test.js",
+      "sha256": "43c941ae0e044af8af728371f8cf867f66906148c689f9f5301583fea4aa7d9e"
+    },
+    {
+      "file": "tests/student_interaction_status_motion_a11y.test.js",
+      "sha256": "9fb5941b3292f8a8afd2427b8cb354a254dc0cf88ce8a8573e54406a71da6e9a"
+    },
+    {
+      "file": "tests/study_timer_modal_a11y.test.js",
+      "sha256": "e6fe1ecf7c7287735c7d9bdff88ed3199d5f80555902369bc37365bcfcde10e4"
+    },
+    {
+      "file": "tests/submission_inbox_a11y.test.js",
+      "sha256": "f47597bec4e914f4caad172bf6df57cb06c23a0eb277c3118d57a2ed1d6a12c0"
+    },
+    {
+      "file": "tests/swimlab_confirmation_a11y.test.js",
+      "sha256": "b9d5bf51e8087bb2df16fcc4dbf74692e84972a8e09cf68005907199a29fbfbd"
+    },
+    {
+      "file": "tests/swimlab_form_controls_a11y.test.js",
+      "sha256": "ce8a524a2e9ffb7636c83076a45f792655e3ad2ea91e151cbf60e229e59da0e5"
+    },
+    {
+      "file": "tests/swimlab_svg_a11y.test.js",
+      "sha256": "08e0e4ced40a12a6fa8302ffaf57a233efc3de54a2e697f3fddb9f7978692cd3"
+    },
+    {
+      "file": "tests/symbol_studio_accessible_names_a11y.test.js",
+      "sha256": "fc17954f8f11e3b5b3be56753fb99d0cd118212f330b301d4a2a880d73a53608"
+    },
+    {
+      "file": "tests/symbol_studio_board_targets_a11y.test.js",
+      "sha256": "e87a7c7f821acb4e96ab7bc5c866ec51266ecbe7da5ebbd646684156410d853e"
+    },
+    {
+      "file": "tests/symbol_studio_dialogs_a11y.test.js",
+      "sha256": "fd3285428ea1dc4c5f1518bf9ed2b82cb80ee84c01466c18389d6dbb1c3975c6"
+    },
+    {
+      "file": "tests/symbol_studio_keyboard_reorder_a11y.test.js",
+      "sha256": "8eac59b41ea62c6f335afba2dfdcdf8421e4c894fad5c3d44fc4826bc6030094"
+    },
+    {
+      "file": "tests/symbol_studio_scanning_dialog_a11y.test.js",
+      "sha256": "6cc23cd1e6b102e4d79735715a58c205efb667436868edaedebba9df6ce99533"
+    },
+    {
+      "file": "tests/symbol_studio_scanning_runtime_a11y.test.js",
+      "sha256": "9d0f9d7295f466e8170e2cc5e6777d4282d24e825f1656c7858231f741ab78f2"
+    },
+    {
+      "file": "tests/syntax_game_dialog_a11y.test.js",
+      "sha256": "44de2bdfb07e0bc3209d0bcd1dbc54c08ec4cc658d26e3b9e6f425362cd1158c"
+    },
+    {
+      "file": "tests/table_accessibility_assertions.test.js",
+      "sha256": "d06369272cf37609882c5ea398fdddb31dae919b8b5f8af491eff8faec77303c"
+    },
+    {
+      "file": "tests/tchart_game_dialog_a11y.test.js",
+      "sha256": "b8e5c5638f93ab3494b6f56c7d8d02a767b2810c2166371df8634d6b14fa4b00"
+    },
+    {
+      "file": "tests/teacher_bingo_dialog_a11y.test.js",
+      "sha256": "5aaaf779aea70dd0d71577fa3a180b99bfe24738577c47d6ab59578baba60ed6"
+    },
+    {
+      "file": "tests/teacher_clear_dialog_a11y.test.js",
+      "sha256": "44c2ee8b344faa4a69d9ed92e17cb890e22217bccab2fda70d2f631632a1ad81"
+    },
+    {
+      "file": "tests/teacher_dashboard_tabs_a11y.test.js",
+      "sha256": "4e71450cf046c8e5d80b0fb233db9c40d2ffd0310cdf13753b390af8581afde9"
+    },
+    {
+      "file": "tests/teacher_escape_room_dialog_a11y.test.js",
+      "sha256": "6158707d7dab8d93ab6e2d8aef1dbd78049dbe397532b3688c372b95e5aaf048"
+    },
+    {
+      "file": "tests/teacher_escape_room_puzzle_a11y.test.js",
+      "sha256": "89c8c196c7139b0e0e0b653878ed0bfeac7d1c6c28807abb5868cde12db9f014"
+    },
+    {
+      "file": "tests/teacher_escape_room_states_a11y.test.js",
+      "sha256": "0229a1c6134c2c8e6678a4759b35412ab0ee3c90d74cc985d96b63fbebfa6f90"
+    },
+    {
+      "file": "tests/teacher_motion_controls_a11y.test.js",
+      "sha256": "1039e8b93cbbe82ece3446253d6903ad0d9f58805171b092f3abe7c6049b9533"
+    },
+    {
+      "file": "tests/teacher_roster_target_size_a11y.test.js",
+      "sha256": "d02562b409da0625f47dc40b9d9948a042431b92e75739b493330ae3b06064c2"
+    },
+    {
+      "file": "tests/teacher_submission_dialog_a11y.test.js",
+      "sha256": "9483d0492c35ce13f485ac2b277f3b23127e640fbc535e905a981bc4b7aa0e4f"
+    },
+    {
+      "file": "tests/teacher_submission_errors_a11y.test.js",
+      "sha256": "9fd1a8def357792136d96c12253d95e446d13d63ea26b7ce19447b68c80c8a3b"
+    },
+    {
+      "file": "tests/test_prep_hub_wcag_a11y.test.js",
+      "sha256": "914bd37e3a390cb50e1c2414fce1462956009120b0fd29fa1c547ad1b82b2f22"
+    },
+    {
+      "file": "tests/throughline_lanes_a11y.test.js",
+      "sha256": "e794d205993b5daf0fc4ed55cd12f0e9e1d85142eb572778c931044c494ff5a6"
+    },
+    {
+      "file": "tests/throwlab_a11y_names.test.js",
+      "sha256": "b6c202b33e6c098b1520f497e271e69db1beb1274364a8541c1b8ec081aa5785"
+    },
+    {
+      "file": "tests/throwlab_deep_refinement_a11y.test.js",
+      "sha256": "32f2c22f4512822e02cf8c6ae9b11b082f46cfe16c2d73239486ce12981516d4"
+    },
+    {
+      "file": "tests/timeline_dragging_alternative_a11y.test.js",
+      "sha256": "1d99a37442b4896cbfeb5a9644513b161fa8b29142aa09ef302b0693fc54755a"
+    },
+    {
+      "file": "tests/timeline_game_dialog_a11y.test.js",
+      "sha256": "2c46c99b6dbbdc9f1da1cc535f24a94697d3cd46f7e0908dcff35157a5ed2ffc"
+    },
+    {
+      "file": "tests/timeline_studio_controls_a11y.test.js",
+      "sha256": "f16f3a0f436c3b948e9d42011ac774febc57da0ca6bb6e4606872992c027ae74"
+    },
+    {
+      "file": "tests/titration_a11y.test.js",
+      "sha256": "948371b36ab83d89780dcc3622b43f1782336a367a109bf0f91b4e9fdba7e95e"
+    },
+    {
+      "file": "tests/titration_axe_a11y.test.js",
+      "sha256": "76673225d199cb8f8e5d474c2802b44cb7cb1689c189d94f3ec0a63767d02ba0"
+    },
+    {
+      "file": "tests/titration_second_pass_a11y.test.js",
+      "sha256": "4a8395008cfb94576d19163ce6083a08a097d560948003bd04217b6ef97116cf"
+    },
+    {
+      "file": "tests/titration_tabs_a11y.test.js",
+      "sha256": "bf1e9a0b03a902c9ab20f8fdb91f7b8439fc99ab7475bc21601191bbfc3cca0c"
+    },
+    {
+      "file": "tests/typingpractice_active_drill_a11y.test.js",
+      "sha256": "8f2a8f4067a6468ba8ec4eff176681c490c81f7ffe7922cdcf027d2d5a908e4a"
+    },
+    {
+      "file": "tests/typingpractice_announcement_quality_a11y.test.js",
+      "sha256": "8665d6709f2e4a8f6eb186ea9220c5f027acd3ed43e145b2c1693063165ae304"
+    },
+    {
+      "file": "tests/typingpractice_battle_inclusive_input_a11y.test.js",
+      "sha256": "1e99647a563a5dd9a0446e74b38cc99add3b00d9ef343e19f22eaca3382b0c33"
+    },
+    {
+      "file": "tests/typingpractice_battle_navigation_a11y.test.js",
+      "sha256": "b6dcf09c659885d7288c156b1d4ab967905f01e0782eccbe562172ca5dfe0625"
+    },
+    {
+      "file": "tests/typingpractice_battle_timing_a11y.test.js",
+      "sha256": "c9384852bb0c530ee9c36ae93e2e938f751835f30c3d6a87d42be5766d63d24d"
+    },
+    {
+      "file": "tests/typingpractice_calendar_accessibility.test.js",
+      "sha256": "6b582a1ea3e9c4e66fd1aa09a61003dd7999eca0bf13229feeff927cceda3da1"
+    },
+    {
+      "file": "tests/typingpractice_color_independent_choices_a11y.test.js",
+      "sha256": "e1585adcf96e206b2ef54beca87a2dd3521c2aac9ec9a989f8c7a7bc4ea9d83c"
+    },
+    {
+      "file": "tests/typingpractice_contextual_status_a11y.test.js",
+      "sha256": "2c5cbd2e341c0b89ae79ffaf91d960ddc71d99441745c29e9c6d27555a02b03e"
+    },
+    {
+      "file": "tests/typingpractice_dialogs_a11y.test.js",
+      "sha256": "653aaee1fc744fa6e7d97901aa2f69553f242185fc780440d84e6fd8e522f976"
+    },
+    {
+      "file": "tests/typingpractice_dynamic_status_a11y.test.js",
+      "sha256": "afca1bb16a4d519b2bdb948af452e7c9a2c2b52c2cff74cf311a3d60a686b418"
+    },
+    {
+      "file": "tests/typingpractice_focus_order_a11y.test.js",
+      "sha256": "2495e08c0c1b1f9bb0524aa754ecafbc6b0be6afd3ad43efbe512dd876647e55"
+    },
+    {
+      "file": "tests/typingpractice_forced_colors_a11y.test.js",
+      "sha256": "9ce9b06a1c61f4765e5cd8b0480e000f8c98c7df7ef416ded349928bf427f1ed"
+    },
+    {
+      "file": "tests/typingpractice_goal_forms_a11y.test.js",
+      "sha256": "0ad0749a38310365b7b03a48d82341e23f0d1436db417296167e83bf38cea418"
+    },
+    {
+      "file": "tests/typingpractice_history_reflow_a11y.test.js",
+      "sha256": "519a1260a9dd24b1326c5422d8899e5c82a5d84651668c86f6127792871d0bc8"
+    },
+    {
+      "file": "tests/typingpractice_inclusive_input_a11y.test.js",
+      "sha256": "0a2f279613471500aa4300e57c1ff5554ca417eab13e5c6ce586c94c0249091b"
+    },
+    {
+      "file": "tests/typingpractice_language_parts_a11y.test.js",
+      "sha256": "9d4aaf9d2a05199624494a8ea5605d7ac9a38f95f476a57b0987fb85c8364136"
+    },
+    {
+      "file": "tests/typingpractice_motion_accommodation_a11y.test.js",
+      "sha256": "086b341b89a36e266662f4122f5a03c75fcbf76498f78b9c4b5f2bf733558811"
+    },
+    {
+      "file": "tests/typingpractice_onboarding_summary_a11y.test.js",
+      "sha256": "db9aa87c2360bc263273e89b0b1ee779a32a103adc37fb5e5e4c2ca03d980777"
+    },
+    {
+      "file": "tests/typingpractice_personalized_setup_a11y.test.js",
+      "sha256": "e385698ed45a16f1b07afa8a844b7ee6fddf5396065f2ede1cf61ebf410f4798"
+    },
+    {
+      "file": "tests/typingpractice_preference_controls_a11y.test.js",
+      "sha256": "23295ecabb40d70267dfa34be7e8c21a6e59472e5bd7cbcf188830f96857832f"
+    },
+    {
+      "file": "tests/typingpractice_progress_a11y.test.js",
+      "sha256": "7514964801435bac5b21375eaa75b9d0899298153d5ce2f11afa3adc3a243e59"
+    },
+    {
+      "file": "tests/typingpractice_progress_integrity_a11y.test.js",
+      "sha256": "4cfcc532da74e8f5a7145c67e5d583018cfb0b67e21ab9282ed1876d93f03c89"
+    },
+    {
+      "file": "tests/typingpractice_settings_summary_a11y.test.js",
+      "sha256": "e50fc6cdcc034f98e9ec3838e5fe097854bac55ab0653826fd925d9521cf40ab"
+    },
+    {
+      "file": "tests/typingpractice_target_size_a11y.test.js",
+      "sha256": "725d0d8dfb83df06b924f8d7f8e03a04bc3c7e4c3c5b4b1f3dadef215a76fa5f"
+    },
+    {
+      "file": "tests/typingpractice_text_spacing_a11y.test.js",
+      "sha256": "8176afa1fc1d5a1b2f44f000e086e8dce3ab9d8d6e7fbab02df03c2d6e1de2a0"
+    },
+    {
+      "file": "tests/typingpractice_tts_layout_accessibility.test.js",
+      "sha256": "385a9cae3ba89ea788397acf98fcaed988a9611569e9609731569ea324966648"
+    },
+    {
+      "file": "tests/typingpractice_wcag_visual.test.js",
+      "sha256": "cc2f7876c69a3166a7f61ec7a797fd03df975c29d2aa1c856982e4d1300c2bdd"
+    },
+    {
+      "file": "tests/ui_modals_a11y.test.js",
+      "sha256": "8b6ef9d4985a8ff8b843e8f43c7e96c1096f2f0a1b81ffe4ab64f13b88dbf069"
+    },
+    {
+      "file": "tests/ui_modals_native_alert_a11y.test.js",
+      "sha256": "3f819395dea973d427b2a474b860b424a2d80be6c2d913fc7c410bfe285ac7c7"
+    },
+    {
+      "file": "tests/ui_modals_runtime_a11y.test.js",
+      "sha256": "e14f49380ab6d288c3eb658abfd507868579ac99cca021f1357a941b1e865483"
+    },
+    {
+      "file": "tests/unitconvert_accessibility.test.js",
+      "sha256": "4c4c026ea84d67c378ae56a4973d8f1006a8c1d22112c1364ffb530723707480"
+    },
+    {
+      "file": "tests/unitconvert_form_controls_a11y.test.js",
+      "sha256": "47bab36966665e2ca3473357ed3ce8b531f4db29656ca3217549f881b0c5366b"
+    },
+    {
+      "file": "tests/unitconvert_tabs_a11y.test.js",
+      "sha256": "1942c1fea135933b4277dcf083146050617ca00cc82c2f316fa5b6d8a77c4aef"
+    },
+    {
+      "file": "tests/universe_accessibility.test.js",
+      "sha256": "5e8118a00e6b095e378e3a87e520ad3dcca543081dde460186fdb1075cf45536"
+    },
+    {
+      "file": "tests/universe_evidence_svg_a11y.test.js",
+      "sha256": "1bac1d15945edca8c5441ceb592099aca35eaca3759bd841d52d0d05e972d071"
+    },
+    {
+      "file": "tests/universe_form_controls_a11y.test.js",
+      "sha256": "3450734d59a2edcff20d2a265a41f2717ec1eb1afbd9ebc102346f252d0e9f94"
+    },
+    {
+      "file": "tests/universe_playback_a11y.test.js",
+      "sha256": "b6641e90536441bffbaa14d3c9609709694a4a25f272498977603587bb4a3d39"
+    },
+    {
+      "file": "tests/universe_tutorial_dialog_a11y.test.js",
+      "sha256": "688e37b3340e439c40c00f25305ebef316e262549d7db7e616f4685c1e02d656"
+    },
+    {
+      "file": "tests/venn_editor_controls_a11y.test.js",
+      "sha256": "4237d66cc549ac5972e018ea738bcd5fed1af041446fa44da00885e157261d83"
+    },
+    {
+      "file": "tests/venn_game_dialog_a11y.test.js",
+      "sha256": "14d705dd8421ebd8b4f9b3ffd042491dad659a9e9159e2bfcfd815c24315ad78"
+    },
+    {
+      "file": "tests/video_studio_dialog_a11y.test.js",
+      "sha256": "867c8447195cb2f9f782d3e73f67d97dd0650956f9cdf7da148673240c61cf1e"
+    },
+    {
+      "file": "tests/view_adventure_active_turn_a11y.test.js",
+      "sha256": "2ff5c69e8a700b4593517cdbf75587dac3ecb9acc7f8350dfd7501b71b48af00"
+    },
+    {
+      "file": "tests/view_adventure_toolbar_a11y.test.js",
+      "sha256": "062ca433505ef28455759be21f4a4d4b59962228c6f01e906899cb4d7a2bb1f6"
+    },
+    {
+      "file": "tests/view_adventure_wcag_a11y.test.js",
+      "sha256": "0c85f8a03c75f5fe86dc4f5c734b1044d7278515fee4a0facc29ec700e6e5de8"
+    },
+    {
+      "file": "tests/view_glossary_dialog_a11y.test.js",
+      "sha256": "d89334c1c9185d3fd65c8d4a081c20f4aa659a34d4d328c4d5e4a9e9fb630b97"
+    },
+    {
+      "file": "tests/view_glossary_wcag_a11y.test.js",
+      "sha256": "1ce0eceda43b722dc1dba3c55b53dea237113e691ab7e0d346f6e185210c2d12"
+    },
+    {
+      "file": "tests/view_header_reflow_a11y.test.js",
+      "sha256": "25c7b95611465fdbcacf34218bc9f4684fd9f746f1685505e7c898228e9d2136"
+    },
+    {
+      "file": "tests/view_misc_panels_dialog_a11y.test.js",
+      "sha256": "a3b2d6ec4f654c29697ba0ab8b27ef4f3fac5fdfcc59a498a260fd87f54c9972"
+    },
+    {
+      "file": "tests/view_misc_panels_prompt_a11y.test.js",
+      "sha256": "7fc938da9d48231cb906891907bdbb039ed41bba8f324967909e9045497ffef2"
+    },
+    {
+      "file": "tests/view_quiz_accessibility.test.js",
+      "sha256": "2b6e67e0354a6b23217d64c163d91e32c6dba285a364126d75f3872eafbd5aa2"
+    },
+    {
+      "file": "tests/view_renderers_concept_map_keyboard_a11y.test.js",
+      "sha256": "f63a2338bff261cbfcfb1909e2cc0c61f56056a7ed4b9b0ad9023c74a0025f08"
+    },
+    {
+      "file": "tests/view_renderers_wcag_a11y.test.js",
+      "sha256": "a2aa440983c0b43dc2cc630495b7b7c406f5f3527ce4ae3556f7a40cc2c956fd"
+    },
+    {
+      "file": "tests/view_sidebar_panels_wcag_a11y.test.js",
+      "sha256": "8ddc37e6f8a67d3db2afee2fc809c767fd83a84a479e58cc82be562d6e8f902b"
+    },
+    {
+      "file": "tests/view_simplified_dialog_a11y.test.js",
+      "sha256": "74df520517f5f3f008c76144757db494d61592436f1d92f5a56c6284957c208e"
+    },
+    {
+      "file": "tests/view_simplified_wcag_a11y.test.js",
+      "sha256": "2d4b6e024c9131d04c067a0849cd3335027489d3e02528736e235e2bac21dd71"
+    },
+    {
+      "file": "tests/view_timeline_accessibility.test.js",
+      "sha256": "159d8b25eb1d07d3d8ae2e13e2ed0d5c86e81010aa736df50568dd06b4b75c15"
+    },
+    {
+      "file": "tests/visual_panel_keyboard_movement_a11y.test.js",
+      "sha256": "93372daf37cee1535553b621fecc3a793f4bfaf1577846ce484bc6dda616416c"
+    },
+    {
+      "file": "tests/visual_panel_label_delete_render_a11y.test.js",
+      "sha256": "c291c4d1b6abc9f58776860bf0c3b7f990f97fc1f9bc5156d62a11595b8ec154"
+    },
+    {
+      "file": "tests/visual_panel_target_size_a11y.test.js",
+      "sha256": "d298cc82607f13be15b24e0a45b5f0664e27cc0eaa312f95813c996bad45e2b4"
+    },
+    {
+      "file": "tests/visual_panel_upload_error_a11y.test.js",
+      "sha256": "3f76f5cf18a9d2e8310ed112128a07571d70da4a66242ac2eb14c6ccc6d04be9"
+    },
+    {
+      "file": "tests/visual_panel_wcag_a11y.test.js",
+      "sha256": "b42d6b5bdb7550eb4ed9be8387653be3cbe45f4341d61718e0bbaf8b60e79496"
+    },
+    {
+      "file": "tests/visual_supports_modal_a11y.test.js",
+      "sha256": "3a5d9c61730024c83e36ec3ce5e00a77efbf4a410fc7ced6b9cbeeec47abc156"
+    },
+    {
+      "file": "tests/visual_supports_motion_runtime_a11y.test.js",
+      "sha256": "7e3e3db7360442717b334e414332dc1298dfb47bdb755a0c9a4788f91dc907c9"
+    },
+    {
+      "file": "tests/volume_canvas_a11y.test.js",
+      "sha256": "1b5550c54b5f15d568e9717f5c5d96353a9ec46c5e600780d23f86af724895c1"
+    },
+    {
+      "file": "tests/volume_tabs_a11y.test.js",
+      "sha256": "8627b7b3c6605383887f29caa2b3e87847862c80af4f4655f01b7201e2df20b3"
+    },
+    {
+      "file": "tests/watercycle_axe_a11y.test.js",
+      "sha256": "a41d9497d16c125be09a7c22eb22519f96e28a58962fc0f7990228b9358f3418"
+    },
+    {
+      "file": "tests/watercycle_controls_a11y.test.js",
+      "sha256": "6b41154fe1156737b3ff1af1a59d11d14628e99f173de6686d8afef4c1e69eb5"
+    },
+    {
+      "file": "tests/watercycle_host_surface_a11y.test.js",
+      "sha256": "8d8c8a7452ccd135c719dfef1f6eceb818101144442558d9ba6c9db0e7fd012a"
+    },
+    {
+      "file": "tests/watercycle_inline_regions_a11y.test.js",
+      "sha256": "9a95dfc3213987acf920ba078d88190faec3962262aa1cc23eb4779e1e0fb3be"
+    },
+    {
+      "file": "tests/watercycle_physical_time_a11y.test.js",
+      "sha256": "6858c1d2c6178ba7539dbe8a2ef44d0d332779738dad5a3bc349a59f8188f0ff"
+    },
+    {
+      "file": "tests/watercycle_subsurface_a11y.test.js",
+      "sha256": "eae2bdf9eb11c65fcb04fb5ed3eb3ce41512403f30a58d6eae8d73d7e5fce31e"
+    },
+    {
+      "file": "tests/watercycle_target_size_wcag_browser.test.js",
+      "sha256": "3f0a492d35774d89619f8eaef2953098e9a036ab2fb08b72a9692e00d88e7d7d"
+    },
+    {
+      "file": "tests/wave_a11y.test.js",
+      "sha256": "859ece313db87a137e872c7c7bb544653d96c88e353a10112e8532346b3767e0"
+    },
+    {
+      "file": "tests/wave_a11y_semantics.test.js",
+      "sha256": "a0f658f9b72c4b1b9d210fdf5b7ffdcd597116541bed3dd5178a526fcad3ead5"
+    },
+    {
+      "file": "tests/wave_form_controls_a11y.test.js",
+      "sha256": "a13a3e745861a0ed840a06eee1b1cbccea326d04adacabb3486fb94d38f05816"
+    },
+    {
+      "file": "tests/wcag22_audit_harness.test.js",
+      "sha256": "e939f1c1a431b4151b36e10db990d3bba8b6ac49fcaa1f80e62dd75a81b52eab"
+    },
+    {
+      "file": "tests/wcag22_labeling.test.js",
+      "sha256": "96697f0dd0a222244915e984e0f45829b0931a6cf905c4efba0cfa598ba68813"
+    },
+    {
+      "file": "tests/word_scramble_a11y.test.js",
+      "sha256": "82e1b412e0d8bd35e705d8d58b5dc4b0c56595a611a0410c7d9b22e618591495"
+    },
+    {
+      "file": "tests/word_search_interaction_a11y.test.js",
+      "sha256": "a992b041b0e2b8f6597244e68a64c1d7bcd448009a2bd280b410490f37a3435b"
+    },
+    {
+      "file": "tests/word_sounds_a11y.test.js",
+      "sha256": "e0928365dc5db0be29b5c00609caf1789bb01e8bcc22c47d4f2c05ba558b16ba"
+    },
+    {
+      "file": "tests/word_sounds_decoding_drag_alternative_a11y.test.js",
+      "sha256": "e054cabcd16a3485ec9dd32495e7ecfa8c9751f754a5cb28ced44f0fbd605fc5"
+    },
+    {
+      "file": "tests/word_sounds_dialog_a11y.test.js",
+      "sha256": "64cbfc7c1185e1c16132ee9e2753d973578c86850b0ef7dac8c3dccb662d87c9"
+    },
+    {
+      "file": "tests/word_sounds_lesson_reorder_a11y.test.js",
+      "sha256": "5ee3c4245bde9434561e57e0163a7dd0d558cd5587d47443252d886722ccb2a7"
+    },
+    {
+      "file": "tests/word_sounds_reduced_motion_a11y.test.js",
+      "sha256": "54399c4df745d72fc6301cde65208ee49fb6231817b09420c485cf7fc0fc79bc"
+    },
+    {
+      "file": "tests/word_sounds_review_actions_a11y.test.js",
+      "sha256": "f5255299d48e5dc40d20455c321308b00da944628c89f9e40a243ae4bac59a0e"
+    },
+    {
+      "file": "tests/word_sounds_review_launcher_ux_a11y.test.js",
+      "sha256": "742f6fceca0a7a5c7d835c65de5f2a10a9b5e296ea64e63ecc1aa486ba88f4e4"
+    },
+    {
+      "file": "tests/word_sounds_setup_native_alert_a11y.test.js",
+      "sha256": "8f1c0b4f846c38644a2de53becebd8df5cf0bdc337618ee8f52ec7daf0a44331"
+    },
+    {
+      "file": "tests/word_sounds_setup_wcag_a11y.test.js",
+      "sha256": "24987835b697ec221c05cb4df71e8339f7b4b264467b7c4d8ae0f14c81fe784b"
+    },
+    {
+      "file": "tests/word_sounds_source_selector_a11y.test.js",
+      "sha256": "84704e18eb4af9696b80a9c6a4c87876e3dc87fea075c2040a0620591bb28e8d"
+    },
+    {
+      "file": "tests/word_sounds_tracing_canvas_a11y.test.js",
+      "sha256": "edeb4c802a70981d0fe543b7e60427dd4bfbfa42b0e020ee22ce86780572eaaf"
+    },
+    {
+      "file": "tests/worldbuilder_form_controls_a11y.test.js",
+      "sha256": "fddfde080a1e1c5adec815b0c8171bb06559706ba950cf6c18ce9a7e84def6b1"
+    },
+    {
+      "file": "tests/xp_modal_a11y.test.js",
+      "sha256": "da1704315d27eb95d26cfbff8dd13653fcb263575bf0ec195d22ae19679ca108"
+    },
+    {
+      "file": "tests/xp_modal_runtime_a11y.test.js",
+      "sha256": "b73a3aaa9a57c6f5073a46abe2ab8cdeb0cb1ebf5bc11580a7c0f3fcb81e0524"
+    }
+  ],
+  "finishedAt": "2026-09-13T03:16:01.574Z",
+  "exitCode": 1
+}

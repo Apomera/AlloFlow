@@ -16,6 +16,27 @@ var _lazyIcon = function (name) {
   // ─── Plan O: Comprehensive section renderers ───────────────────────────
   // Each curriculum-readiness dimension renders as a card with a status and
   // supporting evidence, recommendations, or an explicit incomplete state.
+  // Every list entry the AI reviewers return is rendered through auditText: a string passes
+  // through, an object is flattened to one sentence, anything else renders as nothing. React
+  // throws on an object child, and on 2026-09-13 a {profile, encounter} student-impact entry
+  // took the whole Curriculum Audit down through the error boundary. The dispatcher coerces
+  // the same way before caching; this is the render-side guard for anything it did not see.
+  var AUDIT_TEXT_LEAD_KEYS = ['profile', 'student', 'learner', 'who', 'word', 'term', 'claim', 'label', 'title'];
+  var AUDIT_TEXT_BODY_KEYS = ['encounter', 'experience', 'impact', 'text', 'description', 'detail', 'fix', 'suggestion', 'action', 'recommendation', 'correction', 'gap', 'issue', 'finding', 'reason', 'note'];
+  function auditText(entry) {
+    if (typeof entry === 'string') return entry;
+    if (typeof entry === 'number' || typeof entry === 'boolean') return String(entry);
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return '';
+    var take = function (keys) { return keys.map(function (k) { return entry[k]; }).filter(function (v) { return typeof v === 'string' && v.trim(); }).map(function (v) { return v.trim(); }); };
+    var known = AUDIT_TEXT_LEAD_KEYS.concat(AUDIT_TEXT_BODY_KEYS);
+    var rest = Object.keys(entry).filter(function (k) { return known.indexOf(k) === -1 && typeof entry[k] === 'string' && entry[k].trim(); }).map(function (k) { return entry[k].trim(); });
+    var bodies = take(AUDIT_TEXT_BODY_KEYS);
+    var parts = take(AUDIT_TEXT_LEAD_KEYS).concat(bodies.length ? bodies : rest);
+    if (!parts.length) return '';
+    if (parts.length === 1) return parts[0];
+    var tail = parts.slice(1).join(' ');
+    return /^[a-z]/.test(tail) ? parts[0] + ' ' + tail : parts[0] + ': ' + tail;
+  }
   function statusBadgeClass(status) {
     if (status === 'Aligned' || status === 'Pass') return 'bg-green-100 text-green-700';
     if (status === 'Not Aligned' || status === 'Revise') return 'bg-red-100 text-red-700';
@@ -403,23 +424,23 @@ var _lazyIcon = function (name) {
     var auditedTextWords = typeof v.auditedTextWords === 'number' ? v.auditedTextWords : v.totalWords;
     var scaleNote = v.expected && v.expected.scale && v.expected.scale > 1.5 ? '(rescaled ×' + v.expected.scale + ' for bundle size)' : '';
     return <ComprehensiveSection id="audit-vocabulary" icon="📚" title="Vocabulary fit" status={v.status}><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center" title={sourceWords !== null ? 'Source words: words in the primary lesson source (matches your "lesson length" intuition).\nAudited: words across the full bundle (every artifact), used for tier classification.' : ''}>{sourceWords !== null ? <><div className="text-2xl font-bold text-slate-800">{sourceWords}</div><div className="text-xs text-slate-600">Source words</div><div className="text-[10px] text-slate-500 mt-1">{auditedTextWords + ' across bundle'}</div></> : <><div className="text-2xl font-bold text-slate-800">{auditedTextWords}</div><div className="text-xs text-slate-600">Total words</div></>}</div><div className="p-3 bg-blue-50 rounded text-center"><div className="text-2xl font-bold text-blue-800">{v.tier2Count}</div><div className="text-xs text-blue-700">Tier 2 (academic)</div><div className="text-[10px] text-slate-500 mt-1">{'expected ~' + (v.expected && v.expected.tier2) + ' ' + scaleNote}</div></div><div className="p-3 bg-purple-50 rounded text-center"><div className="text-2xl font-bold text-purple-800">{v.tier3Count}</div><div className="text-xs text-purple-700">Tier 3 (domain)</div><div className="text-[10px] text-slate-500 mt-1">{'expected ~' + (v.expected && v.expected.tier3) + ' ' + scaleNote}</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{v.glossaryTermsCount}</div><div className="text-xs text-slate-600">Glossary terms</div></div></div>{v.tier2Examples && v.tier2Examples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-blue-800 mb-1">Tier 2 examples found:</div><div className="flex flex-wrap gap-1">{v.tier2Examples.map(function (w, i) {
-            return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{w}</span>;
+            return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{auditText(w)}</span>;
           })}</div></div>}{v.tier3Examples && v.tier3Examples.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-purple-800 mb-1">Tier 3 examples found:</div><div className="flex flex-wrap gap-1">{v.tier3Examples.map(function (w, i) {
-            return <span key={i} className="text-xs px-2 py-0.5 bg-purple-100 text-purple-900 rounded">{w}</span>;
+            return <span key={i} className="text-xs px-2 py-0.5 bg-purple-100 text-purple-900 rounded">{auditText(w)}</span>;
           })}</div></div>}{
       // Reading-level harvest from analysis items
       v.readingLevels && v.readingLevels.length > 0 && <div className="p-3 bg-slate-50 border border-slate-200 rounded mb-3"><div className="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-2"><span aria-hidden="true">📖</span> Reading levels (from analyzed source texts)</div><ul className="space-y-1 text-sm text-slate-800">{v.readingLevels.map(function (r, i) {
             return <li key={i} className="flex items-start gap-2"><span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-semibold whitespace-nowrap">{r.range}</span>{r.explanation && <span className="text-xs text-slate-600">{r.explanation.slice(0, 240)}</span>}</li>;
           })}</ul></div>}{v.recommendations && v.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{v.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // LLM review pairing (Plan O Step 1 enhancement)
       v.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> Literacy-coach review (AI)</div>{v.llmReview.narrative && <p className="text-sm text-indigo-900 mb-2">{v.llmReview.narrative}</p>}{v.llmReview.corrections && v.llmReview.corrections.length > 0 && <div className="mb-2"><div className="text-xs font-semibold text-indigo-800 mb-1">Likely misclassified (heuristic flagged Tier 2 but really Tier 1):</div><div className="flex flex-wrap gap-1">{v.llmReview.corrections.map(function (w, i) {
-              return <span key={i} className="text-xs px-2 py-0.5 bg-orange-100 text-orange-900 rounded line-through">{w}</span>;
+              return <span key={i} className="text-xs px-2 py-0.5 bg-orange-100 text-orange-900 rounded line-through">{auditText(w)}</span>;
             })}</div></div>}{v.llmReview.missedTier2 && v.llmReview.missedTier2.length > 0 && <div className="mb-2"><div className="text-xs font-semibold text-indigo-800 mb-1">Tier 2 words present but missed by the heuristic:</div><div className="flex flex-wrap gap-1">{v.llmReview.missedTier2.map(function (w, i) {
-              return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{w}</span>;
+              return <span key={i} className="text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded">{auditText(w)}</span>;
             })}</div></div>}{v.llmReview.recommendations && v.llmReview.recommendations.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested Tier 2 words to add for this topic + grade:</div><div className="flex flex-wrap gap-1">{v.llmReview.recommendations.map(function (w, i) {
-              return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold">{'+ ' + w}</span>;
+              return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold">{'+ ' + auditText(w)}</span>;
             })}</div></div>}</div>}<div className="text-[11px] text-slate-500 italic">{v.notes || ''}</div></ComprehensiveSection>;
   }
   function EngagementSection(p) {
@@ -432,12 +453,12 @@ var _lazyIcon = function (name) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{e.distinctTypeCount}</div><div className="text-xs text-slate-600">Distinct artifact types</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{e.totalArtifacts}</div><div className="text-xs text-slate-600">Total artifacts</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{Math.round((e.diversityScore || 0) * 100) + '%'}</div><div className="text-xs text-slate-600">Diversity score</div></div><div className="p-3 bg-slate-50 rounded text-center"><div className="text-2xl font-bold text-slate-800">{modPresent.length + '/4'}</div><div className="text-xs text-slate-600">Modalities present</div></div></div>{
       // Distinct types chips
       e.distinctTypes && e.distinctTypes.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">Artifact types in this curriculum:</div><div className="flex flex-wrap gap-1">{e.distinctTypes.map(function (t, i) {
-            return <span key={i} className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded">{t}</span>;
+            return <span key={i} className="text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded">{auditText(t)}</span>;
           })}</div></div>} // Modalities row
       <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-2"><div><div className="text-xs font-semibold text-emerald-800 mb-1">Modalities present:</div><div className="flex flex-wrap gap-1">{modPresent.length > 0 ? modPresent.map(function (m, i) {
-              return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">{m}</span>;
+              return <span key={i} className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded">{auditText(m)}</span>;
             }) : <span className="text-xs text-slate-500 italic">(none)</span>}</div></div><div><div className="text-xs font-semibold text-rose-800 mb-1">Modalities missing:</div><div className="flex flex-wrap gap-1">{modMissing.length > 0 ? modMissing.map(function (m, i) {
-              return <span key={i} className="text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded">{m}</span>;
+              return <span key={i} className="text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded">{auditText(m)}</span>;
             }) : <span className="text-xs text-emerald-700">all four covered</span>}</div></div></div>{
       // DOK bar
       e.dokTotal > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">{'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'}</div><div role="img" aria-label={'Quiz DOK distribution: Level 1 recall ' + (dok.L1 || 0) + ' percent; Level 2 skill and concept ' + (dok.L2 || 0) + ' percent; Level 3 strategic thinking ' + (dok.L3 || 0) + ' percent; Level 4 extended thinking ' + (dok.L4 || 0) + ' percent; unknown ' + (dok.unknown || 0) + ' percent.'} className="flex h-6 w-full rounded overflow-hidden border border-slate-200">{(dok.L1 || 0) > 0 && <div style={{
@@ -459,11 +480,11 @@ var _lazyIcon = function (name) {
       <div className="mb-3 grid grid-cols-3 gap-2 text-center text-xs"><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.sentenceFrames || 0}</div><div className="text-slate-600">sentence frames</div></div><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.simplifiedTexts || 0}</div><div className="text-slate-600">simplified texts</div></div><div className="p-2 bg-slate-50 rounded"><div className="font-bold text-slate-800">{e.scaffoldCounts && e.scaffoldCounts.leveledGlossary || 0}</div><div className="text-slate-600">leveled glossaries</div></div></div>{
       // Heuristic recommendations
       e.recommendations && e.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{e.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // LLM review
       e.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> UDL + DOK review (AI)</div>{e.llmReview.narrative && <p className="text-sm text-indigo-900 mb-2">{e.llmReview.narrative}</p>}{e.llmReview.dokAssessment && <p className="text-sm text-indigo-900 mb-2 italic">{'"' + e.llmReview.dokAssessment + '"'}</p>}{e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested format additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{e.llmReview.formatGaps.map(function (g, i) {
-              return <li key={i}>{g}</li>;
+              return <li key={i}>{auditText(g)}</li>;
             })}</ul></div>}</div>}<div className="text-[11px] text-slate-500 italic">{e.notes || ''}</div></ComprehensiveSection>;
   }
   function AccessibilitySection(p) {
@@ -482,13 +503,13 @@ var _lazyIcon = function (name) {
           })}</ul></div>}{
       // Heuristic recommendations
       a.recommendations && a.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{a.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // LLM review with student impacts
       a.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> Accessibility-specialist review (AI)</div>{a.llmReview.narrative && <p className="text-sm text-indigo-900 mb-3">{a.llmReview.narrative}</p>}{a.llmReview.studentImpacts && a.llmReview.studentImpacts.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-indigo-800 mb-1">Student-impact callouts:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.studentImpacts.map(function (s, i) {
-              return <li key={i}>{s}</li>;
+              return <li key={i}>{auditText(s)}</li>;
             })}</ul></div>}{a.llmReview.fixes && a.llmReview.fixes.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested fixes:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.fixes.map(function (f, i) {
-              return <li key={i}>{f}</li>;
+              return <li key={i}>{auditText(f)}</li>;
             })}</ul></div>}</div>}<div className="text-[11px] text-slate-500 italic">{a.notes || ''}</div></ComprehensiveSection>;
   }
   function UdlPillar(p) {
@@ -523,13 +544,13 @@ var _lazyIcon = function (name) {
           })}</ul></details>}{
       // Heuristic recommendations
       a.recommendations && a.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{a.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // LLM review with claims to verify
       a.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> Fact-checker review (AI)</div>{a.llmReview.narrative && <p className="text-sm text-indigo-900 mb-3">{a.llmReview.narrative}</p>}{a.llmReview.claimsToVerify && a.llmReview.claimsToVerify.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-indigo-800 mb-1">Specific claims to double-check:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.claimsToVerify.map(function (c, i) {
-              return <li key={i} className="italic">{'"' + c + '"'}</li>;
+              return <li key={i} className="italic">{'\"' + auditText(c) + '\"'}</li>;
             })}</ul></div>}{a.llmReview.fixes && a.llmReview.fixes.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Suggested improvements:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{a.llmReview.fixes.map(function (f, i) {
-              return <li key={i}>{f}</li>;
+              return <li key={i}>{auditText(f)}</li>;
             })}</ul></div>}</div>}<div className="text-[11px] text-slate-500 italic">{a.notes || ''}</div></ComprehensiveSection>;
   }
 
@@ -558,11 +579,11 @@ var _lazyIcon = function (name) {
           var on = flags[k];
           return <div key={k} className={'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500')}><span aria-hidden="true" className="flex-shrink-0">{on ? '✓' : '○'}</span><span className="min-w-0 break-words">{labelMap[k] || k}</span></div>;
         })}</div>{d.textAccess && <div className="p-3 bg-blue-50 border border-blue-200 rounded mb-3"><div className="text-xs font-semibold text-blue-950 mb-1">Primary-text access evidence</div><p className="text-sm text-blue-950">{d.textAccess.hasPrimary ? 'A designated primary text is present.' : d.textAccess.hasLegacySource ? 'An analyzed source is available, but its instructional role has not been confirmed.' : 'No primary text is identified in this audit scope.'}</p><p className="mt-1 text-xs text-blue-900">{'Supplemental adapted: ' + (d.textAccess.supplementalArtifactIds || []).length + ' · Same-text supported primary: ' + (d.textAccess.supportedPrimaryArtifactIds || []).length + ' · Explicit educator-authorized replacement: ' + (d.textAccess.authorizedModifiedArtifactIds || []).length + ' · Current level evidence: ' + (d.textAccess.primaryWithCurrentComplexityEvidenceIds || []).length + ' · Stale level evidence: ' + (d.textAccess.stalePrimaryComplexityEvidenceIds || []).length}</p></div>}{d.recommendations && d.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{d.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{d.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> UDL specialist review (AI)</div>{d.llmReview.narrative && <p className="text-sm text-indigo-900 mb-2">{d.llmReview.narrative}</p>}{d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && <div className="mb-2"><div className="text-xs font-semibold text-indigo-800 mb-1">Priority additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{d.llmReview.priorityAdditions.map(function (r, i) {
-              return <li key={i}>{r}</li>;
+              return <li key={i}>{auditText(r)}</li>;
             })}</ul></div>}{d.llmReview.qualityFlags && d.llmReview.qualityFlags.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Quality flags:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{d.llmReview.qualityFlags.map(function (r, i) {
-              return <li key={i}>{r}</li>;
+              return <li key={i}>{auditText(r)}</li>;
             })}</ul></div>}</div>}<div className="text-[11px] text-slate-500 italic">{d.notes || ''}</div></ComprehensiveSection>;
   }
 
@@ -577,9 +598,9 @@ var _lazyIcon = function (name) {
       Array.isArray(c.perSegment) && c.perSegment.length > 0 && <div className="mb-3"><div className="text-xs font-semibold text-slate-700 mb-1">Lesson plan segments:</div><ul className="space-y-0.5 text-sm text-slate-700">{c.perSegment.map(function (s, i) {
             return <li key={i} className="flex items-center justify-between gap-2"><span>{s.label}</span><span className={'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-400 italic')}>{s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'}</span></li>;
           })}</ul></div>}{c.recommendations && c.recommendations.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-3"><div className="text-xs font-semibold text-amber-900 mb-1">Heuristic recommendations:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{c.recommendations.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{c.llmReview && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-3"><div className="text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"><span aria-hidden="true">🤖</span> Pacing review (AI)</div>{c.llmReview.narrative && <p className="text-sm text-indigo-900 mb-2">{c.llmReview.narrative}</p>}{c.llmReview.specificAdjustments && c.llmReview.specificAdjustments.length > 0 && <div><div className="text-xs font-semibold text-indigo-800 mb-1">Specific adjustments:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{c.llmReview.specificAdjustments.map(function (r, i) {
-              return <li key={i}>{r}</li>;
+              return <li key={i}>{auditText(r)}</li>;
             })}</ul></div>}</div>}<div className="text-[11px] text-slate-500 italic">{c.notes || ''}</div></ComprehensiveSection>;
   }
 
@@ -590,15 +611,15 @@ var _lazyIcon = function (name) {
     return <ComprehensiveSection id="audit-culturalResponsiveness" icon="🤝" title="Cultural responsiveness" status={c.status}>{c.narrative && <p className="text-sm text-slate-800 mb-3 leading-relaxed">{c.narrative}</p>}{
       // Strengths
       Array.isArray(c.strengths) && c.strengths.length > 0 && <div className="p-3 bg-emerald-50 border border-emerald-200 rounded mb-2"><div className="text-xs font-semibold text-emerald-900 mb-1">Strengths:</div><ul className="list-disc ml-5 text-sm text-emerald-900 space-y-1">{c.strengths.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // Gaps
       Array.isArray(c.gaps) && c.gaps.length > 0 && <div className="p-3 bg-amber-50 border border-amber-200 rounded mb-2"><div className="text-xs font-semibold text-amber-900 mb-1">Gaps:</div><ul className="list-disc ml-5 text-sm text-amber-900 space-y-1">{c.gaps.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}{
       // Additions (the actionable list)
       Array.isArray(c.additions) && c.additions.length > 0 && <div className="p-3 bg-indigo-50 border border-indigo-200 rounded mb-2"><div className="text-xs font-semibold text-indigo-900 mb-1">Suggested additions:</div><ul className="list-disc ml-5 text-sm text-indigo-900 space-y-1">{c.additions.map(function (r, i) {
-            return <li key={i}>{r}</li>;
+            return <li key={i}>{auditText(r)}</li>;
           })}</ul></div>}<div className="text-[11px] text-slate-500 italic mt-2">{c.notes || ''}</div></ComprehensiveSection>;
   }
   var READINESS_DIMENSION_LABELS = {
@@ -1033,14 +1054,45 @@ var _lazyIcon = function (name) {
     var headingId = p.id ? p.id + '-heading' : undefined;
     return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">➖</span><h3 id={headingId} className="font-bold text-slate-700">{label}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700">Not applicable</span></div>{d.reason && <p className="text-sm text-slate-600">{d.reason}</p>}</section>;
   }
+  // Each dimension card renders inside its own boundary, so one bad AI field degrades to a
+  // single "could not be displayed" card instead of tripping the error boundary above the
+  // whole report (2026-09-13: one object entry in an accessibility list blanked the entire
+  // Curriculum Audit). Written as a hybrid: React constructs it as a class and routes render
+  // errors to getDerivedStateFromError; a plain function-call harness gets the children back.
+  // Keyed by report generation time so a regenerated audit remounts a clean boundary.
+  var _ReactBase = (typeof React !== 'undefined' && React && React.Component) ? React.Component : function () {};
+  function _dimensionBoundaryKey(comp, id) {
+    var meta = comp && comp.auditMetadata;
+    return id + ':' + ((meta && meta.generatedAt) || '');
+  }
+  function DimensionBoundary(props) {
+    if (!(this instanceof DimensionBoundary)) return props && props.children !== undefined ? props.children : null;
+    _ReactBase.call(this, props);
+    this.state = { failed: false, message: '' };
+  }
+  DimensionBoundary.prototype = Object.create(_ReactBase.prototype);
+  DimensionBoundary.prototype.constructor = DimensionBoundary;
+  DimensionBoundary.getDerivedStateFromError = function (error) {
+    return { failed: true, message: error && error.message ? String(error.message).slice(0, 240) : 'The section could not be rendered.' };
+  };
+  DimensionBoundary.prototype.componentDidCatch = function (error) {
+    try { (window.warnLog || console.warn)('[Alignment] ' + this.props.label + ' section failed to render: ' + (error && error.message ? error.message : error)); } catch (_) {}
+  };
+  DimensionBoundary.prototype.render = function () {
+    if (!this.state.failed) return this.props.children;
+    var p = this.props;
+    var headingId = p.id ? p.id + '-heading' : undefined;
+    return <section id={p.id || undefined} aria-labelledby={headingId} tabIndex={-1} data-audit-section-failed="true" className="bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"><div className="flex items-center gap-2 mb-2"><span aria-hidden="true" className="text-lg">⚠</span><h3 id={headingId} className="font-bold text-amber-900">{p.label + ' could not be displayed'}</h3><span className="ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-200 text-amber-900">Display error</span></div><p className="text-sm text-amber-900 mb-2">The saved data for this section could not be rendered. The other dimensions are unaffected; regenerate the audit to rebuild this one.</p><details className="text-xs text-amber-800"><summary className="cursor-pointer font-semibold">Show error</summary><pre className="mt-1 p-2 bg-amber-100 rounded overflow-x-auto whitespace-pre-wrap">{this.state.message}</pre></details></section>;
+  };
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
-    return <section aria-labelledby="audit-findings-heading" className="mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"><div className="mb-6"><h2 id="audit-findings-heading" className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Per-Dimension Findings</h2><p className="text-sm text-slate-600">Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.</p></div>{c.auditScope && <div className="mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"><strong>Audit scope: </strong>{(c.auditScope.includedArtifactIds || []).length + ' artifact' + ((c.auditScope.includedArtifactIds || []).length === 1 ? '' : 's')}{(c.auditScope.includedTypes || []).length > 0 ? <span>{' · ' + c.auditScope.includedTypes.join(', ')}</span> : null}{c.auditScope.selectionMode ? <span>{' · Selection: ' + c.auditScope.selectionMode}</span> : null}{(c.auditScope.excludedArtifactCount || 0) > 0 ? <span>{' · ' + c.auditScope.excludedArtifactCount + ' eligible artifact' + (c.auditScope.excludedArtifactCount === 1 ? '' : 's') + ' outside scope'}</span> : null}{c.auditScope.contextTruncated ? <span> · AI context was truncated</span> : null}{c.auditScope.warnings && c.auditScope.warnings.length > 0 ? <ul className="list-disc ml-5 mt-1">{c.auditScope.warnings.map(function (w, i) { return <li key={i}>{w}</li>; })}</ul> : null}</div>}<div className="mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"><strong>Accessibility scope: </strong>These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required.</div>{c.differentiation && c.differentiation.audioCoverage && <AudioCoverageSummary audio={c.differentiation.audioCoverage} />}{c.overall && <ReadinessScoreCard overall={c.overall} />}{
+    return <section aria-labelledby="audit-findings-heading" className="mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto"><div className="mb-6"><h2 id="audit-findings-heading" className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Per-Dimension Findings</h2><p className="text-sm text-slate-600">Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.</p></div>{c.auditScope && <div className="mb-4 p-3 rounded border border-slate-300 bg-slate-50 text-sm text-slate-800"><strong>Audit scope: </strong>{(c.auditScope.includedArtifactIds || []).length + ' artifact' + ((c.auditScope.includedArtifactIds || []).length === 1 ? '' : 's')}{(c.auditScope.includedTypes || []).length > 0 ? <span>{' · ' + c.auditScope.includedTypes.join(', ')}</span> : null}{c.auditScope.selectionMode ? <span>{' · Selection: ' + c.auditScope.selectionMode}</span> : null}{(c.auditScope.excludedArtifactCount || 0) > 0 ? <span>{' · ' + c.auditScope.excludedArtifactCount + ' eligible artifact' + (c.auditScope.excludedArtifactCount === 1 ? '' : 's') + ' outside scope'}</span> : null}{c.auditScope.contextTruncated ? <span> · AI context was truncated</span> : null}{c.auditScope.warnings && c.auditScope.warnings.length > 0 ? <ul className="list-disc ml-5 mt-1">{c.auditScope.warnings.map(function (w, i) { return <li key={i}>{auditText(w)}</li>; })}</ul> : null}</div>}<div className="mb-4 p-3 rounded border border-blue-300 bg-blue-50 text-sm text-blue-950"><strong>Accessibility scope: </strong>These are selected content-accessibility indicators, not a WCAG conformance assessment. Manual keyboard, screen-reader, zoom/reflow, contrast, and rendered-content testing are still required.</div>{c.differentiation && c.differentiation.audioCoverage && <AudioCoverageSummary audio={c.differentiation.audioCoverage} />}{c.overall && <ReadinessScoreCard overall={c.overall} />}{
       // Standards rendered first (most teacher-relevant)
-      c.standards ? (c.standards.computeFailed ? <FailedDimensionCard id="audit-standards" data={c.standards} label="Standards alignment" /> : c.standards.notApplicable ? <NotApplicableCard id="audit-standards" data={c.standards} label="Standards alignment" /> : <StandardsSection standards={c.standards} auditScope={c.auditScope} alignmentMapGraph={p.alignmentMapGraph} onConfirmAttribution={p.onConfirmAttribution} onExportAlignmentGraph={p.onExportAlignmentGraph} />) : <MissingDimensionCard id="audit-standards" label="Standards alignment" />}{c.vocabulary ? (c.vocabulary.computeFailed ? <FailedDimensionCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : c.vocabulary.notEvaluated ? <NotEvaluatedCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : <VocabularySection vocab={c.vocabulary} />) : <MissingDimensionCard id="audit-vocabulary" label="Vocabulary fit" />}{c.engagement ? (c.engagement.computeFailed ? <FailedDimensionCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : c.engagement.notEvaluated ? <NotEvaluatedCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : <EngagementSection eng={c.engagement} />) : <MissingDimensionCard id="audit-engagement" label="Engagement variety" />}{c.accessibility ? (c.accessibility.computeFailed ? <FailedDimensionCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : c.accessibility.notEvaluated ? <NotEvaluatedCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : <AccessibilitySection access={c.accessibility} />) : <MissingDimensionCard id="audit-accessibility" label="Content accessibility" />}{c.udl ? (c.udl.computeFailed ? <FailedDimensionCard id="audit-udl" data={c.udl} label="UDL principles" /> : c.udl.notEvaluated ? <NotEvaluatedCard id="audit-udl" data={c.udl} label="UDL principles" /> : <UdlSection udl={c.udl} />) : <MissingDimensionCard id="audit-udl" label="UDL principles" />}{c.accuracy ? (c.accuracy.computeFailed ? <FailedDimensionCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : c.accuracy.notEvaluated ? <NotEvaluatedCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : <AccuracySection acc={c.accuracy} />) : <MissingDimensionCard id="audit-accuracy" label="Content accuracy" />}{
+      <DimensionBoundary key={_dimensionBoundaryKey(c, "audit-standards")} id="audit-standards" label="Standards alignment">{c.standards ? (c.standards.computeFailed ? <FailedDimensionCard id="audit-standards" data={c.standards} label="Standards alignment" /> : c.standards.notApplicable ? <NotApplicableCard id="audit-standards" data={c.standards} label="Standards alignment" /> : <StandardsSection standards={c.standards} auditScope={c.auditScope} alignmentMapGraph={p.alignmentMapGraph} onConfirmAttribution={p.onConfirmAttribution} onExportAlignmentGraph={p.onExportAlignmentGraph} />) : <MissingDimensionCard id="audit-standards" label="Standards alignment" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-vocabulary")} id="audit-vocabulary" label="Vocabulary fit">{c.vocabulary ? (c.vocabulary.computeFailed ? <FailedDimensionCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : c.vocabulary.notEvaluated ? <NotEvaluatedCard id="audit-vocabulary" data={c.vocabulary} label="Vocabulary fit" /> : <VocabularySection vocab={c.vocabulary} />) : <MissingDimensionCard id="audit-vocabulary" label="Vocabulary fit" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-engagement")} id="audit-engagement" label="Engagement variety">{c.engagement ? (c.engagement.computeFailed ? <FailedDimensionCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : c.engagement.notEvaluated ? <NotEvaluatedCard id="audit-engagement" data={c.engagement} label="Engagement variety" /> : <EngagementSection eng={c.engagement} />) : <MissingDimensionCard id="audit-engagement" label="Engagement variety" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-accessibility")} id="audit-accessibility" label="Content accessibility">{c.accessibility ? (c.accessibility.computeFailed ? <FailedDimensionCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : c.accessibility.notEvaluated ? <NotEvaluatedCard id="audit-accessibility" data={c.accessibility} label="Content accessibility" /> : <AccessibilitySection access={c.accessibility} />) : <MissingDimensionCard id="audit-accessibility" label="Content accessibility" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-udl")} id="audit-udl" label="UDL principles">{c.udl ? (c.udl.computeFailed ? <FailedDimensionCard id="audit-udl" data={c.udl} label="UDL principles" /> : c.udl.notEvaluated ? <NotEvaluatedCard id="audit-udl" data={c.udl} label="UDL principles" /> : <UdlSection udl={c.udl} />) : <MissingDimensionCard id="audit-udl" label="UDL principles" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-accuracy")} id="audit-accuracy" label="Content accuracy">{c.accuracy ? (c.accuracy.computeFailed ? <FailedDimensionCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : c.accuracy.notEvaluated ? <NotEvaluatedCard id="audit-accuracy" data={c.accuracy} label="Content accuracy" /> : <AccuracySection acc={c.accuracy} />) : <MissingDimensionCard id="audit-accuracy" label="Content accuracy" />}</DimensionBoundary>}{
       // Plan R+ new dimensions
-      c.differentiation ? (c.differentiation.computeFailed ? <FailedDimensionCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : c.differentiation.notEvaluated ? <NotEvaluatedCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : <DifferentiationSection diff={c.differentiation} />) : <MissingDimensionCard id="audit-differentiation" label="Differentiation coverage" />}{c.cognitiveLoad ? (c.cognitiveLoad.computeFailed ? <FailedDimensionCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notApplicable ? <NotApplicableCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notEvaluated ? <NotEvaluatedCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : <CognitiveLoadSection load={c.cognitiveLoad} />) : <MissingDimensionCard id="audit-cognitiveLoad" label="Cognitive load / pacing" />}{c.culturalResponsiveness ? (c.culturalResponsiveness.computeFailed ? <FailedDimensionCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notApplicable ? <NotApplicableCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notEvaluated ? <NotEvaluatedCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : <CulturalResponsivenessSection cr={c.culturalResponsiveness} />) : <MissingDimensionCard id="audit-culturalResponsiveness" label="Cultural responsiveness" />}</section>;
+      <DimensionBoundary key={_dimensionBoundaryKey(c, "audit-differentiation")} id="audit-differentiation" label="Differentiation coverage">{c.differentiation ? (c.differentiation.computeFailed ? <FailedDimensionCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : c.differentiation.notEvaluated ? <NotEvaluatedCard id="audit-differentiation" data={c.differentiation} label="Differentiation coverage" /> : <DifferentiationSection diff={c.differentiation} />) : <MissingDimensionCard id="audit-differentiation" label="Differentiation coverage" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-cognitiveLoad")} id="audit-cognitiveLoad" label="Cognitive load / pacing">{c.cognitiveLoad ? (c.cognitiveLoad.computeFailed ? <FailedDimensionCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notApplicable ? <NotApplicableCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : c.cognitiveLoad.notEvaluated ? <NotEvaluatedCard id="audit-cognitiveLoad" data={c.cognitiveLoad} label="Cognitive load / pacing" /> : <CognitiveLoadSection load={c.cognitiveLoad} />) : <MissingDimensionCard id="audit-cognitiveLoad" label="Cognitive load / pacing" />}</DimensionBoundary>}{<DimensionBoundary key={_dimensionBoundaryKey(c, "audit-culturalResponsiveness")} id="audit-culturalResponsiveness" label="Cultural responsiveness">{c.culturalResponsiveness ? (c.culturalResponsiveness.computeFailed ? <FailedDimensionCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notApplicable ? <NotApplicableCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : c.culturalResponsiveness.notEvaluated ? <NotEvaluatedCard id="audit-culturalResponsiveness" data={c.culturalResponsiveness} label="Cultural responsiveness" /> : <CulturalResponsivenessSection cr={c.culturalResponsiveness} />) : <MissingDimensionCard id="audit-culturalResponsiveness" label="Cultural responsiveness" />}</DimensionBoundary>}</section>;
   }
   function auditResourceFingerprint(resource) { return window.AlloModules?.ResourceContentFingerprint?.fingerprint(resource) || null; }
   function auditResourceSnapshot(resources) { return window.AlloModules?.ResourceContentFingerprint?.snapshot(resources) || {}; }

@@ -1,0 +1,102 @@
+        // Untimed identification is the default. Timing is an explicit preference,
+        // captured when a question starts; legacy response times remain separate.
+        var spotterTimed = d._spotterTimed === true;
+        var spotterRoundTimed = d._spotterRoundTimed === true;
+        var spotterActive = d._spotterActive === true;
+        var spotterScore = safeNonNegativeNumber(d._spotterScore, 0, true);
+        var spotterTotal = Math.max(spotterScore, safeNonNegativeNumber(d._spotterTotal, 0, true));
+        var spotterTarget = typeof d._spotterTarget === 'string' ? d._spotterTarget : null;
+        var spotterStartTime = safeNonNegativeNumber(d._spotterStartTime, 0, false);
+        function validSpotterBest(state) { return typeof state._spotterTimedBestTime === 'number' && Number.isFinite(state._spotterTimedBestTime) && state._spotterTimedBestTime > 0 ? state._spotterTimedBestTime : 0; }
+        var spotterBestTime = validSpotterBest(d);
+        var seenSpotterOptions = {};
+        var spotterOptions = Array.isArray(d._spotterOpts) ? d._spotterOpts.reduce(function(valid, option) {
+          var optionId = option && typeof option.id === 'string' ? option.id : null;
+          var canonical = optionId ? allStructures.find(function(structure) { return structure.id === optionId; }) : null;
+          if (canonical && !seenSpotterOptions[canonical.id]) { seenSpotterOptions[canonical.id] = true; valid.push(canonical); }
+          return valid;
+        }, []) : [];
+        // These zones describe the marker in the viewer's perspective, not the
+        // whole structure. They support access but are not a full spatial assessment.
+        function spotterRegionCue(st) {
+          if (!st) return '';
+          var vert = st.y < 0.16 ? t('stem.anatomy.spot_ref_head', 'near the top, around the head and neck')
+            : st.y < 0.30 ? t('stem.anatomy.spot_ref_chest', 'in the upper body, around the shoulders and chest')
+            : st.y < 0.45 ? t('stem.anatomy.spot_ref_belly', 'in the chest and upper belly area')
+            : st.y < 0.62 ? t('stem.anatomy.spot_ref_hips', 'around the lower belly, hips, and upper thighs')
+            : t('stem.anatomy.spot_ref_legs', 'in the lower body, around the legs');
+          var horiz = st.x < 0.42 ? t('stem.anatomy.spot_ref_left', 'on the left side of the figure')
+            : st.x > 0.58 ? t('stem.anatomy.spot_ref_right', 'on the right side of the figure')
+            : t('stem.anatomy.spot_ref_center', 'near the center of the figure');
+          return formatAnatomyStudyText(t('stem.anatomy.spot_ref_position', 'The marker is {horizontal}, {vertical}.'), {horizontal:horiz,vertical:vert});
+        }
+        var spotterTargetStruct = spotterTarget ? (allStructures.find(function(s) { return s.id === spotterTarget; }) || null) : null;
+        var spotterCueText = spotterRegionCue(spotterTargetStruct);
+        var spotterElapsed = safeNonNegativeNumber(d._spotterElapsed, 0, false);
+        var spotterHasElapsed = spotterRoundTimed && typeof d._spotterElapsed === 'number' && Number.isFinite(d._spotterElapsed) && d._spotterElapsed >= 0;
+        var restoredSpotterFeedback = typeof d._spotterFeedback === 'string' ? d._spotterFeedback : null;
+        var spotterFeedback = spotterOptions.some(function(option) { return option.id === restoredSpotterFeedback; }) ? restoredSpotterFeedback : null;
+        var spotterRoundReady = !!spotterTargetStruct && spotterOptions.length === 4 &&
+          spotterOptions.some(function(option) { return option.id === spotterTarget; }) && (spotterStartTime > 0 || spotterFeedback !== null);
+        var spotterTargetVisible = !!spotterTargetStruct && filtered.some(function(s) { return s.id === spotterTarget; });
+        function spotterQuestionKey(state) {
+          return JSON.stringify([state._spotterTarget,state._spotterStartTime,state._spotterSerial,state._spotterRoundTimed === true,
+            Array.isArray(state._spotterOpts) ? state._spotterOpts.map(function(option){return option && option.id;}) : []]);
+        }
+        function sameSpotterContext(state) {
+          return state._activeTab === 'spotter' && state.system === d.system && state.view === d.view && state.complexity === d.complexity;
+        }
+        function shuffleSpotter(items) {
+          var result=items.slice();
+          for(var i=result.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),swap=result[i];result[i]=result[j];result[j]=swap;}
+          return result;
+        }
+        var pickSpotterRound = function(isStart) {
+          var concepts={};
+          var pool=filtered.filter(function(structure){var concept=anatomyEvidenceId(structure.id,knownStructureIds);if(!structure.fn||concepts[concept])return false;concepts[concept]=true;return true;});
+          if(pool.length<4){if(typeof addToast==='function')addToast(t('stem.anatomy.spot_ref_need_four','Spotter needs at least four different structures in view. Choose another view or enable more layers.'));return false;}
+          var previousConcept=anatomyEvidenceId(spotterTarget,knownStructureIds);
+          var candidates=pool.filter(function(structure){return anatomyEvidenceId(structure.id,knownStructureIds)!==previousConcept;});
+          var target=candidates[Math.floor(Math.random()*candidates.length)];
+          var opts=shuffleSpotter(shuffleSpotter(pool.filter(function(structure){return structure.id!==target.id;})).slice(0,3).concat([target]));
+          var expected=spotterQuestionKey(d),accepted=false;
+          setLabToolData(function(previous){
+            var current=previous.anatomy||{};
+            if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected||(isStart&&current._spotterActive===true))return previous;
+            var patch={_spotterActive:true,_spotterTarget:target.id,_spotterFeedback:null,_spotterOpts:opts.map(function(option){return {id:option.id};}),_spotterStartTime:Date.now(),_spotterElapsed:null,_spotterRoundTimed:current._spotterTimed===true,_spotterSerial:safeNonNegativeNumber(current._spotterSerial,0,true)+1};
+            accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});
+          });
+          setTimeout(function(){if(accepted&&typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));},0);
+          return true;
+        };
+        function spotterAnswerPatch(current,optionId,expected,now) {
+          if(!sameSpotterContext(current)||current._spotterActive!==true||spotterQuestionKey(current)!==expected||spotterOptions.some(function(option){return option.id===current._spotterFeedback;}))return null;
+          var correct=optionId===spotterTarget,score=safeNonNegativeNumber(current._spotterScore,0,true),total=Math.max(score,safeNonNegativeNumber(current._spotterTotal,0,true));
+          var elapsed=current._spotterRoundTimed===true&&now>=spotterStartTime ? (now-spotterStartTime)/1000 : null;
+          var patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};
+          if(correct){patch._spotterScore=score+1;var best=validSpotterBest(current);if(elapsed!==null&&elapsed>0&&(!best||elapsed<best))patch._spotterTimedBestTime=elapsed;}
+          return Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current));
+        }
+        var spotterAnswerSubmitted=false;
+        function answerSpotterOption(opt) {
+          if(!spotterActive||!spotterRoundReady||spotterFeedback!==null||spotterAnswerSubmitted||!opt||!spotterOptions.some(function(option){return option.id===opt.id;}))return;
+          spotterAnswerSubmitted=true;
+          var expected=spotterQuestionKey(d),accepted=false;
+          setLabToolData(function(previous){var current=previous.anatomy||{},patch=spotterAnswerPatch(current,opt.id,expected,Date.now());if(!patch)return previous;accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});});
+          setTimeout(function(){
+            if(!accepted)return;
+            var correct=opt.id===spotterTarget;
+            playSound(correct?'spotterCorrect':'spotterWrong');
+            if(typeof announceToSR==='function')announceToSR((correct?t('stem.anatomy.spot_ref_correct','Correct. '):t('stem.anatomy.spot_ref_answer','The marked structure is '))+spotterTargetStruct.name+'. '+learnerText(spotterTargetStruct));
+            checkAnatomyChallenges();
+          },0);
+        }
+        function setSpotterTiming(enabled) {
+          setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||current._spotterActive===true)return previous;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterTimed:enabled===true})});});
+        }
+        function renderSpotterEndButton() {
+          return h('button',{type:'button','data-anatomy-spotter-end':true,'aria-label':t('stem.anatomy.end_test','End Test'),className:'anatomy-spotter-end',onClick:function(){
+            var expected=spotterQuestionKey(d);
+            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false})});});
+          }},t('stem.anatomy.end_test_2','End Test'));
+        }

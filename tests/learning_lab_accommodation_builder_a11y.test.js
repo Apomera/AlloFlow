@@ -194,7 +194,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
 
   it('uses asynchronous clipboard handling with a manual-copy fallback', () => {
     expect(builder).toContain("typeof navigator === 'undefined' || !navigator.clipboard");
-    expect(builder).toContain('Promise.resolve(navigator.clipboard.writeText(body))');
+    expect(builder).toContain('Promise.resolve((window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(body))');
     expect(builder).toContain('The draft text is selected for manual copying.');
     expect(builder).toContain('focusById(textId, true)');
   });

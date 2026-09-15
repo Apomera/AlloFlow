@@ -1053,10 +1053,14 @@ function SimplifiedView(props) {
   var standardsInput = props.standardsInput;
   var sourceTopic = props.sourceTopic;
   var isTeacherMode = props.isTeacherMode;
+  // Explain mode (2026-09-14): every action in its selection menu (Explain,
+  // Simplify, Custom) is an AI call, so the mode is withheld from a student
+  // whose AI is hidden. Word meaning stays: it has a dictionary path.
+  var studentAiFeaturesHidden = !isTeacherMode && !!props.studentAiFeaturesHidden;
   var isProcessing = props.isProcessing;
   var isPlaying = props.isPlaying;
   // Guard stale authoring state immediately when switching to student view.
-  var interactionMode = !isTeacherMode && ['revise', 'add-glossary'].includes(props.interactionMode) ? 'read' : props.interactionMode;
+  var interactionMode = !isTeacherMode && (['revise', 'add-glossary'].includes(props.interactionMode) || studentAiFeaturesHidden && props.interactionMode === 'explain') ? 'read' : props.interactionMode;
   var isCompareMode = isTeacherMode && props.isCompareMode;
   var isFluencyMode = props.isFluencyMode;
   var isEditingLeveledText = isTeacherMode && props.isEditingLeveledText;
@@ -1077,6 +1081,22 @@ function SimplifiedView(props) {
   var isKaraokeOverlayActive = props.isKaraokeOverlayActive;
   var isAnalyzingPos = props.isAnalyzingPos;
   var isCheckingLevel = props.isCheckingLevel;
+  // Automatic level check preference (read by the generation dispatcher).
+  // Stored per browser, never on the resource; default ON for teachers.
+  var _autoLevelPref = React.useState(function () {
+    try {
+      return localStorage.getItem('alloflow_auto_level_check') !== 'off';
+    } catch (_) {
+      return true;
+    }
+  });
+  var autoLevelCheckOn = _autoLevelPref[0];
+  var setAutoLevelCheckOn = function (next) {
+    _autoLevelPref[1](!!next);
+    try {
+      localStorage.setItem('alloflow_auto_level_check', next ? 'on' : 'off');
+    } catch (_) {}
+  };
   var isCheckingAlignment = props.isCheckingAlignment;
   var isLineFocusMode = props.isLineFocusMode;
   var focusedParagraphIndex = props.focusedParagraphIndex;
@@ -3579,7 +3599,7 @@ function SimplifiedView(props) {
     role: "group",
     "aria-label": readerText('simplified.reading_actions', 'Reading tools'),
     className: "flex flex-wrap justify-center w-full min-w-0 bg-white rounded-2xl p-2 border border-indigo-200 shadow-sm gap-2"
-  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ['explain', 'simplified.explain_mode', 'Explain', HelpCircle], ...(isTeacherMode ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
+  }, [['read', 'simplified.read_mode', 'Read', Volume2], ['define', 'simplified.word_meaning', 'Word meaning', Search], ['phonics', 'simplified.word_sounds', 'Word sounds', Ear], ...(studentAiFeaturesHidden ? [] : [['explain', 'simplified.explain_mode', 'Explain', HelpCircle]]), ...(isTeacherMode ? [['add-glossary', 'simplified.add_term', 'Add term', Plus], ['revise', 'simplified.revise_mode', 'Revise', Pencil]] : [])].map(([mode, key, fallback, Icon]) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: mode,
     "data-reading-mode": mode,
@@ -4162,7 +4182,40 @@ function SimplifiedView(props) {
     size: 16
   }) : /*#__PURE__*/React.createElement(Copy, {
     size: 16
-  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
+  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), isTeacherMode && generatedContent.relevel && (() => {
+    const info = generatedContent.relevel || {};
+    const fmt = v => Number.isFinite(Number(v)) ? Number(v).toFixed(1) : '?';
+    const undoRelevel = () => {
+      const restored = {
+        ...generatedContent,
+        data: info.fromText
+      };
+      delete restored.relevel;
+      delete restored.levelCheck;
+      if (info.fromLocalStats) restored.localStats = info.fromLocalStats;else delete restored.localStats;
+      if (info.fromInstructionalText) restored.instructionalText = info.fromInstructionalText;
+      if (info.fromLevelCheck) restored.levelCheck = info.fromLevelCheck;
+      setGeneratedContent(restored);
+      if (typeof setHistory === 'function') setHistory(prev => prev.map(item => item.id === restored.id ? restored : item));
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "data-relevel": "auto",
+      className: "mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold uppercase tracking-wider"
+    }, t('simplified.relevel_label') || 'Re-leveled automatically'), /*#__PURE__*/React.createElement("span", null, `Measured grade ${fmt(info.measuredBefore)} → ${fmt(info.measuredAfter)} (target ${info.targetGrade || ''}). The measurement and the review agreed the first draft was ${info.direction === 'simpler' ? 'too complex' : 'too simple'}.`), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: undoRelevel,
+      className: "ml-auto rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100"
+    }, t('simplified.relevel_undo') || 'Undo re-level'));
+  })(), isTeacherMode && generatedContent.levelCheck && generatedContent.levelCheck.triangulation && generatedContent.levelCheck.triangulation.note && !generatedContent.levelCheck.triangulation.agree && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "data-relevel": "disagreement",
+    className: "mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-bold uppercase tracking-wider mr-2"
+  }, t('simplified.level_signals_disagree') || 'Two reads, one text'), /*#__PURE__*/React.createElement("span", null, generatedContent.levelCheck.triangulation.note)), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
     const measured = simplifiedComplexityDisplay.measuredGrade;
     const targetGrade = simplifiedComplexityDisplay.targetGrade;
     const status = simplifiedComplexityDisplay.status;
@@ -4182,7 +4235,15 @@ function SimplifiedView(props) {
       className: "font-semibold"
     }, verdict), /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] opacity-80"
-    }, "Flesch-Kincaid, measured on this passage.", rangeNote, " Use Check Level for a fuller review."));
+    }, "Flesch-Kincaid, measured on this passage.", rangeNote, " Use Check Level for a fuller review."), /*#__PURE__*/React.createElement("label", {
+      className: "ml-auto flex items-center gap-1 text-[11px] font-semibold cursor-pointer",
+      title: "After each adapted text, run one model review alongside this measurement and re-level automatically only when both agree the target was missed."
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: !!autoLevelCheckOn,
+      onChange: e => setAutoLevelCheckOn(e.target.checked),
+      className: "h-3 w-3"
+    }), t('simplified.auto_level_check') || 'Auto-check on generate'));
   })(), isTeacherMode && !generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"

@@ -1,0 +1,322 @@
+{
+  "title": "Real-World Volume — Packing & Shipping",
+  "description": "Apply volume skills to real-world problems: packing boxes, filling containers, and calculating shipping costs!",
+  "spawnPoint": [
+    5,
+    2.6,
+    10
+  ],
+  "objectives": [
+    "Find how many small boxes fit in the shipping container",
+    "Calculate the wasted space in a partially filled crate",
+    "Design a package that holds exactly 36 cubic units"
+  ],
+  "ground": {
+    "xMin": -2,
+    "xMax": 22,
+    "zMin": -2,
+    "zMax": 22,
+    "y": 0,
+    "type": "stone"
+  },
+  "structures": [
+    {
+      "type": "fill",
+      "x1": 0,
+      "y1": 0,
+      "z1": 0,
+      "x2": 20,
+      "y2": 0,
+      "z2": 20,
+      "block": "stone",
+      "id": "shipping-structure-1",
+      "measurementLayer": "ground"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 2,
+      "x2": 9,
+      "y2": 1,
+      "z2": 5,
+      "block": "wood",
+      "id": "shipping-structure-2"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 4,
+      "z1": 2,
+      "x2": 9,
+      "y2": 4,
+      "z2": 5,
+      "block": "wood",
+      "id": "shipping-structure-3"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 2,
+      "x2": 2,
+      "y2": 4,
+      "z2": 5,
+      "block": "wood",
+      "id": "shipping-structure-4"
+    },
+    {
+      "type": "fill",
+      "x1": 9,
+      "y1": 1,
+      "z1": 2,
+      "x2": 9,
+      "y2": 4,
+      "z2": 5,
+      "block": "wood",
+      "id": "shipping-structure-5"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 2,
+      "x2": 9,
+      "y2": 4,
+      "z2": 2,
+      "block": "wood",
+      "id": "shipping-structure-6"
+    },
+    {
+      "type": "fill",
+      "x1": 3,
+      "y1": 2,
+      "z1": 3,
+      "x2": 4,
+      "y2": 3,
+      "z2": 4,
+      "block": "gold",
+      "id": "shipping-structure-7"
+    },
+    {
+      "type": "fill",
+      "x1": 5,
+      "y1": 2,
+      "z1": 3,
+      "x2": 6,
+      "y2": 3,
+      "z2": 4,
+      "block": "diamond",
+      "id": "shipping-structure-8"
+    },
+    {
+      "type": "fill",
+      "x1": 7,
+      "y1": 2,
+      "z1": 3,
+      "x2": 8,
+      "y2": 3,
+      "z2": 4,
+      "block": "gold",
+      "id": "shipping-structure-9"
+    },
+    {
+      "type": "fill",
+      "x1": 12,
+      "y1": 1,
+      "z1": 2,
+      "x2": 17,
+      "y2": 1,
+      "z2": 7,
+      "block": "wood",
+      "id": "shipping-structure-10"
+    },
+    {
+      "type": "fill",
+      "x1": 12,
+      "y1": 2,
+      "z1": 2,
+      "x2": 12,
+      "y2": 3,
+      "z2": 7,
+      "block": "wood",
+      "id": "shipping-structure-11"
+    },
+    {
+      "type": "fill",
+      "x1": 17,
+      "y1": 2,
+      "z1": 2,
+      "x2": 17,
+      "y2": 3,
+      "z2": 7,
+      "block": "wood",
+      "id": "shipping-structure-12"
+    },
+    {
+      "type": "fill",
+      "x1": 12,
+      "y1": 2,
+      "z1": 2,
+      "x2": 17,
+      "y2": 3,
+      "z2": 2,
+      "block": "wood",
+      "id": "shipping-structure-13"
+    },
+    {
+      "type": "fill",
+      "x1": 12,
+      "y1": 2,
+      "z1": 7,
+      "x2": 17,
+      "y2": 3,
+      "z2": 7,
+      "block": "wood",
+      "id": "shipping-structure-14"
+    },
+    {
+      "type": "fill",
+      "x1": 13,
+      "y1": 2,
+      "z1": 3,
+      "x2": 16,
+      "y2": 2,
+      "z2": 6,
+      "block": "sand",
+      "id": "shipping-structure-15"
+    },
+    {
+      "type": "fill",
+      "x1": 2,
+      "y1": 1,
+      "z1": 14,
+      "x2": 7,
+      "y2": 1,
+      "z2": 19,
+      "block": "glass",
+      "id": "shipping-structure-16"
+    }
+  ],
+  "npcs": [
+    {
+      "position": [
+        5,
+        1,
+        1
+      ],
+      "name": "Warehouse Manager",
+      "color": 8141549,
+      "dialogue": "Welcome to the warehouse! We need to figure out how many boxes fit in our containers. The shipping container is open on one side — look inside!",
+      "question": null
+    },
+    {
+      "position": [
+        5,
+        1,
+        7
+      ],
+      "name": "Packing Expert",
+      "color": 2450411,
+      "dialogue": "Look through the open front of the shipping container. Its usable interior is 6 units long, 2 high, and 3 deep. Each small cube-shaped box is 2 by 2 by 2. Keep the boxes aligned with the container edges. Three fit along the length, one fits in the height, and one fits in the depth: 3 times 1 times 1 gives three boxes. The narrow space at the front remains empty. Volume alone cannot tell us whether a whole box fits.",
+      "question": {
+        "text": "What is the container interior volume? (6 by 2 by 3)",
+        "choices": [
+          "36 cubic units",
+          "24 cubic units",
+          "48 cubic units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "With 2 by 2 by 2 boxes aligned to the container edges, how many fit?",
+            "choices": [
+              "3 boxes: 3 along the length, 1 high, 1 deep",
+              "4 boxes because 36 divided by 8 is more than 4",
+              "6 boxes because the length is 6"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "Three boxes occupy 3 times 8 = 24 cubic units. How much interior space remains?",
+            "choices": [
+              "12 cubic units",
+              "4 cubic units",
+              "No empty space"
+            ],
+            "correct": 0
+          },
+          {
+            "text": "Why can a fourth whole box not fit into the remaining front strip?",
+            "choices": [
+              "The strip is only 1 unit deep, but a box needs 2",
+              "The fourth box would have no volume",
+              "A container can never hold more than three boxes"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        14,
+        1,
+        1
+      ],
+      "name": "Inventory Checker",
+      "color": 16096779,
+      "dialogue": "The crate interior is 4×4×2. The bottom layer has sand.",
+      "question": {
+        "text": "Crate total capacity? (4×4×2)",
+        "choices": [
+          "32 cubic units",
+          "16 cubic units",
+          "24 cubic units"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "16 blocks of sand inside. Empty space = 32 - 16 = ?",
+            "choices": [
+              "16 cubic units",
+              "8 cubic units",
+              "32 cubic units"
+            ],
+            "correct": 0
+          }
+        ]
+      }
+    },
+    {
+      "position": [
+        1,
+        1,
+        16
+      ],
+      "name": "Design Challenge",
+      "color": 1483594,
+      "dialogue": "Use the glass platform to build a solid package model with exactly 36 unit cubes. Try 6 by 3 by 2, then a different arrangement such as 4 by 3 by 3. Measure your own blocks and explain how the dimensions multiply to 36. The protected platform is a work surface, not part of your package.",
+      "question": {
+        "text": "Which equals 36? (check each)",
+        "choices": [
+          "6×3×2 = 36 ✓",
+          "5×4×2 = 40",
+          "3×3×3 = 27"
+        ],
+        "correct": 0,
+        "followUp": [
+          {
+            "text": "Which is another way to make 36?",
+            "choices": [
+              "4×3×3 = 36",
+              "6×6×1 = 36",
+              "Both!"
+            ],
+            "correct": 2
+          }
+        ]
+      }
+    }
+  ]
+}

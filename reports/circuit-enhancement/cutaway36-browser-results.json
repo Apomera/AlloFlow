@@ -1,0 +1,82 @@
+{
+  "scenarios": [
+    "Capacitor charge separation, zero and reversed polarity, exact held/cursor selection, cosmetic layers, board focus and unchanged electrical history",
+    "Flyback cutaways retain current and magnetic storage while voltage and current slope reverse at the same switch time",
+    "Negative coil current, charged zero-power DC storage, known floating voltage, failed-state suppression and empty-state/close focus",
+    "Shared component selector, non-storage selection, and persisted cutaway/layer preferences",
+    "Desktop/phone accessibility, contained geometry, unique material IDs, model explanation, and flat/3D/energy/node-inspection compatibility"
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "violations": []
+    }
+  ],
+  "geometry": [
+    {
+      "width": 1280,
+      "bounds": [
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        },
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "bounds": [
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        },
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "bounds": [
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        },
+        {
+          "type": "inductor",
+          "x": 60.55000305175781,
+          "y": 53.959999084472656,
+          "width": 438.9000244140625,
+          "height": 255.80001831054688
+        }
+      ]
+    }
+  ]
+}

@@ -55,7 +55,7 @@ window.StemLab = window.StemLab || {
 
   // ── Audio (auto-injected) ──
   var _molAC = null;
-  function getMolAC() { if (!_molAC) { try { _molAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_molAC && _molAC.state === "suspended") { try { _molAC.resume(); } catch(e) {} } return _molAC; }
+  function getMolAC() { if (!_molAC) { try { _molAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_molAC && _molAC.state === "suspended") { try { _molAC.resume(); } catch(e) {} } return _molAC; }
   function molTone(f,d,tp,v) { var ac = getMolAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMolClick() { molTone(600, 0.03, "sine", 0.04); }
   function sfxMolSuccess() { molTone(523, 0.08, "sine", 0.07); setTimeout(function() { molTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { molTone(784, 0.1, "sine", 0.08); }, 140); }
@@ -205,6 +205,76 @@ window.StemLab = window.StemLab || {
       GAS_R_LBAR: GAS_R_LBAR, GAS_R_SI: GAS_R_SI, ATM_PER_BAR: ATM_PER_BAR,
       gasSolve: gasSolve, gasRmsSpeed: gasRmsSpeed, gasEffusionRatio: gasEffusionRatio,
       gasVanDerWaals: gasVanDerWaals
+    });
+  } catch (e) {}
+
+  // ═══ Colligative properties — pure model ═══════════════════════════════════
+  // COLLIGATIVE_PROPS states the four formulas as strings. They are one
+  // multiplication each, and they hinge on the one thing the formulas hide: i,
+  // the van 't Hoff factor. Colligative means "depends on the NUMBER of
+  // particles" — so 1 mol of NaCl does not behave like 1 mol of sugar, it
+  // behaves like ~2 mol. That is the whole idea and a table cannot show it.
+  //
+  // Kb/Kf are per-solvent constants in °C·kg/mol (CRC). R here is the L·atm
+  // gas constant so osmotic pressure comes out in atm.
+  var COLLIG_SOLVENTS = {
+    water:    { label: 'Water', kb: 0.512, kf: 1.86, bp: 100, fp: 0 },
+    benzene:  { label: 'Benzene', kb: 2.53, kf: 5.12, bp: 80.1, fp: 5.5 },
+    ethanol:  { label: 'Ethanol', kb: 1.22, kf: 1.99, bp: 78.4, fp: -114.1 },
+    acetic:   { label: 'Acetic acid', kb: 3.07, kf: 3.90, bp: 118.1, fp: 16.6 }
+  };
+
+  // Ideal van 't Hoff factors: particles released per formula unit.
+  // Real i falls below these at higher concentration because ions pair up; the
+  // panel says so rather than pretending the ideal value is exact.
+  var COLLIG_SOLUTES = {
+    sugar:  { label: 'Sugar (sucrose)', i: 1, note: 'Molecular — dissolves whole, one particle.' },
+    nacl:   { label: 'Table salt (NaCl)', i: 2, note: 'Na\u207A + Cl\u207B — two particles.' },
+    cacl2:  { label: 'Road salt (CaCl\u2082)', i: 3, note: 'Ca\u00B2\u207A + 2Cl\u207B — three particles.' },
+    alcl3:  { label: 'AlCl\u2083', i: 4, note: 'Al\u00B3\u207A + 3Cl\u207B — four particles.' }
+  };
+
+  // ΔTb = i·Kb·m  (raises the boiling point)
+  function boilingPointElevation(i, kb, molality) {
+    if (!isFinite(i) || !isFinite(kb) || !isFinite(molality)) return NaN;
+    if (i <= 0 || kb <= 0 || molality < 0) return NaN;
+    return i * kb * molality;
+  }
+
+  // ΔTf = i·Kf·m  (lowers the freezing point — returned POSITIVE as a magnitude,
+  // so callers must subtract it. Returning a negative here is the classic place
+  // the sign gets applied twice.)
+  function freezingPointDepression(i, kf, molality) {
+    if (!isFinite(i) || !isFinite(kf) || !isFinite(molality)) return NaN;
+    if (i <= 0 || kf <= 0 || molality < 0) return NaN;
+    return i * kf * molality;
+  }
+
+  // π = iMRT, with M in mol/L and T in kelvin.
+  // ★ GAS_R_LBAR is L·BAR/(mol·K), so iMRT lands in BAR. The readout is quoted in
+  // atm (the unit every osmotic-pressure table uses), so the conversion is applied
+  // here rather than left to the caller — returning bar from a function whose
+  // callers say "atm" is exactly how a 1.3% error survives a review.
+  function osmoticPressure(i, molarity, tempK) {
+    if (!isFinite(i) || !isFinite(molarity) || !isFinite(tempK)) return NaN;
+    if (i <= 0 || molarity < 0 || tempK <= 0) return NaN;
+    return i * molarity * GAS_R_LBAR * tempK * ATM_PER_BAR;
+  }
+
+  // Total dissolved particles per kg — what every colligative property actually
+  // responds to. Two solutions with the same value behave identically.
+  function particleMolality(i, molality) {
+    if (!isFinite(i) || !isFinite(molality) || i <= 0 || molality < 0) return NaN;
+    return i * molality;
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      COLLIG_SOLVENTS: COLLIG_SOLVENTS, COLLIG_SOLUTES: COLLIG_SOLUTES,
+      boilingPointElevation: boilingPointElevation,
+      freezingPointDepression: freezingPointDepression,
+      osmoticPressure: osmoticPressure,
+      particleMolality: particleMolality
     });
   } catch (e) {}
 
@@ -1073,7 +1143,7 @@ window.StemLab = window.StemLab || {
                 try { if (renderer._alloVisibilityHandler && typeof document !== 'undefined') { document.removeEventListener('visibilitychange', renderer._alloVisibilityHandler); renderer._alloVisibilityHandler = null; } } catch(e){}
                 try { if (renderer._alloResizeObserver) { renderer._alloResizeObserver.disconnect(); renderer._alloResizeObserver = null; } } catch(e){}
                 try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
-                renderer.dispose();
+                renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
                 threeRendererRef.current = null;
               }
               if (threeSceneRef.current) {
@@ -8026,7 +8096,124 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('div', { className: 'text-[0.625rem] text-slate-600 italic' }, '🌡 ' + p.example)
               );
             })
-          )
+          ),
+
+          // ── Live colligative bench ────────────────────────────────────────
+          // The cards above give four formulas. Every one of them turns on i, the
+          // van 't Hoff factor, which is exactly what "colligative" means: the
+          // property counts PARTICLES, not molecules. Sugar and salt at the same
+          // molality do different things, and only a live comparison shows that.
+          (function() {
+            var solventKey = COLLIG_SOLVENTS[d2.cgSolvent] ? d2.cgSolvent : 'water';
+            var soluteKey = COLLIG_SOLUTES[d2.cgSolute] ? d2.cgSolute : 'nacl';
+            var molality = (function() {
+              var x = Number(d2.cgMolality);
+              return (!isFinite(x) || x < 0) ? 1 : Math.max(0, Math.min(6, x));
+            })();
+
+            var sv = COLLIG_SOLVENTS[solventKey];
+            var su = COLLIG_SOLUTES[soluteKey];
+            var dTb = boilingPointElevation(su.i, sv.kb, molality);
+            var dTf = freezingPointDepression(su.i, sv.kf, molality);
+            var particles = particleMolality(su.i, molality);
+            // Osmotic pressure needs MOLARITY (mol/L); this bench works in MOLALITY
+            // (mol/kg). In dilute water the two nearly coincide, so the readout is
+            // shown only there and labelled as an approximation - rather than
+            // quietly conflating the units and printing a confident 293 atm.
+            var osmApproxOk = solventKey === 'water' && molality > 0 && molality <= 1;
+            var osm = osmApproxOk ? osmoticPressure(su.i, molality, 298.15) : NaN;
+
+            var newBp = sv.bp + dTb;
+            var newFp = sv.fp - dTf;
+
+            function f(x, dp) { return isFinite(x) ? x.toFixed(dp === undefined ? 2 : dp) : '--'; }
+
+            var srCg = su.label + ' in ' + sv.label + ' at ' + f(molality, 2)
+              + ' molal gives ' + f(particles, 2) + ' molal in particles. Boiling point rises '
+              + f(dTb) + ' to ' + f(newBp) + ' degrees Celsius. Freezing point falls '
+              + f(dTf) + ' to ' + f(newFp) + ' degrees Celsius.';
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-indigo-300 bg-white p-3' },
+              React.createElement('div', { className: 'text-[0.8125rem] font-black text-indigo-800 mb-1' },
+                __alloT('stem.molecule.collig_live_title', '\uD83E\uDDC2 Try it: particles, not molecules')),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.collig_live_intro', 'Every formula above multiplies by i \u2014 how many particles one formula unit releases. Swap the solute and watch the effect change without touching the amount.')),
+
+              React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'cg-solute', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.solute', 'Solute')),
+                  React.createElement('select', {
+                    id: 'cg-solute', value: soluteKey,
+                    onChange: function(e) { setExp({ cgSolute: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.choose_solute', 'Choose a solute')
+                  }, Object.keys(COLLIG_SOLUTES).map(function(k) {
+                    return React.createElement('option', { key: k, value: k }, COLLIG_SOLUTES[k].label + ' (i = ' + COLLIG_SOLUTES[k].i + ')');
+                  }))),
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'cg-solvent', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.solvent', 'Solvent')),
+                  React.createElement('select', {
+                    id: 'cg-solvent', value: solventKey,
+                    onChange: function(e) { setExp({ cgSolvent: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.choose_solvent', 'Choose a solvent')
+                  }, Object.keys(COLLIG_SOLVENTS).map(function(k) {
+                    return React.createElement('option', { key: k, value: k }, COLLIG_SOLVENTS[k].label);
+                  })))
+              ),
+
+              React.createElement('div', { className: 'mb-3' },
+                React.createElement('label', { htmlFor: 'cg-molality', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                  __alloT('stem.molecule.molality', 'Molality') + ': ',
+                  React.createElement('output', { htmlFor: 'cg-molality', className: 'font-mono text-indigo-800' }, f(molality, 2) + ' mol/kg')),
+                React.createElement('input', {
+                  id: 'cg-molality', type: 'range', min: 0, max: 6, step: 0.25, value: molality,
+                  onChange: function(e) { setExp({ cgMolality: parseFloat(e.target.value) }); },
+                  className: 'w-full min-h-[44px]',
+                  'aria-label': __alloT('stem.molecule.molality', 'Molality in moles per kilogram'),
+                  'aria-valuetext': f(molality, 2) + ' molal, ' + f(particles, 2) + ' molal in particles'
+                })),
+
+              React.createElement('div', { 'data-testid': 'mol-collig-particles', className: 'rounded-lg border border-indigo-300 bg-indigo-50 p-2 mb-2 text-[0.6875rem] text-indigo-900' },
+                React.createElement('strong', null, f(molality, 2) + ' mol/kg \u00D7 i = ' + su.i + '  \u2192  ' + f(particles, 2) + ' mol/kg of particles'),
+                React.createElement('div', { className: 'mt-0.5' }, su.note)),
+
+              React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                React.createElement('div', { 'data-testid': 'mol-collig-bp', className: 'rounded-lg border border-rose-300 bg-rose-50 p-2' },
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold text-rose-800' },
+                    __alloT('stem.molecule.boiling_point', 'Boiling point')),
+                  React.createElement('div', { className: 'font-mono text-[0.75rem] font-black text-slate-900' }, f(newBp) + ' \u00B0C'),
+                  React.createElement('div', { className: 'font-mono text-[0.625rem] text-rose-700' }, '+' + f(dTb) + ' \u00B0C')),
+                React.createElement('div', { 'data-testid': 'mol-collig-fp', className: 'rounded-lg border border-sky-300 bg-sky-50 p-2' },
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold text-sky-800' },
+                    __alloT('stem.molecule.freezing_point', 'Freezing point')),
+                  React.createElement('div', { className: 'font-mono text-[0.75rem] font-black text-slate-900' }, f(newFp) + ' \u00B0C'),
+                  React.createElement('div', { className: 'font-mono text-[0.625rem] text-sky-700' }, '\u2212' + f(dTf) + ' \u00B0C'))
+              ),
+
+              osmApproxOk && React.createElement('div', { 'data-testid': 'mol-collig-osmotic', className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 mb-2 text-[0.6875rem] text-slate-800' },
+                __alloT('stem.molecule.osmotic_at_body', 'Osmotic pressure at 25 \u00B0C \u2248 ') + f(osm, 1)
+                + __alloT('stem.molecule.osmotic_approx', ' atm \u2014 approximate, because \u03C0 = iMRT needs molarity (mol/L) and this bench works in molality (mol/kg). In dilute water the two nearly coincide.')),
+
+              // The road-salt limit: real, and the reason salting stops working.
+              solventKey === 'water' && soluteKey === 'nacl' && React.createElement('div', {
+                'data-testid': 'mol-collig-roadsalt',
+                className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.6875rem] text-amber-900'
+              }, newFp <= -21   // the NaCl/water eutectic, -21.1 C at ~23 wt%
+                ? __alloT('stem.molecule.collig_past_eutectic', 'Below about \u221221 \u00B0C no amount of NaCl helps \u2014 the solution hits its eutectic and salt stops dissolving. This is why councils switch to CaCl\u2082 or grit in a hard freeze.')
+                : __alloT('stem.molecule.collig_roadsalt', 'This is road salting: the ice melts because the freezing point of the solution is now below the air temperature.')),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-collig-sr', className: 'sr-only' }, srCg),
+
+              React.createElement('button', {
+                type: 'button',
+                onClick: function() { setExp({ cgSolvent: 'water', cgSolute: 'nacl', cgMolality: 1 }); },
+                className: 'mt-2 min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700'
+              }, __alloT('stem.molecule.reset_collig', 'Reset'))
+            );
+          })()
         );
       }
 

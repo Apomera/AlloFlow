@@ -1,0 +1,6 @@
+"technology","scenario","duration_minutes","varied_input","input_value","output_unit","output","change_from_reference","percent_change","target","meets_target","resource_input","remainder","requested_kWh","unserved_kWh","initial_stored_kWh","ending_stored_kWh","shutdown_minutes","clipped_minutes","irradiance [W/m²]","area [m²]","efficiency [%]","incidence [°]"
+"solarPv","steady",,"area",10,"kW",1.92,-1.92,-50,5,"false",10,8.08,,,0,0,0,0,1000,10,20,0
+"solarPv","steady",,"area",20,"kW",3.84,0,0,5,"false",20,16.16,,,0,0,0,0,1000,20,20,0
+"solarPv","steady",,"area",30,"kW",5.76,1.92,50,5,"true",30,24.240000000000002,,,0,0,0,0,1000,30,20,0
+"solarPv","steady",,"area",40,"kW",7.68,3.84,100,5,"true",40,32.32,,,0,0,0,0,1000,40,20,0
+"solarPv","steady",,"area",50,"kW",9.6,5.76,150,5,"true",50,40.4,,,0,0,0,0,1000,50,20,0

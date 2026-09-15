@@ -1,0 +1,369 @@
+{
+  "scenarios": [
+    "Mesh picking after four camera orientations; node picking/probes/inspection; keyboard orbit, pan, zoom, fit and focus preserve the electrical state and held reference",
+    "Pointer orbit persists its camera; leaving the scene disposes GPU geometry; re-entry restores the view",
+    "Shared energy/voltage/current overlays, reduced graphics load and labels; idle scenes do not render continuously",
+    "Trail stepping via pointer and keyboard, selected/all/off filtering, node incidence, playback at a fixed held snapshot, offscreen suspension, explicit pause, live reduced-motion changes, and global motion pause",
+    "RLC current reversal follows actual positive and negative calculated snapshots",
+    "Switch lever and 3D timestamp follow exact before/after solver snapshots",
+    "Open switch hides trails; inductor flyback shows returning energy; ambiguous ideal-source current and failed solves do not invent a trail",
+    "Graphics-context loss reports a recoverable error; retry creates a fresh canvas and preserves the circuit",
+    "Asset-loading failure offers the working projected board without losing the model"
+  ],
+  "examples": [
+    {
+      "id": "bridge",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "shared",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "sources",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "current",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rc-charge",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rl-start",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "rlc-ring",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "bridge-settle",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "sine-filter",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "pulse-smooth",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "triangle-current",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-hold",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-discharge",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "switch-flyback",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-half-wave",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-bridge",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-filter",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-flyback",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-regulator",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-line",
+      "parts": 4,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-limiter",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-resistance",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "diode-resistance-sweep",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "zener-resistance",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-amplifier",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-current",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-sense",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "controlled-feedback",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-buffer",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-inverting",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-clipping",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-filter",
+      "parts": 6,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-bandwidth",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-gain-bandwidth",
+      "parts": 5,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-slew",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "opamp-startup",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-triangle",
+      "parts": 2,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-clipping",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    },
+    {
+      "id": "harmonic-smoothing",
+      "parts": 3,
+      "routesClear": true,
+      "finite": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": [],
+      "overflow": {
+        "width": 1280,
+        "scroll": 1280
+      }
+    },
+    {
+      "width": 390,
+      "violations": [],
+      "overflow": {
+        "width": 390,
+        "scroll": 390
+      }
+    },
+    {
+      "width": 320,
+      "violations": [],
+      "overflow": {
+        "width": 320,
+        "scroll": 320
+      }
+    }
+  ],
+  "resources": [
+    {
+      "geometries": 115,
+      "textures": 11
+    }
+  ],
+  "pixels": [
+    {
+      "name": "flow41-rlc-isometric",
+      "lit": 98446,
+      "canvasPixels": 355120,
+      "captures": 5
+    },
+    {
+      "name": "flow41-capacitor-detail",
+      "lit": 217657,
+      "canvasPixels": 355120,
+      "captures": 4
+    },
+    {
+      "name": "flow41-energy",
+      "lit": 98515,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-voltage",
+      "lit": 98728,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-selected-trails",
+      "lit": 98467,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-all-trails",
+      "lit": 98276,
+      "canvasPixels": 355120,
+      "captures": 1
+    },
+    {
+      "name": "flow41-current-reversal",
+      "lit": 98466,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-switch-before",
+      "lit": 99883,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-switch-after",
+      "lit": 99842,
+      "canvasPixels": 355120,
+      "captures": 1
+    },
+    {
+      "name": "flow41-flyback-reading",
+      "lit": 99842,
+      "canvasPixels": 355120,
+      "captures": 1
+    },
+    {
+      "name": "flow41-restored",
+      "lit": 98446,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-board-1280",
+      "lit": 98446,
+      "canvasPixels": 355120,
+      "captures": 2
+    },
+    {
+      "name": "flow41-board-390",
+      "lit": 32331,
+      "canvasPixels": 106560,
+      "captures": 1
+    },
+    {
+      "name": "flow41-board-320",
+      "lit": 18672,
+      "canvasPixels": 80660,
+      "captures": 1
+    }
+  ],
+  "pageErrors": [],
+  "finalDisposals": 3
+}

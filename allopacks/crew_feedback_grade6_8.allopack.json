@@ -47,7 +47,7 @@
       "type": "simplified",
       "title": "Feedback Is Information, Not a Verdict",
       "timestamp": "2026-09-13T18:00:00.000Z",
-      "data": "## Feedback Is Information, Not a Verdict\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nTwo Perseverance behaviors in the King HOWLs go together: **assess** your work using **targets** and **rubrics**, and learn from **feedback** and **revise**. Both are about the same skill. Looking at your own work honestly, before and after someone else does, and then changing it.\n\nFeedback is hard to hear. When a teacher hands back a draft with comments, a lot of people feel one of two things. Either \"this means I am bad at this,\" or \"this teacher just does not like my work.\" Both feelings are normal. Both are also wrong about what feedback is. Feedback is information about the **gap** between where the work is and where the target is. It is not a **verdict** about you.\n\nThat is why targets and rubrics matter. A learning target says what the work is supposed to do. A rubric says what each level of doing it looks like. When you have those in front of you, you can check your own work before anyone else sees it. That is self-assessment. It turns feedback from a surprise into a confirmation. You already knew the **evidence** was thin in paragraph two. The teacher just agreed.\n\nHere is a fictional example. Leila turns in a science explanation. It comes back with three comments: \"claim is clear,\" \"evidence is missing for the second part,\" \"reasoning needs to connect the evidence to the claim.\" Leila's first reaction is a sinking feeling. Then she opens the rubric. The rubric has three rows: claim, evidence, reasoning. She rates her own draft on each row. Claim, level 3. Evidence, level 2. Reasoning, level 2. The teacher's comments and her own ratings match. Now the comments are not a judgment. They are a map. She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision. Twenty minutes.\n\nRevising is not **redoing**. Redoing means starting over because the first try felt bad. Revising means keeping what works and changing what the target says to change. Most revisions are small. The people who revise well are not the people with the most talent. They are the people who can look at a rubric row, look at their work, and say \"that one, not that one\" without it feeling like an attack.\n\nThere is a thought that gets in the way: \"I cannot do this.\" The growth-minded version is one word longer: \"I cannot do this **yet**.\" That word is not a slogan. It is a claim about how brains work. Skills are built by doing the hard thing slightly wrong and then adjusting. Feedback is the adjusting part. Skipping it does not protect you. It just stops the building.\n\nThis week you practice rating your own work against a rubric before you get feedback, and then treating the feedback as a map. You will use the HOWL Tracker in the SEL Hub to rate your own perseverance the same way: with evidence, not with a feeling.",
+      "data": "## Feedback Is Information, Not a Verdict\n\n**HOWL: \"I persevere to produce high quality work.\"**\n\nTwo Perseverance behaviors in the King **HOWLs** go together: **assess** your work using **targets** and **rubrics**, and learn from **feedback** and **revise**. Both are about the same skill. Looking at your own work honestly, before and after someone else does, and then changing it.\n\nFeedback is hard to hear. When a teacher hands back a draft with comments, a lot of people feel one of two things. Either \"this means I am bad at this,\" or \"this teacher just does not like my work.\" Both feelings are normal. Both are also wrong about what feedback is. Feedback is information about the **gap** between where the work is and where the target is. It is not a **verdict** about you.\n\nThat is why targets and rubrics matter. A learning target says what the work is supposed to do. A rubric says what each level of doing it looks like. When you have those in front of you, you can check your own work before anyone else sees it. That is self-assessment. It turns feedback from a surprise into a confirmation. You already knew the **evidence** was thin in paragraph two. The teacher just agreed.\n\nHere is a fictional example. Leila turns in a science explanation. It comes back with three comments: \"claim is clear,\" \"evidence is missing for the second part,\" \"reasoning needs to connect the evidence to the claim.\" Leila's first reaction is a sinking feeling. Then she opens the rubric. The rubric has three rows: claim, evidence, reasoning. She rates her own draft on each row. Claim, level 3. Evidence, level 2. Reasoning, level 2. The teacher's comments and her own ratings match. Now the comments are not a judgment. They are a map. She adds one piece of evidence for the second part and one sentence connecting it to the claim. That is the whole revision. Twenty minutes.\n\nRevising is not **redoing**. Redoing means starting over because the first try felt bad. Revising means keeping what works and changing what the target says to change. Most revisions are small. The people who revise well are not the people with the most talent. They are the people who can look at a rubric row, look at their work, and say \"that one, not that one\" without it feeling like an attack.\n\nThere is a thought that gets in the way: \"I cannot do this.\" The growth-minded version is one word longer: \"I cannot do this **yet**.\" That word is not a slogan. It is a claim about how brains work. Skills are built by doing the hard thing slightly wrong and then adjusting. Feedback is the adjusting part. Skipping it does not protect you. It just stops the building.\n\nThis week you practice rating your own work against a rubric before you get feedback, and then treating the feedback as a map. You will use the HOWL Tracker in the SEL Hub to rate your own perseverance the same way: with evidence, not with a feeling.",
       "meta": "6th-8th Grade • Leveled reading • ~510 words"
     },
     {
@@ -105,9 +105,19 @@
           "term": "Yet",
           "def": "The word that turns \"I cannot do this\" into a claim about how brains build skills.",
           "tier": "Domain-Specific"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
         }
       ],
-      "meta": "6th-8th Grade • 10 terms • Tiered"
+      "meta": "6th-8th Grade • 12 terms • Tiered"
     },
     {
       "id": "cf-anchor",
@@ -351,6 +361,14 @@
       "timestamp": "2026-09-13T18:00:00.000Z",
       "data": [
         {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
           "question": "What if my self-rating is higher than the teacher's?",
           "answer": "That is useful. It means you and the rubric are reading a row differently. Ask what the next level looks like on that row. That is the ask move from last week."
         },
@@ -371,7 +389,7 @@
           "answer": "The Perseverance HOWL includes assessing your work using targets and rubrics, and learning from feedback and revising. Rating your own work first and then revising is that HOWL, in two sentences."
         }
       ],
-      "meta": "5 questions"
+      "meta": "7 questions"
     },
     {
       "id": "cf-memory",

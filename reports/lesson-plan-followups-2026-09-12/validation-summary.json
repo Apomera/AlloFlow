@@ -1,0 +1,50 @@
+{
+  "distinctFiles": 17,
+  "distinctTests": 422,
+  "passed": 422,
+  "failed": 0,
+  "combinedRun": {
+    "passed": 421,
+    "failed": 1
+  },
+  "unchangedRecheck": {
+    "files": 1,
+    "passed": 12
+  },
+  "runnerError": "Initial translation test reported STACK_TRACE_ERROR after 26 seconds; unchanged file recheck passed.",
+  "browser": {
+    "results": [
+      {
+        "viewport": "desktop",
+        "navigationRecovery": "passed",
+        "refreshRecovery": "passed",
+        "actorIsolation": "passed",
+        "saveClearsDraft": "passed",
+        "settingsRetainedAfterSave": "passed",
+        "researchChoicePreserved": "passed",
+        "discardClearsDraft": "passed",
+        "horizontalOverflow": false,
+        "axeViolations": []
+      },
+      {
+        "viewport": "small-phone",
+        "navigationRecovery": "passed",
+        "refreshRecovery": "passed",
+        "actorIsolation": "passed",
+        "saveClearsDraft": "passed",
+        "settingsRetainedAfterSave": "passed",
+        "researchChoicePreserved": "passed",
+        "discardClearsDraft": "passed",
+        "horizontalOverflow": false,
+        "axeViolations": []
+      },
+      {
+        "freshDefaultDiscard": "passed",
+        "unavailableStorageNotice": "passed",
+        "unrecoverableRefreshGuard": "passed"
+      }
+    ],
+    "pageErrors": []
+  },
+  "liveProvider": "not-tested"
+}

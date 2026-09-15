@@ -122,7 +122,7 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L5
 {
   "right period & amp, phase off (a=2.5,b=2π/6,c=3)": {
     "equation": "y = a·sin(b·x + c) + k, with a = 2.50, b = 1.05, c = 3.00, k = 4. A wave of amplitude 2.50 centered on the midline y = 4, one full wave every 6 units.",
-    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 3.1, but the opening is y = 6.05 to 6.95. The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.",
+    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 3.1, but the opening is y = 6.05 to 6.95. The wave is too low at this window — slide the wave sideways with the phase c so a crest lands here, increase the amplitude a, or change the period.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 3.1,
@@ -136,7 +136,7 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L5
   },
   "starting shot, period 4 & no phase (a=1,b=2π/4,c=0)": {
     "equation": "y = a·sin(b·x + c) + k, with a = 1.00, b = 1.57, c = 0.00, k = 4. A wave of amplitude 1.00 centered on the midline y = 4, one full wave every 4 units.",
-    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 4.7, but the opening is y = 6.05 to 6.95. The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.",
+    "narration": "Blocked at the gate (x = 0.5): the beam passed at y = 4.7, but the opening is y = 6.05 to 6.95. The wave is too low at this window — slide the wave sideways with the phase c so a crest lands here, increase the amplitude a, or change the period.",
     "nodeDist": null,
     "result": "gate",
     "yAt": 4.7,

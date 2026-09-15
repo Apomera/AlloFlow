@@ -1,0 +1,59 @@
+{
+  "scenarios": [
+    "Keyboard harmonic selection; isolated and summed reconstructions; voltage/current; cycle bounds; independent scope focus; saved controls; SI download",
+    "Clipped amplifier adds harmonic content while its sine input stays clean",
+    "Pulse filter reduces the fifth harmonic more strongly than the base frequency",
+    "DC/time switching restores the saved harmonic workflow"
+  ],
+  "examples": [
+    {
+      "id": "harmonic-triangle",
+      "rows": 12,
+      "thdPercent": 12.0759634298972,
+      "routeClear": true
+    },
+    {
+      "id": "harmonic-clipping",
+      "rows": 12,
+      "thdPercent": 31.227896951411086,
+      "routeClear": true
+    },
+    {
+      "id": "harmonic-smoothing",
+      "rows": 12,
+      "thdPercent": 20.145797128994896,
+      "routeClear": true
+    }
+  ],
+  "axe": [
+    {
+      "width": 1280,
+      "violations": [],
+      "overflow": {
+        "scroll": 1280,
+        "width": 1280
+      }
+    },
+    {
+      "width": 390,
+      "violations": [],
+      "overflow": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "width": 320,
+      "violations": [],
+      "overflow": {
+        "scroll": 320,
+        "width": 320
+      }
+    }
+  ],
+  "geometry": {
+    "invalidPaths": 0,
+    "duplicateIds": []
+  },
+  "pageErrors": []
+}

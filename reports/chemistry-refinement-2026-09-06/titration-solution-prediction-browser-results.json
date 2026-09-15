@@ -1,0 +1,93 @@
+{
+  "checks": [
+    "Predictions conceal output until checking or explicit reveal, require both answers, give separate correct/incorrect feedback, reset on scenario or source changes, and never change preparation or live chemistry records.",
+    "Native radio keyboard controls, focus after check and retry, Escape return, optional reveal, forced colors, desktop/phone accessibility and layout, retained sample, remount defaults, tiny values, and invalid state recovery pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "unanswered",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "unanswered",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "correct-aliquot",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "correct-aliquot",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "both-revisit",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "both-revisit",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "partial-dilution",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "partial-dilution",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "revealed-without-answer",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "revealed-without-answer",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prediction-reset",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "prediction-reset",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tiny-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

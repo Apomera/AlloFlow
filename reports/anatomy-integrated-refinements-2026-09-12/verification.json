@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-12",
+  "sourceSha256": "d8e2d3876a6083f5043f7a4660acec6acd5f615d1c0959157f2ef67388574c31",
+  "canonical": "stem_lab/stem_tool_anatomy.js",
+  "mirror": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+  "identical": true,
+  "tests": {
+    "passed": 894
+  },
+  "testFiles": 46,
+  "authoredApplicationStems": 13,
+  "vocabularyTerms": 10,
+  "validConnectionMaps": 10,
+  "languagePacks": [
+    {
+      "language": "french",
+      "keys": 99,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "spanish_latin_america",
+      "keys": 99,
+      "mirrorIdentical": true
+    },
+    {
+      "language": "arabic",
+      "keys": 99,
+      "mirrorIdentical": true
+    }
+  ],
+  "axeScans": 10,
+  "axeViolations": 0,
+  "axeIncomplete": 0,
+  "browserErrors": 0,
+  "screenshots": 15,
+  "keyboard": {
+    "focusAfterNext": {
+      "tag": "DIV",
+      "label": null,
+      "quizPanel": true,
+      "text": "🧪 Anatomy QuizContinuous practice · 0 correct / 1 answered · Question 2↺ RestartEnd quizM"
+    },
+    "attemptsBefore": 1,
+    "attemptsAfter": 2
+  }
+}

@@ -1,0 +1,644 @@
+{
+  "errors": [],
+  "screens": [
+    {
+      "name": "desktop-start",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "targets": [
+        {
+          "name": "Start Spotter Test",
+          "height": 44,
+          "width": 176.078125
+        }
+      ]
+    },
+    {
+      "name": "desktop-review",
+      "width": 1280,
+      "scrollWidth": 1280,
+      "targets": [
+        {
+          "name": "Read the spotter prompt aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗Femur",
+          "height": 46,
+          "width": 301
+        },
+        {
+          "name": "2Humerus",
+          "height": 46,
+          "width": 301
+        },
+        {
+          "name": "✓Hyoid Bone",
+          "height": 46,
+          "width": 301
+        },
+        {
+          "name": "4Pelvis",
+          "height": 46,
+          "width": 301
+        },
+        {
+          "name": "Read the marked structure explanation aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "Study Term (+5 RP)",
+          "height": 44,
+          "width": 135.03125
+        },
+        {
+          "name": "Study Hyoid Bone on the diagram",
+          "height": 44,
+          "width": 610
+        },
+        {
+          "name": "Next Structure",
+          "height": 44,
+          "width": 610
+        },
+        {
+          "name": "End Test",
+          "height": 44,
+          "width": 610
+        }
+      ]
+    },
+    {
+      "name": "phone-390-start",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Start Spotter Test",
+          "height": 44,
+          "width": 176.078125
+        }
+      ]
+    },
+    {
+      "name": "phone-390-question",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Read the spotter prompt aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "1Fibula",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "2Tibia",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "3Skull (Cranium)",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "4Radius",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "End Test",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-390-review",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Read the spotter prompt aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗Fibula",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "2Tibia",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "✓Skull (Cranium)",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "4Radius",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "Read the marked structure explanation aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "Study Term (+5 RP)",
+          "height": 44,
+          "width": 135.03125
+        },
+        {
+          "name": "Study Skull (Cranium) on the diagram",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "Next Structure",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "End Test",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-320-start",
+      "width": 320,
+      "scrollWidth": 320,
+      "targets": [
+        {
+          "name": "Start Spotter Test",
+          "height": 44,
+          "width": 176.078125
+        }
+      ]
+    },
+    {
+      "name": "phone-320-question",
+      "width": 320,
+      "scrollWidth": 320,
+      "targets": [
+        {
+          "name": "Read the spotter prompt aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "1Femur",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "2Ribs (1-12)",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "3Humerus",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "4Patella",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "End Test",
+          "height": 44,
+          "width": 268
+        }
+      ]
+    },
+    {
+      "name": "phone-320-review",
+      "width": 320,
+      "scrollWidth": 320,
+      "targets": [
+        {
+          "name": "Read the spotter prompt aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗Femur",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "2Ribs (1-12)",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "✓Humerus",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "4Patella",
+          "height": 46,
+          "width": 130
+        },
+        {
+          "name": "Read the marked structure explanation aloud",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "Study Humerus on the diagram",
+          "height": 44,
+          "width": 268
+        },
+        {
+          "name": "Next Structure",
+          "height": 44,
+          "width": 268
+        },
+        {
+          "name": "End Test",
+          "height": 44,
+          "width": 268
+        }
+      ]
+    },
+    {
+      "name": "phone-french-start",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Démarrer le test de repérage",
+          "height": 44,
+          "width": 244.9375
+        }
+      ]
+    },
+    {
+      "name": "phone-french-review",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Lire la consigne de Spotter à voix haute",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✓Sternum",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "✗Fémur",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "3Os hyoïde",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "4Bassin",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "Lire l’explication de la structure indiquée à voix haute",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "Étudier Sternum sur le schéma",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "Structure suivante",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "Terminer le test",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-spanish_latin_america-start",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Iniciar prueba de localización",
+          "height": 44,
+          "width": 247.390625
+        }
+      ]
+    },
+    {
+      "name": "phone-spanish_latin_america-review",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "Leer la consigna de Spotter en voz alta",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗Costillas (1-12)",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "2Tibia",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "3Metacarpianos y falanges (mano)",
+          "height": 65.59375,
+          "width": 165
+        },
+        {
+          "name": "✓Hueso hioides",
+          "height": 65.59375,
+          "width": 165
+        },
+        {
+          "name": "Leer la explicación de la estructura marcada en voz alta",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "Estudiar Hueso hioides en el diagrama",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "Siguiente estructura",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "Terminar prueba",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-arabic-start",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "بدء اختبار التحديد",
+          "height": 44,
+          "width": 158.03125
+        }
+      ]
+    },
+    {
+      "name": "phone-arabic-review",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "قراءة سؤال التحديد بصوت عالٍ",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗العظم اللامي",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "2الجمجمة",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "3الترقوة",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "✓عظام الرصغ",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "قراءة شرح البنية المشار إليها بصوت عالٍ",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "دراسة عظام الرصغ على الرسم",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "البنية التالية",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "إنهاء الاختبار",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-arabic-dark-review",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "قراءة سؤال التحديد بصوت عالٍ",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "✗العظم اللامي",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "2الجمجمة",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "3الترقوة",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "✓عظام الرصغ",
+          "height": 46,
+          "width": 165
+        },
+        {
+          "name": "قراءة شرح البنية المشار إليها بصوت عالٍ",
+          "height": 44,
+          "width": 44
+        },
+        {
+          "name": "دراسة عظام الرصغ على الرسم",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "البنية التالية",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "name": "إنهاء الاختبار",
+          "height": 44,
+          "width": 338
+        }
+      ]
+    },
+    {
+      "name": "phone-arabic-dark-start",
+      "width": 390,
+      "scrollWidth": 390,
+      "targets": [
+        {
+          "name": "بدء اختبار التحديد",
+          "height": 44,
+          "width": 158.03125
+        }
+      ]
+    }
+  ],
+  "axe": [
+    {
+      "name": "desktop-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "desktop-question",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "desktop-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "desktop-timed-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "restored-timed-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "recovery",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390-question",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-390-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-question",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "phone-320-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "french-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "french-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "spanish_latin_america-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "spanish_latin_america-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-start",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-dark-review",
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "arabic-dark-start",
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "flows": [
+    "untimed question, review, next, unanswered end, and focus return",
+    "explicit timing and correct-answer credit",
+    "saved-round restoration and incomplete-round escape"
+  ]
+}

@@ -1533,7 +1533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           for (var osi = 0; osi < agentSounds.length; osi++) { try { agentSounds[osi].osc.stop(); } catch(e) {} } agentOscRef.current = [];
           for (var amsi = 0; amsi < ambientNodes.length; amsi++) { try { ambientNodes[amsi].osc.stop(); } catch(e) {} } ambientSoundsRef.current = [];
           try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
-          if (renderer) { try { renderer.dispose(); } catch(e) {} if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); } }
+          if (renderer) { try { renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer); } catch(e) {} if (renderer.domElement && renderer.domElement.parentNode) { renderer.domElement.parentNode.removeChild(renderer.domElement); } }
           rendererRef.current = null; sceneDataRef.current = null;
           if (document.pointerLockElement) { try { document.exitPointerLock(); } catch(e) {} }
           document.removeEventListener('pointerlockchange', onPointerLockChange); document.removeEventListener('mousemove', onMouseMove);

@@ -1,0 +1,46 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/symbol_studio_draft_runtime.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/symbol_studio_draft_runtime.test.js
+[KaraokeAudioStore] registered (per-sentence vettable read-aloud: persist + hydrate + regenerate-one)
+[CDN] Symbol Studio (SymbolStudio v2) loaded
+
+ ❯ tests/symbol_studio_draft_runtime.test.js (13 tests | 1 failed) 6094ms
+     × restores authored support content but resets choice, reward, pain, and transition responses 608ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/symbol_studio_draft_runtime.test.js > Symbol Studio recoverable learner drafts > restores authored support content but resets choice, reward, pain, and transition responses
+AssertionError: Next u2192: expected null to be truthy
+
+- Expected:
+true
+
++ Received:
+null
+
+ ❯ control tests/symbol_studio_draft_runtime.test.js:34:118
+     32| async function settle(action = () => {}) { await act(async () => { act…
+     33| async function advance(ms = 650) { await act(async () => { await vi.ad…
+     34| function control(label) { const element = host.querySelector('[aria-la…
+       |                                                                                                                      ^
+     35| async function click(label) { await settle(() => control(label).click(…
+     36| async function action(label) {
+ ❯ tests/symbol_studio_draft_runtime.test.js:35:50
+ ❯ tests/symbol_studio_draft_runtime.test.js:32:68
+ ❯ act desktop/web-app/node_modules/react/cjs/react.development.js:2512:16
+ ❯ settle tests/symbol_studio_draft_runtime.test.js:32:50
+ ❯ click tests/symbol_studio_draft_runtime.test.js:35:37
+ ❯ tests/symbol_studio_draft_runtime.test.js:119:55
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 47 passed (48)
+   Start at  22:38:53
+   Duration  11.20s (transform 200ms, setup 99ms, import 322ms, tests 6.27s, environment 3.87s)
+

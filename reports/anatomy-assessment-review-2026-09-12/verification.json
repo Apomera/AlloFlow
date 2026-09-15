@@ -1,0 +1,17 @@
+{
+  "kind": "read-only application audit",
+  "findings": 8,
+  "sha256": "1e6e7959dc78f014589afed116727368ed41a7afbfd816e3c8ee43260c72b125",
+  "mirrorIdentical": true,
+  "applicationUnchanged": true,
+  "localReportLinksVerified": 26,
+  "browserErrors": 0,
+  "screenshots": 7,
+  "binaryRounds": 6,
+  "relationshipExamples": 3,
+  "reviewedClinicalNotes": 13,
+  "truncatedClinicalNotes": 13,
+  "retainedCallbackIsSyntheticLifecycleProbe": true,
+  "previousPassingTests": 846,
+  "regressionSuiteRerun": false
+}

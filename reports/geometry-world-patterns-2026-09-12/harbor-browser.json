@@ -1,0 +1,48 @@
+{
+  "assertions": [
+    {
+      "name": "Expanded Harbor loads all eight activities and the eastern architecture",
+      "pass": true
+    },
+    {
+      "name": "Both new activities can be reached without lifting the learner onto a structure",
+      "pass": true,
+      "details": [
+        {
+          "id": "arcade-patterns",
+          "travel": true,
+          "camera": [
+            28.5,
+            2.6,
+            -13.5
+          ],
+          "expected": [
+            28.5,
+            2.6,
+            -13.5
+          ]
+        },
+        {
+          "id": "community-studio",
+          "travel": true,
+          "camera": [
+            41.5,
+            2.6,
+            1.5
+          ],
+          "expected": [
+            41.5,
+            2.6,
+            1.5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New reference arches each measure nine cubes in the running engine",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "scope": "Actual Chromium WebGL and React controls; desktop, 320px phone, and 390px-high landscape."
+}

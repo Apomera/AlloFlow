@@ -1,0 +1,34 @@
+Identifie la structure indiquée et apprends grâce au retour
+près du haut, autour de la tête et du cou
+dans le haut du corps, autour des épaules et de la poitrine
+dans la région de la poitrine et du haut du ventre
+autour du bas du ventre, des hanches et du haut des cuisses
+dans le bas du corps, autour des jambes
+sur le côté gauche de la figure
+sur le côté droit de la figure
+près du centre de la figure
+Le repère est {horizontal}, {vertical}.
+Spotter nécessite au moins quatre structures différentes visibles. Choisis une autre vue ou active davantage de couches.
+Identifie la structure indiquée.
+Correct.
+La structure indiquée est
+Meilleur temps mesuré : {seconds} s
+Identifie la structure au niveau du réticule. Prends le temps de comparer les choix, puis utilise le retour pour revoir sa fonction.
+Afficher les temps de réponse (facultatif)
+La pratique sans chronométrage est le réglage par défaut. Le chronométrage est un défi personnel ; il ne change pas le crédit des réponses et ne mesure pas la maîtrise. Il n’y a pas de limite de temps.
+Chronométrage activé
+Pratique sans chronométrage
+{correct} réponses correctes sur {total} tentatives
+Gauche et droite se rapportent à la personne qui regarde. L’indice situe le repère, pas toute l’étendue de la structure.
+Lire la consigne de Spotter à voix haute
+Cette question Spotter enregistrée est incomplète.
+Commence une nouvelle question avec les structures visibles dans le schéma actuel.
+Commencer une nouvelle question
+La structure indiquée est masquée par la vue ou les filtres de couches actuels.
+Rétablis sa vue ou sa couche pour voir le réticule. Tu peux aussi utiliser l’indice de position ou choisir une structure visible.
+Choisir une structure dans cette vue
+Tu as choisi {chosen} : {chosenfunction} Structure indiquée — {target} : {targetfunction}
+Temps de réponse : {seconds} s
+Lire l’explication de la structure indiquée à voix haute
+Concept :
+Étudier {name} sur le schéma

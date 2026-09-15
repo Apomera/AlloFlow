@@ -1665,7 +1665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             document.removeEventListener('mousemove', eng._mouseMove);
             document.removeEventListener('pointerlockchange', eng._pointerLockChange);
             if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
-            try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); } catch (e) {}
+            try { if (eng.renderer && eng.renderer.dispose) eng.renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(eng.renderer); } catch (e) {}
             cave3dEngineRef.current = null;
           };
       }, [tab, threeLoaded, cave3dRetryNonce]);
@@ -2440,7 +2440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // Insectivores: high-frequency FM sweep (frequency drops during call)
         // Frugivores: tongue click (short broadband impulse)
         try {
-          var ac = window._echoLabAC || (window._echoLabAC = new (window.AudioContext || window.webkitAudioContext)());
+          var ac = window._echoLabAC || (window._echoLabAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()));
           if (ac.state === 'suspended') ac.resume();
           if (sp.diet === 'fruit') {
             // Tongue click — short noise burst

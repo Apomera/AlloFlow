@@ -1,0 +1,153 @@
+{
+  "checks": [
+    "Current gross, tare deduction, and net bars use a fixed signed scale through empty, untared, tared, loaded, removed, stale-record, tiny, and maximum samples. Retained off-pan sample and current versus recorded mass remain distinct.",
+    "Actual weighing actions, gates, disclosure keyboard activation, Escape focus return, remount defaults, forced colors, desktop/phone accessibility and layout, malformed saved state, and unchanged live chemistry pass."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "state": "empty",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "untared",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "untared",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tared",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "tared",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "sample-open",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "sample-open",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "recorded",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "stale-record",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "stale-record",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "off-pan-open",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "off-pan-open",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "off-pan-closed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "off-pan-closed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "maximum-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "small-sample",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "small-sample",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-boat-off-pan",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "empty-boat-off-pan",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "state": "malformed",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

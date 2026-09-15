@@ -1,0 +1,125 @@
+{
+  "viewports": [
+    {
+      "width": 390,
+      "height": 3755,
+      "canvasTop": 944.59375,
+      "primaryTop": 363.09375,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 3436,
+      "canvasTop": 935.5,
+      "primaryTop": 388.5,
+      "overflow": false
+    }
+  ],
+  "assertions": [
+    "Starter → grow → predict → advance → inspect day report",
+    "Workspace and canvas continuity",
+    "Responsive water guidance and care feedback",
+    "Harvest → funds → replant → resume",
+    "Keyboard plot navigation, preview, removal confirmation and replanting",
+    "Root inspection and serialized restoration",
+    "Quick undo refunds paid seeds",
+    "Empty unfunded garden recovery preserves records",
+    "Winter pause and spring growth",
+    "Water, pest, and soil-care priorities",
+    "Crop meters and actual companion effects",
+    "Conflicts and expandable neighbor explanations",
+    "Keyboard crop browsing and focus return",
+    "Harvest receipt, proceeds, and replanting handoff",
+    "Reduced motion for crop and harvest animations",
+    "Batched hide/reveal visibility updates repaint the garden",
+    "Harvest, care, and companion garden views",
+    "View changes preserve previews, time, funds, and canvas identity",
+    "Text plot values match live canvas data",
+    "Maximized scene and phone view controls",
+    "View transition, reduced motion, and saved-session restoration"
+  ],
+  "errors": [
+    "Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0."
+  ],
+  "initial": {
+    "height": 1145,
+    "canvasTop": 453.59375,
+    "primaryTop": 208.546875,
+    "overflow": false
+  },
+  "initialMobile": [
+    {
+      "width": 390,
+      "height": 1159,
+      "canvasTop": 633,
+      "primaryTop": 328.5,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 1249,
+      "canvasTop": 722.5,
+      "primaryTop": 388.5,
+      "overflow": false
+    }
+  ],
+  "firstNaturalHarvestDay": 19,
+  "mobileCropFocus": {
+    "top": 90.5,
+    "navBottom": 74
+  },
+  "cropPanelAccessibility": [],
+  "harvestAccessibility": [],
+  "gardenViews": [
+    {
+      "id": "harvest",
+      "summary": "2 ready · 11 growing · 1 need care"
+    },
+    {
+      "id": "care",
+      "summary": "3 of 14 crops need attention"
+    },
+    {
+      "id": "companions",
+      "summary": "9 helped · 1 with net conflicts · 4 with no net effect"
+    }
+  ],
+  "gardenViewsAccessibility": [],
+  "accessibility": [],
+  "failureScene": {
+    "visibility": "visible",
+    "hasCanvas": true,
+    "connected": true,
+    "visible": true,
+    "animation": null,
+    "attributes": {
+      "gardenRenderDay": "19",
+      "gardenTileWidth": "126.89655172413794",
+      "gardenMotion": "still",
+      "gardenLens": "natural",
+      "gardenOriginY": "203.99668965517242",
+      "gardenTileHeight": "83.75172413793103",
+      "gardenScene": "botanical",
+      "gardenRenderWidth": "616",
+      "gardenRenderHeight": "760",
+      "gardenPlantedCount": "1",
+      "gardenReadyCount": "0"
+    },
+    "width": 616,
+    "height": 760,
+    "bounds": {
+      "x": 6,
+      "y": 241.5,
+      "width": 308,
+      "height": 360,
+      "top": 241.5,
+      "right": 314,
+      "bottom": 601.5,
+      "left": 6
+    },
+    "frameLens": "natural",
+    "contextLost": false,
+    "reducedMotion": false
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   \"Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The image argument is a canvas element with a width or height of 0.\"\n+ ]\n- []\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\companion_planting_gameplay_qa.cjs:457:12"
+}

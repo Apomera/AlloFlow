@@ -368,6 +368,21 @@
     return o;
   }
 
+  // Rebuild a level's params from what a SAVED record claims, keeping only values
+  // that are actually usable. Driven by paramOrder (the level's own declaration), so
+  // a saved object that is empty, an array, or partly the wrong type can only ever
+  // contribute the fields that survive — never the shape. Locked params always win,
+  // matching the adjudication-layer clamp in classifyShot.
+  function arcSafeParams(level, raw) {
+    var src = (raw && typeof raw === 'object') ? raw : {};
+    var out = {}, order = level.paramOrder || [], specs = level.params || {};
+    for (var i = 0; i < order.length; i++) {
+      var n = order[i], spec = specs[n] || {}, v = Number(src[n]);
+      out[n] = (spec.locked || !isFinite(v)) ? spec.default : v;
+    }
+    return out;
+  }
+
   function sampleCurve(level, params) {
     var pts = [];
     var n = Math.round((level.world.x1 - level.world.x0) / level.dx);
@@ -914,7 +929,13 @@
       var tooHigh = res.yAt > res.obstacle.hi;
       if (fam === 'line') return tooHigh ? 'The beam is too high there — lower the start height b or reduce the slope.' : 'The beam is too low there — raise the start height b or increase the slope.';
       if (fam === 'absval') return tooHigh ? 'The beam is too high there — lower the vertex k, or move the vertex h so the V dips into the window.' : 'The beam is too low there — raise the vertex k, or steepen a so the arm climbs through the window.';
-      if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — reduce the amplitude a, or change the frequency b so a dip lands here.' : 'The wave is too low at this window — increase the amplitude a, or change the frequency b so a crest lands here.';
+      // Name the controls the student can actually SEE. Both sine levels expose b as
+      // "period" (asPeriod: true, read out as "N units per wave"), so coaching them to
+      // "change the frequency b" names a control that is not on screen — and points the
+      // opposite way, since raising b SHORTENS the period. Phase c is usually the right
+      // answer for "land a crest at THIS window", so it leads; the match-coaching branch
+      // below already words it this way.
+      if (fam === 'sine') return tooHigh ? 'The wave is too high at this window — slide the wave sideways with the phase c so a dip lands here, reduce the amplitude a, or change the period.' : 'The wave is too low at this window — slide the wave sideways with the phase c so a crest lands here, increase the amplitude a, or change the period.';
       if (fam === 'exp') return tooHigh ? 'The curve is too high here — lower the start height a, decay faster (more negative b), or lower the floor k.' : 'The curve is too low here — raise the start height a, decay slower (less negative b), or raise the floor k.';
       if (fam === 'log') return tooHigh ? 'The climb is too high here — lower the climb strength a, lower the shift c, or lower the offset k.' : 'The climb is too low here — raise the climb strength a, raise the shift c, or raise the offset k.';
       if (fam === 'poly') return tooHigh ? 'The wiggle sits too high here — nudge the crest p or the dip q toward this window, or ease the steepness a.' : 'The wiggle sits too low here — nudge the crest p or the dip q toward this window, or increase the steepness a.';
@@ -1101,6 +1122,18 @@
   // snapValues, snap to the NEAREST of those (used for sine's whole-number periods,
   // §3.1 — b = 2π/P only ever lands on clean periods); otherwise snap to the step. ──
   function snapToRange(val, r) {
+    // A non-finite input must never become a param. `<input type=number>` hands back
+    // the raw string, and a lone '-' / 'e' / '.' (every legal PREFIX of a number, so
+    // this is ordinary typing, not abuse) makes Number() NaN. Unguarded, that NaN
+    // survived Object.assign normalisation into the saved battle draft, redisplayed
+    // in the box as the literal "NaN", sampled 201 non-finite points, and reported
+    // "missed by Infinity units" — while still consuming the turn. Clamping is
+    // meaningless for NaN (Math.min/max propagate it), so fall back to the range's
+    // own default, else its midpoint: the value the control was already showing.
+    if (!isFinite(val)) {
+      if (r.snapValues && r.snapValues.length) return isFinite(r.default) ? r.default : r.snapValues[0];
+      return isFinite(r.default) ? r.default : (r.min + r.max) / 2;
+    }
     if (r.snapValues && r.snapValues.length) {
       var best = r.snapValues[0], bd = Math.abs(val - best);
       for (var i = 1; i < r.snapValues.length; i++) { var d = Math.abs(val - r.snapValues[i]); if (d < bd) { bd = d; best = r.snapValues[i]; } }
@@ -1255,7 +1288,22 @@
     fnLevels.map(function (l) { return l.family; }).filter(function (f, i, a) { return a.indexOf(f) === i; }).forEach(function (f) { families[f] = familyStatus(byLevel, f); });
     var nodesReLit = levels.filter(function (l) { return l.status === 'completed'; }).length;
     var starsEarned = levels.reduce(function (n, l) { return n + l.stars; }, 0);
-    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, stars: starsEarned, starsMax: fnLevels.length * 3, starLegend: STAR_LEGEND, badges: badges.map(badgeLabel) };
+    // Transformations (goal:'match') stay OUT of "Levels solved" — overlaying a ghost
+    // is not re-lighting a node, and conflating the two objectives would misreport
+    // both. But excluding them from the COUNT is not a reason to omit them from the
+    // REPORT: a student can spend a whole session in Re-Target Yards and the summary
+    // read "0 of 9, not started" on every line, with a single binary badge as the only
+    // trace. That contradicts the caveat's own promise to show "what this player did".
+    // Reported as its own countable observation, in the same never-a-score wording.
+    var tfLevels = LEVELS.filter(function (l) { return l.goal === 'match'; }).map(function (l) {
+      var st = byLevel[l.id] || {};
+      return {
+        id: l.id, title: l.title, family: l.family,
+        status: st.solved ? 'completed' : (((st.shots || 0) > 0 || (st.misses || 0) > 0) ? 'explored' : 'not started'),
+        independent: !!st.independent, shots: st.shots || 0, exploredAdjustments: st.misses || 0, stars: levelStars(st)
+      };
+    });
+    return { caveat: TEACHER_CAVEAT, families: families, levels: levels, nodesReLit: nodesReLit, totalLevels: fnLevels.length, stars: starsEarned, starsMax: fnLevels.length * 3, starLegend: STAR_LEGEND, badges: badges.map(badgeLabel), transformations: tfLevels, transformationsMatched: tfLevels.filter(function (l) { return l.status === 'completed'; }).length, transformationsTotal: tfLevels.length };
   }
   function teacherSummaryText(summary) {
     var lines = ['Arc City — progress summary', '', summary.caveat, '', 'Levels solved: ' + summary.nodesReLit + ' of ' + summary.totalLevels, '', 'Functions:'];
@@ -1268,6 +1316,21 @@
       if (l.stars) bit += ' — ' + l.stars + '/3 stars';
       lines.push('  - ' + l.title + ': ' + bit);
     });
+    // Transformations are a SEPARATE objective (overlay a ghost, don't light a node),
+    // so they get their own heading and their own count rather than being folded into
+    // "Levels solved" — reported, never conflated. Omitted entirely when untouched, so
+    // a player who never opened them does not get a wall of "not started".
+    if ((summary.transformations || []).some(function (l) { return l.status !== 'not started'; })) {
+      lines.push(''); lines.push('Transformations (match the ghost — a separate goal, not node-lighting):');
+      lines.push('  Matched: ' + summary.transformationsMatched + ' of ' + summary.transformationsTotal);
+      summary.transformations.forEach(function (l) {
+        var bit = l.status;
+        if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
+        if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
+        if (l.stars) bit += ' — ' + l.stars + '/3 stars';
+        lines.push('  - ' + l.title + ': ' + bit);
+      });
+    }
     lines.push(''); lines.push('Stars: ' + summary.stars + ' of ' + summary.starsMax + ' (' + summary.starLegend + ')');
     if (summary.badges.length) { lines.push(''); lines.push('Badges: ' + summary.badges.join(', ')); }
     return lines.join('\n');
@@ -1595,7 +1658,7 @@
   var _arcAC = null;
   function getArcAC() {
     try {
-      if (!_arcAC && (window.AudioContext || window.webkitAudioContext)) _arcAC = new (window.AudioContext || window.webkitAudioContext)();
+      if (!_arcAC && (window.AudioContext || window.webkitAudioContext)) _arcAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
       if (_arcAC && _arcAC.state === 'suspended') { try { _arcAC.resume(); } catch (e) { } }
     } catch (e) { _arcAC = null; }
     return _arcAC;
@@ -2725,8 +2788,24 @@
         }
         var lIdx = levelIndex(level.id);
         var rawLS = byLevel[level.id];
-        var ls = (rawLS && rawLS.params) ? rawLS : { params: defaultParams(level), shots: 0, solved: false, misses: 0 };
-        var P = Object.assign({}, ls.params);
+        // Supply what is MISSING; never discard what is there. This used to read
+        // `rawLS.params ? rawLS : <blank>`, so a record carrying real progress but no
+        // `params` (a corrupted or cross-version save — the same input class wave 27
+        // hardened) was thrown away wholesale and `solved` silently became false. That
+        // disagreed with every OTHER surface, which reads byLevel directly: the tally
+        // still said "City restored 1/12", the star still showed, and isLevelUnlocked
+        // still opened the next level — but the Next-level CTA (which reads ls.solved)
+        // vanished, so the tool credited the solve and withheld the way forward.
+        var ls = Object.assign({ params: defaultParams(level), shots: 0, solved: false, misses: 0 }, rawLS || {});
+        // Every param this level declares must end up a FINITE number. A saved record
+        // can carry a params object that is empty, an array, or partly the wrong type
+        // ({m:'x'}), and each of those reaches the board as the same failure the battle
+        // number input used to: sliders reading "NaN", the equation printing
+        // "y = NaN · x +", and the narration saying the beam "missed it by Infinity
+        // units". Rebuild from the level's own declared params, taking the saved value
+        // only when it is usable, so the object shape can never be trusted blindly.
+        var P = arcSafeParams(level, ls.params);
+        ls.params = P;
         var res = classifyShot(level, P);
         // The Gauntlet LOCKS to the independent (preview-hidden-until-Fire) tier so
         // every stage is solved by prediction — the Grand Tour run is genuinely
@@ -3110,7 +3189,7 @@
           if (!exportEnabled) { announceArc(ctx, t('arccity.export_disabled', 'Enable export first.')); return; }
           try {
             var txt = teacherSummaryText(teacherSummary(byLevel, badges));
-            if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) window.navigator.clipboard.writeText(txt);
+            if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(txt);
             announceArc(ctx, t('arccity.copied', 'Summary copied to clipboard.'));
           } catch (e) { announceArc(ctx, t('arccity.copy_fail', 'Copy failed — select and copy the summary text manually.')); }
         }
@@ -4194,6 +4273,23 @@
                 l.stars ? h('span', { key: 'tlg-' + l.id, 'aria-hidden': 'true', style: { marginLeft: 6, letterSpacing: '1px', color: PAL.warn } }, '★★★☆☆☆'.slice(3 - l.stars, 6 - l.stars)) : null,
                 l.stars ? h('span', { key: 'tls-' + l.id, style: ARC_SR_ONLY }, ' — ' + l.stars + ' of 3 stars') : null);
             })),
+          // Transformations: a separate objective, so a separate section with its own
+          // count — never folded into "Levels solved". Rendered only once the player
+          // has touched them, so an untouched world does not add a wall of
+          // "not started" to a panel a teacher scans between students.
+          (summary.transformations || []).some(function (l) { return l.status !== 'not started'; }) ? h('div', { key: 'tfwrap', style: { marginBottom: 12 } },
+            h('h3', { key: 'tfh', style: { fontSize: 14, margin: '0 0 2px', color: INK } }, t('arccity.transformations', 'Transformations')),
+            h('div', { key: 'tfnote', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 6 } }, t('arccity.transformations_note', 'Matching a ghost curve — a different goal from re-lighting a node, so these are counted separately.') + ' ' + t('arccity.matched', 'Matched') + ': ' + summary.transformationsMatched + ' / ' + summary.transformationsTotal),
+            h('ul', { key: 'tflist', style: { listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: INK } },
+              summary.transformations.map(function (l) {
+                var bit = l.status;
+                if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
+                if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
+                return h('li', { key: 'tf-' + l.id, style: { marginBottom: 3 } },
+                  l.title + ': ' + bit,
+                  l.stars ? h('span', { key: 'tfg-' + l.id, 'aria-hidden': 'true', style: { marginLeft: 6, letterSpacing: '1px', color: PAL.warn } }, '★★★☆☆☆'.slice(3 - l.stars, 6 - l.stars)) : null,
+                  l.stars ? h('span', { key: 'tfs-' + l.id, style: ARC_SR_ONLY }, ' — ' + l.stars + ' of 3 stars') : null);
+              }))) : null,
           summary.badges.length ? h('div', { key: 'tbadges', style: { fontSize: 13, color: INK, marginBottom: 12 } }, t('arccity.badges', 'Badges earned') + ': ' + summary.badges.join(', ')) : null,
           h('div', { key: 'exportbox', style: { borderTop: '1px solid ' + GRID, paddingTop: 10 } },
             // The checkbox itself is user-agent sized (13px); what a finger hits is this

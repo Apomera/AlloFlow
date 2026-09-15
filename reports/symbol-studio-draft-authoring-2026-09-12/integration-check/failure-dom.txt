@@ -1,0 +1,166 @@
+Background control
+🎨
+Symbol Studio
+
+AI-powered symbol bank • boards • sequences • social stories
+
+×
+🎨
+Symbol Bank
+📋
+Board Builder
+📅
+Sequences
+📖
+Social Stories
+⚡
+Quick Boards
+📚
+Visual Packs
+🎮
+Symbol Quest
+🔍
+Symbol Search
+🌱
+8
+Word Garden
+STUDENT PROFILES
++ Add
+👤
+Demo Learner A
+👤
+Demo Learner B
+👤
+Fresh Learner
+GLOBAL SETTINGS
+Art Style
+Flat Vector (default)
+Line Art
+Cartoon
+Watercolor
+Bold Comic
+High Contrast (B&W Print)
+✏️ Custom Style...
+Auto-clean text from images
+
+Runs a second AI pass to strip any embedded labels
+
+Category Colors (AAC)
+Noun
+Verb
+Adj
+Other
+Reset
+
+Colors apply to boards and symbol cards
+
+🔊 Quick Voice Settings
+🔊 Preview voice
+
+Synced with app-wide voice settings
+
+🌱 WORD GARDEN
+Open →
+🌰 44
+🌱 5
+🌿 4
+
+53 words across 4 tool types
+
+🎯 WEEKLY FOCUS
+
+Words that would grow most from attention this week:
+
+Help
+Add to: schedule, story
+CORE
+Yes
+Add to: schedule, story
+CORE
+No
+Add to: schedule, story
+CORE
+
+Model each word 5+ times daily across settings
+
+BACKUP & RESTORE
+
+8 symbols · 1 board · 1 schedule
+
+⬇️ Export Backup
+📂 Import Backup
+📊 AAC Usage Analytics
+▼ show
+IEP COMMUNICATION GOALS
+
+Track AAC & communication goals. Progress syncs with Teacher Dashboard RTI data.
+
+No goals set for this profile yet.
+
+Expressive
+Receptive
+Social
+Pragmatic
+Articulation
++ IEP team details (priority, baseline, target date, cue level)
++ Add Goal
+Draft restored from this device.
+Clear this draft
+🗣
+Communication Builder
+Auto-populated boards, ready to drag-and-drop. FCT-ready.
+🎯 Guided (FCT)
+✍️ Free-text goal
+Function
+👀
+Attention-Seeking
+🏃
+Escape/Avoidance
+🎁
+Tangible Access
+🌀
+Sensory Regulation
+Phase
+Phase 1 · Single FCR
+1
+Phase 2 · Carrier phrase
+3
+Phase 3 · Mixed
+6
+Phase 4 · Integrated
+12
+3 symbols — combine into a short sentence.
+PREVIEW (3 SYMBOLS):
+I
+want
+break
+Build board →
+Tip: Teach rejection and help-seeking words so the student can appropriately request breaks or assistance.
+➡️
+First-Then
+🔵
+Choice Board
+⭐
+Token Economy
+🌿
+Calming Corner
+🎧
+Sensory Needs
+🙋
+Ask Me
+🩺
+Body Check
+⏰
+Transition
+FIRST
+?
+Immediate close flush
+✨
+📷
+→
+THEN
+?
+ 
+✨
+📷
+🖨️ Print Board

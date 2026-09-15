@@ -1,0 +1,151 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/remediation-batch-clarity-2026-09-12/layout-diagnostic-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "remediation_continuity.spec.ts",
+      "file": "remediation_continuity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "batch queue controls and details fit 320px contrast",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3198,
+                  "error": {
+                    "message": "Error: {\"overflow\":[{\"tag\":\"BUTTON\",\"classes\":\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\",\"text\":\"📊 Dashboard\",\"right\":310.21875}],\"shell\":{\"width\":320,\"client\":301,\"scroll\":308,\"html\":\"rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors\\\">New Batch</button><button data-help-key=\\\"pdf_audit_view_batch_dashboard_btn\\\" class=\\\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\\\">📊 Dashboard</button></div></div><div class=\\\"flex items-center gap-2 mt-3 pt-3 border-t border-slate-100\\\"><label class=\\\"flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200\\\" title=\\\"Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.\\\">📂 Continue a previous session<input type=\\\"file\\\" accept=\\\".json\\\" class=\\\"hidden\\\"></label><button class=\\\"text-xs text-slate-600 hover:text-slate-900 font-bold\\\">Cancel</button></div></div>\"}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7\u001b[39m",
+                    "stack": "Error: {\"overflow\":[{\"tag\":\"BUTTON\",\"classes\":\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\",\"text\":\"📊 Dashboard\",\"right\":310.21875}],\"shell\":{\"width\":320,\"client\":301,\"scroll\":308,\"html\":\"rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors\\\">New Batch</button><button data-help-key=\\\"pdf_audit_view_batch_dashboard_btn\\\" class=\\\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\\\">📊 Dashboard</button></div></div><div class=\\\"flex items-center gap-2 mt-3 pt-3 border-t border-slate-100\\\"><label class=\\\"flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200\\\" title=\\\"Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.\\\">📂 Continue a previous session<input type=\\\"file\\\" accept=\\\".json\\\" class=\\\"hidden\\\"></label><button class=\\\"text-xs text-slate-600 hover:text-slate-900 font-bold\\\">Cancel</button></div></div>\"}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\remediation_continuity.spec.ts:447:266",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\remediation_continuity.spec.ts",
+                      "column": 266,
+                      "line": 447
+                    },
+                    "snippet": "  445 |     const shell = page.locator('.pdf-workspace-shell');\n  446 |     const overflow = await shell.evaluate(el => Array.from(el.querySelectorAll('*')).filter(child => child.getBoundingClientRect().right > el.getBoundingClientRect().left + el.clientLeft + el.clientWidth + 1).map(child => ({ tag: child.tagName, classes: child.className, text: child.textContent?.slice(0, 90), right: child.getBoundingClientRect().right })).slice(0, 12));\n> 447 |     expect(await shell.evaluate(el => el.scrollWidth - el.clientWidth), JSON.stringify({ overflow, shell: await shell.evaluate(el => ({ width: el.getBoundingClientRect().width, client: el.clientWidth, scroll: el.scrollWidth, html: el.innerHTML.slice(-1000) })) })).toBeLessThanOrEqual(1);\n      |                                                                                                                                                                                                                                                                          ^\n  448 |     await page.addScriptTag({ path: path.join(ROOT, 'node_modules/axe-core/axe.min.js') });\n  449 |     const violations = await page.evaluate(async () => (await (window as any).axe.run({ include: [['.pdf-workspace-batch-filters'], ['.pdf-workspace-batch-error']] })).violations);\n  450 |     expect(violations).toEqual([]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\remediation_continuity.spec.ts",
+                        "column": 266,
+                        "line": 447
+                      },
+                      "message": "Error: {\"overflow\":[{\"tag\":\"BUTTON\",\"classes\":\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\",\"text\":\"📊 Dashboard\",\"right\":310.21875}],\"shell\":{\"width\":320,\"client\":301,\"scroll\":308,\"html\":\"rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors\\\">New Batch</button><button data-help-key=\\\"pdf_audit_view_batch_dashboard_btn\\\" class=\\\"px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2\\\">📊 Dashboard</button></div></div><div class=\\\"flex items-center gap-2 mt-3 pt-3 border-t border-slate-100\\\"><label class=\\\"flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200\\\" title=\\\"Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.\\\">📂 Continue a previous session<input type=\\\"file\\\" accept=\\\".json\\\" class=\\\"hidden\\\"></label><button class=\\\"text-xs text-slate-600 hover:text-slate-900 font-bold\\\">Cancel</button></div></div>\"}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m7\u001b[39m\n\n  445 |     const shell = page.locator('.pdf-workspace-shell');\n  446 |     const overflow = await shell.evaluate(el => Array.from(el.querySelectorAll('*')).filter(child => child.getBoundingClientRect().right > el.getBoundingClientRect().left + el.clientLeft + el.clientWidth + 1).map(child => ({ tag: child.tagName, classes: child.className, text: child.textContent?.slice(0, 90), right: child.getBoundingClientRect().right })).slice(0, 12));\n> 447 |     expect(await shell.evaluate(el => el.scrollWidth - el.clientWidth), JSON.stringify({ overflow, shell: await shell.evaluate(el => ({ width: el.getBoundingClientRect().width, client: el.clientWidth, scroll: el.scrollWidth, html: el.innerHTML.slice(-1000) })) })).toBeLessThanOrEqual(1);\n      |                                                                                                                                                                                                                                                                          ^\n  448 |     await page.addScriptTag({ path: path.join(ROOT, 'node_modules/axe-core/axe.min.js') });\n  449 |     const violations = await page.evaluate(async () => (await (window as any).axe.run({ include: [['.pdf-workspace-batch-filters'], ['.pdf-workspace-batch-error']] })).violations);\n  450 |     expect(violations).toEqual([]);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\remediation_continuity.spec.ts:447:266"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-12T19:08:31.120Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-batch-clarity-2026-09-12\\layout-diagnostic-artifacts\\remediation_continuity-bat-7f662--details-fit-320px-contrast-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-batch-clarity-2026-09-12\\layout-diagnostic-artifacts\\remediation_continuity-bat-7f662--details-fit-320px-contrast-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-batch-clarity-2026-09-12\\layout-diagnostic-artifacts\\remediation_continuity-bat-7f662--details-fit-320px-contrast-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\remediation-batch-clarity-2026-09-12\\layout-diagnostic-artifacts\\remediation_continuity-bat-7f662--details-fit-320px-contrast-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\remediation_continuity.spec.ts",
+                    "column": 266,
+                    "line": 447
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "00cf49ffa881b2acfb13-f037a2edfd4d6087bf5c",
+          "file": "remediation_continuity.spec.ts",
+          "line": 431,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T19:08:29.703Z",
+    "duration": 6121.241,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

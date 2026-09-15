@@ -1,0 +1,67 @@
+{
+  "scope": "Rendered HTML facts; model visual review and independent human acceptance are separate",
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\mcp-testing\\refinement-study\\private\\calibration-2026-09-12\\followup\\gated\\ed-parent-guide-idea-accessible.html",
+  "title": "Accessible Document — ed-parent-guide-idea",
+  "bodyTextLength": 6481,
+  "images": 1,
+  "placeholderPanels": 0,
+  "controls": [
+    {
+      "text": "Replace",
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        71,
+        85,
+        105
+      ],
+      "contrast": 7.577663953533317
+    },
+    {
+      "text": "Adjust Crop",
+      "foreground": [
+        255,
+        255,
+        255
+      ],
+      "background": [
+        109,
+        40,
+        217
+      ],
+      "contrast": 7.104892978519159
+    }
+  ],
+  "fileInputs": [
+    {
+      "display": "block",
+      "tabIndex": 0,
+      "label": "Replace"
+    }
+  ],
+  "links": [
+    {
+      "text": "Skip to main content",
+      "href": "#main-content"
+    },
+    {
+      "text": "Lisa.Pagano@ed.gov",
+      "href": "mailto:Lisa.Pagano@ed.gov"
+    },
+    {
+      "text": "OCR@ed.gov",
+      "href": "mailto:OCR@ed.gov"
+    },
+    {
+      "text": "www.lep.gov/resources/EOS_SOI_Philly_012716.pdf",
+      "href": "http://www.lep.gov/resources/EOS_SOI_Philly_012716.pdf"
+    },
+    {
+      "text": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf",
+      "href": "https://www.justice.gov/crt/about/cor/lep/DOJFinLEPFRJun182002.pdf"
+    }
+  ]
+}

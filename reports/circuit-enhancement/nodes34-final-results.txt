@@ -1,0 +1,134 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stderr | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes each prediction schematic without revealing the answer
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the top-level render call using <svg>. See https://reactjs.org/link/warning-keys for more information.
+    at line
+    at Comp
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > describes the current point and trend in the Ohm inquiry graph
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > gives all sixteen SVG declarations an explicit image role and name
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_svg_alternatives_a11y.test.js > Circuit Lab SVG alternatives > keeps the source and deploy copies identical
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > bounds saved camera input without changing its source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side -1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 35
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > keeps dense labels clear and routes finite at side 1 tilt 70
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_camera.test.js > connected board camera and routing > preserves placement across camera changes and includes control-only nodes
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+·stdout | tests/circuit_network_node_inspection.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > maps terminal B current into a shared node and terminal A currents out
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a -0.005 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > uses the real sign of a 1e-15 A source at either terminal
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > lists both same-node terminals and cancels their known currents
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not infer aggregate currents when parallel ideal-source currents are unknown
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps known currents when the node voltage is floating
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > separates voltage sensing from current-carrying source/output terminals
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > retains both sensing inputs when they reference the same node
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > does not invent a node terminal for current sensing through another source
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > keeps zero-current open contacts in the connection list
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > suppresses stale finite readings in a failed solution
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node connection inspection > falls back to a used node and handles an empty network
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 0
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction 1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > keeps arrow direction -1 along axis 1
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > skips duplicate route points while placing a finite arrow
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > route arrow placement > omits arrows without a direction or usable path
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > renders an optional node action, per-terminal flows and balance readings
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+························stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > preserves probe action labels outside inspection mode
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+stdout | tests/circuit_network_node_inspection.test.js > node inspector presentation > describes sensing connections and failed totals explicitly
+[StemLab] stem_tool_circuit.js loaded - Circuit Builder
+
+··
+
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+   Start at  12:47:12
+   Duration  17.97s (transform 797ms, setup 729ms, import 1.12s, tests 6.25s, environment 8.12s)
+

@@ -1,0 +1,116 @@
+{
+  "completedAt": "2026-09-13T03:11:37.161Z",
+  "status": "passed",
+  "bugClassesFixed": [
+    "Bridge deadline circular wait and per-file abandoned pending requests",
+    "Detected language applied after initial baseline audits",
+    "Attributed document title recognition and replacement across modes",
+    "Source coverage omitted native semantic list numbering"
+  ],
+  "gates": {
+    "mcp-calibration-post-semantic-final": {
+      "success": true,
+      "passed": 214,
+      "failed": 0,
+      "pending": 0,
+      "files": 20
+    },
+    "mcp-parity-post-semantic-final": {
+      "success": true,
+      "passed": 73,
+      "failed": 0,
+      "pending": 0,
+      "files": 1
+    },
+    "mcpb-ci-post-semantic-final": {
+      "success": true,
+      "passed": 41,
+      "failed": 0,
+      "pending": 0,
+      "files": 9
+    },
+    "remediation-unit-post-semantic-final": {
+      "success": true,
+      "passed": 631,
+      "failed": 0,
+      "pending": 0,
+      "files": 34
+    }
+  },
+  "fullGateSnapshot": "gated-snapshot-before-inline-collapse.json",
+  "fullGateHelperSha256": "4cbe3774451d91df011db46ad6bc7d84ea05803d802de14ced682fa87ce0f9c3",
+  "finalGuardHelperSha256": "76f7d430480bf9addc9f54c28e9fc7686d0155a58490e43e089b310082bd0e6f",
+  "finalGuardFocusedReport": "semantic-marker-final-inline-visibility-focused.json",
+  "finalGuardPatch": "semantic-marker-final-patch.json",
+  "exactCommands": [
+    {
+      "name": "mcp-calibration-post-semantic-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/mcp_agent_bridge_e2e.test.js tests/mcp_agent_bridge_restart_e2e.test.js tests/mcp_agent_bridge_terminal_modes_e2e.test.js tests/mcp_keyless_workflow.test.js tests/mcp_http_transport.test.js tests/mcp_refinement_study_runner.test.js tests/mcp_refinement_study_protocol.test.js tests/mcp_refinement_study_analysis.test.js tests/mcp_refinement_expert_annotations.test.js tests/remediation_visibility_selector_recovery.test.js tests/doc_pipeline_inherited_contrast.test.js tests/doc_pipeline_placeholder_audit_payload.test.js tests/aifix_chunk_boundary_whitespace.test.js tests/doc_pipeline_focus_wrap_browser.test.js tests/static_crop_cleanup.test.js tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js tests/semantic_list_marker_coverage.test.js tests/mcp_content_coverage.test.js tests/mcp_narration_languages.test.js --maxWorkers=1 --testTimeout=360000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\mcp-calibration-post-semantic-final.json",
+      "exitCode": 0,
+      "elapsedMs": 331592
+    },
+    {
+      "name": "mcp-inventory-post-semantic-final",
+      "command": "node dev-tools/mcp_capability_inventory.cjs --assert-parity",
+      "exitCode": 0,
+      "elapsedMs": 2603
+    },
+    {
+      "name": "mcp-parity-post-semantic-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/mcp_remediation_stdio_smoke.test.js --maxWorkers=1 --testTimeout=70000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\mcp-parity-post-semantic-final.json",
+      "exitCode": 0,
+      "elapsedMs": 26323
+    },
+    {
+      "name": "mcpb-ci-post-semantic-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/desktop_mcp_durable_jobs.test.js tests/desktop_mcp_residual_hardening.test.js tests/desktop_mcp_runtime_build_drift.test.js tests/desktop_mcp_completion_manifest_race.test.js tests/batch_checkpoint_boundary_commit.test.js tests/doc_pipeline_build_parity.test.js tests/mcp_verifier_packaging_hardening.test.js tests/mcp_call_cli.test.js tests/mcpb_release_workflow.test.js --maxWorkers=1 --testTimeout=70000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\mcpb-ci-post-semantic-final.json",
+      "exitCode": 0,
+      "elapsedMs": 17709
+    },
+    {
+      "name": "remediation-unit-post-semantic-final",
+      "command": "node node_modules/vitest/vitest.mjs run tests/aifix_chunk_gates.test.js tests/aifix_source_associations.test.js tests/doc_pipeline_build_parity.test.js tests/document_export_inspection_failures.test.js tests/remediation_form_association_index.test.js tests/remediation_form_context.test.js tests/remediation_gate_regressions.test.js tests/remediation_inline_math_option_groups.test.js tests/remediation_residual_live.test.js tests/remediation_review_evidence.test.js tests/remediation_review_helpers.test.js tests/remediation_semantic_fidelity.test.js tests/remediation_source_contract_integration.test.js tests/remediation_validation.test.js tests/rendered_fidelity_calibration.test.js tests/rendered_fidelity_resilience.test.js tests/rendered_fidelity_review.test.js tests/source_remediation_contract.test.js tests/remediation_continuity.test.js tests/remediation_autoloop_dependencies.test.js tests/remediation_view_lifecycle_regressions.test.js tests/remediation_workspace.test.js tests/remediation_retry_startup.test.js tests/batch_checkpoint_boundary_commit.test.js tests/utils_pure_storage.test.js tests/remediation_visibility_selector_recovery.test.js tests/doc_pipeline_inherited_contrast.test.js tests/doc_pipeline_placeholder_audit_payload.test.js tests/aifix_chunk_boundary_whitespace.test.js tests/doc_pipeline_focus_wrap_browser.test.js tests/static_crop_cleanup.test.js tests/generated_baseline_language.test.js tests/doc_pipeline_title_attributes.test.js tests/semantic_list_marker_coverage.test.js --maxWorkers=2 --allowOnly=false --testTimeout=30000 --reporter=json --outputFile=reports\\mcp-calibration-2026-09-12-round2\\remediation-unit-post-semantic-final.json",
+      "exitCode": 0,
+      "elapsedMs": 41143
+    }
+  ],
+  "maintainedUnit": {
+    "files": 34,
+    "passed": 631
+  },
+  "semanticFocused": {
+    "passed": 49,
+    "failed": 0,
+    "files": 2
+  },
+  "sourceBuildVerification": "language-title-companion-verification.json",
+  "finalHashes": "final-changed-file-hashes-post-semantic.json",
+  "livePilot": "spanish-live-summary.json",
+  "liveVerdictPreserved": {
+    "level": "review",
+    "reviewCount": 3,
+    "cautionCount": 0
+  },
+  "postFixCoverageReplay": "spanish-content-coverage-after-semantic-marker-final-inline-visibility.json",
+  "postFixMissingTokens": 0,
+  "rootSourceAndVisualQa": "root-final-source-qa.json",
+  "rootSemanticReview": "root-semantic-marker-review.json",
+  "sourceExtraction": "source-extraction-observations.json",
+  "historicalAttemptEvidence": [
+    "bridge-terminal-matrix-before-fix.json",
+    "bridge-terminal-matrix-confirmed-before-fix.json",
+    "bridge-terminal-matrix-after-fix.json",
+    "bridge-terminal-matrix-after-fix-deadline-retry.json",
+    "bridge-terminal-matrix-born-digital.json",
+    "mcp-calibration-final.json",
+    "mcp-parity-final.json",
+    "mcp-parity-adapter-retry.json",
+    "mcp-parity-adapter-initialized-retry.json"
+  ],
+  "limits": [
+    "No blinded human, screen-reader, or PDF/UA acceptance claim.",
+    "Official live run stays review-required; no tagged PDF was produced because active_content_scan_unavailable.",
+    "Post-pilot fixes were tested/replayed separately and did not rewrite the historical live result.",
+    "No scoring thresholds or scanner security gates changed."
+  ]
+}

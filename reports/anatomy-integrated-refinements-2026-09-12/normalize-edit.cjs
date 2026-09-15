@@ -1,0 +1,1 @@
+const fs=require('node:fs'),file=__dirname+'/edit-core.cjs';let s=fs.readFileSync(file,'utf8');s=s.replace("function replace(a,b){","function replace(a,b){a=a.replace(/\\r\\n/g,'\\n');");s=s.replace("let s=fs.readFileSync(file,'utf8');","let s=fs.readFileSync(file,'utf8').replace(/\\r\\n/g,'\\n');");fs.writeFileSync(file,s);

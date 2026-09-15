@@ -1,0 +1,30 @@
+{
+  "started": true,
+  "length": 3,
+  "coveredIds": [
+    "heater",
+    "cloud",
+    "river"
+  ],
+  "targetIds": [
+    "rain",
+    "lake",
+    "sequence"
+  ],
+  "events": [
+    {
+      "id": "rain",
+      "value": "1"
+    },
+    {
+      "id": "lake",
+      "value": "0"
+    },
+    {
+      "id": "sequence",
+      "value": "1,2,3,0"
+    }
+  ],
+  "checked": true,
+  "draft": ""
+}

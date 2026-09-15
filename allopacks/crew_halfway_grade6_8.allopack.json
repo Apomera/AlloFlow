@@ -1,0 +1,594 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Crew Launch Week 10: The Halfway Check",
+    "author": "AlloFlow Crew Launch set (authored by Claude for King Middle School Crew; all scenarios fictional; educator review pending)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th-8th Grade",
+    "createdAt": "2026-09-13T18:00:00.000Z",
+    "imageShotList": "allopacks/crew_halfway_grade6_8.IMAGES.md",
+    "standards": "King Middle School HOWL Responsibility (arrive prepared for class; complete assignments thoughtfully and timely); CASEL Self-Management (setting personal goals; using planning and organizational skills; exhibiting self-discipline); CASEL Self-Awareness (having a growth mindset); EL Education Crew (Crew Launch: goal review and HOWL reflection); Maine DOE PBIS Tier 1 (teaching self-monitoring as an expected behavior)"
+  },
+  "sourceTopic": "Mid-trimester review of systems and goals",
+  "history": [
+    {
+      "id": "ch-directions",
+      "type": "directions",
+      "title": "Crew Launch Week 10: The Halfway Check",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "body": "Crew slot: 40 minutes. HOWL: Responsibility. \"I take responsibility for my success as a learner.\"\n\nThis week you review the system and the goal you set in September, keep what works, and fix the one part that broke.\n\n1. Read **The Halfway Check** (10 minutes).\n2. Learn the **Glossary** words, then win the **Matching** game.\n3. Keep the **Three Review Questions** chart open.\n4. Sort the cards in **Keep, Fix, or Wish?**\n5. Take the quiz. Question 3 is about Marcus and the puppy.\n6. Open the SEL Hub and choose [Goal Setter](#sel-hub/goals?station=sel_station_crew_launch_halfway). Open the goal you set in week 4 and answer the three questions against it. Then open [HOWL Tracker](#sel-hub/howlTracker?station=sel_station_crew_launch_halfway) and look at your History: what does the trend for Responsibility actually show? If your system needs one part rebuilt, [Executive Function](#sel-hub/execfunction?station=sel_station_crew_launch_halfway) has the capture, launch, and reset tools.\n7. Use the **Sentence Frames** to write your review in three answers and one change.\n8. Lock it in with **Remember Said, Happened, Change**.\n9. Finish with the **Decide Challenge: One Thing, Not Everything**.\n\nYour commitment: this week, make the one change from your review, run it for five days, and count the mornings you had everything. 📋\n\nClicking a tool link above also starts your Crew station for this week, so the time you spend in the tools and the self-check stay together in one place. It stays active until you exit it, so come back later in the week to mark the self-check. You can find it again under SEL Stations in the History panel. 📌",
+        "objectives": [
+          {
+            "id": "ch-goal-match",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "ch-glossary"
+          },
+          {
+            "id": "ch-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "ch-goal-manual",
+            "label": "I made the one change from my halfway review, ran it for five days, and I know how many mornings I had everything",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • Crew slot • 3 goals"
+    },
+    {
+      "id": "ch-reading",
+      "type": "simplified",
+      "title": "The Halfway Check",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": "## The Halfway Check\n\n**HOWL: \"I take responsibility for my success as a learner.\"**\n\nYou are **halfway** through the trimester. Six weeks ago, in the week on **systems**, you built a capture spot, a launch check, and a weekly reset, and you **counted** the mornings you had everything. Some of that system is still running. Some of it broke in week two and you have been getting by. This week is not about starting over. It is about looking at what you built, keeping what worked, and fixing the one part that did not.\n\nHere is why halfway matters. Responsibility, in the King **HOWLs**, includes arriving **prepared** and completing assignments thoughtfully and on time. Those are not things you do once. They are things you do on a Tuesday in November when nobody is watching and the system you built in September has quietly stopped. The students who stay prepared through a whole trimester are not the ones with perfect systems. They are the ones who check.\n\nHere is a moment from a fictional **Crew**. In week four, Marcus built a good system: assignments captured in his phone notes, a launch check at 8 pm, a Sunday reset. For two weeks he had everything every morning. Then his family got a puppy. The 8 pm check **collided** with the puppy's walk, and Marcus stopped doing it. He did not decide to stop. It just stopped. By week eight he was missing a book about twice a week and telling himself he was bad at this.\n\nAt the halfway check, Marcus looked at his count. The capture spot still worked. The Sunday reset still worked. Only the launch check had died, and it died for a reason he could name: it was scheduled at the wrong time. He moved it to right after dinner, before the walk. That is the whole **revision**. One part, moved. Not a new system. Not a new person.\n\nA **review** has three questions. What did I say I would do? What actually happened, by the count? What is the one thing to change? The first question needs the goal you wrote. The second needs honest numbers, which is why the count matters more than the feeling. The third question is the hard one, because the temptation is to change everything. Change one thing. Test it for a week. Then check again.\n\nThis is also the week to look at your HOWL Tracker goals from the start of the trimester. A goal from September that you have not looked at since is not a goal. It is a **wish**. A goal you review halfway, with a count, and revise, is what responsibility looks like on the inside.",
+      "meta": "6th-8th Grade • Leveled reading • ~450 words"
+    },
+    {
+      "id": "ch-glossary",
+      "type": "glossary",
+      "title": "Review Words",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "term": "Review",
+          "def": "Looking at what you said you would do, what happened, and what to change.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Halfway",
+          "def": "The middle of a trimester, when there is still time for a change to matter.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Count",
+          "def": "A number you kept, like mornings you had everything, that beats a feeling.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Revise",
+          "def": "To change one part of something and keep the rest.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Wish",
+          "def": "A goal you wrote and never looked at again.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Collide",
+          "def": "When two things need the same time, and one of them quietly stops.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Trend",
+          "def": "The direction a count has been moving over several weeks.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Prepared",
+          "def": "Having what the class needs, in the room, at the start.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Timely",
+          "def": "Done by the time it was due.",
+          "tier": "Academic"
+        },
+        {
+          "term": "System",
+          "def": "A set of small habits with a capture spot, a launch check, and a weekly reset.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Crew",
+          "def": "A small group of students and one adult who meet regularly to support each other and reflect on learning. EL Education's word for advisory.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "HOWL",
+          "def": "Habit of Work and Learning: a way of working that your school teaches and scores separately from academic grades. At King, the three are Respect, Responsibility, and Perseverance.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "6th-8th Grade • 12 terms • Tiered"
+    },
+    {
+      "id": "ch-anchor",
+      "type": "anchor-chart",
+      "title": "Three Review Questions",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "THREE REVIEW QUESTIONS",
+        "sections": [
+          {
+            "label": "WHAT DID I SAY I WOULD DO?",
+            "bullets": [
+              "Find the goal you wrote",
+              "Read it as written, not as remembered"
+            ],
+            "iconPrompt": "an open notebook with one highlighted line"
+          },
+          {
+            "label": "WHAT ACTUALLY HAPPENED?",
+            "bullets": [
+              "By the count, not the feeling",
+              "Mornings with everything: __ of __",
+              "Which part stopped, and when"
+            ],
+            "iconPrompt": "a row of tally marks with one gap"
+          },
+          {
+            "label": "WHAT IS THE ONE CHANGE?",
+            "bullets": [
+              "One part, not the whole system",
+              "Name why that part broke",
+              "Test it for a week, then check again"
+            ],
+            "iconPrompt": "a single gear being turned by a hand"
+          },
+          {
+            "label": "GOAL OR WISH?",
+            "bullets": [
+              "Reviewed halfway, with a count: a goal",
+              "Written in September, never opened: a wish"
+            ],
+            "iconPrompt": "two cards, one with a checkmark, one with a small star"
+          }
+        ]
+      },
+      "meta": "4 sections • Crew reference chart"
+    },
+    {
+      "id": "ch-sort",
+      "type": "concept-sort",
+      "title": "Keep, Fix, or Wish?",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "ch-keep",
+            "label": "KEEP (the count says it works)",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "ch-fix",
+            "label": "FIX (one part broke for a reason)",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "ch-wish",
+            "label": "WISH (written, never reviewed)",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "ch-i1",
+            "content": "Capture spot: every assignment went into phone notes for six weeks.",
+            "categoryId": "ch-keep"
+          },
+          {
+            "id": "ch-i2",
+            "content": "Launch check at 8 pm: stopped when the puppy walk moved to 8.",
+            "categoryId": "ch-fix"
+          },
+          {
+            "id": "ch-i3",
+            "content": "\"Be more organized this year,\" written on the first day and not seen since.",
+            "categoryId": "ch-wish"
+          },
+          {
+            "id": "ch-i4",
+            "content": "Sunday reset: happened five of six Sundays.",
+            "categoryId": "ch-keep"
+          },
+          {
+            "id": "ch-i5",
+            "content": "Turn in homework on time: no count kept, no idea how it went.",
+            "categoryId": "ch-wish"
+          },
+          {
+            "id": "ch-i6",
+            "content": "Packing the bag in the morning: too rushed, so things get left; move it to the night before.",
+            "categoryId": "ch-fix"
+          },
+          {
+            "id": "ch-i7",
+            "content": "Charging the laptop on the kitchen counter every night: has not missed once.",
+            "categoryId": "ch-keep"
+          },
+          {
+            "id": "ch-i8",
+            "content": "Weekly reset on Sunday: collides with a game every other week, so it gets skipped half the time.",
+            "categoryId": "ch-fix"
+          },
+          {
+            "id": "ch-i9",
+            "content": "A HOWL Tracker goal from September that has never been opened.",
+            "categoryId": "ch-wish"
+          },
+          {
+            "id": "ch-i10",
+            "content": "Water bottle by the door: filled every morning since week one.",
+            "categoryId": "ch-keep"
+          }
+        ]
+      },
+      "meta": "3 categories • 10 cards"
+    },
+    {
+      "id": "ch-quiz",
+      "type": "quiz",
+      "title": "The Halfway Check",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What does the reading say the halfway check is for?",
+            "options": [
+              "Starting over with a better system",
+              "Deciding whether you are good at being organized",
+              "Keeping what worked and fixing the one part that did not",
+              "Proving to your Crew leader that the system worked"
+            ],
+            "correctAnswer": "Keeping what worked and fixing the one part that did not",
+            "conceptLabel": "revise the part that broke"
+          },
+          {
+            "type": "mcq",
+            "question": "According to the reading, who stays prepared through a whole trimester?",
+            "options": [
+              "Students who check their system and fix it",
+              "Students with perfect systems",
+              "Students whose families remind them every night",
+              "Students who do not need a system at all"
+            ],
+            "correctAnswer": "Students who check their system and fix it",
+            "conceptLabel": "the ones who check"
+          },
+          {
+            "type": "mcq",
+            "question": "Why did Marcus's launch check stop working?",
+            "options": [
+              "He decided he did not need it anymore",
+              "His phone notes app stopped working",
+              "He never actually built a launch check in week four",
+              "It was scheduled at a time that collided with the puppy's walk"
+            ],
+            "correctAnswer": "It was scheduled at a time that collided with the puppy's walk",
+            "conceptLabel": "it broke for a reason"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say the count matters more than the feeling?",
+            "options": [
+              "Because feelings are always wrong about systems",
+              "Because the second review question needs honest numbers",
+              "Because teachers only accept numbers as evidence",
+              "Because counting is faster than thinking"
+            ],
+            "correctAnswer": "Because the second review question needs honest numbers",
+            "conceptLabel": "count beats feeling"
+          },
+          {
+            "type": "mcq",
+            "question": "What is a goal from September that you have not looked at since, according to the reading?",
+            "options": [
+              "A long-term goal",
+              "A wish",
+              "A system",
+              "A trend"
+            ],
+            "correctAnswer": "A wish",
+            "conceptLabel": "goal or wish"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your week-4 system worked four mornings out of five. Write the one question you would ask about the fifth morning, and what you would change.",
+            "expectedAnswer": "A question about the specific failure (what was missing, when did the launch check get skipped) and one small revision to that part, not a new system.",
+            "conceptLabel": "revise the part that broke"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which part of your week-4 system is still running? Which part stopped, and can you name the day it stopped?"
+          }
+        ]
+      },
+      "meta": "5 multiple choice + 1 short answer • 1 reflection"
+    },
+    {
+      "id": "ch-frames",
+      "type": "sentence-frames",
+      "title": "My Halfway Review",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "In week 4 I said I would ____."
+          },
+          {
+            "text": "By the count, ____ mornings out of ____ I had everything."
+          },
+          {
+            "text": "The part that still works is ____. The part that stopped is ____, and it stopped because ____."
+          },
+          {
+            "text": "My one change is ____. I will not change ____."
+          },
+          {
+            "text": "I will run it for five days and count ____."
+          },
+          {
+            "text": "My HOWL Tracker goal from September was ____. Looking at it now, it is a ____ (goal or wish) because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 - Starting | 3 - Getting There | 5 - Crew Ready |\n|---|---|---|---|\n| Uses the count | A feeling (\"it went okay\") | A number, roughly | The exact count and which days were missing |\n| Names why it broke | Blames self (\"I am bad at this\") | Names the part that stopped | Names the part, the reason, and roughly when |\n| One change | Rebuilds everything | Changes two or three things | Changes one part and says what stays |\n"
+      },
+      "meta": "6 frames • rubric included"
+    },
+    {
+      "id": "ch-faq",
+      "type": "faq",
+      "title": "Review Questions Crews Ask",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": [
+        {
+          "question": "What is Crew, anyway?",
+          "answer": "Crew is your school's word for a small group of students and one adult who meet regularly to check in, set goals, and work through hard things together. It comes from EL Education, the school model King has used since 1992, and from an old idea about ships: everyone on board is crew, not a passenger. Read more on [King's EL page](https://king.portlandschools.org/about/learning-models) or [EL Education's Crew page](https://www.eleducation.org/crew)."
+        },
+        {
+          "question": "What is a HOWL?",
+          "answer": "A Habit of Work and Learning. Your school scores three of them, apart from your academic grades: Respect (\"I am a respectful member of the King community\"), Responsibility (\"I take responsibility for my success as a learner\"), and Perseverance (\"I persevere to produce high quality work\"). Teachers score them; Crew is where you practice them. The statements are on [King's grading guide](https://king.portlandschools.org/families/handbook/handbook-interior/~board/king-student-family-handbook/post/grading-guide)."
+        },
+        {
+          "question": "My whole system fell apart. Is one change enough?",
+          "answer": "Usually one part fell apart first and the rest followed. Find the first part. Fix that one. If the rest does not come back in a week, fix the next one at the next check."
+        },
+        {
+          "question": "I did not keep a count. What do I review?",
+          "answer": "Start one today. For this week the review question is \"what do I remember,\" and the honest answer is \"not enough to know.\" That is a real finding. Next check, you will have numbers."
+        },
+        {
+          "question": "What if the change does not work either?",
+          "answer": "Then you learned something about that part, and you change it again at the next check. A change that does not work is data. Not checking is the only real failure."
+        },
+        {
+          "question": "Is it embarrassing that my goal was a wish?",
+          "answer": "Almost everyone's September goal is a wish by November. The difference is whether you open it. Opening it today makes it a goal again."
+        },
+        {
+          "question": "How does this connect to my HOWL grade?",
+          "answer": "The Responsibility HOWL says you arrive prepared and complete work thoughtfully and on time. A system you review and repair is how that stays true in November. Your teachers score HOWLs; Crew is where you practice them."
+        }
+      ],
+      "meta": "7 questions"
+    },
+    {
+      "id": "ch-memory",
+      "type": "memory-aid",
+      "title": "Remember Said, Happened, Change",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Said, Happened, Change",
+        "instructions": "Each card locks in one idea from The Halfway Check. Look at the example aid, make it your own, and tell how it helps you review.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "A review has three questions. What did I say I would do? What actually happened, by the count? What is the one thing to change? Change one thing. Test it for a week. Then check again.",
+        "lessonRef": {
+          "resourceId": "ch-reading",
+          "title": "The Halfway Check"
+        },
+        "cards": [
+          {
+            "id": "ch-ma-shc",
+            "target": "The three review questions: what I said, what happened, the one change",
+            "essentialFacts": [
+              "What did I say I would do?",
+              "What actually happened, by the count?",
+              "What is the one thing to change?"
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Said, Happened, Change. Past, past, future. Two looks back, one step forward.",
+            "mapping": "The three questions run in time order, and the cue \"two back, one forward\" keeps the review from jumping straight to fixing.",
+            "scaffoldStarter": "I said ____. What happened was ____. I will change ____.",
+            "scaffoldSteps": [
+              "Write the three questions in order.",
+              "Notice two are about the past and one is about the future.",
+              "Say the sequence out loud."
+            ],
+            "coachPrompts": [
+              "Which of the three questions did Marcus need the count for?"
+            ],
+            "studentPrompt": "Make your own three-beat cue for the review.",
+            "reasoningPrompt": "How does your cue stop you from changing everything at once?",
+            "hookFact": {
+              "text": "A goal from September that you have not looked at since is not a goal. It is a wish.",
+              "sourceTitle": "The Halfway Check (this lesson)"
+            }
+          },
+          {
+            "id": "ch-ma-onepart",
+            "target": "Change one part and keep the rest",
+            "essentialFacts": [
+              "The temptation is to change everything.",
+              "Change one thing, test it for a week, then check again."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A bike with a flat tire does not need a new bike. It needs one tire. Fix the tire, ride for a week, then look again.",
+            "mapping": "The bike is the system; the flat is the one part that broke for a reason; the rest still rolls.",
+            "scaffoldStarter": "My system is like ____. The part that broke is like ____.",
+            "scaffoldSteps": [
+              "Pick something with parts that can break one at a time.",
+              "Name the one broken part.",
+              "Say what still works."
+            ],
+            "coachPrompts": [
+              "What was Marcus's flat tire?"
+            ],
+            "studentPrompt": "Make your own picture for one-part repair.",
+            "reasoningPrompt": "How does your picture help you keep what works instead of starting over?"
+          }
+        ]
+      },
+      "meta": "6th-8th Grade • 2 memory aids • three questions, one part"
+    },
+    {
+      "id": "ch-challenge",
+      "type": "applied-challenge",
+      "title": "Decide Challenge: One Thing, Not Everything",
+      "timestamp": "2026-09-13T18:00:00.000Z",
+      "data": {
+        "schemaVersion": 6,
+        "title": "One Thing, Not Everything",
+        "instructions": "Review your week-4 system and your September HOWL Tracker goal with the three questions, decide the single change with the best reason, run it for five school days with a morning count, and report what the count did.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "The HOWL behaviors are arriving prepared and completing work thoughtfully and on time. Deciding one change from evidence, rather than resolving to try harder, is how those behaviors survive the middle of a trimester.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "decide",
+          "context": "You have a system from week 4, a count (or the honest absence of one), and a goal from September. Halfway through the trimester, several things could be changed. You get to change one.",
+          "role": "The person who owns the system",
+          "audience": "Yourself, and your Crew, which will hear the change and the count",
+          "drivingQuestion": "Of everything I could change, which one part broke first, why, and what is the smallest fix that would matter?",
+          "seedDirection": "Answer the three questions in writing. List every candidate change. For each, name the reason that part broke. Pick the one with the clearest reason. Run it five days. Count mornings with everything.",
+          "lockedLessonFacts": [
+            "The halfway check keeps what worked and fixes the one part that did not.",
+            "The count matters more than the feeling.",
+            "Change one thing, test it for a week, then check again.",
+            "A goal reviewed halfway, with a count, is a goal; one never opened is a wish."
+          ],
+          "openQuestions": [
+            "Which part stopped first?",
+            "What did it collide with?",
+            "Is the smallest fix a time, a place, or a person?",
+            "What will I count?"
+          ],
+          "stakeholders": [
+            "You",
+            "A family member whose schedule the change touches",
+            "The teacher of the class you are most often unprepared for",
+            "Your Crew leader"
+          ],
+          "criteria": [
+            "The three questions are answered against the goal as written",
+            "The candidate list has at least three changes with a reason each",
+            "Exactly one change is chosen and the reason is stated",
+            "Five days of morning count, honest",
+            "Uses at least three glossary words"
+          ],
+          "constraints": [
+            "One change",
+            "Five school days",
+            "The count is mornings with everything, not a feeling",
+            "The September goal is opened and labelled goal or wish"
+          ],
+          "deliverable": "A one-page decision record: three answers, the candidate list with reasons, the one change chosen, and the five-day count.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A fictional student had three candidates: move the launch check, buy a new planner, and pack the bag at night.",
+            "move": "The reason column showed only the launch check had a clear cause (it collided with a walk). The planner was a wish for a fresh start. The bag was a symptom of the missing check. She moved the check. Five-day count: five of five.",
+            "whyItHelps": "It shows how the reason column picks the change, and how one fix can clear a symptom too."
+          },
+          "frameStarter": "I said I would ____. By the count, ____. My candidates were ____, ____, and ____. I chose ____ because ____. Five-day count: ____ of 5.",
+          "frameChoices": [
+            "My September goal turned out to be a ____.",
+            "The change touched ____ at home, so I ____.",
+            "Next check I will look at ____."
+          ],
+          "coachPrompts": [
+            "Which candidate is really a wish for a fresh start?",
+            "What would the count have to be for you to call the change a success?"
+          ]
+        },
+        "coachHint": "If a student wants to change three things, ask which one broke first. The first break is usually the only real decision.",
+        "sourceExcerpt": "A review has three questions. What did I say I would do? What actually happened, by the count? What is the one thing to change? Change one thing. Test it for a week. Then check again.",
+        "lessonRef": {
+          "resourceId": "ch-reading",
+          "title": "The Halfway Check"
+        }
+      },
+      "meta": "6th-8th Grade • Decide brief • one change, five days"
+    }
+  ],
+  "selStations": [
+    {
+      "id": "sel_station_crew_launch_halfway",
+      "name": "Crew station: Week 10: The Halfway Check",
+      "tools": [
+        "goals",
+        "howlTracker",
+        "execfunction"
+      ],
+      "teacherNote": "Built into the Crew Launch Week 10: The Halfway Check pack. A tool link in the pack's directions starts it; it is also listed under SEL Stations in the History panel. The time step counts only while the tool is open and in use; the self-check is the commitment the student carries into another class this week.",
+      "quests": [
+        {
+          "qid": "crew_halfway_time",
+          "type": "timeSpent",
+          "toolId": "goals",
+          "label": "Spend 5 minutes in Goal Setter",
+          "params": {
+            "minutes": 5
+          }
+        },
+        {
+          "qid": "crew_halfway_check",
+          "type": "manualComplete",
+          "toolId": "execfunction",
+          "label": "I made the one change from my halfway review, ran it for five days, and I know how many mornings I had everything",
+          "params": {}
+        }
+      ],
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "source": "allopack"
+    }
+  ]
+}

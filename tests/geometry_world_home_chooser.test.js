@@ -284,3 +284,41 @@ describe('Geometry World home chooser lifecycle', () => {
     m.unmount();
   });
 });
+
+// The chooser lives in the builder enhancement. The shell loads each STEM lab on demand, one script per tile,
+// so a companion script must be declared as a dependency or it never loads: on the live app (measured
+// 2026-09-14, build 2b2407ccf) only stem_tool_geometryworld.js was fetched, geometryWorldBuilderPure was never
+// defined, and every user, first-time or returning, landed on the legacy "Volume Explorer" lesson intro.
+describe('Geometry World home chooser reaches the live app', () => {
+  it('the shell declares the builder as Geometry World\'s dependency in both copies', () => {
+    for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const source = readFileSync(file, 'utf8');
+      const map = source.indexOf('var stemModuleDependencies = {');
+      expect(map, file).toBeGreaterThan(-1);
+      const entry = source.indexOf("'stem_lab/stem_tool_geometryworld.js': ['stem_lab/stem_tool_geometryworld_builder.js']");
+      expect(entry, file + ' lists the builder as a dependency').toBeGreaterThan(map);
+      expect(entry - map, file + ' entry sits inside the map').toBeLessThan(2500);
+    }
+  });
+
+  it('the builder wraps the tool the instant the core registers, even when it loads first (the dependency order)', () => {
+    resetStemLab();
+    window.THREE = makeThreeStub();
+    // Dependency first: the builder finds no tool yet and must not wait for its 100 ms poll.
+    new Function(readFileSync(BUILDER, 'utf8'))();
+    expect(window.StemLab.isRegistered('geometryWorld')).toBe(false);
+    expect(typeof window.StemLab.geometryWorldBuilderPure).toBe('object');
+    loadTool(FILE, 'geometryWorld');
+    const tool = window.StemLab._registry.geometryWorld;
+    // Synchronously enhanced: the host mounts the tool as soon as it registers, and a render whose hook
+    // count grows on a later re-render throws in React.
+    expect(tool.__alloflowBuilderEnhanced).toBe(true);
+    expect(tool.desc).toMatch(/free-build sandbox/);
+    const m = mountTool(tool, { _introShownOnce: true, worldActive: true });
+    m.rerender();
+    expect(m.bucket().showGeometryHome).toBe(true);
+    expect(m.container.querySelector('.gwe-home[role="dialog"]')).toBeTruthy();
+    expect(m.container.querySelectorAll('button.gwe-home-continue').length).toBe(1);
+    m.unmount();
+  });
+});

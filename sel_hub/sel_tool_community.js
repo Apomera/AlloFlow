@@ -1767,8 +1767,8 @@ window.SelHub = window.SelHub || {
                   lines.push('Created with AlloFlow Community & Culture Tool');
                   var text = lines.join('\n');
                   try {
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                      navigator.clipboard.writeText(text);
+                    if (window.SelHub && window.SelHub.copyText) {
+                      window.SelHub.copyText(text).then(function(ok) { if (!ok) if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); });
                       addToast('\uD83D\uDCCB Heritage project copied to clipboard!', 'success');
                     } else {
                       var ta = document.createElement('textarea');
