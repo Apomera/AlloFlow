@@ -3599,7 +3599,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         if(renderer){renderer.domElement.removeEventListener('pointerdown',onDown);renderer.domElement.removeEventListener('pointermove',onMove);renderer.domElement.removeEventListener('pointerup',onUp);renderer.domElement.removeEventListener('pointercancel',onUp);renderer.domElement.removeEventListener('webglcontextlost',lost);renderer.dispose();renderer.forceContextLoss();if(renderer.domElement.parentNode)renderer.domElement.remove();}
       };
     },[retryPair[0]]);
-    return h('div',{className:'rn-landscape'},
+    // Stage = rn-landscape: the camera buttons under the scene are the keyboard
+    // path, and the status line is what says whether 3D came up at all.
+    return h('div',{className:'rn-landscape','data-allo-fs-stage':'true',ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },style:{position:'relative'}},
+      h('button', {
+        type: 'button',
+        'data-allo-fs-btn': 'true',
+        'aria-pressed': 'false',
+        'aria-label': __alloT('stem.renewables.enter_fullscreen', 'View the 3D energy landscape fullscreen'),
+        'data-fs-out': __alloT('stem.renewables.enter_fullscreen', 'View the 3D energy landscape fullscreen'),
+        'data-fs-in': __alloT('stem.renewables.exit_fullscreen', 'Exit fullscreen 3D energy landscape (Escape)'),
+        style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+      }, h('span', { 'aria-hidden': 'true' }, '⛶')),
       h('div',{ref:mount,className:'rn-webgl',role:'img','aria-label':'3D landscape of six illustrative US regions. Solar arrays, turbines, batteries, and electricity links reflect the selected hour. Exact readings are in the region inspector.','data-render-status':status}),
       status!=='ready'&&h('div',{className:'rn-scene-status',role:'status'},status==='loading'?'Loading the 3D landscape…':'3D is unavailable. The map, chart, and simulation still work.',status==='failed'&&h('button',{type:'button',onClick:function(){retryPair[1](retryPair[0]+1);}},'Retry 3D')),
       h('div',{className:'rn-camera','aria-label':'3D camera controls'},[['left','Rotate left'],['right','Rotate right'],['in','Zoom in'],['out','Zoom out'],['top','Top view'],['home','Reset camera']].map(function(a){return h('button',{key:a[0],type:'button',disabled:status!=='ready',onClick:function(){if(api.current)api.current(a[0]);}},a[1]);})));
