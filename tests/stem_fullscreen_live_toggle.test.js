@@ -59,6 +59,7 @@ const CASES = [
   { file: 'stem_lab/stem_tool_economicslab.js', id: 'economicsLab', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_singing.js', id: 'singing', stage: 'data-allo-fs-stage' },
   { file: 'stem_lab/stem_tool_moonmission.js', id: 'moonMission', stage: 'data-allo-fs-stage' },
+  { file: 'stem_lab/stem_tool_spacestation.js', id: 'spaceStation', stage: 'data-allo-fs-stage', seed: { spaceStation: { tab: 'missions' } } },
   { file: 'stem_lab/stem_tool_money.js', id: 'moneyMath', stage: 'data-allo-fs-stage', seed: { _moneyMath: { tab: 'inquiry', showDollarLab: true } } },
   { file: 'stem_lab/stem_tool_manipulatives.js', id: 'base10', stage: 'data-allo-fs-stage', seed: { _manipulatives: { b10Solid: true } } },
   // The scene view only exists once a student has picked a scene.
@@ -243,7 +244,7 @@ describe('fullscreen copy calls an i18n helper its tool actually defines', () =>
 // Without this they would be the only fullscreen buttons in the lab with no gate
 // at all - exactly how the original dead-button bug survived three reports.
 describe('THREE-gated stages still satisfy the fullscreen contract', () => {
-  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab', 'behaviorlab', 'rocks', 'astronomy', 'ecosystem'];
+  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab', 'behaviorlab', 'rocks', 'astronomy', 'ecosystem', 'archstudio'];
 
   CASES.forEach((name) => {
     it('stem_tool_' + name + '.js declares a wired, labelled stage', () => {
