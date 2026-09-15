@@ -1404,9 +1404,9 @@ function _buildAlloPackShareUrl(encodedPack, aiPolicy = 'off') {
 // Code.gs remains the one canonical source. The generated CDN module serves
 // Canvas and online sessions; the compact gzip fallback preserves first-use
 // offline/Desktop copying without keeping 2,590 lines of Apps Script inline.
-const ALLO_MB_SCRIPT_VERSION = 23;
-const ALLO_MB_SCRIPT_SHA256 = 'cf91247446b7878ab392d5dd3e06f4e06e91009c295c89e6aa50672bdf84b232';
-const ALLO_MB_SCRIPT_BYTES = 129663;
+const ALLO_MB_SCRIPT_VERSION = 24;
+const ALLO_MB_SCRIPT_SHA256 = 'f5b38a25f6d479bc03690ba2b88083f0a9dfbb9dc4ce089f18e3587a9ae3bf61';
+const ALLO_MB_SCRIPT_BYTES = 145173;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -1966,9 +1966,9 @@ function _alloStudentAiConfigIsValidated(config) {
     const keyless = ['alloflow-local', 'lmstudio', 'localai', 'ollama', 'onnx-npu', 'custom'];
     return keyless.includes(backend) || Boolean(String(config.apiKey || '').trim());
 }
-function _makeQrStudentAiBlockedFn(label) {
+function _makeQrStudentAiBlockedFn(label, message) {
     const blocked = async () => {
-        const err = new Error('AI generation is off for this teacher-prepared QR activity.');
+        const err = new Error(message || 'AI generation is off for this teacher-prepared QR activity.');
         err.code = 'allo-qr-ai-disabled';
         err.aiDisabledFor = label || 'qr-student-mode';
         throw err;
@@ -9660,6 +9660,7 @@ const buildLiveHostPresence = (leaseId, now = Date.now()) => ({
   expiresAt: Number(now) + LIVE_HOST_LEASE_TTL_MS,
   leaseId: String(leaseId || '').slice(0, 120) || null,
 });
+const validLiveHostPresenceValue = (presence) => normalizeLiveHostPresence(presence) !== null;
 const ALLOHAVEN_CLASSROOM_REWARD_INBOX_KEY = 'alloflow_allohaven_classroom_reward_inbox_v1';
 const ALLOHAVEN_CLASSROOM_REWARD_REASONS = Object.freeze([
   { id: 'ready_to_learn', label: 'Ready to learn' },
@@ -11259,73 +11260,69 @@ const AlloFlowContent = () => {
   // module sees live values (later-declared consts included) exactly like the original
   // closures. Built once per render; the handler set is created lazily per render.
   const __alloHostDeps = {
-    get ADVENTURE_INITIAL() { return ADVENTURE_INITIAL; }, get ALLOHAVEN_CLASSROOM_REWARD_REASONS() { return ALLOHAVEN_CLASSROOM_REWARD_REASONS; }, get ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS() { return ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS; }, get ALLOHAVEN_RECOGNITION_CAPS() { return ALLOHAVEN_RECOGNITION_CAPS; },
-    get ALLO_AAC_PACK_AUDIO_CHARS() { return ALLO_AAC_PACK_AUDIO_CHARS; }, get ALLO_AAC_PACK_AUDIO_ITEM_CHARS() { return ALLO_AAC_PACK_AUDIO_ITEM_CHARS; }, get ALLO_AAC_PACK_IMAGE_CHARS() { return ALLO_AAC_PACK_IMAGE_CHARS; }, get ALLO_AAC_PACK_IMAGE_ITEM_CHARS() { return ALLO_AAC_PACK_IMAGE_ITEM_CHARS; },
-    get ALLO_ARTIFACT_INSTANCE_ID_FIELD() { return ALLO_ARTIFACT_INSTANCE_ID_FIELD; }, get ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT() { return ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT; }, get ALLO_GENERATION_METRICS() { return ALLO_GENERATION_METRICS; }, get ALLO_MB_ADMIN_KEY() { return ALLO_MB_ADMIN_KEY; },
-    get ALLO_MB_LIVE_KEY() { return ALLO_MB_LIVE_KEY; }, get ALLO_MB_URL_KEY() { return ALLO_MB_URL_KEY; }, get ALLO_MB_VERSION_KEY() { return ALLO_MB_VERSION_KEY; }, get ALLO_PDF_REMEDIATION_CACHE() { return ALLO_PDF_REMEDIATION_CACHE; },
-    get ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY() { return ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY; }, get ALLO_STORAGE_INVENTORY() { return ALLO_STORAGE_INVENTORY; }, get ALLO_STORAGE_RETENTION_POLICY_KEY() { return ALLO_STORAGE_RETENTION_POLICY_KEY; }, get ALLO_WORKSPACE_RECOVERY() { return ALLO_WORKSPACE_RECOVERY; },
-    get ALLO_WORKSPACE_RECOVERY_KEY() { return ALLO_WORKSPACE_RECOVERY_KEY; }, get ALLO_WORKSPACE_RECOVERY_NAMESPACE() { return ALLO_WORKSPACE_RECOVERY_NAMESPACE; }, get BUILDER_PROJECT_DRAFT_MAX_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_BYTES; }, get BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES; },
-    get CS_GENERATED_ITEM_BUDGET() { return CS_GENERATED_ITEM_BUDGET; }, get DEFAULT_EXPORT_CONFIG() { return DEFAULT_EXPORT_CONFIG; }, get DIGITAL_RUBRIC_CONSTRAINT() { return DIGITAL_RUBRIC_CONSTRAINT; }, get DOMException() { return DOMException; },
-    get DOM_TO_TOOL_ID_MAP() { return DOM_TO_TOOL_ID_MAP; }, get DecompressionStream() { return DecompressionStream; }, get GEMINI_MODELS() { return GEMINI_MODELS; }, get GUIDED_STEP_IDS() { return GUIDED_STEP_IDS; },
-    get GUIDED_TOUR_MAP() { return GUIDED_TOUR_MAP; }, get LIVE_ORGANIZER_TYPES() { return LIVE_ORGANIZER_TYPES; }, get ORF_SCREENING_PASSAGES() { return ORF_SCREENING_PASSAGES; }, get PDF_REGRESSION_TOLERANCE() { return PDF_REGRESSION_TOLERANCE; },
-    get React() { return React; }, get TIMELINE_MODE_DEFINITIONS() { return TIMELINE_MODE_DEFINITIONS; }, get TRANSLATION_MODE_AUTO() { return TRANSLATION_MODE_AUTO; }, get UI_ELEMENT_MAP() { return UI_ELEMENT_MAP; },
-    get VENN_ZONES() { return VENN_ZONES; }, get WebSearchProvider() { return WebSearchProvider; }, get _EXPORT_PRESET_SCHEMA_VERSION() { return _EXPORT_PRESET_SCHEMA_VERSION; }, get _aiConfig() { return _aiConfig; },
-    get _alloAacHash() { return _alloAacHash; }, get _alloAacId() { return _alloAacId; }, get _alloAacText() { return _alloAacText; }, get _alloActivityContext() { return _alloActivityContext; },
-    get _alloActivityDispatcher() { return _alloActivityDispatcher; }, get _alloActivityRetryable() { return _alloActivityRetryable; }, get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; },
-    get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; }, get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; },
-    get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; }, get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCaptureCanvasSelAuthoringState() { return _alloCaptureCanvasSelAuthoringState; },
-    get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; }, get _alloCheckpointSupports() { return _alloCheckpointSupports; },
-    get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; }, get _alloCmdCtx() { return _alloCmdCtx; },
-    get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCollectResChunk() { return _alloCollectResChunk; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDcSendDrained() { return _alloDcSendDrained; },
-    get _alloDecodeAlloPack() { return _alloDecodeAlloPack; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; }, get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; },
-    get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; }, get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEncodeAlloPack() { return _alloEncodeAlloPack; },
-    get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFinishResChunk() { return _alloFinishResChunk; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
+    get ALLOHAVEN_CLASSROOM_REWARD_REASONS() { return ALLOHAVEN_CLASSROOM_REWARD_REASONS; }, get ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS() { return ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS; }, get ALLOHAVEN_RECOGNITION_CAPS() { return ALLOHAVEN_RECOGNITION_CAPS; }, get ALLO_AAC_PACK_AUDIO_CHARS() { return ALLO_AAC_PACK_AUDIO_CHARS; },
+    get ALLO_AAC_PACK_AUDIO_ITEM_CHARS() { return ALLO_AAC_PACK_AUDIO_ITEM_CHARS; }, get ALLO_AAC_PACK_IMAGE_CHARS() { return ALLO_AAC_PACK_IMAGE_CHARS; }, get ALLO_AAC_PACK_IMAGE_ITEM_CHARS() { return ALLO_AAC_PACK_IMAGE_ITEM_CHARS; }, get ALLO_ARTIFACT_INSTANCE_ID_FIELD() { return ALLO_ARTIFACT_INSTANCE_ID_FIELD; },
+    get ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT() { return ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT; }, get ALLO_GENERATION_METRICS() { return ALLO_GENERATION_METRICS; }, get ALLO_MB_ADMIN_KEY() { return ALLO_MB_ADMIN_KEY; }, get ALLO_MB_LIVE_KEY() { return ALLO_MB_LIVE_KEY; },
+    get ALLO_MB_URL_KEY() { return ALLO_MB_URL_KEY; }, get ALLO_MB_VERSION_KEY() { return ALLO_MB_VERSION_KEY; }, get ALLO_PDF_REMEDIATION_CACHE() { return ALLO_PDF_REMEDIATION_CACHE; }, get ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY() { return ALLO_SCHOOL_REWARDS_PORTAL_URL_KEY; },
+    get ALLO_STORAGE_INVENTORY() { return ALLO_STORAGE_INVENTORY; }, get ALLO_STORAGE_RETENTION_POLICY_KEY() { return ALLO_STORAGE_RETENTION_POLICY_KEY; }, get ALLO_WORKSPACE_RECOVERY() { return ALLO_WORKSPACE_RECOVERY; }, get ALLO_WORKSPACE_RECOVERY_KEY() { return ALLO_WORKSPACE_RECOVERY_KEY; },
+    get ALLO_WORKSPACE_RECOVERY_NAMESPACE() { return ALLO_WORKSPACE_RECOVERY_NAMESPACE; }, get BUILDER_PROJECT_DRAFT_MAX_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_BYTES; }, get BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES() { return BUILDER_PROJECT_DRAFT_MAX_STORED_BYTES; }, get CS_GENERATED_ITEM_BUDGET() { return CS_GENERATED_ITEM_BUDGET; },
+    get DEFAULT_EXPORT_CONFIG() { return DEFAULT_EXPORT_CONFIG; }, get DIGITAL_RUBRIC_CONSTRAINT() { return DIGITAL_RUBRIC_CONSTRAINT; }, get DOMException() { return DOMException; }, get DOM_TO_TOOL_ID_MAP() { return DOM_TO_TOOL_ID_MAP; },
+    get DecompressionStream() { return DecompressionStream; }, get GEMINI_MODELS() { return GEMINI_MODELS; }, get GUIDED_STEP_IDS() { return GUIDED_STEP_IDS; }, get GUIDED_TOUR_MAP() { return GUIDED_TOUR_MAP; },
+    get LIVE_ORGANIZER_TYPES() { return LIVE_ORGANIZER_TYPES; }, get ORF_SCREENING_PASSAGES() { return ORF_SCREENING_PASSAGES; }, get PDF_REGRESSION_TOLERANCE() { return PDF_REGRESSION_TOLERANCE; }, get React() { return React; },
+    get TIMELINE_MODE_DEFINITIONS() { return TIMELINE_MODE_DEFINITIONS; }, get TRANSLATION_MODE_AUTO() { return TRANSLATION_MODE_AUTO; }, get UI_ELEMENT_MAP() { return UI_ELEMENT_MAP; }, get WebSearchProvider() { return WebSearchProvider; },
+    get _EXPORT_PRESET_SCHEMA_VERSION() { return _EXPORT_PRESET_SCHEMA_VERSION; }, get _aiConfig() { return _aiConfig; }, get _alloAacHash() { return _alloAacHash; }, get _alloAacId() { return _alloAacId; },
+    get _alloAacText() { return _alloAacText; }, get _alloActivityContext() { return _alloActivityContext; }, get _alloActivityDispatcher() { return _alloActivityDispatcher; }, get _alloActivityRetryable() { return _alloActivityRetryable; },
+    get _alloAlignmentAuditSummary() { return _alloAlignmentAuditSummary; }, get _alloAlignmentExportFromRegistryEntry() { return _alloAlignmentExportFromRegistryEntry; }, get _alloAlignmentExportSchema() { return _alloAlignmentExportSchema; }, get _alloApplyCanvasSelAuthoringState() { return _alloApplyCanvasSelAuthoringState; },
+    get _alloArtifactListLength() { return _alloArtifactListLength; }, get _alloArtifactMatchesInstanceId() { return _alloArtifactMatchesInstanceId; }, get _alloBeginGlossaryTask() { return _alloBeginGlossaryTask; }, get _alloBoundLearningWebGraphForExplorer() { return _alloBoundLearningWebGraphForExplorer; },
+    get _alloBuildAssignmentCenterCsv() { return _alloBuildAssignmentCenterCsv; }, get _alloCheckpointArtifact() { return _alloCheckpointArtifact; }, get _alloCheckpointRecordsRef() { return _alloCheckpointRecordsRef; }, get _alloCheckpointSaltRef() { return _alloCheckpointSaltRef; },
+    get _alloCheckpointSupports() { return _alloCheckpointSupports; }, get _alloCheckpointSupportsRef() { return _alloCheckpointSupportsRef; }, get _alloCleanMailboxUrl() { return _alloCleanMailboxUrl; }, get _alloClearCachedDeviceStoragePromises() { return _alloClearCachedDeviceStoragePromises; },
+    get _alloCmdCtx() { return _alloCmdCtx; }, get _alloCmdCtxRef() { return _alloCmdCtxRef; }, get _alloCreateDefaultStudentProjectSettings() { return _alloCreateDefaultStudentProjectSettings; }, get _alloDiagnosticBoundedInt() { return _alloDiagnosticBoundedInt; },
+    get _alloDiagnosticReason() { return _alloDiagnosticReason; }, get _alloDiagnosticResourceType() { return _alloDiagnosticResourceType; }, get _alloDiagnosticRunId() { return _alloDiagnosticRunId; }, get _alloDiagnosticTimestamp() { return _alloDiagnosticTimestamp; },
+    get _alloDirectionsGoalResources() { return _alloDirectionsGoalResources; }, get _alloEnsureLedger() { return _alloEnsureLedger; }, get _alloFollowResourceLive() { return _alloFollowResourceLive; }, get _alloGenerationHelpersDeps() { return _alloGenerationHelpersDeps; },
     get _alloGetCanvasDeviceStorage() { return _alloGetCanvasDeviceStorage; }, get _alloGetRecoveryVaultStack() { return _alloGetRecoveryVaultStack; }, get _alloIsAlignmentGraph() { return _alloIsAlignmentGraph; }, get _alloLastLenRef() { return _alloLastLenRef; },
-    get _alloLearningWebScopeId() { return _alloLearningWebScopeId; }, get _alloLedgerRef() { return _alloLedgerRef; }, get _alloLiveAacModule() { return _alloLiveAacModule; }, get _alloLoadScriptGlobal() { return _alloLoadScriptGlobal; },
-    get _alloMailboxCall() { return _alloMailboxCall; }, get _alloMailboxCallWithRetry() { return _alloMailboxCallWithRetry; }, get _alloMbBridgeActive() { return _alloMbBridgeActive; }, get _alloMbBridgeState() { return _alloMbBridgeState; },
-    get _alloMbInstallBridge() { return _alloMbInstallBridge; }, get _alloMbNudge() { return _alloMbNudge; }, get _alloMbTeardownBridge() { return _alloMbTeardownBridge; }, get _alloMiscHandlersDeps() { return _alloMiscHandlersDeps; },
-    get _alloNormalizeAlignmentGraphExportForHost() { return _alloNormalizeAlignmentGraphExportForHost; }, get _alloNormalizeDirectionsData() { return _alloNormalizeDirectionsData; }, get _alloNormalizePortableAacBoardPackage() { return _alloNormalizePortableAacBoardPackage; }, get _alloNormalizeStudentProjectSettings() { return _alloNormalizeStudentProjectSettings; },
-    get _alloProvenanceApi() { return _alloProvenanceApi; }, get _alloQuickHash() { return _alloQuickHash; }, get _alloRandomToken() { return _alloRandomToken; }, get _alloReadVisualSupportCollection() { return _alloReadVisualSupportCollection; },
-    get _alloRefreshWorkStory() { return _alloRefreshWorkStory; }, get _alloRunActivityGeneration() { return _alloRunActivityGeneration; }, get _alloSafeArtifactField() { return _alloSafeArtifactField; }, get _alloSafeArtifactPublicIdValue() { return _alloSafeArtifactPublicIdValue; },
-    get _alloSerializeResourceForStudentPack() { return _alloSerializeResourceForStudentPack; }, get _alloSessionSyncTrace() { return _alloSessionSyncTrace; }, get _alloSplitPackChunks() { return _alloSplitPackChunks; }, get _alloStampBrainstormDerivative() { return _alloStampBrainstormDerivative; },
-    get _alloStudentSafeResources() { return _alloStudentSafeResources; }, get _alloUpdateBrainstormActivity() { return _alloUpdateBrainstormActivity; }, get _alloWriteVisualSupportCollection() { return _alloWriteVisualSupportCollection; }, get _applySimplifiedTextMutation() { return _applySimplifiedTextMutation; },
-    get _beginReadThisPageVoiceSpeech() { return _beginReadThisPageVoiceSpeech; }, get _blueprintArchiveLib() { return _blueprintArchiveLib; }, get _buildAlloMailboxEntryUrl() { return _buildAlloMailboxEntryUrl; }, get _builderBase64ToBytes() { return _builderBase64ToBytes; },
-    get _builderDraftRestoreRef() { return _builderDraftRestoreRef; }, get _builderOpenerElRef() { return _builderOpenerElRef; }, get _builderReviewSessionRef() { return _builderReviewSessionRef; }, get _builderUtf8ByteLength() { return _builderUtf8ByteLength; },
-    get _contentEngineRef() { return _contentEngineRef; }, get _copySanitizedDiagnostic() { return _copySanitizedDiagnostic; }, get _demoteInFlightRows() { return _demoteInFlightRows; }, get _docPipeline() { return _docPipeline; },
-    get _encodeReadAloudBridgeAudio() { return _encodeReadAloudBridgeAudio; }, get _ensureKaraokeStore() { return _ensureKaraokeStore; }, get _extensionGuideRequests() { return _extensionGuideRequests; }, get _getBuilderDraftForProject() { return _getBuilderDraftForProject; },
-    get _getBuilderHistorySignature() { return _getBuilderHistorySignature; }, get _getFreshTextComplexityEvidence() { return _getFreshTextComplexityEvidence; }, get _getPrivatePersonaArtifactStorage() { return _getPrivatePersonaArtifactStorage; }, get _isDesktopBundledApp() { return _isDesktopBundledApp; },
-    get _isIOSCanvasEnv() { return _isIOSCanvasEnv; }, get _isQrStudentAiDisabled() { return _isQrStudentAiDisabled; }, get _lessonTemplateLib() { return _lessonTemplateLib; }, get _listMainVoiceEditableFields() { return _listMainVoiceEditableFields; },
-    get _mbEmptySessionShape() { return _mbEmptySessionShape; }, get _mbPushOneResource() { return _mbPushOneResource; }, get _readBuilderDraftStreamBounded() { return _readBuilderDraftStreamBounded; }, get _readTextDomain() { return _readTextDomain; },
-    get _recordTextChange() { return _recordTextChange; }, get _releaseReadThisPageVoiceSpeech() { return _releaseReadThisPageVoiceSpeech; }, get _removeBuilderCropUi() { return _removeBuilderCropUi; }, get _resourceMutationStateRef() { return _resourceMutationStateRef; },
-    get _sanitizeBuilderProjectDraft() { return _sanitizeBuilderProjectDraft; }, get _setOnlyInteractiveOrganizer() { return _setOnlyInteractiveOrganizer; }, get _settleReadThisPagePauseWaiters() { return _settleReadThisPagePauseWaiters; }, get _shiftTextStack() { return _shiftTextStack; },
+    get _alloLearningWebScopeId() { return _alloLearningWebScopeId; }, get _alloLedgerRef() { return _alloLedgerRef; }, get _alloLoadScriptGlobal() { return _alloLoadScriptGlobal; }, get _alloMailboxCall() { return _alloMailboxCall; },
+    get _alloMailboxCallWithRetry() { return _alloMailboxCallWithRetry; }, get _alloMbBridgeActive() { return _alloMbBridgeActive; }, get _alloMbBridgeState() { return _alloMbBridgeState; }, get _alloMbInstallBridge() { return _alloMbInstallBridge; },
+    get _alloMbTeardownBridge() { return _alloMbTeardownBridge; }, get _alloMiscHandlersDeps() { return _alloMiscHandlersDeps; }, get _alloNormalizeAlignmentGraphExportForHost() { return _alloNormalizeAlignmentGraphExportForHost; }, get _alloNormalizeDirectionsData() { return _alloNormalizeDirectionsData; },
+    get _alloNormalizePortableAacBoardPackage() { return _alloNormalizePortableAacBoardPackage; }, get _alloNormalizeStudentProjectSettings() { return _alloNormalizeStudentProjectSettings; }, get _alloProvenanceApi() { return _alloProvenanceApi; }, get _alloQuickHash() { return _alloQuickHash; },
+    get _alloRandomToken() { return _alloRandomToken; }, get _alloReadVisualSupportCollection() { return _alloReadVisualSupportCollection; }, get _alloRefreshWorkStory() { return _alloRefreshWorkStory; }, get _alloRunActivityGeneration() { return _alloRunActivityGeneration; },
+    get _alloSafeArtifactField() { return _alloSafeArtifactField; }, get _alloSafeArtifactPublicIdValue() { return _alloSafeArtifactPublicIdValue; }, get _alloSerializeResourceForStudentPack() { return _alloSerializeResourceForStudentPack; }, get _alloSessionSyncTrace() { return _alloSessionSyncTrace; },
+    get _alloSplitPackChunks() { return _alloSplitPackChunks; }, get _alloStampBrainstormDerivative() { return _alloStampBrainstormDerivative; }, get _alloStudentSafeResources() { return _alloStudentSafeResources; }, get _alloUpdateBrainstormActivity() { return _alloUpdateBrainstormActivity; },
+    get _alloWriteVisualSupportCollection() { return _alloWriteVisualSupportCollection; }, get _applySimplifiedTextMutation() { return _applySimplifiedTextMutation; }, get _beginReadThisPageVoiceSpeech() { return _beginReadThisPageVoiceSpeech; }, get _blueprintArchiveLib() { return _blueprintArchiveLib; },
+    get _buildAlloMailboxEntryUrl() { return _buildAlloMailboxEntryUrl; }, get _builderBase64ToBytes() { return _builderBase64ToBytes; }, get _builderDraftRestoreRef() { return _builderDraftRestoreRef; }, get _builderOpenerElRef() { return _builderOpenerElRef; },
+    get _builderReviewSessionRef() { return _builderReviewSessionRef; }, get _builderUtf8ByteLength() { return _builderUtf8ByteLength; }, get _contentEngineRef() { return _contentEngineRef; }, get _copySanitizedDiagnostic() { return _copySanitizedDiagnostic; },
+    get _demoteInFlightRows() { return _demoteInFlightRows; }, get _docPipeline() { return _docPipeline; }, get _encodeReadAloudBridgeAudio() { return _encodeReadAloudBridgeAudio; }, get _ensureKaraokeStore() { return _ensureKaraokeStore; },
+    get _extensionGuideRequests() { return _extensionGuideRequests; }, get _getBuilderHistorySignature() { return _getBuilderHistorySignature; }, get _getFreshTextComplexityEvidence() { return _getFreshTextComplexityEvidence; }, get _getPrivatePersonaArtifactStorage() { return _getPrivatePersonaArtifactStorage; },
+    get _isDesktopBundledApp() { return _isDesktopBundledApp; }, get _isIOSCanvasEnv() { return _isIOSCanvasEnv; }, get _isQrStudentAiDisabled() { return _isQrStudentAiDisabled; }, get _lessonTemplateLib() { return _lessonTemplateLib; },
+    get _listMainVoiceEditableFields() { return _listMainVoiceEditableFields; }, get _mbEmptySessionShape() { return _mbEmptySessionShape; }, get _mbPushOneResource() { return _mbPushOneResource; }, get _readBuilderDraftStreamBounded() { return _readBuilderDraftStreamBounded; },
+    get _readTextDomain() { return _readTextDomain; }, get _recordTextChange() { return _recordTextChange; }, get _releaseReadThisPageVoiceSpeech() { return _releaseReadThisPageVoiceSpeech; }, get _removeBuilderCropUi() { return _removeBuilderCropUi; },
+    get _resourceMutationStateRef() { return _resourceMutationStateRef; }, get _sanitizeBuilderProjectDraft() { return _sanitizeBuilderProjectDraft; }, get _setOnlyInteractiveOrganizer() { return _setOnlyInteractiveOrganizer; }, get _settleReadThisPagePauseWaiters() { return _settleReadThisPagePauseWaiters; },
     get _stripForImmersive() { return _stripForImmersive; }, get _textDomainLabel() { return _textDomainLabel; }, get _textUndoLiveRef() { return _textUndoLiveRef; }, get _unpackBuilderProjectDraft() { return _unpackBuilderProjectDraft; },
     get _updatePanelInPlan() { return _updatePanelInPlan; }, get _voiceEditableFieldSelectionRef() { return _voiceEditableFieldSelectionRef; }, get _waitForReadThisPageResume() { return _waitForReadThisPageResume; }, get aacPlaybackRef() { return aacPlaybackRef; },
     get activeBlueprint() { return activeBlueprint; }, get activeChallengeMode() { return activeChallengeMode; }, get activeInteractiveOrganizerTypeRef() { return activeInteractiveOrganizerTypeRef; }, get activeResolvedStandardsContext() { return activeResolvedStandardsContext; },
     get activeSessionAppId() { return activeSessionAppId; }, get activeSessionCode() { return activeSessionCode; }, get activeSidebarTab() { return activeSidebarTab; }, get activeUnitId() { return activeUnitId; },
-    get activeView() { return activeView; }, get addToast() { return addToast; }, get addToastRef() { return addToastRef; }, get addXp() { return addXp; },
-    get adventureCustomInstructions() { return adventureCustomInstructions; }, get adventureImageDB() { return adventureImageDB; }, get adventureState() { return adventureState; }, get alloBotRef() { return alloBotRef; },
-    get alloMailboxConfigExportPayload() { return alloMailboxConfigExportPayload; }, get alloNormalizeLearnerReadingPreference() { return alloNormalizeLearnerReadingPreference; }, get alloNormalizeReadingTheme() { return alloNormalizeReadingTheme; }, get alloPersistMailboxConfig() { return alloPersistMailboxConfig; },
-    get alloReadMailboxConfigCache() { return alloReadMailboxConfigCache; }, get alloStableAssignmentId() { return alloStableAssignmentId; }, get annotationImportOwnerRef() { return annotationImportOwnerRef; }, get annotationLiveDocumentIdentityRef() { return annotationLiveDocumentIdentityRef; },
-    get annotationMode() { return annotationMode; }, get annotationUndoStackRef() { return annotationUndoStackRef; }, get appId() { return appId; }, get appUpdateApplying() { return appUpdateApplying; },
-    get archiveLivePlan() { return archiveLivePlan; }, get assignmentCenterRows() { return assignmentCenterRows; }, get assignmentDirections() { return assignmentDirections; }, get auditOutputAccessibility() { return auditOutputAccessibility; },
-    get autoRemoveWords() { return autoRemoveWords; }, get bingoSettings() { return bingoSettings; }, get blendAiAxe() { return blendAiAxe; }, get blueprintExecutionResult() { return blueprintExecutionResult; },
-    get buildSanitizedBlueprintDiagnostic() { return buildSanitizedBlueprintDiagnostic; }, get buildSanitizedFullPackDiagnostic() { return buildSanitizedFullPackDiagnostic; }, get buildSecurePersonaReflectionPrompt() { return buildSecurePersonaReflectionPrompt; }, get buildStudentResourcePatchBatches() { return buildStudentResourcePatchBatches; },
-    get buildUniqueRosterSessionCodenameIndex() { return buildUniqueRosterSessionCodenameIndex; }, get builderResourceIds() { return builderResourceIds; }, get callGemini() { return callGemini; }, get callGeminiImageEdit() { return callGeminiImageEdit; },
-    get callImagen() { return callImagen; }, get callTTS() { return callTTS; }, get canWriteLiveActivityProgress() { return canWriteLiveActivityProgress; }, get cancelActiveFileIntakeOperations() { return cancelActiveFileIntakeOperations; },
-    get cancelActiveProjectLoad() { return cancelActiveProjectLoad; }, get cancelAnnotationImports() { return cancelAnnotationImports; }, get canvasRecoveryCurrentIdRef() { return canvasRecoveryCurrentIdRef; }, get canvasRecoveryDecisionMade() { return canvasRecoveryDecisionMade; },
-    get canvasRecoveryDialogRef() { return canvasRecoveryDialogRef; }, get canvasRecoveryImmediateSaveRef() { return canvasRecoveryImmediateSaveRef; }, get canvasRecoveryMutationInProgressRef() { return canvasRecoveryMutationInProgressRef; }, get canvasRecoveryPendingSaveCountRef() { return canvasRecoveryPendingSaveCountRef; },
-    get canvasRecoverySaveTokenRef() { return canvasRecoverySaveTokenRef; }, get canvasRecoveryStoreRef() { return canvasRecoveryStoreRef; }, get canvasRecoveryVaultControllerRef() { return canvasRecoveryVaultControllerRef; }, get canvasRecoveryVaultForm() { return canvasRecoveryVaultForm; },
-    get canvasRecoveryVaultImportRef() { return canvasRecoveryVaultImportRef; }, get canvasRecoveryVaultPendingActionRef() { return canvasRecoveryVaultPendingActionRef; }, get canvasRecoveryVaultState() { return canvasRecoveryVaultState; }, get canvasRecoveryWriteQueueRef() { return canvasRecoveryWriteQueueRef; },
-    get capturePdfDocumentIntakeEpoch() { return capturePdfDocumentIntakeEpoch; }, get challengeFeedback() { return challengeFeedback; }, get challengeModeType() { return challengeModeType; }, get challengeTarget() { return challengeTarget; },
-    get checkpointState() { return checkpointState; }, get cleanJson() { return cleanJson; }, get clearCanvasRecoveryVaultSecrets() { return clearCanvasRecoveryVaultSecrets; }, get clearMathResourceState() { return clearMathResourceState; },
-    get closeCanvasRecoveryDialog() { return closeCanvasRecoveryDialog; }, get colorOverlay() { return colorOverlay; }, get commitCanvasRecoveryVaultEnable() { return commitCanvasRecoveryVaultEnable; }, get commitPdfFixResultIfCurrent() { return commitPdfFixResultIfCurrent; },
-    get conceptImageMode() { return conceptImageMode; }, get conceptMapEdges() { return conceptMapEdges; }, get conceptMapNodes() { return conceptMapNodes; }, get conceptSortAutoRemoveWords() { return conceptSortAutoRemoveWords; },
-    get connectingSourceId() { return connectingSourceId; }, get contentAreaRef() { return contentAreaRef; }, get contentEngineStateRef() { return contentEngineStateRef; }, get contentRef() { return contentRef; },
-    get copyToClipboard() { return copyToClipboard; }, get csAsyncRunIsCurrent() { return csAsyncRunIsCurrent; }, get csBeginAsyncRun() { return csBeginAsyncRun; }, get csGeneratedItemBudgetRef() { return csGeneratedItemBudgetRef; },
-    get csLiveDocumentIdRef() { return csLiveDocumentIdRef; }, get csRefinementInputs() { return csRefinementInputs; }, get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; },
-    get db() { return db; }, get debugLog() { return debugLog; }, get deleteDoc() { return deleteDoc; }, get describeSavedFollowUpLiveFailure() { return describeSavedFollowUpLiveFailure; },
-    get differentiationRange() { return differentiationRange; }, get directionsDeriving() { return directionsDeriving; }, get doc() { return doc; }, get dokLevel() { return dokLevel; },
-    get downloadSubmissionBackup() { return downloadSubmissionBackup; }, get dragOffset() { return dragOffset; }, get draggedNodeId() { return draggedNodeId; }, get draggedTimelineIndex() { return draggedTimelineIndex; },
+    get addToast() { return addToast; }, get addToastRef() { return addToastRef; }, get addXp() { return addXp; }, get adventureCustomInstructions() { return adventureCustomInstructions; },
+    get adventureImageDB() { return adventureImageDB; }, get adventureState() { return adventureState; }, get alloBotRef() { return alloBotRef; }, get alloMailboxConfigExportPayload() { return alloMailboxConfigExportPayload; },
+    get alloNormalizeLearnerReadingPreference() { return alloNormalizeLearnerReadingPreference; }, get alloNormalizeReadingTheme() { return alloNormalizeReadingTheme; }, get alloPersistMailboxConfig() { return alloPersistMailboxConfig; }, get alloReadMailboxConfigCache() { return alloReadMailboxConfigCache; },
+    get alloStableAssignmentId() { return alloStableAssignmentId; }, get annotationImportOwnerRef() { return annotationImportOwnerRef; }, get annotationLiveDocumentIdentityRef() { return annotationLiveDocumentIdentityRef; }, get annotationMode() { return annotationMode; },
+    get annotationUndoStackRef() { return annotationUndoStackRef; }, get appId() { return appId; }, get appUpdateApplying() { return appUpdateApplying; }, get assignmentCenterRows() { return assignmentCenterRows; },
+    get assignmentDirections() { return assignmentDirections; }, get auditOutputAccessibility() { return auditOutputAccessibility; }, get autoRemoveWords() { return autoRemoveWords; }, get bingoSettings() { return bingoSettings; },
+    get blendAiAxe() { return blendAiAxe; }, get blueprintExecutionResult() { return blueprintExecutionResult; }, get buildSanitizedBlueprintDiagnostic() { return buildSanitizedBlueprintDiagnostic; }, get buildSanitizedFullPackDiagnostic() { return buildSanitizedFullPackDiagnostic; },
+    get buildSecurePersonaReflectionPrompt() { return buildSecurePersonaReflectionPrompt; }, get buildStudentResourcePatchBatches() { return buildStudentResourcePatchBatches; }, get buildUniqueRosterSessionCodenameIndex() { return buildUniqueRosterSessionCodenameIndex; }, get builderResourceIds() { return builderResourceIds; },
+    get callGemini() { return callGemini; }, get callGeminiImageEdit() { return callGeminiImageEdit; }, get callImagen() { return callImagen; }, get callTTS() { return callTTS; },
+    get canWriteLiveActivityProgress() { return canWriteLiveActivityProgress; }, get cancelActiveFileIntakeOperations() { return cancelActiveFileIntakeOperations; }, get cancelActiveProjectLoad() { return cancelActiveProjectLoad; }, get cancelAnnotationImports() { return cancelAnnotationImports; },
+    get canvasRecoveryCurrentIdRef() { return canvasRecoveryCurrentIdRef; }, get canvasRecoveryDecisionMade() { return canvasRecoveryDecisionMade; }, get canvasRecoveryDialogRef() { return canvasRecoveryDialogRef; }, get canvasRecoveryImmediateSaveRef() { return canvasRecoveryImmediateSaveRef; },
+    get canvasRecoveryMutationInProgressRef() { return canvasRecoveryMutationInProgressRef; }, get canvasRecoveryPendingSaveCountRef() { return canvasRecoveryPendingSaveCountRef; }, get canvasRecoverySaveTokenRef() { return canvasRecoverySaveTokenRef; }, get canvasRecoveryStoreRef() { return canvasRecoveryStoreRef; },
+    get canvasRecoveryVaultControllerRef() { return canvasRecoveryVaultControllerRef; }, get canvasRecoveryVaultForm() { return canvasRecoveryVaultForm; }, get canvasRecoveryVaultImportRef() { return canvasRecoveryVaultImportRef; }, get canvasRecoveryVaultPendingActionRef() { return canvasRecoveryVaultPendingActionRef; },
+    get canvasRecoveryVaultState() { return canvasRecoveryVaultState; }, get canvasRecoveryWriteQueueRef() { return canvasRecoveryWriteQueueRef; }, get capturePdfDocumentIntakeEpoch() { return capturePdfDocumentIntakeEpoch; }, get challengeFeedback() { return challengeFeedback; },
+    get challengeModeType() { return challengeModeType; }, get challengeTarget() { return challengeTarget; }, get checkpointState() { return checkpointState; }, get cleanJson() { return cleanJson; },
+    get clearCanvasRecoveryVaultSecrets() { return clearCanvasRecoveryVaultSecrets; }, get clearMathResourceState() { return clearMathResourceState; }, get closeCanvasRecoveryDialog() { return closeCanvasRecoveryDialog; }, get colorOverlay() { return colorOverlay; },
+    get commitCanvasRecoveryVaultEnable() { return commitCanvasRecoveryVaultEnable; }, get commitPdfFixResultIfCurrent() { return commitPdfFixResultIfCurrent; }, get conceptImageMode() { return conceptImageMode; }, get conceptMapEdges() { return conceptMapEdges; },
+    get conceptMapNodes() { return conceptMapNodes; }, get conceptSortAutoRemoveWords() { return conceptSortAutoRemoveWords; }, get connectingSourceId() { return connectingSourceId; }, get contentAreaRef() { return contentAreaRef; },
+    get contentEngineStateRef() { return contentEngineStateRef; }, get contentRef() { return contentRef; }, get copyToClipboard() { return copyToClipboard; }, get csAsyncRunIsCurrent() { return csAsyncRunIsCurrent; },
+    get csBeginAsyncRun() { return csBeginAsyncRun; }, get csGeneratedItemBudgetRef() { return csGeneratedItemBudgetRef; }, get csLiveDocumentIdRef() { return csLiveDocumentIdRef; }, get csRefinementInputs() { return csRefinementInputs; },
+    get csUpdateData() { return csUpdateData; }, get currentUiLanguage() { return currentUiLanguage; }, get db() { return db; }, get debugLog() { return debugLog; },
+    get deleteDoc() { return deleteDoc; }, get describeSavedFollowUpLiveFailure() { return describeSavedFollowUpLiveFailure; }, get differentiationRange() { return differentiationRange; }, get directionsDeriving() { return directionsDeriving; },
+    get doc() { return doc; }, get dokLevel() { return dokLevel; }, get downloadSubmissionBackup() { return downloadSubmissionBackup; }, get draggedTimelineIndex() { return draggedTimelineIndex; },
     get editingOptionsBuffer() { return editingOptionsBuffer; }, get educatorAccessState() { return educatorAccessState; }, get emptyCanvasRecoveryVaultView() { return emptyCanvasRecoveryVaultView; }, get encodeFramesToGif() { return encodeFramesToGif; },
     get endMailboxLiveSession() { return endMailboxLiveSession; }, get endSessionNote() { return endSessionNote; }, get endSessionPreview() { return endSessionPreview; }, get ensureArtifactInstanceId() { return ensureArtifactInstanceId; },
     get ensureExportLibraries() { return ensureExportLibraries; }, get ensureToolVisible() { return ensureToolVisible; }, get evaluateMathExpression() { return evaluateMathExpression; }, get evaluationPortalUrl() { return evaluationPortalUrl; },
@@ -11344,193 +11341,183 @@ const AlloFlowContent = () => {
     get getExportableHistory() { return getExportableHistory; }, get getFilteredHistory() { return getFilteredHistory; }, get getLiveOrganizerReadiness() { return getLiveOrganizerReadiness; }, get getLiveOrganizerResourceRevision() { return getLiveOrganizerResourceRevision; },
     get getMathResourceStateKey() { return getMathResourceStateKey; }, get getMathStoredProblemKeys() { return getMathStoredProblemKeys; }, get getPersonaVoiceOptions() { return getPersonaVoiceOptions; }, get getReadableContent() { return getReadableContent; },
     get getSavedLessonProgressionContext() { return getSavedLessonProgressionContext; }, get getSimplifiedRigorApi() { return getSimplifiedRigorApi; }, get getSkippedResources() { return getSkippedResources; }, get getSpeechLangCode() { return getSpeechLangCode; },
-    get getVennZone() { return getVennZone; }, get getWordSoundsPortableAudioCoverage() { return getWordSoundsPortableAudioCoverage; }, get globalPoints() { return globalPoints; }, get glossaryCustomInstructions() { return glossaryCustomInstructions; },
-    get glossaryHealthCheckIdRef() { return glossaryHealthCheckIdRef; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryLiveRef() { return glossaryLiveRef; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
-    get glossaryTaskRegistryRef() { return glossaryTaskRegistryRef; }, get gradeLevel() { return gradeLevel; }, get gradingSession() { return gradingSession; }, get guidedActiveSteps() { return guidedActiveSteps; },
-    get guidedCompletedIds() { return guidedCompletedIds; }, get guidedCreatedHistoryIds() { return guidedCreatedHistoryIds; }, get guidedDeliveryEvidence() { return guidedDeliveryEvidence; }, get guidedMode() { return guidedMode; },
-    get guidedPlanBrief() { return guidedPlanBrief; }, get guidedSelectedIds() { return guidedSelectedIds; }, get guidedSkippedIds() { return guidedSkippedIds; }, get guidedStep() { return guidedStep; },
-    get handleAdventureChoice() { return handleAdventureChoice; }, get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAnalysisTextChange() { return handleAnalysisTextChange; }, get handleAnnotationUndo() { return handleAnnotationUndo; },
-    get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; }, get handleExportSlides() { return handleExportSlides; }, get handleGenerate() { return handleGenerate; },
-    get handleGenerateConceptItem() { return handleGenerateConceptItem; }, get handleGuidingHand() { return handleGuidingHand; }, get handleLoadProject() { return handleLoadProject; }, get handleMasteryGrading() { return handleMasteryGrading; },
-    get handleRecognizeStudents() { return handleRecognizeStudents; }, get handleRestoreView() { return handleRestoreView; }, get handleScoreUpdate() { return handleScoreUpdate; }, get handleSpeak() { return handleSpeak; },
-    get handleStartLiveSession() { return handleStartLiveSession; }, get handleUrlFetch() { return handleUrlFetch; }, get havenConfigBusy() { return havenConfigBusy; }, get havenRecognitionConfig() { return havenRecognitionConfig; },
-    get havenRewardAmount() { return havenRewardAmount; }, get havenRewardBusy() { return havenRewardBusy; }, get havenRewardDraftsRef() { return havenRewardDraftsRef; }, get havenRewardReasonId() { return havenRewardReasonId; },
-    get havenRewardSendLockRef() { return havenRewardSendLockRef; }, get highlightColor() { return highlightColor; }, get highlightElement() { return highlightElement; }, get history() { return history; },
-    get homeworkExpiryDays() { return homeworkExpiryDays; }, get homeworkShelf() { return homeworkShelf; }, get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; },
-    get includeCharts() { return includeCharts; }, get includeSourceCitations() { return includeSourceCitations; }, get inputText() { return inputText; }, get interactiveOrganizerWriteQueueRef() { return interactiveOrganizerWriteQueueRef; },
-    get invalidateLocalDataHydration() { return invalidateLocalDataHydration; }, get invalidatePdfDocumentOperations() { return invalidatePdfDocumentOperations; }, get isBotSpeakingRef() { return isBotSpeakingRef; }, get isBotVisible() { return isBotVisible; },
-    get isCanvas() { return isCanvas; }, get isCheckingChallenge() { return isCheckingChallenge; }, get isCommittedMathAssessmentContext() { return isCommittedMathAssessmentContext; }, get isDictationActiveRef() { return isDictationActiveRef; },
-    get isExecutingBlueprint() { return isExecutingBlueprint; }, get isGlobalMuted() { return isGlobalMuted; }, get isGoogleRedirect() { return isGoogleRedirect; }, get isImmersiveReaderActive() { return isImmersiveReaderActive; },
-    get isIndependentMode() { return isIndependentMode; }, get isPdfDocumentIntakeCurrent() { return isPdfDocumentIntakeCurrent; }, get isPersonaChatOpen() { return isPersonaChatOpen; }, get isPlayableInteractiveVennData() { return isPlayableInteractiveVennData; },
-    get isPlayingRef() { return isPlayingRef; }, get isSavedFollowUpLiveSessionCurrent() { return isSavedFollowUpLiveSessionCurrent; }, get isTeacherMode() { return isTeacherMode; }, get isUDLGuideExpanded() { return isUDLGuideExpanded; },
-    get isUndoingAnnotationRef() { return isUndoingAnnotationRef; }, get isVoiceRecording() { return isVoiceRecording; }, get isWide() { return isWide; }, get keepCitations() { return keepCitations; },
+    get getWordSoundsPortableAudioCoverage() { return getWordSoundsPortableAudioCoverage; }, get globalPoints() { return globalPoints; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
+    get gradeLevel() { return gradeLevel; }, get gradingSession() { return gradingSession; }, get guidedActiveSteps() { return guidedActiveSteps; }, get guidedCompletedIds() { return guidedCompletedIds; },
+    get guidedCreatedHistoryIds() { return guidedCreatedHistoryIds; }, get guidedDeliveryEvidence() { return guidedDeliveryEvidence; }, get guidedMode() { return guidedMode; }, get guidedPlanBrief() { return guidedPlanBrief; },
+    get guidedSelectedIds() { return guidedSelectedIds; }, get guidedSkippedIds() { return guidedSkippedIds; }, get guidedStep() { return guidedStep; }, get handleAdventureChoice() { return handleAdventureChoice; },
+    get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAnalysisTextChange() { return handleAnalysisTextChange; }, get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; },
+    get handleExportSlides() { return handleExportSlides; }, get handleGenerate() { return handleGenerate; }, get handleGenerateConceptItem() { return handleGenerateConceptItem; }, get handleGuidingHand() { return handleGuidingHand; },
+    get handleLoadProject() { return handleLoadProject; }, get handleMasteryGrading() { return handleMasteryGrading; }, get handleRecognizeStudents() { return handleRecognizeStudents; }, get handleRestoreView() { return handleRestoreView; },
+    get handleScoreUpdate() { return handleScoreUpdate; }, get handleSpeak() { return handleSpeak; }, get handleStartLiveSession() { return handleStartLiveSession; }, get handleUrlFetch() { return handleUrlFetch; },
+    get havenConfigBusy() { return havenConfigBusy; }, get havenRecognitionConfig() { return havenRecognitionConfig; }, get havenRewardAmount() { return havenRewardAmount; }, get havenRewardBusy() { return havenRewardBusy; },
+    get havenRewardDraftsRef() { return havenRewardDraftsRef; }, get havenRewardReasonId() { return havenRewardReasonId; }, get havenRewardSendLockRef() { return havenRewardSendLockRef; }, get highlightColor() { return highlightColor; },
+    get highlightElement() { return highlightElement; }, get history() { return history; }, get homeworkExpiryDays() { return homeworkExpiryDays; }, get homeworkShelf() { return homeworkShelf; },
+    get hydrateHistory() { return hydrateHistory; }, get hydratedHistoryRef() { return hydratedHistoryRef; }, get includeSourceCitations() { return includeSourceCitations; }, get inputText() { return inputText; },
+    get interactiveOrganizerWriteQueueRef() { return interactiveOrganizerWriteQueueRef; }, get invalidateLocalDataHydration() { return invalidateLocalDataHydration; }, get invalidatePdfDocumentOperations() { return invalidatePdfDocumentOperations; }, get isBotSpeakingRef() { return isBotSpeakingRef; },
+    get isBotVisible() { return isBotVisible; }, get isCanvas() { return isCanvas; }, get isCheckingChallenge() { return isCheckingChallenge; }, get isCommittedMathAssessmentContext() { return isCommittedMathAssessmentContext; },
+    get isDictationActiveRef() { return isDictationActiveRef; }, get isExecutingBlueprint() { return isExecutingBlueprint; }, get isGlobalMuted() { return isGlobalMuted; }, get isGoogleRedirect() { return isGoogleRedirect; },
+    get isImmersiveReaderActive() { return isImmersiveReaderActive; }, get isIndependentMode() { return isIndependentMode; }, get isPdfDocumentIntakeCurrent() { return isPdfDocumentIntakeCurrent; }, get isPersonaChatOpen() { return isPersonaChatOpen; },
+    get isPlayableInteractiveVennData() { return isPlayableInteractiveVennData; }, get isPlayingRef() { return isPlayingRef; }, get isSavedFollowUpLiveSessionCurrent() { return isSavedFollowUpLiveSessionCurrent; }, get isTeacherMode() { return isTeacherMode; },
+    get isUDLGuideExpanded() { return isUDLGuideExpanded; }, get isUndoingAnnotationRef() { return isUndoingAnnotationRef; }, get isVoiceRecording() { return isVoiceRecording; }, get isWide() { return isWide; },
     get lastIntentSnapshotRef() { return lastIntentSnapshotRef; }, get lastOrganizerProgressWriteRef() { return lastOrganizerProgressWriteRef; }, get lastPackRefRef() { return lastPackRefRef; }, get lastPdfAuditResultRef() { return lastPdfAuditResultRef; },
     get lastPdfBytesRef() { return lastPdfBytesRef; }, get lastResourcesStringRef() { return lastResourcesStringRef; }, get lastTurnSnapshot() { return lastTurnSnapshot; }, get learningWebOpenContextRef() { return learningWebOpenContextRef; },
     get learningWebOpenTimerRef() { return learningWebOpenTimerRef; }, get learningWebRestoreViewRef() { return learningWebRestoreViewRef; }, get lessonHandoffRequestRef() { return lessonHandoffRequestRef; }, get lessonProgressionContextRef() { return lessonProgressionContextRef; },
-    get lessonProgressionRequestRef() { return lessonProgressionRequestRef; }, get leveledTextCustomInstructions() { return leveledTextCustomInstructions; }, get leveledTextLanguage() { return leveledTextLanguage; }, get leveledTextLength() { return leveledTextLength; },
-    get liveActivitySnapshots() { return liveActivitySnapshots; }, get liveQuizResponseCountsByUid() { return liveQuizResponseCountsByUid; }, get liveResourceHydrationAttemptsRef() { return liveResourceHydrationAttemptsRef; }, get liveResourceHydrationRetryTimerRef() { return liveResourceHydrationRetryTimerRef; },
-    get liveSessionCommandStateRef() { return liveSessionCommandStateRef; }, get mapContainerRef() { return mapContainerRef; }, get markGuidedDeliveryEvidence() { return markGuidedDeliveryEvidence; }, get markGuidedStepDone() { return markGuidedStepDone; },
-    get mathActiveResourceKeyRef() { return mathActiveResourceKeyRef; }, get mathSelfGradeContextKey() { return mathSelfGradeContextKey; }, get mathSelfGradeSubmissionRef() { return mathSelfGradeSubmissionRef; }, get mathStudentAnswers() { return mathStudentAnswers; },
-    get mbAdminInput() { return mbAdminInput; }, get mbChunkStoreRef() { return mbChunkStoreRef; }, get mbConfig() { return mbConfig; }, get mbDirectionsDraft() { return mbDirectionsDraft; },
-    get mbHostedAssignment() { return mbHostedAssignment; }, get mbImageNoticeRef() { return mbImageNoticeRef; }, get mbLive() { return mbLive; }, get mbMode() { return mbMode; },
-    get mbPackItemsRef() { return mbPackItemsRef; }, get mbPeersRef() { return mbPeersRef; }, get mbPreparedImagesRef() { return mbPreparedImagesRef; }, get mbRoster() { return mbRoster; },
-    get mbSentPacksRef() { return mbSentPacksRef; }, get mbStudent() { return mbStudent; }, get mbStudentCursorRef() { return mbStudentCursorRef; }, get mbUpCursorRef() { return mbUpCursorRef; },
-    get mbUrlInput() { return mbUrlInput; }, get newGroupName() { return newGroupName; }, get newProfileName() { return newProfileName; }, get nextFlashcard() { return nextFlashcard; },
-    get nodeInputText() { return nodeInputText; }, get normalizeAlloEvaluationPortalUrl() { return normalizeAlloEvaluationPortalUrl; }, get normalizeAlloHavenClassroomReward() { return normalizeAlloHavenClassroomReward; }, get normalizeClassGoals() { return normalizeClassGoals; },
-    get normalizeGuidedPlanBrief() { return normalizeGuidedPlanBrief; }, get normalizeGuidedProgress() { return normalizeGuidedProgress; }, get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; },
-    get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; }, get normalizeRosterSessionCodename() { return normalizeRosterSessionCodename; }, get noteColor() { return noteColor; },
-    get noteTemplate() { return noteTemplate; }, get onUpdateResource() { return onUpdateResource; }, get openQrShareModal() { return openQrShareModal; }, get openReadThisPagePanel() { return openReadThisPagePanel; },
-    get parseTaggedContent() { return parseTaggedContent; }, get pasteEvents() { return pasteEvents; }, get pauseReadThisPage() { return pauseReadThisPage; }, get pdfAutoContinueAbortCtrlRef() { return pdfAutoContinueAbortCtrlRef; },
-    get pdfAutoContinueAbortRef() { return pdfAutoContinueAbortRef; }, get pdfDocumentSelectionEpochRef() { return pdfDocumentSelectionEpochRef; }, get pdfFixResult() { return pdfFixResult; }, get pdfFixResultRef() { return pdfFixResultRef; },
-    get pendingAacHistoryShareRef() { return pendingAacHistoryShareRef; }, get persistedLessonDNA() { return persistedLessonDNA; }, get personaAutoReadRef() { return personaAutoReadRef; }, get personaAutoReadWasEnabledRef() { return personaAutoReadWasEnabledRef; },
-    get personaCustomInstructions() { return personaCustomInstructions; }, get personaReflectionIdentityRef() { return personaReflectionIdentityRef; }, get personaReflectionPromptAbortRef() { return personaReflectionPromptAbortRef; }, get personaReflectionPromptRequestRef() { return personaReflectionPromptRequestRef; },
+    get lessonProgressionRequestRef() { return lessonProgressionRequestRef; }, get leveledTextCustomInstructions() { return leveledTextCustomInstructions; }, get leveledTextLanguage() { return leveledTextLanguage; }, get liveActivitySnapshots() { return liveActivitySnapshots; },
+    get liveQuizResponseCountsByUid() { return liveQuizResponseCountsByUid; }, get liveResourceHydrationAttemptsRef() { return liveResourceHydrationAttemptsRef; }, get liveResourceHydrationRetryTimerRef() { return liveResourceHydrationRetryTimerRef; }, get liveSessionCommandStateRef() { return liveSessionCommandStateRef; },
+    get mapContainerRef() { return mapContainerRef; }, get markGuidedDeliveryEvidence() { return markGuidedDeliveryEvidence; }, get markGuidedStepDone() { return markGuidedStepDone; }, get mathActiveResourceKeyRef() { return mathActiveResourceKeyRef; },
+    get mathSelfGradeContextKey() { return mathSelfGradeContextKey; }, get mathSelfGradeSubmissionRef() { return mathSelfGradeSubmissionRef; }, get mathStudentAnswers() { return mathStudentAnswers; }, get mbAdminInput() { return mbAdminInput; },
+    get mbConfig() { return mbConfig; }, get mbDirectionsDraft() { return mbDirectionsDraft; }, get mbHostedAssignment() { return mbHostedAssignment; }, get mbLive() { return mbLive; },
+    get mbMode() { return mbMode; }, get mbPackItemsRef() { return mbPackItemsRef; }, get mbRoster() { return mbRoster; }, get mbSentPacksRef() { return mbSentPacksRef; },
+    get mbStudent() { return mbStudent; }, get mbUpCursorRef() { return mbUpCursorRef; }, get mbUrlInput() { return mbUrlInput; }, get newGroupName() { return newGroupName; },
+    get newProfileName() { return newProfileName; }, get nextFlashcard() { return nextFlashcard; }, get nodeInputText() { return nodeInputText; }, get normalizeAlloEvaluationPortalUrl() { return normalizeAlloEvaluationPortalUrl; },
+    get normalizeAlloHavenClassroomReward() { return normalizeAlloHavenClassroomReward; }, get normalizeClassGoals() { return normalizeClassGoals; }, get normalizeGuidedPlanBrief() { return normalizeGuidedPlanBrief; }, get normalizeGuidedProgress() { return normalizeGuidedProgress; },
+    get normalizeInteractiveVennGameData() { return normalizeInteractiveVennGameData; }, get normalizeLiveActivityProgress() { return normalizeLiveActivityProgress; }, get normalizeLiveOrganizerProgress() { return normalizeLiveOrganizerProgress; }, get normalizeQuizReceiptQuestionIndexes() { return normalizeQuizReceiptQuestionIndexes; },
+    get normalizeRosterSessionCodename() { return normalizeRosterSessionCodename; }, get noteColor() { return noteColor; }, get noteTemplate() { return noteTemplate; }, get onUpdateResource() { return onUpdateResource; },
+    get openQrShareModal() { return openQrShareModal; }, get openReadThisPagePanel() { return openReadThisPagePanel; }, get parseTaggedContent() { return parseTaggedContent; }, get pasteEvents() { return pasteEvents; },
+    get pauseReadThisPage() { return pauseReadThisPage; }, get pdfAutoContinueAbortCtrlRef() { return pdfAutoContinueAbortCtrlRef; }, get pdfAutoContinueAbortRef() { return pdfAutoContinueAbortRef; }, get pdfDocumentSelectionEpochRef() { return pdfDocumentSelectionEpochRef; },
+    get pdfFixResult() { return pdfFixResult; }, get pdfFixResultRef() { return pdfFixResultRef; }, get pendingAacHistoryShareRef() { return pendingAacHistoryShareRef; }, get personaAutoReadRef() { return personaAutoReadRef; },
+    get personaAutoReadWasEnabledRef() { return personaAutoReadWasEnabledRef; }, get personaReflectionIdentityRef() { return personaReflectionIdentityRef; }, get personaReflectionPromptAbortRef() { return personaReflectionPromptAbortRef; }, get personaReflectionPromptRequestRef() { return personaReflectionPromptRequestRef; },
     get personaState() { return personaState; }, get personaTeacherEditor() { return personaTeacherEditor; }, get personaTtsProcessorRef() { return personaTtsProcessorRef; }, get personaTtsQueueGenerationRef() { return personaTtsQueueGenerationRef; },
-    get personaTtsQueueRef() { return personaTtsQueueRef; }, get personaTtsQueueRunningRef() { return personaTtsQueueRunningRef; }, get personaTtsQueuedMessageKeysRef() { return personaTtsQueuedMessageKeysRef; }, get phonemeMastery() { return phonemeMastery; },
-    get playSound() { return playSound; }, get playbackSessionRef() { return playbackSessionRef; }, get pollAiBusy() { return pollAiBusy; }, get pollAsk() { return pollAsk; },
-    get prepareMailboxResourceImages() { return prepareMailboxResourceImages; }, get prepareReadAloudArtifactAudio() { return prepareReadAloudArtifactAudio; }, get prepareWordSoundsSession() { return prepareWordSoundsSession; }, get presentationState() { return presentationState; },
-    get profileInputRef() { return profileInputRef; }, get profiles() { return profiles; }, get publishCanvasRecoveryVaultLockedState() { return publishCanvasRecoveryVaultLockedState; }, get pushResourceToMailbox() { return pushResourceToMailbox; },
-    get qrShareModal() { return qrShareModal; }, get queueCanvasRecoveryStorage() { return queueCanvasRecoveryStorage; }, get quizAnswerMatches() { return quizAnswerMatches; }, get quizGuestRef() { return quizGuestRef; },
-    get quizMergedAllResponses() { return quizMergedAllResponses; }, get quizSelectedOption() { return quizSelectedOption; }, get readSavedFollowUpLiveSessionIdentity() { return readSavedFollowUpLiveSessionIdentity; }, get readUnlockedCanvasRecoveryVaultStore() { return readUnlockedCanvasRecoveryVaultStore; },
-    get readingLibraryIndexPromiseRef() { return readingLibraryIndexPromiseRef; }, get readingProfileScope() { return readingProfileScope; }, get recognitionRef() { return recognitionRef; }, get recordGameCompletion() { return recordGameCompletion; },
-    get recordSourceProvenance() { return recordSourceProvenance; }, get refreshAlloModelStatus() { return refreshAlloModelStatus; }, get rehydrateVerificationHtmlBinding() { return rehydrateVerificationHtmlBinding; }, get removeArtifactInstanceFromList() { return removeArtifactInstanceFromList; },
-    get reportBuilderResourceProblem() { return reportBuilderResourceProblem; }, get requestExportPreviewModules() { return requestExportPreviewModules; }, get requestPdfAuditModules() { return requestPdfAuditModules; }, get requestSessionManagementModule() { return requestSessionManagementModule; },
-    get requestWordSoundsAudioConfirmation() { return requestWordSoundsAudioConfirmation; }, get resetAllMathRuntimeState() { return resetAllMathRuntimeState; }, get resetGuidedProgress() { return resetGuidedProgress; }, get resolveClassGoalTeamUids() { return resolveClassGoalTeamUids; },
-    get resolveEndSessionCohortUids() { return resolveEndSessionCohortUids; }, get resolveSavedFollowUpLivePlanTarget() { return resolveSavedFollowUpLivePlanTarget; }, get resolveTranslationPolicy() { return resolveTranslationPolicy; }, get resourceCount() { return resourceCount; },
+    get personaTtsQueueRef() { return personaTtsQueueRef; }, get personaTtsQueueRunningRef() { return personaTtsQueueRunningRef; }, get personaTtsQueuedMessageKeysRef() { return personaTtsQueuedMessageKeysRef; }, get playSound() { return playSound; },
+    get playbackSessionRef() { return playbackSessionRef; }, get pollAiBusy() { return pollAiBusy; }, get pollAsk() { return pollAsk; }, get prepareReadAloudArtifactAudio() { return prepareReadAloudArtifactAudio; },
+    get prepareWordSoundsSession() { return prepareWordSoundsSession; }, get presentationState() { return presentationState; }, get profileInputRef() { return profileInputRef; }, get profiles() { return profiles; },
+    get publishCanvasRecoveryVaultLockedState() { return publishCanvasRecoveryVaultLockedState; }, get pushResourceToMailbox() { return pushResourceToMailbox; }, get qrShareModal() { return qrShareModal; }, get queueCanvasRecoveryStorage() { return queueCanvasRecoveryStorage; },
+    get quizAnswerMatches() { return quizAnswerMatches; }, get quizGuestRef() { return quizGuestRef; }, get quizMergedAllResponses() { return quizMergedAllResponses; }, get quizSelectedOption() { return quizSelectedOption; },
+    get readSavedFollowUpLiveSessionIdentity() { return readSavedFollowUpLiveSessionIdentity; }, get readUnlockedCanvasRecoveryVaultStore() { return readUnlockedCanvasRecoveryVaultStore; }, get readingLibraryIndexPromiseRef() { return readingLibraryIndexPromiseRef; }, get readingProfileScope() { return readingProfileScope; },
+    get recognitionRef() { return recognitionRef; }, get recordGameCompletion() { return recordGameCompletion; }, get recordSourceProvenance() { return recordSourceProvenance; }, get refreshAlloModelStatus() { return refreshAlloModelStatus; },
+    get rehydrateVerificationHtmlBinding() { return rehydrateVerificationHtmlBinding; }, get removeArtifactInstanceFromList() { return removeArtifactInstanceFromList; }, get reportBuilderResourceProblem() { return reportBuilderResourceProblem; }, get requestExportPreviewModules() { return requestExportPreviewModules; },
+    get requestPdfAuditModules() { return requestPdfAuditModules; }, get requestSessionManagementModule() { return requestSessionManagementModule; }, get requestWordSoundsAudioConfirmation() { return requestWordSoundsAudioConfirmation; }, get resetAllMathRuntimeState() { return resetAllMathRuntimeState; },
+    get resolveClassGoalTeamUids() { return resolveClassGoalTeamUids; }, get resolveEndSessionCohortUids() { return resolveEndSessionCohortUids; }, get resolveSavedFollowUpLivePlanTarget() { return resolveSavedFollowUpLivePlanTarget; }, get resolveTranslationPolicy() { return resolveTranslationPolicy; },
     get rosterKey() { return rosterKey; }, get rtpAudioFinishRef() { return rtpAudioFinishRef; }, get rtpCurrentAudioRef() { return rtpCurrentAudioRef; }, get rtpCurrentIndexRef() { return rtpCurrentIndexRef; },
     get rtpPausedRef() { return rtpPausedRef; }, get rtpReadRunRef() { return rtpReadRunRef; }, get rtpReadingRef() { return rtpReadingRef; }, get rtpStopRef() { return rtpStopRef; },
     get rtpTtsAbortRef() { return rtpTtsAbortRef; }, get rtpVoiceSpeechLeaseRef() { return rtpVoiceSpeechLeaseRef; }, get runAxeAudit() { return runAxeAudit; }, get safeDownloadBlob() { return safeDownloadBlob; },
-    get safeRemoveItem() { return safeRemoveItem; }, get safeSetItem() { return safeSetItem; }, get sameArtifactInstance() { return sameArtifactInstance; }, get sanitizeHistoryForCloud() { return sanitizeHistoryForCloud; },
-    get sanitizeSubmissionData() { return sanitizeSubmissionData; }, get savePortableAacResourceToHistory() { return savePortableAacResourceToHistory; }, get savedFollowUpLiveSendLockRef() { return savedFollowUpLiveSendLockRef; }, get schoolRewardsPortalUrl() { return schoolRewardsPortalUrl; },
-    get selectBuilderResources() { return selectBuilderResources; }, get selectedInventoryItem() { return selectedInventoryItem; }, get selectedLanguages() { return selectedLanguages; }, get selectedLetters() { return selectedLetters; },
-    get selectedPreviewImgRef() { return selectedPreviewImgRef; }, get selectedProfileId() { return selectedProfileId; }, get selectedVoice() { return selectedVoice; }, get sessionData() { return sessionData; },
-    get setAacHistoryRevision() { return setAacHistoryRevision; }, get setActiveBlueprint() { return setActiveBlueprint; }, get setActiveChallengeMode() { return setActiveChallengeMode; }, get setActiveSessionCode() { return setActiveSessionCode; },
-    get setActiveSidebarTab() { return setActiveSidebarTab; }, get setActiveUnitId() { return setActiveUnitId; }, get setActiveView() { return setActiveView; }, get setAdventureArtStyle() { return setAdventureArtStyle; },
-    get setAdventureChanceMode() { return setAdventureChanceMode; }, get setAdventureConsistentCharacters() { return setAdventureConsistentCharacters; }, get setAdventureCustomArtStyle() { return setAdventureCustomArtStyle; }, get setAdventureCustomInstructions() { return setAdventureCustomInstructions; },
-    get setAdventureDifficulty() { return setAdventureDifficulty; }, get setAdventureFreeResponseEnabled() { return setAdventureFreeResponseEnabled; }, get setAdventureInputMode() { return setAdventureInputMode; }, get setAdventureLanguageMode() { return setAdventureLanguageMode; },
-    get setAdventureState() { return setAdventureState; }, get setAdventureTextInput() { return setAdventureTextInput; }, get setAlloModelStatus() { return setAlloModelStatus; }, get setAlloStudioInitialAction() { return setAlloStudioInitialAction; },
-    get setAlloStudioInitialArtwork() { return setAlloStudioInitialArtwork; }, get setAlloStudioInitialFile() { return setAlloStudioInitialFile; }, get setAlloStudioInitialResource() { return setAlloStudioInitialResource; }, get setAnchorChartCustomInstructions() { return setAnchorChartCustomInstructions; },
-    get setAnchorChartType() { return setAnchorChartType; }, get setAnnotationUndoCount() { return setAnnotationUndoCount; }, get setAppUpdateApplying() { return setAppUpdateApplying; }, get setApplyingRemarkup() { return setApplyingRemarkup; },
-    get setArchivedPlans() { return setArchivedPlans; }, get setAssignmentCenterActionByUrl() { return setAssignmentCenterActionByUrl; }, get setAssignmentCenterStatusByUrl() { return setAssignmentCenterStatusByUrl; }, get setAutoRestoreSummary() { return setAutoRestoreSummary; },
-    get setBingoState() { return setBingoState; }, get setBlueprintExecutionResult() { return setBlueprintExecutionResult; }, get setBlueprintPreview() { return setBlueprintPreview; }, get setBoringPalettePrompt() { return setBoringPalettePrompt; },
-    get setBotSpotlightPos() { return setBotSpotlightPos; }, get setBrainstormCustomInstructions() { return setBrainstormCustomInstructions; }, get setBuilderResourceIds() { return setBuilderResourceIds; }, get setBuilderWorkspaceMode() { return setBuilderWorkspaceMode; },
-    get setCanvasRecoveryBusyId() { return setCanvasRecoveryBusyId; }, get setCanvasRecoveryDecisionMade() { return setCanvasRecoveryDecisionMade; }, get setCanvasRecoveryDialogMode() { return setCanvasRecoveryDialogMode; }, get setCanvasRecoveryEraseId() { return setCanvasRecoveryEraseId; },
-    get setCanvasRecoveryError() { return setCanvasRecoveryError; }, get setCanvasRecoveryErrorCode() { return setCanvasRecoveryErrorCode; }, get setCanvasRecoveryRemoveMediaId() { return setCanvasRecoveryRemoveMediaId; }, get setCanvasRecoveryRevision() { return setCanvasRecoveryRevision; },
-    get setCanvasRecoverySaveStatus() { return setCanvasRecoverySaveStatus; }, get setCanvasRecoveryStore() { return setCanvasRecoveryStore; }, get setCanvasRecoveryStoreAuthoritative() { return setCanvasRecoveryStoreAuthoritative; }, get setCanvasRecoveryVaultForm() { return setCanvasRecoveryVaultForm; },
-    get setCanvasRecoveryVaultState() { return setCanvasRecoveryVaultState; }, get setChallengeFeedback() { return setChallengeFeedback; }, get setChallengeTarget() { return setChallengeTarget; }, get setCheckpointState() { return setCheckpointState; },
-    get setChunkResumePrompt() { return setChunkResumePrompt; }, get setChunkSaveFlash() { return setChunkSaveFlash; }, get setColorOverlay() { return setColorOverlay; }, get setConceptInput() { return setConceptInput; },
-    get setConceptMapEdges() { return setConceptMapEdges; }, get setConceptMapNodes() { return setConceptMapNodes; }, get setConceptMasteryLocal() { return setConceptMasteryLocal; }, get setConceptSortCustomInstructions() { return setConceptSortCustomInstructions; },
-    get setConfirmDialog() { return setConfirmDialog; }, get setConnectingSourceId() { return setConnectingSourceId; }, get setCsAddingCatId() { return setCsAddingCatId; }, get setCsAddingText() { return setCsAddingText; },
-    get setCsBusyId() { return setCsBusyId; }, get setCsRefinementInputs() { return setCsRefinementInputs; }, get setCurrentWordSoundsWord() { return setCurrentWordSoundsWord; }, get setDbqCustomInstructions() { return setDbqCustomInstructions; },
-    get setDefinitionData() { return setDefinitionData; }, get setDiffChunks() { return setDiffChunks; }, get setDiffSelection() { return setDiffSelection; }, get setDiffViewOpen() { return setDiffViewOpen; },
-    get setDifferentiationRange() { return setDifferentiationRange; }, get setDirectionsDeriving() { return setDirectionsDeriving; }, get setDoc() { return setDoc; }, get setDokLevel() { return setDokLevel; },
-    get setDraggedNodeId() { return setDraggedNodeId; }, get setDraggedTimelineIndex() { return setDraggedTimelineIndex; }, get setDynamicReflectionQuestion() { return setDynamicReflectionQuestion; }, get setEducatorAccessState() { return setEducatorAccessState; },
-    get setEndSessionNote() { return setEndSessionNote; }, get setEndSessionPreview() { return setEndSessionPreview; }, get setError() { return setError; }, get setExpandedTools() { return setExpandedTools; },
-    get setExploreScore() { return setExploreScore; }, get setExportConfig() { return setExportConfig; }, get setExportPresets() { return setExportPresets; }, get setExportPreviewMode() { return setExportPreviewMode; },
-    get setExportPreviewSource() { return setExportPreviewSource; }, get setExportTheme() { return setExportTheme; }, get setExternalCBMScores() { return setExternalCBMScores; }, get setExtractedImagesList() { return setExtractedImagesList; },
-    get setExtractionData() { return setExtractionData; }, get setFailedAdventureAction() { return setFailedAdventureAction; }, get setFaqCustomInstructions() { return setFaqCustomInstructions; }, get setFidelityLog() { return setFidelityLog; },
-    get setFidelityResult() { return setFidelityResult; }, get setFixIssuesList() { return setFixIssuesList; }, get setFlashcardFeedback() { return setFlashcardFeedback; }, get setFlashcardIndex() { return setFlashcardIndex; },
-    get setFlashcardLang() { return setFlashcardLang; }, get setFlashcardMode() { return setFlashcardMode; }, get setFlashcardOptions() { return setFlashcardOptions; }, get setFlashcardScore() { return setFlashcardScore; },
-    get setFluencyAssessments() { return setFluencyAssessments; }, get setFluencyResult() { return setFluencyResult; }, get setFluencyStatus() { return setFluencyStatus; }, get setFoundWords() { return setFoundWords; },
-    get setFrameCustomInstructions() { return setFrameCustomInstructions; }, get setFullPackTargetGroup() { return setFullPackTargetGroup; }, get setGameCompletions() { return setGameCompletions; }, get setGeneratedContent() { return setGeneratedContent; },
-    get setGenerationStep() { return setGenerationStep; }, get setGlossaryCustomInstructions() { return setGlossaryCustomInstructions; }, get setGlossaryHealthCheck() { return setGlossaryHealthCheck; }, get setGlossaryRefinementInputs() { return setGlossaryRefinementInputs; },
+    get safeRemoveItem() { return safeRemoveItem; }, get safeSetItem() { return safeSetItem; }, get sameArtifactInstance() { return sameArtifactInstance; }, get sanitizeSubmissionData() { return sanitizeSubmissionData; },
+    get savePortableAacResourceToHistory() { return savePortableAacResourceToHistory; }, get savedFollowUpLiveSendLockRef() { return savedFollowUpLiveSendLockRef; }, get schoolRewardsPortalUrl() { return schoolRewardsPortalUrl; }, get selectBuilderResources() { return selectBuilderResources; },
+    get selectedInventoryItem() { return selectedInventoryItem; }, get selectedLanguages() { return selectedLanguages; }, get selectedLetters() { return selectedLetters; }, get selectedPreviewImgRef() { return selectedPreviewImgRef; },
+    get selectedVoice() { return selectedVoice; }, get sessionData() { return sessionData; }, get setAacHistoryRevision() { return setAacHistoryRevision; }, get setActiveBlueprint() { return setActiveBlueprint; },
+    get setActiveChallengeMode() { return setActiveChallengeMode; }, get setActiveSessionCode() { return setActiveSessionCode; }, get setActiveSidebarTab() { return setActiveSidebarTab; }, get setActiveUnitId() { return setActiveUnitId; },
+    get setActiveView() { return setActiveView; }, get setAdventureArtStyle() { return setAdventureArtStyle; }, get setAdventureChanceMode() { return setAdventureChanceMode; }, get setAdventureConsistentCharacters() { return setAdventureConsistentCharacters; },
+    get setAdventureCustomArtStyle() { return setAdventureCustomArtStyle; }, get setAdventureCustomInstructions() { return setAdventureCustomInstructions; }, get setAdventureDifficulty() { return setAdventureDifficulty; }, get setAdventureFreeResponseEnabled() { return setAdventureFreeResponseEnabled; },
+    get setAdventureInputMode() { return setAdventureInputMode; }, get setAdventureLanguageMode() { return setAdventureLanguageMode; }, get setAdventureState() { return setAdventureState; }, get setAdventureTextInput() { return setAdventureTextInput; },
+    get setAlloModelStatus() { return setAlloModelStatus; }, get setAlloStudioInitialAction() { return setAlloStudioInitialAction; }, get setAlloStudioInitialArtwork() { return setAlloStudioInitialArtwork; }, get setAlloStudioInitialFile() { return setAlloStudioInitialFile; },
+    get setAlloStudioInitialResource() { return setAlloStudioInitialResource; }, get setAnchorChartCustomInstructions() { return setAnchorChartCustomInstructions; }, get setAnchorChartType() { return setAnchorChartType; }, get setAnnotationUndoCount() { return setAnnotationUndoCount; },
+    get setAppUpdateApplying() { return setAppUpdateApplying; }, get setApplyingRemarkup() { return setApplyingRemarkup; }, get setArchivedPlans() { return setArchivedPlans; }, get setAssignmentCenterActionByUrl() { return setAssignmentCenterActionByUrl; },
+    get setAssignmentCenterStatusByUrl() { return setAssignmentCenterStatusByUrl; }, get setAutoRestoreSummary() { return setAutoRestoreSummary; }, get setBingoState() { return setBingoState; }, get setBlueprintExecutionResult() { return setBlueprintExecutionResult; },
+    get setBlueprintPreview() { return setBlueprintPreview; }, get setBoringPalettePrompt() { return setBoringPalettePrompt; }, get setBotSpotlightPos() { return setBotSpotlightPos; }, get setBrainstormCustomInstructions() { return setBrainstormCustomInstructions; },
+    get setBuilderResourceIds() { return setBuilderResourceIds; }, get setBuilderWorkspaceMode() { return setBuilderWorkspaceMode; }, get setCanvasRecoveryBusyId() { return setCanvasRecoveryBusyId; }, get setCanvasRecoveryDecisionMade() { return setCanvasRecoveryDecisionMade; },
+    get setCanvasRecoveryDialogMode() { return setCanvasRecoveryDialogMode; }, get setCanvasRecoveryEraseId() { return setCanvasRecoveryEraseId; }, get setCanvasRecoveryError() { return setCanvasRecoveryError; }, get setCanvasRecoveryErrorCode() { return setCanvasRecoveryErrorCode; },
+    get setCanvasRecoveryRemoveMediaId() { return setCanvasRecoveryRemoveMediaId; }, get setCanvasRecoveryRevision() { return setCanvasRecoveryRevision; }, get setCanvasRecoverySaveStatus() { return setCanvasRecoverySaveStatus; }, get setCanvasRecoveryStore() { return setCanvasRecoveryStore; },
+    get setCanvasRecoveryStoreAuthoritative() { return setCanvasRecoveryStoreAuthoritative; }, get setCanvasRecoveryVaultForm() { return setCanvasRecoveryVaultForm; }, get setCanvasRecoveryVaultState() { return setCanvasRecoveryVaultState; }, get setChallengeFeedback() { return setChallengeFeedback; },
+    get setChallengeTarget() { return setChallengeTarget; }, get setCheckpointState() { return setCheckpointState; }, get setChunkResumePrompt() { return setChunkResumePrompt; }, get setChunkSaveFlash() { return setChunkSaveFlash; },
+    get setColorOverlay() { return setColorOverlay; }, get setConceptInput() { return setConceptInput; }, get setConceptMapEdges() { return setConceptMapEdges; }, get setConceptMapNodes() { return setConceptMapNodes; },
+    get setConceptMasteryLocal() { return setConceptMasteryLocal; }, get setConceptSortCustomInstructions() { return setConceptSortCustomInstructions; }, get setConfirmDialog() { return setConfirmDialog; }, get setConnectingSourceId() { return setConnectingSourceId; },
+    get setCsAddingCatId() { return setCsAddingCatId; }, get setCsAddingText() { return setCsAddingText; }, get setCsBusyId() { return setCsBusyId; }, get setCsRefinementInputs() { return setCsRefinementInputs; },
+    get setCurrentWordSoundsWord() { return setCurrentWordSoundsWord; }, get setDbqCustomInstructions() { return setDbqCustomInstructions; }, get setDefinitionData() { return setDefinitionData; }, get setDiffChunks() { return setDiffChunks; },
+    get setDiffSelection() { return setDiffSelection; }, get setDiffViewOpen() { return setDiffViewOpen; }, get setDifferentiationRange() { return setDifferentiationRange; }, get setDirectionsDeriving() { return setDirectionsDeriving; },
+    get setDoc() { return setDoc; }, get setDokLevel() { return setDokLevel; }, get setDraggedTimelineIndex() { return setDraggedTimelineIndex; }, get setDynamicReflectionQuestion() { return setDynamicReflectionQuestion; },
+    get setEducatorAccessState() { return setEducatorAccessState; }, get setEndSessionNote() { return setEndSessionNote; }, get setEndSessionPreview() { return setEndSessionPreview; }, get setError() { return setError; },
+    get setExpandedTools() { return setExpandedTools; }, get setExploreScore() { return setExploreScore; }, get setExportConfig() { return setExportConfig; }, get setExportPresets() { return setExportPresets; },
+    get setExportPreviewMode() { return setExportPreviewMode; }, get setExportPreviewSource() { return setExportPreviewSource; }, get setExportTheme() { return setExportTheme; }, get setExternalCBMScores() { return setExternalCBMScores; },
+    get setExtractedImagesList() { return setExtractedImagesList; }, get setExtractionData() { return setExtractionData; }, get setFailedAdventureAction() { return setFailedAdventureAction; }, get setFaqCustomInstructions() { return setFaqCustomInstructions; },
+    get setFidelityLog() { return setFidelityLog; }, get setFidelityResult() { return setFidelityResult; }, get setFixIssuesList() { return setFixIssuesList; }, get setFlashcardFeedback() { return setFlashcardFeedback; },
+    get setFlashcardIndex() { return setFlashcardIndex; }, get setFlashcardLang() { return setFlashcardLang; }, get setFlashcardMode() { return setFlashcardMode; }, get setFlashcardOptions() { return setFlashcardOptions; },
+    get setFlashcardScore() { return setFlashcardScore; }, get setFluencyAssessments() { return setFluencyAssessments; }, get setFluencyResult() { return setFluencyResult; }, get setFluencyStatus() { return setFluencyStatus; },
+    get setFoundWords() { return setFoundWords; }, get setFrameCustomInstructions() { return setFrameCustomInstructions; }, get setFullPackTargetGroup() { return setFullPackTargetGroup; }, get setGameCompletions() { return setGameCompletions; },
+    get setGeneratedContent() { return setGeneratedContent; }, get setGenerationStep() { return setGenerationStep; }, get setGlossaryCustomInstructions() { return setGlossaryCustomInstructions; }, get setGlossaryRefinementInputs() { return setGlossaryRefinementInputs; },
     get setGlossaryTier2Count() { return setGlossaryTier2Count; }, get setGlossaryTier3Count() { return setGlossaryTier3Count; }, get setGradeLevel() { return setGradeLevel; }, get setGradingResult() { return setGradingResult; },
     get setGradingSession() { return setGradingSession; }, get setGuidedAdvanceNotice() { return setGuidedAdvanceNotice; }, get setGuidedCompletedIds() { return setGuidedCompletedIds; }, get setGuidedCreatedHistoryIds() { return setGuidedCreatedHistoryIds; },
     get setGuidedDeliveryEvidence() { return setGuidedDeliveryEvidence; }, get setGuidedFlowState() { return setGuidedFlowState; }, get setGuidedMode() { return setGuidedMode; }, get setGuidedNavigationUndo() { return setGuidedNavigationUndo; },
     get setGuidedPlanBrief() { return setGuidedPlanBrief; }, get setGuidedProgressSaveState() { return setGuidedProgressSaveState; }, get setGuidedSelectedIds() { return setGuidedSelectedIds; }, get setGuidedSkippedIds() { return setGuidedSkippedIds; },
-    get setGuidedStep() { return setGuidedStep; }, get setHasSavedAdventure() { return setHasSavedAdventure; }, get setHasSelectedMode() { return setHasSelectedMode; }, get setHasSelectedRole() { return setHasSelectedRole; },
-    get setHasUsedAutoFill() { return setHasUsedAutoFill; }, get setHavenConfigBusy() { return setHavenConfigBusy; }, get setHavenRewardBusy() { return setHavenRewardBusy; }, get setHavenRewardReceipt() { return setHavenRewardReceipt; },
-    get setHintHistory() { return setHintHistory; }, get setHistory() { return setHistory; }, get setHomeworkShelf() { return setHomeworkShelf; }, get setImageReinsertionReport() { return setImageReinsertionReport; },
-    get setImportedAlignmentGraphExport() { return setImportedAlignmentGraphExport; }, get setIncludeCharts() { return setIncludeCharts; }, get setIncludeSourceCitations() { return setIncludeSourceCitations; }, get setInputText() { return setInputText; },
-    get setInteractiveOrganizerRetrying() { return setInteractiveOrganizerRetrying; }, get setInteractiveOrganizerSync() { return setInteractiveOrganizerSync; }, get setInterventionLogs() { return setInterventionLogs; }, get setIsAdminHubOpen() { return setIsAdminHubOpen; },
-    get setIsAdventureStoryMode() { return setIsAdventureStoryMode; }, get setIsAlloStudioOpen() { return setIsAlloStudioOpen; }, get setIsAutoFillMode() { return setIsAutoFillMode; }, get setIsChallengeActive() { return setIsChallengeActive; },
-    get setIsChatProcessing() { return setIsChatProcessing; }, get setIsCheckingAlignment() { return setIsCheckingAlignment; }, get setIsCheckingChallenge() { return setIsCheckingChallenge; }, get setIsEditingOptions() { return setIsEditingOptions; },
-    get setIsEducatorEvaluationOpen() { return setIsEducatorEvaluationOpen; }, get setIsExtracting() { return setIsExtracting; }, get setIsFactChecking() { return setIsFactChecking; }, get setIsFlashcardFlipped() { return setIsFlashcardFlipped; },
-    get setIsFlashcardQuizMode() { return setIsFlashcardQuizMode; }, get setIsFluencyMode() { return setIsFluencyMode; }, get setIsGeneratingBrainstormRubric() { return setIsGeneratingBrainstormRubric; }, get setIsGeneratingExtension() { return setIsGeneratingExtension; },
-    get setIsGeneratingExtensionGuide() { return setIsGeneratingExtensionGuide; }, get setIsGeneratingGuide() { return setIsGeneratingGuide; }, get setIsGeneratingProgression() { return setIsGeneratingProgression; }, get setIsGeneratingReflectionPrompt() { return setIsGeneratingReflectionPrompt; },
-    get setIsGeneratingRubric() { return setIsGeneratingRubric; }, get setIsGeneratingTermImage() { return setIsGeneratingTermImage; }, get setIsGeneratingWorksheet() { return setIsGeneratingWorksheet; }, get setIsGeneratingWorksheetCover() { return setIsGeneratingWorksheetCover; },
-    get setIsGrading() { return setIsGrading; }, get setIsImmersiveReaderActive() { return setIsImmersiveReaderActive; }, get setIsIndependentMode() { return setIsIndependentMode; }, get setIsInteractiveCESort() { return setIsInteractiveCESort; },
-    get setIsInteractiveConceptMapSort() { return setIsInteractiveConceptMapSort; }, get setIsInteractiveFishboneSort() { return setIsInteractiveFishboneSort; }, get setIsInteractiveFlashcards() { return setIsInteractiveFlashcards; }, get setIsInteractiveFrayerSort() { return setIsInteractiveFrayerSort; },
-    get setIsInteractiveOutlineSort() { return setIsInteractiveOutlineSort; }, get setIsInteractivePipeline() { return setIsInteractivePipeline; }, get setIsInteractiveProblemSolutionSort() { return setIsInteractiveProblemSolutionSort; }, get setIsInteractiveSeeThinkWonderSort() { return setIsInteractiveSeeThinkWonderSort; },
-    get setIsInteractiveStoryMapSort() { return setIsInteractiveStoryMapSort; }, get setIsInteractiveTChart() { return setIsInteractiveTChart; }, get setIsLargeFileProcessing() { return setIsLargeFileProcessing; }, get setIsMapLocked() { return setIsMapLocked; },
-    get setIsParentMode() { return setIsParentMode; }, get setIsProcessing() { return setIsProcessing; }, get setIsProfileModalOpen() { return setIsProfileModalOpen; }, get setIsProjectSettingsOpen() { return setIsProjectSettingsOpen; },
-    get setIsPushingResource() { return setIsPushingResource; }, get setIsReadingLibraryOpen() { return setIsReadingLibraryOpen; }, get setIsRosterKeyOpen() { return setIsRosterKeyOpen; }, get setIsRunningHealthCheck() { return setIsRunningHealthCheck; },
-    get setIsSaveActionPulsing() { return setIsSaveActionPulsing; }, get setIsSavingAdvice() { return setIsSavingAdvice; }, get setIsSpotlightMode() { return setIsSpotlightMode; }, get setIsStudentLinkMode() { return setIsStudentLinkMode; },
-    get setIsTeacherMode() { return setIsTeacherMode; }, get setIsTranslateModalOpen() { return setIsTranslateModalOpen; }, get setIsUDLGuideExpanded() { return setIsUDLGuideExpanded; }, get setIsUniversalSettingsOpen() { return setIsUniversalSettingsOpen; },
-    get setIsUrlSearchMode() { return setIsUrlSearchMode; }, get setIsWordSoundsMode() { return setIsWordSoundsMode; }, get setKeepCitations() { return setKeepCitations; }, get setLabToolData() { return setLabToolData; },
-    get setLargeFileProgress() { return setLargeFileProgress; }, get setLargeFileStatus() { return setLargeFileStatus; }, get setLargeFileTotalChunks() { return setLargeFileTotalChunks; }, get setLastSaved() { return setLastSaved; },
-    get setLearningWebRegistryRevision() { return setLearningWebRegistryRevision; }, get setLessonCustomAdditions() { return setLessonCustomAdditions; }, get setLeveledTextCustomInstructions() { return setLeveledTextCustomInstructions; }, get setLeveledTextLanguage() { return setLeveledTextLanguage; },
-    get setLeveledTextLength() { return setLeveledTextLength; }, get setLiveChunkExpanded() { return setLiveChunkExpanded; }, get setLiveChunkRejected() { return setLiveChunkRejected; }, get setLiveChunkSessionActive() { return setLiveChunkSessionActive; },
-    get setLiveChunkStream() { return setLiveChunkStream; }, get setLivePollPreset() { return setLivePollPreset; }, get setLiveResourceLoadState() { return setLiveResourceLoadState; }, get setLiveResourceRetryEpoch() { return setLiveResourceRetryEpoch; },
-    get setMapAddInput() { return setMapAddInput; }, get setMathCheckResults() { return setMathCheckResults; }, get setMathEditingProblem() { return setMathEditingProblem; }, get setMathHintData() { return setMathHintData; },
-    get setMathInput() { return setMathInput; }, get setMathMode() { return setMathMode; }, get setMathProbeForm() { return setMathProbeForm; }, get setMathSelfGradeMode() { return setMathSelfGradeMode; },
-    get setMathStudentAnswers() { return setMathStudentAnswers; }, get setMbAdminInput() { return setMbAdminInput; }, get setMbBusy() { return setMbBusy; }, get setMbConfig() { return setMbConfig; },
-    get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; }, get setMbJoinStatus() { return setMbJoinStatus; },
-    get setMbLive() { return setMbLive; }, get setMbMode() { return setMbMode; }, get setMbPanelOpen() { return setMbPanelOpen; }, get setMbResourceReceiveError() { return setMbResourceReceiveError; },
+    get setGuidedStep() { return setGuidedStep; }, get setHasSelectedMode() { return setHasSelectedMode; }, get setHasSelectedRole() { return setHasSelectedRole; }, get setHasUsedAutoFill() { return setHasUsedAutoFill; },
+    get setHavenConfigBusy() { return setHavenConfigBusy; }, get setHavenRewardBusy() { return setHavenRewardBusy; }, get setHavenRewardReceipt() { return setHavenRewardReceipt; }, get setHintHistory() { return setHintHistory; },
+    get setHistory() { return setHistory; }, get setImageReinsertionReport() { return setImageReinsertionReport; }, get setImportedAlignmentGraphExport() { return setImportedAlignmentGraphExport; }, get setIncludeCharts() { return setIncludeCharts; },
+    get setIncludeSourceCitations() { return setIncludeSourceCitations; }, get setInputText() { return setInputText; }, get setInteractiveOrganizerRetrying() { return setInteractiveOrganizerRetrying; }, get setInteractiveOrganizerSync() { return setInteractiveOrganizerSync; },
+    get setInterventionLogs() { return setInterventionLogs; }, get setIsAdminHubOpen() { return setIsAdminHubOpen; }, get setIsAdventureStoryMode() { return setIsAdventureStoryMode; }, get setIsAlloStudioOpen() { return setIsAlloStudioOpen; },
+    get setIsAutoFillMode() { return setIsAutoFillMode; }, get setIsChallengeActive() { return setIsChallengeActive; }, get setIsChatProcessing() { return setIsChatProcessing; }, get setIsCheckingAlignment() { return setIsCheckingAlignment; },
+    get setIsCheckingChallenge() { return setIsCheckingChallenge; }, get setIsEditingOptions() { return setIsEditingOptions; }, get setIsEducatorEvaluationOpen() { return setIsEducatorEvaluationOpen; }, get setIsExtracting() { return setIsExtracting; },
+    get setIsFactChecking() { return setIsFactChecking; }, get setIsFlashcardFlipped() { return setIsFlashcardFlipped; }, get setIsFlashcardQuizMode() { return setIsFlashcardQuizMode; }, get setIsFluencyMode() { return setIsFluencyMode; },
+    get setIsGeneratingBrainstormRubric() { return setIsGeneratingBrainstormRubric; }, get setIsGeneratingExtension() { return setIsGeneratingExtension; }, get setIsGeneratingExtensionGuide() { return setIsGeneratingExtensionGuide; }, get setIsGeneratingGuide() { return setIsGeneratingGuide; },
+    get setIsGeneratingProgression() { return setIsGeneratingProgression; }, get setIsGeneratingReflectionPrompt() { return setIsGeneratingReflectionPrompt; }, get setIsGeneratingRubric() { return setIsGeneratingRubric; }, get setIsGeneratingTermImage() { return setIsGeneratingTermImage; },
+    get setIsGeneratingWorksheet() { return setIsGeneratingWorksheet; }, get setIsGeneratingWorksheetCover() { return setIsGeneratingWorksheetCover; }, get setIsGrading() { return setIsGrading; }, get setIsImmersiveReaderActive() { return setIsImmersiveReaderActive; },
+    get setIsIndependentMode() { return setIsIndependentMode; }, get setIsInteractiveCESort() { return setIsInteractiveCESort; }, get setIsInteractiveConceptMapSort() { return setIsInteractiveConceptMapSort; }, get setIsInteractiveFishboneSort() { return setIsInteractiveFishboneSort; },
+    get setIsInteractiveFlashcards() { return setIsInteractiveFlashcards; }, get setIsInteractiveFrayerSort() { return setIsInteractiveFrayerSort; }, get setIsInteractiveOutlineSort() { return setIsInteractiveOutlineSort; }, get setIsInteractivePipeline() { return setIsInteractivePipeline; },
+    get setIsInteractiveProblemSolutionSort() { return setIsInteractiveProblemSolutionSort; }, get setIsInteractiveSeeThinkWonderSort() { return setIsInteractiveSeeThinkWonderSort; }, get setIsInteractiveStoryMapSort() { return setIsInteractiveStoryMapSort; }, get setIsInteractiveTChart() { return setIsInteractiveTChart; },
+    get setIsLargeFileProcessing() { return setIsLargeFileProcessing; }, get setIsMapLocked() { return setIsMapLocked; }, get setIsParentMode() { return setIsParentMode; }, get setIsProcessing() { return setIsProcessing; },
+    get setIsProfileModalOpen() { return setIsProfileModalOpen; }, get setIsProjectSettingsOpen() { return setIsProjectSettingsOpen; }, get setIsPushingResource() { return setIsPushingResource; }, get setIsReadingLibraryOpen() { return setIsReadingLibraryOpen; },
+    get setIsRosterKeyOpen() { return setIsRosterKeyOpen; }, get setIsSaveActionPulsing() { return setIsSaveActionPulsing; }, get setIsSavingAdvice() { return setIsSavingAdvice; }, get setIsSpotlightMode() { return setIsSpotlightMode; },
+    get setIsStudentLinkMode() { return setIsStudentLinkMode; }, get setIsTeacherMode() { return setIsTeacherMode; }, get setIsTranslateModalOpen() { return setIsTranslateModalOpen; }, get setIsUDLGuideExpanded() { return setIsUDLGuideExpanded; },
+    get setIsUniversalSettingsOpen() { return setIsUniversalSettingsOpen; }, get setIsUrlSearchMode() { return setIsUrlSearchMode; }, get setIsWordSoundsMode() { return setIsWordSoundsMode; }, get setKeepCitations() { return setKeepCitations; },
+    get setLabToolData() { return setLabToolData; }, get setLargeFileProgress() { return setLargeFileProgress; }, get setLargeFileStatus() { return setLargeFileStatus; }, get setLargeFileTotalChunks() { return setLargeFileTotalChunks; },
+    get setLastSaved() { return setLastSaved; }, get setLearningWebRegistryRevision() { return setLearningWebRegistryRevision; }, get setLessonCustomAdditions() { return setLessonCustomAdditions; }, get setLeveledTextCustomInstructions() { return setLeveledTextCustomInstructions; },
+    get setLeveledTextLanguage() { return setLeveledTextLanguage; }, get setLeveledTextLength() { return setLeveledTextLength; }, get setLiveChunkExpanded() { return setLiveChunkExpanded; }, get setLiveChunkRejected() { return setLiveChunkRejected; },
+    get setLiveChunkSessionActive() { return setLiveChunkSessionActive; }, get setLiveChunkStream() { return setLiveChunkStream; }, get setLivePollPreset() { return setLivePollPreset; }, get setLiveResourceLoadState() { return setLiveResourceLoadState; },
+    get setLiveResourceRetryEpoch() { return setLiveResourceRetryEpoch; }, get setMapAddInput() { return setMapAddInput; }, get setMathCheckResults() { return setMathCheckResults; }, get setMathEditingProblem() { return setMathEditingProblem; },
+    get setMathHintData() { return setMathHintData; }, get setMathInput() { return setMathInput; }, get setMathMode() { return setMathMode; }, get setMathProbeForm() { return setMathProbeForm; },
+    get setMathSelfGradeMode() { return setMathSelfGradeMode; }, get setMathStudentAnswers() { return setMathStudentAnswers; }, get setMbAdminInput() { return setMbAdminInput; }, get setMbBusy() { return setMbBusy; },
+    get setMbConfig() { return setMbConfig; }, get setMbDirectionsDraft() { return setMbDirectionsDraft; }, get setMbJoinError() { return setMbJoinError; }, get setMbJoinRetryable() { return setMbJoinRetryable; },
+    get setMbJoinStatus() { return setMbJoinStatus; }, get setMbLive() { return setMbLive; }, get setMbMode() { return setMbMode; }, get setMbPanelOpen() { return setMbPanelOpen; },
     get setMbResumable() { return setMbResumable; }, get setMbRoster() { return setMbRoster; }, get setMbShowAdmin() { return setMbShowAdmin; }, get setMbStatus() { return setMbStatus; },
-    get setMbStudent() { return setMbStudent; }, get setMemoryAidCustomInstructions() { return setMemoryAidCustomInstructions; }, get setMicBannerDismissed() { return setMicBannerDismissed; }, get setMicPermissionStatus() { return setMicPermissionStatus; },
-    get setNewGroupName() { return setNewGroupName; }, get setNewProfileName() { return setNewProfileName; }, get setNodeInputText() { return setNodeInputText; }, get setNoteTakingCustomInstructions() { return setNoteTakingCustomInstructions; },
-    get setNoteTakingTemplateType() { return setNoteTakingTemplateType; }, get setOutlineCustomInstructions() { return setOutlineCustomInstructions; }, get setOutlineType() { return setOutlineType; }, get setPanelTtsPending() { return setPanelTtsPending; },
-    get setPdfActiveRemediationStorageKey() { return setPdfActiveRemediationStorageKey; }, get setPdfAuditLoading() { return setPdfAuditLoading; }, get setPdfAuditResult() { return setPdfAuditResult; }, get setPdfAuditTab() { return setPdfAuditTab; },
-    get setPdfAutoContinueRunning() { return setPdfAutoContinueRunning; }, get setPdfBatchCurrentIndex() { return setPdfBatchCurrentIndex; }, get setPdfBatchMode() { return setPdfBatchMode; }, get setPdfBatchProcessing() { return setPdfBatchProcessing; },
-    get setPdfBatchQueue() { return setPdfBatchQueue; }, get setPdfBatchStep() { return setPdfBatchStep; }, get setPdfBatchSummary() { return setPdfBatchSummary; }, get setPdfFixLoading() { return setPdfFixLoading; },
-    get setPdfFixResult() { return setPdfFixResult; }, get setPdfFixStep() { return setPdfFixStep; }, get setPdfMultiSession() { return setPdfMultiSession; }, get setPdfPageRange() { return setPdfPageRange; },
-    get setPdfPreviewOpen() { return setPdfPreviewOpen; }, get setPdfRemediationCacheEntries() { return setPdfRemediationCacheEntries; }, get setPdfRemediationDeleteConfirm() { return setPdfRemediationDeleteConfirm; }, get setPdfReturnPillDismissed() { return setPdfReturnPillDismissed; },
-    get setPdfWebMode() { return setPdfWebMode; }, get setPendingLargeFile() { return setPendingLargeFile; }, get setPendingPdfBase64() { return setPendingPdfBase64; }, get setPendingPdfFile() { return setPendingPdfFile; },
-    get setPendingQrAssignmentResource() { return setPendingQrAssignmentResource; }, get setPendingReadingBookSlug() { return setPendingReadingBookSlug; }, get setPendingReadingLocation() { return setPendingReadingLocation; }, get setPendingSync() { return setPendingSync; },
-    get setPersistedLessonDNA() { return setPersistedLessonDNA; }, get setPersonaAutoRead() { return setPersonaAutoRead; }, get setPersonaAutoReadEpoch() { return setPersonaAutoReadEpoch; }, get setPersonaCustomInstructions() { return setPersonaCustomInstructions; },
-    get setPersonaState() { return setPersonaState; }, get setPersonaTeacherEditor() { return setPersonaTeacherEditor; }, get setPhonemeMastery() { return setPhonemeMastery; }, get setPictionaryInitialMode() { return setPictionaryInitialMode; },
-    get setPictionaryPreparedInteraction() { return setPictionaryPreparedInteraction; }, get setPollAiBusy() { return setPollAiBusy; }, get setPresentationState() { return setPresentationState; }, get setProbeActivity() { return setProbeActivity; },
-    get setProbeGradeLevel() { return setProbeGradeLevel; }, get setProbeHistory() { return setProbeHistory; }, get setProcessingProgress() { return setProcessingProgress; }, get setProfiles() { return setProfiles; },
-    get setProgressionData() { return setProgressionData; }, get setQrShareModal() { return setQrShareModal; }, get setQuizCustomInstructions() { return setQuizCustomInstructions; }, get setQuizMcqCount() { return setQuizMcqCount; },
-    get setQuizMode() { return setQuizMode; }, get setQuizSelectedOption() { return setQuizSelectedOption; }, get setReadingLibraryIndexForBot() { return setReadingLibraryIndexForBot; }, get setReadingStudySource() { return setReadingStudySource; },
-    get setRecentQrShares() { return setRecentQrShares; }, get setResolvedStandardsSelection() { return setResolvedStandardsSelection; }, get setResourceCount() { return setResourceCount; }, get setRosterKey() { return setRosterKey; },
-    get setRtiGoals() { return setRtiGoals; }, get setRtpCurrentIndex() { return setRtpCurrentIndex; }, get setRtpPlaybackState() { return setRtpPlaybackState; }, get setRunTour() { return setRunTour; },
-    get setSchoolRewardsPortalUrl() { return setSchoolRewardsPortalUrl; }, get setSearchOptions() { return setSearchOptions; }, get setSelectedInventoryItem() { return setSelectedInventoryItem; }, get setSelectedLanguages() { return setSelectedLanguages; },
-    get setSelectedLetters() { return setSelectedLetters; }, get setSelectedProfileId() { return setSelectedProfileId; }, get setSelectedVoice() { return setSelectedVoice; }, get setSessionCounter() { return setSessionCounter; },
-    get setSessionData() { return setSessionData; }, get setSharedAssignmentActivity() { return setSharedAssignmentActivity; }, get setShellDeepLinkTool() { return setShellDeepLinkTool; }, get setShowDirectionsComposer() { return setShowDirectionsComposer; },
-    get setShowExportMenu() { return setShowExportMenu; }, get setShowExportPreview() { return setShowExportPreview; }, get setShowExportPreviewWrapped() { return setShowExportPreviewWrapped; }, get setShowFlashcardImages() { return setShowFlashcardImages; },
-    get setShowHealthCheckPanel() { return setShowHealthCheckPanel; }, get setShowLargeFileModal() { return setShowLargeFileModal; }, get setShowLearningWebExplorer() { return setShowLearningWebExplorer; }, get setShowLiveDock() { return setShowLiveDock; },
-    get setShowLivePollingPanel() { return setShowLivePollingPanel; }, get setShowMathAnswers() { return setShowMathAnswers; }, get setShowPictionaryHost() { return setShowPictionaryHost; }, get setShowReadThisPage() { return setShowReadThisPage; },
-    get setShowRecentQrShares() { return setShowRecentQrShares; }, get setShowSessionModal() { return setShowSessionModal; }, get setShowSourceGen() { return setShowSourceGen; }, get setShowStemLab() { return setShowStemLab; },
-    get setShowStudentEntry() { return setShowStudentEntry; }, get setShowStudentWelcome() { return setShowStudentWelcome; }, get setShowUDLGuide() { return setShowUDLGuide; }, get setShowUrlInput() { return setShowUrlInput; },
-    get setShowVisualSupports() { return setShowVisualSupports; }, get setShowWizard() { return setShowWizard; }, get setSingleImageOverride() { return setSingleImageOverride; }, get setSourceCustomInstructions() { return setSourceCustomInstructions; },
-    get setSourceLength() { return setSourceLength; }, get setSourceLevel() { return setSourceLevel; }, get setSourceRefineInstruction() { return setSourceRefineInstruction; }, get setSourceTone() { return setSourceTone; },
-    get setSourceTopic() { return setSourceTopic; }, get setSourceVocabulary() { return setSourceVocabulary; }, get setSpotlightMessage() { return setSpotlightMessage; }, get setStandardDeckLang() { return setStandardDeckLang; },
-    get setStandardInputValue() { return setStandardInputValue; }, get setStandardMode() { return setStandardMode; }, get setStandardsInput() { return setStandardsInput; }, get setStemArtworkDestination() { return setStemArtworkDestination; },
-    get setStemArtworkHandoff() { return setStemArtworkHandoff; }, get setStemArtworkLabel() { return setStemArtworkLabel; }, get setStemLabTab() { return setStemLabTab; }, get setStemLabTool() { return setStemLabTool; },
-    get setStickers() { return setStickers; }, get setStorageManagerInventory() { return setStorageManagerInventory; }, get setStudentInterests() { return setStudentInterests; }, get setStudentProgressLog() { return setStudentProgressLog; },
-    get setStudentProjectSettings() { return setStudentProjectSettings; }, get setStudentResponses() { return setStudentResponses; }, get setSurveyResponses() { return setSurveyResponses; }, get setTargetStandards() { return setTargetStandards; },
-    get setTeachingScriptRuns() { return setTeachingScriptRuns; }, get setTextFormat() { return setTextFormat; }, get setTimelineMode() { return setTimelineMode; }, get setTimelineTopic() { return setTimelineTopic; },
-    get setTourRect() { return setTourRect; }, get setTourStep() { return setTourStep; }, get setTranslationMode() { return setTranslationMode; }, get setUdlMessages() { return setUdlMessages; },
-    get setUnits() { return setUnits; }, get setUrlToFetch() { return setUrlToFetch; }, get setUseEmojis() { return setUseEmojis; }, get setVisualCustomInstructions() { return setVisualCustomInstructions; },
-    get setVisualCustomStyle() { return setVisualCustomStyle; }, get setVisualStyle() { return setVisualStyle; }, get setVoiceRecording() { return setVoiceRecording; }, get setVoiceSpeed() { return setVoiceSpeed; },
-    get setVoiceVolume() { return setVoiceVolume; }, get setVsTab() { return setVsTab; }, get setWordSoundsActivity() { return setWordSoundsActivity; }, get setWordSoundsAudioLibrary() { return setWordSoundsAudioLibrary; },
-    get setWordSoundsAutoReview() { return setWordSoundsAutoReview; }, get setWordSoundsBadges() { return setWordSoundsBadges; }, get setWordSoundsConfusionPatterns() { return setWordSoundsConfusionPatterns; }, get setWordSoundsCustomTerms() { return setWordSoundsCustomTerms; },
-    get setWordSoundsDailyProgress() { return setWordSoundsDailyProgress; }, get setWordSoundsFamilies() { return setWordSoundsFamilies; }, get setWordSoundsHistory() { return setWordSoundsHistory; }, get setWordSoundsPhonemes() { return setWordSoundsPhonemes; },
-    get setWordSoundsPreparedAudioStatus() { return setWordSoundsPreparedAudioStatus; }, get setWordSoundsScore() { return setWordSoundsScore; }, get setWorkspacePane() { return setWorkspacePane; }, get setWsActivitySequence() { return setWsActivitySequence; },
-    get setWsPreloadedWords() { return setWsPreloadedWords; }, get showExportMenu() { return showExportMenu; }, get showReadThisPage() { return showReadThisPage; }, get sourceCustomInstructions() { return sourceCustomInstructions; },
-    get sourceLength() { return sourceLength; }, get sourceLevel() { return sourceLevel; }, get sourceRefineInstruction() { return sourceRefineInstruction; }, get sourceTone() { return sourceTone; },
-    get sourceTopic() { return sourceTopic; }, get sourceVocabulary() { return sourceVocabulary; }, get speak() { return speak; }, get splitReferencesFromBody() { return splitReferencesFromBody; },
-    get spotlightOpenTimeRef() { return spotlightOpenTimeRef; }, get standardInputValue() { return standardInputValue; }, get standardMode() { return standardMode; }, get standardsInput() { return standardsInput; },
-    get startClassSessionRef() { return startClassSessionRef; }, get startVoiceRecording() { return startVoiceRecording; }, get stemArtworkDestination() { return stemArtworkDestination; }, get stemArtworkHandoff() { return stemArtworkHandoff; },
-    get stemArtworkLabel() { return stemArtworkLabel; }, get stemLabTool() { return stemLabTool; }, get stickerType() { return stickerType; }, get stickers() { return stickers; },
-    get stopAacPlayback() { return stopAacPlayback; }, get stopPlayback() { return stopPlayback; }, get stopReadThisPage() { return stopReadThisPage; }, get stopVoiceRecording() { return stopVoiceRecording; },
-    get storageDB() { return storageDB; }, get storageManagerInventory() { return storageManagerInventory; }, get storageManagerRefreshTokenRef() { return storageManagerRefreshTokenRef; }, get stripUndefined() { return stripUndefined; },
+    get setMemoryAidCustomInstructions() { return setMemoryAidCustomInstructions; }, get setMicBannerDismissed() { return setMicBannerDismissed; }, get setMicPermissionStatus() { return setMicPermissionStatus; }, get setNewGroupName() { return setNewGroupName; },
+    get setNewProfileName() { return setNewProfileName; }, get setNodeInputText() { return setNodeInputText; }, get setNoteTakingCustomInstructions() { return setNoteTakingCustomInstructions; }, get setNoteTakingTemplateType() { return setNoteTakingTemplateType; },
+    get setOutlineCustomInstructions() { return setOutlineCustomInstructions; }, get setOutlineType() { return setOutlineType; }, get setPanelTtsPending() { return setPanelTtsPending; }, get setPdfActiveRemediationStorageKey() { return setPdfActiveRemediationStorageKey; },
+    get setPdfAuditLoading() { return setPdfAuditLoading; }, get setPdfAuditResult() { return setPdfAuditResult; }, get setPdfAuditTab() { return setPdfAuditTab; }, get setPdfAutoContinueRunning() { return setPdfAutoContinueRunning; },
+    get setPdfBatchCurrentIndex() { return setPdfBatchCurrentIndex; }, get setPdfBatchMode() { return setPdfBatchMode; }, get setPdfBatchProcessing() { return setPdfBatchProcessing; }, get setPdfBatchQueue() { return setPdfBatchQueue; },
+    get setPdfBatchStep() { return setPdfBatchStep; }, get setPdfBatchSummary() { return setPdfBatchSummary; }, get setPdfFixLoading() { return setPdfFixLoading; }, get setPdfFixResult() { return setPdfFixResult; },
+    get setPdfFixStep() { return setPdfFixStep; }, get setPdfMultiSession() { return setPdfMultiSession; }, get setPdfPageRange() { return setPdfPageRange; }, get setPdfPreviewOpen() { return setPdfPreviewOpen; },
+    get setPdfRemediationCacheEntries() { return setPdfRemediationCacheEntries; }, get setPdfRemediationDeleteConfirm() { return setPdfRemediationDeleteConfirm; }, get setPdfReturnPillDismissed() { return setPdfReturnPillDismissed; }, get setPdfWebMode() { return setPdfWebMode; },
+    get setPendingLargeFile() { return setPendingLargeFile; }, get setPendingPdfBase64() { return setPendingPdfBase64; }, get setPendingPdfFile() { return setPendingPdfFile; }, get setPendingQrAssignmentResource() { return setPendingQrAssignmentResource; },
+    get setPendingReadingBookSlug() { return setPendingReadingBookSlug; }, get setPendingReadingLocation() { return setPendingReadingLocation; }, get setPendingSync() { return setPendingSync; }, get setPersistedLessonDNA() { return setPersistedLessonDNA; },
+    get setPersonaAutoRead() { return setPersonaAutoRead; }, get setPersonaAutoReadEpoch() { return setPersonaAutoReadEpoch; }, get setPersonaCustomInstructions() { return setPersonaCustomInstructions; }, get setPersonaState() { return setPersonaState; },
+    get setPersonaTeacherEditor() { return setPersonaTeacherEditor; }, get setPhonemeMastery() { return setPhonemeMastery; }, get setPictionaryInitialMode() { return setPictionaryInitialMode; }, get setPictionaryPreparedInteraction() { return setPictionaryPreparedInteraction; },
+    get setPollAiBusy() { return setPollAiBusy; }, get setPresentationState() { return setPresentationState; }, get setProbeActivity() { return setProbeActivity; }, get setProbeGradeLevel() { return setProbeGradeLevel; },
+    get setProbeHistory() { return setProbeHistory; }, get setProcessingProgress() { return setProcessingProgress; }, get setProfiles() { return setProfiles; }, get setProgressionData() { return setProgressionData; },
+    get setQrShareModal() { return setQrShareModal; }, get setQuizCustomInstructions() { return setQuizCustomInstructions; }, get setQuizMcqCount() { return setQuizMcqCount; }, get setQuizMode() { return setQuizMode; },
+    get setQuizSelectedOption() { return setQuizSelectedOption; }, get setReadingLibraryIndexForBot() { return setReadingLibraryIndexForBot; }, get setReadingStudySource() { return setReadingStudySource; }, get setRecentQrShares() { return setRecentQrShares; },
+    get setResolvedStandardsSelection() { return setResolvedStandardsSelection; }, get setResourceCount() { return setResourceCount; }, get setRosterKey() { return setRosterKey; }, get setRtiGoals() { return setRtiGoals; },
+    get setRtpCurrentIndex() { return setRtpCurrentIndex; }, get setRtpPlaybackState() { return setRtpPlaybackState; }, get setRunTour() { return setRunTour; }, get setSchoolRewardsPortalUrl() { return setSchoolRewardsPortalUrl; },
+    get setSearchOptions() { return setSearchOptions; }, get setSelectedInventoryItem() { return setSelectedInventoryItem; }, get setSelectedLanguages() { return setSelectedLanguages; }, get setSelectedLetters() { return setSelectedLetters; },
+    get setSelectedProfileId() { return setSelectedProfileId; }, get setSelectedVoice() { return setSelectedVoice; }, get setSessionCounter() { return setSessionCounter; }, get setSessionData() { return setSessionData; },
+    get setSharedAssignmentActivity() { return setSharedAssignmentActivity; }, get setShellDeepLinkTool() { return setShellDeepLinkTool; }, get setShowDirectionsComposer() { return setShowDirectionsComposer; }, get setShowExportMenu() { return setShowExportMenu; },
+    get setShowExportPreview() { return setShowExportPreview; }, get setShowExportPreviewWrapped() { return setShowExportPreviewWrapped; }, get setShowFlashcardImages() { return setShowFlashcardImages; }, get setShowLargeFileModal() { return setShowLargeFileModal; },
+    get setShowLearningWebExplorer() { return setShowLearningWebExplorer; }, get setShowLiveDock() { return setShowLiveDock; }, get setShowLivePollingPanel() { return setShowLivePollingPanel; }, get setShowMathAnswers() { return setShowMathAnswers; },
+    get setShowPictionaryHost() { return setShowPictionaryHost; }, get setShowReadThisPage() { return setShowReadThisPage; }, get setShowRecentQrShares() { return setShowRecentQrShares; }, get setShowSessionModal() { return setShowSessionModal; },
+    get setShowSourceGen() { return setShowSourceGen; }, get setShowStemLab() { return setShowStemLab; }, get setShowStudentEntry() { return setShowStudentEntry; }, get setShowStudentWelcome() { return setShowStudentWelcome; },
+    get setShowUDLGuide() { return setShowUDLGuide; }, get setShowUrlInput() { return setShowUrlInput; }, get setShowVisualSupports() { return setShowVisualSupports; }, get setShowWizard() { return setShowWizard; },
+    get setSingleImageOverride() { return setSingleImageOverride; }, get setSourceCustomInstructions() { return setSourceCustomInstructions; }, get setSourceLength() { return setSourceLength; }, get setSourceLevel() { return setSourceLevel; },
+    get setSourceRefineInstruction() { return setSourceRefineInstruction; }, get setSourceTone() { return setSourceTone; }, get setSourceTopic() { return setSourceTopic; }, get setSourceVocabulary() { return setSourceVocabulary; },
+    get setSpotlightMessage() { return setSpotlightMessage; }, get setStandardDeckLang() { return setStandardDeckLang; }, get setStandardInputValue() { return setStandardInputValue; }, get setStandardMode() { return setStandardMode; },
+    get setStandardsInput() { return setStandardsInput; }, get setStemArtworkDestination() { return setStemArtworkDestination; }, get setStemArtworkHandoff() { return setStemArtworkHandoff; }, get setStemArtworkLabel() { return setStemArtworkLabel; },
+    get setStemLabTab() { return setStemLabTab; }, get setStemLabTool() { return setStemLabTool; }, get setStickers() { return setStickers; }, get setStorageManagerInventory() { return setStorageManagerInventory; },
+    get setStudentInterests() { return setStudentInterests; }, get setStudentProgressLog() { return setStudentProgressLog; }, get setStudentProjectSettings() { return setStudentProjectSettings; }, get setStudentResponses() { return setStudentResponses; },
+    get setSurveyResponses() { return setSurveyResponses; }, get setTargetStandards() { return setTargetStandards; }, get setTeachingScriptRuns() { return setTeachingScriptRuns; }, get setTextFormat() { return setTextFormat; },
+    get setTimelineMode() { return setTimelineMode; }, get setTimelineTopic() { return setTimelineTopic; }, get setTourRect() { return setTourRect; }, get setTourStep() { return setTourStep; },
+    get setTranslationMode() { return setTranslationMode; }, get setUdlMessages() { return setUdlMessages; }, get setUnits() { return setUnits; }, get setUrlToFetch() { return setUrlToFetch; },
+    get setUseEmojis() { return setUseEmojis; }, get setVisualCustomInstructions() { return setVisualCustomInstructions; }, get setVisualCustomStyle() { return setVisualCustomStyle; }, get setVisualStyle() { return setVisualStyle; },
+    get setVoiceRecording() { return setVoiceRecording; }, get setVoiceSpeed() { return setVoiceSpeed; }, get setVoiceVolume() { return setVoiceVolume; }, get setVsTab() { return setVsTab; },
+    get setWordSoundsActivity() { return setWordSoundsActivity; }, get setWordSoundsAudioLibrary() { return setWordSoundsAudioLibrary; }, get setWordSoundsAutoReview() { return setWordSoundsAutoReview; }, get setWordSoundsBadges() { return setWordSoundsBadges; },
+    get setWordSoundsConfusionPatterns() { return setWordSoundsConfusionPatterns; }, get setWordSoundsCustomTerms() { return setWordSoundsCustomTerms; }, get setWordSoundsDailyProgress() { return setWordSoundsDailyProgress; }, get setWordSoundsFamilies() { return setWordSoundsFamilies; },
+    get setWordSoundsHistory() { return setWordSoundsHistory; }, get setWordSoundsPhonemes() { return setWordSoundsPhonemes; }, get setWordSoundsPreparedAudioStatus() { return setWordSoundsPreparedAudioStatus; }, get setWordSoundsScore() { return setWordSoundsScore; },
+    get setWorkspacePane() { return setWorkspacePane; }, get setWsActivitySequence() { return setWsActivitySequence; }, get setWsPreloadedWords() { return setWsPreloadedWords; }, get showExportMenu() { return showExportMenu; },
+    get showReadThisPage() { return showReadThisPage; }, get sourceCustomInstructions() { return sourceCustomInstructions; }, get sourceLength() { return sourceLength; }, get sourceLevel() { return sourceLevel; },
+    get sourceRefineInstruction() { return sourceRefineInstruction; }, get sourceTone() { return sourceTone; }, get sourceTopic() { return sourceTopic; }, get sourceVocabulary() { return sourceVocabulary; },
+    get speak() { return speak; }, get splitReferencesFromBody() { return splitReferencesFromBody; }, get spotlightOpenTimeRef() { return spotlightOpenTimeRef; }, get standardInputValue() { return standardInputValue; },
+    get standardsInput() { return standardsInput; }, get startClassSessionRef() { return startClassSessionRef; }, get startVoiceRecording() { return startVoiceRecording; }, get stemArtworkDestination() { return stemArtworkDestination; },
+    get stemArtworkHandoff() { return stemArtworkHandoff; }, get stemArtworkLabel() { return stemArtworkLabel; }, get stemLabTool() { return stemLabTool; }, get stickerType() { return stickerType; },
+    get stickers() { return stickers; }, get stopAacPlayback() { return stopAacPlayback; }, get stopPlayback() { return stopPlayback; }, get stopReadThisPage() { return stopReadThisPage; },
+    get stopVoiceRecording() { return stopVoiceRecording; }, get storageDB() { return storageDB; }, get storageManagerInventory() { return storageManagerInventory; }, get storageManagerRefreshTokenRef() { return storageManagerRefreshTokenRef; },
     get studentAiPolicyForShare() { return studentAiPolicyForShare; }, get studentInterests() { return studentInterests; }, get studentLanguage() { return studentLanguage; }, get studentNickname() { return studentNickname; },
-    get studentProgressLog() { return studentProgressLog; }, get studentProjectSettings() { return studentProjectSettings; }, get studentResponses() { return studentResponses; }, get studentWorkInput() { return studentWorkInput; },
-    get summarizeLiveSessionResourceDelivery() { return summarizeLiveSessionResourceDelivery; }, get syncCanvasRecoveryVaultState() { return syncCanvasRecoveryVaultState; }, get t() { return t; }, get targetStandards() { return targetStandards; },
-    get targetTranslationLang() { return targetTranslationLang; }, get teachingScriptControllerRef() { return teachingScriptControllerRef; }, get teachingScriptStateRef() { return teachingScriptStateRef; }, get textFormat() { return textFormat; },
-    get textUndoRef() { return textUndoRef; }, get tourSteps() { return tourSteps; }, get translateResourceItem() { return translateResourceItem; }, get translateScope() { return translateScope; },
-    get translationMode() { return translationMode; }, get translationTargetChoices() { return translationTargetChoices; }, get udlMessages() { return udlMessages; }, get units() { return units; },
-    get universalImageStyle() { return universalImageStyle; }, get updateDoc() { return updateDoc; }, get urlSearchQuery() { return urlSearchQuery; }, get urlToFetch() { return urlToFetch; },
-    get useEmojis() { return useEmojis; }, get useLowQualityVisuals() { return useLowQualityVisuals; }, get user() { return user; }, get validateDraftQuality() { return validateDraftQuality; },
-    get videoTranscriptSourceContext() { return videoTranscriptSourceContext; }, get visualCustomStyle() { return visualCustomStyle; }, get visualStyle() { return visualStyle; }, get visualSupportsPayloadRef() { return visualSupportsPayloadRef; },
-    get voiceAudioRegistryRef() { return voiceAudioRegistryRef; }, get voiceCapTimeoutRef() { return voiceCapTimeoutRef; }, get voiceRecording() { return voiceRecording; }, get voiceSpeed() { return voiceSpeed; },
-    get voiceStartTimeRef() { return voiceStartTimeRef; }, get voiceTickRef() { return voiceTickRef; }, get voiceVolume() { return voiceVolume; }, get warnLog() { return warnLog; },
-    get wordImageCacheRef() { return wordImageCacheRef; }, get wordSoundsActivity() { return wordSoundsActivity; }, get wordSoundsAudioDeliveryAt() { return wordSoundsAudioDeliveryAt; }, get wordSoundsAudioLibrary() { return wordSoundsAudioLibrary; },
-    get wordSoundsBadges() { return wordSoundsBadges; }, get wordSoundsConfusionPatterns() { return wordSoundsConfusionPatterns; }, get wordSoundsDailyProgress() { return wordSoundsDailyProgress; }, get wordSoundsFamilies() { return wordSoundsFamilies; },
-    get wordSoundsHistory() { return wordSoundsHistory; }, get wordSoundsScore() { return wordSoundsScore; }, get wordSoundsSessionConfig() { return wordSoundsSessionConfig; }, get wordSoundsSessionGoal() { return wordSoundsSessionGoal; },
-    get workspacePane() { return workspacePane; }, get writeToSession() { return writeToSession; }, get wsDispatch() { return wsDispatch; },
+    get studentProjectSettings() { return studentProjectSettings; }, get studentResponses() { return studentResponses; }, get studentWorkInput() { return studentWorkInput; }, get summarizeLiveSessionResourceDelivery() { return summarizeLiveSessionResourceDelivery; },
+    get syncCanvasRecoveryVaultState() { return syncCanvasRecoveryVaultState; }, get t() { return t; }, get targetStandards() { return targetStandards; }, get targetTranslationLang() { return targetTranslationLang; },
+    get teachingScriptControllerRef() { return teachingScriptControllerRef; }, get teachingScriptStateRef() { return teachingScriptStateRef; }, get textFormat() { return textFormat; }, get textUndoRef() { return textUndoRef; },
+    get tourSteps() { return tourSteps; }, get translateResourceItem() { return translateResourceItem; }, get translateScope() { return translateScope; }, get translationMode() { return translationMode; },
+    get translationTargetChoices() { return translationTargetChoices; }, get udlMessages() { return udlMessages; }, get units() { return units; }, get universalImageStyle() { return universalImageStyle; },
+    get updateDoc() { return updateDoc; }, get urlSearchQuery() { return urlSearchQuery; }, get urlToFetch() { return urlToFetch; }, get useEmojis() { return useEmojis; },
+    get useLowQualityVisuals() { return useLowQualityVisuals; }, get user() { return user; }, get validateDraftQuality() { return validateDraftQuality; }, get videoTranscriptSourceContext() { return videoTranscriptSourceContext; },
+    get visualCustomStyle() { return visualCustomStyle; }, get visualStyle() { return visualStyle; }, get visualSupportsPayloadRef() { return visualSupportsPayloadRef; }, get voiceAudioRegistryRef() { return voiceAudioRegistryRef; },
+    get voiceCapTimeoutRef() { return voiceCapTimeoutRef; }, get voiceRecording() { return voiceRecording; }, get voiceSpeed() { return voiceSpeed; }, get voiceStartTimeRef() { return voiceStartTimeRef; },
+    get voiceTickRef() { return voiceTickRef; }, get voiceVolume() { return voiceVolume; }, get warnLog() { return warnLog; }, get wordImageCacheRef() { return wordImageCacheRef; },
+    get wordSoundsActivity() { return wordSoundsActivity; }, get wordSoundsAudioDeliveryAt() { return wordSoundsAudioDeliveryAt; }, get wordSoundsScore() { return wordSoundsScore; }, get wordSoundsSessionConfig() { return wordSoundsSessionConfig; },
+    get wordSoundsSessionGoal() { return wordSoundsSessionGoal; }, get workspacePane() { return workspacePane; }, get writeToSession() { return writeToSession; },
   };
   let __alloHostHandlersCache = null;
   const _alloHostHandlers = () => {
@@ -12003,6 +11990,61 @@ const AlloFlowContent = () => {
       studentProjectSettings.hideStudentAiFeatures === true
       || (qrStudentModeActive && !studentAiConfigured)
   );
+  // In-app students (2026-09-14). The QR guard swaps the window AI globals for
+  // blocked functions, but a student who is NOT on a QR link (Student role on
+  // a shared device with hideStudentAiFeatures on) kept the teacher's live
+  // window.callGemini. The host hands modules callGemini = null, yet ~40 module
+  // sites reach the AI through the global instead (Concept Map 3D layout and
+  // hints, Memory Palace sculptures, "Surprise me", persona image edits,
+  // vision alt-text), so the setting hid nothing there. Swap the text, vision
+  // and image-edit globals for blocked functions while the flag holds and put
+  // the originals back when the role flips to teacher. Audio is left alone:
+  // read-aloud is an access feature, not generation, and the QR path only
+  // blocks it when a personal key lacks it.
+  // The same applies to the host's own module-scope bindings: ~30 lazy tools
+  // (Learning Hub: AlloHaven, Test Prep, Lit Lab, Story Forge, Reading
+  // Library, SEL Hub, STEM Lab, ...) are mounted with `callGemini,` straight
+  // from those bindings, not through the null-when-hidden prop. callImagen
+  // reads window.__alloStudentAiDisabled itself.
+  const [, setStudentAiGuardTick] = useState(0);
+  useEffect(() => {
+      if (typeof window === 'undefined' || !studentAiFeaturesHidden) return undefined;
+      const message = 'AI features are turned off for students in this project.';
+      const savedWindow = {};
+      ['callGemini', 'callGeminiVision', 'callGeminiImageEdit'].forEach((name) => {
+          const current = window[name];
+          if (typeof current === 'function' && current._alloQrBlocked) return; // the QR guard already owns it
+          savedWindow[name] = current;
+          window[name] = _makeQrStudentAiBlockedFn(name, message);
+      });
+      const savedLocal = { callGemini, callGeminiSingleAttempt, callGeminiVision, callGeminiImageEdit };
+      const localSwapped = !(typeof callGemini === 'function' && callGemini._alloQrBlocked);
+      if (localSwapped) {
+          callGemini = _makeQrStudentAiBlockedFn('text', message);
+          callGeminiSingleAttempt = callGemini;
+          callGeminiVision = _makeQrStudentAiBlockedFn('vision', message);
+          callGeminiImageEdit = _makeQrStudentAiBlockedFn('image-edit', message);
+      }
+      const previousDisabled = window.__alloStudentAiDisabled;
+      window.__alloStudentAiDisabled = true;
+      // Children rendered in this same pass still hold the live functions;
+      // one more render hands every mount site the blocked ones.
+      setStudentAiGuardTick((tick) => tick + 1);
+      return () => {
+          Object.keys(savedWindow).forEach((name) => {
+              // Only undo our own swap; a re-initialised API may have replaced it.
+              if (typeof window[name] === 'function' && window[name]._alloQrBlocked) window[name] = savedWindow[name];
+          });
+          if (localSwapped && typeof callGemini === 'function' && callGemini._alloQrBlocked) {
+              callGemini = savedLocal.callGemini;
+              callGeminiSingleAttempt = savedLocal.callGeminiSingleAttempt;
+              callGeminiVision = savedLocal.callGeminiVision;
+              callGeminiImageEdit = savedLocal.callGeminiImageEdit;
+          }
+          window.__alloStudentAiDisabled = previousDisabled;
+          setStudentAiGuardTick((tick) => tick + 1);
+      };
+  }, [studentAiFeaturesHidden]);
   const [showClassAnalytics, setShowClassAnalytics] = useState(false);
   // Research Suite (2026-08-23): the standalone entry to the IRB study surface
   // that used to be reachable only as the Assessment Center's third tab. Same
@@ -13555,7 +13597,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '2b2407ccf';
+    var pluginCdnVersion = '6c787f5a1';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -13919,31 +13961,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=2b2407ccf');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=2b2407ccf');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=2b2407ccf');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=2b2407ccf');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=2b2407ccf');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=2b2407ccf');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=2b2407ccf');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=6c787f5a1');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=6c787f5a1');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=6c787f5a1');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=6c787f5a1');
+    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=6c787f5a1');
+    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=6c787f5a1');
+    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=6c787f5a1');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
-    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=2b2407ccf');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=2b2407ccf');
+    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=6c787f5a1');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=6c787f5a1');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=e880c18c');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=2b2407ccf');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=2b2407ccf');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=2b2407ccf');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=2b2407ccf');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=2b2407ccf');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=2b2407ccf');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=6c787f5a1');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=6c787f5a1');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=6c787f5a1');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=6c787f5a1');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6c787f5a1');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=6c787f5a1');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=47162871');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=a3fb7ab7');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=6c225180');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=2b2407ccf');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=2b2407ccf');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=2b2407ccf');
+    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=8067cdd8');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=6c787f5a1');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=6c787f5a1');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=6c787f5a1');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -13956,47 +13998,48 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=2b2407ccf'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=2b2407ccf');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=2b2407ccf');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=2b2407ccf');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=6c787f5a1'); }; })();
+    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=6c787f5a1');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=6c787f5a1');
+    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=6c787f5a1');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=2b2407ccf');
+        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=6c787f5a1');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=2b2407ccf');
+        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=6c787f5a1');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=2b2407ccf'); };
-    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=2b2407ccf'); };
-    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=2b2407ccf'); };
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=2b2407ccf');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=2b2407ccf');
+    window.__alloLazyDirectionsComposer = () => { loadModule('DirectionsComposer', 'https://alloflow-cdn.pages.dev/view_directions_composer_module.js?v=6c787f5a1'); };
+    window.__alloLazyPersonaWorkspace = () => { loadModule('PersonaWorkspace', 'https://alloflow-cdn.pages.dev/view_persona_workspace_module.js?v=6c787f5a1'); };
+    window.__alloLazyReportWriter = () => { loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=6c787f5a1'); };
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=6c787f5a1');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=6c787f5a1');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=6c787f5a1'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=6c787f5a1'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=6c787f5a1'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
     window.__alloLazyWalkthroughCopilot = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WalkthroughCopilot', 'https://alloflow-cdn.pages.dev/walkthrough_copilot_cdn_module.js?v=wc081301'); }; })();
+    window.__alloLazyCommunicationsStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CommunicationsStudio', 'https://alloflow-cdn.pages.dev/communications_studio_module.js?v=cs091301'); }; })();
     // Disproportionality Analyzer (Aug 3 2026) — admin equity metrics,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
@@ -14004,68 +14047,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=6c787f5a1'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=6c787f5a1'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=2b2407ccf'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=6c787f5a1'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=2b2407ccf');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=2b2407ccf');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=2b2407ccf');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=2b2407ccf'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=6c787f5a1');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=6c787f5a1');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=6c787f5a1');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=6c787f5a1'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=2b2407ccf');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=2b2407ccf');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=2b2407ccf');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=2b2407ccf');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=2b2407ccf');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=2b2407ccf');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=2b2407ccf');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=2b2407ccf');
+    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=6c787f5a1');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=6c787f5a1');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=6c787f5a1');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=6c787f5a1');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=6c787f5a1');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=6c787f5a1');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=6c787f5a1');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=6c787f5a1');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=2b2407ccf');
+      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=6c787f5a1');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=2b2407ccf');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=2b2407ccf');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=2b2407ccf'); }; })();
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=6c787f5a1');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=6c787f5a1');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=6c787f5a1'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=6c787f5a1'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=2b2407ccf');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=2b2407ccf');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=6c787f5a1');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=6c787f5a1');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=af265f93');
-    window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=2b2407ccf'); };
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=2b2407ccf');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=2b2407ccf');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=2b2407ccf');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=2b2407ccf');
+    window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=6c787f5a1'); };
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=6c787f5a1');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=6c787f5a1');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=6c787f5a1');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=6c787f5a1');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=6c787f5a1'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=2b2407ccf');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=6c787f5a1');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=2b2407ccf');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=2b2407ccf'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=6c787f5a1');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=6c787f5a1'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -14073,7 +14116,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=2b2407ccf');
+      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=6c787f5a1');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14126,15 +14169,15 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Teaching-script research and editor load only when a teacher opens a plan.
     window.__alloLazyLessonTeachingScript = function() {
       const retry = name => window.__alloModuleRegistry?.[name]?.status === 'failed' && window.__alloRetryModule(name);
-      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=2b2407ccf');
-      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=2b2407ccf');
-      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=2b2407ccf');
+      if (!window.AlloModules?.LessonTeachingScript && !retry('LessonTeachingScriptModule')) loadModule('LessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_module.js?v=6c787f5a1');
+      if (!window.AlloModules?.LessonTeachingScriptHost && !retry('LessonTeachingScriptHostModule')) loadModule('LessonTeachingScriptHostModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_script_host_module.js?v=6c787f5a1');
+      if (!window.AlloModules?.LessonTeachingScriptView && !retry('ViewLessonTeachingScriptModule')) loadModule('ViewLessonTeachingScriptModule', 'https://alloflow-cdn.pages.dev/view_lesson_teaching_script_module.js?v=6c787f5a1');
       if (!window.AlloModules?.ResourceContentFingerprint && !retry('ResourceContentFingerprint')) loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
     };
     window.__alloLazyLessonTeachingResearch = () => {
       if (window.AlloModules?.LessonTeachingResearch) return;
       if (window.__alloModuleRegistry?.LessonTeachingResearchModule?.status === 'failed') window.__alloRetryModule('LessonTeachingResearchModule');
-      else loadModule('LessonTeachingResearchModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_research_module.js?v=2b2407ccf');
+      else loadModule('LessonTeachingResearchModule', 'https://alloflow-cdn.pages.dev/lesson_teaching_research_module.js?v=6c787f5a1');
     };
     window.__alloEnsureLessonTeachingScript = () => Promise.all([
       ['LessonTeachingScriptModule', 'LessonTeachingScript'],
@@ -14146,56 +14189,56 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=b3668673'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyMailboxScriptSource = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=6c787f5a1'); }; })();
     window.__alloLazyLiveSessionDockView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LiveSessionDockView', 'https://alloflow-cdn.pages.dev/view_live_session_dock_module.js?v=4727fcee'); }; })();
     window.__alloLazyFullPackRunView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FullPackRunView', 'https://alloflow-cdn.pages.dev/view_full_pack_run_module.js?v=dabce57a'); }; })();
     window.__alloLazyShareSessionSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ShareSessionSurfaces', 'https://alloflow-cdn.pages.dev/view_share_session_surfaces_module.js?v=306cdfdb'); }; })();
     window.__alloLazyCanvasRecoveryDialogView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('CanvasRecoveryDialogView', 'https://alloflow-cdn.pages.dev/view_canvas_recovery_dialog_module.js?v=f4324770'); }; })();
     window.__alloLazyColdPathSurfaces = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ColdPathSurfaces', 'https://alloflow-cdn.pages.dev/view_cold_path_surfaces_module.js?v=ce78e81d'); }; })();
     window.__alloLazyVideoStudioHostBridgeView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoStudioHostBridgeView', 'https://alloflow-cdn.pages.dev/video_studio_host_bridge_module.js?v=081de825'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=2b2407ccf'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=6c787f5a1'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=2b2407ccf'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=2b2407ccf');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=2b2407ccf'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=6c787f5a1'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=6c787f5a1');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=6c787f5a1'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=2b2407ccf');
+    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=6c787f5a1');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=888ff3fb');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=2b2407ccf');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=2b2407ccf');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=2b2407ccf');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=2b2407ccf');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=2b2407ccf');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=2b2407ccf'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=2b2407ccf'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=2b2407ccf'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=2b2407ccf'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=2b2407ccf'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=2b2407ccf'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=2b2407ccf');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=2b2407ccf');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=2b2407ccf');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=6c787f5a1');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=6c787f5a1');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=6c787f5a1');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=6c787f5a1');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=6c787f5a1');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=6c787f5a1'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=6c787f5a1'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=6c787f5a1'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=6c787f5a1'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=6c787f5a1'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=6c787f5a1'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=6c787f5a1');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=6c787f5a1');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=6c787f5a1');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=2b2407ccf');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=2b2407ccf');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=2b2407ccf');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=6c787f5a1');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=6c787f5a1');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=6c787f5a1');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=2b2407ccf');
+      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=6c787f5a1');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -14204,14 +14247,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=2b2407ccf');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=2b2407ccf');
+    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=6c787f5a1');
+    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=6c787f5a1');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=2b2407ccf');
+      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=6c787f5a1');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -14220,17 +14263,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=2b2407ccf');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=2b2407ccf');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=2b2407ccf');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=2b2407ccf');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=2b2407ccf');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=2b2407ccf');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=2b2407ccf');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=2b2407ccf');
-    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=2b2407ccf'); };
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=6c787f5a1');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6c787f5a1');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=6c787f5a1');
+    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=6c787f5a1');
+    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=6c787f5a1');
+    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=6c787f5a1');
+    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=6c787f5a1');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=6c787f5a1');
+    window.__alloEnsureSidebarPanels = () => { loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=6c787f5a1'); };
     window.__alloEnsureSidebarPanels();
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=2b2407ccf');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=6c787f5a1');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -14252,11 +14295,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=188e3e93');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=2b2407ccf');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=6c787f5a1');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=2b2407ccf');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=2b2407ccf');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=2b2407ccf');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=6c787f5a1');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=6c787f5a1');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=6c787f5a1');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -14281,23 +14324,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=2b2407ccf');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=2b2407ccf');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=2b2407ccf');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=2b2407ccf');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=2b2407ccf');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=6c787f5a1');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=6c787f5a1');
+    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=6c787f5a1');
+    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=6c787f5a1');
+    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=6c787f5a1');
     loadModule('ResourceContentFingerprint', 'https://alloflow-cdn.pages.dev/resource_content_fingerprint_module.js');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=2b2407ccf');
+    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=6c787f5a1');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=2b2407ccf');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=2b2407ccf');
+    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=6c787f5a1');
+    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=6c787f5a1');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=2b2407ccf');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=2b2407ccf');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=2b2407ccf');
+    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=6c787f5a1');
+    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=6c787f5a1');
+    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=6c787f5a1');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -14312,14 +14355,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=2b2407ccf');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=2b2407ccf');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=2b2407ccf');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=2b2407ccf');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=2b2407ccf');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=2b2407ccf');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=2b2407ccf');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=2b2407ccf');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=6c787f5a1');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=6c787f5a1');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=6c787f5a1');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=6c787f5a1');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=6c787f5a1');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=6c787f5a1');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=6c787f5a1');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=6c787f5a1');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=5ebfbbb5');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
@@ -14329,66 +14372,66 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=2b2407ccf');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=6c787f5a1');
     // File selection must promote intake ahead of deferred background tools.
     // The registry handles in-flight deduplication and failed-load retries.
-    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=2b2407ccf'); };
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=2b2407ccf');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=2b2407ccf');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=2b2407ccf');
-    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=2b2407ccf');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=2b2407ccf');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=2b2407ccf');
+    window.__alloLazyFileIntake = () => { loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=6c787f5a1'); };
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=6c787f5a1');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=6c787f5a1');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=6c787f5a1');
+    loadModule('MathManipulativeGraderModule', 'https://alloflow-cdn.pages.dev/math_manipulative_grader_module.js?v=6c787f5a1');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=6c787f5a1');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=6c787f5a1');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=f8601d00');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=2b2407ccf');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=2b2407ccf');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=2b2407ccf');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=2b2407ccf');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=2b2407ccf');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=2b2407ccf');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=6c787f5a1');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=6c787f5a1');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=6c787f5a1');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=6c787f5a1');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=6c787f5a1');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=6c787f5a1');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=f81b5ec1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=2b2407ccf');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=2b2407ccf');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=2b2407ccf');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=2b2407ccf');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=2b2407ccf');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bd163a6e'); }; })();
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=6c787f5a1');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=6c787f5a1');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=6c787f5a1');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=6c787f5a1');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=6c787f5a1');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=4362c5e9'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=2b2407ccf');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=2b2407ccf');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=2b2407ccf');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=2b2407ccf');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=2b2407ccf');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=2b2407ccf');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=6c787f5a1');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=6c787f5a1');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=6c787f5a1');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=6c787f5a1');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6c787f5a1');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=6c787f5a1');
     window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=e739e9ba'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=2b2407ccf');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=2b2407ccf');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=2b2407ccf');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=6c787f5a1');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=6c787f5a1');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=6c787f5a1');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=7470d542');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=014b36c5');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=2b2407ccf');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=2b2407ccf');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=2b2407ccf');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=2b2407ccf');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=2b2407ccf');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=2b2407ccf');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=2b2407ccf');
-    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=2b2407ccf');
-    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=2b2407ccf');
-    loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=2b2407ccf');
-    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=2b2407ccf');
-    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=2b2407ccf');
-    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=2b2407ccf');
-    window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=2b2407ccf'); };
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=2b2407ccf');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=2b2407ccf');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=2b2407ccf');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=2b2407ccf');
-    window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', 'https://alloflow-cdn.pages.dev/concept_quest_solo_module.js?v=2b2407ccf');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=6c787f5a1');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=6c787f5a1');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=6c787f5a1');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6c787f5a1');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=6c787f5a1');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=6c787f5a1');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=6c787f5a1');
+    loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=6c787f5a1');
+    loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=6c787f5a1');
+    loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=6c787f5a1');
+    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=6c787f5a1');
+    loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=6c787f5a1');
+    loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=6c787f5a1');
+    window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=6c787f5a1'); };
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=6c787f5a1');
+    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=6c787f5a1');
+    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=6c787f5a1');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=6c787f5a1');
+    window.__alloLazyConceptQuestSolo = () => loadModule('ConceptQuestSoloModule', 'https://alloflow-cdn.pages.dev/concept_quest_solo_module.js?v=6c787f5a1');
     window.__alloLazyConnectedEscape = () => loadModule('ConnectedEscapeRoomModule', 'https://alloflow-cdn.pages.dev/connected_escape_room_module.js?v=2a8d292216');
     window.__alloLazyConnectedEscape();
     window.__alloLazyLessonBoard = () => loadModule('LessonBoardModule', 'https://alloflow-cdn.pages.dev/lesson_board_module.js?v=1f53dc08d2');
@@ -14962,7 +15005,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             // Regression mode embeds Data Plotter, which in turn owns the kernel.
             'stem_lab/stem_tool_datastudio.js': ['stem_lab/stem_tool_dataplot.js'],
             'stem_lab/stem_lumen_study.js': ['stem_lab/stem_lumen_evidence.js'],
-            'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js']
+            'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js'],
+            // The builder owns the home chooser; per-tile loading fetches only what is declared here.
+            'stem_lab/stem_tool_geometryworld.js': ['stem_lab/stem_tool_geometryworld_builder.js']
           };
 
           function loadStemModuleWithDependencies(mod, force, ancestors) {
@@ -16429,6 +16474,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
   const [isWalkthroughCopilotOpen, setIsWalkthroughCopilotOpen] = useState(false);
+  const [isCommunicationsStudioOpen, setIsCommunicationsStudioOpen] = useState(false);
   const [isDisproAnalyzerOpen, setIsDisproAnalyzerOpen] = useState(false);
   const [isAdminHubOpen, setIsAdminHubOpen] = useState(false);
   // Leadership Hub Drive backup (2026-08-17): the hub's own auto-save runs when
@@ -17752,6 +17798,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [showLiveLessonPrep, setShowLiveLessonPrep] = useState(false);
   const [mbPanelOpen, setMbPanelOpen] = useState(false);
   useEffect(() => {
+      // Lets separately-mounted modules (the export preview's "Send to my Drive"
+      // group) open the mailbox setup without threading a prop through the bags.
+      // Same shape as window.__alloOpenAiSetup.
+      window.__alloOpenMailboxSetup = () => { try { setMbPanelOpen(true); } catch (_) {} };
+      return () => { try { delete window.__alloOpenMailboxSetup; } catch (_) {} };
+  }, []);
+  useEffect(() => {
     if (!mbPanelOpen) return;
     setMailboxScriptRequested(true);
     try { window.__alloLazyMailboxScriptSource?.(); } catch (_) {}
@@ -18513,7 +18566,58 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     setPendingRole(null);
   };
   const handleToggleAllTools = (...__a) => _alloHostHandlers().handleToggleAllTools(...__a);
-  const executeRoleSelect = (...__a) => _alloHostHandlers().executeRoleSelect(...__a);
+  const executeRoleSelect = (role) => {
+      // Promote the setup wizard just after the role-selection feedback frame;
+      // its local script evaluation should never lengthen the role click.
+      if (role !== 'student') {
+          setTimeout(() => { try { window.__alloLazyQuickStartWizard?.(); } catch (_) {} }, 80);
+      }
+      if (role === 'student') {
+          setIsTeacherMode(false);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(true);
+          setShowWizard(false);
+          setShowStudentEntry(true);
+          setIsAdventureStoryMode(false);
+      } else if (role === 'parent') {
+          setIsTeacherMode(true);
+          setIsParentMode(true);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(false);
+          setExpandedTools(['source-input', 'adventure', 'glossary', 'simplified']);
+          addToast(t('toasts.mode_parent_enabled'), "success");
+          setIsAdventureStoryMode(true);
+      } else if (role === 'independent') {
+          setIsTeacherMode(true);
+          setIsParentMode(false);
+          setIsStudentLinkMode(false);
+          setIsIndependentMode(true);
+          setShowStudentEntry(false);
+          // Self-study is mostly adults (adult education, licensure prep). Lift the
+          // untouched K-12 default; the Quick Start wizard that follows still asks,
+          // and a value the learner already set is left alone.
+          setGradeLevel(prev => (prev === '5th Grade' ? 'College' : prev));
+          addToast(t('toasts.mode_independent_enabled'), "success");
+          setIsAdventureStoryMode(false);
+      } else {
+          setIsTeacherMode(true);
+          setIsParentMode(false);
+          setIsIndependentMode(false);
+          setIsStudentLinkMode(false);
+          addToast(t('toasts.mode_teacher_enabled'), "success");
+          setIsAdventureStoryMode(false);
+      }
+      setHasSelectedRole(true);
+      // Remember the choice so RoleSelectionModal can badge "last time" next boot.
+      // Deliberately a HINT, not an auto-skip: there is no switch-role affordance
+      // after selection (the wizard never reopens), so skipping it would trap a
+      // shared device in one role. 'student' is not remembered — that path opens
+      // the student entry flow, which link-based entry already handles.
+      if (role !== 'student') {
+          try { localStorage.setItem('alloflow_last_role', role); } catch (_) {}
+      }
+  };
   // ── Family deep link (?allo_family) ──────────────────────────────────────
   // A teacher-distributable link (newsletter, IEP meeting handout) that lands a
   // family directly in Parent Mode: no launch pad, no role wizard. Parent mode
@@ -19124,7 +19228,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       return false;
   };
-  const showSpotlight = useCallback((...__a) => _alloHostHandlers().showSpotlight(...__a), []);
+  const showSpotlight = useCallback((element, title, text) => {
+      const rect = element.getBoundingClientRect();
+        const isBotAvatar = element.getAttribute('data-help-key') === 'bot_avatar';
+        const fixedBotRect = isBotAvatar ? {
+            top: rect.bottom - 120,
+            left: rect.right - 100,
+            bottom: rect.bottom - 20,
+            right: rect.right,
+            width: 100,
+            height: 100,
+            x: rect.right - 100,
+            y: rect.bottom - 120
+        } : rect;
+        setTourRect(fixedBotRect);
+      setBotSpotlightPos({ x: isBotAvatar ? rect.right - 50 : rect.left + rect.width/2, y: isBotAvatar ? rect.bottom - 70 : rect.top + rect.height/2 });
+      setSpotlightMessage({ title, text });
+      spotlightOpenTimeRef.current = Date.now();
+      setIsSpotlightMode(true);
+      // Screen-reader users get the help/tour text read immediately (the popup is otherwise silent).
+      try { if (window.alloAnnounce) window.alloAnnounce((title ? title + '. ' : '') + (text || ''), 'polite'); } catch (_) {}
+  }, []);
   const getStageElementId = (stageName) => {
       const map = {
           'source': 'tour-input-panel',
@@ -19357,7 +19481,23 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const raw = String(canvasRecoveryCurrentIdRef?.current || '').trim().slice(0, 200);
       return 'workspace:' + (raw || 'session');
   };
-  const _alloBlueprintLearningWebResource = (...__a) => _alloHostHandlers()._alloBlueprintLearningWebResource(...__a);
+  const _alloBlueprintLearningWebResource = (blueprint) => {
+      if (!blueprint || !Array.isArray(blueprint.resourcePlan) || !blueprint.resourcePlan.length) return null;
+      const bounded = (value, max) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+      const resourcePlan = blueprint.resourcePlan.slice(0, 80).map((row, index) => ({
+          id: bounded(row?.uiId || row?.stepId || ('step-' + (index + 1)), 160),
+          title: bounded(row?.title || row?.label || row?.tool || row?.type || ('Step ' + (index + 1)), 200),
+          type: bounded(row?.type || row?.tool || 'resource', 100),
+          resourceId: bounded(row?.resourceId, 200),
+      }));
+      const idSeed = bounded(blueprint.id || blueprint.planId || blueprint.title || blueprint.name || 'active', 160);
+      return {
+          id: 'blueprint:' + idSeed,
+          type: 'blueprint',
+          title: bounded(blueprint.title || blueprint.name || 'Active Blueprint', 200),
+          resourcePlan,
+      };
+  };
   const _alloBoundLearningWebGraphForExplorer = (candidate, registryApi) => {
       const raw = candidate?.graph || candidate;
       if (!raw || raw.version !== 'acg/v1' || !Array.isArray(raw.nodes) || !Array.isArray(raw.edges)) return null;
@@ -19402,7 +19542,27 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return { graph: null, registrySnapshot: empty, scopeId };
       }
   };
-  const _alloAlignmentRegistryRecordFromResource = (...__a) => _alloHostHandlers()._alloAlignmentRegistryRecordFromResource(...__a);
+  const _alloAlignmentRegistryRecordFromResource = (resource, scopeId) => {
+      if (!resource || resource.type !== 'alignment-report') return null;
+      const comprehensive = resource?.data?.comprehensive;
+      const graph = comprehensive?.alignmentMapGraph;
+      if (!_alloIsAlignmentGraph(graph)) return null;
+      const confirmations = (graph.edges || []).flatMap(edge => Array.isArray(edge?.attributionHistory) ? edge.attributionHistory : []);
+      const confirmedAt = confirmations.map(item => Date.parse(item?.confirmedAt || '')).filter(Number.isFinite).sort((a, b) => b - a)[0];
+      const resourceTime = Date.parse(resource?.updatedAt || resource?.timestamp || graph?.meta?.alignmentAudit?.generatedAt || '') || Date.now();
+      return {
+          id: 'alignment-map:' + String(resource.id || '').slice(0, 200),
+          graph,
+          scopeId,
+          kind: 'alignment-map',
+          title: String(resource.title || 'Alignment Map').slice(0, 200),
+          resourceId: String(resource.id || '').slice(0, 200),
+          resourceType: resource.type,
+          resourceTitle: resource.title,
+          updatedAt: new Date(confirmedAt || resourceTime).toISOString(),
+          provenance: graph?.meta?.alignmentAudit || {},
+      };
+  };
   const _alloAlignmentExportFromRegistryEntry = (...__a) => _alloHostHandlers()._alloAlignmentExportFromRegistryEntry(...__a);
   const _alloAlignmentGraphExportForContext = (...__a) => _alloHostHandlers()._alloAlignmentGraphExportForContext(...__a);
   const _alloNormalizeAlignmentGraphExportForHost = (payload) => {
@@ -20356,8 +20516,39 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       });
       setDraggedNodeId(nodeId);
   };
-  const handleNodeMouseMove = useCallback((...__a) => _alloHostHandlers().handleNodeMouseMove(...__a), [draggedNodeId, dragOffset]);
-  const handleNodeMouseUp = useCallback((...__a) => _alloHostHandlers().handleNodeMouseUp(...__a), [draggedNodeId]);
+  const handleNodeMouseMove = useCallback((e) => {
+      if (!draggedNodeId) return;
+      const newX = e.clientX - dragOffset.x;
+      const newY = e.clientY - dragOffset.y;
+      const containerW = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 1200;
+      const containerH = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 800;
+      const clampedX = Math.max(0, Math.min(containerW, newX));
+      const clampedY = Math.max(0, Math.min(containerH, newY));
+      setConceptMapNodes(prev => prev.map(n =>
+          n.id === draggedNodeId ? { ...n, x: clampedX, y: clampedY } : n
+      ));
+  }, [draggedNodeId, dragOffset]);
+  const handleNodeMouseUp = useCallback(() => {
+      if (draggedNodeId) {
+          setConceptMapNodes(prevNodes => {
+              return prevNodes.map(node => {
+                  if (node.id === draggedNodeId && node.type === 'venn-token') {
+                      const zone = getVennZone(node.x, node.y);
+                      if (zone === 'bank' && node.y < VENN_ZONES.BANK_Y) {
+                          return {
+                              ...node,
+                              x: 100 + Math.random() * 600,
+                              y: 530 + Math.random() * 50
+                          };
+                      }
+                      return node;
+                  }
+                  return node;
+              });
+          });
+      }
+      setDraggedNodeId(null);
+  }, [draggedNodeId]);
   const handleNodeClick = (...__a) => _alloHostHandlers().handleNodeClick(...__a);
   const handleDeleteNode = (nodeId) => {
       setConfirmDialog({ message: t('concept_map.confirm_delete_node') || 'Delete this node?', onConfirm: () => {
@@ -23947,7 +24138,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const prepared = item && audioChannel === 'live' ? mbPreparedImagesRef.current.get(item)?.resource : null;
       return prepared || moduleApi.serializeResourceForStudentPack(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel });
   };
-  const prepareMailboxResourceImages = async (...__a) => _alloHostHandlers().prepareMailboxResourceImages(...__a);
+  const prepareMailboxResourceImages = async (item) => {
+      const cache = mbPreparedImagesRef.current;
+      if (cache.has(item)) return cache.get(item).promise;
+      const entry = {};
+      entry.promise = (async () => {
+          const api = _alloLiveAacModule();
+          if (!api?.prepareMailboxResource) throw new Error('Image delivery tools are still loading. Please retry.');
+          const result = await api.prepareMailboxResource(item, { sanitizeHistoryForCloud, stripUndefined, audioChannel: 'live' });
+          entry.resource = result.resource;
+          const report = result.report;
+          if (report.omitted || report.resized) {
+              const signature = JSON.stringify(report);
+              if (mbImageNoticeRef.current.get(item.id) !== signature) {
+                  mbImageNoticeRef.current.set(item.id, signature);
+                  if (mbImageNoticeRef.current.size > 100) mbImageNoticeRef.current.delete(mbImageNoticeRef.current.keys().next().value);
+                  addToast('"' + (item.title || item.type) + '": ' + (report.omitted
+                      ? report.omitted + ' image(s) could not be included' + (report.tooLarge ? ' because they exceed the size limit' : ' because their format or URL is unsupported') + '. Use a smaller PNG, JPEG, WebP or AVIF picture and resend.'
+                      : report.resized + ' image(s) resized for delivery. Your original pictures are unchanged.'), report.omitted ? 'warning' : 'info');
+              }
+          }
+          return result.resource;
+      })().catch(error => { cache.delete(item); throw error; });
+      cache.set(item, entry);
+      return entry.promise;
+  };
   const describeSavedFollowUpLiveFailure = (...__a) => _alloHostHandlers().describeSavedFollowUpLiveFailure(...__a);
   const readSavedFollowUpLiveSessionIdentity = (...__a) => _alloHostHandlers().readSavedFollowUpLiveSessionIdentity(...__a);
   const isSavedFollowUpLiveSessionCurrent = (expected) => {
@@ -23961,7 +24176,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const resolveSavedFollowUpLiveDeliverySnapshot = (...__a) => _alloHostHandlers().resolveSavedFollowUpLiveDeliverySnapshot(...__a);
   const sendSavedFollowUpPlanToLiveSession = async (...__a) => _alloHostHandlers().sendSavedFollowUpPlanToLiveSession(...__a);
   // without yanking their view; opts.quiet=true suppresses per-item toasts.
-  const _mbPushOneResource = useCallback(async (...__a) => _alloHostHandlers()._mbPushOneResource(...__a), [mbLive, mbConfig]);
+  const _mbPushOneResource = useCallback(async (item, opts = {}) => {
+      if (!mbLive || !mbConfig?.url || !item || !item.id) return { rtcCount: 0 };
+      const assertCurrent = () => { if (opts.isCurrent && !opts.isCurrent()) { const error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error; } };
+      assertCurrent();
+      const flags = { open: opts.open !== false, quiet: opts.quiet === true };
+      const packItem = await prepareMailboxResourceImages(item);
+      if (!packItem) return { rtcCount: 0 };
+      const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
+      assertCurrent();
+      const parts = _alloSplitPackChunks(encoded);
+      const rid = 'R' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      let rtcCount = 0;
+      const openPeers = Object.entries(mbPeersRef.current || {}).filter(([, peer]) => peer.dc && peer.dc.readyState === 'open');
+      for (const [, peer] of openPeers) {
+          try {
+              for (let i = 0; i < parts.length; i += 1) {
+                  assertCurrent();
+                  await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet }));
+              }
+              rtcCount += 1;
+          } catch (dcErr) { if (dcErr?.name === 'AbortError') throw dcErr; warnLog('Channel push failed for one student (mailbox copy still covers them):', dcErr?.message); }
+      }
+      for (let i = 0; i < parts.length; i += 1) {
+          assertCurrent();
+          await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: flags.open, quiet: flags.quiet } });
+      }
+      return { rtcCount };
+  }, [mbLive, mbConfig]);
   const pushResourceToMailbox = useCallback(async (...__a) => _alloHostHandlers().pushResourceToMailbox(...__a), [mbLive, mbConfig, generatedContent, history, mbRoster, _mbPushOneResource, requestWordSoundsAudioConfirmation]);
   // Async-mode parity: hand the class the teacher's whole student-safe pack
   // to explore freely (delivered quietly, without yanking anyone's view).
@@ -24428,7 +24670,93 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // One applier for teacher→student payloads from EITHER transport. The
   // shared chunk store + applied-rid set make the double delivery (instant
   // channel copy + mailbox replay copy) converge to a single render.
-  const applyMbDownPayload = useCallback(async (...__a) => _alloHostHandlers().applyMbDownPayload(...__a), [addToast]);
+  const applyMbDownPayload = useCallback(async (v) => {
+      if (!v) return;
+      if (v.kind === 'sdocv') {
+          // Bridge nudge over the data channel: the teacher just wrote to the
+          // session doc store — pull it soon (jittered: the nudge reaches the
+          // whole class at once, and simultaneous pulls collide with Apps
+          // Script's concurrency ceiling).
+          _alloMbNudge();
+          return;
+      }
+      if (v.kind === 'end') {
+          addToast('The teacher ended this live session.', 'info');
+          setMbStudent(null);
+          return;
+      }
+      if (v.kind === 'takehome') {
+          // Take-Home Pack v1: persist the CURRENT student-safe pack to this device so it
+          // survives the session (IndexedDB via storageDB — stable-origin). The pack channel
+          // already delivered/self-healed the resources; this message only flips persistence.
+          const items = _alloStudentSafeResources(hydratedHistoryRef.current || []);
+          if (!items.length) { addToast(t('takehome.empty_pack') || 'Your teacher sent homework, but no resources have arrived yet — stay connected a moment and ask them to resend.', 'info'); return; }
+          const shelf = {
+              v: 1,
+              savedAt: new Date().toISOString(),
+              code: (typeof mbLive === 'object' && mbLive) ? (mbLive.code || null) : null,
+              title: String(v.title || '').slice(0, 140) || 'Homework',
+              note: String(v.note || '').slice(0, 2000),
+              resources: items,
+          };
+          try {
+              const ok = await storageDB.set('allo_homework_shelf_v1', shelf);
+              if (ok === false) throw new Error('storage unavailable');
+              setHomeworkShelf(shelf);
+              addToast(t('takehome.saved', { title: shelf.title || 'saved pack', count: items.length }) || ('📥 ' + shelf.title + ' saved to THIS device (' + items.length + ' resources). Open AlloFlow at home to continue — no code needed.'), 'success');
+          } catch (persistErr) {
+              // Honest fallback (shared/locked-down devices): storage refused — offer the file.
+              warnLog('Take-home persist failed', persistErr);
+              setHomeworkShelf(shelf); // in-memory for this visit so the banner's download button works
+              addToast(t('takehome.save_failed') || 'This device would not save the homework — use the Download button on the homework banner to keep a file copy.', 'warning');
+          }
+          return;
+      }
+      if (v.kind === 'packdone') {
+          addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+          return;
+      }
+      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          setHistory(prev => {
+              const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+              hydratedHistoryRef.current = next;
+              return next;
+          });
+          return;
+      }
+      if (v.kind === 'res') {
+          const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
+          const assembled = _alloCollectResChunk(store, v);
+          if (!assembled) return;
+          try {
+              let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+              resource = _alloStudentSafeResources([resource])[0];
+              if (!resource) throw new Error('The transferred resource is not a valid student resource');
+              if (mbChunkStoreRef.current !== store) return;
+              setHistory(prev => {
+                  const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                  const next = [...rest, resource];
+                  // The pack IS the mailbox session's resource pool: keep the ref
+                  // the session-doc consumers read (sync jump, group/individual
+                  // pushes) pointing at it. Idempotent under double invocation.
+                  hydratedHistoryRef.current = next;
+                  return next;
+              });
+              // open=false delivers quietly into the pack (async-mode share);
+              // open=true (default) follows the teacher like sync mode.
+              if (v.open !== false) setPendingQrAssignmentResource(resource);
+              _alloFinishResChunk(store, v.rid, true);
+              setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
+              if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+          } catch (decodeErr) {
+              if (mbChunkStoreRef.current !== store) return;
+              _alloFinishResChunk(store, v.rid, false);
+              setMbResourceReceiveError(true);
+              if ((store.failures?.[v.rid]?.count || 0) < 3) mbStudentCursorRef.current = 0;
+              warnLog('Mailbox resource decode failed', decodeErr);
+          }
+      }
+  }, [addToast]);
   const createHomeworkAssignmentLink = useCallback(async (resourceIds = null) => {
       const selectedResourceIds = Array.isArray(resourceIds) ? resourceIds : null;
       const resourcesToAssign = resolveAssignmentResources(selectedResourceIds);
@@ -28251,10 +28579,42 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current);
           return;
       }
-      syncProgressToFirestore();
-      progressSyncTimerRef.current = setInterval(syncProgressToFirestore, 60000);
+      // PhaseKHelpers is a deferred module. A student joining from a phone can
+      // reach this effect long before the background pump gets to it, so ask
+      // for it by name and poll until it lands instead of calling through the
+      // wrapper (which throws, unhandled, once a minute). Module presence is a
+      // dependency of the run below, so the sync starts on a FRESH closure --
+      // polling a window global alone would leave stale deps captured here.
+      if (!(window.AlloModules && window.AlloModules.PhaseKHelpers)) {
+          if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current);
+          try { if (window.__alloLazyLiveSessionSync) window.__alloLazyLiveSessionSync(); } catch (_) {}
+          let cancelled = false;
+          // Patience matches the lazy-module ceiling, not a courtesy poll.
+          const waitUntil = Date.now() + 65000;
+          const waitTimer = setInterval(() => {
+              if (cancelled) return;
+              if (window.AlloModules && window.AlloModules.PhaseKHelpers) {
+                  clearInterval(waitTimer);
+                  setModulesReady(n => n + 1); // re-run with a fresh closure
+              } else if (Date.now() > waitUntil) {
+                  clearInterval(waitTimer);
+                  console.warn('[syncProgressToFirestore] PhaseKHelpers did not load; progress sync is off for this session.');
+              }
+          }, 1000);
+          return () => { cancelled = true; clearInterval(waitTimer); };
+      }
+      // Never let a sync failure surface as an unhandled rejection: this runs
+      // on a timer nobody awaits.
+      const runSync = () => {
+          try {
+              const r = syncProgressToFirestore();
+              if (r && typeof r.catch === 'function') r.catch(e => console.warn('[syncProgressToFirestore] sync failed', e));
+          } catch (e) { console.warn('[syncProgressToFirestore] sync failed', e); }
+      };
+      runSync();
+      progressSyncTimerRef.current = setInterval(runSync, 60000);
       return () => { if (progressSyncTimerRef.current) clearInterval(progressSyncTimerRef.current); };
-  }, [isCanvas, activeSessionCode, studentNickname, syncProgressToFirestore]);
+  }, [isCanvas, activeSessionCode, studentNickname, syncProgressToFirestore, modulesReady]);
   useEffect(() => {
       if (history.length > 0 && activeSidebarTab !== 'history') {
           setIsHistoryPulsing(true);
@@ -29825,11 +30185,38 @@ const parseTaggedContent = (text) => {
   const glossaryHealthFollowUpTimerRef = React.useRef(null);
   const glossaryHealthSignature = generatedContent?.type === 'glossary' && Array.isArray(generatedContent.data)
       ? JSON.stringify(generatedContent.data.map(item => item && [item.term, item.def, item.tier])) : '';
-  const runGlossaryHealthCheck = React.useCallback(async (...__a) => _alloHostHandlers().runGlossaryHealthCheck(...__a), [callGemini]);
+  const runGlossaryHealthCheck = React.useCallback(async (terms, sourceText) => {
+    const module = window.AlloModules && window.AlloModules.ExportHandlers;
+    const live = glossaryLiveRef.current.resource;
+    if (!module?.runGlossaryHealthCheck || live?.type !== 'glossary') return null;
+    const signature = JSON.stringify(terms.map(item => item && [item.term, item.def, item.tier]));
+    const task = window.AlloModules?.GlossaryHelpers?.beginGlossaryTask({
+        generatedContent: live, getGlossaryLive: () => glossaryLiveRef.current,
+        glossaryTaskRegistry: glossaryTaskRegistryRef.current,
+    }, null, [], 'health');
+    if (!task) return null;
+    const current = () => task.visible() && signature === JSON.stringify((glossaryLiveRef.current.resource?.data || []).map(item => item && [item.term, item.def, item.tier]));
+    glossaryHealthCheckIdRef.current = String(live.id) + ':' + signature;
+    try {
+        const result = await module.runGlossaryHealthCheck(terms, sourceText, {
+            debugLog, warnLog,
+            callGemini: (...args) => { args[5] = task.signal; return callGemini(...args); },
+            setIsRunningHealthCheck: value => { if (current()) setIsRunningHealthCheck(value); },
+            setShowHealthCheckPanel: value => { if (current()) setShowHealthCheckPanel(value); },
+            setGlossaryHealthCheck: value => { if (current()) setGlossaryHealthCheck(value); },
+        });
+        return current() ? result : null;
+    } finally { task.finish(); }
+  }, [callGemini]);
   const fetchReplacementSuggestion = React.useCallback(async (...__a) => _alloHostHandlers().fetchReplacementSuggestion(...__a), [callGemini]);
   useEffect(() => {
       const resource = glossaryLiveRef.current.resource;
       if (activeView !== 'glossary') return;
+      // Teacher-only (2026-09-14): this is an authoring check (accuracy score,
+      // definition grade level, coverage gaps) and it costs an AI call, which a
+      // student with a personal key would have paid for; AlloBot then read the
+      // result aloud to the student six seconds later.
+      if (!isTeacherMode) return;
       if (resource?.type !== 'glossary' || !resource.data?.length) return;
       const key = String(resource.id) + ':' + glossaryHealthSignature;
       let active = true;
@@ -29858,7 +30245,7 @@ const parseTaggedContent = (text) => {
           glossaryHealthFollowUpTimerRef.current = null;
           if (glossaryHealthCheckIdRef.current === key) glossaryHealthCheckIdRef.current = null;
       };
-  }, [activeView, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);
+  }, [activeView, isTeacherMode, generatedContent?.id, glossaryHealthSignature, runGlossaryHealthCheck]);
   const resilientJsonParse = async (jsonString, attempt = 1) => {
       try {
           return JSON.parse(cleanJson(jsonString));
@@ -30171,8 +30558,8 @@ const parseTaggedContent = (text) => {
       const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
     };
     _throwIfImageAborted();
-    if (_isQrStudentAiDisabled()) {
-      const err = new Error('AI image generation is off for this teacher-prepared QR activity.');
+    if (_isQrStudentAiDisabled() || (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true)) {
+      const err = new Error(_isQrStudentAiDisabled() ? 'AI image generation is off for this teacher-prepared QR activity.' : 'AI image generation is turned off for students in this project.');
       err.code = 'allo-qr-ai-disabled';
       err.aiDisabledFor = 'imagen';
       throw err;
@@ -30637,6 +31024,12 @@ const parseTaggedContent = (text) => {
     setPhonicsData, setRevisionData, setSelectionMenu,
     setPlayingContentId, setPlaybackState, setIsPlaying, setIsPaused,
     recordSourceProvenance, calculateReadability,
+    // applyTextRevision writes the edited passage back through this handler;
+    // it was never in the bag, so Apply on a Simplify/Custom revision threw
+    // ReferenceError inside the engine (since the 2026-04 extraction). A
+    // getter, because the handler is a const declared ~7,000 lines below this
+    // bag and is only ever read from an event handler, after render.
+    get handleSimplifiedTextChange() { return handleSimplifiedTextChange; },
   };
   const _contentEngineRef = { current: null };
   window.__contentEngineState = contentEngineStateRef.current;
@@ -33586,9 +33979,145 @@ const parseTaggedContent = (text) => {
 
   const resetCanvasWorkspaceSettings = (...__a) => _alloHostHandlers().resetCanvasWorkspaceSettings(...__a);
 
-  const clearCanvasWorkspaceState = (...__a) => _alloHostHandlers().clearCanvasWorkspaceState(...__a);
+  const clearCanvasWorkspaceState = (options = {}) => {
+      cancelActiveProjectLoad();
+      cancelActiveFileIntakeOperations('canvas-workspace-clear');
+      invalidateLocalDataHydration();
+      resetAllMathRuntimeState();
+      try { window.__alloBuilderEditedPack = null; } catch (_) {}
+      setHistory([]);
+      setGeneratedContent(null);
+      setActiveView('input');
+      setActiveSidebarTab('create');
+      setInputText('');
+      setSourceTopic('');
+      setUnits([]);
+      setProfiles([]);
+      setActiveUnitId('all');
+      setPersistedLessonDNA(null);
+      // The plan and its run record describe the workspace we are clearing —
+      // leaving them behind strands a status board pointing at resources that
+      // no longer exist, and the rows would invite a rebuild that duplicates
+      // work. Clear them with the history they belong to.
+      // Continuity: the archive key is deliberately NOT cleared here, and the
+      // outgoing plan is filed before the wipe — clearing a workspace must not
+      // silently empty the cabinet, or the archive is worse than nothing.
+      if (options.archivePlan !== false) archiveLivePlan();
+      setActiveBlueprint(null);
+      setBlueprintExecutionResult(null);
+      setFullPackRun(null); // the pack's status board belongs to this workspace too; null drops its saved envelope
 
-  const buildCanvasWorkspaceSnapshot = async (...__a) => _alloHostHandlers().buildCanvasWorkspaceSnapshot(...__a);
+      resetCanvasWorkspaceSettings();
+      setStudentProgressLog([]);
+      setStickers([]);
+      setGuidedMode(false);
+      resetGuidedProgress();
+      setAdventureState(ADVENTURE_INITIAL);
+      setHasSavedAdventure(false);
+      setWordSoundsHistory([]);
+      wsDispatch({ type: 'WS_RESET' });
+      setWordSoundsBadges([]);
+      setPhonemeMastery({});
+      setWordSoundsDailyProgress({ date: new Date().toDateString(), completed: 0, goalMet: false });
+      setWordSoundsConfusionPatterns({});
+  };
+
+  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {
+
+      const existing = canvasRecoveryStoreRef.current.snapshots.find(item => item.id === workspaceId);
+      let builderDraft = null;
+      try {
+          if (typeof window !== 'undefined' && window.__alloBuilderEditedPack) builderDraft = await _getBuilderDraftForProject();
+      } catch (_) {}
+      const savedAt = new Date().toISOString();
+      const title = String(sourceTopic || history[history.length - 1]?.title || 'Untitled workspace').trim().slice(0, 160) || 'Untitled workspace';
+      const snapshot = {
+          version: ALLO_WORKSPACE_RECOVERY.VERSION,
+          id: workspaceId,
+          title,
+          createdAt: existing?.createdAt || savedAt,
+          savedAt,
+          pinned: existing?.pinned === true,
+          assetPolicy: existing?.assetPolicy === 'text-only' ? 'text-only' : 'full',
+          omittedAssets: existing?.omittedAssets || 0,
+          omittedAssetManifest: Array.isArray(existing?.omittedAssetManifest) ? existing.omittedAssetManifest : [],
+          workspace: {
+              history,
+              units,
+              profiles,
+              selectedProfileId,
+              activeResourceId: generatedContent?.id || null,
+              activeView,
+              selAuthoringState: _alloCaptureCanvasSelAuthoringState(),
+              activeUnitId,
+              activeSidebarTab,
+              inputText,
+              sourceTopic,
+              persistedLessonDNA,
+              builderDraft,
+              guidedProgress: {
+                  enabled: guidedMode,
+                  step: guidedStep,
+                  selectedIds: guidedSelectedIds,
+                  completedIds: guidedCompletedIds,
+                  skippedIds: guidedSkippedIds,
+                  createdHistoryIds: guidedCreatedHistoryIds,
+                  deliveryEvidence: guidedDeliveryEvidence,
+                  planBrief: guidedPlanBrief
+              },
+              lessonSettings: {
+                  gradeLevel,
+                  differentiationRange,
+                  textFormat,
+                  leveledTextLength,
+                  studentInterests,
+                  leveledTextCustomInstructions,
+                  glossaryCustomInstructions,
+                  adventureCustomInstructions,
+                  personaCustomInstructions,
+                  useEmojis,
+                  keepCitations,
+                  includeCharts,
+                  dokLevel,
+                  targetStandards,
+                  standardInputValue,
+                  standardMode,
+                  selectedLanguages,
+                  leveledTextLanguage,
+                  sourceTone,
+                  sourceLevel,
+                  sourceVocabulary,
+                  sourceLength,
+                  sourceCustomInstructions,
+                  resourceCount,
+                  fullPackTargetGroup
+              },
+              projectState: {
+                  studentProjectSettings: _alloNormalizeStudentProjectSettings(studentProjectSettings),
+                  responses: studentResponses,
+                  progressLog: studentProgressLog,
+                  stickers: Array.isArray(stickers) ? stickers : []
+              },
+              wordSoundsState: {
+                  history: wordSoundsHistory,
+                  families: wordSoundsFamilies,
+                  audioLibrary: wordSoundsAudioLibrary,
+                  badges: wordSoundsBadges,
+                  phonemeMastery,
+                  dailyProgress: wordSoundsDailyProgress,
+                  confusionPatterns: wordSoundsConfusionPatterns,
+                  sessionScore: wordSoundsScore
+              }
+          }
+      };
+      const sessionSafeSnapshot = ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
+      if (existing?.assetPolicy === 'text-only') {
+          const explicitRemoval = existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media');
+          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(
+              sessionSafeSnapshot, explicitRemoval ? 'user-remove-media' : 'device-quota');
+      }
+      return sessionSafeSnapshot;
+  };
 
   const restoreCanvasWorkspaceSnapshot = async (...__a) => _alloHostHandlers().restoreCanvasWorkspaceSnapshot(...__a);
 
@@ -33622,7 +34151,17 @@ const parseTaggedContent = (text) => {
 
   const refreshStorageManagerInventory = async (...__a) => _alloHostHandlers().refreshStorageManagerInventory(...__a);
 
-  const getCanvasRecoveryVaultController = async (...__a) => _alloHostHandlers().getCanvasRecoveryVaultController(...__a);
+  const getCanvasRecoveryVaultController = async () => {
+      if (canvasRecoveryVaultControllerRef.current) return canvasRecoveryVaultControllerRef.current;
+      const deviceStorage = await _alloGetCanvasDeviceStorage();
+      const stack = await _alloGetRecoveryVaultStack();
+      const controller = stack.integration.createController(deviceStorage, {
+          vaultModule: stack.vault,
+          crypto: stack.crypto
+      });
+      canvasRecoveryVaultControllerRef.current = controller;
+      return controller;
+  };
 
   const emptyCanvasRecoveryVaultView = (status = {}) => ALLO_WORKSPACE_RECOVERY.normalizeStore({
       version: ALLO_WORKSPACE_RECOVERY.VERSION,
@@ -34323,10 +34862,7 @@ const parseTaggedContent = (text) => {
       ? { ...exportConfig, classPublicJwk: rosterKey.submissionKey.publicJwk, classId: stableClassId, assignmentId: offlineAssignmentId,
           ...(_mailboxSubmitTarget ? { mailboxSubmitTarget: _mailboxSubmitTarget } : {}) }
       : { ...exportConfig, ...(stableClassId ? { classId: stableClassId } : {}), assignmentId: offlineAssignmentId };
-    // Inject teacher's current annotations (stickers + notes + highlights)
-    // so they ride the exported HTML. Phase 4 of the annotation suite —
-    // the export becomes a self-contained surface that renders these
-    // annotations + lets the student add their own locally.
+    // Teacher annotations ride the export: the page renders them and lets students add their own.
     const activeResourceId = (generatedContent && generatedContent.id) || 'default';
     const annotationsByResource = { ...(stickersMapRef.current || {}) };
     if (activeResourceId) annotationsByResource[activeResourceId] = Array.isArray(stickers) ? stickers : [];
@@ -34354,29 +34890,54 @@ const parseTaggedContent = (text) => {
         a11yInspectMode,
     });
     warnLog('[updateExportPreview] ExportPreviewHelpers module not loaded yet — preview refresh deferred.');
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas]);
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, pdfFixResult, history, studentResponses, selectedFont, a11yInspectMode, isCanvas, _docPipeline]);
   _docPipelineLiveDepsRef.current.updateExportPreview = updateExportPreview;
 
+  // Cold-session first open: factory, writer and iframe land later; a closure captured before the pipeline instance existed writes ''.
+  const [builderPreviewReadyTick, setBuilderPreviewReadyTick] = useState(0);
+  const _builderPreviewTickCountRef = React.useRef(0);
+  const _writeBuilderPreviewPendingNote = (iframe) => {
+    try {
+      const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+      if (!doc || !doc.body || doc.body.hasAttribute('data-allo-preview-pending')) return;
+      if (doc.body.children.length) return;
+      const note = String(t('toasts.doc_pipeline_loading') || 'The document tools are still loading.').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+      doc.open();
+      doc.write('<!DOCTYPE html><html><body data-allo-preview-pending="1" style="margin:0;background:#f8fafc;color:#334155;font-family:system-ui,sans-serif"><p role="status" style="margin:2rem;font-size:14px">' + note + '</p></body></html>');
+      doc.close();
+    } catch (_) {}
+  };
   React.useEffect(() => {
     if (!showExportPreview) {
       _exportPreviewErrorRef.current = null; // reset so reopening can toast again
+      _builderPreviewTickCountRef.current = 0;
       return;
     }
     let cancelled = false;
     let attempts = 0;
+    const closureHasPipeline = !!_docPipeline;
     const tryRender = () => {
       if (cancelled) return;
-      const pipelineReady = !!(window.AlloModules && window.AlloModules.createDocPipeline);
-      if (pipelineReady || attempts > 20) {
+      const factoryReady = !!(window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function');
+      const writerReady = !!(window.AlloModules && window.AlloModules.ExportPreviewHelpers);
+      const iframe = exportPreviewRef.current;
+      if (factoryReady && writerReady && iframe) {
+        if (!closureHasPipeline && _builderPreviewTickCountRef.current < 3) {
+          _builderPreviewTickCountRef.current += 1;
+          setBuilderPreviewReadyTick((n) => n + 1);
+          return;
+        }
         updateExportPreview();
         return;
       }
+      if (attempts >= 430) { updateExportPreview(); return; }
       attempts++;
+      if (iframe && !factoryReady) _writeBuilderPreviewPendingNote(iframe);
       setTimeout(tryRender, 150);
     };
     tryRender();
     return () => { cancelled = true; };
-  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, studentResponses, selectedFont, updateExportPreview]);
+  }, [showExportPreview, history, exportConfig, exportTheme, customExportCSS, exportPreviewMode, exportPreviewSource, builderResourceIds, studentResponses, selectedFont, updateExportPreview, builderPreviewReadyTick]);
 
   const setExportConfigAndRefresh = (updater) => {
     setExportConfig(updater);
@@ -34388,11 +34949,8 @@ const parseTaggedContent = (text) => {
       return _m.toggleA11yInspect({ setA11yInspectMode, exportPreviewRef });
     }
   }, []);
-  // ── Phase P: export handlers extracted to ExportHandlersModule ──
-  // generateExportAudio, executeExportFromPreview, handleExport, and
-  // downloadHtmlBlob now live in export_handlers_module.js. The shims
-  // below forward arguments + a fresh deps object every call so the
-  // module always sees current state (no stale closures).
+  // Export handlers live in export_handlers_module.js; each shim passes a fresh deps object per
+  // call so the module never sees a stale closure.
   const generateExportAudio = async (text, label) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
     if (_m && typeof _m.generateExportAudio === 'function') {
@@ -34420,6 +34978,7 @@ const parseTaggedContent = (text) => {
     setHistory([]);
     setGeneratedContent(null);
     setActiveView('input');
+    setFullPackRun(null);
     addToast(t('toasts.history_cleared'), "info");
   };
   const sanitizeSubmissionData = (...__a) => _alloHostHandlers().sanitizeSubmissionData(...__a);
@@ -37943,7 +38502,15 @@ const parseTaggedContent = (text) => {
     : domain === 'analysis' ? (t('toasts.undo_domain_analysis') || 'analysis source text')
     : (t('toasts.undo_domain_simplified') || 'leveled text');
   const _shiftTextStack = (...__a) => _alloHostHandlers()._shiftTextStack(...__a);
-  const handleTextUndo = (...__a) => _alloHostHandlers().handleTextUndo(...__a);
+  const handleTextUndo = () => {
+    const h = textUndoRef.current;
+    if (_shiftTextStack(h.undo, h.redo, 'undo')) return true;
+    // Nothing in the text history — fall back to annotation undo so the old
+    // Ctrl+Z behavior still reaches sticker users, then report empty.
+    if (annotationUndoStackRef.current.length > 0) { handleAnnotationUndo(); return true; }
+    addToast(t('toasts.nothing_undo_yet') || 'Nothing to undo yet.', 'info');
+    return false;
+  };
   const handleTextRedo = () => {
     const h = textUndoRef.current;
     if (_shiftTextStack(h.redo, h.undo, 'redo')) return true;
@@ -38656,18 +39223,20 @@ const parseTaggedContent = (text) => {
           {liveResourceLoadState.status === 'failed' && <button type="button" onClick={retryLiveSessionResources} className="rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-900 focus-visible:ring-offset-2">{t('mailbox.retry_resources') || 'Retry resources'}</button>}
         </div>
       )}
-      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinStatus || activeSessionCode) && (
+      {/* Join strips (2026-09-14): only while joining or when the join failed and
+          needs a Retry. Once a code is live, the header's Live button carries the
+          code, codename, AI status and connection, so nothing sits over the page
+          for the whole session. */}
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'live' && (liveJoinError || (liveJoinStatus && !activeSessionCode)) && (
         <div role={liveJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
           <span>{liveJoinStatus || `Class ${activeSessionCode} · ${studentNickname || 'Student'} · ${studentAiConfigured ? 'Personal AI connected' : studentAiSetupAllowed ? 'Personal AI available' : 'AI tools off'}`}</span>
           {liveJoinError && liveJoinRetryable && <button onClick={() => setLiveJoinAttempt(value => value + 1)} className="rounded-lg bg-cyan-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-cyan-800">{t('mailbox.retry') || 'Retry'}</button>}
-          {!liveJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-xs font-bold text-cyan-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
-      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinStatus || activeSessionCode) && (
+      {!isTeacherMode && window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinError || (mbJoinStatus && !activeSessionCode)) && (
         <div role={mbJoinError ? 'alert' : 'status'} aria-live="polite" className="fixed top-3 left-1/2 -translate-x-1/2 z-[145] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border border-indigo-200 bg-white/95 px-4 py-3 text-center text-sm font-semibold text-slate-700 shadow-xl backdrop-blur no-print">
           <span>{mbJoinStatus || `Class ${activeSessionCode || window.__alloQrStudentMode?.code || ''} · ${studentNickname || 'Student'} · ${studentAiConfigured ? 'Personal AI connected' : studentAiSetupAllowed ? 'Personal AI available' : 'AI tools off'}`}</span>
           {mbJoinError && <button onClick={() => setMbJoinAttempt(v => v + 1)} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-700">{t('mailbox.retry') || 'Retry'}</button>}
-          {!mbJoinError && <button onClick={() => setShowStudentWelcome(true)} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-900">{studentNickname ? 'Change codename' : 'Set codename'}</button>}
         </div>
       )}
       {!isTeacherMode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) && (
@@ -38793,7 +39362,23 @@ const parseTaggedContent = (text) => {
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} liveStatus={!isTeacherMode && activeSessionCode ? { nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, connection: liveSessionConnectionState.status, hostState: liveHostConnectionState, retryConnection: retryLiveSessionConnection, leave: leaveLiveSession, changeCodename: () => setShowStudentWelcome(true), signals: (user && user.uid) ? (() => {
+        // Help signals (student sender). Enum-only Tier-1 channel: writes
+        // roster.{uid}.signal + signalAt via writeToSession; the teacher's Live
+        // Session Center lists + clears them. No free text by design. Lived in
+        // a floating bottom-right button until 2026-09-14; now inside the
+        // header's Live popover with the rest of the session controls.
+        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
+        const current = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
+        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
+        return {
+          options: LIVE_SIGNAL_OPTIONS.map((opt) => ({ id: opt.id, emoji: opt.emoji, label: t('live_signals.' + opt.id) || opt.label })),
+          current,
+          send: (id) => { if (!LIVE_SIGNAL_OPTIONS.some((opt) => opt.id === id)) return false; writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {}); return true; },
+          clear: () => { writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {}); },
+          privacyNote: t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.',
+        };
+      })() : null } : null} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -40154,7 +40739,7 @@ const parseTaggedContent = (text) => {
                 {activeView === 'simplified' && React.createElement(LazySimplifiedView, {
                     t, generatedContent, inputText, gradeLevel, leveledTextLanguage,
                     studentInterests, standardsInput, sourceTopic,
-                    isTeacherMode, isProcessing, isPlaying,
+                    isTeacherMode, studentAiFeaturesHidden, isProcessing, isPlaying,
                     interactionMode, isCompareMode, isFluencyMode, isEditingLeveledText,
                     isImmersiveReaderActive, immersiveSettings, immersiveRulerY,
                     isFocusReaderActive, isChunkReaderActive, chunkReaderIdx,
@@ -41473,59 +42058,8 @@ const parseTaggedContent = (text) => {
           </div>
         </div>
       )}
-      {/* Help signals (student sender). Enum-only Tier-1 channel: writes */}
-      {/* roster.{uid}.signal + signalAt via writeToSession; the teacher's Live */}
-      {/* Session Center lists + clears them. No free text by design. */}
-      {!isTeacherMode && activeSessionCode && user && user.uid && (() => {
-        const myEntry = (sessionData && sessionData.roster && sessionData.roster[user.uid]) || {};
-        const myFresh = (myEntry.signal && myEntry.signalAt && (Date.now() - myEntry.signalAt) < LIVE_SIGNAL_FRESH_MS) ? myEntry.signal : null;
-        const myMeta = myFresh ? (LIVE_SIGNAL_OPTIONS.find(o => o.id === myFresh) || null) : null;
-        const signalRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
-        const sendSignal = (id) => {
-          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: id, [`roster.${user.uid}.signalAt`]: Date.now() }).catch(() => {});
-          setShowStudentSignals(false);
-        };
-        const clearMySignal = () => {
-          writeToSession(signalRef, { [`roster.${user.uid}.signal`]: null, [`roster.${user.uid}.signalAt`]: null }).catch(() => {});
-          setShowStudentSignals(false);
-        };
-        return (
-          <>
-            <button
-              onClick={() => setShowStudentSignals(v => !v)}
-              aria-label={t('live_signals.open_aria') || 'Send your teacher a quick signal'}
-              aria-expanded={showStudentSignals}
-              style={{position:'fixed',bottom:'5.5rem',right:'1rem',zIndex:9999,background: myFresh ? '#b45309' : '#1e3a8a',color:'white',border:'none',borderRadius:24,padding:'0.6rem 1rem',fontWeight:700,fontSize:'0.85rem',cursor:'pointer',boxShadow:'0 8px 20px rgba(30,58,138,0.35)'}}
-            >
-              {myMeta ? myMeta.emoji + ' ' + (t('live_signals.sent') || 'Sent') : (t('live_signals.button') || '✋ Signal')}
-            </button>
-            {showStudentSignals && (
-              <div role="dialog" aria-label={t('live_signals.title') || 'Send your teacher a signal'} style={{position:'fixed',bottom:'8.75rem',right:'1rem',zIndex:9999,width:238,background:'white',borderRadius:14,border:'1px solid #e2e8f0',boxShadow:'0 18px 44px rgba(15,23,42,0.35)',padding:'0.7rem'}}>
-                <div style={{fontWeight:800,color:'#0f172a',fontSize:'0.85rem',marginBottom:6}}>{t('live_signals.title') || 'Let your teacher know'}</div>
-                <div style={{display:'flex',flexDirection:'column',gap:5}}>
-                  {LIVE_SIGNAL_OPTIONS.map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => sendSignal(opt.id)}
-                      style={{display:'flex',alignItems:'center',gap:8,width:'100%',textAlign:'left',padding:'0.45rem 0.55rem',borderRadius:8,cursor:'pointer',fontSize:'0.8rem',fontWeight:600,color:'#0f172a',background: myFresh === opt.id ? '#eef2ff' : 'white',border: myFresh === opt.id ? '1.5px solid #1e3a8a' : '1px solid #e2e8f0'}}
-                    >
-                      <span aria-hidden="true">{opt.emoji}</span>{t('live_signals.' + opt.id) || opt.label}
-                    </button>
-                  ))}
-                  {myFresh && (
-                    <button onClick={clearMySignal} style={{background:'none',border:'none',color:'#1d4ed8',cursor:'pointer',fontSize:'0.72rem',fontWeight:700,textAlign:'right',padding:'0.1rem 0'}}>
-                      {t('live_signals.clear') || 'Clear my signal'}
-                    </button>
-                  )}
-                </div>
-                <p style={{fontSize:'0.66rem',color:'#64748b',margin:'0.55rem 0 0 0',lineHeight:1.35}}>
-                  {t('live_signals.privacy_note') || 'Your teacher sees your codename with this signal. Nothing else is sent.'}
-                </p>
-              </div>
-            )}
-          </>
-        );
-      })()}
+      {/* Help signals moved into the header's Live popover (2026-09-14); see the
+          liveStatus.signals prop on HeaderBar. */}
       {/* ── BridgeSendModal extracted to view_gemini_bridge_module.js (CDN) ── */}
       {(bridgeSendOpen && isTeacherMode) && window.AlloModules && window.AlloModules.BridgeSendModal && React.createElement(window.AlloModules.BridgeSendModal, {
           activeSessionCode, addToast, appId, bridgeChatMessages, bridgeChatOpen,
@@ -41699,6 +42233,7 @@ const parseTaggedContent = (text) => {
             if (toolId === 'evaluation') { handleOpenPrincipalEvaluationFromSettings(); }
             else if (toolId === 'walkthrough') { if (typeof window.__alloLazyUdlWalkthrough === 'function') { try { window.__alloLazyUdlWalkthrough(); } catch (_) {} } setIsUdlWalkthroughOpen(true); }
             else if (toolId === 'walkthroughCopilot') { if (typeof window.__alloLazyWalkthroughCopilot === 'function') { try { window.__alloLazyWalkthroughCopilot(); } catch (_) {} } setIsWalkthroughCopilotOpen(true); }
+            else if (toolId === 'communicationsStudio') { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }
             else if (toolId === 'dispro') { if (typeof window.__alloLazyDisproAnalyzer === 'function') { try { window.__alloLazyDisproAnalyzer(); } catch (_) {} } setIsDisproAnalyzerOpen(true); }
             else if (toolId === 'meetings') { if (typeof window.__alloLazyMeetingDocs === 'function') { try { window.__alloLazyMeetingDocs(); } catch (_) {} } setIsMeetingDocsOpen(true); }
             else if (toolId === 'timelines') { if (typeof window.__alloLazySpedTimelines === 'function') { try { window.__alloLazySpedTimelines(); } catch (_) {} } setIsSpedTimelinesOpen(true); }
@@ -41770,6 +42305,15 @@ const parseTaggedContent = (text) => {
           onClose: () => { setIsDisproAnalyzerOpen(false); _alloHubToolClosed(); },
           t,
           addToast,
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="CommunicationsStudio.CommunicationsStudioPanel" isOpen={isCommunicationsStudioOpen} onClose={() => { setIsCommunicationsStudioOpen(false); _alloHubToolClosed(); }} icon="✉️" displayName="Communications Studio" t={t}>
+        {(CommunicationsStudioPanel) => React.createElement(CommunicationsStudioPanel, {
+          isOpen: true,
+          roster: rosterKey,
+          dashboardData,
+          onClose: () => { setIsCommunicationsStudioOpen(false); _alloHubToolClosed(); },
+          t,
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="WalkthroughCopilot.WalkthroughCopilotPanel" isOpen={isWalkthroughCopilotOpen} onClose={() => { setIsWalkthroughCopilotOpen(false); _alloHubToolClosed(); }} icon="👣" displayName="Walkthrough Copilot" t={t}>
@@ -42715,7 +43259,7 @@ const parseTaggedContent = (text) => {
                   setShowStemLab, setStemLabTab, setStemLabTool
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} openSchoolRewards={handleOpenSchoolRewards} openCommunicationsStudio={() => { if (typeof window.__alloLazyCommunicationsStudio === 'function') { try { window.__alloLazyCommunicationsStudio(); } catch (_) {} } setIsCommunicationsStudioOpen(true); }} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowClassAnalytics={setShowClassAnalytics} setIsResearchSuiteOpen={setIsResearchSuiteOpen} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate loaderName="__alloLazyReportWriter" moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
@@ -42738,7 +43282,7 @@ const parseTaggedContent = (text) => {
         <CDNModuleGate moduleKey="CinematicStudio" isOpen={showCinematicStudio} onClose={() => setShowCinematicStudio(false)} icon="🎬" displayName="Cinematic Studio" t={t}>
             {(CinematicStudio) => React.createElement(CinematicStudio, {
                 onClose: () => setShowCinematicStudio(false),
-                callGemini: callGemini,
+                callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 addToast,
                 t,
                 sourceTopic: sourceTopic || '',
@@ -42940,10 +43484,10 @@ const parseTaggedContent = (text) => {
             {(AlloHaven) => React.createElement(AlloHaven, {
                 isOpen: true,
                     onClose: () => setIsAlloHavenOpen(false),
-                    callImagen,
-                    callGemini,
-                    callGeminiVision,
-                    callGeminiImageEdit,
+                    callImagen: (studentAiFeaturesHidden ? null : callImagen),
+                    callGemini: (studentAiFeaturesHidden ? null : callGemini),
+                    callGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
+                    callGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
                     callGeminiAudio,
                     callTTS,
                     selectedVoice,
@@ -43079,9 +43623,9 @@ const parseTaggedContent = (text) => {
                     host: {
                         addToast,
                         autoRemoveWords,
-                        callGemini,
-                        callGeminiImageEdit,
-                        callImagen,
+                        callGemini: (studentAiFeaturesHidden ? null : callGemini),
+                        callGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
+                        callImagen: (studentAiFeaturesHidden ? null : callImagen),
                         cleanJson,
                         gradeLevel,
                         handleGenerate,
@@ -43115,7 +43659,7 @@ const parseTaggedContent = (text) => {
                 onClose: () => setIsReadingLibraryOpen(false),
                 addToast,
                 t,
-                callGemini,
+                callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 handleGenerate,
                 // "Use as source text" must land the user somewhere visible:
                 // set the text AND reveal the Source panel (same steps as the
@@ -43320,11 +43864,11 @@ const parseTaggedContent = (text) => {
             {(StoryForge) => React.createElement(StoryForge, {
                 isOpen: true,
                     onClose: () => setShowStoryForge(false),
-                    onCallImagen: callImagen,
-                    onCallGeminiImageEdit: callGeminiImageEdit,
-                    onCallGemini: callGemini,
+                    onCallImagen: (studentAiFeaturesHidden ? null : callImagen),
+                    onCallGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
+                    onCallGemini: (studentAiFeaturesHidden ? null : callGemini),
                     onCallTTS: callTTS,
-                    onCallGeminiVision: callGeminiVision,
+                    onCallGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
                     selectedVoice,
                     gradeLevel,
                     sourceTopic,
@@ -43412,7 +43956,7 @@ const parseTaggedContent = (text) => {
         <CDNModuleGate moduleKey="TimelineStudio" isOpen={isTimelineStudioOpen} onClose={() => setIsTimelineStudioOpen(false)} icon={'\uD83D\uDD70\uFE0F'} displayName="Timeline Studio" t={t}>
             {(TimelineStudio) => React.createElement(TimelineStudio, {
                 onClose: () => setIsTimelineStudioOpen(false),
-                callGemini,
+                callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 addToast,
                 gradeLevel,
                 lang: (typeof currentUiLanguage !== 'undefined' ? currentUiLanguage : 'en'),
@@ -43423,7 +43967,7 @@ const parseTaggedContent = (text) => {
             {(LinguaPractice) => React.createElement(LinguaPractice, {
                 isOpen: true,
                 onClose: () => setIsLinguaPracticeOpen(false),
-                callGemini,
+                callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 addToast,
                 sourceText: inputText,
                 initialSource: pendingLinguaSource,
@@ -43505,7 +44049,7 @@ const parseTaggedContent = (text) => {
                 isOpen: true,
                 onClose: () => setIsTestPrepHubOpen(false),
                 callTTS,
-                callGemini,
+                callGemini: (studentAiFeaturesHidden ? null : callGemini),
                 callGeminiAudio,
                 selectedVoice,
                 addToast,
@@ -43516,11 +44060,11 @@ const parseTaggedContent = (text) => {
             {(LitLab) => React.createElement(LitLab, {
                 isOpen: true,
                     onClose: () => setShowLitLab(false),
-                    onCallGemini: callGemini,
+                    onCallGemini: (studentAiFeaturesHidden ? null : callGemini),
                     onCallTTS: callTTS,
-                    onCallImagen: callImagen,
-                    onCallGeminiImageEdit: callGeminiImageEdit,
-                    onCallGeminiVision: callGeminiVision,
+                    onCallImagen: (studentAiFeaturesHidden ? null : callImagen),
+                    onCallGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
+                    onCallGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
                     selectedVoice,
                     gradeLevel,
                     addToast,
@@ -43584,10 +44128,10 @@ const parseTaggedContent = (text) => {
         <CDNModuleGate moduleKey="PoetTree" isOpen={showPoetTree} onClose={() => setShowPoetTree(false)} icon="🌳" displayName="Poet Tree" t={t}>
             {(PoetTree) => React.createElement(PoetTree, {
                 onClose: () => setShowPoetTree(false),
-                    onCallGemini: callGemini,
+                    onCallGemini: (studentAiFeaturesHidden ? null : callGemini),
                     onCallTTS: callTTS,
-                    onCallImagen: callImagen,
-                    onCallGeminiImageEdit: callGeminiImageEdit,
+                    onCallImagen: (studentAiFeaturesHidden ? null : callImagen),
+                    onCallGeminiImageEdit: (studentAiFeaturesHidden ? null : callGeminiImageEdit),
                     selectedVoice,
                     gradeLevel,
                     addToast,
@@ -43628,7 +44172,7 @@ const parseTaggedContent = (text) => {
                     selHubTool, setSelHubTool,
                     addToast, gradeLevel,
                     callGemini: !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor ? callGemini : null,
-                    callTTS, callImagen, callGeminiVision,
+                    callTTS, callImagen: (studentAiFeaturesHidden ? null : callImagen), callGeminiVision: (studentAiFeaturesHidden ? null : callGeminiVision),
                     onSafetyFlag: handleAiSafetyFlag,
                     studentCodename: studentNickname || 'student',
                     selectedVoice,

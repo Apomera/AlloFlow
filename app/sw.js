@@ -4,8 +4,8 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-student-shell-v1789330531600';
-const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.b2aec286.js","./static/css/main.35155c47.css"];
+const CACHE_NAME = 'alloflow-student-shell-v1789445862817';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.3c84b37a.js","./static/css/main.f7a5edfe.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 
@@ -48,6 +48,11 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating:', CACHE_NAME);
     event.waitUntil(
+        // Purge only OUR previous shell caches. Other named caches on this origin
+        // belong to other owners: 'transformers-cache' holds the 88 MB Kokoro
+        // voice model, and deleting it here forced a full re-download after
+        // every deploy (the student-shell copy has been prefix-scoped by
+        // build.js since the shell split; this is the same rule for the rest).
         caches.keys().then((keys) => Promise.all(
             keys.filter(k => k.startsWith('alloflow-student-shell-v') && k !== CACHE_NAME).map(k => caches.delete(k))
         )).then(() => self.clients.claim())
