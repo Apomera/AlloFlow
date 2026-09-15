@@ -2653,7 +2653,16 @@ window.StemLab = window.StemLab || {
                   className: 'rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-black text-violet-700 transition-all hover:bg-violet-100'
                 }, showTruthLab ? t('stem.logiclab.hide_visual', 'Hide visual') : t('stem.logiclab.open_visual', 'Open visual'))
               ),
-              showTruthLab && React.createElement('div', { className: 'mt-3 rounded-xl overflow-hidden border border-violet-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
+              showTruthLab && React.createElement('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'mt-3 rounded-xl overflow-hidden border border-violet-200', style: { position: 'relative', background: '#1e1b4b', aspectRatio: '16/5' } },
+                React.createElement('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': t('stem.logiclab.enter_fullscreen', 'View the truth table visual fullscreen'),
+                  'data-fs-out': t('stem.logiclab.enter_fullscreen', 'View the truth table visual fullscreen'),
+                  'data-fs-in': t('stem.logiclab.exit_fullscreen', 'Exit fullscreen truth table visual (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(196,181,253,0.6)', color: '#ede9fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                 React.createElement('canvas', {
                   role: 'img',
                   tabIndex: 0,

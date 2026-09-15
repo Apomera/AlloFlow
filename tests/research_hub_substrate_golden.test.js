@@ -694,6 +694,31 @@ describe('Research Hub substrate — enforceQuestionFormat', () => {
     expect(out.my_questions[0]).toBe('Why does X happen?');
   });
 
+  // 2026-09-15: object entries used to pass straight through to the lanes' <li>{q}</li> renders,
+  // where React throws on an object child and the whole lane disappears behind the error
+  // boundary (the Curriculum Audit hit the same class two days earlier). A single-question
+  // object is now flattened to its text and judged by the same rules; an object that carries
+  // nested structure (per-framing question sets) keeps its shape and is recursed.
+  it('flattens a single-question object to its text and keeps nested question sets intact', () => {
+    const telemetry = { rejected: 0, fixedKeys: [] };
+    const out = internals().enforceQuestionFormat({
+      inversion_questions: [
+        { question: 'What would a rival stakeholder ask?', rationale: 'inverts the priority' },
+        { text: 'Which threshold is actually binding?' },
+        { q: 'Is this a statement rather than a question.' },
+        { rationale: 'no question text at all' },
+        'Plain string question?',
+      ],
+      pressure_test_questions_by_framing: [
+        { framing_id: 'f1', questions: ['Why this frame?', { question: 'Whose voice is missing?' }, 'Not a question'] },
+      ],
+    }, 0, telemetry);
+    expect(out.inversion_questions).toEqual(['What would a rival stakeholder ask?', 'Which threshold is actually binding?', 'Plain string question?']);
+    expect(out.inversion_questions.every((q) => typeof q === 'string')).toBe(true);
+    expect(out.pressure_test_questions_by_framing).toEqual([{ framing_id: 'f1', questions: ['Why this frame?', 'Whose voice is missing?'] }]);
+    // the statement-shaped object and the text-less object both count as rejected entries
+    expect(telemetry.rejected).toBe(3);
+  });
   it('drops items longer than 25 words', () => {
     const longQ = 'Why ' + Array.from({ length: 30 }).fill('word').join(' ') + '?';
     const out = enforce({ probe_questions: ['Short Q?', longQ] });

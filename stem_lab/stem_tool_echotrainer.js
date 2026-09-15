@@ -741,6 +741,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       var playerRef = useRef({ x: 400, y: 700, angle: -Math.PI / 2 });
       var canvasRef = useRef(null);
       var mountRef = useRef(null);
+      // Fullscreen stage: the 3D viewport plus the minimap and the coverage
+      // readout layered over it, so the student keeps their orientation cues.
+      // The render loop already re-measures the renderer each frame, so the
+      // scene fills the new size without any extra resize plumbing.
+      var echoFsRef = useRef(null);
+      var _echoFs = useState(false), echoFs = _echoFs[0], setEchoFs = _echoFs[1];
       var animRef = useRef(null);
       var keysRef = useRef({});
       var pulsesRef = useRef([]);
@@ -1087,6 +1093,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (addToast) addToast(t('stem.echotrainer.no_surface_detected_ahead_try_facing_a', 'No surface detected ahead. Try facing a wall first.'), 'info');
         }
       }
+
+      useEffect(function() {
+        var el = echoFsRef.current;
+        if (!el || typeof MutationObserver !== 'function') return;
+        var sync = function() {
+          setEchoFs(!!(el.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === el
+            || document.webkitFullscreenElement === el));
+        };
+        var mo = new MutationObserver(sync);
+        mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+        sync();
+        return function() {
+          mo.disconnect();
+          document.removeEventListener('fullscreenchange', sync);
+          document.removeEventListener('webkitfullscreenchange', sync);
+        };
+      }, [has3D]);
 
       // ══════════════════════════════════════════════════════════
       // 3D RENDER LOOP
@@ -2075,7 +2101,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.retry_3d_mode', 'Retry 3D Mode'))
         ) : null,
-        has3D ? h('div', { style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
+        has3D ? h('div', { ref: echoFsRef, 'data-allo-fs-stage': 'true', style: { position: 'relative', width: '100%', flex: 1, minHeight: '400px', borderRadius: '12px', overflow: 'hidden', background: '#000' } },
+          h('button', {
+            type: 'button',
+            onClick: function() { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(echoFsRef.current); },
+            'aria-pressed': echoFs ? 'true' : 'false',
+            'aria-label': echoFs
+              ? t('stem.echotrainer.exit_fullscreen', 'Exit fullscreen echo navigation (Escape)')
+              : t('stem.echotrainer.enter_fullscreen', 'View echo navigation fullscreen'),
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(99,102,241,0.55)', color: '#c7d2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, echoFs ? '✕' : '⛶')),
           h('div', { ref: mountRef, role: 'application', 'aria-label': t('stem.echotrainer.echo_navigation_3d_viewport_click_to_l', 'Echo navigation 3D viewport. Click to lock mouse, then click to emit sonar. WASD to move, mouse to look, Q/E to strafe. Shift to sprint, C to crouch.'), tabIndex: 0, style: { width: '100%', height: '100%', minHeight: '400px', cursor: 'crosshair' } }),
           h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { position: 'absolute', bottom: '10px', right: '10px', width: '200px', height: '200px', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.4)', opacity: 0.9, pointerEvents: 'none', zIndex: 5 } }),
           h('div', { style: { position: 'absolute', bottom: '14px', right: '194px', fontSize: '10px', fontWeight: 700, color: etint('#6366f1'), background: 'rgba(0,0,0,0.7)', padding: '2px 6px', borderRadius: '4px', zIndex: 10, pointerEvents: 'none' } }, coveragePct + '% mapped'),

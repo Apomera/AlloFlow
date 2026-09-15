@@ -862,14 +862,14 @@ window.SelHub = window.SelHub || {
 
       // ═══ RENDER ═══
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (typeof d._srMsg === 'string' ? d._srMsg : '')),
 
         // Header
         h('div', { className: 'flex items-center gap-3' },
           h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
           h('div', null,
-            h('h2', { className: 'text-xl font-black text-slate-800' }, '\u2696\uFE0F Ethical Reasoning Lab'),
-            h('p', { className: 'text-xs text-slate-600' }, 'There are no easy answers \u2014 only honest questions')
+            h('h2', { className: 'text-xl font-black text-slate-100' }, '\u2696\uFE0F Ethical Reasoning Lab'),
+            h('p', { className: 'text-xs text-slate-300' }, 'There are no easy answers \u2014 only honest questions')
           ),
           // Badge counter
           h('div', { className: 'ml-auto flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-3 py-1' },
@@ -903,7 +903,40 @@ window.SelHub = window.SelHub || {
 
         // ── Topic-accent hero band per tab ──
         (function() {
-          var TAB_META = {
+              // The card's accent doubles as its border, rule and background tint, so
+      // it cannot simply be recoloured — but six of the thirteen accents fail
+      // WCAG AA as TEXT on their own tinted card (#7c3aed is 2.91:1). This
+      // lightens the accent for the title only, mixing toward white until it
+      // clears 4.5:1, leaving the card's identity colour untouched.
+      function _readableAccent(hex, tintedBg) {
+        function ch(h, i) { return parseInt(h.slice(i, i + 2), 16); }
+        function lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+        function lum(c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
+        function ratio(a, b) {
+          var x = lum(a), y = lum(b);
+          var hi = Math.max(x, y), lo = Math.min(x, y);
+          return (hi + 0.05) / (lo + 0.05);
+        }
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return hex;
+        var rgb0 = [ch(hex, 1), ch(hex, 3), ch(hex, 5)];
+        var rgb = rgb0;
+        // The card tints its background with 10% of the accent over the shell,
+        // so grade against THAT, not the bare shell — otherwise the chosen mix
+        // lands just under AA on the surface it actually sits on.
+        var shell = [15, 23, 42];
+        var bg = tintedBg || rgb0.map(function(v, i) { return v * 0.10 + shell[i] * 0.90; });
+        for (var mix = 0; mix <= 1.0001; mix += 0.02) {
+          var c = rgb.map(function(v) { return v + (255 - v) * mix; });
+          // Aim just past 4.5 rather than exactly at it: landing ON the
+          // threshold makes the result depend on a grader's rounding.
+          if (ratio(c, bg) >= 4.55) {
+            return 'rgb(' + c.map(Math.round).join(',') + ')';
+          }
+        }
+        return '#ffffff';
+      }
+
+  var TAB_META = {
             dilemmas:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDD25', title: 'Dilemmas \u2014 the trolley problem and friends',         hint: 'Foot 1967 → Thomson 1976 → Greene 2001 fMRI: utilitarian vs deontological responses use different brain regions. Dilemmas don\u2019t have right answers — they expose the values you didn\u2019t know you held.' },
             branching:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF33', title: 'Scenarios \u2014 choices that lead somewhere',           hint: 'Branching paths reveal SECOND-order consequences \u2014 the part most ethics-of-the-moment skips. \u201CThen what happened?\u201D is the question that separates intuition from reasoning.' },
             casestudies:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCD6', title: 'Cases \u2014 historical and current',                      hint: 'Tuskegee, Stanford Prison Experiment, Cambridge Analytica, Theranos. Real cases test frameworks against complexity. Hindsight is 20/20; the harder skill is foresight, which only practice builds.' },
@@ -931,15 +964,16 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+
+              h('h3', { style: { color: _readableAccent(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
 
         // ═══ DILEMMAS TAB ═══
         tab === 'dilemmas' && !selectedDilemma && h('div', {  className: 'space-y-3' },
-          h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
+          h('p', { className: 'text-sm text-slate-300 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
           h('div', {  className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             DILEMMAS.map(function(dl) {
               return h('button', { key: dl.id, onClick: function() {
@@ -966,8 +1000,8 @@ window.SelHub = window.SelHub || {
         // ═══ BRANCHING SCENARIOS TAB ═══
         tab === 'branching' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { id: 'ethical-branch-title', className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF33 Ethical Scenarios'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Choose wisely \u2014 every decision has consequences.')
+            h('h3', { id: 'ethical-branch-title', className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF33 Ethical Scenarios'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Choose wisely \u2014 every decision has consequences.')
           ),
 
           // If no scenario selected, show list
@@ -1001,7 +1035,7 @@ window.SelHub = window.SelHub || {
               h('div', {  className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200 p-5' },
                 h('div', {  className: 'flex items-center gap-2 mb-3' },
                   h('span', {  className: 'text-3xl' }, sc.emoji),
-                  h('h3', { className: 'text-lg font-black text-slate-800' }, sc.title)
+                  h('h3', { className: 'text-lg font-black text-slate-100' }, sc.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, sc.scenario),
                 callTTS && h('button', {  onClick: function() { callTTS(sc.scenario); }, className: 'mt-2 text-xs text-emerald-600 hover:text-emerald-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
@@ -1212,7 +1246,7 @@ window.SelHub = window.SelHub || {
             h('div', {  className: 'flex items-center gap-2 mb-3' },
               h('span', {  className: 'text-3xl' }, selectedDilemma.emoji),
               h('div', null,
-                h('h3', { className: 'text-lg font-black text-slate-800' }, selectedDilemma.title),
+                h('h3', { className: 'text-lg font-black text-slate-100' }, selectedDilemma.title),
                 h('span', {  className: 'text-xs text-slate-600 font-bold uppercase' }, selectedDilemma.category)
               ),
               h('button', {  onClick: function() { updMulti({ dilemmaId: null, tab: 'dilemmas', frameworkAnalysis: null }); }, className: 'ml-auto text-xs text-slate-600 hover:text-slate-600 font-bold' }, '\u2190 All Dilemmas')
@@ -1293,8 +1327,8 @@ window.SelHub = window.SelHub || {
         // ═══ SOCRATIC DIALOGUE TAB ═══
         tab === 'dialogue' && h('div', { role: 'region', 'aria-label': 'Socratic dialogue', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCAC Socratic Dialogue'),
-            h('p', { className: 'text-sm text-slate-600' }, selectedDilemma ? 'Exploring: ' + selectedDilemma.title : 'Select a dilemma first, then share your thinking.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCAC Socratic Dialogue'),
+            h('p', { className: 'text-sm text-slate-300' }, selectedDilemma ? 'Exploring: ' + selectedDilemma.title : 'Select a dilemma first, then share your thinking.')
           ),
 
           !selectedDilemma && h('div', { className: 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center' },
@@ -1316,7 +1350,7 @@ window.SelHub = window.SelHub || {
             ),
 
             dialogueHistory.length === 0 && h('div', { className: 'bg-slate-50 rounded-xl p-4 text-center' },
-              h('p', { className: 'text-sm text-slate-600' }, 'Share your initial thoughts about "', selectedDilemma.title, '" and I\'ll ask you questions to deepen your reasoning.')
+              h('p', { className: 'text-sm text-slate-300' }, 'Share your initial thoughts about "', selectedDilemma.title, '" and I\'ll ask you questions to deepen your reasoning.')
             ),
 
             h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-xs text-indigo-600 min-h-[1.25rem] text-center' }, aiLoading ? 'Socrates is thinking…' : ''),
@@ -1340,8 +1374,8 @@ window.SelHub = window.SelHub || {
         // ═══ KOHLBERG MORAL REASONING ASSESSMENT TAB ═══
         tab === 'kohlberg' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDE0 Moral Reasoning Style'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Discover how you think about right and wrong. There are no wrong answers \u2014 only YOUR reasoning.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDE0 Moral Reasoning Style'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Discover how you think about right and wrong. There are no wrong answers \u2014 only YOUR reasoning.')
           ),
 
           // Intro card
@@ -1473,8 +1507,8 @@ window.SelHub = window.SelHub || {
         // ═══ DEBATE PREP TAB ═══
         tab === 'debate' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFA4 Debate Prep Tool'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Pick a topic, choose a side, and build your argument.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFA4 Debate Prep Tool'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Pick a topic, choose a side, and build your argument.')
           ),
 
           // Topic selection
@@ -1608,8 +1642,8 @@ window.SelHub = window.SelHub || {
         // ═══ CASE STUDIES TAB ═══
         tab === 'casestudies' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCD6 Ethical Case Studies'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Real-world ethical situations for deeper analysis and Socratic dialogue.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCD6 Ethical Case Studies'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Real-world ethical situations for deeper analysis and Socratic dialogue.')
           ),
 
           // Case study list (when none selected)
@@ -1647,7 +1681,7 @@ window.SelHub = window.SelHub || {
               h('div', {  className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl border-2 border-teal-200 p-5' },
                 h('div', {  className: 'flex items-center gap-2 mb-3' },
                   h('span', {  className: 'text-3xl' }, cs.emoji),
-                  h('h3', { className: 'text-lg font-black text-slate-800' }, cs.title)
+                  h('h3', { className: 'text-lg font-black text-slate-100' }, cs.title)
                 ),
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, cs.background),
                 callTTS && h('button', { 'aria-label': 'Read Aloud', onClick: function() { callTTS(cs.background); }, className: 'mt-2 text-xs text-teal-600 hover:text-teal-800 font-bold' }, '\uD83D\uDD0A Read Aloud')
@@ -1817,8 +1851,8 @@ window.SelHub = window.SelHub || {
         // ═══ VALUES CLARIFICATION TAB ═══
         tab === 'values' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDC8E Values Clarification'),
-            h('p', { className: 'text-sm text-slate-600' }, 'What matters most to you? Rank your top values and reflect on why.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDC8E Values Clarification'),
+            h('p', { className: 'text-sm text-slate-300' }, 'What matters most to you? Rank your top values and reflect on why.')
           ),
 
           // Intro or active exercise
@@ -1985,8 +2019,8 @@ window.SelHub = window.SelHub || {
         // ═══ DECISION TREE BUILDER TAB ═══
         tab === 'decisiontree' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF32 Ethical Decision Tree Builder'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Walk through ethical reasoning step by step and build your decision tree.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF32 Ethical Decision Tree Builder'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Walk through ethical reasoning step by step and build your decision tree.')
           ),
 
           !d.dtStarted && h('div', {  className: 'bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 p-5 text-center' },
@@ -2118,8 +2152,8 @@ window.SelHub = window.SelHub || {
         // ═══ PHILOSOPHY CORNER TAB ═══
         tab === 'philosophy' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDD0 Philosophy Corner'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Meet the thinkers who shaped how we reason about right and wrong.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDD0 Philosophy Corner'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Meet the thinkers who shaped how we reason about right and wrong.')
           ),
 
           // Grade band selector
@@ -2193,8 +2227,8 @@ window.SelHub = window.SelHub || {
         // ═══ BADGES TAB ═══
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC5 Badges & Achievements'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Earn badges by exploring ethical reasoning deeply.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Badges & Achievements'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Earn badges by exploring ethical reasoning deeply.')
           ),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },

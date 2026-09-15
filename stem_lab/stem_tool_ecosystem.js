@@ -2869,7 +2869,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       var ecoGraphOpen = d.ecoGraphOpen !== undefined ? d.ecoGraphOpen : true;
 
       // Mode tabs
-      var tab = d.tab || 'explore';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'explore'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['badges', 'conserve', 'explore', 'foodweb', 'inquiry', 'quiz', 'sandbox'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'explore';
       // Quiz state
       var quizIndex = d.quizIndex !== undefined ? d.quizIndex : 0;
       var quizAnswer = d.quizAnswer !== undefined ? d.quizAnswer : -1;

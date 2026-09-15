@@ -128,7 +128,7 @@ function SentenceFramesView(props) {
                              {usableItems.map((item, idx) => isUsableItem(item) ? (
                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors" data-help-key="scaffolds_item">
                                      <div className="flex items-start gap-3">
-                                         <div className="bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{idx + 1}</div>
+                                         <div className="bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1">{idx + 1}</div>
                                          <div className="w-full min-w-0">
                                             {isEditingScaffolds ? (
                                                 <>

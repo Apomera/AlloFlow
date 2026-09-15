@@ -1482,7 +1482,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 !confirmBulkDelete
                     ? h('button', { "aria-label": "Toggle confirm bulk delete",
                         onClick: () => setConfirmBulkDelete(true),
-                        className: 'text-[11px] px-3 py-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-500 transition-all'
+                        className: 'text-[11px] px-3 py-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-all'
                     }, tt('behavior_lens.delete_selected', '🗑 Delete Selected'))
                     : h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-[11px] text-red-700 font-bold' }, tt('behavior_lens.are_you_sure', 'Are you sure?')),
@@ -1634,12 +1634,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                     h('div', { className: 'flex justify-end gap-1' },
                                                         callGemini && h('button', { "aria-label": "Restorative Questions",
                                                             onClick: () => handleRestorativeQuestions(entry),
-                                                            className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-600' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
+                                                            className: `p-2 rounded transition-colors ${restorativeId === entry.id ? 'bg-purple-100 text-purple-800' : 'text-slate-600 hover:bg-purple-50 hover:text-purple-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400`,
                                                             title: tt('behavior_lens.restorative_questions', 'Restorative Questions')
                                                         }, restorativeLoading && restorativeId === entry.id ? '⏳' : '💬'),
                                                         callGemini && h('button', { "aria-label": "Toggle nl edit id",
                                                             onClick: () => { setNlEditId(nlEditId === entry.id ? null : entry.id); setNlEditInput(''); },
-                                                            className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-600' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
+                                                            className: `p-2 rounded transition-colors ${nlEditId === entry.id ? 'bg-amber-100 text-amber-800' : 'text-slate-600 hover:bg-amber-50 hover:text-amber-500'} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400`,
                                                             title: tt('behavior_lens.ai_edit', 'AI Edit')
                                                         }, '✏️🧠'),
                                                         h('button', { "aria-label": "Toggle edit entry",
@@ -1648,7 +1648,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                         }, h(Edit2, { size: 13 })),
                                                         h('button', { "aria-label": "Delete",
                                                             onClick: () => handleDelete(entry.id),
-                                                            className: 'p-2 rounded hover:bg-red-100 text-slate-600 hover:text-red-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400'
+                                                            className: 'p-2 rounded hover:bg-red-100 text-slate-600 hover:text-red-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400'
                                                         }, h(Trash2, { size: 13 }))
                                                     )
                                                 )
@@ -1687,7 +1687,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                                                         h('button', { "aria-label": "Nl Edit",
                                                             onClick: () => handleNlEdit(entry),
                                                             disabled: nlEditLoading || !nlEditInput.trim(),
-                                                            className: 'px-3 py-2 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-600 disabled:opacity-40 transition-all'
+                                                            className: 'px-3 py-2 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-800 disabled:opacity-40 transition-all'
                                                         }, nlEditLoading ? '⏳' : 'Apply'),
                                                         h('button', {
                                                             onClick: () => { setNlEditId(null); setNlEditInput(''); },
@@ -2061,7 +2061,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     )
                 ),
                 method === 'duration' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    h('div', { className: 'text-sm text-slate-300' },
+                    h('div', { className: 'text-sm text-slate-600' },
                         durationStart
                             ? (tt('behavior_lens.obs.behavior_occurring', '🔴 Behavior occurring...'))
                             : (tt('behavior_lens.obs.tap_when_starts', 'Tap when behavior starts'))
@@ -2100,12 +2100,12 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         className: `px-6 py-4 rounded-xl text-sm font-bold transition-all ${currentInterval.occurred ? 'bg-red-600 ring-2 ring-red-400' : 'bg-white/10 hover:bg-white/20'
                             }`
                     }, currentInterval.occurred ? '✅ Behavior occurred' : '❌ Not occurred'),
-                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-300' },
+                    intervals.length > 0 && h('div', { className: 'text-xs text-slate-600' },
                         `${intervals.filter(i => i.occurred).length}/${intervals.length} intervals — ${Math.round((intervals.filter(i => i.occurred).length / intervals.length) * 100)}%`
                     )
                 ),
                 method === 'latency' && h('div', { className: 'flex flex-col items-center gap-4' },
-                    h('div', { className: 'text-sm text-slate-300' },
+                    h('div', { className: 'text-sm text-slate-600' },
                         latencyEnd
                             ? (tt('behavior_lens.obs.latency_recorded', 'Latency recorded!'))
                             : latencyStart
@@ -2658,14 +2658,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h(X, { size: 24 })
                 ),
                 h('div', { className: 'text-center' },
-                    h('div', { className: 'text-xs font-bold text-slate-300 uppercase' }, studentName || ''),
-                    h('div', { className: 'text-xs text-slate-300 mt-0.5' },
+                    h('div', { className: 'text-xs font-bold text-slate-600 uppercase' }, studentName || ''),
+                    h('div', { className: 'text-xs text-slate-600 mt-0.5' },
                         counters.length > 1 ? `${counters.length} behaviors tracked` : 'Frequency Counter'
                     )
                 ),
                 h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
                 h('button', { onClick: handleSave,
-                    className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 transition-colors'
+                    className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-800 transition-colors'
                 }, tt('behavior_lens.freq.save', 'Save'))
             ),
 
@@ -2705,7 +2705,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                             className: `${counters.length === 1 ? 'bl-freq-count-solo text-[120px] md:text-[180px]' : 'text-5xl'} font-black tabular-nums leading-none`,
                             style: { color }
                         }, counter.count),
-                        h('div', { className: 'text-xs text-slate-300' }, `${counterRate} / min`),
+                        h('div', { className: 'text-xs text-slate-600' }, `${counterRate} / min`),
                         // Tap button — name the behavior so a screen-reader /
                         // voice user tracking several behaviors at once knows
                         // which one they are incrementing.
@@ -2761,7 +2761,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
             // Timer
             h('div', { className: 'mt-6 pb-4 text-center' },
                 h('div', { className: 'text-3xl font-black tabular-nums text-slate-200' }, fmtDuration(elapsed)),
-                h('div', { className: 'text-xs text-slate-400 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
+                h('div', { className: 'text-xs text-slate-600 mt-1' }, tt('behavior_lens.freq.elapsed', 'Elapsed'))
             )
         );
     };
@@ -2846,11 +2846,11 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('button', { onClick: recovery.requestClose, 'aria-label': 'Close', className: 'p-2 rounded-full text-slate-300 hover:bg-white/10' }, h(X, { size: 20 })),
                     h('div', null,
                         h('h3', { className: 'text-white font-black text-lg', 'data-help-key': 'bl_interval_recording' }, tt('behavior_lens.interval.title', 'Interval Recording')),
-                        h('p', { className: 'text-xs text-slate-300' }, `${studentName || ''} — ${modeLabels[mode].label}`)
+                        h('p', { className: 'text-xs text-slate-600' }, `${studentName || ''} — ${modeLabels[mode].label}`)
                     )
                 ),
                 h('button', { onClick: recovery.discardAndClose, className: 'min-h-11 px-3 text-xs text-white underline' }, 'Discard draft'),
-                h('button', { onClick: handleSave, disabled: completedCount === 0, className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-400 disabled:opacity-40 transition-all' },
+                h('button', { onClick: handleSave, disabled: completedCount === 0, className: 'px-4 py-2 bg-emerald-700 text-white rounded-full text-sm font-bold hover:bg-emerald-800 disabled:opacity-40 transition-all' },
                     tt('behavior_lens.interval.save', 'Save Session'))
             ),
             // Setup (shown when not running and no data)
@@ -2860,14 +2860,14 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         h('button', { 'aria-label': modeLabels[m], 'aria-pressed': mode === m,
                             key,
                             onClick: () => setMode(key),
-                            className: `flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ${mode === key ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`
+                            className: `flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ${mode === key ? 'bg-indigo-600 text-white' : 'bg-white/10 text-slate-300 hover:bg-white/20'}`
                         }, label)
                     )
                 ),
-                h('p', { className: 'text-xs text-slate-300 text-center' }, modeLabels[mode].desc),
+                h('p', { className: 'text-xs text-slate-600 text-center' }, modeLabels[mode].desc),
                 h('div', { className: 'flex gap-4 items-center justify-center' },
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.interval_sec', 'Interval (sec)')),
                         h('select', {
                             value: intervalSec,
                             onChange: (e) => setIntervalSec(Number(e.target.value)),
@@ -2876,7 +2876,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                         }, [10, 15, 20, 30, 60].map(v => h('option', { key: v, value: v }, `${v}s`)))
                     ),
                     h('div', null,
-                        h('label', { className: 'text-[11px] font-bold text-slate-300 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
+                        h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.total_intervals', 'Total Intervals')),
                         h('select', {
                             value: totalIntervals,
                             onChange: (e) => setTotalIntervals(Number(e.target.value)),
@@ -2887,7 +2887,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 ),
                 h('button', { "aria-label": "Start recording",
                     onClick: () => { setRunning(true); setGrid([]); setCurrentInterval(0); setElapsed(0); },
-                    className: 'w-full py-3 bg-indigo-500 text-white rounded-xl font-bold text-lg hover:bg-indigo-400 transition-all'
+                    className: 'w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all'
                 }, '▶ ' + (tt('behavior_lens.interval.start', 'Start Recording')))
             ),
             // Grid display
@@ -2928,7 +2928,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                 running && h('div', { className: 'mt-4 flex gap-3 justify-center' },
                     h('button', { "aria-label": "Mark current interval as occurred",
                         onClick: () => mark(currentInterval),
-                        className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-400 active:scale-95 transition-all'
+                        className: 'bl-occurred-btn px-8 py-3 bg-red-700 text-white rounded-xl font-bold text-lg hover:bg-red-700 active:scale-95 transition-all'
                     }, '✓ ' + (tt('behavior_lens.obs_occurred', 'Occurred'))),
                     h('button', { "aria-label": "Pause",
                         onClick: () => setRunning(false),
@@ -2939,7 +2939,7 @@ Return ONLY valid JSON with the modified fields (include ALL fields, even unchan
                     h('button', { "aria-label": "Resume",
                         onClick: () => setRunning(true),
                         disabled: completedCount >= totalIntervals,
-                        className: 'px-6 py-3 bg-indigo-500 text-white rounded-xl font-bold hover:bg-indigo-400 disabled:opacity-40 transition-all'
+                        className: 'px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-40 transition-all'
                     }, '▶ Resume')
                 )
             ),
@@ -3297,7 +3297,7 @@ Return ONLY valid JSON:
                 h('div', { 'aria-expanded': String(timerActive), className: 'flex gap-2 justify-center' },
                     h('button', { 'aria-expanded': String(timerActive), "aria-label": "Toggle timer active",
                         onClick: () => setTimerActive(!timerActive),
-                        className: `px-4 py-2 rounded-lg font-bold text-sm ${timerActive ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`
+                        className: `px-4 py-2 rounded-lg font-bold text-sm ${timerActive ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`
                     }, timerActive ? '⏸ Pause' : '▶ Start Timer'),
                     h('button', { "aria-label": "Reset first-then board",
                         onClick: () => { setTimerSeconds(0); setIntervalReady(false); },
@@ -3314,7 +3314,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'text-xs text-slate-600 mb-3' }, `Next reinforcement at response #${nextReinforceAt}`),
                 h('button', { "aria-label": "Record Behavior",
                     onClick: recordResponse,
-                    className: 'px-8 py-4 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-2xl font-black text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all active:scale-95'
+                    className: 'px-8 py-4 bg-gradient-to-r from-rose-700 to-amber-700 text-white rounded-2xl font-black text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all active:scale-95'
                 }, '✋ Record Behavior')
             ),
             // Token Board Display
@@ -3323,7 +3323,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'text-xs font-bold text-rose-500 uppercase mb-1' }, studentName || ''),
                     targetBehavior && h('div', { className: 'text-lg font-black text-slate-800' }, targetBehavior),
                     reward && h('div', { className: 'text-sm text-amber-600 font-medium mt-1' }, `🎁 ${reward}`),
-                    scheduleType !== 'token' && h('div', { className: 'mt-1 inline-block px-2 py-0.5 bg-rose-100 text-rose-600 rounded-full text-[11px] font-bold' },
+                    scheduleType !== 'token' && h('div', { className: 'mt-1 inline-block px-2 py-0.5 bg-rose-100 text-rose-800 rounded-full text-[11px] font-bold' },
                         `${scheduleType}-${scheduleParam}`)
                 ),
                 h('div', { className: 'flex flex-wrap justify-center gap-4 mb-6' },
@@ -4484,7 +4484,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                 h('p', { className: 'text-sm text-slate-800 font-medium leading-relaxed' }, goalPreview),
                 h('button', { "aria-label": "Save Goal",
                     onClick: saveGoal,
-                    className: 'mt-3 px-4 py-2 bg-lime-500 text-white rounded-lg font-bold text-sm hover:bg-lime-400 transition-all'
+                    className: 'mt-3 px-4 py-2 bg-lime-700 text-white rounded-lg font-bold text-sm hover:bg-lime-700 transition-all'
                 }, '✓ ' + (tt('behavior_lens.goals.save', 'Save Goal')))
             ),
             // Saved goals with progress tracking
@@ -4508,7 +4508,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                                 onClick: () => deleteGoal(g.id),
                                 'aria-label': (t && t('behavior_lens.aria.delete_goal')) || 'Delete goal',
                                 title: (t && t('behavior_lens.aria.delete_goal')) || 'Delete goal',
-                                className: 'p-1 rounded hover:bg-red-100 text-slate-600 hover:text-red-500 transition-colors shrink-0'
+                                className: 'p-1 rounded hover:bg-red-100 text-slate-600 hover:text-red-700 transition-colors shrink-0'
                             }, '✕')
                         ),
                         // Sparkline + last score
@@ -4531,7 +4531,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                             }, progressGoalId === g.id ? '▾ Close' : '📊 Log Progress'),
                             h('button', { "aria-label": "Mark Met",
                                 onClick: () => setGoalStatus(g.id, 'met'),
-                                className: 'text-[11px] px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-all'
+                                className: 'text-[11px] px-3 py-1.5 bg-blue-50 text-blue-800 border border-blue-600 rounded-lg font-bold hover:bg-blue-100 transition-all'
                             }, '✓ Mark Met'),
                             h('button', { "aria-label": "Toggle goal status",
                                 onClick: () => setGoalStatus(g.id, 'discontinued'),
@@ -4542,7 +4542,7 @@ Generate 3 SMART behavioral goals and return ONLY valid JSON:
                         g.status !== 'active' && h('div', { className: 'mt-2 pt-2 border-t border-slate-100' },
                             h('button', { "aria-label": "Reactivate",
                                 onClick: () => setGoalStatus(g.id, 'active'),
-                                className: 'text-[11px] px-3 py-1.5 bg-emerald-50 text-emerald-600 border border-emerald-600 rounded-lg font-bold hover:bg-emerald-100 transition-all'
+                                className: 'text-[11px] px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-600 rounded-lg font-bold hover:bg-emerald-100 transition-all'
                             }, '↩ Reactivate')
                         ),
                         // Inline progress form
@@ -4683,7 +4683,7 @@ Generate a behavior contract and return ONLY valid JSON:
                 callGemini && h('button', { onClick: handleDraft, disabled: drafting,
                     className: 'flex-1 py-3 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.contract.draft', 'AI Draft Contract')))),
-                h('button', { 'aria-expanded': String(showHistory), onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save'),
+                h('button', { 'aria-expanded': String(showHistory), onClick: saveContract, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
                 history.length > 0 && h('button', { 'aria-expanded': String(showHistory), "aria-label": "Toggle show history",
                     onClick: () => setShowHistory(!showHistory),
                     className: 'px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
@@ -4836,12 +4836,12 @@ Personalize each phase of the cycle and return ONLY valid JSON:
                 callGemini && h('button', { onClick: handlePersonalize, disabled: personalizing || abcEntries.length < 2,
                     className: 'flex-1 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, personalizing ? '⏳ Personalizing...' : ('🧠 ' + (tt('behavior_lens.cycle.personalize', 'Personalize for This Student')))),
-                h('button', { 'aria-expanded': String(editing), onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save'),
+                h('button', { 'aria-expanded': String(editing), onClick: saveCycle, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save'),
                 h('button', { 'aria-expanded': String(editing), "aria-label": "Toggle editing",
                     onClick: () => setEditing(!editing),
-                    className: `px-4 py-3 rounded-xl font-bold text-sm transition-all ${editing ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
+                    className: `px-4 py-3 rounded-xl font-bold text-sm transition-all ${editing ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`
                 }, editing ? '✏️ Editing' : '✏️ Edit'),
-                Object.keys(personalized).length > 0 && h('button', { "aria-label": "Reset", onClick: resetCycle, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-600 transition-all' }, '🔄 Reset')
+                Object.keys(personalized).length > 0 && h('button', { "aria-label": "Reset", onClick: resetCycle, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-800 transition-all' }, '🔄 Reset')
             ),
             // Cycle visualization
             h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm' },
@@ -4992,7 +4992,7 @@ Recommend reinforcers and return ONLY valid JSON:
                 h('button', { "aria-label": "Save Ratings",
                     onClick: saveRatings,
                     disabled: rankedItems.length === 0,
-                    className: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold shadow hover:bg-emerald-600 disabled:opacity-40 transition-all text-sm'
+                    className: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold shadow hover:bg-emerald-800 disabled:opacity-40 transition-all text-sm'
                 }, '💾 Save Ratings'),
                 h('button', { "aria-label": "Snapshot",
                     onClick: takeSnapshot,
@@ -5191,7 +5191,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             h('input', { value: c.label, onChange: (e) => updateChoice(i, 'label', e.target.value), 'aria-label': 'Choice ' + (i + 1) + ' label', className: 'flex-1 border rounded-lg px-3 py-2 text-sm' }),
                             choices.length > 2 && h('button', { "aria-label": `Remove choice ${i + 1}: ${c.label}`,
                                 onClick: () => setChoices(prev => prev.filter((_, j) => j !== i)),
-                                className: 'min-w-11 min-h-11 p-2 rounded-lg hover:bg-red-100 text-slate-500 hover:text-red-600 transition-colors inline-flex items-center justify-center'
+                                className: 'min-w-11 min-h-11 p-2 rounded-lg hover:bg-red-100 text-slate-500 hover:text-red-800 transition-colors inline-flex items-center justify-center'
                             }, h(X, { size: 14 }))
                         )
                     ),
@@ -5219,7 +5219,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             )
                         )
                     ),
-                    h('button', { "aria-label": "Done editing choice board", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-500 text-white rounded-lg font-bold' }, tt('behavior_lens.ui.done', 'Done'))
+                    h('button', { "aria-label": "Done editing choice board", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-600 text-white rounded-lg font-bold' }, tt('behavior_lens.ui.done', 'Done'))
                 )
             );
         }
@@ -5373,7 +5373,7 @@ Provide improvement recommendations and return ONLY valid JSON:
                                         key: v,
                                         onClick: () => setRatings(prev => ({ ...prev, [item.id]: prev[item.id] === v ? 0 : v })),
                                         className: `w-7 h-7 rounded-md text-xs font-bold transition-all ${(ratings[item.id] || 0) >= v ?
-                                            (v <= 2 ? 'bg-red-100 text-red-600 border border-red-600' : v <= 3 ? 'bg-amber-100 text-amber-600 border border-amber-600' : 'bg-emerald-100 text-emerald-600 border border-emerald-600') :
+                                            (v <= 2 ? 'bg-red-100 text-red-800 border border-red-600' : v <= 3 ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-emerald-100 text-emerald-800 border border-emerald-600') :
                                             'bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100'
                                             } `
                                     }, v)
@@ -5407,7 +5407,7 @@ Provide improvement recommendations and return ONLY valid JSON:
                 aiRecs.recommendations && h('div', { className: 'space-y-2' },
                     aiRecs.recommendations.map((r, i) =>
                         h('div', { key: i, className: 'flex items-start gap-2 p-3 bg-white rounded-lg border border-blue-100' },
-                            h('span', { className: `px-1.5 py-0.5 rounded text-[11px] font-bold shrink-0 ${r.priority === 'high' ? 'bg-red-100 text-red-600' : r.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}` }, r.priority),
+                            h('span', { className: `px-1.5 py-0.5 rounded text-[11px] font-bold shrink-0 ${r.priority === 'high' ? 'bg-red-100 text-red-800' : r.priority === 'medium' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}` }, r.priority),
                             h('div', null,
                                 h('span', { className: 'text-sm font-bold text-slate-700' }, r.area + ': '),
                                 h('span', { className: 'text-sm text-slate-600' }, r.action)
@@ -5735,7 +5735,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                 callGemini && h('button', { onClick: handleDraft, disabled: drafting,
                     className: 'flex-1 py-3 bg-gradient-to-r from-stone-600 to-stone-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, drafting ? '⏳ Drafting...' : ('🧠 ' + (tt('behavior_lens.crisis.draft', 'AI Draft Crisis Plan')))),
-                h('button', { "aria-label": "Save Plan", onClick: savePlan, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Plan')
+                h('button', { "aria-label": "Save Plan", onClick: savePlan, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save Plan')
             ),
             // Scope / authorization guardrail — this is the highest-stakes
             // output in the tool; an untrained user must not treat AI-drafted
@@ -5784,7 +5784,7 @@ Generate a 3-tier crisis intervention plan and return ONLY valid JSON:
                 h('div', { className: 'mt-4 p-4 bg-red-50 rounded-xl border border-red-200' },
                     h('div', { className: 'flex items-center justify-between mb-3' },
                         h('label', { className: 'text-[11px] font-bold text-red-600 uppercase' }, '📞 Emergency Contacts'),
-                        h('button', { "aria-label": "+ Add", onClick: addContact, className: 'text-xs bg-red-100 text-red-600 px-2 py-1 rounded-lg font-bold hover:bg-red-200 transition-all' }, '+ Add')
+                        h('button', { "aria-label": "+ Add", onClick: addContact, className: 'text-xs bg-red-100 text-red-800 px-2 py-1 rounded-lg font-bold hover:bg-red-200 transition-all' }, '+ Add')
                     ),
                     h('div', { className: 'space-y-2' },
                         contacts.map((c, i) =>
@@ -6400,10 +6400,10 @@ Generate a daily fidelity checklist (5-8 items) and return ONLY valid JSON:
                 }, generating ? '⏳ Generating...' : ('🧠 ' + (tt('behavior_lens.fidelity.generate', 'AI Generate Checklist from BIP')))),
                 h('button', { "aria-label": "Quick Fill",
                     onClick: handleQuickFill,
-                    className: 'px-4 py-3 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all',
+                    className: 'px-4 py-3 bg-gradient-to-r from-amber-700 to-orange-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all',
                     title: (tt('behavior_lens.raw.instantly_fill_functionmatched_fidelity_items_no_ai_needed', 'Instantly fill function-matched fidelity items (no AI needed)'))
                 }, '⚡ Quick Fill'),
-                items.length > 0 && h('button', { onClick: saveToday, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-600 transition-all' }, '💾 Save Today'),
+                items.length > 0 && h('button', { onClick: saveToday, className: 'px-4 py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 transition-all' }, '💾 Save Today'),
                 items.length > 0 && h('button', { "aria-label": "Clear", onClick: clearChecks, className: 'px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all' }, '🔄 Clear')
             ),
             // 7-day streak calendar
@@ -6527,7 +6527,7 @@ Provide recommendations to improve feasibility. Return ONLY valid JSON:
                                             key: v,
                                             onClick: () => setRatings(prev => ({ ...prev, [q.id]: prev[q.id] === v ? 0 : v })),
                                             className: `w-7 h-7 rounded-md text-xs font-bold transition-all ${(ratings[q.id] || 0) >= v ?
-                                                (v <= 2 ? 'bg-red-100 text-red-600 border border-red-600' : v <= 3 ? 'bg-amber-100 text-amber-600 border border-amber-600' : 'bg-emerald-100 text-emerald-600 border border-emerald-600') :
+                                                (v <= 2 ? 'bg-red-100 text-red-800 border border-red-600' : v <= 3 ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-emerald-100 text-emerald-800 border border-emerald-600') :
                                                 'bg-slate-50 text-slate-600 border border-slate-100 hover:bg-slate-100'}`
                                         }, v)
                                     )
@@ -6771,7 +6771,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                         onClick: () => setActiveTab(tab.id),
                         onKeyDown: (event) => handleGuideTabKeyDown(event, index),
                         className: `flex-1 py-2.5 px-3 rounded-lg text-sm font-bold transition-all ${activeTab === tab.id
-                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
+                            ? 'bg-gradient-to-r from-indigo-700 to-purple-700 text-white shadow-md'
                             : 'text-slate-600 hover:bg-slate-100'}`
                     }, tab.label)
                 )
@@ -6987,7 +6987,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
             h('div', { 'aria-expanded': String(showForm), className: 'flex gap-2 flex-wrap' },
                 h('button', { 'aria-expanded': String(showForm), "aria-label": "Toggle show form",
                     onClick: () => setShowForm(!showForm),
-                    className: 'flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
+                    className: 'flex-1 py-3 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
                 }, showForm ? '▾ Close Form' : '➕ Log a Behavior'),
                 // Enhancement #3: Push home log entries into the main ABC data stream
                 setAbcEntries && entries.length > 0 && h('button', { onClick: () => {
@@ -7013,7 +7013,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                             return [...fresh, ...prev];
                         });
                     },
-                    className: 'px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
+                    className: 'px-4 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
                 }, '📤 Push to ABC'),
                 entries.length > 0 && h('button', { "aria-label": "Export",
                     onClick: handleExportSnapshot,
@@ -7590,16 +7590,16 @@ Respond only with the student's words:`;
                 ),
                 h('div', { className: 'bg-white rounded-xl border border-slate-400 p-5 shadow-sm space-y-4' },
                     h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-300 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
+                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '🌟 Self-Assessment: How effective was my counseling?'),
                         h('input', { type: 'range', min: 1, max: 5, value: selfRating, onChange: (e) => setSelfRating(parseInt(e.target.value)), 'aria-label': 'Self-assessment rating 1 to 5', className: 'w-full accent-teal-600' }),
-                        h('div', { className: 'flex justify-between text-[11px] text-slate-300 mt-0.5' },
+                        h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-0.5' },
                             h('span', null, tt('behavior_lens.needs_practice', 'Needs practice')),
                             h('span', null, tt('behavior_lens.getting_there', 'Getting there')),
                             h('span', null, tt('behavior_lens.feeling_confident', 'Feeling confident'))
                         )
                     ),
                     h('div', null,
-                        h('label', { className: 'block text-xs font-bold text-slate-300 uppercase mb-2' }, '📝 What strategies did I use? What would I try differently?'),
+                        h('label', { className: 'block text-xs font-bold text-slate-600 uppercase mb-2' }, '📝 What strategies did I use? What would I try differently?'),
                         h('textarea', {
                             value: strategyNotes,
                             onChange: (e) => setStrategyNotes(e.target.value),
@@ -7612,7 +7612,7 @@ Respond only with the student's words:`;
                 ),
                 // Conversation review
                 h('details', { className: 'bg-slate-50 rounded-xl border border-slate-400 p-4' },
-                    h('summary', { className: 'text-xs font-bold text-slate-300 cursor-pointer' }, '💬 Review Conversation'),
+                    h('summary', { className: 'text-xs font-bold text-slate-600 cursor-pointer' }, '💬 Review Conversation'),
                     h('div', { className: 'mt-3 space-y-2 max-h-64 overflow-y-auto' },
                         messages.filter(m => m.role !== 'system').map((m, i) =>
                             h('div', { key: i, className: `text-xs p-2 rounded-lg ${m.role === 'counselor' ? 'bg-teal-50 text-teal-800 ms-8' : 'bg-white text-slate-300 me-8 border border-slate-400'}` },
@@ -7629,16 +7629,16 @@ Respond only with the student's words:`;
                         const lines = messages.filter(m => m.role !== 'system').map(m => `${m.role === 'counselor' ? 'Counselor' : 'Student'}: ${m.content}`);
                         navigator.clipboard.writeText([header, ...lines].join('\n')).then(() => { if (addToast) addToast(t('toasts.transcript_copied'), 'success'); });
                     },
-                    className: 'w-full py-2 bg-slate-50 text-slate-300 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
+                    className: 'w-full py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-xl text-xs font-bold hover:bg-slate-100 transition-all'
                 }, '📋 Export Transcript'),
                 h('div', { className: 'flex gap-3' },
                     h('button', { "aria-label": "New Session",
                         onClick: handleReset,
-                        className: 'flex-1 py-3 bg-slate-100 text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
+                        className: 'flex-1 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all'
                     }, '🔄 New Session'),
                     h('button', { "aria-label": "Save & Close",
                         onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.reflection_saved', 'Reflection saved ✨'), 'success'); handleReset(); },
-                        className: 'flex-1 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
+                        className: 'flex-1 py-3 bg-gradient-to-r from-teal-700 to-cyan-700 text-white rounded-xl font-bold text-sm shadow-lg hover:shadow-xl transition-all'
                     }, '✅ Save & Close')
                 )
             );
@@ -7702,7 +7702,7 @@ Respond only with the student's words:`;
                         : h('div', { key: i, className: `flex ${m.role === 'counselor' ? 'justify-end' : 'justify-start'}` },
                             h('div', {
                                 className: `max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${m.role === 'counselor'
-                                    ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-tr-sm'
+                                    ? 'bg-gradient-to-br from-teal-700 to-teal-700 text-white rounded-tr-sm'
                                     : 'bg-slate-100 text-slate-800 border border-slate-400 rounded-tl-sm'
                                     }`
                             },
@@ -7831,7 +7831,7 @@ Respond only with the student's words:`;
             h('div', { 'aria-expanded': String(showForm), className: 'flex gap-2' },
                 h('button', { 'aria-expanded': String(showForm), "aria-label": "Toggle show form",
                     onClick: () => setShowForm(!showForm),
-                    className: 'flex-1 py-3 bg-gradient-to-r from-violet-500 to-indigo-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
+                    className: 'flex-1 py-3 bg-gradient-to-r from-violet-700 to-indigo-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm'
                 }, showForm ? '▾ Close' : '✨ How am I feeling right now?'),
                 callGemini && entries.length >= 2 && h('button', { onClick: async () => {
                         setAiReflectionLoading(true);
@@ -8507,7 +8507,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                     ),
                     h('button', { "aria-label": "Open Print Dialog",
                         onClick: handlePrint,
-                        className: 'w-full py-3 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2'
+                        className: 'w-full py-3 bg-gradient-to-r from-cyan-700 to-teal-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2'
                     }, '🖨️ Open Print Dialog')
                 )
             );
@@ -8542,7 +8542,7 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                     h('div', { key: section.id, className: `rounded-xl border p-4 transition-all ${editingId === section.id ? 'border-cyan-400 bg-cyan-50/30 shadow-sm' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}` },
                         h('div', { className: 'flex items-center justify-between mb-2' },
                             h('h4', { className: 'text-xs font-bold text-slate-700 flex items-center gap-1.5' },
-                                section.required && h('span', { className: 'text-[11px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-black uppercase' }, tt('behavior_lens.ui.required', 'Required')),
+                                section.required && h('span', { className: 'text-[11px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-black uppercase' }, tt('behavior_lens.ui.required', 'Required')),
                                 section.title
                             ),
                             editingId !== section.id &&
@@ -8574,11 +8574,11 @@ Rewrite all section content to be warmer, more accessible, and family-friendly w
                 h('div', { className: 'grid grid-cols-2 gap-2 pt-2' },
                     h('button', { "aria-label": "Preview & Print",
                         onClick: () => setShowPrint(true),
-                        className: 'py-2.5 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5'
+                        className: 'py-2.5 bg-gradient-to-r from-cyan-700 to-teal-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5'
                     }, '🖨️ Preview & Print'),
                     h('button', { "aria-label": "Export Template (JSON)",
                         onClick: handleExportTemplate,
-                        className: 'py-2.5 bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5'
+                        className: 'py-2.5 bg-gradient-to-r from-violet-700 to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5'
                     }, '📤 Export Template (JSON)')
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-2' },
@@ -9085,7 +9085,7 @@ Generate ${entryCount} entries and ${observationCount} observations. Include a m
                                 h('p', { className: 'text-[11px] text-slate-600 italic leading-relaxed mb-3' }, sc.backstory),
                                 h('button', { "aria-label": "Load This Scenario",
                                     onClick: () => handleLoadPrebuilt(sc),
-                                    className: 'w-full py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-bold shadow hover:shadow-md transition-all'
+                                    className: 'w-full py-2 bg-gradient-to-r from-blue-700 to-blue-700 text-white rounded-lg text-xs font-bold shadow hover:shadow-md transition-all'
                                 }, '📥 Load This Scenario')
                             )
                         )
@@ -9825,18 +9825,18 @@ Rules:
             // Summary stats (non-mini)
             !mini && h('div', { className: 'grid grid-cols-3 gap-3 mt-4' },
                 h('div', { className: 'bg-slate-50 rounded-xl p-3 text-center border border-slate-400' },
-                    h('div', { className: 'text-2xl font-black text-slate-300' }, cells.reduce((s, c) => s + c.count, 0)),
-                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Total Incidents')
+                    h('div', { className: 'text-2xl font-black text-slate-600' }, cells.reduce((s, c) => s + c.count, 0)),
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Total Incidents')
                 ),
                 h('div', { className: 'bg-red-50 rounded-xl p-3 text-center border border-red-200' },
                     h('div', { className: 'text-2xl font-black text-red-300' },
                         (() => { const peak = cells.reduce((max, c) => c.count > max.count ? c : max, cells[0]); return peak.count > 0 ? dayNames[peak.dayIdx] : '—'; })()
                     ),
-                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Peak Day')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Peak Day')
                 ),
                 h('div', { className: 'bg-emerald-50 rounded-xl p-3 text-center border border-emerald-200' },
                     h('div', { className: 'text-2xl font-black text-emerald-600' }, cells.filter(c => c.count === 0).length),
-                    h('div', { className: 'text-[11px] text-slate-300 font-bold' }, 'Zero-Incident Days')
+                    h('div', { className: 'text-[11px] text-slate-600 font-bold' }, 'Zero-Incident Days')
                 )
             )
         );
@@ -9962,7 +9962,7 @@ Rules:
                 h('p', { className: 'text-sm text-slate-600 mt-1 max-w-md mx-auto' }, 'Track your ABA competency growth — complete challenges, earn badges, and level up from Novice to Practitioner')
             ),
             // Level & XP Dashboard
-            h('div', { className: 'bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 rounded-2xl p-6 text-white shadow-xl' },
+            h('div', { className: 'bg-gradient-to-br from-indigo-700 via-purple-700 to-violet-700 rounded-2xl p-6 text-white shadow-xl' },
                 h('div', { className: 'flex items-center justify-between mb-4' },
                     h('div', { className: 'flex items-center gap-3' },
                         h('div', { className: 'w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl' }, currentLevel.icon),
@@ -10065,14 +10065,14 @@ Rules:
                                 },
                                     h('button', { "aria-label": "Toggle Skill",
                                         onClick: () => toggleSkill(skill.id),
-                                        className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all shrink-0 ${isDone ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-400 text-transparent hover:text-indigo-300'}`
+                                        className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all shrink-0 ${isDone ? 'bg-emerald-700 border-emerald-500 text-white' : 'border-slate-300 hover:border-indigo-400 text-transparent hover:text-indigo-300'}`
                                     }, isDone ? '✓' : ''),
                                     h('div', { className: 'flex-1 min-w-0' },
                                         h('div', { className: `text-xs font-black ${isDone ? 'text-emerald-700 line-through' : 'text-slate-700'}` }, skill.label),
                                         h('div', { className: 'text-[11px] text-slate-600 truncate' }, skill.desc)
                                     ),
                                     h('div', { className: 'flex items-center gap-2 shrink-0' },
-                                        h('span', { className: `text-[11px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600'}` }, `+${skill.xp} XP`),
+                                        h('span', { className: `text-[11px] font-black px-2 py-0.5 rounded-full ${isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}` }, `+${skill.xp} XP`),
                                         !isDone && skill.tool && onOpenTool && h('button', { "aria-label": "Open Tool",
                                             onClick: (e) => { e.stopPropagation(); onOpenTool(skill.tool); },
                                             className: 'px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold hover:bg-indigo-200 transition-all',
@@ -10462,7 +10462,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                         },
                             // Step number circle
                             h('div', {
-                                className: `w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0 transition-all ${complete ? 'bg-green-700 text-white' : subsDone > 0 ? 'bg-blue-100 text-blue-600 border-2 border-blue-300' : 'bg-slate-100 text-slate-600'}`
+                                className: `w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shrink-0 transition-all ${complete ? 'bg-green-700 text-white' : subsDone > 0 ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' : 'bg-slate-100 text-slate-600'}`
                             }, complete ? '✓' : step.num),
                             // Step info
                             h('div', { className: 'flex-1 min-w-0' },
@@ -10502,7 +10502,7 @@ Based on this progress, recommend the ONE most important next action. Be specifi
                                         onClick: (e) => { e.stopPropagation(); toggleSub(sub.id); },
                                         className: `w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-start transition-all ${checked ? 'bg-green-50 border border-green-600' : 'bg-slate-50 border border-slate-100 hover:border-slate-200'}`
                                     },
-                                        h('div', { className: `w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${checked ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` },
+                                        h('div', { className: `w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${checked ? 'bg-green-700 border-green-700 text-white' : 'border-slate-300'}` },
                                             checked && h('span', { className: 'text-[11px]' }, '✓')
                                         ),
                                         h('span', { className: `text-xs ${checked ? 'text-green-700 line-through' : 'text-slate-700'}` }, sub.label)
@@ -11008,7 +11008,7 @@ Provide a brief (3-4 sentence) personalized reflection. If correct, affirm their
                     h('button', { type: 'button', onClick: handleAdd,
                         'aria-label': 'Add team note',
                         disabled: !newNote.trim(),
-                        className: 'px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-bold hover:bg-indigo-600 disabled:opacity-40 transition-all self-end'
+                        className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 disabled:opacity-40 transition-all self-end'
                     }, '📤')
                 ),
                 h('p', { id: 'bl-team-notes-persistence', className: 'text-[11px] text-slate-600 mt-2' }, 'Notes are stored per student in the workspace. They remain local when cloud sync is offline.')
@@ -11177,7 +11177,7 @@ Keep the language strengths-based and restorative. Use "your child" not the code
             (!graphExport || !effectSizeResults) && setActivePanel && h('div', { className: 'flex gap-2' },
                 !graphExport && h('button', { "aria-label": "Open Graph to add phase data",
                     onClick: () => setActivePanel('abagraph'),
-                    className: 'flex-1 py-2 bg-indigo-50 border border-dashed border-indigo-600 rounded-xl text-[11px] font-bold text-indigo-400 hover:bg-indigo-100 hover:text-indigo-600 transition-all'
+                    className: 'flex-1 py-2 bg-indigo-50 border border-dashed border-indigo-600 rounded-xl text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 hover:text-indigo-600 transition-all'
                 }, '📈 Open Graph to add phase data'),
                 !effectSizeResults && h('button', { "aria-label": "Open Effect Size to add metrics",
                     onClick: () => setActivePanel('effectsize'),
@@ -11419,15 +11419,15 @@ Be specific with percentages where possible. Keep language strengths-based and a
             ),
             // Stats bar
             h('div', { className: 'grid grid-cols-3 gap-3' },
-                h('div', { className: 'bg-gradient-to-br from-orange-400 to-red-500 rounded-xl p-4 text-center text-white shadow-lg' },
+                h('div', { className: 'bg-gradient-to-br from-orange-700 to-red-700 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, `${streak}🔥`),
                     h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.day_streak', 'Day Streak'))
                 ),
-                h('div', { className: 'bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl p-4 text-center text-white shadow-lg' },
+                h('div', { className: 'bg-gradient-to-br from-blue-700 to-indigo-700 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, checkins.length),
                     h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.checkins', 'Check-Ins'))
                 ),
-                h('div', { className: 'bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl p-4 text-center text-white shadow-lg' },
+                h('div', { className: 'bg-gradient-to-br from-amber-700 to-yellow-700 rounded-xl p-4 text-center text-white shadow-lg' },
                     h('div', { className: 'text-2xl font-black' }, badges.length),
                     h('div', { className: 'text-[11px] font-bold opacity-80' }, tt('behavior_lens.ui.badges', 'Badges'))
                 )
@@ -11456,7 +11456,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                     }),
                     h('button', { "aria-label": "Check In!",
                         onClick: handleCheckin,
-                        className: 'w-full py-2.5 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-xl font-bold shadow hover:shadow-md transition-all'
+                        className: 'w-full py-2.5 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold shadow hover:shadow-md transition-all'
                     }, '✅ Check In!')
                 )
             ),
@@ -11466,7 +11466,7 @@ Be specific with percentages where possible. Keep language strengths-based and a
                 h('div', { className: 'space-y-2' },
                     quests.map(q =>
                         h('div', { key: q.id, className: `flex items-center gap-3 p-3 rounded-xl border ${q.done ? 'bg-green-50 border-green-200' : 'bg-white border-slate-100'}` },
-                            h('div', { className: `w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${q.done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300 text-slate-600'}` }, q.done ? '✓' : ''),
+                            h('div', { className: `w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs ${q.done ? 'bg-green-700 border-green-700 text-white' : 'border-slate-300 text-slate-600'}` }, q.done ? '✓' : ''),
                             h('div', { className: 'flex-1' },
                                 h('div', { className: `text-xs font-bold ${q.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, q.title),
                                 h('div', { className: 'text-[11px] text-slate-600' }, q.desc)
@@ -12114,7 +12114,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                         ),
                         h('div', { className: 'space-y-2' },
                             completionSteps.map(step => h('button', { "aria-label": "Toggle Step", key: step.id, onClick: () => toggleStep(step.id), className: `w-full text-start flex items-center gap-3 p-3 rounded-lg border transition-all ${step.done ? 'bg-green-50 border-green-600' : 'bg-white border-slate-100 hover:border-slate-200'}` },
-                                h('div', { className: `w-5 h-5 rounded-full border-2 flex items-center justify-center text-[11px] transition-all ${step.done ? 'bg-green-500 border-green-500 text-white' : 'border-slate-300'}` }, step.done ? '✓' : ''),
+                                h('div', { className: `w-5 h-5 rounded-full border-2 flex items-center justify-center text-[11px] transition-all ${step.done ? 'bg-green-700 border-green-700 text-white' : 'border-slate-300'}` }, step.done ? '✓' : ''),
                                 h('span', { className: `text-xs ${step.done ? 'text-green-700 line-through' : 'text-slate-700'}` }, step.label)
                             ))
                         ),
@@ -12124,7 +12124,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                     ),
                     // Actions
                     h('div', { className: 'flex gap-2' },
-                        h('button', { onClick: savePlan, className: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-all' }, '💾 Save Plan'),
+                        h('button', { onClick: savePlan, className: 'flex-1 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-sm hover:bg-emerald-800 transition-all' }, '💾 Save Plan'),
                         h('button', { onClick: exportPlan, className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '📋 Copy'),
                         h('button', { "aria-label": "Print", onClick: () => window.print(), className: 'px-4 py-2.5 bg-white text-slate-600 border border-slate-400 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all' }, '🖨️ Print')
                     )
@@ -12231,7 +12231,7 @@ For each of the 3 categories, suggest a specific, age-appropriate restitution ac
                 : h('div', { className: 'space-y-3' },
                     // Center student
                     h('div', { className: 'text-center' },
-                        h('div', { className: 'inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl shadow-lg' },
+                        h('div', { className: 'inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-2xl shadow-lg' },
                             h('span', { className: 'text-xl' }, '👤'),
                             h('span', { className: 'font-black text-sm' }, studentName || 'Student')
                         )
@@ -12908,11 +12908,11 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                     !timerRunning
                         ? h('button', { "aria-label": "Toggle timer running",
                             onClick: () => { if (timerRemaining <= 0) setTimerRemaining(timerSeconds); setTimerRunning(true); },
-                            className: 'px-6 py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-600'
+                            className: 'px-6 py-3 bg-green-700 text-white rounded-xl font-bold shadow-lg hover:bg-green-800'
                         }, timerRemaining <= 0 ? '🔄 Restart' : '▶️ Start')
                         : h('button', { "aria-label": "Pause",
                             onClick: () => setTimerRunning(false),
-                            className: 'px-6 py-3 bg-amber-700 text-white rounded-xl font-bold shadow-lg hover:bg-amber-600'
+                            className: 'px-6 py-3 bg-amber-700 text-white rounded-xl font-bold shadow-lg hover:bg-amber-800'
                         }, '⏸ Pause'),
                     h('button', { "aria-label": "Reset",
                         onClick: () => { setTimerRunning(false); setTimerRemaining(timerSeconds); },
@@ -12950,7 +12950,7 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
                             className: `w-full text-start p-4 rounded-xl border-2 transition-all cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800 ${groundingStep === i ? 'bg-teal-100 border-teal-400 shadow-md scale-[1.02]' : i < groundingStep ? 'bg-teal-50 border-teal-200 opacity-60' : 'bg-white border-teal-100'}`
                         },
                             h('div', { className: 'flex items-center gap-3' },
-                                h('div', { className: `w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${groundingStep === i ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-600'}` }, step.count),
+                                h('div', { className: `w-10 h-10 rounded-full flex items-center justify-center font-black text-lg ${groundingStep === i ? 'bg-teal-700 text-white' : 'bg-teal-100 text-teal-800'}` }, step.count),
                                 h('div', null,
                                     h('span', { className: 'text-xs font-black text-teal-800' }, step.sense),
                                     h('p', { className: 'text-[11px] text-teal-600 mt-0.5' }, step.prompt)
@@ -13010,9 +13010,9 @@ Example: ["strategy 1", "strategy 2", "strategy 3", "strategy 4"]`;
         const progressOptions = [
             { id: 'not_started', label: (tt('behavior_lens.raw.not_started', 'Not Started')), color: 'bg-slate-200 text-slate-600' },
             { id: 'teaching', label: (tt('behavior_lens.raw.teaching', 'Teaching')), color: 'bg-blue-200 text-blue-700' },
-            { id: 'prompting', label: (tt('behavior_lens.raw.needs_prompts', 'Needs Prompts')), color: 'bg-amber-200 text-amber-700' },
-            { id: 'emerging', label: (tt('behavior_lens.raw.emerging', 'Emerging')), color: 'bg-green-200 text-green-700' },
-            { id: 'mastered', label: (tt('behavior_lens.raw.mastered', 'Mastered')), color: 'bg-green-500 text-white' },
+            { id: 'prompting', label: (tt('behavior_lens.raw.needs_prompts', 'Needs Prompts')), color: 'bg-amber-200 text-amber-800' },
+            { id: 'emerging', label: (tt('behavior_lens.raw.emerging', 'Emerging')), color: 'bg-green-200 text-green-800' },
+            { id: 'mastered', label: (tt('behavior_lens.raw.mastered', 'Mastered')), color: 'bg-green-700 text-white' },
         ];
 
         // Auto-suggest from ABC data
@@ -13413,10 +13413,10 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
         ];
 
         const ratings = [
-            { value: 3, label: '😍 Love', color: 'bg-green-500 text-white' },
-            { value: 2, label: '😊 Like', color: 'bg-green-200 text-green-700' },
-            { value: 1, label: '😐 Okay', color: 'bg-amber-200 text-amber-700' },
-            { value: 0, label: '😒 No', color: 'bg-red-200 text-red-700' },
+            { value: 3, label: '😍 Love', color: 'bg-green-700 text-white' },
+            { value: 2, label: '😊 Like', color: 'bg-green-200 text-green-800' },
+            { value: 1, label: '😐 Okay', color: 'bg-amber-200 text-amber-800' },
+            { value: 0, label: '😒 No', color: 'bg-red-200 text-red-800' },
         ];
 
         const catColors = { blue: 'border-blue-200', green: 'border-green-200', purple: 'border-purple-200', teal: 'border-teal-200', amber: 'border-amber-200', indigo: 'border-indigo-200' };
@@ -13458,7 +13458,7 @@ Example: ["give me a high five", "hand me that pencil", "say your name", "touch 
                 h('h3', { className: 'text-xs font-black text-green-800 mb-2' }, '🏆 Top Preferences'),
                 h('div', { className: 'flex flex-wrap gap-1.5' },
                     topPrefs.map(p =>
-                        h('span', { key: p.item, className: `px-2.5 py-1 rounded-lg text-[11px] font-bold ${p.rating === 3 ? 'bg-green-700 text-white' : 'bg-green-200 text-green-700'}` }, `${p.rating === 3 ? '😍' : '😊'} ${p.item}`)
+                        h('span', { key: p.item, className: `px-2.5 py-1 rounded-lg text-[11px] font-bold ${p.rating === 3 ? 'bg-green-700 text-white' : 'bg-green-200 text-green-800'}` }, `${p.rating === 3 ? '😍' : '😊'} ${p.item}`)
                     )
                 )
             ),
@@ -13610,9 +13610,9 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
         const statusOptions = [
             { id: 'planned', label: '📋 Planned', color: 'bg-slate-200 text-slate-600' },
             { id: 'implementing', label: '🔧 In Progress', color: 'bg-blue-200 text-blue-700' },
-            { id: 'monitoring', label: '👀 Monitoring', color: 'bg-amber-200 text-amber-700' },
-            { id: 'effective', label: '✅ Effective', color: 'bg-green-500 text-white' },
-            { id: 'ineffective', label: '❌ Ineffective', color: 'bg-red-200 text-red-700' },
+            { id: 'monitoring', label: '👀 Monitoring', color: 'bg-amber-200 text-amber-800' },
+            { id: 'effective', label: '✅ Effective', color: 'bg-green-700 text-white' },
+            { id: 'ineffective', label: '❌ Ineffective', color: 'bg-red-200 text-red-800' },
         ];
 
         return h('div', { className: 'max-w-2xl mx-auto space-y-4' },
@@ -13850,7 +13850,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
             h('div', { className: 'flex items-center justify-between' },
                 h('h3', { className: 'text-lg font-black text-slate-800 flex items-center gap-2' },
                     '📝 ', tt('behavior_lens.session_notes', 'Session Notes'),
-                    (notes || []).length > 0 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-600 border border-teal-200' },
+                    (notes || []).length > 0 && h('span', { className: 'text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200' },
                         `${(notes || []).length} notes`
                     )
                 )
@@ -13873,14 +13873,14 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                             onClick: isListening ? stopMic : startMic,
                             className: `w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${isListening
                                 ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none shadow-lg shadow-red-200'
-                                : 'bg-teal-100 text-teal-600 hover:bg-teal-200'
+                                : 'bg-teal-100 text-teal-800 hover:bg-teal-200'
                                 }`,
                             title: isListening ? 'Stop listening' : 'Start dictation'
                         }, isListening ? '⏹️' : '🎤'),
                         // Add button
                         h('button', { onClick: handleAdd,
                             disabled: !draft.replace(/\s*🎤.*$/, '').trim(),
-                            className: 'w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center text-lg hover:bg-teal-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all'
+                            className: 'w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center text-lg hover:bg-teal-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all'
                         }, '➕')
                     )
                 ),
@@ -13912,7 +13912,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                                     h('div', { className: 'flex gap-2' },
                                         h('button', { "aria-label": "Save Edit",
                                             onClick: () => handleSaveEdit(note.id),
-                                            className: 'px-3 py-1 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-600'
+                                            className: 'px-3 py-1 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800'
                                         }, '✅ ' + (tt('common.save', 'Save'))),
                                         h('button', { "aria-label": "Toggle editing id",
                                             onClick: () => { setEditingId(null); setEditText(''); },
@@ -14318,7 +14318,7 @@ Keep it encouraging and professional. Under 300 words.`;
                     currentPhase === CASE_STUDY_PHASES.length - 1 && allEvaluated && h('button', { "aria-label": "Generate Debrief",
                         onClick: generateDebrief,
                         disabled: loading, 'aria-busy': loading,
-                        className: 'flex-1 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl text-xs font-bold hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                        className: 'flex-1 py-2.5 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl text-xs font-bold hover:from-green-800 hover:to-emerald-700 shadow-lg'
                     }, loading ? '⏳ Generating Debrief...' : '🏁 Complete Case Study & Get Debrief')
                 )
             );
@@ -14478,7 +14478,7 @@ Respond helpfully and concisely as AlloBot:`;
         return h('div', { className: 'max-w-4xl mx-auto flex flex-col', style: { height: 'calc(100vh - 180px)' } },
             // Header
             h('div', { className: 'flex items-center gap-3 mb-4' },
-                h('div', { className: 'w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-lg shadow-md' }, '🤖'),
+                h('div', { className: 'w-10 h-10 rounded-full bg-gradient-to-br from-indigo-700 to-purple-700 flex items-center justify-center text-white text-lg shadow-md' }, '🤖'),
                 h('div', { className: 'flex-1' },
                     h('h3', { className: 'text-lg font-black text-slate-800' }, tt('behavior_lens.allobot_chat.title', 'Ask AlloBot')),
                     h('p', { className: 'text-xs text-slate-600' },
@@ -14578,7 +14578,7 @@ Respond helpfully and concisely as AlloBot:`;
                         tt('behavior_lens.profile.title', 'Student Profile')
                     ),
                     studentName && h('span', { className: 'text-xs text-teal-600 font-medium' }, `— ${studentName}`),
-                    filledCount > 0 && h('span', { className: 'text-[11px] bg-teal-200 text-teal-700 px-1.5 py-0.5 rounded-full font-bold' }, `${filledCount}/6`)
+                    filledCount > 0 && h('span', { className: 'text-[11px] bg-teal-200 text-teal-800 px-1.5 py-0.5 rounded-full font-bold' }, `${filledCount}/6`)
                 ),
                 h('span', { className: `text-teal-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}` }, '▼')
             ),
@@ -15144,8 +15144,8 @@ Format as a professional, structured report with clear sections and headers. Kee
                                 className: `flex-1 py-2 rounded-lg text-[11px] font-bold border transition-all ${templateFields.urgency === level
                                     ? level === 'crisis' ? 'bg-red-600 text-white border-red-600'
                                     : level === 'high' ? 'bg-orange-700 text-white border-orange-500'
-                                    : level === 'moderate' ? 'bg-amber-400 text-white border-amber-400'
-                                    : 'bg-green-500 text-white border-green-500'
+                                    : level === 'moderate' ? 'bg-amber-700 text-white border-amber-400'
+                                    : 'bg-green-700 text-white border-green-700'
                                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'}`
                             }, level.charAt(0).toUpperCase() + level.slice(1))
                         )
@@ -16516,9 +16516,9 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     // Quick log buttons
                     h('div', { className: 'grid grid-cols-3 gap-1' },
-                        h('button', { onClick: () => logTrial(b.id, 'fp'), className: 'py-1.5 bg-red-50 text-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100' }, '🔴 FP'),
+                        h('button', { onClick: () => logTrial(b.id, 'fp'), className: 'py-1.5 bg-red-50 text-red-800 rounded-lg text-[11px] font-bold hover:bg-red-100' }, '🔴 FP'),
                         h('button', { onClick: () => logTrial(b.id, 'pp'), className: 'py-1.5 bg-amber-50 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100' }, '🟡 PP'),
-                        h('button', { "aria-label": "IND", onClick: () => logTrial(b.id, 'ind'), className: 'py-1.5 bg-green-50 text-green-600 rounded-lg text-[11px] font-bold hover:bg-green-100' }, '🟢 IND')
+                        h('button', { "aria-label": "IND", onClick: () => logTrial(b.id, 'ind'), className: 'py-1.5 bg-green-50 text-green-800 rounded-lg text-[11px] font-bold hover:bg-green-100' }, '🟢 IND')
                     )
                 );
             })
@@ -16773,13 +16773,13 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     )
                 ),
                 h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: startSession, className: 'flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-700 shadow-lg transition-all' }, '▶ Start Session'),
+                    h('button', { onClick: startSession, className: 'flex-1 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm hover:from-green-800 hover:to-emerald-700 shadow-lg transition-all' }, '▶ Start Session'),
                     h('button', { "aria-label": "Toggle view history", onClick: () => setViewHistory(true), className: 'px-4 py-3 bg-white border border-slate-400 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50' }, `📋 ${sessionHistory.length}`)
                 )
             ) :
                 // Active session
                 h('div', { className: 'space-y-3' },
-                    h('div', { className: 'bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-4 text-white text-center shadow-lg' },
+                    h('div', { className: 'bg-gradient-to-r from-green-700 to-emerald-700 rounded-xl p-4 text-white text-center shadow-lg' },
                         h('div', { className: 'text-3xl font-black tabular-nums' }, fmtTime(elapsed)),
                         h('p', { className: 'text-[11px] opacity-80 mt-1' }, tt('behavior_lens.ui.session_active', 'Session Active'))
                     ),
@@ -16792,7 +16792,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                 h('span', { className: 'text-xs text-slate-600 font-medium' }, DATA_TYPES.find(d => d.id === tgt.type)?.label)
                             ),
                             tgt.type === 'frequency' || tgt.type === 'rate' ? h('div', { className: 'flex items-center gap-4' },
-                                h('button', { "aria-label": "Record Count", onClick: () => recordCount(tgt.id), className: 'w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-3xl font-black shadow-lg hover:scale-105 active:scale-95 transition-transform' }, tgt.count),
+                                h('button', { "aria-label": "Record Count", onClick: () => recordCount(tgt.id), className: 'w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-700 to-purple-700 text-white text-3xl font-black shadow-lg hover:scale-105 active:scale-95 transition-transform' }, tgt.count),
                                 h('div', null,
                                     h('p', { className: 'text-xs text-slate-600' }, `Count: ${tgt.count}`),
                                     elapsed > 0 && h('p', { className: 'text-xs text-purple-600 font-bold' }, `Rate: ${(tgt.count / (elapsed / 60)).toFixed(1)}/min`)
@@ -16825,7 +16825,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                         ) : null
                         );
                     }),
-                    h('button', { "aria-label": "End Session & Save", onClick: endSession, className: 'w-full py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold text-sm hover:from-red-600 hover:to-rose-700 shadow-lg' }, '⏹ End Session & Save')
+                    h('button', { "aria-label": "End Session & Save", onClick: endSession, className: 'w-full py-3 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-sm hover:from-red-800 hover:to-rose-700 shadow-lg' }, '⏹ End Session & Save')
                 )
         );
     };
@@ -17545,11 +17545,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     h('div', { 'aria-expanded': String(showCsvImport), className: 'flex gap-2' },
                         h('button', { 'aria-expanded': String(showCsvImport), "aria-label": "Toggle show csv import",
                             onClick: () => setShowCsvImport(!showCsvImport),
-                            className: 'px-3 py-1 bg-white border border-fuchsia-600 rounded-lg text-[11px] font-bold text-fuchsia-600 hover:bg-fuchsia-50'
+                            className: 'px-3 py-1 bg-white border border-fuchsia-600 rounded-lg text-[11px] font-bold text-fuchsia-800 hover:bg-fuchsia-50'
                         }, showCsvImport ? '← Back' : '📋 Paste CSV'),
                         manualData.length > 0 && h('button', { "aria-label": "Clear",
                             onClick: () => { setManualData([]); if (addToast) addToast(tt('behavior_lens.toast.data_cleared', 'Data cleared'), 'info'); },
-                            className: 'px-3 py-1 bg-white border border-red-600 rounded-lg text-[11px] font-bold text-red-500 hover:bg-red-50'
+                            className: 'px-3 py-1 bg-white border border-red-600 rounded-lg text-[11px] font-bold text-red-700 hover:bg-red-50'
                         }, '🗑️ Clear')
                     )
                 ),
@@ -17702,7 +17702,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         step: 'any',
                         className: 'w-20 text-xs border border-yellow-600 rounded px-2 py-0.5 bg-white font-mono focus:outline-none focus:ring-1 focus:ring-yellow-400'
                     }),
-                    h('button', { onClick: confirmSvgEdit, className: 'px-2 py-0.5 bg-yellow-700 text-white rounded text-[11px] font-bold hover:bg-yellow-600' }, '✓ Save'),
+                    h('button', { onClick: confirmSvgEdit, className: 'px-2 py-0.5 bg-yellow-700 text-white rounded text-[11px] font-bold hover:bg-yellow-800' }, '✓ Save'),
                     h('button', { "aria-label": "Cancel", onClick: () => setEditingPoint(null), className: 'px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[11px] font-bold hover:bg-slate-300' }, '✕ Cancel')
                 ),
                 h('svg', { id: 'aba-graph-svg', role: 'img', 'aria-label': `${graphTitle || 'Behavior graph'}. ${dataSeries.map(point => `session ${point.session}, ${point.value}`).join('; ')}.`, viewBox: `0 0 ${W} ${H}`, className: 'w-full', style: { minWidth: '500px', maxHeight: '350px', fontFamily: 'Arial, sans-serif' } },
@@ -17903,11 +17903,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             dataSeries.length > 0 && phaseAnalysis.length >= 2 && setActivePanel && h('div', { className: 'flex gap-2' },
                 h('button', { "aria-label": "Send to Effect Size",
                     onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.graph_data_ready_autofill_available_in_effect_size', 'Graph data ready — auto-fill available in Effect Size!'), 'success'); setActivePanel('effectsize'); },
-                    className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl text-xs font-bold hover:from-indigo-600 hover:to-purple-600 shadow-md transition-all'
+                    className: 'flex-1 py-2.5 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl text-xs font-bold hover:from-indigo-800 hover:to-purple-800 shadow-md transition-all'
                 }, '📐 Send to Effect Size →'),
                 h('button', { "aria-label": "Send to IEP Prep",
                     onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.graph_data_attached_to_iep_prep', 'Graph data attached to IEP Prep!'), 'success'); setActivePanel('iepprep'); },
-                    className: 'flex-1 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl text-xs font-bold hover:from-blue-600 hover:to-indigo-600 shadow-md transition-all'
+                    className: 'flex-1 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl text-xs font-bold hover:from-blue-800 hover:to-indigo-800 shadow-md transition-all'
                 }, '📄 Send to IEP Prep →')
             )
         );
@@ -19547,7 +19547,7 @@ Keep it under 150 words.`);
                             h('textarea', { value: obs2Data, onChange: function(e) { setObs2Data(e.target.value); }, 'aria-label': 'Observer 2 data', placeholder: 'e.g., 1, 0, 0, 1, 0, 1, 1, 0, 1, 0', rows: 2, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
                         )
                     ),
-                    h('button', { "aria-label": "Calculate IOA", onClick: function() { if (!bulkMode) syncStructuredToCSV(); calcTraditionalIOA(); }, className: 'w-full py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm' }, '📊 Calculate IOA')
+                    h('button', { "aria-label": "Calculate IOA", onClick: function() { if (!bulkMode) syncStructuredToCSV(); calcTraditionalIOA(); }, className: 'w-full py-2.5 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all text-sm' }, '📊 Calculate IOA')
                 )
             ),
 
@@ -19656,7 +19656,7 @@ Keep it under 150 words.`);
                     h('textarea', { value: practitionerCoding, onChange: function(e) { setPractitionerCoding(e.target.value); }, 'aria-label': 'Your observation coding', placeholder: 'e.g., 1, 0, 1, 1, 0, 0, 1, 0  (leave blank for AI-only mode)', rows: 2, className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 outline-none resize-none font-mono' })
                 ),
                 h('button', { onClick: processIOAWithAI, disabled: !mediaFile || !targetBehaviors.trim() || aiProcessing, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all text-base' }, aiProcessing ? '🧠 AI is analyzing... ' + aiProgress + '%' : '🧠 Run AI Behavioral Coding (Pass 1)'),
-                aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { "aria-label": "Compare Your Coding vs AI", onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI'),
+                aiCoding && practitionerCoding.trim() && !ioaComparison && h('button', { "aria-label": "Compare Your Coding vs AI", onClick: function() { doIOAComparison(null); }, className: 'w-full py-2.5 bg-gradient-to-r from-teal-700 to-cyan-700 text-white rounded-xl font-bold shadow-lg transition-all text-sm' }, '📊 Compare Your Coding vs AI'),
                 // Second Independent AI Pass
                 aiCoding && h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-4 space-y-3' },
                     h('div', { className: 'flex items-center gap-2' },
@@ -20339,7 +20339,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             // Session recording
             !sessionActive ? h('button', { "aria-label": "Start Session", onClick: startSession, disabled: program?.status === 'mastered', className: 'w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-600 hover:to-emerald-700 shadow-lg disabled:opacity-50' }, program?.status === 'mastered' ? '🏆 Mastered — Start New Program' : '▶ Start Trial Session') :
                 h('div', { className: 'space-y-3' },
-                    h('div', { className: 'bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 text-white text-center' },
+                    h('div', { className: 'bg-gradient-to-r from-indigo-700 to-purple-700 rounded-xl p-4 text-white text-center' },
                         h('p', { className: 'text-[11px] opacity-70' }, program?.target || 'Current Target'),
                         h('div', { className: 'text-3xl font-black mt-1' }, `Trial ${sessionTrials.length + 1}`),
                     ),
@@ -20358,7 +20358,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                         ),
                         h('p', { className: 'text-[11px] text-slate-600 mt-2' }, `${sessionTrials.filter(t => t.response === '+').length}/${sessionTrials.length} correct (${Math.round((sessionTrials.filter(t => t.response === '+').length / sessionTrials.length) * 100)}%)`)
                     ),
-                    h('button', { "aria-label": "End Session", onClick: endSession, className: 'w-full py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold text-sm shadow-lg' }, `⏹ End Session (${sessionTrials.length} trials)`)
+                    h('button', { "aria-label": "End Session", onClick: endSession, className: 'w-full py-3 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-sm shadow-lg' }, `⏹ End Session (${sessionTrials.length} trials)`)
                 ),
             // Session history
             program && program.trials.length > 0 && !sessionActive && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
@@ -20550,7 +20550,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                     ),
                     items.length < 8 && h('button', { onClick: () => setItems(prev => [...prev, '']), className: 'text-[11px] text-indigo-600 font-bold mt-2 hover:underline' }, '+ Add Item')
                 ),
-                h('button', { "aria-label": "Start Assessment", onClick: () => method === 'mswo' ? startMSWO() : method === 'paired' ? startPaired() : startFreeOp(), className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm shadow-lg' }, '▶ Start Assessment')
+                h('button', { "aria-label": "Start Assessment", onClick: () => method === 'mswo' ? startMSWO() : method === 'paired' ? startPaired() : startFreeOp(), className: 'w-full py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold text-sm shadow-lg' }, '▶ Start Assessment')
             ),
             // MSWO active
             trialActive && method === 'mswo' && h('div', { className: 'space-y-3' },
@@ -20572,7 +20572,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             ),
             // Free operant active
             trialActive && method === 'freeop' && h('div', { className: 'space-y-3' },
-                h('div', { className: 'bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-4 text-white text-center' },
+                h('div', { className: 'bg-gradient-to-r from-amber-700 to-orange-700 rounded-xl p-4 text-white text-center' },
                     h('div', { className: 'text-3xl font-black tabular-nums' }, `${Math.floor(freeOpTimer / 60)}:${(freeOpTimer % 60).toString().padStart(2, '0')}`),
                     h('p', { className: 'text-[11px] opacity-80' }, tt('behavior_lens.ui.tap_each_item_when_student_engages_with_it', 'Tap each item when student engages with it'))
                 ),
@@ -20612,7 +20612,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
         const getCellColor = (val) => {
             if (val === 0 || val === undefined) return 'bg-white';
             if (val === 1) return 'bg-amber-200';
-            return 'bg-red-400 text-white';
+            return 'bg-red-600 text-white';
         };
 
         // Auto-populate from ABC
@@ -20814,14 +20814,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             ),
             // Action buttons
             !waitingForResponse ?
-                h('button', { "aria-label": "Present Stimulus", onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-black text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
+                h('button', { "aria-label": "Present Stimulus", onClick: presentStimulus, className: 'w-full py-6 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl font-black text-lg hover:from-blue-800 hover:to-indigo-700 shadow-lg transition-all hover:scale-[1.02] active:scale-95' }, '📢 Present Stimulus') :
                 h('div', { className: 'space-y-3' },
                     h('div', { className: 'bg-amber-50 rounded-xl p-6 border-2 border-amber-300 text-center animate-pulse motion-reduce:animate-none' },
                         h('p', { className: 'text-lg font-black text-amber-800' }, '⏳ Waiting for response...')
                     ),
                     h('div', { className: 'grid grid-cols-2 gap-3' },
-                        h('button', { onClick: recordResponse, className: 'py-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✓ Response!'),
-                        h('button', { "aria-label": "No Response", onClick: recordNoResponse, className: 'py-6 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✗ No Response')
+                        h('button', { onClick: recordResponse, className: 'py-6 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✓ Response!'),
+                        h('button', { "aria-label": "No Response", onClick: recordNoResponse, className: 'py-6 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-sm shadow-lg hover:scale-105 active:scale-95 transition-transform' }, '✗ No Response')
                     )
                 ),
             // Results
@@ -20879,14 +20879,14 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 ),
                 // Trial badges
                 h('div', { className: 'flex flex-wrap gap-1' },
-                    trials.map((t, i) => h('span', { key: i, className: `px-2 py-1 rounded-lg text-[11px] font-bold ${t.noResponse ? 'bg-red-100 text-red-600' : !isNaN(goalNum) && goalNum > 0 && t.latency <= goalNum ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}` }, t.noResponse ? 'NR' : `${t.latency}s`))
+                    trials.map((t, i) => h('span', { key: i, className: `px-2 py-1 rounded-lg text-[11px] font-bold ${t.noResponse ? 'bg-red-100 text-red-800' : !isNaN(goalNum) && goalNum > 0 && t.latency <= goalNum ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}` }, t.noResponse ? 'NR' : `${t.latency}s`))
                 ),
                 // Action buttons
                 h('div', { className: 'flex gap-2 flex-wrap' },
-                    onSaveSession && h('button', { onClick: saveToSessionHistory, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-xs font-bold hover:from-emerald-600 hover:to-teal-600 transition-all' }, '💾 Save to Session History'),
+                    onSaveSession && h('button', { onClick: saveToSessionHistory, className: 'flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-800 hover:to-teal-800 transition-all' }, '💾 Save to Session History'),
                     h('button', { onClick: exportPNG, className: 'px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-600 rounded-lg text-[11px] font-bold hover:bg-indigo-100 transition-all' }, '📷 PNG'),
                     h('button', { onClick: copyCSV, className: 'px-3 py-2 bg-slate-50 text-slate-700 border border-slate-400 rounded-lg text-[11px] font-bold hover:bg-slate-100 transition-all' }, '📋 CSV'),
-                    h('button', { "aria-label": "Clear", onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-600 border border-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
+                    h('button', { "aria-label": "Clear", onClick: clearTrials, className: 'px-3 py-2 bg-red-50 text-red-800 border border-red-600 rounded-lg text-[11px] font-bold hover:bg-red-100 transition-all' }, '🗑️ Clear')
                 ),
                 // Goal summary
                 !isNaN(goalNum) && goalNum > 0 && validTrials.length > 0 && h('div', { className: `rounded-lg p-3 border text-xs ${validTrials.filter(tr => tr.latency <= goalNum).length / validTrials.length >= 0.8 ? 'bg-green-50 border-green-200 text-green-700' : 'bg-amber-50 border-amber-200 text-amber-700'}` },
@@ -21129,7 +21129,7 @@ Keep the language professional but accessible.`;
                 )
             ),
             // Saved comparison button
-            savedResults.length >= 2 && h('button', { "aria-label": "Toggle show comparison", onClick: () => setShowComparison(true), className: 'w-full py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl text-[11px] font-bold shadow-sm' }, `📊 View Pre/Post Comparison (${savedResults.length} administrations)`),
+            savedResults.length >= 2 && h('button', { "aria-label": "Toggle show comparison", onClick: () => setShowComparison(true), className: 'w-full py-2 bg-gradient-to-r from-blue-700 to-purple-700 text-white rounded-xl text-[11px] font-bold shadow-sm' }, `📊 View Pre/Post Comparison (${savedResults.length} administrations)`),
             // Survey items
             !result ? h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm space-y-4' },
                 total > 0 && h('div', { className: 'flex justify-between items-center' },
@@ -21141,7 +21141,7 @@ Keep the language professional but accessible.`;
                     h('div', { key: i, className: 'space-y-1' },
                         h('p', { className: 'text-xs text-slate-700' }, `${i + 1}. ${item}${current.reverseItems?.includes(i) ? ' ®' : ''}`),
                         h('div', { className: 'flex gap-1' },
-                            current.scale.map((s, si) => h('button', { "aria-label": "Toggle responses", key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[11px] font-medium border ${responses[i] === si ? 'bg-indigo-500 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'}` }, s))
+                            current.scale.map((s, si) => h('button', { "aria-label": "Toggle responses", key: si, onClick: () => setResponses(prev => ({ ...prev, [i]: si })), className: `flex-1 py-1 rounded text-[11px] font-medium border ${responses[i] === si ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'}` }, s))
                         )
                     )
                 ),
@@ -21348,7 +21348,7 @@ Keep the language professional but accessible.`;
                         BACB_TIERS.map((tier, i) => {
                             const active = daysSinceMastery >= (BACB_TIERS[i - 1]?.days || 0) && daysSinceMastery < tier.days;
                             const past = daysSinceMastery >= tier.days;
-                            return h('div', { key: i, className: `px-2 py-1 rounded-lg text-[11px] border ${active ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-bold ring-2 ring-indigo-300' : past ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-slate-200 text-slate-600'}` },
+                            return h('div', { key: i, className: `px-2 py-1 rounded-lg text-[11px] border ${active ? 'bg-indigo-200 border-indigo-400 text-indigo-800 font-bold ring-2 ring-indigo-300' : past ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-200 text-slate-600'}` },
                                 h('span', null, `${tier.label}`),
                                 active && h('span', { className: 'ms-1' }, '← current')
                             );
@@ -21925,7 +21925,7 @@ Keep the language professional but accessible.`;
                 h('div', { className: 'space-y-2' },
                     components.map((comp, i) =>
                         h('div', { key: comp.id, className: 'flex items-center gap-2' },
-                            h('button', { onClick: () => updateComponent(comp.id, 'implemented', !comp.implemented), className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors ${comp.implemented ? 'bg-green-500 border-green-600 text-white' : 'bg-white border-slate-200 text-slate-600'}` }, comp.implemented ? '✓' : ''),
+                            h('button', { onClick: () => updateComponent(comp.id, 'implemented', !comp.implemented), className: `w-7 h-7 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors ${comp.implemented ? 'bg-green-700 border-green-600 text-white' : 'bg-white border-slate-200 text-slate-600'}` }, comp.implemented ? '✓' : ''),
                             h('input', { value: comp.desc, onChange: e => updateComponent(comp.id, 'desc', e.target.value), 'aria-label': 'Component ' + (i + 1) + ' description', placeholder: `Component ${i + 1}: e.g. "Deliver token within 5s of target behavior"`, className: 'flex-1 text-xs border border-slate-400 rounded-lg px-2 py-1.5' }),
                             components.length > 1 && h('button', { onClick: () => removeComponent(comp.id), title: 'Remove component', 'aria-label': 'Remove fidelity component', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
                         )
@@ -21938,7 +21938,7 @@ Keep the language professional but accessible.`;
                     )
                 )
             ),
-            h('button', { "aria-label": "Save Integrity Check", onClick: saveCheck, className: 'w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm shadow-lg' }, '💾 Save Integrity Check'),
+            h('button', { "aria-label": "Save Integrity Check", onClick: saveCheck, className: 'w-full py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold text-sm shadow-lg' }, '💾 Save Integrity Check'),
             sessions.length > 0 && h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 shadow-sm' },
                 h('div', { className: 'flex items-center justify-between mb-3' },
                     h('h3', { className: 'text-xs font-bold text-slate-600' }, `📊 History (${sessions.length} checks)`),
@@ -22786,12 +22786,12 @@ Keep the language professional but accessible.`;
 
                 // Auto-fill from graph button
                 graphExport && graphExport.phaseAnalysis && graphExport.phaseAnalysis.length >= 2 && h('button', { onClick: handleAutoFill,
-                    className: 'w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-xs font-bold hover:from-emerald-600 hover:to-teal-600 shadow-md transition-all mb-2'
+                    className: 'w-full py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl text-xs font-bold hover:from-emerald-800 hover:to-teal-800 shadow-md transition-all mb-2'
                 }, `📊 Auto-fill from Graph ("${graphExport.behaviorName}" — ${graphExport.phaseAnalysis.length} phases)`),
 
                 // Auto-fill from phase-tagged ABC entries
                 hasPhaseData && h('button', { onClick: handleAutoFillFromPhases,
-                    className: 'w-full py-2.5 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-xl text-xs font-bold hover:from-violet-600 hover:to-purple-600 shadow-md transition-all mb-2'
+                    className: 'w-full py-2.5 bg-gradient-to-r from-violet-700 to-purple-700 text-white rounded-xl text-xs font-bold hover:from-violet-800 hover:to-purple-800 shadow-md transition-all mb-2'
                 }, `🏷️ Auto-fill from Phase-Tagged ABC Data (${abcEntries.filter(e => e.phase === 'baseline' || !e.phase).length}A + ${abcEntries.filter(e => e.phase && e.phase !== 'baseline').length}B)`),
 
                 !graphExport && !hasPhaseData && setActivePanel && h('button', { "aria-label": "Open ABA Graph to enable auto-fill",
@@ -22803,7 +22803,7 @@ Keep the language professional but accessible.`;
 
                 h('div', null, h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider' }, '📈 Intervention Phase (B)'), h('input', { value: interventionData, onChange: e => setInterventionData(e.target.value), 'aria-label': 'eg 8, 6, 5, 4, 3', placeholder: tt('behavior_lens.ph.eg_8_6_5_4_3', 'e.g. 8, 6, 5, 4, 3'), className: 'w-full mt-1 p-2 border border-slate-400 rounded-lg text-xs' })),
 
-                h('button', { "aria-label": "Calculate Effect Sizes", onClick: calculate, className: 'px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transition-all' }, '📐 Calculate Effect Sizes')
+                h('button', { "aria-label": "Calculate Effect Sizes", onClick: calculate, className: 'px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold rounded-lg text-sm hover:from-indigo-700 hover:to-purple-700 transition-all' }, '📐 Calculate Effect Sizes')
 
             ),
 
@@ -22845,7 +22845,7 @@ Keep the language professional but accessible.`;
                 // Inter-tool: Send to IEP
                 setActivePanel && h('button', { "aria-label": "Send Effect Sizes to IEP Prep",
                     onClick: () => { if (addToast) addToast(tt('behavior_lens.toast.effect_sizes_attached_to_iep_prep', 'Effect sizes attached to IEP Prep!'), 'success'); setActivePanel('iepprep'); },
-                    className: 'w-full py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl text-xs font-bold hover:from-blue-600 hover:to-indigo-600 shadow-md transition-all'
+                    className: 'w-full py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-xl text-xs font-bold hover:from-blue-800 hover:to-indigo-800 shadow-md transition-all'
                 }, '📄 Send Effect Sizes to IEP Prep →')
 
             )
@@ -23457,7 +23457,7 @@ Keep the language professional but accessible.`;
                         h('input', { type: 'color', value: p.color, onChange: e => setPhases(prev => prev.map((pp, j) => j === i ? { ...pp, color: e.target.value } : pp)), 'aria-label': 'Phase color', className: 'w-8 h-8 border-0 rounded cursor-pointer' }),
                         h('button', { onClick: () => setPhases(prev => prev.filter((_, j) => j !== i)), title: 'Close', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')
                     )),
-                    h('button', { "aria-label": "+ Add Phase", onClick: () => setPhases(prev => [...prev, { label: `Phase ${prev.length + 1}`, startDate: '', color: '#ec4899' }]), className: 'px-3 py-1 bg-indigo-500 text-white rounded text-[11px] font-bold hover:bg-indigo-600' }, '+ Add Phase')
+                    h('button', { "aria-label": "+ Add Phase", onClick: () => setPhases(prev => [...prev, { label: `Phase ${prev.length + 1}`, startDate: '', color: '#ec4899' }]), className: 'px-3 py-1 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700' }, '+ Add Phase')
                 )
             ),
             // Chart
@@ -24652,7 +24652,7 @@ IMPORTANT rules for expert keys:
                     h('div', { className: 'text-center pt-2' },
                         h('button', { "aria-label": "Start Observation",
                             onClick: startObservation,
-                            className: 'px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm'
+                            className: 'px-8 py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 text-sm'
                         }, '▶️ Start Observation')
                     )
                 )
@@ -24772,7 +24772,7 @@ IMPORTANT rules for expert keys:
                 // Actions
                 h('div', { className: 'flex gap-3' },
                     h('button', { onClick: resetPracticum, className: 'flex-1 px-4 py-3 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors' }, '🔄 Retry Same Scenario'),
-                    h('button', { onClick: nextScenario, className: 'flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all' }, '➡️ Next Scenario'),
+                    h('button', { onClick: nextScenario, className: 'flex-1 px-4 py-3 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all' }, '➡️ Next Scenario'),
                     h('button', { "aria-label": "Change Method", onClick: () => { setMode(null); resetPracticum(); }, className: 'px-4 py-3 bg-amber-50 text-amber-700 border border-amber-600 rounded-xl font-bold text-sm hover:bg-amber-100 transition-colors' }, '📏 Change Method')
                 )
             );
@@ -24844,7 +24844,7 @@ IMPORTANT rules for expert keys:
 
         return h('div', { className: 'max-w-xl mx-auto mt-8 relative z-10' },
             h('div', { className: 'bg-white rounded-2xl shadow-xl overflow-hidden border border-indigo-100' },
-                h('div', { className: 'px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between text-white' },
+                h('div', { className: 'px-6 py-5 bg-gradient-to-r from-indigo-700 to-purple-700 flex items-center justify-between text-white' },
                     h('div', { className: 'flex items-center gap-3' },
                         h('span', { className: 'text-3xl drop-shadow-md' }, '🧭'),
                         h('div', null,
@@ -28770,7 +28770,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 ),
                                 h('button', { "aria-label": "Randomize Name",
                                     onClick: randomizeName,
-                                    className: 'p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0',
+                                    className: 'p-2 bg-indigo-100 text-indigo-800 rounded-full hover:bg-indigo-200 hover:scale-110 transition-all shrink-0',
                                     title: tt('behavior_lens.hub.randomize', 'Randomize')
                                 }, '🎲')
                             ),
@@ -28802,7 +28802,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 ),
                                 h('button', { "aria-label": "Load Demo Student",
                                     onClick: loadDemoStudent,
-                                    className: 'w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-bold text-sm shadow outline-none focus:ring-2 focus:ring-emerald-300 transition-all flex justify-center items-center gap-2'
+                                    className: 'w-full py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white rounded-xl font-bold text-sm shadow outline-none focus:ring-2 focus:ring-emerald-300 transition-all flex justify-center items-center gap-2'
                                 },
                                     h('span', null, '🚀'),
                                     h('span', null, `Load Demo (${sandboxDays}d / ${sandboxEntries} entries)`)
@@ -28894,7 +28894,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         className: 'w-full flex items-center justify-between p-4 text-start'
                     },
                         h('div', { className: 'flex items-center gap-3' },
-                            h('div', { className: 'w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-lg' }, '🧠'),
+                            h('div', { className: 'w-10 h-10 rounded-xl bg-gradient-to-br from-purple-700 to-indigo-700 flex items-center justify-center text-white text-lg' }, '🧠'),
                             h('div', null,
                                 h('h4', { className: 'text-sm font-black text-purple-800' }, tt('behavior_lens.ui.full_student_summary', 'Full Student Summary')),
                                 h('p', { className: 'text-[11px] text-purple-500' }, tt('behavior_lens.ui.aisynthesized_behavioral_profile_from_all_data_sou', 'AI-synthesized behavioral profile from all data sources'))
@@ -29058,7 +29058,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             )
                         ),
                         // ── First-Visit Welcome Banner ──
-                        showWelcome && h('div', { className: 'relative bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 rounded-2xl p-6 shadow-xl text-white overflow-hidden' },
+                        showWelcome && h('div', { className: 'relative bg-gradient-to-br from-indigo-700 via-purple-700 to-violet-700 rounded-2xl p-6 shadow-xl text-white overflow-hidden' },
                             // Decorative background circles
                             h('div', { className: 'absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full' }),
                             h('div', { className: 'absolute -bottom-4 -left-4 w-24 h-24 bg-white/5 rounded-full' }),
@@ -29223,7 +29223,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                         h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-4' },
                             h('div', { className: 'flex items-center justify-between mb-3' },
                                 h('div', { className: 'flex items-center gap-2' },
-                                    h('div', { className: 'w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center text-sm font-black' }, selectedStudent.charAt(0).toUpperCase()),
+                                    h('div', { className: 'w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-sm font-black' }, selectedStudent.charAt(0).toUpperCase()),
                                     h('span', { className: 'text-sm font-black text-indigo-800' }, selectedStudent)
                                 ),
                                 h('span', { className: 'text-[11px] text-indigo-400' }, new Date().toLocaleDateString())
@@ -29453,7 +29453,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             onClick: () => setActivePanel('hub'),
                             className: 'p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 me-1 transition-colors'
                         }, h(ArrowLeft, { size: 18 })),
-                        h('div', { className: 'bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl text-white shadow-md' },
+                        h('div', { className: 'bg-gradient-to-br from-indigo-700 to-purple-700 p-2 rounded-xl text-white shadow-md' },
                             h(Eye, { size: 22 })
                         ),
                         h('div', null,
@@ -29552,7 +29552,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 cloudSync.syncStatus === 'synced' ? 'bg-sky-50 border-sky-200 text-sky-700' :
                                 cloudSync.syncStatus === 'syncing' ? 'bg-amber-50 border-amber-200 text-amber-700 animate-pulse motion-reduce:animate-none' :
                                 cloudSync.syncStatus === 'conflict' ? 'bg-orange-50 border-orange-300 text-orange-700' :
-                                cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-600' :
+                                cloudSync.syncStatus === 'offline' ? 'bg-red-50 border-red-200 text-red-800' :
                                 'bg-slate-50 border-slate-200 text-slate-600'
                             }`,
                             title: cloudSync.syncStatus === 'synced' ? 'Data synced to cloud' :
@@ -30919,7 +30919,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                         className: `flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                                             isCurrent ? 'bg-purple-600 text-white shadow-md ring-2 ring-purple-300' :
                                             isDone ? 'bg-purple-100 text-purple-700 border border-purple-600' :
-                                            'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-purple-50 hover:text-purple-600'
+                                            'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-purple-50 hover:text-purple-800'
                                         }`
                                     }, h('span', null, isDone ? '✓' : step.icon), step.label);
                                     return i < interventionChain.length - 1
@@ -30929,7 +30929,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                             ),
                             chainIdx < chainIds.length - 1 && h('button', { 'aria-label': 'Next: ' + interventionChain[chainIdx + 1].label,
                                 onClick: () => openPanel(chainIds[chainIdx + 1]),
-                                className: 'mt-2 w-full py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:shadow-lg transition-all flex items-center justify-center gap-2'
+                                className: 'mt-2 w-full py-2 bg-gradient-to-r from-purple-700 to-indigo-700 text-white rounded-lg text-xs font-bold shadow hover:shadow-lg transition-all flex items-center justify-center gap-2'
                             }, `Next: ${interventionChain[chainIdx + 1].icon} ${interventionChain[chainIdx + 1].label} →`)
                         ),
                         // Related tools (existing)
@@ -31261,7 +31261,7 @@ Use professional language. Refer to "the student" (not the codename).`;
                                 setShowAiConsentModal(false);
                                 if (addToast) addToast(tt('behavior_lens.toast.ai_turned_on', '🤖 AI turned ON — student data will be sent to Gemini for analysis'), 'success');
                             },
-                            className: 'px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors'
+                            className: 'px-4 py-2 rounded-lg text-sm font-bold bg-emerald-700 text-white hover:bg-emerald-700 transition-colors'
                         }, tt('behavior_lens.ai.consent_accept', 'Enable AI'))
                     )
                 )

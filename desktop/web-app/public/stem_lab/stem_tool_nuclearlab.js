@@ -1346,6 +1346,8 @@
         check: function (d) { return !!(d && (d.reactorsSeen || []).length >= 3); } },
       { id: 'nk_waste', label: 'Work through the waste question', icon: '🗄️',
         check: function (d) { return !!(d && (d.wasteSeen || []).length >= 3); } },
+      { id: 'nk_compare', label: 'Predict the death ranking, then check it against the data', icon: '⚖️',
+        check: function (d) { return !!(d && d.cmpRevealed && (d.cmpSeen || []).length >= 4); } },
       { id: 'nk_evidence', label: 'Master all five evidence verdicts', icon: '🔎',
         check: function (d) { return !!(d && (d.evidenceMastered || []).length >= EVIDENCE_CLAIMS.length); } }
     ],
@@ -1633,6 +1635,44 @@
         upd(Object.assign({ cdRuns: [] }, patch));
         if (typeof beep === 'function') beep();
       }
+
+      // ── compared with the alternatives ──
+      // Section 19 carries the tool's most contested claim and, until now, the
+      // least to do: two bar charts and a paragraph. Reading a chart that agrees
+      // with you is not evidence you have understood it, so the ranking is a
+      // prediction first. Committing to an order before the numbers appear is
+      // what makes the coal/nuclear gap land as a surprise rather than a slogan
+      // — and the per-source notes below were written long ago and never shown.
+      var cmpGuessRaw = d.cmpGuess && typeof d.cmpGuess === 'object' ? d.cmpGuess : null;
+      var cmpRevealed = !!d.cmpRevealed;
+      var cmpSelId = typeof d.cmpSel === 'string' ? d.cmpSel : '';
+      // The two sources people most reliably mis-rank against each other. Coal
+      // versus nuclear is the headline; hydro is the one that catches people who
+      // have already accepted the headline, because a single 1975 dam failure
+      // puts "renewable" hydro above nuclear.
+      var CMP_PAIRS = [
+        { id: 'coal_nuclear', a: 'Coal', b: 'Nuclear',
+          ask: 'Per unit of electricity, which has killed more people?' },
+        { id: 'hydro_nuclear', a: 'Hydropower', b: 'Nuclear',
+          ask: 'And which of these two?' },
+        { id: 'gas_solar', a: 'Natural gas', b: 'Solar',
+          ask: 'One more — which of these?' }
+      ];
+      function cmpValue(name) {
+        var row = DEATHS_TWH.filter(function (x) { return x.name === name; })[0];
+        return row ? row.v : 0;
+      }
+      function cmpGuessFor(id) {
+        return cmpGuessRaw && typeof cmpGuessRaw[id] === 'string' ? cmpGuessRaw[id] : '';
+      }
+      // A guess is right when the named source really is the deadlier of the two.
+      function cmpCorrect(pair) {
+        return cmpValue(pair.a) > cmpValue(pair.b) ? pair.a : pair.b;
+      }
+      var cmpAnswered = CMP_PAIRS.filter(function (pair) { return cmpGuessFor(pair.id); });
+      var cmpRight = cmpAnswered.filter(function (pair) {
+        return cmpGuessFor(pair.id) === cmpCorrect(pair);
+      });
 
       // ── shelter or evacuate ──
       var shRate = typeof d.shRate === 'number' ? d.shRate : 2;        // mSv/h outdoors
@@ -3195,7 +3235,7 @@
         { id: 'shelter', grp: 'society', icon: '🏠', label: 'Shelter or evacuate?', kw: 'emergency protective action evacuation sheltering plume dose reduction factor fukushima pag epa iaea basement decision' },
         { id: 'reactors', grp: 'reactors', icon: '🏭', label: 'Reactor designs & SMRs', kw: 'pwr bwr candu rbmk smr molten salt fusion small modular status' },
         { id: 'waste', grp: 'society', icon: '🗄️', label: 'The waste question', kw: 'spent fuel repository onkalo storage geological million years disposal' },
-        { id: 'compare', grp: 'society', icon: '⚖️', label: 'Compared with alternatives', kw: 'deaths per twh coal gas solar wind carbon co2 lifecycle safest' },
+        { id: 'compare', grp: 'society', icon: '⚖️', label: 'Compared with alternatives', kw: 'deaths per twh coal gas solar wind carbon co2 lifecycle safest predict ranking guess which kills more banqiao hydro dam risk perception' },
         { id: 'operate', grp: 'reactors', icon: '🎛️', label: 'Operate a reactor', kw: 'simulator control rods scram xenon blackout scenario 3d core hands on' },
         { id: 'evidence', grp: 'society', icon: '🔎', label: 'Evidence challenge', kw: 'claim evidence supported contradicted uncertainty critical thinking misconception check mastery' }
       ];
@@ -5564,40 +5604,120 @@
           heading(ink('#84cc16'), '⚖️ 19. Compared with the alternatives'),
           h('p', { className: 'text-[0.6875rem] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
             'Risk only means something next to the risk of the thing you would do instead. Both charts are full life cycle, including mining, construction and accidents.'),
-          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
-          h('div', { role: 'list', className: 'space-y-1' },
-            DEATHS_TWH.map(function (r) {
-              return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' deaths per terawatt hour', className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
-                h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
-                  h('div', { style: { height: '100%', width: Math.max(1, nkLogFrac(r.v, 0.01, 25) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
-                h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
-            })
+
+          // ── predict before the chart ──
+          h('div', { className: 'rounded-lg border p-2.5 mb-2', style: { borderColor: 'rgba(163,230,53,0.5)', background: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(247,254,231,0.85)' } },
+            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#65a30d') } }, 'First, commit to an answer'),
+            h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              'Answer these before you look. A chart you already agree with teaches you nothing; the gap between what you expected and what the data says is the part worth having.'),
+            CMP_PAIRS.map(function (pair) {
+              var guess = cmpGuessFor(pair.id);
+              var right = cmpCorrect(pair);
+              return h('div', { key: pair.id, className: 'mb-2' },
+                h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, pair.ask),
+                h('div', { className: 'flex flex-wrap gap-1' },
+                  [pair.a, pair.b].map(function (name) {
+                    return pill(guess === name, '#84cc16', name, function () {
+                      var map = Object.assign({}, cmpGuessRaw || {});
+                      map[pair.id] = name;
+                      upd({ cmpGuess: map });
+                      if (typeof beep === 'function') beep();
+                    }, name + ' has caused more deaths per terawatt hour', pair.id + '-' + name);
+                  })
+                ),
+                // Feedback waits for the reveal so the second and third questions
+                // are still genuine predictions rather than pattern-matching.
+                (guess && cmpRevealed)
+                  ? h('p', { className: 'text-[0.6875rem] mt-1 leading-relaxed font-bold', style: { color: ink(guess === right ? '#059669' : '#f59e0b') } },
+                    guess === right
+                      ? ('Right — ' + right + ', at ' + nkFmt(cmpValue(right), 2) + ' against ' + nkFmt(cmpValue(guess === pair.a ? pair.b : pair.a), 2) + ' deaths per TWh.')
+                      : ('Actually ' + right + ', at ' + nkFmt(cmpValue(right), 2) + ' against ' + nkFmt(cmpValue(guess), 2) + ' deaths per TWh.'))
+                  : null);
+            }),
+            h('button', {
+              type: 'button',
+              disabled: cmpAnswered.length < CMP_PAIRS.length,
+              onClick: function () {
+                upd({ cmpRevealed: true });
+                if (typeof beep === 'function') beep();
+                if (cmpRight.length === CMP_PAIRS.length) nkCelebrate();
+              },
+              className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
+              style: cmpAnswered.length < CMP_PAIRS.length
+                ? { background: 'transparent', color: isDark ? '#94a3b8' : '#64748b', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)'), cursor: 'not-allowed' }
+                : { background: '#84cc16', color: '#0b1020', border: '1px solid #84cc16' }
+            }, cmpRevealed ? 'Answers shown below' : (cmpAnswered.length < CMP_PAIRS.length
+              ? ('Answer all three to compare (' + cmpAnswered.length + ' of ' + CMP_PAIRS.length + ')')
+              : 'Show me the data')),
+            cmpRevealed
+              ? h('p', { role: 'status', className: 'text-[0.6875rem] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+                cmpRight.length + ' of ' + CMP_PAIRS.length + ' predicted correctly. '
+                + (cmpRight.length === CMP_PAIRS.length
+                  ? 'You already had the ranking. The harder question is the one at the end of this section: why the ranking persuades so few people.'
+                  : 'Whichever you missed is worth sitting with — being wrong here is the ordinary result, not a failure of attention.'))
+              : null
           ),
+          h('p', { className: 'text-[0.6875rem] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Deaths per terawatt-hour of electricity'),
+          // Bars stay hidden until the prediction is in. Showing them early
+          // would answer the three questions above for free.
+          !cmpRevealed
+            ? h('p', { className: 'text-[0.6875rem] rounded-lg border border-dashed p-2.5 leading-relaxed', style: { borderColor: isDark ? 'rgba(148,163,184,0.4)' : 'rgba(100,116,139,0.35)', color: isDark ? '#94a3b8' : '#475569' } },
+              'The chart appears once you have answered the three questions above.')
+            : h('div', { role: 'list', className: 'space-y-1' },
+              DEATHS_TWH.map(function (r) {
+                var on = cmpSelId === r.name;
+                // Each row is a button so the note written for it is reachable
+                // by keyboard, not only by eye.
+                return h('div', { key: r.name, role: 'listitem' },
+                  h('button', {
+                    type: 'button',
+                    'aria-pressed': on ? 'true' : 'false',
+                    'aria-label': r.name + ', ' + r.v + ' deaths per terawatt hour. Show what is behind this number',
+                    onClick: function () {
+                      upd({ cmpSel: on ? '' : r.name });
+                      if (!on) pushOnce('cmpSeen', r.name);
+                      if (typeof beep === 'function') beep();
+                    },
+                    className: 'w-full min-h-11 flex items-center gap-2 text-left px-1.5 py-1 rounded-lg',
+                    style: { background: on ? r.colour + '22' : 'transparent', border: '1px solid ' + (on ? r.colour : 'transparent') }
+                  },
+                    h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
+                    h('span', { className: 'flex-1 h-3 rounded-full overflow-hidden block', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
+                      h('span', { className: 'block', style: { height: '100%', width: Math.max(1, nkLogFrac(r.v, 0.01, 25) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
+                    h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v)),
+                  on ? h('p', { className: 'text-[0.6875rem] px-1.5 pb-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.note) : null);
+              })
+            ),
+          cmpRevealed
+            ? nkExplorationProgress('cmpSeen', DEATHS_TWH.map(function (item) { return item.name; }), 4, 'sources', '#84cc16')
+            : null,
           h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Logarithmic scale. Markandya & Wilkinson (2007) and Sovacool et al. (2016), compiled by Our World in Data. Nuclear\'s figure includes Chernobyl and Fukushima.'),
 
-          h('p', { className: 'text-[0.6875rem] font-bold mt-3 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Lifecycle CO₂, grams per kWh'),
-          h('div', { role: 'list', className: 'space-y-1' },
-            CO2_KWH.map(function (r) {
-              return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' grams CO2 per kilowatt hour', className: 'flex items-center gap-2' },
-                h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
-                h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
-                  h('div', { style: { height: '100%', width: Math.max(1, (r.v / 820) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
-                h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
-            })
-          ),
-          h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Linear scale. IPCC AR5 Annex III medians.'),
+          cmpRevealed ? h(React.Fragment, null,
+            h('p', { className: 'text-[0.6875rem] font-bold mt-3 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Lifecycle CO₂, grams per kWh'),
+            h('div', { role: 'list', className: 'space-y-1' },
+              CO2_KWH.map(function (r) {
+                return h('div', { key: r.name, role: 'listitem', 'aria-label': r.name + ', ' + r.v + ' grams CO2 per kilowatt hour', className: 'flex items-center gap-2' },
+                  h('span', { className: 'text-[0.6875rem] font-bold w-24 flex-shrink-0', style: { color: isDark ? '#e2e8f0' : '#334155' } }, r.name),
+                  h('div', { className: 'flex-1 h-3 rounded-full overflow-hidden', 'aria-hidden': 'true', style: { background: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.12)' } },
+                    h('div', { style: { height: '100%', width: Math.max(1, (r.v / 820) * 100) + '%', background: r.colour, borderRadius: '999px' } })),
+                  h('span', { className: 'text-[0.6875rem] font-mono w-12 text-right', style: { color: ink(r.colour) } }, r.v));
+              })
+            ),
+            h('p', { className: 'text-[0.625rem] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'Linear scale. IPCC AR5 Annex III medians.'),
+          ) : null,
 
-          h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(163,230,53,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(247,254,231,0.9)' } },
-            h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#65a30d') } }, 'What these charts do and do not settle'),
-            h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              'They show that on deaths and on carbon, nuclear sits with wind and solar rather than with fossil fuels — and that is not a close call. They do not settle the argument, because the real objections to nuclear are mostly not about these two numbers. They are about capital cost, build times that have run to a decade or more in the West, waste policy that no country except Finland has finished, and weapons proliferation. Anyone who tells you the deaths-per-TWh chart ends the debate is skipping the parts that are actually hard.')
-          ),
+          cmpRevealed ? h(React.Fragment, null,
+            h('div', { className: 'mt-3 rounded-lg border p-2.5', style: { borderColor: 'rgba(163,230,53,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(247,254,231,0.9)' } },
+              h('p', { className: 'text-[0.6875rem] font-black mb-1', style: { color: ink('#65a30d') } }, 'What these charts do and do not settle'),
+              h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+                'They show that on deaths and on carbon, nuclear sits with wind and solar rather than with fossil fuels — and that is not a close call. They do not settle the argument, because the real objections to nuclear are mostly not about these two numbers. They are about capital cost, build times that have run to a decade or more in the West, waste policy that no country except Finland has finished, and weapons proliferation. Anyone who tells you the deaths-per-TWh chart ends the debate is skipping the parts that are actually hard.')
+            )
+          ) : null,
           ponder('compare', '#84cc16',
-            'Coal kills roughly 800 times more people per unit of energy than nuclear, yet nuclear provokes far more fear. What does that tell you about how people weigh a rare, dramatic, involuntary risk against a constant, invisible, familiar one?',
-            'That expected deaths are not the thing people are measuring. Risk-perception research — Slovic\'s work in Science in 1987 is the standard reference — finds judgements track a handful of other factors far more strongly: whether the harm is dreaded and catastrophic rather than dispersed, whether it is taken on voluntarily, how familiar it is, how much control you have over it, and whether it falls fairly. Coal scores low on every one. Its deaths arrive one at a time, over decades, from something people have lived beside all their lives. Nuclear scores high on all of them: rare, concentrated, invisible, imposed, and historically tied to weapons. The honest conclusion is NOT that the fear is irrational. Dread, involuntariness and unfairness are real things to weigh, and a society is entitled to decide it would rather carry a larger dispersed harm than a smaller concentrated one. What the research does show is which factors are doing the work — so an argument conducted purely in deaths per terawatt-hour will not move anybody, and neither will one that ignores the numbers.')
-        ),
+            'Nuclear power provokes far more fear than several sources that harm more people per unit of energy. What does that tell you about how people weigh a rare, dramatic, involuntary risk against a constant, invisible, familiar one?',
+            'That expected deaths are not the thing people are measuring. Risk-perception research — Slovic\'s work in Science in 1987 is the standard reference — finds judgements track a handful of other factors far more strongly: whether the harm is dreaded and catastrophic rather than dispersed, whether it is taken on voluntarily, how familiar it is, how much control you have over it, and whether it falls fairly. Coal scores low on every one. Its deaths arrive one at a time, over decades, from something people have lived beside all their lives. Nuclear scores high on all of them: rare, concentrated, invisible, imposed, and historically tied to weapons. The honest conclusion is NOT that the fear is irrational. Dread, involuntariness and unfairness are real things to weigh, and a society is entitled to decide it would rather carry a larger dispersed harm than a smaller concentrated one. What the research does show is which factors are doing the work — so an argument conducted purely in deaths per terawatt-hour will not move anybody, and neither will one that ignores the numbers.')        ),
 
         // ── reactor operation simulator ──
         sec('operate', '#34d399',

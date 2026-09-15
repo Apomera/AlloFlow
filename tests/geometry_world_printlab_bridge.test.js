@@ -877,3 +877,42 @@ describe('Print Lab keeps its plugin key stable across the handoff and its tabs'
     expect(host).not.toContain('_modeTd.printStage');
   });
 });
+
+// Three tools hand a model to Print Lab, and only the receiver could lose it. Each sender writes
+// window.__alloPrintLabPendingHandoff and calls setStemLabTool in the SAME synchronous handler, so a sender
+// remount cannot drop it. On the receiving side the distinction that matters is what Print Lab persists:
+// a RECIPE handoff (Art Studio) is written into toolData, while STL `bytes` live only in component memory —
+// so the two STL senders (Geometry World, Architecture Studio) were the data-losing cases, and both are
+// covered by the printStage fix above. Pinned so a future edit cannot quietly re-add a key-bearing write.
+describe('every Print Lab handoff survives the trip', () => {
+  const SENDERS = [
+    ['stem_lab/stem_tool_geometryworld_builder.js', 'geometryWorld', 'STL'],
+    ['stem_lab/stem_tool_archstudio.js', 'archStudio', 'STL'],
+    ['stem_lab/stem_tool_artstudio.js', 'artStudio', 'RECIPE'],
+  ];
+
+  it.each(SENDERS)('%s sets the handoff and navigates in one synchronous handler', (file, sourceTool, format) => {
+    const source = readFileSync(file, 'utf8');
+    // Anchor on the pending-handoff assignment itself: a tool may name its sourceTool elsewhere for unrelated
+    // payloads (Art Studio tags captured artwork the same way).
+    const assign = source.indexOf('window.__alloPrintLabPendingHandoff =');
+    expect(assign, file + ' writes the pending slot').toBeGreaterThan(-1);
+    const at = source.indexOf("sourceTool: '" + sourceTool + "'", assign);
+    expect(at, file + ' names its source tool in the handoff').toBeGreaterThan(assign);
+    const navigate = source.indexOf("setStemLabTool('printLab')", assign);
+    expect(navigate, file + ' navigates after setting the handoff').toBeGreaterThan(assign);
+    // No await between the assignment and the navigation: nothing can unmount the sender in between.
+    expect(source.slice(assign, navigate)).not.toMatch(/\bawait\b|setTimeout\(/);
+    expect(source.slice(assign, navigate)).toContain("format: '" + format + "'");
+  });
+
+  it('only RECIPE handoffs are persisted, which is why the STL senders needed the stable key', () => {
+    const printLab = readFileSync(PRINT_PATHS[0], 'utf8');
+    // the intake persists the recipe but never the bytes
+    const persistCall = printLab.slice(printLab.indexOf("persist({ printStage: 'Design',"), printLab.indexOf("persist({ printStage: 'Design',") + 400);
+    expect(persistCall).toContain('recipe: pendingHandoff.recipe || null');
+    expect(persistCall).not.toContain('bytes');
+    // and the bytes are held in component state only
+    expect(printLab).toContain('React.useState(pendingHandoff ? pendingHandoff.bytes : null)');
+  });
+});

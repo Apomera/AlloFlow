@@ -21222,7 +21222,7 @@
           h('span', { style: { fontSize: '12px', opacity: 0.85 } }, '🔍 Print preview'),
           h('button', {
             onClick: printNow,
-            style: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            style: { background: '#15803d', color: '#fff', border: 'none', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, '🖨 Print now'),
           h('button', {
             onClick: close,

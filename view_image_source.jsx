@@ -157,7 +157,7 @@ function ImageView(props) {
                                         aria-label={t('visuals.restore_ai_image') || 'Restore AI image'}
                                         title={t('visuals.restore_ai_image') || 'Restore AI image'}
                                         onClick={() => updateImageResource(restoreSingleImage)}
-                                        className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
+                                        className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-50 transition-all shadow-sm cursor-pointer"
                                       >↩️ {t('visuals.restore_original') || 'Restore'}</button>
                                     )}
                                   </div>
@@ -277,9 +277,9 @@ function ImageView(props) {
                               aria-label={t('visuals.upload_image') || 'Upload your own image'}
                               title={t('visuals.upload_image') || 'Upload your own image'}
                               onClick={() => singleImageFileRef.current?.click()}
-                              className="flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
+                              className="flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
                             ><span style={{fontSize:'1.125rem'}}>📷</span></button>
-                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-600 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
+                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
                         </div>
                         )}
                     </div>

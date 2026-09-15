@@ -1364,6 +1364,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         { id: 'drop', label: 'Dropping the pasta', textbook: 'boil', choices: [
           { id: 'boil', label: 'At a rolling boil' },
           { id: 'warm', label: 'Into warm water, before the boil', apply: function(sched) { return sched.map(function(g) { return g.untilPot === 'boiling' ? Object.assign({}, g, { untilPot: undefined, untilPotF: 150 }) : g; }); } } ] },
+        { id: 'potDial', label: 'The pot after the pasta goes in', textbook: 'high', choices: [
+          { id: 'high', label: 'Left on high, a rolling boil' },
+          { id: 'low', label: 'Turned down to 2 (still boiling)', apply: function(sched) { return sched.map(function(g) { return g.pot === 'drop' ? Object.assign({}, g, { potLevel: 2 }) : g; }); } },
+          { id: 'off', label: 'Burner off by mistake', apply: function(sched) { return sched.map(function(g) { return g.pot === 'drop' ? Object.assign({}, g, { potLevel: 0, untilPotCook: undefined, 'for': 600 }) : g; }); } } ] },
         { id: 'pastaTime', label: 'Pasta in the water', textbook: 'nine', choices: [
           { id: 'five', label: '5 minutes', apply: function(sched) { return sched.map(function(g) { return g.untilPotCook ? Object.assign({}, g, { untilPotCook: undefined, untilPotPastaSec: 300 }) : g; }); } },
           { id: 'nine', label: '9 minutes' },
@@ -2523,6 +2527,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       else if (e.k === 'add') cur.add.push(e.id);
       else if (e.k === 'stir') cur.stirNow = (cur.stirNow || 0) + 1;
       else if (e.k === 'mark') cur.mark = e.id;
+      else if (e.k === 'pot' && e.action === 'dial') cur.potLevel = e.level || 0;
       else if (e.k === 'pot') cur.pot = e.action;
       else if (e.k === 'peek') cur.peek = true;
     });
@@ -2534,6 +2539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       if (g.stirNow) out.stirNow = g.stirNow;
       if (g.mark) out.mark = g.mark;
       if (g.pot) out.pot = g.pot;
+      if (g.potLevel != null) out.potLevel = g.potLevel;
       if (g.peek) out.peek = true;
       return out;
     });
@@ -2579,6 +2585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     if (e.k === 'probe') return 'probed the centre: ' + Math.round(e.reading || 0) + '°F';
     if (e.k === 'flick') return 'flicked water on the pan';
     if (e.k === 'peek') return 'opened the oven door';
+    if (e.k === 'pot' && e.action === 'dial') return e.level ? 'pot burner to ' + e.level : 'pot burner off';
     if (e.k === 'pot') return { start: 'pot on', drop: 'pasta into the pot', drain: 'pasta drained, water down the sink', drainKeep: 'pasta drained, a cup of water kept' }[e.action] || e.action;
     return e.k;
   }
@@ -2598,6 +2605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       if (g.pot === 'drop') parts.push('pasta into the pot');
       if (g.pot === 'drainKeep') parts.push('drain the pasta, a cup of water kept');
       if (g.pot === 'drain') parts.push('drain the pasta, water down the sink');
+      if (g.potLevel != null) parts.push(g.potLevel ? 'pot burner to ' + g.potLevel : 'pot burner off');
       (g.add || []).forEach(function(id) { parts.push('+ ' + name(id)); });
       if (g.mark) parts.push(g.mark + ', then');
       var centre = g.untilFoodF != null ? 'until the centre reads ' + Math.round(typeof g.untilFoodF === 'function' ? g.untilFoodF(rec, st) : g.untilFoodF) + '°F' : null;
@@ -2639,6 +2647,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     if (dn.stir && !dn.stir.disturbs) rows.push({ id: 'unattended', label: 'Unattended', value: Math.round(dd.unattendedSec) + ' s' });
     if (dd.oil) rows.push({ id: 'smoke', label: 'Fat past its smoke point', value: Math.round(dd.smokeSec) + ' s' });
     return rows;
+  }
+
+  // ─── Lessons behind the notes ───
+  // A judge's flag names a result; the tab that teaches the reason is one click
+  // away. Matched on the note's words, so new recipes get the links for free.
+  var LESSONS = [
+    { re: /food safety|usda|salmonella|undercooked|under 145|probed|thermometer|sliced straight|short rest|no rest|rest/i, section: 'safety', label: 'Safe temperatures and resting' },
+    { re: /smoke point|smoking|butter burnt|fat past|acrid/i, section: 'resources', label: 'Smoke points' },
+    { re: /crust|maillard|brown|pale|charred|burnt|scorch|golden|colour|color|wet surface|steamed|dark|char\b/i, section: 'maillard', label: 'The browning reaction' },
+    { re: /target|overdone|overcooked|doneness|yolk|centre|center/i, section: 'safety', label: 'Doneness by temperature' },
+    { re: /stir|toss|left alone|caught on the bottom|stuck|unattended|moved|poke/i, section: 'heat', label: 'Technique: keep it moving, or leave it alone' },
+    { re: /boil|simmer|thin sauce|gummy|crunchy|pasta|water|lid|door|preheat|too cool|too hot|hot for|cool side|screaming|shrunken|hard inside|raw|flip|door/i, section: 'heat', label: 'Heat and technique' }
+  ];
+  function lessonFor(note) {
+    if (!note) return null;
+    // the label is the judge's own naming of the fault, so it decides first; the detail only breaks a tie
+    var byLabel = LESSONS.find(function(l) { return l.re.test(note.label || ''); });
+    var hit = byLabel || LESSONS.find(function(l) { return l.re.test((note.label || '') + ' ' + (note.detail || '')); });
+    return hit ? { section: hit.section, label: hit.label } : null;
   }
 
   // ─── Portfolio ───
@@ -3395,9 +3422,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     var phase = prior.potState || 'cold';
     if (phase === 'cold' || phase === 'drained') return {};
     var cur = prior.potTempF || 70;
-    var k = panMaterial('stainless').k_up * POT_THERMAL_SCALE;
+    // the pot's own burner: high by default; turned down it still holds a boil (the vessel is pinned), turned off it cools and the cooking stops
+    var level = prior.potBurnerLevel != null ? prior.potBurnerLevel : POT_BURNER_LEVEL;
+    var mat = panMaterial('stainless');
+    var k = (level > 0 ? mat.k_up : mat.k_down) * POT_THERMAL_SCALE;
     var bp = boilingPointF(prior), near = bp - 7;
-    var temp = Math.min(bp, cur + (burnerTargetTemp(POT_BURNER_LEVEL) - cur) * (1 - Math.exp(-k * dtSec)));
+    var temp = Math.min(bp, cur + ((level > 0 ? burnerTargetTemp(level) : 70) - cur) * (1 - Math.exp(-k * dtSec)));
     var patch = { potTempF: temp };
     if (phase === 'heating' && temp >= near) patch.potState = 'boiling';
     if (phase === 'pasta-in' || phase === 'pasta-done') {
@@ -3412,9 +3442,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // The pot's buttons as pure transitions, stamped in sim-seconds. Pasta may
   // go into water that is not yet boiling (the judge will say so), and may
   // be drained before it is al dente (the judge will say that too).
-  function potAction(prior, action, simNow) {
+  function potAction(prior, action, simNow, arg) {
     var phase = prior.potState || 'cold';
-    if (action === 'start') return phase === 'cold' ? { potState: 'heating', potStartedSimSec: simNow, potTempF: 70 } : {};
+    if (action === 'start') return phase === 'cold' ? { potState: 'heating', potStartedSimSec: simNow, potTempF: 70, potBurnerLevel: POT_BURNER_LEVEL } : {};
+    if (action === 'dial') return phase === 'cold' || phase === 'drained' ? {} : { potBurnerLevel: Math.max(0, Math.min(10, arg == null ? POT_BURNER_LEVEL : arg)) };
     if (action === 'drop') {
       if (phase !== 'boiling' && phase !== 'heating') return {};
       var t = prior.potTempF || 70;
@@ -3580,6 +3611,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       if (seg.mark) s.recipeMarks[seg.mark] = { simSec: simSec, browning: s.recipeBrowning || 0, foodF: s.recipeFoodInternalF || 40, panF: pan, icon: '🔄' };
       // `pot: 'start' | 'drop' | 'drain' | 'drainKeep'` presses the pot's button at the start of the segment
       if (seg.pot) Object.assign(s, potAction(s, seg.pot, simSec));
+      // `potLevel: n` turns the pot's own burner (after the pot has been started)
+      if (seg.potLevel != null) Object.assign(s, potAction(s, 'dial', simSec, seg.potLevel));
       // `peek: true` opens the oven door at the start of the segment; `peekEvery: s` keeps opening it (a logged cook's peeks replay as `peek`)
       if (seg.peek) { var pk = peekOven(Object.assign({}, s, { recipePanTempF: pan })); pan = pk.recipePanTempF; s.recipePeeks = pk.recipePeeks; }
       var peekEvery = seg.peekEvery || Infinity, nextPeekAt = simSec + peekEvery;
@@ -3721,6 +3754,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       potTempF: 70,                        // the pot's own temperature (tickPot)
       potPastaSec: 0,                      // sim-seconds the pasta has had in boiling water
       potPastaCook: 0,                     // the cooking that did (equal at sea level, less at altitude)
+      potBurnerLevel: 0,                   // the pot's own burner (high when the pot is started; the student may turn it down or off)
       potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null,
       potWaterReserved: false,             // did the student save pasta water?
       // Competition mode
@@ -3782,7 +3816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     color: 'orange',
     category: 'applied',
     // Pure engine pieces for tests/kitchenlab_recipe_engine.test.js; the host never reads this.
-    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
+    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
     questHooks: [
       { id: 'open_safety', label: 'Open Kitchen Safety School', icon: '🛡️',
         check: function(d) { return !!(d && d.klViewedSafety); },
@@ -4836,10 +4870,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         });
       }
       // The pot's buttons: pure transitions in potAction, stamped in sim time and logged
-      function potPatch(prior, action) {
-        var patch = potAction(prior, action, prior.recipeSimElapsedSec || 0);
-        if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, { k: 'pot', action: action });
+      function potPatch(prior, action, arg) {
+        var patch = potAction(prior, action, prior.recipeSimElapsedSec || 0, arg);
+        if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, action === 'dial' ? { k: 'pot', action: action, level: arg } : { k: 'pot', action: action });
         return patch;
+      }
+      function setPotDial(level) {
+        setKL(function(prior) { return potPatch(prior, 'dial', level); });
+        klAnnounce('Pot burner ' + (level ? level + ' of 10' : 'off') + '.');
       }
       function startPot() {
         setKL(function(prior) { return potPatch(prior, 'start'); });
@@ -4926,7 +4964,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
           recipeJudgement: null,
           // Reset pot state for multi-pot recipes
-          potState: 'cold', potTempF: 70, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
+          potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
           // Reset constraint trackers
           twoStepHeatAchieved: false, coldDipAfterFood: false, hadHighBurner: false,
           klNewAchievements: [], klBenchLiveHint: null, klReplayVar: null, klReplayChoice: null, klProbeUntil: null, klFlickUntil: null, klFlickReading: null, klScrubResults: null
@@ -5068,7 +5106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             recipeTempHistory: [],
             recipeBrowning: 0, recipeFoodPeakF: 40, recipeFoodSetAt: null, recipeSecAboveOverF: 0, recipeSimElapsedSec: 0,
             recipeJudgement: null,
-            potState: 'cold', potTempF: 70, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
+            potState: 'cold', potTempF: 70, potBurnerLevel: 0, potPastaSec: 0, potPastaCook: 0, potStartedSimSec: null, potPastaInSimSec: null, potPastaInTempF: null, potPastaDoneSimSec: null, potDrainedSimSec: null, potWaterReserved: false,
             competitionActive: true,
             competitionConstraints: constraints,
             competitionDeadline: deadline,
@@ -6221,8 +6259,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.45 } }, j.verdict),
             h('ul', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 } },
               j.notes.map(function(n, i) {
+                var lesson = n.neg ? lessonFor(n) : null;
                 return h('li', { key: i, style: { fontSize: 11, lineHeight: 1.45, color: n.neg ? '#fca5a5' : '#86efac' } },
-                  h('span', { style: { fontWeight: 700 } }, n.label), h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' ' + n.detail));
+                  h('span', { style: { fontWeight: 700 } }, n.label), h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ' ' + n.detail),
+                  lesson ? h('button', { type: 'button', 'data-kl-lesson': lesson.section, onClick: function() { setSection(lesson.section); klAnnounce('Opened ' + lesson.label + '.'); },
+                    style: { marginLeft: 8, padding: '2px 8px', background: 'transparent', color: '#7dd3fc', border: '1px solid rgba(125,211,252,0.4)', borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer' } },
+                    '📖 ' + lesson.label + ' →') : null);
               })),
             d.klDetectiveUnlocked && d.klDetectiveUnlocked.length ? h('div', { style: { marginTop: 8, fontSize: 12, fontWeight: 700, color: '#fde68a' } }, '🏅 Achievement unlocked: ' + d.klDetectiveUnlocked.join(', ')) : null,
             h('button', { type: 'button', 'data-kl-detective-next': '1', onClick: another,
@@ -6815,6 +6857,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               // Progress bar
               h('div', { style: { height: 8, background: 'rgba(15,23,42,0.6)', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
                 h('div', { style: { height: '100%', width: progressPct + '%', background: phaseColor, transition: 'width 0.3s' } })),
+              // The pot's own burner: high to boil; once boiling any setting that keeps it there cooks, off stops the clock
+              phase !== 'cold' && phase !== 'drained' ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+                h('label', { htmlFor: 'kl-pot-dial', style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Pot burner'),
+                h('input', { id: 'kl-pot-dial', type: 'range', min: 0, max: 10, step: 1, value: d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL, disabled: controlsDisabled, 'data-kl-pot-dial': d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL,
+                  onChange: function(e) { setPotDial(parseInt(e.target.value, 10)); }, 'aria-label': 'Pot burner level', style: { flex: '1 1 140px', minWidth: 0, accentColor: phaseColor } }),
+                h('span', { style: { fontSize: 12, fontWeight: 800, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 52 } }, (d.potBurnerLevel != null ? d.potBurnerLevel : POT_BURNER_LEVEL) + ' / 10'),
+                (d.potBurnerLevel === 0) ? h('span', { 'data-kl-pot-off': '1', style: { fontSize: 11, color: '#fca5a5' } }, 'off: the water is cooling; once it falls below the boil the pasta stops cooking') : null) : null,
               // Action buttons (vary by phase)
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 phase === 'cold' ? h('button', { disabled: controlsDisabled, 'data-kl-pot': 'start',
@@ -7149,7 +7198,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                     borderLeft: '4px solid ' + tone[2],
                     padding: '10px 14px', borderRadius: 8 } },
                   h('div', { style: { fontSize: 13, fontWeight: 700, color: tone[3], marginBottom: 4 } }, n.label),
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, n.detail));
+                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5 } }, n.detail),
+                  // a flagged note links to the tab that teaches the reason
+                  (function() {
+                    var lesson = n.neg ? lessonFor(n) : null;
+                    return lesson ? h('button', { type: 'button', 'data-kl-lesson': lesson.section, onClick: function() { setSection(lesson.section); klAnnounce('Opened ' + lesson.label + '.'); },
+                      style: { marginTop: 6, padding: '4px 10px', background: 'transparent', color: '#7dd3fc', border: '1px solid rgba(125,211,252,0.4)', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                      '📖 Learn why: ' + lesson.label + ' →') : null;
+                  })());
               }))),
 
           // Copy fallback: the report as selectable text (Ctrl+C counts as success)

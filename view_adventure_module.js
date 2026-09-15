@@ -3222,7 +3222,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: openAdventureActionVote,
-    className: "min-h-11 w-full rounded-lg border border-emerald-300 bg-emerald-700 px-3 py-2 text-sm font-black text-white hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+    className: "min-h-11 w-full rounded-lg border border-emerald-300 bg-emerald-700 px-3 py-2 text-sm font-black text-white hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
   }, /*#__PURE__*/React.createElement(Users, {
     size: 16,
     "aria-hidden": "true"
@@ -3484,7 +3484,7 @@ function AdventureView(props) {
     type: "button",
     "aria-label": t('adventure.start_sequel'),
     onClick: handleStartSequel,
-    className: "min-h-11 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all motion-reduce:transform-none flex items-center gap-3 border-2 border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all motion-reduce:transform-none flex items-center gap-3 border-2 border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 20,
     "aria-hidden": "true"

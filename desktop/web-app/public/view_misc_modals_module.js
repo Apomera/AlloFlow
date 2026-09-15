@@ -56,44 +56,76 @@ function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDi
   React.useEffect(() => () => onDirty(false), []);
   const entries = Object.entries(fields || {});
   if (!entries.length) return null;
-  return /* @__PURE__ */ React.createElement("form", { className: "space-y-2 mt-3", onSubmit: (event) => {
-    event.preventDefault();
-    Promise.resolve(onApply(values)).then(() => onDirty(false)).catch(() => {
-    });
-  } }, entries.map(([key, field]) => /* @__PURE__ */ React.createElement("label", { key, className: "block text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "block mb-1 font-medium" }, tx(field.labelKey || "cmd.param_" + key, field.label || key)), /* @__PURE__ */ React.createElement(
-    "input",
+  return /* @__PURE__ */ React.createElement(
+    "form",
     {
-      name: key,
-      type: field.type === "integer" ? "number" : "text",
-      step: field.type === "integer" ? 1 : void 0,
-      min: field.min,
-      maxLength: field.maxLength || 200,
-      required: !!field.required,
-      disabled,
-      value: values[key] == null ? "" : String(values[key]),
-      onChange: (event) => {
-        onDirty(true);
-        setValues((previous) => ({ ...previous, [key]: event.target.value }));
-      },
-      className: `w-full min-w-0 rounded border p-2 ${styles.input}`
-    }
-  ))), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled, className: `px-3 py-1.5 rounded-lg text-xs font-bold ${styles.secondaryButton}` }, tx("chat_guide.apply_fields", "Apply details")));
+      className: "space-y-2 mt-3",
+      "aria-label": tx("chat_guide.command_details", "Command details"),
+      onSubmit: (event) => {
+        event.preventDefault();
+        Promise.resolve(onApply(values)).then(() => onDirty(false)).catch(() => {
+        });
+      }
+    },
+    entries.map(([key, field]) => /* @__PURE__ */ React.createElement("label", { key, className: "block text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "block mb-1 font-medium" }, tx(field.labelKey || "cmd.param_" + key, field.label || key), field.required && /* @__PURE__ */ React.createElement("span", { className: `ml-1 font-normal ${styles.subText}` }, " ", tx("common.required_marker", "(required)"))), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        name: key,
+        type: field.type === "integer" ? "number" : "text",
+        step: field.type === "integer" ? 1 : void 0,
+        min: field.min,
+        maxLength: field.maxLength || 200,
+        required: !!field.required,
+        disabled,
+        "aria-required": field.required ? "true" : void 0,
+        value: values[key] == null ? "" : String(values[key]),
+        onChange: (event) => {
+          onDirty(true);
+          setValues((previous) => ({ ...previous, [key]: event.target.value }));
+        },
+        className: `w-full min-w-0 rounded border p-2 ${styles.input}`
+      }
+    ))),
+    /* @__PURE__ */ React.createElement("button", { type: "submit", disabled, className: `px-3 py-1.5 rounded-lg text-xs font-bold ${styles.secondaryButton}` }, tx("chat_guide.apply_fields", "Apply details"))
+  );
 }
 function UDLGuideModal(props) {
   const [chatMenuOpen, setChatMenuOpen] = React.useState(false);
   const [voicePaused, setVoicePaused] = React.useState(false);
+  const chatMenuRef = React.useRef(null);
+  const chatMenuTriggerRef = React.useRef(null);
   React.useEffect(() => {
     if (!chatMenuOpen) return void 0;
     const onKey = (ev) => {
-      if (ev.key === "Escape") setChatMenuOpen(false);
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        setChatMenuOpen(false);
+        try {
+          chatMenuTriggerRef.current?.focus();
+        } catch (_) {
+        }
+      }
     };
-    const onDown = () => setChatMenuOpen(false);
+    const onDown = (ev) => {
+      const menu = chatMenuRef.current;
+      if (menu && ev.target && menu.contains(ev.target)) return;
+      if (chatMenuTriggerRef.current && ev.target && chatMenuTriggerRef.current.contains(ev.target)) return;
+      setChatMenuOpen(false);
+    };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onDown);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onDown);
     };
+  }, [chatMenuOpen]);
+  React.useEffect(() => {
+    if (!chatMenuOpen) return;
+    const first = chatMenuRef.current && chatMenuRef.current.querySelector('[role^="menuitem"]');
+    try {
+      first?.focus();
+    } catch (_) {
+    }
   }, [chatMenuOpen]);
   const {
     InteractiveBlueprintCard,
@@ -185,6 +217,79 @@ function UDLGuideModal(props) {
     setIsConversationMode(false);
     handleSetShowUDLGuideToFalse();
   }, [handleSetShowUDLGuideToFalse, setIsConversationMode, stopLegacyDictation]);
+  const guideRef = React.useRef(null);
+  const closeGuideRef = React.useRef(closeGuide);
+  closeGuideRef.current = closeGuide;
+  const previewRef = React.useRef(null);
+  const closePreviewRef = React.useRef(closeBlueprintPreview);
+  closePreviewRef.current = closeBlueprintPreview;
+  React.useEffect(() => {
+    if (!blueprintPreview) return void 0;
+    const overlay = previewRef.current;
+    if (!overlay) return void 0;
+    const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
+    const focusable = () => Array.from(overlay.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => el.offsetParent !== null || el === document.activeElement);
+    (focusable()[0] || overlay).focus();
+    const onKey = (ev) => {
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        ev.stopPropagation();
+        closePreviewRef.current();
+        return;
+      }
+      if (ev.key !== "Tab") return;
+      const items = focusable();
+      if (!items.length) {
+        ev.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (!overlay.contains(active)) {
+        ev.preventDefault();
+        first.focus();
+        return;
+      }
+      if (ev.shiftKey && active === first) {
+        ev.preventDefault();
+        last.focus();
+      } else if (!ev.shiftKey && active === last) {
+        ev.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("keydown", onKey, true);
+      try {
+        if (previousFocus && typeof previousFocus.focus === "function" && document.contains(previousFocus)) previousFocus.focus();
+      } catch (_) {
+      }
+    };
+  }, [blueprintPreview]);
+  React.useEffect(() => {
+    if (!showUDLGuide) return void 0;
+    const previousFocus = typeof document !== "undefined" ? document.activeElement : null;
+    const onKey = (ev) => {
+      if (ev.key !== "Escape") return;
+      if (ev.defaultPrevented) return;
+      const root = guideRef.current;
+      if (root && root.querySelector('[data-testid="bp-preview-overlay"]')) return;
+      ev.preventDefault();
+      closeGuideRef.current();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      try {
+        if (previousFocus && typeof previousFocus.focus === "function" && document.contains(previousFocus)) previousFocus.focus();
+      } catch (_) {
+      }
+    };
+  }, [showUDLGuide]);
   React.useEffect(() => {
     if (alloVoiceActive || voicePaused || !showUDLGuide) stopLegacyDictation();
     if (!alloVoiceActive || !showUDLGuide) setIsConversationMode(false);
@@ -220,511 +325,571 @@ function UDLGuideModal(props) {
   const activeOperation = latestOperation && latestOperation.operationStatus !== "closed" ? latestOperation : null;
   if (!showUDLGuide) return null;
   if (isCollapsed) {
-    return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-2 flex items-center gap-2 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, t("chat_guide.header")), isChatProcessing && /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setIsCollapsed(false),
-        className: "hover:bg-white/20 p-1 rounded transition-colors ml-1",
-        title: t("chat_guide.restore") || "Restore chat",
-        "aria-label": t("chat_guide.restore") || "Restore chat"
-      },
-      /* @__PURE__ */ React.createElement(Maximize, { size: 16 })
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: closeGuide,
-        className: "hover:bg-white/20 p-1 rounded transition-colors",
-        "aria-label": t("common.close")
-      },
-      /* @__PURE__ */ React.createElement(X, { size: 16 })
-    )));
-  }
-  return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0, maxWidth: isUDLGuideExpanded ? void 0 : "calc(100vw - 2rem)" }, className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 }), " ", t("chat_guide.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "chat_talk",
-      "aria-pressed": alloVoiceActive ? "true" : "false",
-      onClick: (e) => {
-        if (isHelpMode) return;
-        e.preventDefault();
-        const next = !alloVoiceActive;
-        stopLegacyDictation();
-        if (typeof onToggleVoiceAgent === "function") onToggleVoiceAgent();
-        setVoicePaused(false);
-        setIsConversationMode(false);
-        if (next) setIsBotVisible(true);
-        let seenHint = false;
-        try {
-          seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
-        } catch (_) {
-        }
-        if (next && !seenHint) {
-          try {
-            localStorage.setItem("allo_agent_voice_hint_v1", "1");
-          } catch (_) {
-          }
-          setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D Say \u201Cpause listening\u201D to pause or \u201Cstop listening\u201D to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it." }]);
-        }
-      },
-      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 animate-pulse" : "border-white/40"}`,
-      title: alloVoiceActive ? voicePaused ? t("chat_guide.talk_stop_paused_tooltip", "Stop the paused AlloBot voice session") : t("chat_guide.talk_stop_tooltip", "Stop AlloBot command listening") : t("chat_guide.talk_start_tooltip", "Start AlloBot command listening")
-    },
-    /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
-    " ",
-    alloVoiceActive ? voicePaused ? t("chat_guide.talk_paused", "Paused") : t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
-  ), alloVoiceActive && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "chat_talk_pause",
-      "aria-pressed": voicePaused ? "true" : "false",
-      onClick: () => {
-        stopLegacyDictation();
-        const loop = window.__alloVoiceLoop;
-        if (!loop) return;
-        if (voicePaused) {
-          Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok));
-        } else {
-          loop.pause();
-          setVoicePaused(true);
-        }
-      },
-      className: `hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
-      title: voicePaused ? t("chat_guide.resume_tooltip", "Resume AlloBot command listening") : t("chat_guide.pause_tooltip", "Pause AlloBot command listening and release its microphone session")
-    },
-    voicePaused ? t("chat_guide.resume", "Resume") : t("chat_guide.pause", "Pause")
-  ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "chat_more",
-      "aria-haspopup": "true",
-      "aria-expanded": chatMenuOpen ? "true" : "false",
-      "aria-label": t("chat_guide.more_actions", "More chat options"),
-      onClick: () => setChatMenuOpen((v) => !v),
-      className: "hover:bg-white/20 p-1 rounded transition-colors mr-1",
-      title: t("chat_guide.more_actions", "More chat options")
-    },
-    /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
-  ), chatMenuOpen && /* @__PURE__ */ React.createElement("div", { role: "menu", className: "absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      role: "menuitemcheckbox",
-      "aria-checked": isShowMeMode ? "true" : "false",
-      type: "button",
-      onClick: () => {
-        handleToggleIsShowMeMode();
-        setChatMenuOpen(false);
-      },
-      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
-    },
-    /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
-    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      role: "menuitem",
-      type: "button",
-      onClick: () => {
-        saveFullChat();
-        setChatMenuOpen(false);
-      },
-      className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
-    },
-    /* @__PURE__ */ React.createElement(Save, { size: 14, className: "mt-0.5 shrink-0" }),
-    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.save_chat", "Save this chat"))
-  ))), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": t("common.minimize"),
-      "data-help-key": "chat_expand",
-      onClick: handleToggleIsUDLGuideExpanded,
-      className: "hover:bg-white/20 p-1 rounded transition-colors",
-      title: isUDLGuideExpanded ? t("common.minimize") : t("common.maximize")
-    },
-    isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "chat_collapse",
-      onClick: () => setIsCollapsed(true),
-      className: "hover:bg-white/20 p-1 rounded transition-colors",
-      title: t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)",
-      "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
-    },
-    /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: closeGuide, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, (!msg.type || msg.type === "choices" && msg.operationKind) && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`, "data-testid": "blueprint-history" }, renderFormattedText(msg.text || tx("chat_guide.lesson_shared", "A lesson plan was added to this conversation.")), msg.blueprintSummary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, Array.isArray(msg.blueprintSummary) ? msg.blueprintSummary.join(" \u2192 ") : msg.blueprintSummary)), msg.type === "chat-error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: `max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      disabled: isChatProcessing,
-      className: `block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`,
-      onClick: () => handleSendUDLMessage({ action: "retry-chat", text: msg.retryText })
-    },
-    tx("chat_guide.retry_reply", "Retry response")
-  )), msg.type === "choices" && !msg.operationKind && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: cIdx,
-      type: "button",
-      disabled: isChatProcessing || idx !== udlMessages.length - 1,
-      title: choice.hint || void 0,
-      "aria-label": choice.hint ? `${choice.label} \u2014 ${choice.hint}` : void 0,
-      onClick: () => {
-        if (choice.action === "focus-input") {
-          setUdlInput("");
-          if (udlInputRef && udlInputRef.current) udlInputRef.current.focus();
-          return;
-        }
-        handleSendUDLMessage(choice.value);
-      },
-      className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
-    },
-    choice.label
-  ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-[11px] italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": t("common.refresh"),
-      "data-help-key": "chat_save_advice_btn",
-      onClick: () => saveUDLAdvice(msg.text, udlMessages[idx - 1]?.role === "user" ? udlMessages[idx - 1].text : "Teacher Inquiry"),
-      disabled: isSavingAdvice,
-      className: `mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`
-    },
-    isSavingAdvice ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Save, { size: 10 }),
-    isSavingAdvice ? t("chat_guide.save_actionable_loading") : t("chat_guide.save_actionable_btn")
-  ))), !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-testid": "bp-template-apply",
-      "data-help-key": "blueprint_template_apply_btn",
-      onClick: () => handleApplyLessonTemplate(tpl.id),
-      className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tpl.name),
-    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, (() => {
-      const _n = Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0;
-      const _word = _n === 1 ? t("blueprint.template_step_count_one") || "step" : t("blueprint.template_step_count") || "steps";
-      return _n + " " + _word;
-    })())
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-testid": "bp-template-delete",
-      onClick: () => handleDeleteLessonTemplate(tpl.id),
-      "aria-label": `${t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
-      title: t("blueprint.template_delete") || "Delete template",
-      className: "text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
-    },
-    "\xD7"
-  ))))), !activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-archive-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.archive_title") || "Previous plans:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, archivedPlans.slice(0, 8).map((rec) => /* @__PURE__ */ React.createElement("li", { key: rec.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-testid": "bp-archive-restore",
-      "data-help-key": "blueprint_archive_restore_btn",
-      onClick: () => handleRestoreArchivedPlan(rec.id),
-      className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, rec.name),
-    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, rec.stats ? `${rec.stats.landed}/${rec.stats.total} ${t("blueprint.archive_landed") || "landed"}` : "", rec.savedAt ? ` \xB7 ${String(rec.savedAt).slice(0, 10)}` : "")
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-testid": "bp-archive-delete",
-      "data-help-key": "blueprint_archive_delete_btn",
-      onClick: () => handleDeleteArchivedPlan(rec.id),
-      "aria-label": `${t("blueprint.archive_delete") || "Delete archived plan"}: ${rec.name}`,
-      title: t("blueprint.archive_delete") || "Delete archived plan",
-      className: "text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
-    },
-    "\xD7"
-  ))))), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), (activeOperation || activeBlueprint) && /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "45%" }, className: `shrink-0 border-t overflow-y-auto p-3 space-y-3 custom-scrollbar ${chatStyles.body}`, "data-testid": "allobot-active-work" }, activeOperation && /* @__PURE__ */ React.createElement(
-    "section",
-    {
-      "aria-label": tx("chat_guide.active_workflow", "Current command workflow"),
-      "data-testid": "active-command-workflow",
-      className: `p-3 rounded-xl text-sm ${chatStyles.modelBubble}`
-    },
-    /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, renderFormattedText(activeOperation.text)),
-    activeOperation.commandReview && /* @__PURE__ */ React.createElement(
-      AlloCommandFields,
-      {
-        key: activeOperation.operationId + ":" + JSON.stringify(activeOperation.commandReview.params),
-        fields: activeOperation.commandReview.fields,
-        params: activeOperation.commandReview.params,
-        onDirty: (dirty) => markFieldsDirty(activeOperation.operationId, dirty),
-        tx,
-        disabled: isChatProcessing,
-        styles: chatStyles,
-        onApply: (params) => handleSendUDLMessage({ action: "command-params", requestId: activeOperation.commandReview.requestId, params })
-      }
-    ),
-    activeOperation.workflowMode === "edit" && (activeOperation.workflowSteps || []).map((step, index, steps) => /* @__PURE__ */ React.createElement("div", { key: step.stepId, className: "border rounded-lg p-2 mt-2", "data-testid": "workflow-step-editor" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, index + 1, ". ", step.label), /* @__PURE__ */ React.createElement(
-      AlloCommandFields,
-      {
-        key: step.stepId + ":" + JSON.stringify(step.params),
-        fields: step.fields,
-        params: step.params,
-        onDirty: (dirty) => markFieldsDirty(step.stepId, dirty),
-        tx,
-        disabled: isChatProcessing,
-        styles: chatStyles,
-        onApply: (params) => handleSendUDLMessage({ action: "workflow-params", workflowId: activeOperation.workflowId, stepId: step.stepId, params })
-      }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        disabled: isChatProcessing || index === 0,
-        className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
-        "aria-label": tx("chat_guide.move_up", "Move up") + ": " + step.label,
-        onClick: () => handleSendUDLMessage({ action: "workflow-move", workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index - 1 })
-      },
-      tx("chat_guide.move_up", "Move up")
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        disabled: isChatProcessing || index === steps.length - 1,
-        className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
-        "aria-label": tx("chat_guide.move_down", "Move down") + ": " + step.label,
-        onClick: () => handleSendUDLMessage({ action: "workflow-move", workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index + 1 })
-      },
-      tx("chat_guide.move_down", "Move down")
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        disabled: isChatProcessing,
-        className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
-        "aria-label": tx("chat_guide.remove_step", "Remove step") + ": " + step.label,
-        onClick: () => handleSendUDLMessage({ action: "workflow-remove", workflowId: activeOperation.workflowId, stepId: step.stepId })
-      },
-      tx("chat_guide.remove_step", "Remove step")
-    )))),
-    hasUnappliedFields && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs" }, tx("chat_guide.apply_before_run", "Apply your edited details before running the plan.")),
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": tx("chat_guide.workflow_actions", "Workflow actions") }, (activeOperation.choices || []).map((choice, index) => /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        key: index,
-        type: "button",
-        disabled: choice.disabled || isChatProcessing && choice.value !== "__allo_plan_stop" || hasUnappliedFields && ["__allo_do", "__allo_plan_run"].includes(choice.value),
-        className: `px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 ${chatStyles.button}`,
-        onClick: () => handleSendUDLMessage(choice.value)
-      },
-      choice.label
-    )))
-  ), activeBlueprint && /* @__PURE__ */ React.createElement("details", { open: true, "data-testid": "active-lesson-blueprint" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold mb-2" }, tx("chat_guide.active_lesson", "Current lesson plan")), /* @__PURE__ */ React.createElement(
-    InteractiveBlueprintCard,
-    {
-      config: activeBlueprint,
-      run: blueprintExecutionResult,
-      isRunning: !!isExecutingBlueprint,
-      onStopRun: handleStopBlueprintRun,
-      onRebuildStep: handleRebuildBlueprintStep,
-      onOpenErrorLog: handleOpenGenerationErrorLog,
-      onCopyDiagnostics: handleCopyBlueprintDiagnostics,
-      onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
-      summarizeFailureReason: getSafeGenerationFailureReason,
-      onSaveTemplate: handleSaveLessonTemplate,
-      onPreviewStep: handlePreviewBlueprintStep,
-      onUpdate: handleBlueprintUIUpdate,
-      onConfirm: handleExecuteBlueprint,
-      onCancel: () => {
-        if (isExecutingBlueprint) {
-          addToast(t("blueprint.cancel_while_running") || "This plan is still generating. Wait for it to finish.", "info");
-          return;
-        }
-        if (typeof archiveLivePlan === "function") archiveLivePlan();
-        setUdlMessages((prev) => [...prev, { role: "model", text: t("blueprint.cancel_msg") }]);
-        setActiveBlueprint(null);
-        if (typeof setBlueprintExecutionResult === "function") setBlueprintExecutionResult(null);
-      }
-    }
-  ))), blueprintPreview && /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      className: `absolute inset-0 z-20 flex flex-col ${theme === "dark" ? "bg-slate-900" : "bg-white"}`,
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": t("blueprint.preview_step") || "Preview this resource",
-      "data-testid": "bp-preview-overlay"
-    },
-    /* @__PURE__ */ React.createElement("div", { className: `p-3 flex items-center justify-between shrink-0 border-b ${theme === "dark" ? "border-slate-700" : "border-slate-200"}` }, /* @__PURE__ */ React.createElement("span", { className: `text-sm font-bold ${chatStyles.text}` }, blueprintPreview.itemTitle || blueprintPreview.title), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "data-testid": "bp-preview-close",
-        onClick: closeBlueprintPreview,
-        "aria-label": t("common.close"),
-        className: "hover:bg-slate-500/20 p-1 rounded transition-colors"
-      },
-      /* @__PURE__ */ React.createElement(X, { size: 18 })
-    )),
-    /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto p-4 custom-scrollbar" }, blueprintPreview.missing ? /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-missing" }, t("blueprint.preview_missing") || "That resource is no longer in this workspace. Rebuild the step to make it again.") : blueprintPreview.unsupported ? (
-      // generateResourceHTML has no branch for some types and returns
-      // '' — say so rather than showing an empty white box.
-      /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-unsupported" }, t("blueprint.preview_unsupported") || "This resource type opens in its own view rather than a preview.")
-    ) : /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "allo-preview-body text-sm",
-        "data-testid": "bp-preview-body",
-        dangerouslySetInnerHTML: { __html: blueprintPreview.html }
+        ref: guideRef,
+        role: "dialog",
+        "aria-labelledby": "udl-guide-title-collapsed",
+        style: { zIndex: showStemLab ? 10490 : void 0 },
+        className: `allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`
+      },
+      /* @__PURE__ */ React.createElement("div", { className: `px-3 py-2 flex items-center gap-2 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { id: "udl-guide-title-collapsed", className: "font-bold text-sm" }, tx("chat_guide.header", "AI Guide & Assistant")), isChatProcessing && /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "motion-safe:animate-spin", "aria-hidden": "true" }), isChatProcessing && /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status" }, t("bot.mood_thinking")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setIsCollapsed(false),
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors ml-1",
+          title: t("chat_guide.restore") || "Restore chat",
+          "aria-label": t("chat_guide.restore") || "Restore chat"
+        },
+        /* @__PURE__ */ React.createElement(Maximize, { size: 16 })
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: closeGuide,
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
+          "aria-label": t("common.close")
+        },
+        /* @__PURE__ */ React.createElement(X, { size: 16 })
+      ))
+    );
+  }
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: guideRef,
+      role: "dialog",
+      "aria-labelledby": "udl-guide-title",
+      style: { zIndex: showStemLab ? 10490 : void 0, maxWidth: isUDLGuideExpanded ? void 0 : "calc(100vw - 2rem)" },
+      className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}`
+    },
+    /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("h2", { id: "udl-guide-title", className: "flex items-center gap-2 font-bold text-base" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18, "aria-hidden": "true" }), " ", tx("chat_guide.header", "AI Guide & Assistant")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "chat_talk",
+        "aria-pressed": alloVoiceActive ? "true" : "false",
+        onClick: (e) => {
+          if (isHelpMode) return;
+          e.preventDefault();
+          const next = !alloVoiceActive;
+          stopLegacyDictation();
+          if (typeof onToggleVoiceAgent === "function") onToggleVoiceAgent();
+          setVoicePaused(false);
+          setIsConversationMode(false);
+          if (next) setIsBotVisible(true);
+          let seenHint = false;
+          try {
+            seenHint = !!localStorage.getItem("allo_agent_voice_hint_v1");
+          } catch (_) {
+          }
+          if (next && !seenHint) {
+            try {
+              localStorage.setItem("allo_agent_voice_hint_v1", "1");
+            } catch (_) {
+            }
+            setUdlMessages((prev) => [...prev, { role: "model", text: t("chat_guide.talk_hint") || "Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try \u201Copen the learning hub\u201D, \u201Cread this page\u201D, or \u201Cwhere is the export button?\u201D Say \u201Cpause listening\u201D to pause or \u201Cstop listening\u201D to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it." }]);
+          }
+        },
+        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "bg-red-600 text-white border-red-400 motion-safe:animate-pulse" : "border-white/40"}`,
+        title: alloVoiceActive ? voicePaused ? t("chat_guide.talk_stop_paused_tooltip", "Stop the paused AlloBot voice session") : t("chat_guide.talk_stop_tooltip", "Stop AlloBot command listening") : t("chat_guide.talk_start_tooltip", "Start AlloBot command listening")
+      },
+      /* @__PURE__ */ React.createElement(Headphones, { size: 12 }),
+      " ",
+      alloVoiceActive ? voicePaused ? t("chat_guide.talk_paused", "Paused") : t("chat_guide.talk_on") || "Listening" : t("chat_guide.talk") || "Talk"
+    ), alloVoiceActive && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "chat_talk_pause",
+        "aria-pressed": voicePaused ? "true" : "false",
+        onClick: () => {
+          stopLegacyDictation();
+          const loop = window.__alloVoiceLoop;
+          if (!loop) return;
+          if (voicePaused) {
+            Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok));
+          } else {
+            loop.pause();
+            setVoicePaused(true);
+          }
+        },
+        className: `hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? "bg-amber-400 text-indigo-900 border-amber-500" : "border-white/40"}`,
+        title: voicePaused ? t("chat_guide.resume_tooltip", "Resume AlloBot command listening") : t("chat_guide.pause_tooltip", "Pause AlloBot command listening and release its microphone session")
+      },
+      voicePaused ? t("chat_guide.resume", "Resume") : t("chat_guide.pause", "Pause")
+    ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        ref: chatMenuTriggerRef,
+        "data-help-key": "chat_more",
+        "aria-haspopup": "true",
+        "aria-expanded": chatMenuOpen ? "true" : "false",
+        "aria-label": t("chat_guide.more_actions", "More chat options"),
+        onClick: () => setChatMenuOpen((v) => !v),
+        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors mr-1",
+        title: t("chat_guide.more_actions", "More chat options")
+      },
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
+    ), chatMenuOpen && /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        role: "menu",
+        ref: chatMenuRef,
+        onKeyDown: (ev) => {
+          if (ev.key !== "ArrowDown" && ev.key !== "ArrowUp" && ev.key !== "Home" && ev.key !== "End") return;
+          ev.preventDefault();
+          const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]'));
+          if (!items.length) return;
+          const at = items.indexOf(document.activeElement);
+          const next = ev.key === "Home" ? 0 : ev.key === "End" ? items.length - 1 : ev.key === "ArrowDown" ? (at + 1) % items.length : (at - 1 + items.length) % items.length;
+          items[next].focus();
+        },
+        className: "absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl"
+      },
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          role: "menuitemcheckbox",
+          "aria-checked": isShowMeMode ? "true" : "false",
+          type: "button",
+          onClick: () => {
+            handleToggleIsShowMeMode();
+            setChatMenuOpen(false);
+          },
+          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+        },
+        /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
+        /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-500" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
+      ),
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          role: "menuitem",
+          type: "button",
+          onClick: () => {
+            saveFullChat();
+            setChatMenuOpen(false);
+          },
+          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+        },
+        /* @__PURE__ */ React.createElement(Save, { size: 14, className: "mt-0.5 shrink-0" }),
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.save_chat", "Save this chat"))
+      )
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "aria-label": t("common.minimize"),
+        "data-help-key": "chat_expand",
+        onClick: handleToggleIsUDLGuideExpanded,
+        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
+        title: isUDLGuideExpanded ? t("common.minimize") : t("common.maximize")
+      },
+      isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "chat_collapse",
+        onClick: () => setIsCollapsed(true),
+        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
+        title: t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)",
+        "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
+      },
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
+    ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: closeGuide, className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))),
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        role: "log",
+        "aria-live": "polite",
+        "aria-relevant": "additions",
+        "aria-atomic": "false",
+        "aria-label": tx("chat_guide.transcript_aria", "Conversation transcript"),
+        className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`,
+        ref: udlScrollRef
+      },
+      udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, (!msg.type || msg.type === "choices" && msg.operationKind) && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`, "data-testid": "blueprint-history" }, renderFormattedText(msg.text || tx("chat_guide.lesson_shared", "A lesson plan was added to this conversation.")), msg.blueprintSummary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, Array.isArray(msg.blueprintSummary) ? msg.blueprintSummary.join(" \u2192 ") : msg.blueprintSummary)), msg.type === "chat-error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: `max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: isChatProcessing,
+          className: `block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`,
+          onClick: () => handleSendUDLMessage({ action: "retry-chat", text: msg.retryText })
+        },
+        tx("chat_guide.retry_reply", "Retry response")
+      )), msg.type === "choices" && !msg.operationKind && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": tx("chat_guide.choices_group", "Suggested replies") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: cIdx,
+          type: "button",
+          disabled: isChatProcessing || idx !== udlMessages.length - 1,
+          title: choice.hint || void 0,
+          "aria-label": choice.hint ? `${choice.label} \u2014 ${choice.hint}` : void 0,
+          onClick: () => {
+            if (choice.action === "focus-input") {
+              setUdlInput("");
+              if (udlInputRef && udlInputRef.current) udlInputRef.current.focus();
+              return;
+            }
+            handleSendUDLMessage(choice.value);
+          },
+          className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
+        },
+        choice.label
+      ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-[11px] italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-help-key": "chat_save_advice_btn",
+          onClick: () => saveUDLAdvice(msg.text, udlMessages[idx - 1]?.role === "user" ? udlMessages[idx - 1].text : "Teacher Inquiry"),
+          disabled: isSavingAdvice,
+          className: `mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`
+        },
+        isSavingAdvice ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "motion-safe:animate-spin", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
+        isSavingAdvice ? t("chat_guide.save_actionable_loading") : t("chat_guide.save_actionable_btn")
+      ))),
+      !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-testid": "bp-template-apply",
+          "data-help-key": "blueprint_template_apply_btn",
+          onClick: () => handleApplyLessonTemplate(tpl.id),
+          className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tpl.name),
+        /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, (() => {
+          const _n = Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0;
+          const _word = _n === 1 ? t("blueprint.template_step_count_one") || "step" : t("blueprint.template_step_count") || "steps";
+          return _n + " " + _word;
+        })())
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-testid": "bp-template-delete",
+          onClick: () => handleDeleteLessonTemplate(tpl.id),
+          "aria-label": `${t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
+          title: t("blueprint.template_delete") || "Delete template",
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+        },
+        "\xD7"
+      ))))),
+      !activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-archive-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.archive_title") || "Previous plans:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, archivedPlans.slice(0, 8).map((rec) => /* @__PURE__ */ React.createElement("li", { key: rec.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-testid": "bp-archive-restore",
+          "data-help-key": "blueprint_archive_restore_btn",
+          onClick: () => handleRestoreArchivedPlan(rec.id),
+          className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, rec.name),
+        /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, rec.stats ? `${rec.stats.landed}/${rec.stats.total} ${t("blueprint.archive_landed") || "landed"}` : "", rec.savedAt ? ` \xB7 ${String(rec.savedAt).slice(0, 10)}` : "")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-testid": "bp-archive-delete",
+          "data-help-key": "blueprint_archive_delete_btn",
+          onClick: () => handleDeleteArchivedPlan(rec.id),
+          "aria-label": `${t("blueprint.archive_delete") || "Delete archived plan"}: ${rec.name}`,
+          title: t("blueprint.archive_delete") || "Delete archived plan",
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+        },
+        "\xD7"
+      ))))),
+      isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { role: "status", className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "motion-safe:animate-spin", "aria-hidden": "true" }), " ", t("bot.mood_thinking")))
+    ),
+    (activeOperation || activeBlueprint) && /* @__PURE__ */ React.createElement("div", { style: { maxHeight: "45%" }, className: `shrink-0 border-t overflow-y-auto p-3 space-y-3 custom-scrollbar ${chatStyles.body}`, "data-testid": "allobot-active-work" }, activeOperation && /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "aria-label": tx("chat_guide.active_workflow", "Current command workflow"),
+        "data-testid": "active-command-workflow",
+        className: `p-3 rounded-xl text-sm ${chatStyles.modelBubble}`
+      },
+      /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, renderFormattedText(activeOperation.text)),
+      activeOperation.commandReview && /* @__PURE__ */ React.createElement(
+        AlloCommandFields,
+        {
+          key: activeOperation.operationId + ":" + JSON.stringify(activeOperation.commandReview.params),
+          fields: activeOperation.commandReview.fields,
+          params: activeOperation.commandReview.params,
+          onDirty: (dirty) => markFieldsDirty(activeOperation.operationId, dirty),
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onApply: (params) => handleSendUDLMessage({ action: "command-params", requestId: activeOperation.commandReview.requestId, params })
+        }
+      ),
+      activeOperation.workflowMode === "edit" && (activeOperation.workflowSteps || []).map((step, index, steps) => /* @__PURE__ */ React.createElement("div", { key: step.stepId, className: "border rounded-lg p-2 mt-2", "data-testid": "workflow-step-editor" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, index + 1, ". ", step.label), /* @__PURE__ */ React.createElement(
+        AlloCommandFields,
+        {
+          key: step.stepId + ":" + JSON.stringify(step.params),
+          fields: step.fields,
+          params: step.params,
+          onDirty: (dirty) => markFieldsDirty(step.stepId, dirty),
+          tx,
+          disabled: isChatProcessing,
+          styles: chatStyles,
+          onApply: (params) => handleSendUDLMessage({ action: "workflow-params", workflowId: activeOperation.workflowId, stepId: step.stepId, params })
+        }
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: isChatProcessing || index === 0,
+          className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
+          "aria-label": tx("chat_guide.move_up", "Move up") + ": " + step.label,
+          onClick: () => handleSendUDLMessage({ action: "workflow-move", workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index - 1 })
+        },
+        tx("chat_guide.move_up", "Move up")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: isChatProcessing || index === steps.length - 1,
+          className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
+          "aria-label": tx("chat_guide.move_down", "Move down") + ": " + step.label,
+          onClick: () => handleSendUDLMessage({ action: "workflow-move", workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index + 1 })
+        },
+        tx("chat_guide.move_down", "Move down")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: isChatProcessing,
+          className: `px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`,
+          "aria-label": tx("chat_guide.remove_step", "Remove step") + ": " + step.label,
+          onClick: () => handleSendUDLMessage({ action: "workflow-remove", workflowId: activeOperation.workflowId, stepId: step.stepId })
+        },
+        tx("chat_guide.remove_step", "Remove step")
+      )))),
+      hasUnappliedFields && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs" }, tx("chat_guide.apply_before_run", "Apply your edited details before running the plan.")),
+      /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": tx("chat_guide.workflow_actions", "Workflow actions") }, (activeOperation.choices || []).map((choice, index) => /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: index,
+          type: "button",
+          disabled: choice.disabled || isChatProcessing && choice.value !== "__allo_plan_stop" || hasUnappliedFields && ["__allo_do", "__allo_plan_run"].includes(choice.value),
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 ${chatStyles.button}`,
+          onClick: () => handleSendUDLMessage(choice.value)
+        },
+        choice.label
+      )))
+    ), activeBlueprint && /* @__PURE__ */ React.createElement("details", { open: true, "data-testid": "active-lesson-blueprint" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold mb-2" }, tx("chat_guide.active_lesson", "Current lesson plan")), /* @__PURE__ */ React.createElement(
+      InteractiveBlueprintCard,
+      {
+        config: activeBlueprint,
+        run: blueprintExecutionResult,
+        isRunning: !!isExecutingBlueprint,
+        onStopRun: handleStopBlueprintRun,
+        onRebuildStep: handleRebuildBlueprintStep,
+        onOpenErrorLog: handleOpenGenerationErrorLog,
+        onCopyDiagnostics: handleCopyBlueprintDiagnostics,
+        onDownloadDiagnostics: handleDownloadBlueprintDiagnostics,
+        summarizeFailureReason: getSafeGenerationFailureReason,
+        onSaveTemplate: handleSaveLessonTemplate,
+        onPreviewStep: handlePreviewBlueprintStep,
+        onUpdate: handleBlueprintUIUpdate,
+        onConfirm: handleExecuteBlueprint,
+        onCancel: () => {
+          if (isExecutingBlueprint) {
+            addToast(t("blueprint.cancel_while_running") || "This plan is still generating. Wait for it to finish.", "info");
+            return;
+          }
+          if (typeof archiveLivePlan === "function") archiveLivePlan();
+          setUdlMessages((prev) => [...prev, { role: "model", text: t("blueprint.cancel_msg") }]);
+          setActiveBlueprint(null);
+          if (typeof setBlueprintExecutionResult === "function") setBlueprintExecutionResult(null);
+        }
       }
-    ))
-  ), /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: toggleStandardTools,
-      "aria-expanded": standardToolsOpen,
-      "aria-controls": "udl-standard-tools",
-      "data-help-key": "chat_standard_tools_toggle",
-      className: `w-full mb-2 flex items-center gap-1.5 px-1 py-1 rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`
-    },
-    standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12 }),
-    /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11 }),
-    t("standards.tools_disclosure") || "Standards tools",
-    !standardToolsOpen && /* @__PURE__ */ React.createElement("span", { className: "font-normal normal-case ml-auto opacity-80" }, t("standards.tools_disclosure_hint") || "find / consult")
-  ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.standards_region_framework_placeholder"),
-      type: "text",
-      value: aiStandardRegion,
-      onChange: (e) => setAiStandardRegion(e.target.value),
-      "data-help-key": "standards_region_input",
-      placeholder: t("standards.region_framework_placeholder"),
-      className: `w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.text_field"),
-      type: "text",
-      value: aiStandardQuery,
-      onChange: (e) => setAiStandardQuery(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(),
-      placeholder: isIndependentMode ? t("wizard.independent_learning_goal") : t("wizard.skill_search_placeholder"),
-      className: `flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: handleFindStandards,
-      disabled: isFindingStandards || !aiStandardQuery.trim(),
-      className: `p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`,
-      title: t("standards.search_button_title"),
-      "aria-label": t("standards.search_button_title")
-    },
-    isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
-  )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: `max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === "dark" ? "bg-slate-900 border-slate-700 divide-slate-700" : theme === "contrast" ? "bg-black border-white divide-white" : "bg-white border-slate-200 divide-slate-100"}` }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      key: idx,
-      onClick: () => {
-        setStandardsInput(`${std.code}: ${std.description}`);
-        addToast(t("toasts.applied_standard", { code: std.code }), "success");
+    ))),
+    blueprintPreview && /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref: previewRef,
+        tabIndex: -1,
+        className: `absolute inset-0 z-20 flex flex-col outline-none ${theme === "dark" ? "bg-slate-900" : "bg-white"}`,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "bp-preview-title",
+        "data-testid": "bp-preview-overlay"
       },
-      className: `w-full text-left p-2 transition-colors group flex flex-col gap-1 ${theme === "dark" ? "hover:bg-indigo-900/50" : theme === "contrast" ? "hover:bg-yellow-900" : "hover:bg-green-50"}`
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold px-1 rounded border ${theme === "dark" ? "bg-indigo-900 text-indigo-200 border-indigo-700" : theme === "contrast" ? "bg-black text-yellow-400 border-yellow-400" : "bg-indigo-50 text-indigo-700 border-indigo-100"}` }, std.code), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] uppercase ml-auto ${chatStyles.subText}` }, std.framework)),
-    /* @__PURE__ */ React.createElement("p", { className: `text-[11px] leading-snug line-clamp-2 ${chatStyles.text}` }, std.description)
-  )))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10 }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "data-help-key": "chat_framework_select",
-      value: udlStandardFramework,
-      onChange: (e) => setUdlStandardFramework(e.target.value),
-      className: `flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`,
-      "aria-label": t("standards.consult_header")
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "Common Core ELA" }, t("standards.frameworks.ccss_ela")),
-    /* @__PURE__ */ React.createElement("option", { value: "Common Core Math" }, t("standards.frameworks.ccss_math")),
-    /* @__PURE__ */ React.createElement("option", { value: "Next Generation Science Standards (NGSS)" }, t("standards.frameworks.ngss")),
-    /* @__PURE__ */ React.createElement("option", { value: "C3 Framework (Social Studies)" }, t("standards.frameworks.c3")),
-    /* @__PURE__ */ React.createElement("option", { value: "ISTE Standards" }, t("standards.frameworks.iste")),
-    /* @__PURE__ */ React.createElement("option", { value: "CASEL Competencies" }, t("standards.frameworks.casel")),
-    /* @__PURE__ */ React.createElement("option", { value: "Texas Essential Knowledge and Skills (TEKS)" }, t("standards.frameworks.teks"))
-  ), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "chat_grade_select",
-      value: udlStandardGrade,
-      onChange: (e) => setUdlStandardGrade(e.target.value),
-      className: `w-28 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("standards.grades.k")),
-    /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("standards.grades.1")),
-    /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("standards.grades.2")),
-    /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t("standards.grades.3")),
-    /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("standards.grades.4")),
-    /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("standards.grades.5")),
-    /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("standards.grades.6")),
-    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("standards.grades.7")),
-    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("standards.grades.8")),
-    /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("standards.grades.9")),
-    /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("standards.grades.10")),
-    /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("standards.grades.11")),
-    /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("standards.grades.12"))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": t("common.continue"),
-      "data-help-key": "chat_consult_btn",
-      onClick: () => handleSendUDLMessage(t("standards.prompts.identify_key_standards", { framework: udlStandardFramework, grade: udlStandardGrade })),
-      className: `p-1.5 rounded transition-colors border ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
-      title: t("standards.consult_btn_title")
-    },
-    /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
-  )))), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${!isAutoFillMode && !hasUsedAutoFill ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse" : `border border-transparent px-1 ${chatStyles.subText}`}` }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_blueprint_mode") || "Toggle Blueprint Mode",
-      type: "checkbox",
-      checked: isAutoFillMode,
-      onChange: handleAutoFillToggle,
-      className: `rounded h-3.5 w-3.5 cursor-pointer ${theme === "contrast" ? "bg-black border-yellow-400 checked:bg-yellow-400" : "border-slate-300 text-indigo-600 focus:ring-indigo-500"}`,
-      id: "udl-autofill-check",
-      "data-help-key": "chat_autofill"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.blueprint_mode_label") || "Blueprint Mode", !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_udl_input"),
-      ref: udlInputRef,
-      type: "text",
-      value: udlInput,
-      onChange: (e) => setUdlInput(e.target.value),
-      onKeyDown: (e) => {
-        if (e.key !== "Enter") return;
-        e.preventDefault();
-        if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
+      /* @__PURE__ */ React.createElement("div", { className: `p-3 flex items-center justify-between shrink-0 border-b ${theme === "dark" ? "border-slate-700" : "border-slate-200"}` }, /* @__PURE__ */ React.createElement("h2", { id: "bp-preview-title", className: `text-sm font-bold ${chatStyles.text}` }, blueprintPreview.itemTitle || blueprintPreview.title || (t("blueprint.preview_step") || "Preview this resource")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-testid": "bp-preview-close",
+          onClick: closeBlueprintPreview,
+          "aria-label": t("common.close"),
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors"
+        },
+        /* @__PURE__ */ React.createElement(X, { size: 18 })
+      )),
+      /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto p-4 custom-scrollbar" }, blueprintPreview.missing ? /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-missing" }, t("blueprint.preview_missing") || "That resource is no longer in this workspace. Rebuild the step to make it again.") : blueprintPreview.unsupported ? (
+        // generateResourceHTML has no branch for some types and returns
+        // '' — say so rather than showing an empty white box.
+        /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-unsupported" }, t("blueprint.preview_unsupported") || "This resource type opens in its own view rather than a preview.")
+      ) : /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: "allo-preview-body text-sm",
+          "data-testid": "bp-preview-body",
+          dangerouslySetInnerHTML: { __html: blueprintPreview.html }
+        }
+      ))
+    ),
+    /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: toggleStandardTools,
+        "aria-expanded": standardToolsOpen,
+        "aria-controls": "udl-standard-tools",
+        "data-help-key": "chat_standard_tools_toggle",
+        className: `w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`
       },
-      placeholder: isShowMeMode ? t("chat_guide.input_placeholder_showme") : t("chat_guide.input_placeholder_default"),
-      className: `flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`,
-      "data-help-key": "chat_input"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "aria-label": t("common.show"),
-      onClick: () => handleSendUDLMessage(),
-      disabled: !udlInput.trim() || isChatProcessing,
-      className: `p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`,
-      "data-help-key": "chat_send"
-    },
-    isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18 }) : /* @__PURE__ */ React.createElement(Send, { size: 18 })
-  ))));
+      standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12 }),
+      /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11 }),
+      t("standards.tools_disclosure") || "Standards tools",
+      !standardToolsOpen && /* @__PURE__ */ React.createElement("span", { className: "font-normal normal-case ml-auto opacity-80" }, t("standards.tools_disclosure_hint") || "find / consult")
+    ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": t("standards.region_framework_placeholder"),
+        type: "text",
+        value: aiStandardRegion,
+        onChange: (e) => setAiStandardRegion(e.target.value),
+        "data-help-key": "standards_region_input",
+        placeholder: t("standards.region_framework_placeholder"),
+        className: `w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": isIndependentMode ? t("wizard.independent_learning_goal") : t("wizard.skill_search_placeholder"),
+        type: "text",
+        value: aiStandardQuery,
+        onChange: (e) => setAiStandardQuery(e.target.value),
+        onKeyDown: (e) => e.key === "Enter" && handleFindStandards(),
+        placeholder: isIndependentMode ? t("wizard.independent_learning_goal") : t("wizard.skill_search_placeholder"),
+        className: `flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: handleFindStandards,
+        disabled: isFindingStandards || !aiStandardQuery.trim(),
+        className: `p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`,
+        title: t("standards.search_button_title"),
+        "aria-label": t("standards.search_button_title")
+      },
+      isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "motion-safe:animate-spin", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true" })
+    )), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "sr-only" }, isFindingStandards ? tx("standards.searching", "Searching for standards\u2026") : suggestedStandards.length > 0 ? t("standards.results_count", { count: suggestedStandards.length }) || suggestedStandards.length + " standards found" : ""), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: `max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === "dark" ? "bg-slate-900 border-slate-700 divide-slate-700" : theme === "contrast" ? "bg-black border-white divide-white" : "bg-white border-slate-200 divide-slate-100"}` }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement("li", { key: idx }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-label": `${std.code}${std.framework ? " (" + std.framework + ")" : ""}: ${std.description}`,
+        onClick: () => {
+          setStandardsInput(`${std.code}: ${std.description}`);
+          addToast(t("toasts.applied_standard", { code: std.code }), "success");
+        },
+        className: `w-full text-left p-2 min-h-[24px] transition-colors group flex flex-col gap-1 ${theme === "dark" ? "hover:bg-indigo-900/50" : theme === "contrast" ? "hover:bg-yellow-900" : "hover:bg-green-50"}`
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-bold px-1 rounded border ${theme === "dark" ? "bg-indigo-900 text-indigo-200 border-indigo-700" : theme === "contrast" ? "bg-black text-yellow-400 border-yellow-400" : "bg-indigo-50 text-indigo-700 border-indigo-100"}` }, std.code), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] uppercase ml-auto ${chatStyles.subText}` }, std.framework)),
+      /* @__PURE__ */ React.createElement("span", { className: `block text-[11px] leading-snug line-clamp-2 ${chatStyles.text}` }, std.description)
+    ))))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10 }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "data-help-key": "chat_framework_select",
+        value: udlStandardFramework,
+        onChange: (e) => setUdlStandardFramework(e.target.value),
+        className: `flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`,
+        "aria-label": tx("standards.framework_aria", "Standards framework")
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "Common Core ELA" }, t("standards.frameworks.ccss_ela")),
+      /* @__PURE__ */ React.createElement("option", { value: "Common Core Math" }, t("standards.frameworks.ccss_math")),
+      /* @__PURE__ */ React.createElement("option", { value: "Next Generation Science Standards (NGSS)" }, t("standards.frameworks.ngss")),
+      /* @__PURE__ */ React.createElement("option", { value: "C3 Framework (Social Studies)" }, t("standards.frameworks.c3")),
+      /* @__PURE__ */ React.createElement("option", { value: "ISTE Standards" }, t("standards.frameworks.iste")),
+      /* @__PURE__ */ React.createElement("option", { value: "CASEL Competencies" }, t("standards.frameworks.casel")),
+      /* @__PURE__ */ React.createElement("option", { value: "Texas Essential Knowledge and Skills (TEKS)" }, t("standards.frameworks.teks"))
+    ), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": tx("standards.grade_aria", "Grade level"),
+        "data-help-key": "chat_grade_select",
+        value: udlStandardGrade,
+        onChange: (e) => setUdlStandardGrade(e.target.value),
+        className: `w-28 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("standards.grades.k")),
+      /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("standards.grades.1")),
+      /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("standards.grades.2")),
+      /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t("standards.grades.3")),
+      /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("standards.grades.4")),
+      /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("standards.grades.5")),
+      /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("standards.grades.6")),
+      /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("standards.grades.7")),
+      /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("standards.grades.8")),
+      /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("standards.grades.9")),
+      /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("standards.grades.10")),
+      /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("standards.grades.11")),
+      /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("standards.grades.12"))
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "aria-label": t("standards.consult_btn_title"),
+        "data-help-key": "chat_consult_btn",
+        onClick: () => handleSendUDLMessage(t("standards.prompts.identify_key_standards", { framework: udlStandardFramework, grade: udlStandardGrade })),
+        className: `p-1.5 rounded transition-colors border ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
+        title: t("standards.consult_btn_title")
+      },
+      /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
+    )))), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${!isAutoFillMode && !hasUsedAutoFill ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm motion-safe:animate-pulse" : `border border-transparent px-1 ${chatStyles.subText}`}` }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        checked: isAutoFillMode,
+        onChange: handleAutoFillToggle,
+        className: `rounded h-6 w-6 shrink-0 cursor-pointer ${theme === "contrast" ? "bg-black border-yellow-400 checked:bg-yellow-400" : "border-slate-300 text-indigo-600 focus:ring-indigo-500"}`,
+        id: "udl-autofill-check",
+        "data-help-key": "chat_autofill"
+      }
+    ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.blueprint_mode_label") || "Blueprint Mode", !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "aria-label": tx("chat_guide.input_aria", "Ask the UDL guide a question"),
+        ref: udlInputRef,
+        type: "text",
+        value: udlInput,
+        onChange: (e) => setUdlInput(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
+        },
+        placeholder: isShowMeMode ? t("chat_guide.input_placeholder_showme") : t("chat_guide.input_placeholder_default"),
+        className: `flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`,
+        "data-help-key": "chat_input"
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "aria-label": isShowMeMode ? tx("chat_guide.send_showme_aria", "Show me where this is on screen") : tx("chat_guide.send_aria", "Send message"),
+        onClick: () => handleSendUDLMessage(),
+        disabled: !udlInput.trim() || isChatProcessing,
+        className: `p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`,
+        "data-help-key": "chat_send"
+      },
+      isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18 }) : /* @__PURE__ */ React.createElement(Send, { size: 18 })
+    )))
+  );
 }
 function PlatformDiagnosticsSection(props) {
   const { t } = props;
@@ -1820,7 +1985,7 @@ function AIBackendModalBody(props) {
         },
         className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_free_note") || "Free: 2,000 queries/month \u2022 Adds exact math solving & step-by-step verification"))), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_free_note") || "Free: 2,000 queries/month \u2022 Adds exact math solving & step-by-step verification"))), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         "data-help-key": "ai_backend_test_connection_btn",

@@ -149,7 +149,9 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/code\.includes\('timeout'\)/);
         expect(anti).toMatch(/splashAutoRetried = true/);
         expect(anti).toMatch(/moduleAutoRetryRef\.current = true/);
-        // Hosted homework fetches ride the retry wrapper too.
-        expect(anti).toMatch(/_alloMailboxCallWithRetry\(entry\.u, \{ a: 'getpack'/);
+        // Hosted homework fetches ride the retry wrapper too: the retrying call is
+        // what the concurrent part-fetcher is handed as its transport.
+        expect(anti).toMatch(/params => _alloMailboxCallWithRetry\(entry\.u, params\)/);
+        expect(anti).toMatch(/_alloFetchMailboxPackParts\([\s\S]{0,200}?a: 'getpack'/);
     });
 });

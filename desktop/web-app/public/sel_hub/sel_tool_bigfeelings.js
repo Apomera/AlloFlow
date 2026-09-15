@@ -485,7 +485,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           var didDo = document.getElementById('bf-did').value;
           var betterDo = document.getElementById('bf-better').value;
           var intensity = parseInt(document.getElementById('bf-intensity').value, 10);
-          if (!trigger || !trigger.trim()) return;
+          if (!trigger || !trigger.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var entry = { date: todayISO(), trigger: trigger.trim(), body: body, didDo: didDo, wouldHaveBeen: betterDo, intensity: intensity };
           setBF({ hassleLog: (d.hassleLog || []).concat([entry]) });
           ['bf-trigger', 'bf-body', 'bf-did', 'bf-better'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
@@ -563,7 +563,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         function listEditor(key, title, color, starters, blurb) {
           var items = d[key] || [];
           function addItem(value) {
-            if (!value || !value.trim()) return;
+            if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
             var list = items.slice();
             if (list.indexOf(value.trim()) === -1) list.push(value.trim());
             var patch = {}; patch[key] = list;
@@ -578,7 +578,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
           var inputId = 'bf-trig-' + key;
           function submit() {
             var el = document.getElementById(inputId);
-            if (!el || !el.value.trim()) return;
+            if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
             addItem(el.value);
             el.value = '';
           }
@@ -640,7 +640,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
       function renderCooldown() {
         var items = d.myCoolDowns || [];
         function addItem(value) {
-          if (!value || !value.trim()) return;
+          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           var list = items.slice();
           if (list.indexOf(value.trim()) === -1) list.push(value.trim());
           setBF({ myCoolDowns: list });
@@ -652,7 +652,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bigFeelings'))) 
         }
         function submit() {
           var el = document.getElementById('bf-cd-input');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           addItem(el.value);
           el.value = '';
         }

@@ -715,7 +715,7 @@ function PdfDiffViewer(props) {
                         // (no-op state change retriggers the dep array).
                         setDiffGranularity(g => g);
                       }}
-                      className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[12px]"
+                      className="shrink-0 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-md font-bold text-[12px]"
                       title={t('diff_view.rebuild_tooltip') || 'Clear the diff cache and recompute chunks against the current source ↔ remediated pair.'}
                     >{t('diff_view.rebuild_button') || 'Rebuild diff'}</button>
                   </div>
@@ -873,7 +873,7 @@ function PdfDiffViewer(props) {
                   <p id="allo-diff-confirm-message" className="mt-2 text-sm leading-relaxed text-slate-700">{diffConfirmation.message}</p>
                   <div className="mt-5 flex flex-wrap justify-end gap-2">
                     <button ref={diffConfirmCancelRef} type="button" onClick={() => finishDiffConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{diffConfirmation.cancelLabel || 'Cancel'}</button>
-                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">{diffConfirmation.confirmLabel || 'Continue'}</button>
+                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800">{diffConfirmation.confirmLabel || 'Continue'}</button>
                   </div>
                 </div>
               </div>
@@ -1118,7 +1118,7 @@ function GroupSessionModal(props) {
                                                     </div>
                                                 </div>
                                                 {description && (
-                                                    <div className="text-[11px] text-purple-500 bg-purple-50 px-2 py-1 rounded-md mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                    <div className="text-[11px] text-purple-700 bg-purple-50 px-2 py-1 rounded-md mb-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                                         {description}
                                                     </div>
                                                 )}
@@ -1127,12 +1127,12 @@ function GroupSessionModal(props) {
                                                         {language && (
                                                             Array.isArray(language) ? (
                                                                 language.slice(0, 5).map((lang, li) => (
-                                                                    <span key={li} className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">
+                                                                    <span key={li} className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
                                                                         <Globe size={8} /> {lang}
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium">
+                                                                <span className="inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium">
                                                                     <Globe size={8} /> {language}
                                                                 </span>
                                                             )
@@ -1174,7 +1174,7 @@ function GroupSessionModal(props) {
                                     <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
-                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
+                                            <button onClick={() => handleDeleteGroup(gid)} className="text-red-800 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors" aria-label={t('common.delete')}><X size={16}/></button>
                                         </div>
                                         <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
                                             {t('groups.assign_resource_label')}
@@ -1384,7 +1384,7 @@ function FluencyModePanel(props) {
                             {(() => {
                                 const rrMetrics = calculateRunningRecordMetrics(fluencyResult.wordData, fluencyResult.insertions);
                                 const benchmarkResult = getBenchmarkComparison(fluencyResult.wcpm, fluencyBenchmarkGrade, fluencyBenchmarkSeason, fluencyCustomNorms);
-                                const levelColors = { above: 'text-green-600 bg-green-50 border-green-200', at: 'text-emerald-600 bg-emerald-50 border-emerald-200', approaching: 'text-yellow-600 bg-yellow-50 border-yellow-200', well_below: 'text-red-600 bg-red-50 border-red-200', unknown: 'text-slate-600 bg-slate-50 border-slate-200' };
+                                const levelColors = { above: 'text-green-800 bg-green-50 border-green-200', at: 'text-emerald-700 bg-emerald-50 border-emerald-200', approaching: 'text-yellow-800 bg-yellow-50 border-yellow-200', well_below: 'text-red-800 bg-red-50 border-red-200', unknown: 'text-slate-600 bg-slate-50 border-slate-200' };
                                 const levelLabels = { above: t('fluency.benchmark_above'), at: t('fluency.benchmark_at'), approaching: t('fluency.benchmark_approaching'), well_below: t('fluency.benchmark_below'), unknown: '—' };
                                 const readingLevelColors = { independent: 'bg-green-100 text-green-700 border-green-300', instructional: 'bg-yellow-100 text-yellow-700 border-yellow-300', frustrational: 'bg-red-100 text-red-700 border-red-300' };
                                 const readingLevelLabels = { independent: t('fluency.independent'), instructional: t('fluency.instructional'), frustrational: t('fluency.frustrational') };
@@ -1694,25 +1694,25 @@ function FluencyModePanel(props) {
                                 </p>
                                 <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs font-medium text-slate-300">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded text-green-600 font-medium bg-green-50/50">
+                                        <span className="px-2 py-0.5 rounded text-green-800 font-medium bg-green-50/50">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_correct')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-300">
+                                        <span className="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_hesitation')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-300 border-b-2 border-blue-400">
+                                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 border-b-2 border-blue-400">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_self_corrected')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-300 border-b-2 border-red-400">
+                                        <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 border-b-2 border-red-400">
                                             {t('fluency.legend_word')}
                                         </span>
                                         <span>{t('fluency.legend_mispronounced')}</span>
@@ -3049,7 +3049,7 @@ function VolumeBuilderView(props) {
                                                 aria-checked={sel}
                                                 onClick={() => { setCubeShape(s.id); setCubeChallenge(null); setCubeFeedback(null); }}
                                                 className={'px-3 py-1.5 rounded-full text-xs font-bold transition-all border-2 ' + (sel
-                                                    ? 'bg-emerald-600 text-white border-emerald-700 shadow'
+                                                    ? 'bg-emerald-700 text-white border-emerald-700 shadow'
                                                     : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50')}
                                             >{s.label}</button>
                                         );
@@ -3179,7 +3179,7 @@ function VolumeBuilderView(props) {
                                         setCubeAnswer('');
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
-                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
+                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
                                         🎲 {t('volume_builder.random_challenge') || 'Random Challenge'}
                                     </button>
                                     <button onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
@@ -3202,7 +3202,7 @@ function VolumeBuilderView(props) {
                                                 data-help-key="volume_builder_answer_field" />
                                             <button onClick={checkCubeAnswer}
                                                 disabled={!cubeAnswer}
-                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all"
+                                                className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all"
                                                 data-help-key="volume_builder_check_btn">
                                                 {t('volume_builder.check') || 'Check'}
                                             </button>

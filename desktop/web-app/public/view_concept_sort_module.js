@@ -201,7 +201,7 @@ function ConceptSortView(props) {
     }, "＋ Add")), /*#__PURE__*/React.createElement("div", {
       className: "p-2 space-y-1.5 bg-slate-50/50"
     }, catItems.length === 0 && !isAddingHere && /*#__PURE__*/React.createElement("div", {
-      className: "text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded p-2 text-center"
+      className: "text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded p-2 text-center"
     }, "⚠ No items in this category. Students will see an empty column."), catItems.map(item => {
       const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
       const isBusy = csBusyId === item.id;
@@ -334,7 +334,7 @@ function ConceptSortView(props) {
       }), /*#__PURE__*/React.createElement("button", {
         onClick: () => csRefineItemImage(item.id),
         disabled: isBusy || !refineInput.trim(),
-        className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30",
+        className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30",
         title: "Apply edit prompt to this image",
         "aria-label": t("a11y.apply_edit_prompt")
       }, "✏️ Send")));
@@ -360,7 +360,7 @@ function ConceptSortView(props) {
     }), /*#__PURE__*/React.createElement("button", {
       onClick: () => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []),
       disabled: !csAddingText.trim() || csBusyId === '__adding__',
-      className: "px-2 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-700"
+      className: "px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800"
     }, csBusyId === '__adding__' ? '⏳' : 'Add'), /*#__PURE__*/React.createElement("button", {
       onClick: () => {
         setCsAddingCatId(null);

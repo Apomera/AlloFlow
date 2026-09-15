@@ -1418,7 +1418,7 @@ Return ONLY valid JSON:
     );
   })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setDrawings({});
-  }, title: t("common.clear_drawings"), "aria-label": t("common.clear_all_drawings"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#ef4444", cursor: "pointer", fontSize: "12px", fontWeight: 600, marginLeft: "auto" } }, "\u{1F5D1}\uFE0F Clear"), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), !isStudentChallenge && /* @__PURE__ */ React.createElement(
+  }, title: t("common.clear_drawings"), "aria-label": t("common.clear_all_drawings"), style: { padding: "4px 8px", borderRadius: "6px", border: "1px solid #fecaca", background: "#fff1f2", color: "#b91c1c", cursor: "pointer", fontSize: "12px", fontWeight: 600, marginLeft: "auto" } }, "\u{1F5D1}\uFE0F Clear"), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", height: "20px", background: "#e2e8f0" } }), !isStudentChallenge && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1434,7 +1434,7 @@ Return ONLY valid JSON:
       type: "button",
       onClick: () => handleToggleChallenge(),
       title: t("common.deactivate_label_challenge"),
-      style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#16a34a", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }
+      style: { display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#15803d", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }
     },
     "\u{1F3C6} ",
     challengeType === "fill-blank" ? "Fill-in-Blank" : "From Scratch",
@@ -1858,7 +1858,7 @@ Return ONLY valid JSON:
       type: "button",
       "aria-label": t("common.cancel"),
       onClick: () => setRefiningPanelIdx(null),
-      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
+      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
   )), animatingPanelIdx === panelIdx && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6 } }, /* @__PURE__ */ React.createElement(
@@ -1891,7 +1891,7 @@ Return ONLY valid JSON:
         setAnimatingPanelIdx(null);
         setAnimateInput("");
       },
-      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
+      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
   )), /* @__PURE__ */ React.createElement("p", { style: { fontSize: 10, color: "#64748b", margin: "4px 2px 0", lineHeight: 1.4 } }, t("common.animate_hint") || "Best for processes \u2014 mitosis, water cycle, motion. Static images stay clearer for anatomy or vocabulary.")), panel.frames && panel.frames.length > 1 && (onRegenerateFrame || onDeleteFrame) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 6, padding: "6px 8px", background: "#fafafe", borderRadius: "8px", border: "1px solid #e0e7ff" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, fontWeight: 600, color: "#475569", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" } }, t("common.frames_label") || "Frames", " (", panel.frames.length, ")"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4 } }, panel.frames.map((frameUrl, fIdx) => {
@@ -1928,7 +1928,7 @@ Return ONLY valid JSON:
         onClick: () => onDeleteFrame(panelIdx, fIdx),
         "aria-label": t("common.frame_delete_aria") || `Delete frame ${fIdx + 1}`,
         title: t("common.frame_delete_title") || "Delete this frame",
-        style: { position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#ef4444", color: "white", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }
+        style: { position: "absolute", top: -8, right: -8, width: 24, height: 24, borderRadius: "50%", background: "#b91c1c", color: "white", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }
       },
       "\u2715"
     ), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 2, marginTop: 2, justifyContent: "center" } }, onReorderFrame && fIdx > 0 && /* @__PURE__ */ React.createElement(
@@ -2005,7 +2005,7 @@ Return ONLY valid JSON:
         setRegenInput("");
       },
       "aria-label": t("common.cancel"),
-      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#64748b", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
+      style: { padding: "6px 10px", borderRadius: 6, background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", cursor: "pointer", fontSize: 12 }
     },
     "\u2715"
   )))), visualPlan.layout === "sequence" && panelIdx < orderedPanels.length - 1 && /* @__PURE__ */ React.createElement("div", { className: "visual-sequence-arrow" }, "\u2022 \u2022 \u2022")))), showComparison && challengeResult && /* @__PURE__ */ React.createElement(

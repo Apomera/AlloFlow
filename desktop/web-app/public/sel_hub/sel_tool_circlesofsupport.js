@@ -99,7 +99,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       function goto(v) { setCOS({ view: v }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
-      function rings() { return d.rings || { intimate: [], friends: [], allies: [], paid: [] }; }
+      function rings() {
+        // A saved file can hold `{}` or a partial object, so normalise EVERY
+        // ring: consumers do `r.intimate.length` with no further guard.
+        var raw = (d.rings && typeof d.rings === 'object' && !Array.isArray(d.rings)) ? d.rings : {};
+        return {
+          intimate: Array.isArray(raw.intimate) ? raw.intimate : [],
+          friends:  Array.isArray(raw.friends)  ? raw.friends  : [],
+          allies:   Array.isArray(raw.allies)   ? raw.allies   : [],
+          paid:     Array.isArray(raw.paid)     ? raw.paid     : []
+        };
+      }
       function totalCount() { var r = rings(); return r.intimate.length + r.friends.length + r.allies.length + r.paid.length; }
 
       function header() {
@@ -282,7 +292,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       function renderEdit() {
         var r = rings();
         function addTo(ringId, name) {
-          if (!name || !name.trim()) return;
+          if (!name || !name.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
           var nx = Object.assign({}, r);
           nx[ringId] = nx[ringId].concat([name.trim()]);
           setCOS({ rings: nx });
@@ -310,7 +320,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             var inputId = 'cos-input-' + ring.id;
             function submit() {
               var el = document.getElementById(inputId);
-              if (!el || !el.value.trim()) return;
+              if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
               addTo(ring.id, el.value);
               el.value = '';
             }

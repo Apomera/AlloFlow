@@ -678,6 +678,48 @@
       };
     }
 
+    // Fullscreen button binder for tools that hold no React state.
+    // Roughly half the STEM tools keep their state in ctx.toolData and declare no
+    // hooks, so they cannot re-render a button label from a useState flag. Without
+    // this their fullscreen button would keep saying "Fullscreen" while the tool
+    // already filled the screen, and a screen-reader user would have no way to tell
+    // the state at all. __alloStemFsBind(btn, stage) toggles the stage, then keeps
+    // the button's accessible name, aria-pressed and glyph in step with the stage's
+    // marker attribute - including when Escape leaves fullscreen without passing
+    // through the click handler. Labels arrive already translated via data-fs-in /
+    // data-fs-out, so this helper never has to know about i18n.
+    if (typeof window !== 'undefined' && !window.__alloStemFsBind) {
+      window.__alloStemFsBind = function (btn, stage) {
+        if (!btn || !stage || btn.__alloFsBound === stage) return;
+        btn.__alloFsBound = stage;
+        var labelIn = btn.getAttribute('data-fs-in') || 'Exit fullscreen (Esc)';
+        var labelOut = btn.getAttribute('data-fs-out') || 'Fullscreen';
+        var sync = function () {
+          var on = stage.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === stage
+            || document.webkitFullscreenElement === stage;
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.setAttribute('aria-label', on ? labelIn : labelOut);
+          btn.setAttribute('title', on ? labelIn : labelOut);
+          var glyph = btn.firstElementChild;
+          if (glyph) glyph.textContent = on ? '✕' : '⛶';
+        };
+        try {
+          var mo = new MutationObserver(sync);
+          mo.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+          document.addEventListener('fullscreenchange', sync);
+          document.addEventListener('webkitfullscreenchange', sync);
+        } catch (e) {}
+        btn.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (typeof window.__alloStemFS === 'function') window.__alloStemFS(stage);
+          sync();
+        });
+        sync();
+      };
+    }
+
     // ── StemLab Plugin Registry (Phase 2) ──
     // Initialize before the hub component so plugins can register tools.
     // Plugins (stem_tool_*.js) call window.StemLab.registerTool(id, config)

@@ -946,6 +946,7 @@
           '.iss-interior-safety [data-iss-interior-transfer-status="contact"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-transfer-status="ready"],.iss-interior-safety [data-iss-interior-transfer-status="tethered"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-transfer-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
           '.iss-interior-safety button[aria-disabled="true"]{opacity:.72;border-style:dashed;cursor:help}.iss-interior-safety [data-iss-interior-cargo-status="held"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-cargo-status="secured"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-worksite-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-worksite-status="ready"],.iss-interior-safety [data-iss-interior-worksite-status="working"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-worksite-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-capillary-status="unstable"],.iss-interior-safety [data-iss-interior-capillary-status="overflow"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-capillary-status="ready"],.iss-interior-safety [data-iss-interior-capillary-status="priming"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-capillary-status="underfill"],.iss-interior-safety [data-iss-interior-capillary-status="interrupted"]{border-color:#fbbf24;color:#fde68a}.iss-interior-safety [data-iss-interior-capillary-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-observation-status="align"]{border-color:#a78bfa;color:#ddd6fe}.iss-interior-safety [data-iss-interior-observation-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-observation-status="ready"],.iss-interior-safety [data-iss-interior-observation-status="locking"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-observation-status="blurred"],.iss-interior-safety [data-iss-interior-observation-status="interrupted"]{border-color:#fbbf24;color:#fde68a}.iss-interior-safety [data-iss-interior-observation-status="captured"],.iss-interior-safety [data-iss-interior-observation-status="secured"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
           '.iss-interior-safety [data-iss-interior-stow-status="match-motion"],.iss-interior-safety [data-iss-interior-stow-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-stow-status="carry"]{border-color:#a78bfa;color:#ddd6fe}.iss-interior-safety [data-iss-interior-stow-status="ready-catch"],.iss-interior-safety [data-iss-interior-stow-status="ready-secure"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-stow-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
+          '.iss-interior-controls button,[data-iss-interior-worksite-action],[data-iss-interior-capillary-action],[data-iss-interior-observation-action]{touch-action:none}' +
           '.iss-interior-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}.iss-interior-thrusters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.iss-interior-thrusters button,.iss-interior-safety button{min-height:39px;padding:6px 7px;border:1px solid #475569;border-radius:9px;background:rgba(2,6,23,.44);color:#cbd5e1;font-size:9.5px;font-weight:850;cursor:pointer;touch-action:none}.iss-interior-thrusters button:active{border-color:#7dd3fc;background:rgba(14,165,233,.2)}.iss-interior-safety{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}.iss-interior-safety button:first-child{border-color:#fbbf24;color:#fde68a}.iss-interior-instructions{margin:7px 0 0;color:#94a3b8;font-size:10.5px;line-height:1.5}.iss-nav-challenges{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:6px;margin:9px 0 2px}.iss-nav-challenge{min-height:62px;padding:8px;border:1px solid #334155;border-radius:10px;background:rgba(2,6,23,.38);color:#94a3b8}.iss-nav-challenge.is-complete{border-color:rgba(74,222,128,.52);background:rgba(34,197,94,.09);color:#bbf7d0}.iss-nav-challenge strong{display:block;margin-bottom:2px;color:#e2e8f0;font-size:10px}.iss-nav-challenge span{display:block;font-size:9px;line-height:1.35}.iss-nav-challenge i{float:right;font-style:normal}.iss-discovery-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.iss-discovery-row button{padding:7px 8px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.52);color:#e2e8f0;font-size:10px;font-weight:800;cursor:pointer}' +
           '.iss-interior-3d:focus-within{border-color:#7dd3fc;box-shadow:0 20px 45px rgba(2,6,23,.42),inset 0 0 52px rgba(14,165,233,.13),0 0 0 2px rgba(125,211,252,.16)}.iss-interior-hud{grid-template-columns:minmax(0,1fr) repeat(3,auto)}.iss-interior-speed[data-rate="controlled"]{color:#bbf7d0;border-color:rgba(74,222,128,.42)}.iss-interior-speed[data-rate="fast"]{color:#fde68a;border-color:rgba(251,191,36,.52)}.iss-interior-reticle{position:absolute;left:50%;top:50%;z-index:2;width:72px;height:72px;transform:translate(-50%,-50%);pointer-events:none}.iss-interior-reticle:before,.iss-interior-reticle:after{content:"";position:absolute;left:50%;top:50%;background:rgba(224,242,254,.7);box-shadow:0 0 8px rgba(125,211,252,.5)}.iss-interior-reticle:before{width:24px;height:1px;transform:translate(-50%,-50%)}.iss-interior-reticle:after{width:1px;height:24px;transform:translate(-50%,-50%)}.iss-interior-horizon{position:absolute;left:12px;right:12px;top:35px;height:1px;background:linear-gradient(90deg,transparent,#7dd3fc 28%,#7dd3fc 72%,transparent);opacity:.5;transform-origin:50% 50%}.iss-interior-velocity-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border:1px solid #f8fafc;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8}.iss-interior-next-hatch{position:absolute;right:10px;top:54px;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:2px 7px;align-items:center;max-width:190px;padding:7px 9px;border:1px solid rgba(125,211,252,.32);border-radius:9px;background:rgba(2,6,23,.76);color:#e0f2fe;font:800 8.5px ui-monospace,monospace;pointer-events:none}.iss-interior-next-hatch-arrow{grid-row:1/3;display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(125,211,252,.46);border-radius:50%;color:#7dd3fc;font-size:17px}.iss-interior-next-hatch strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.6px}.iss-interior-next-hatch span:last-child{color:#94a3b8}.iss-interior-objective{position:absolute;left:10px;top:54px;z-index:2;max-width:210px;padding:7px 9px;border-left:3px solid #fbbf24;border-radius:7px;background:rgba(2,6,23,.76);color:#fef3c7;font:800 8px ui-monospace,monospace;letter-spacing:.45px;pointer-events:none}.iss-interior-event{position:absolute;left:50%;top:26%;z-index:3;max-width:75%;padding:7px 11px;border:1px solid rgba(125,211,252,.4);border-radius:8px;background:rgba(2,6,23,.86);color:#bae6fd;font:900 9px ui-monospace,monospace;letter-spacing:.7px;text-align:center;transform:translate(-50%,-8px);opacity:0;transition:opacity .16s ease,transform .16s ease;pointer-events:none}.iss-interior-event.is-visible{opacity:1;transform:translate(-50%,0)}.iss-interior-event[data-tone="safe"]{color:#bbf7d0;border-color:#4ade80}.iss-interior-event[data-tone="warn"],.iss-interior-event[data-tone="impact"]{color:#fde68a;border-color:#fbbf24}.iss-interior-mission-cue{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;margin:8px 0 0;padding:8px 10px;border:1px solid rgba(125,211,252,.25);border-radius:10px;background:linear-gradient(90deg,rgba(14,165,233,.12),rgba(2,6,23,.38))}.iss-interior-mission-cue>span{grid-row:1/3;color:#7dd3fc;font:900 8px ui-monospace,monospace;letter-spacing:1px}.iss-interior-mission-cue strong{color:#e0f2fe;font-size:10.5px}.iss-interior-mission-cue small{color:#94a3b8;font-size:9px}.iss-interior-thrusters button{display:flex;align-items:center;justify-content:space-between;gap:5px}.iss-interior-thrusters kbd{min-width:20px;padding:2px 4px;border:1px solid #64748b;border-bottom-width:2px;border-radius:4px;background:#101827;color:#e0f2fe;font:850 8px ui-monospace,monospace}.iss-interior-safety button:disabled{opacity:.48;cursor:not-allowed}.iss-location-strip.iss-interior-route-map{display:block;padding:8px 10px;overflow:hidden}.iss-route-map-heading{display:flex;justify-content:space-between;gap:10px;color:#94a3b8;font:850 8px ui-monospace,monospace;letter-spacing:.7px}.iss-route-map-heading strong{color:#7dd3fc}.iss-route-schematic{display:block;width:100%;height:auto;margin-top:2px}.iss-route-schematic .iss-route-line{fill:none;stroke:#334155;stroke-width:3}.iss-route-schematic .iss-route-progress-line{fill:none;stroke:#38bdf8;stroke-width:2;stroke-dasharray:5 5;opacity:.65}.iss-route-schematic .iss-route-node circle{fill:#07101d;stroke:#64748b;stroke-width:2}.iss-route-schematic .iss-route-node text{fill:#94a3b8;font:800 8px ui-monospace,monospace;text-anchor:middle}.iss-route-schematic .iss-route-node.is-visited circle{stroke:#38bdf8}.iss-route-schematic .iss-route-node.is-done circle{fill:#14532d;stroke:#4ade80}.iss-route-schematic .iss-route-node.is-current circle{fill:#0ea5e9;stroke:#e0f2fe;stroke-width:3;filter:drop-shadow(0 0 5px #38bdf8)}.iss-route-schematic .iss-route-node.is-current text{fill:#e0f2fe}.iss-route-schematic .iss-route-branch-label{fill:#fbbf24;font:850 7px ui-monospace,monospace;letter-spacing:.6px}' +
           '.iss-interior-braking{position:absolute;right:10px;bottom:45px;z-index:2;max-width:220px;padding:6px 8px;border:1px solid rgba(125,211,252,.3);border-radius:7px;background:rgba(2,6,23,.78);color:#bae6fd;font:850 8px ui-monospace,monospace;letter-spacing:.55px;pointer-events:none}.iss-interior-braking[data-state="controlled"]{border-color:rgba(74,222,128,.5);color:#bbf7d0}.iss-interior-braking[data-state="warn"]{border-color:rgba(251,191,36,.58);color:#fde68a}.iss-interior-impact-flash{position:absolute;inset:0;z-index:2;opacity:0;background:radial-gradient(circle at center,transparent 45%,rgba(248,113,113,.2));box-shadow:inset 0 0 58px rgba(248,113,113,.7);transition:opacity .14s ease;pointer-events:none}.iss-interior-impact-flash.is-visible{opacity:1}.iss-interior-reticle{--iss-motion-color:#94a3b8}.iss-interior-reticle[data-rate="controlled"]{--iss-motion-color:#4ade80}.iss-interior-reticle[data-rate="fast"]{--iss-motion-color:#fbbf24}.iss-interior-reticle[data-rate="impact"]{--iss-motion-color:#f87171}.iss-interior-reticle:before,.iss-interior-reticle:after{background:var(--iss-motion-color);box-shadow:0 0 9px var(--iss-motion-color)}.iss-interior-velocity-dot{background:var(--iss-motion-color);box-shadow:0 0 12px var(--iss-motion-color)}.iss-interior-hud [data-iss-interior-rail-distance][data-reachable="true"]{color:#bbf7d0;border-color:rgba(74,222,128,.46)}@media (max-width:620px){.iss-interior-braking{right:8px;bottom:44px;max-width:160px}}@media (prefers-reduced-motion:reduce){.iss-interior-impact-flash{transition:none}}' +
@@ -1434,7 +1435,7 @@
               for (var mi2 = 0; mi2 < MODULES.length; mi2++) { if (MODULES[mi2].id === id) { mm = MODULES[mi2]; break; } }
               upd({ selModule: id });
               markSeen('seenModules', id);
-              if (mm) announceToSR(mm.name + ' ' + 'selected. Details shown below the map.');
+              if (mm) announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: mm.name }));
               if (typeof awardXP === 'function') { try { awardXP(1); } catch (e) {} }
             }
           }
@@ -1545,7 +1546,7 @@
             } else {
               cameraTween = { progress: 0, fromCamera: camera.position.clone(), toCamera: new THREE.Vector3(view.camera[0], view.camera[1], view.camera[2]), fromRotation: [station.rotation.x, station.rotation.y, station.rotation.z], toRotation: view.rotation.slice(), target: new THREE.Vector3(view.target[0], view.target[1], view.target[2]) };
             }
-            if (!immediate) announceToSR(name + ' camera view selected.');
+            if (!immediate) announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_view_selected', '{value1} camera view selected.'), { value1: name }));
           };
           // ★★RESTORE THE SAVED CAMERA VIEW. `d.mapView` persists in the tool
           // bucket and the view buttons render `aria-pressed` from it, but the
@@ -4441,7 +4442,7 @@
             var distance = cargoDistance();
             if (state.room !== state.cargoRoom || distance > cargoCatchReach) {
               setFeedback('POUCH OUT OF REACH // ' + distance.toFixed(2) + ' M', 'warn', 1800);
-              announce(state.room !== state.cargoRoom ? 'The loose pouch is in ' + roomInfo(state.cargoRoom).name + '.' : 'The pouch is ' + distance.toFixed(2) + ' meters away. Move within 0.65 meters.');
+              announce(state.room !== state.cargoRoom ? __alloFill(__alloT('stem.spacestation.sr_pouch_in_room', 'The loose pouch is in {value1}.'), { value1: roomInfo(state.cargoRoom).name }) : __alloFill(__alloT('stem.spacestation.sr_pouch_distance', 'The pouch is {value1} meters away. Move within 0.65 meters.'), { value1: distance.toFixed(2) }));
               return false;
             }
             tempCargoRelativeVelocity.copy(state.velocity).sub(state.cargoVelocity);
@@ -4553,7 +4554,7 @@
               syncStowCanvasProps();
               emit('stow-airflow-warning', { room: 'harmony', item: blockedItem.id, distance: blockedItem.object.position.distanceTo(harmonyAirReturnPoint) });
               setFeedback('AIRFLOW BLOCKED // CATCH ' + blockedItem.label.toUpperCase(), 'impact', 2600);
-              announce(blockedItem.label + ' is blocking the Harmony air return. Match its motion, catch it with X, then secure it at the marked restraint.');
+              announce(__alloFill(__alloT('stem.spacestation.sr_item_blocking_air_return', '{value1} is blocking the Harmony air return. Match its motion, catch it with X, then secure it at the marked restraint.'), { value1: blockedItem.label }));
             }
             if (!_prefersReducedMotion && nextState !== 'blocked') {
               harmonyAirflowArrows.forEach(function (arrow, index) {
@@ -4613,7 +4614,7 @@
                 announce(__alloT('stem.spacestation.sr_all_three_cabin_items_are_restrained_harmony_airf', 'All three cabin items are restrained. Harmony airflow is clear and the canonical cabin stow job is complete.'));
               } else {
                 setFeedback(securedCount + ' OF 3 SECURED // FIND NEXT LOOSE ITEM', 'safe', 2200);
-                announce(heldItem.label + ' secured. ' + securedCount + ' of three items are now stowed.');
+                announce(__alloFill(__alloT('stem.spacestation.sr_item_secured_count', '{value1} secured. {value2} of three items are now stowed.'), { value1: heldItem.label, value2: securedCount }));
               }
               dirty = true;
               return true;
@@ -4649,7 +4650,7 @@
             emit('stow-caught', { room: 'harmony', item: nearest.id, distance: nearestDistance, relativeSpeed: relativeSpeed, attempt: state.stowAttempts });
             state.mode = state.velocity.length() > 0.006 ? 'COASTING + STOW ITEM' : 'HOLDING STOW ITEM';
             setFeedback(nearest.label.toUpperCase() + ' CAUGHT // FIND MATCHING RESTRAINT', 'safe', 2300);
-            announce(nearest.label + ' caught at low relative speed. Carry it to its matching restraint, brace on the nearby rail, then press X again.');
+            announce(__alloFill(__alloT('stem.spacestation.sr_item_caught', '{value1} caught at low relative speed. Carry it to its matching restraint, brace on the nearby rail, then press X again.'), { value1: nearest.label }));
             return true;
           }
           function updateHarmonyStow(dt, now) {
@@ -4750,7 +4751,7 @@
             var controlled = speed >= 0.12 && speed <= 0.35 && angularSpeed <= 0.2;
             setFeedback(controlled ? 'CONTROLLED RAIL CATCH' : speed > 0.35 || angularSpeed > 0.2 ? 'RAIL CAUGHT // ENTRY TOO FAST' : 'RAIL HOLD // STATIONARY', controlled ? 'safe' : speed > 0.35 || angularSpeed > 0.2 ? 'warn' : 'info');
             emit('rail-grab', { room: state.room, speed: speed, angularSpeed: angularSpeed, distance: distance, controlled: controlled });
-            announce(speed > 0.02 || angularSpeed > 0.02 ? 'Handrail caught. Linear and rotational momentum stopped.' : 'Handrail held. You are already stationary. Push once to launch from this anchor.');
+            announce(speed > 0.02 || angularSpeed > 0.02 ? __alloT('stem.spacestation.sr_handrail_caught', 'Handrail caught. Linear and rotational momentum stopped.') : __alloT('stem.spacestation.sr_handrail_held', 'Handrail held. You are already stationary. Push once to launch from this anchor.'));
             return true;
           }
           function centerAndStop() {
@@ -6365,7 +6366,7 @@
             h('text', { x: 610, y: y + 4, textAnchor: 'end', fill: color, fontSize: 10, fontWeight: 900 }, value.toFixed(decimals) + unit),
             targetMax == null ? null : h('text', { x: 178, y: y + 18, fill: '#86efac', fontSize: 7.5, fontWeight: 800 }, 'CAPTURE ENVELOPE ≤ ' + targetMax.toFixed(decimals) + unit));
         }
-        var aria = outcome + '. ' + (d.dockResult === 'drift' ? 'Final' : 'Contact') + ' rate ' + speed.toFixed(2) + ' meters per second. Port offset ' + offset.toFixed(2) + ' meters. Propellant ' + fuel.toFixed(0) + ' percent. Elapsed time ' + elapsed.toFixed(0) + ' seconds. ' + modeLabel + '.';
+        var aria = __alloFill(__alloT('stem.spacestation.a11y_dock_debrief', '{value1}. {value2} rate {value3} meters per second. Port offset {value4} meters. Propellant {value5} percent. Elapsed time {value6} seconds. {value7}.'), { value1: outcome, value2: d.dockResult === 'drift' ? __alloT('stem.spacestation.a11y_dock_rate_final', 'Final') : __alloT('stem.spacestation.a11y_dock_rate_contact', 'Contact'), value3: speed.toFixed(2), value4: offset.toFixed(2), value5: fuel.toFixed(0), value6: elapsed.toFixed(0), value7: modeLabel });
         return h('div', { className: 'iss-learning-visual iss-dock-debrief', 'data-iss-dock-debrief': d.dockResult || 'complete' },
           h('svg', { viewBox: '0 0 640 184', role: 'img', 'aria-label': aria },
             h('defs', null, h('linearGradient', { id: 'iss-dock-debrief-bg', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#03101f' }), h('stop', { offset: '100%', stopColor: '#0b2038' }))),
@@ -6694,7 +6695,7 @@
           else if (event.type === 'cargo-secured') announceToSR(__alloT('stem.spacestation.sr_cargo_pouch_secured_loose_object_management_chall', 'Cargo pouch secured. Loose-object management challenge complete.'));
           else if (event.type === 'cargo-clear') announceToSR(__alloT('stem.spacestation.sr_loose_cargo_avoided_navigation_challenge_complete', 'Loose cargo avoided. Navigation challenge complete.'));
           else if (event.type === 'transfer-attempt') announceToSR(__alloT('stem.spacestation.sr_transfer_tether_clipped_center_both_body_and_bag', 'Transfer tether clipped. Center both body and bag through the Harmony-Destiny hatch.'));
-          else if (event.type === 'transfer-contact') announceToSR(event.source === 'diagram' ? 'Diagram hatch contact. Only the still diagram scenario reset; the saved 3-D flight room is unchanged.' : 'Physical body or bag envelope clipped the hatch rim. Crew and bag reset to Harmony staging.');
+          else if (event.type === 'transfer-contact') announceToSR(event.source === 'diagram' ? __alloT('stem.spacestation.sr_diagram_hatch_contact', 'Diagram hatch contact. Only the still diagram scenario reset; the saved 3-D flight room is unchanged.') : __alloT('stem.spacestation.sr_physical_hatch_contact', 'Physical body or bag envelope clipped the hatch rim. Crew and bag reset to Harmony staging.'));
           else if (event.type === 'transfer-cancelled') announceToSR(__alloT('stem.spacestation.sr_bulky_transfer_cancelled_before_a_cross_room_trai', 'Bulky transfer cancelled before a cross-room training move. Bag returned to Harmony staging; contact and completion counts did not change.'));
           else if (event.type === 'transfer-complete') announceToSR(__alloT('stem.spacestation.sr_bulky_hatch_transfer_complete_transfer_bag_docked', 'Bulky hatch transfer complete. Transfer bag docked in Destiny.'));
           else if (event.type === 'worksite-reaction') announceToSR(__alloT('stem.spacestation.sr_reaction_torque_detected_recover_catch_the_nearby', 'Reaction torque detected. Recover, catch the nearby rail, then retry the filter service.'));
@@ -6789,7 +6790,7 @@
             }
             return h('button', {
               key: action, type: 'button', 'data-iss-interior-control': action,
-              'aria-label': label + '. Press and hold. Keyboard shortcut ' + shortcut + '.',
+              'aria-label': __alloFill(__alloT('stem.spacestation.a11y_press_and_hold_shortcut', '{value1}. Press and hold. Keyboard shortcut {value2}.'), { value1: label, value2: shortcut }),
               onPointerDown: setControl(true), onPointerUp: setControl(false),
               onPointerCancel: setControl(false), onPointerLeave: setControl(false),
               onKeyDown: keyControl(true), onKeyUp: keyControl(false), onBlur: setControl(false)
@@ -7014,7 +7015,7 @@
                   'Destiny water injector. Secure the sample, then hold V and release between 2.7 and 3.3 milliliters.'),
                 h('button', {
                   type: 'button', 'data-iss-interior-observation-action': 'true', 'data-iss-interior-observation-status': 'approach',
-                  'data-iss-interior-observation-progress': '0', 'data-iss-interior-observation-target': d.cupolaTarget || 'day',
+                  'data-iss-interior-observation-progress': '0', 'data-iss-interior-observation-target': ['day', 'aurora', 'night'].indexOf(d.cupolaTarget) >= 0 ? d.cupolaTarget : 'day',
                   'aria-disabled': 'false', 'aria-pressed': 'false', 'aria-describedby': 'iss-interior-observation-readout',
                   onPointerDown: observationHold(true), onPointerUp: observationHold(false), onPointerCancel: observationCancel,
                   onKeyDown: observationKey(true), onKeyUp: observationKey(false), onBlur: observationCancel, onClick: observationActivate
@@ -7059,7 +7060,7 @@
             }
             return Object.assign({}, prev, { spaceStation: station });
           });
-          announceToSR(next.name + '. ' + next.zone + (interiorView === '3d' ? '. Camera centered and incomplete route progress restarted.' : '. Diagram selection changed; physical free-flight position preserved.'));
+          announceToSR(next.name + '. ' + next.zone + '. ' + (interiorView === '3d' ? __alloT('stem.spacestation.sr_room_changed_3d', 'Camera centered and incomplete route progress restarted.') : __alloT('stem.spacestation.sr_room_changed_diagram', 'Diagram selection changed; physical free-flight position preserved.')));
         }
         function visitRoomById(id) {
           var index = INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === id; });
@@ -7085,7 +7086,7 @@
             if (addToast) addToast(room.icon + ' ' + room.task + ' — complete', 'success');
           }
           upd(patch);
-          announceToSR((choice.correct ? 'Task complete. ' : 'Try another approach. ') + choice.feedback);
+          announceToSR((choice.correct ? __alloT('stem.spacestation.sr_task_complete', 'Task complete.') : __alloT('stem.spacestation.sr_try_another_approach', 'Try another approach.')) + ' ' + choice.feedback);
         }
         function secureCupolaFrom3d() {
           if (d.cupolaShutters || roomDone) return;
@@ -7302,12 +7303,12 @@
               chooseInterior({ id: 'wick', correct: true, feedback: 'Experiment active. The camera can now reveal how capillary flow reaches roots without gravity-driven drainage.' }, { researchStep: 3, researchFeedback: 'Baseline logged — water front stable, chamber contained, camera recording.' });
             } else {
               upd({ researchStep: next, researchFeedback: procedure[index][1] + ' confirmed. Continue to step ' + (next + 1) + '.' });
-              announceToSR(procedure[index][1] + ' complete.');
+              announceToSR(__alloFill(__alloT('stem.spacestation.sr_procedure_step_complete', '{value1} complete.'), { value1: procedure[index][1] }));
             }
           }
           return h('div', { 'data-iss-research-procedure': 'true', style: { display: 'grid', gap: 6 } },
             h('div', { className: 'iss-learning-visual', 'data-iss-capillary-visual': visualStep, style: { marginBottom: 2 } },
-              h('svg', { viewBox: '0 0 640 158', role: 'img', 'aria-label': 'Plant chamber procedure visualization. ' + stageLabel.toLowerCase() + '. ' + (visualStep >= 2 ? 'Water has moved through the porous wick to the root pillow by capillary action.' : 'Water has not yet reached the root pillow.') },
+              h('svg', { viewBox: '0 0 640 158', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_plant_chamber_procedure', 'Plant chamber procedure visualization. {value1}.'), { value1: stageLabel.toLowerCase() }) + ' ' + (visualStep >= 2 ? __alloT('stem.spacestation.a11y_plant_water_reached', 'Water has moved through the porous wick to the root pillow by capillary action.') : __alloT('stem.spacestation.a11y_plant_water_not_reached', 'Water has not yet reached the root pillow.')) },
                 h('defs', null, h('linearGradient', { id: 'iss-glovebox-window', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#17304a' }), h('stop', { offset: '100%', stopColor: '#07101f' })), h('filter', { id: 'iss-water-front-glow', x: '-30%', y: '-100%', width: '160%', height: '300%' }, h('feGaussianBlur', { stdDeviation: 3, result: 'w' }), h('feMerge', null, h('feMergeNode', { in: 'w' }), h('feMergeNode', { in: 'SourceGraphic' })))),
                 h('rect', { width: 640, height: 158, fill: '#050b18' }),
                 h('text', { x: 18, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'DESTINY PLANT CHAMBER // CAPILLARY FLOW'),
@@ -7365,7 +7366,7 @@
           }
           return h('div', { 'data-iss-maintenance-console': 'true' },
             h('div', { className: 'iss-learning-visual', 'data-iss-maintenance-telemetry': telemetryState, style: { marginBottom: 8 } },
-              h('svg', { viewBox: '0 0 640 158', role: 'img', 'aria-label': 'Life-support telemetry trend display. Fan motor current is normal. Inlet pressure drop is ' + (roomDone ? 'recovering' : 'high') + '. Cabin carbon dioxide is ' + (roomDone ? 'stabilizing after airflow restoration' : 'rising') + '. ' + (reading >= 0 && sensors[reading] ? 'Focused channel: ' + sensors[reading][0] + '.' : 'No channel focused.') },
+              h('svg', { viewBox: '0 0 640 158', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_life_support_telemetry', 'Life-support telemetry trend display. Fan motor current is normal. Inlet pressure drop is {value1}. Cabin carbon dioxide is {value2}.'), { value1: roomDone ? __alloT('stem.spacestation.a11y_telemetry_recovering', 'recovering') : __alloT('stem.spacestation.a11y_telemetry_high', 'high'), value2: roomDone ? __alloT('stem.spacestation.a11y_telemetry_stabilizing', 'stabilizing after airflow restoration') : __alloT('stem.spacestation.a11y_telemetry_rising', 'rising') }) + ' ' + (reading >= 0 && sensors[reading] ? __alloFill(__alloT('stem.spacestation.a11y_telemetry_focused_channel', 'Focused channel: {value1}.'), { value1: sensors[reading][0] }) : __alloT('stem.spacestation.a11y_telemetry_no_channel', 'No channel focused.')) },
                 h('rect', { width: 640, height: 158, fill: '#050b18' }),
                 h('text', { x: 18, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'TRANQUILITY ECLSS // TELEMETRY CORRELATION'),
                 h('text', { x: 622, y: 18, textAnchor: 'end', fill: roomDone ? '#86efac' : checkedCount >= 2 ? '#fde68a' : '#94a3b8', fontSize: 8.5, fontWeight: 850 }, telemetryLabel),
@@ -7425,7 +7426,7 @@
               chooseInterior({ id: 'strap', correct: true, feedback: 'Cabin stow complete. Every loose item is restrained and the air return remains clear.' }, { cabinStow: next });
             } else {
               upd({ cabinStow: next });
-              announceToSR(item[2] + ' secured. ' + nextCount + ' of ' + items.length + ' items stowed.');
+              announceToSR(__alloFill(__alloT('stem.spacestation.sr_cabin_item_stowed', '{value1} secured. {value2} of {value3} items stowed.'), { value1: item[2], value2: nextCount, value3: items.length }));
             }
           }
           function objectMark(id, looseX, looseY, secureX, secureY, label, shape) {
@@ -7440,7 +7441,7 @@
           }
           return h('div', { 'data-iss-cabin-stow': 'true' },
             h('div', { className: 'iss-learning-visual', 'data-iss-cabin-safety': safetyState, style: { marginBottom: 8 } },
-              h('svg', { viewBox: '0 0 640 168', role: 'img', 'aria-label': 'Crew cabin loose-item safety scan. ' + stowedCount + ' of 3 items secured. ' + (airflowClear ? 'The cabin is clear and the air return is unobstructed.' : (items.length - stowedCount) + ' items remain floating and could obstruct airflow or equipment.') },
+              h('svg', { viewBox: '0 0 640 168', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_loose_item_scan', 'Crew cabin loose-item safety scan. {value1} of {value2} items secured.'), { value1: stowedCount, value2: items.length }) + ' ' + (airflowClear ? __alloT('stem.spacestation.a11y_loose_item_clear', 'The cabin is clear and the air return is unobstructed.') : __alloFill(__alloT('stem.spacestation.a11y_loose_item_floating', '{value1} items remain floating and could obstruct airflow or equipment.'), { value1: items.length - stowedCount })) },
                 h('defs', null, h('marker', { id: 'iss-cabin-air-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M0 0L10 5L0 10Z', fill: airflowClear ? '#4ade80' : '#38bdf8' })), h('linearGradient', { id: 'iss-cabin-scan-bg', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#111c2e' }), h('stop', { offset: '100%', stopColor: '#050b18' }))),
                 h('rect', { width: 640, height: 168, fill: 'url(#iss-cabin-scan-bg)' }),
                 h('text', { x: 18, y: 18, fill: '#7dd3fc', fontSize: 9.5, fontWeight: 850, letterSpacing: 1.2 }, 'HARMONY CABIN // LOOSE-ITEM SAFETY SCAN'),
@@ -7473,7 +7474,7 @@
           function selectTarget(id) {
             if (roomDone) return;
             upd({ cupolaTarget: id, cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '' });
-            announceToSR(targets[id].label + ' selected. Imaging mode: ' + targets[id].mode + '.');
+            announceToSR(__alloFill(__alloT('stem.spacestation.sr_cupola_target_selected', '{value1} selected. Imaging mode: {value2}.'), { value1: targets[id].label, value2: targets[id].mode }));
           }
           function captureTarget() {
             if (interiorView !== 'diagram' || roomDone || captured) return;
@@ -7487,7 +7488,7 @@
           }
           return h('div', { 'data-iss-cupola-observation': 'true' },
             h('div', { className: 'iss-learning-visual', 'data-iss-cupola-view': targetId, 'data-observation-state': observationState, style: { marginBottom: 8 } },
-              h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Cupola Earth observation view. Target ' + target.label + '. Camera plan ' + target.mode + '. ' + (shutters ? 'The pressure-window shutters are closed.' : captured ? 'The image is captured and ready for shutter closeout.' : 'The target is centered and ready to capture.') },
+              h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_cupola_observation', 'Cupola Earth observation view. Target {value1}. Camera plan {value2}.'), { value1: target.label, value2: target.mode }) + ' ' + (shutters ? __alloT('stem.spacestation.a11y_cupola_shutters_closed', 'The pressure-window shutters are closed.') : captured ? __alloT('stem.spacestation.a11y_cupola_captured', 'The image is captured and ready for shutter closeout.') : __alloT('stem.spacestation.a11y_cupola_ready', 'The target is centered and ready to capture.')) },
                 h('defs', null,
                   h('radialGradient', { id: 'iss-cupola-earth-view', cx: '42%', cy: '28%' }, h('stop', { offset: '0%', stopColor: targetId === 'night' ? '#24425f' : '#8ed2f7' }), h('stop', { offset: '58%', stopColor: targetId === 'night' ? '#0a1b31' : '#2470ad' }), h('stop', { offset: '100%', stopColor: '#061326' })),
                   h('radialGradient', { id: 'iss-cupola-frame-glow' }, h('stop', { offset: '0%', stopColor: target.color, stopOpacity: .18 }), h('stop', { offset: '100%', stopColor: target.color, stopOpacity: 0 })),
@@ -7575,7 +7576,7 @@
                 h('p', { style: { padding: '7px 8px', borderRadius: 8, background: room.color + '10', borderLeft: '3px solid ' + room.color, fontSize: 11.5, color: TEXT, lineHeight: 1.5, margin: '0 0 8px' } }, h('strong', { style: { color: room.color } }, 'Objective: '), room.objective),
                 h('p', { style: { fontSize: 12.5, color: TEXT, lineHeight: 1.6, margin: '0 0 8px' } }, room.prompt),
                 guided && !roomDone ? h('div', { style: { margin: '0 0 8px', padding: '7px 8px', borderRadius: 8, background: 'rgba(14,165,233,.08)', color: '#bae6fd', fontSize: 10.5, lineHeight: 1.5 } }, h('strong', null, '🧭 Flight hint: '), room.hint) : null,
-                room.id === 'harmony' ? renderCabinStow() : room.id === 'destiny' ? renderResearchProcedure() : room.id === 'tranquility' ? renderMaintenanceConsole() : room.id === 'unity' ? renderLowGSimulator() : room.id === 'cupola' ? renderCupolaObservation() : h('div', { role: 'group', 'aria-label': room.task + ' choices', style: { display: 'grid', gap: 6 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; var bg = roomDone && choice.correct ? 'rgba(34,197,94,0.16)' : picked ? room.color + '20' : 'rgba(2,6,23,0.35)'; var border = roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'; return h('button', { key: choice.id, type: 'button', disabled: roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '8px 9px', borderRadius: 8, background: bg, border: '1px solid ' + border, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomDone ? 'default' : 'pointer', opacity: roomDone && !choice.correct ? .55 : 1 } }, (roomDone && choice.correct ? '✅ ' : '') + choice.label); })),
+                room.id === 'harmony' ? renderCabinStow() : room.id === 'destiny' ? renderResearchProcedure() : room.id === 'tranquility' ? renderMaintenanceConsole() : room.id === 'unity' ? renderLowGSimulator() : room.id === 'cupola' ? renderCupolaObservation() : h('div', { role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_room_task_choices', '{value1} choices'), { value1: room.task }), style: { display: 'grid', gap: 6 } }, room.choices.map(function (choice) { var picked = choiceId === choice.id; var bg = roomDone && choice.correct ? 'rgba(34,197,94,0.16)' : picked ? room.color + '20' : 'rgba(2,6,23,0.35)'; var border = roomDone && choice.correct ? '#22c55e' : picked ? room.color : '#475569'; return h('button', { key: choice.id, type: 'button', disabled: roomDone, onClick: function () { chooseInterior(choice); }, style: { textAlign: 'left', padding: '8px 9px', borderRadius: 8, background: bg, border: '1px solid ' + border, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomDone ? 'default' : 'pointer', opacity: roomDone && !choice.correct ? .55 : 1 } }, (roomDone && choice.correct ? '✅ ' : '') + choice.label); })),
                 ['harmony', 'destiny', 'tranquility', 'unity', 'cupola'].indexOf(room.id) < 0 && pickedChoice ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, color: TEXT, fontSize: 11.5, lineHeight: 1.55, background: pickedChoice.correct ? 'rgba(34,197,94,0.1)' : 'rgba(251,191,36,0.1)', borderLeft: '3px solid ' + (pickedChoice.correct ? '#22c55e' : '#fbbf24') } }, h('strong', { style: { color: pickedChoice.correct ? '#4ade80' : '#fbbf24' } }, pickedChoice.correct ? 'Crew check: ' : 'What happened: '), pickedChoice.feedback) : null,
                 (d.interiorAttempts || {})[room.id] ? h('p', { style: { margin: '7px 0 0', color: SOFT, fontSize: 9.5 } }, 'Crew attempts: ' + (d.interiorAttempts || {})[room.id] + (roomDone && (d.interiorAttempts || {})[room.id] === 1 ? ' • first-try bonus earned' : '')) : null,
                 roomDone ? h('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px solid #334155', color: TEXT, fontSize: 11.5, lineHeight: 1.55 } }, h('strong', { style: { color: '#7dd3fc' } }, '🔬 Science you used: '), room.lesson) : null,
@@ -7615,7 +7616,7 @@
         var minSample = samples.reduce(function (m, sm) { return sm[field] < m[field] ? sm : m; }, first);
         var line = samples.map(function (sm, i) { return (i ? 'L' : 'M') + x(sm.minute).toFixed(1) + ' ' + y(sm[field]).toFixed(1); }).join(' ');
         var area = line + ' L' + x(last.minute).toFixed(1) + ' ' + bottom + ' L' + x(first.minute).toFixed(1) + ' ' + bottom + ' Z';
-        var summary = label + '. Starts at ' + first[field].toFixed(0) + unit + ', ends the orbit at ' + last[field].toFixed(0) + unit + ', lowest ' + minSample[field].toFixed(0) + unit + ' at ' + minSample.minute.toFixed(0) + ' minutes. Sunlight for the first ' + sunlightMinutes.toFixed(0) + ' minutes, then eclipse.';
+        var summary = __alloFill(__alloT('stem.spacestation.a11y_orbit_curve_summary', '{value1}. Starts at {value2}{value3}, ends the orbit at {value4}{value3}, lowest {value5}{value3} at {value6} minutes. Sunlight for the first {value7} minutes, then eclipse.'), { value1: label, value2: first[field].toFixed(0), value3: unit, value4: last[field].toFixed(0), value5: minSample[field].toFixed(0), value6: minSample.minute.toFixed(0), value7: sunlightMinutes.toFixed(0) });
         return h('div', { className: 'iss-spark iss-orbit-curve', 'data-iss-orbit-curve': field },
           h('svg', { viewBox: '0 0 640 120', role: 'img', 'aria-label': summary },
             h('rect', { x: left, y: top, width: x(sunlightMinutes) - left, height: bottom - top, fill: '#78350f', opacity: .22 }),
@@ -7642,7 +7643,7 @@
         var cursorX = x(cursorMinute);
         var phase = cursorMinute < eclipseStart ? 'SUNLIGHT' : 'ECLIPSE';
         var phaseColor = phase === 'SUNLIGHT' ? '#fbbf24' : '#818cf8';
-        var summary = 'Predicted orbit margins. At T plus ' + cursorMinute.toFixed(0) + ' minutes in ' + phase.toLowerCase() + ', battery is ' + cursorSample.battery.toFixed(0) + ' percent, thermal margin ' + cursorSample.thermal.toFixed(0) + ' percent, attitude margin ' + cursorSample.attitude.toFixed(0) + ' percent.';
+        var summary = __alloFill(__alloT('stem.spacestation.a11y_orbit_margins', 'Predicted orbit margins. At T plus {value1} minutes in {value2}, battery is {value3} percent, thermal margin {value4} percent, attitude margin {value5} percent.'), { value1: cursorMinute.toFixed(0), value2: phase.toLowerCase(), value3: cursorSample.battery.toFixed(0), value4: cursorSample.thermal.toFixed(0), value5: cursorSample.attitude.toFixed(0) });
         return h('div', { className: 'iss-learning-visual iss-orbit-forecast', 'data-iss-orbit-forecast': 'true' },
           h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': summary },
             h('defs', null,
@@ -7687,11 +7688,17 @@
           { id: 'thermal', x: 554, y: 154, label: 'THERMAL', value: metrics.temp.toFixed(1) + '°C', color: metrics.temp > 18 && metrics.temp < 27 ? '#fb923c' : '#f87171' },
           { id: 'attitude', x: 320, y: 180, label: 'ATTITUDE', value: metrics.cmg.toFixed(0) + '%', color: metrics.cmg < 80 ? '#a78bfa' : '#f87171' }
         ];
-        var selectedFocus = focus || 'all';
+        // The focus buttons are 'all' plus one per node, so that IS the
+        // allow-list. Unclamped, a persisted junk id reached
+        // data-iss-network-focus and the diagram's aria-label verbatim, and no
+        // focus button kept aria-pressed. (`details[selectedFocus] ||
+        // details.all` already protected the prose below.)
+        var focusIds = ['all'].concat(nodes.map(function (n0) { return n0.id; }));
+        var selectedFocus = focusIds.indexOf(focus) !== -1 ? focus : 'all';
         var details = { all: 'Crew safety is the combined result of power, air, water, heat rejection, and attitude control.', power: 'Power feeds every rack, pump, fan, heater, computer, and control actuator aboard.', air: 'Cabin airflow carries carbon dioxide and humidity to life-support equipment for removal.', water: 'Recovered humidity and wastewater reduce resupply mass while supporting oxygen generation.', thermal: 'Electrical work becomes heat, which coolant loops carry to radiators for rejection to space.', attitude: 'CMGs hold orientation without routine propellant, keeping arrays, radiators, and visiting vehicles aligned.' };
         function active(node) { return selectedFocus === 'all' || selectedFocus === node.id; }
         return h('div', { className: 'iss-learning-visual iss-ops-schematic', 'data-iss-network-focus': selectedFocus },
-          h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': 'Connected station systems overview focused on ' + selectedFocus + '. ' + nodes.map(function (n) { return n.label + ' ' + n.value; }).join(', ') },
+          h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_systems_overview', 'Connected station systems overview focused on {value1}.'), { value1: selectedFocus }) + ' ' + nodes.map(function (n) { return n.label + ' ' + n.value; }).join(', ') },
             h('defs', null, h('radialGradient', { id: 'iss-ops-earth', cx: '40%', cy: '30%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
             h('rect', { width: 640, height: 220, fill: '#040a16' }), h('circle', { cx: 320, cy: 310, r: 156, fill: 'url(#iss-ops-earth)', opacity: .72 }),
             nodes.map(function (n, i) { var on = active(n); return h('path', { key: 'p' + i, className: on ? 'iss-flow-path' : '', d: 'M320 111 Q' + ((320 + n.x) / 2) + ' ' + ((100 + n.y) / 2 - 13) + ' ' + n.x + ' ' + n.y, fill: 'none', stroke: on ? n.color : '#334155', strokeWidth: on ? 2.2 : 1, opacity: on ? .76 : .3 }); }),
@@ -7831,8 +7838,21 @@
           { id: 'crew', icon: '●●', label: 'Crew surge', note: 'Eleven people aboard', patch: { opsCrew: 11, opsResearch: 70, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 82, opsRecovery: 98.5, opsScrub: 98, opsRadiator: 94, opsCooling: 94, opsCmg: 35 } },
           { id: 'fault', icon: '!', label: 'Cascading fault', note: 'Recover the station', patch: { opsCrew: 7, opsResearch: 90, opsArrayAngle: 55, opsEclipse: 42, opsBattery: 38, opsRecovery: 84, opsScrub: 55, opsRadiator: 42, opsCooling: 48, opsCmg: 78 } }
         ];
-        var mode = d.opsMode || 'integrated';
-        var opsScenario = d.opsScenario || 'custom';
+        // Both are PERSISTED. `mode` drives the 8-way ternary below, whose
+        // terminator is renderIntegrated() -- so an unknown id rendered the
+        // Integrated panel correctly while no mode button kept aria-pressed.
+        // `focus` is echoed into data-iss-network-focus and the coupled-systems
+        // aria-label, so an unknown id was spoken to a screen reader verbatim.
+        var OPS_MODE_IDS = ['integrated', 'power', 'eclss', 'thermal', 'attitude', 'debris', 'human', 'emergency', 'rendezvous'];
+        var mode = OPS_MODE_IDS.indexOf(d.opsMode) !== -1 ? d.opsMode : 'integrated';
+        // PERSISTED. The valid set is the five presets PLUS 'custom', which is
+        // deliberately not a preset -- it is the "you hand-tuned the sliders"
+        // state and drives both the CUSTOM CONFIGURATION badge and the
+        // nominal-reference forecast. An unknown id left NO scenario button
+        // pressed and silently hid the badge, so the panel claimed neither a
+        // preset nor a custom configuration.
+        var scenarioIds = ['custom'].concat(scenarioPresets.map(function (s0) { return s0.id; }));
+        var opsScenario = scenarioIds.indexOf(d.opsScenario) !== -1 ? d.opsScenario : 'custom';
         var flightRules = [
           { mode: 'power', label: 'Battery reserve', value: projectedBattery.toFixed(0) + '%', rule: '≥ 25%', pass: projectedBattery >= 25, color: projectedBattery >= 25 ? '#4ade80' : '#f87171' },
           { mode: 'eclss', label: 'Cabin CO₂', value: co2.toFixed(0) + ' ppm', rule: '< ' + CO2_ACTION_PPM + ' ppm', pass: co2 < CO2_ACTION_PPM, color: co2 < CO2_ACTION_PPM ? '#34d399' : '#f87171' },
@@ -7857,7 +7877,7 @@
         }
         function applyScenario(scenario) {
           upd(Object.assign({ opsScenario: scenario.id, opsMode: 'integrated', opsOrbitMinute: 0, opsEmergencyResult: '' }, scenario.patch));
-          if (announceToSR) announceToSR(scenario.label + ' mission scenario loaded.');
+          if (announceToSR) announceToSR(__alloFill(__alloT('stem.spacestation.sr_scenario_loaded', '{value1} mission scenario loaded.'), { value1: scenario.label }));
         }
         function renderScenarioPresets() {
           return h('div', { className: 'iss-ops-presets', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_mission_scenario_presets', 'Mission scenario presets') },
@@ -7906,7 +7926,7 @@
         function renderDebris() {
           var survives = impactKj <= shieldCapacity;
           return h('div', null,
-            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': 'Debris impact test. Particle ' + debrisSize.toFixed(1) + ' millimeters at ' + debrisSpeed.toFixed(1) + ' kilometers per second. ' + (survives ? 'Shield disperses impact.' : 'Pressure wall at risk.') }, h('defs',null,h('filter',{id:'iss-debris-flash',x:'-140%',y:'-140%',width:'380%',height:'380%'},h('feGaussianBlur',{stdDeviation:7,result:'db'}),h('feMerge',null,h('feMergeNode',{in:'db'}),h('feMergeNode',{in:'SourceGraphic'}))),h('radialGradient',{id:'iss-debris-burst'},h('stop',{offset:'0%',stopColor:survives?'#fef3c7':'#fecaca',stopOpacity:.95}),h('stop',{offset:'100%',stopColor:survives?'#f59e0b':'#ef4444',stopOpacity:0}))),h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171',filter:'url(#iss-debris-flash)'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),
+            h('div', { className: 'iss-learning-visual' }, h('svg', { viewBox: '0 0 640 190', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_debris_impact', 'Debris impact test. Particle {value1} millimeters at {value2} kilometers per second.'), { value1: debrisSize.toFixed(1), value2: debrisSpeed.toFixed(1) }) + ' ' + (survives ? __alloT('stem.spacestation.a11y_debris_survives', 'Shield disperses impact.') : __alloT('stem.spacestation.a11y_debris_breach', 'Pressure wall at risk.')) }, h('defs',null,h('filter',{id:'iss-debris-flash',x:'-140%',y:'-140%',width:'380%',height:'380%'},h('feGaussianBlur',{stdDeviation:7,result:'db'}),h('feMerge',null,h('feMergeNode',{in:'db'}),h('feMergeNode',{in:'SourceGraphic'}))),h('radialGradient',{id:'iss-debris-burst'},h('stop',{offset:'0%',stopColor:survives?'#fef3c7':'#fecaca',stopOpacity:.95}),h('stop',{offset:'100%',stopColor:survives?'#f59e0b':'#ef4444',stopOpacity:0}))),h('rect',{width:640,height:190,fill:'#050b18'}),h('line',{x1:110,y1:95,x2:268,y2:95,stroke:'#f87171',strokeWidth:3,strokeDasharray:'8 6'}),h('circle',{cx:96,cy:95,r:Math.max(3,debrisSize),fill:'#f87171',filter:'url(#iss-debris-flash)'}),h('rect',{x:286,y:34,width:8,height:122,fill:'#cbd5e1'}),h('text',{x:290,y:172,textAnchor:'middle',fill:'#94a3b8',fontSize:8},'BUMPER'),
               // The bumper impact is where the whole Whipple idea happens: the
               // particle vaporizes into a spreading cloud instead of a slug.
               h('circle',{cx:294,cy:95,r:26,fill:'url(#iss-debris-burst)'}),
@@ -8003,7 +8023,7 @@
               h('text', { x: 594, y: 82, textAnchor: 'middle', fill: incidentState === 'contained' ? '#94a3b8' : '#fca5a5', fontSize: 7.5, fontWeight: 850 }, incidentState === 'contained' ? 'LEAK ISOLATED' : 'OUTFLOW'));
           }
           function renderIncidentVisual() {
-            var aria = scenario.name + '. ' + scenario.telemetry + '. Response state: ' + stateLabel + '.';
+            var aria = __alloFill(__alloT('stem.spacestation.a11y_incident_visual', '{value1}. {value2}. Response state: {value3}.'), { value1: scenario.name, value2: scenario.telemetry, value3: stateLabel });
             return h('div', { className: 'iss-learning-visual iss-emergency-visual', 'data-iss-emergency-visual': sid, 'data-iss-emergency-state': incidentState },
               h('svg', { viewBox: '0 0 640 220', role: 'img', 'aria-label': aria },
                 h('defs', null,
@@ -8041,7 +8061,7 @@
           var hold = holds[holdIndex], capsule = holdPositions[holdIndex];
           return h('div', null,
             h('div', { className: 'iss-learning-visual iss-rendezvous-planner', 'data-iss-rendezvous-planner': holdIndex },
-              h('svg', { viewBox: '0 0 640 236', role: 'img', 'aria-label': 'Rendezvous hold point ' + (holdIndex + 1) + ' of 4 at ' + hold.range + '. ' + hold.phase + '. Primary decision: ' + hold.cue + '. Checks: ' + hold.checks.join(', ') + '.' },
+              h('svg', { viewBox: '0 0 640 236', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_rendezvous_hold', 'Rendezvous hold point {value1} of {value2} at {value3}. {value4}. Primary decision: {value5}. Checks: {value6}.'), { value1: holdIndex + 1, value2: holds.length, value3: hold.range, value4: hold.phase, value5: hold.cue, value6: hold.checks.join(', ') }) },
                 h('defs', null,
                   h('linearGradient', { id: 'iss-rendezvous-bg', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#020611' }), h('stop', { offset: '100%', stopColor: '#0a2037' })),
                   h('radialGradient', { id: 'iss-rendezvous-earth', cx: '48%', cy: '4%', r: '76%' }, h('stop', { offset: '0%', stopColor: '#6cc5ee' }), h('stop', { offset: '42%', stopColor: '#256da7' }), h('stop', { offset: '100%', stopColor: '#092d59' })),
@@ -8103,7 +8123,14 @@
         { id: 'history', icon: '📜', label: __alloT('stem.spacestation.tab_history', 'History & Future') },
         { id: 'quiz', icon: '🧠', label: __alloT('stem.spacestation.tab_quiz', 'Quiz') }
       ];
-      var tab = d.tab || 'map';
+      // `tab` is PERSISTED state and the panel is a ternary chain ending in
+      // `renderQuiz()`, so an id this build does not know did NOT blank the page
+      // -- it silently showed the QUIZ. Worse, the panel's
+      // `aria-labelledby: 'iss-tab-' + tab` then pointed at an element that does
+      // not exist, and no tab reported aria-selected="true". Derive the allow
+      // list from TABS (declared just above) so a new tab is covered for free.
+      var TAB_IDS = TABS.map(function (t0) { return t0.id; });
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'map';
 
       function renderModuleBlueprint(module) {
         var moduleColor = '#' + Number(module.color || 0x38bdf8).toString(16).padStart(6, '0');
@@ -8122,7 +8149,7 @@
         var dimX1 = isTruss ? 105 : isCupola ? 252 : bodyX;
         var dimX2 = isTruss ? 535 : isCupola ? 388 : bodyX + bodyW;
         return h('div', { className: 'iss-learning-visual iss-blueprint' },
-          h('svg', { viewBox: '0 0 640 164', role: 'img', 'aria-label': 'Engineering silhouette of ' + module.name + '. Scene axis ' + module.axis + '. Relative envelope ' + module.size[1] + ' by ' + module.size[0] + ' scene units. ' + ((isTruss || isCupola) ? 'Not to scale.' : 'Pressurized modules are drawn to one shared scale, so their silhouettes can be compared.') },
+          h('svg', { viewBox: '0 0 640 164', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_module_blueprint', 'Engineering silhouette of {value1}. Scene axis {value2}. Relative envelope {value3} by {value4} scene units.'), { value1: module.name, value2: module.axis, value3: module.size[1], value4: module.size[0] }) + ' ' + ((isTruss || isCupola) ? __alloT('stem.spacestation.a11y_blueprint_not_to_scale', 'Not to scale.') : __alloT('stem.spacestation.a11y_blueprint_shared_scale', 'Pressurized modules are drawn to one shared scale, so their silhouettes can be compared.')) },
             h('defs', null, h('pattern', { id: 'iss-blueprint-grid', width: 20, height: 20, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M20 0H0V20', fill: 'none', stroke: '#38bdf8', strokeWidth: .5, opacity: .22 })), h('linearGradient', { id: 'iss-module-metal', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#f8fafc' }), h('stop', { offset: '52%', stopColor: moduleColor }), h('stop', { offset: '100%', stopColor: '#475569' }))),
             h('rect', { width: 640, height: 164, fill: '#06101e' }), h('rect', { width: 640, height: 164, fill: 'url(#iss-blueprint-grid)' }),
             h('text', { x: 20, y: 23, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.5 }, 'MODULE BLUEPRINT // ' + module.id.toUpperCase()),
@@ -8169,6 +8196,15 @@
           h('div', { className: 'iss-visual-caption' }, h('span', null, __alloT('stem.spacestation.blueprint_caption', 'Envelope taken from the 3-D model; hatches and ports are schematic.')), h('span', null, (isTruss || isCupola) ? 'SCHEMATIC · NOT TO SCALE' : 'SCHEMATIC · MODULES SHARE ONE SCALE')));
       }
       function renderMap() {
+        // Every camera id the view buttons below can produce. `mapView` is
+        // PERSISTED, so a saved project from another build -- or a renamed
+        // view -- can carry an id this build does not know, and `|| 'overview'`
+        // only catches null/''. Unclamped, the 3-D camera silently fell back to
+        // overview (views[name] || views.overview) while the live region
+        // announced "Camera view <junk>" and NO view button kept
+        // aria-pressed, so nothing read as current. Same shape as TAB_IDS.
+        var MAP_VIEW_IDS = ['overview', 'truss', 'labs', 'russian', 'nadir'];
+        var mapView = MAP_VIEW_IDS.indexOf(d.mapView) !== -1 ? d.mapView : 'overview';
         return h('div', null,
           // The station comes FIRST on this tab — before instructions, before
           // any button. It is the landing view of the whole tool, so the first
@@ -8193,11 +8229,11 @@
               h('circle', { cx: 42, cy: 42, r: 3, fill: '#e2e8f0' }),
               h('text', { x: 4, y: 80, fill: '#fca5a5', fontSize: 7, fontWeight: 850 }, 'X P/S'), h('text', { x: 35, y: 80, fill: '#86efac', fontSize: 7, fontWeight: 850 }, 'Y Z/N'), h('text', { x: 66, y: 80, fill: '#7dd3fc', fontSize: 7, fontWeight: 850 }, 'Z A/F')),
             h('div', { className: 'iss-stage-help', 'aria-hidden': 'true' }, 'Drag or arrow keys to orbit  /  + − to zoom'),
-            h('span', { id: 'iss-map-status', className: 'iss-sr-only', role: 'status', 'aria-live': 'polite' }, 'Selected module ' + selModule.name + '. Camera view ' + (d.mapView || 'overview') + '.'),
+            h('span', { id: 'iss-map-status', className: 'iss-sr-only', role: 'status', 'aria-live': 'polite' }, 'Selected module ' + selModule.name + '. Camera view ' + mapView + '.'),
             h('span', { id: 'iss-map-orientation', className: 'iss-sr-only' }, 'Orientation triad: X is port to starboard, Y is zenith to nadir, and Z is aft to forward.')
           ),
           h('div', { className: 'iss-map-controls', role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_3d_station_view_controls', '3D station view controls') },
-            [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = (d.mapView || 'overview') === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
+            [['overview','◉ Overview'],['truss','↔ Truss'],['labs','⚗ Labs'],['russian','★ Russian segment'],['nadir','🌍 Earth-facing']].map(function (view) { var on = mapView === view[0]; return h('button', { key: view[0], type: 'button', 'data-iss-camera-view': view[0], 'aria-pressed': on, onClick: function () { upd({ mapView: view[0] }); var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issSetView) cv._issSetView(view[0]); } }, view[1]); }),
             h('button', { type: 'button', 'data-iss-focus-module': d.selModule, onClick: function () { var cv = document.querySelector('.iss-station-stage canvas'); if (cv && cv._issFocusModule) cv._issFocusModule(d.selModule); announceToSR(__alloFill(__alloT('stem.spacestation.sr_camera_centered_on', 'Camera centered on {value1}.'), { value1: selModule.name })); } }, '◎ Center ' + selModule.name.split(' (')[0]),
             h('button', { type: 'button', 'data-iss-cutaway': 'true', 'aria-pressed': !!d.mapCutaway, onClick: function () { upd({ mapCutaway: !d.mapCutaway }); } }, d.mapCutaway ? '◫ Cutaway ON' : '▣ Isolate selected module')),
           h('p', { id: 'iss-map-instructions', style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '10px 0' } },
@@ -8210,7 +8246,7 @@
               var on = m.id === d.selModule;
               return h('button', {
                 key: m.id, type: 'button', 'aria-pressed': on,
-                onClick: function () { upd({ selModule: m.id }); markSeen('seenModules', m.id); announceToSR(m.name + ' selected. Details shown below the map.'); },
+                onClick: function () { upd({ selModule: m.id }); markSeen('seenModules', m.id); announceToSR(__alloFill(__alloT('stem.spacestation.sr_module_selected', '{value1} selected. Details shown below the map.'), { value1: m.name })); },
                 style: { padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: on ? 'rgba(56,189,248,0.2)' : PANEL, color: on ? '#7dd3fc' : TEXT, border: '1px solid ' + (on ? '#38bdf8' : '#334155') }
               }, m.name.split(' (')[0]);
             })),
@@ -8408,7 +8444,7 @@
           comms: { upstream: ['ELECTRIC POWER', 'ANTENNA POINTING'], downstream: ['GROUND CONTROL', 'SCIENCE DATA'], note: 'Pointing an antenna at a relay satellite depends on knowing the station’s orientation, so attitude control and talking to the ground are the same problem.' },
           body: { upstream: ['AIR + WATER', 'EXERCISE LOAD'], downstream: ['CREW HEALTH', 'MISSION DATA'], note: 'Life support sustains the crew; crew measurements refine future missions.' }
         }[sys.id];
-        var aria = sys.name + ' coupling map. Inputs: ' + coupling.upstream.join(' and ') + '. Outputs: ' + coupling.downstream.join(' and ') + '. ' + coupling.note;
+        var aria = __alloFill(__alloT('stem.spacestation.a11y_coupling_map', '{value1} coupling map. Inputs: {value2}. Outputs: {value3}. {value4}'), { value1: sys.name, value2: coupling.upstream.join(' and '), value3: coupling.downstream.join(' and '), value4: coupling.note });
         function endpoint(x, y, label, side, index) {
           return h('g', { key: side + index },
             h('rect', { x: x, y: y, width: 126, height: 30, rx: 8, fill: '#101c2e', stroke: side === 'in' ? '#64748b' : sys.color, strokeWidth: 1.1 }),
@@ -8472,7 +8508,7 @@
         var markerId = 'iss-flow-arrow-' + sys.id;
         var glowId = 'iss-flow-glow-' + sys.id;
         return h('div', { className: 'iss-learning-visual iss-system-visual' },
-          h('svg', { viewBox: '0 0 640 ' + (flow.loop ? 178 : 142), role: 'img', 'aria-label': sys.name + ' process diagram. ' + flow.nodes.map(function (node) { return node[0] + ': ' + node[1]; }).join('. ') + (selectedStep ? ' Focused stage ' + selectedStep + ': ' + flow.nodes[selectedStep - 1][0] + ', ' + flow.nodes[selectedStep - 1][1] + '.' : '') },
+          h('svg', { viewBox: '0 0 640 ' + (flow.loop ? 178 : 142), role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_process_diagram', '{value1} process diagram.'), { value1: sys.name }) + ' ' + flow.nodes.map(function (node) { return node[0] + ': ' + node[1]; }).join('. ') + (selectedStep ? ' ' + __alloFill(__alloT('stem.spacestation.a11y_process_focused_stage', 'Focused stage {value1}: {value2}, {value3}.'), { value1: selectedStep, value2: flow.nodes[selectedStep - 1][0], value3: flow.nodes[selectedStep - 1][1] }) : '') },
             h('defs', null,
               h('marker', { id: markerId, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: sys.color })),
               h('filter', { id: glowId, x: '-30%', y: '-30%', width: '160%', height: '160%' }, h('feGaussianBlur', { stdDeviation: 3, result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
@@ -8649,7 +8685,7 @@
         var plannedLabel = reboostDay > 0 ? 'DAY ' + reboostDay + ' // +' + reboostGain + ' KM' : 'NO REBOOST';
         var rateMeters = initialDrag * 1000;
         var rateLabel = rateMeters < 1 ? '<1' : rateMeters.toFixed(rateMeters < 10 ? 1 : 0);
-        var aria = 'Thirty day simplified altitude model. Start ' + orbitAlt + ' kilometers. ' + solar.label.toLowerCase() + '. ' + plannedLabel.toLowerCase() + '. End altitude ' + endAltitude.toFixed(1) + ' kilometers, net change ' + (netChange >= 0 ? 'plus ' : 'minus ') + Math.abs(netChange).toFixed(1) + ' kilometers. ' + trajectoryState.toLowerCase() + '.';
+        var aria = __alloFill(__alloT('stem.spacestation.a11y_drag_reboost', 'Thirty day simplified altitude model. Start {value1} kilometers. {value2}. {value3}. End altitude {value4} kilometers, net change {value5} {value6} kilometers. {value7}.'), { value1: orbitAlt, value2: solar.label.toLowerCase(), value3: plannedLabel.toLowerCase(), value4: endAltitude.toFixed(1), value5: netChange >= 0 ? __alloT('stem.spacestation.a11y_reboost_plus', 'plus') : __alloT('stem.spacestation.a11y_reboost_minus', 'minus'), value6: Math.abs(netChange).toFixed(1), value7: trajectoryState.toLowerCase() });
         return h('div', { className: 'iss-learning-visual iss-drag-reboost-visual', 'data-iss-drag-model': solarId, 'data-iss-reboost-day': reboostDay },
           h('svg', { viewBox: '0 0 640 218', role: 'img', 'aria-label': aria },
             h('defs', null,
@@ -8787,13 +8823,13 @@
         var westShift = 360 * (orbitT * 60) / SIDEREAL_DAY_S;
         var blockedPads = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
         return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1) },
-          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': 'World map with the station ground track at ' + inc.toFixed(1) + ' degrees inclination. The track reaches ' + inc.toFixed(1) + ' degrees north and south, crossing ' + Math.round(landShare * 100) + ' percent of Earth’s land area. Each orbit shifts ' + westShift.toFixed(1) + ' degrees west. ' + (blockedPads.length ? blockedPads.map(function (s) { return s.name; }).join(' and ') + ' cannot reach this orbit directly; the other launch sites can.' : // ★Derived, not "five". The readout below this map already computes
+          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_ground_track', 'World map with the station ground track at {value1} degrees inclination. The track reaches {value1} degrees north and south, crossing {value2} percent of Earth’s land area. Each orbit shifts {value3} degrees west.'), { value1: inc.toFixed(1), value2: Math.round(landShare * 100), value3: westShift.toFixed(1) }) + ' ' + (blockedPads.length ? __alloFill(__alloT('stem.spacestation.a11y_ground_track_blocked', '{value1} cannot reach this orbit directly; the other launch sites can.'), { value1: blockedPads.map(function (s) { return s.name; }).join(' and ') }) : // ★Derived, not "five". The readout below this map already computes
 // `(LAUNCH_SITES.length - blocked.length) + ' of ' + LAUNCH_SITES.length`,
 // so the count had two derivations and one of them was a literal. It happens
 // to be right today; adding a sixth pad would have made this line lie. Worst
 // of all it is aria-label text, so the lie would be invisible to anyone
 // reviewing by eye and audible only to a screen-reader user.
-'All ' + LAUNCH_SITES.length + ' marked launch sites can reach this orbit directly.') },
+__alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1} marked launch sites can reach this orbit directly.'), { value1: LAUNCH_SITES.length })) },
             h('text', { x: 20, y: 20, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, 'GROUND TRACK // 3 CONSECUTIVE ORBITS'),
             h('text', { x: 620, y: 20, textAnchor: 'end', fill: '#7dd3fc', fontSize: 8.5, fontWeight: 850, letterSpacing: 1 }, 'INCLINATION ' + inc.toFixed(1) + '°'),
             h('rect', { x: mapX, y: mapY, width: mapW, height: mapH, rx: 4, fill: '#071b33' }),

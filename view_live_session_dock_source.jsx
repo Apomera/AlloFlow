@@ -619,7 +619,7 @@ function LiveSessionDockView(props) {
                                 if (goal) saveGoals(goals.concat([goal]).slice(0, 20));
                                 setClassGoalDraft(null);
                               }}
-                              style={{border:'1px solid #0369a1',borderRadius:7,background:'#0284c7',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer',opacity:!draft.label.trim()?0.5:1}}
+                              style={{border:'1px solid #0369a1',borderRadius:7,background:'#0369a1',color:'white',padding:'0.26rem 0.5rem',fontSize:'0.66rem',fontWeight:800,cursor:'pointer',opacity:!draft.label.trim()?0.5:1}}
                             >Add goal</button>
                           </div>
                         </div>

@@ -241,7 +241,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       });
   };
   const sharedButtonClass = 'min-h-11 rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60';
-  const submitButtonClass = 'min-h-11 rounded-xl bg-indigo-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50';
+  const submitButtonClass = 'min-h-11 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50';
 
   if (questionType === 'fill-blank' || questionType === 'short-answer' || questionType === 'self-explanation') {
       const isFillBlank = questionType === 'fill-blank';
@@ -861,7 +861,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       switch(color) {
           case 'Red': return 'bg-red-600 text-white';
           case 'Blue': return 'bg-blue-600 text-white';
-          case 'Green': return 'bg-green-600 text-white';
+          case 'Green': return 'bg-green-700 text-white';
           case 'Yellow': return 'bg-yellow-400 text-black';
           default: return 'bg-slate-600 text-white';
       }
@@ -1043,7 +1043,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     const isSelected = selectedOptionIndex === idx;
                     const isDisabled = hasAnswered || phase !== 'answering';
                     let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
-                    if (isSelected) btnClass = 'bg-purple-500 text-white border-purple-700 scale-[1.05] ring-4 ring-purple-300/40 z-10';
+                    if (isSelected) btnClass = 'bg-purple-700 text-white border-purple-700 scale-[1.05] ring-4 ring-purple-300/40 z-10';
                     else if (isDisabled) btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60 cursor-not-allowed';
                     return (
                       <button
@@ -1076,7 +1076,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-300';
                     if (isRevealed && isUnscoredLiveQuestion) {
                         if (isSelected) {
-                            btnClass = 'bg-purple-500 text-white border-purple-700 scale-[1.02] ring-4 ring-purple-300/40 z-10';
+                            btnClass = 'bg-purple-700 text-white border-purple-700 scale-[1.02] ring-4 ring-purple-300/40 z-10';
                             letterClass = 'bg-white text-purple-700 border-white';
                         } else {
                             btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60';
@@ -1087,7 +1087,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             btnClass = 'bg-green-700 text-white border-green-800 ring-4 ring-green-700/30 z-10 scale-[1.02] shadow-xl';
                             letterClass = 'bg-white text-green-600 border-white';
                         } else if (isSelected && idx !== correctAnswerIndex) {
-                            btnClass = 'bg-red-500 text-white border-red-600 opacity-90';
+                            btnClass = 'bg-red-600 text-white border-red-600 opacity-90';
                             letterClass = 'bg-white text-red-600 border-white';
                         } else {
                             btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-50';
@@ -1252,7 +1252,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             w-full px-8 py-6 rounded-3xl font-black text-2xl shadow-2xl flex items-center justify-center gap-6 border-4 transform transition-transform hover:scale-105
                             ${isCorrect
                                 ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30'
-                                : 'bg-red-500 border-red-300 text-white ring-4 ring-red-500/30'}
+                                : 'bg-red-600 border-red-300 text-white ring-4 ring-red-500/30'}
                         `}>
                             {isCorrect ? <CheckCircle2 aria-hidden="true" size={40} className="fill-white text-green-500"/> : <XCircle aria-hidden="true" size={40} className="fill-white text-red-500"/>}
                             <div>
@@ -1565,7 +1565,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_student"
         >
-            <div className="bg-teal-100 text-teal-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
+            <div className="bg-teal-100 text-teal-700 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <GraduationCap size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-teal-700">{roleCopy('roles.student', 'Student')}</span>
@@ -1589,7 +1589,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_parent"
         >
-            <div className="bg-orange-100 text-orange-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
+            <div className="bg-orange-100 text-orange-800 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <Heart size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-orange-700">{roleCopy('roles.parent', 'Parent')}</span>
@@ -1601,7 +1601,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_independent"
         >
-            <div className="bg-cyan-100 text-cyan-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
+            <div className="bg-cyan-100 text-cyan-800 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <UserCircle2 size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-cyan-700">{roleCopy('roles.independent', 'Independent Learner')}</span>

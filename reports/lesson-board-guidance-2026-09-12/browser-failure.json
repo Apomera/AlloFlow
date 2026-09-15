@@ -1,0 +1,112 @@
+{
+  "message": "Error: expect(locator).toHaveAttribute(expected) failed\n\nLocator:  locator('[data-board-guide]')\nExpected: \"complete\"\nReceived: \"\"\n\nCall log:\n  - Expect \"to.have.attribute.value\" with timeout 5000ms\n  - waiting for locator('[data-board-guide]')\n\n    at captureRawStack (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright-core\\lib\\coreBundle.js:3130:17)\n    at callMatcherAsStep (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12873:57)\n    at Object.toHaveAttribute (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\playwright\\lib\\matchers\\expect.js:12863:23)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\check_lesson_board_guidance.cjs:10:2522",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    },
+    {
+      "width": 390,
+      "scans": [
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    }
+  ],
+  "errors": []
+}

@@ -2041,7 +2041,14 @@ window.StemLab = window.StemLab || {
         if (id === 'laundry') return openLifeSkillsLaundry3D();
         if (id === 'transit') return openLifeSkillsTransit3D();
       }
-      var tab = d.tab || 'overview';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'overview'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['appointments', 'battle', 'bodycare', 'budget', 'carcare', 'challenge', 'communication', 'contract', 'cooking', 'credit', 'data', 'decision', 'dental', 'digitalsafety', 'foodconfidence', 'homerepair', 'homesafety', 'homesys', 'insurance', 'interviewstudio', 'laundry', 'learn', 'meds', 'overview', 'paycheck', 'prooflocker', 'records', 'resumebuilder', 'science', 'sleep', 'timemanagement', 'transport', 'workreadiness'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'overview';
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
       var overviewFocus = d.overviewFocus || 'money';
       var overviewConfidence = d.overviewConfidence != null ? d.overviewConfidence : 3;

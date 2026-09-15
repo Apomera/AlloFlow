@@ -3880,7 +3880,7 @@
                     e('pre', { style: { whiteSpace: 'pre-wrap', fontFamily: 'Georgia, serif', fontSize: largeText ? '15px' : '13px', color: '#1e293b', margin: 0, lineHeight: 1.7 } }, extractedPoem),
                     e('button', { onClick: function () { setPoemText(extractedPoem); announcePT(tr('Erasure poem copied into editor.')); addToast && addToast(tr('Copied to editor!'), 'success'); },
                       'aria-label': tr('Copy this erasure into the main poem editor below'),
-                      style: { marginTop: '8px', padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#0d9488', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+                      style: { marginTop: '8px', padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#0f766e', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
                     }, '↓ Use as poem')
                   )
                 );
@@ -4670,7 +4670,7 @@
                       style: { padding: '10px 20px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: onCallTTS ? 'pointer' : 'not-allowed', opacity: onCallTTS ? 1 : 0.5 }
                     }, '▶ Play')
                   : e('button', { onClick: stopPoem, 'aria-label': tr('Stop playback'),
-                      style: { padding: '10px 20px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
+                      style: { padding: '10px 20px', background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
                     }, '⏹ Stop'),
                 form && form.id === 'image-poem' && onCallImagen && e('p', { role: 'note', style: { margin: 0, padding: '8px 10px', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '8px', color: '#5b21b6', fontSize: '10px', lineHeight: 1.45 } }, 'Privacy note: the poem text is sent to the configured image model as the image prompt.'),
                 // Image Poem: primary "Imagine It" button shown only when this form is active.
@@ -4746,7 +4746,7 @@
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
                   }, '◀ Back'),
                   e('button', { onClick: advanceReadAloud, autoFocus: true, 
-                    style: { padding: '12px 28px', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
+                    style: { padding: '12px 28px', background: '#0f766e', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }
                   }, 'Next ▶'),
                   e('button', { onClick: stopReadAloud, 'aria-label': tr('Exit read-aloud mode'),
                     style: { padding: '8px 14px', background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }

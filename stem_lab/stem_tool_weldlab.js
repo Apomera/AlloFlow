@@ -2050,7 +2050,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             ),
             // Canvas — existing top-down 2D view (default)
-            beadView === 'topdown' && h('div', { className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3' },
+            beadView === 'topdown' && h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              className: 'bg-slate-900 rounded-2xl shadow border-2 border-slate-700 p-3', style: { position: 'relative' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.weldlab.enter_fullscreen', 'View the weld bead fullscreen'),
+                'data-fs-out': __alloT('stem.weldlab.enter_fullscreen', 'View the weld bead fullscreen'),
+                'data-fs-in': __alloT('stem.weldlab.exit_fullscreen', 'Exit fullscreen weld bead (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 ref: canvasRef,
                 width: 900,

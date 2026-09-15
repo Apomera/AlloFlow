@@ -1731,7 +1731,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var xMax2 = Math.max(rawXMin, rawXMax);
         var mode = d.mode || 'left';
         var nRects = normalizeCalculusSubdivisions(finiteNum(d.n, 20), mode);
-        var tab = d.tab || 'integral';
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'integral'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['challenge', 'derivHunt', 'derivative', 'discover', 'integral', 'visualize'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'integral';
         var x0 = clampCalculusNumber(d.x0, xMin - 1, xMax2 + 1, Math.round((xMin + xMax2) / 2 * 10) / 10);
         var exact = evalAntiAt(fa, fb, fc, xMax2) - evalAntiAt(fa, fb, fc, xMin);
 

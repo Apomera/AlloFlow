@@ -69,7 +69,7 @@ function SocraticChat({
   // dark / contrast themes we hand off to chatStyles since the teal would
   // be illegible against those backgrounds.
   const _container = chatStyles.container || 'bg-white border-2 border-teal-500 shadow-2xl';
-  const _header = chatStyles.header || 'bg-teal-600 text-white';
+  const _header = chatStyles.header || 'bg-teal-700 text-white';
   const _body = chatStyles.body || 'bg-slate-50';
   const _modelBubble = chatStyles.modelBubble || 'bg-white text-slate-700 border border-slate-400';
   const _userBubble = chatStyles.userBubble || 'bg-teal-700 text-white';

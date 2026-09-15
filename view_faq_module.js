@@ -366,7 +366,7 @@ function FaqView(props) {
       setIsPlaying(false);
       setPlayingContentId(null);
     },
-    className: "p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors",
+    className: "p-1.5 hover:bg-rose-100 text-rose-800 rounded-md transition-colors",
     title: t('common.stop')
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-xs uppercase px-1"

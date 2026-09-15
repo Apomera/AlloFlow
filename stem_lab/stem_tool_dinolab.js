@@ -10803,6 +10803,17 @@ var evidenceRoute = [
           upd({ field3dFocusMode: nextFocus, field3dDrawerOpen: false });
           focusFieldControlSoon(nextFocus ? 'dinolab-3d-canvas-' + dn.id : 'dinolab-field-focus-toggle');
           announceToSR(focusMode ? 'Focus view closed.' : 'Focus view opened. The 3D model is enlarged and supporting panels are hidden.');
+          // Focus view grows the canvas to 76vh, which is right in the page but is
+          // not fullscreen - and inside the sandboxed embed it is barely a change.
+          // The shared helper takes the stage the rest of the way: real fullscreen
+          // where the host allows it, a CSS fill-frame where it refuses, Escape out
+          // of either. Announcement and focus handling above are untouched.
+          try {
+            if (typeof window.__alloStemFS === 'function') {
+              var stage = document.querySelector('[data-allo-fs-stage="dinolab-field"]');
+              if (stage) window.__alloStemFS(stage);
+            }
+          } catch (e) {}
         }
         function workflowStepAvailable(step) {
           if (step === 'explore' || step === 'scan') return true;
@@ -11344,7 +11355,7 @@ var evidenceRoute = [
         ], { marginBottom: 12, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.32)' });
         return el('div', null,
           focusMode ? null : sectionTitle('3D', 'Field Station', 'A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.'),
-          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative' } },
+          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative' } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
                 focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),

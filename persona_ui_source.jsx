@@ -1309,8 +1309,8 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                             aria-busy={character.isUpdating ? 'true' : 'false'}
                             className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${
                                 side === 'left'
-                                ? 'bg-indigo-500 hover:bg-indigo-600 text-white'
-                                : 'bg-rose-500 hover:bg-rose-600 text-white'
+                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                : 'bg-rose-600 hover:bg-rose-700 text-white'
                             }`}
                         >
                             <RefreshCw size={12} />

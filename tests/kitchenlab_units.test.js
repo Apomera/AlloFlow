@@ -282,6 +282,21 @@ describe('°C mode across the tool', () => {
     expect(picker).toContain('data-kl-portfolio-copy="idle"');
   });
 
+  it('puts a lesson link under each flagged note and a burner slider on the pot', () => {
+    const results = renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeActiveId: 'steak', recipePhase: 'done', recipeStartedAt: 0, recipeSimElapsedSec: 600,
+      recipeJudgement: { score: 49, grade: 'F', verdict: 'x', notes: [{ neg: true, label: '☣️ FOOD SAFETY: under 145°F', detail: 'Peak internal 137°F.' }, { neg: false, label: '✓ Deep crust', detail: 'Steakhouse crust.' }, { neg: true, label: '🌫️ Oil past its smoke point', detail: 'Bitter.' }] } } });
+    expect(results).toContain('data-kl-lesson="safety"');
+    expect(results).toContain('data-kl-lesson="resources"');
+    expect((results.match(/data-kl-lesson=/g) || []).length).toBe(2);           // positive notes carry no link
+    expect(strip(results)).toContain('Learn why: Safe temperatures and resting →');
+    const pot = renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeActiveId: 'pastaSauce', recipePhase: 'paused', recipePausedAt: 1000, recipeStartedAt: 0, recipeCurrentStep: 4,
+      recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeMoisture: 240, recipeSimElapsedSec: 700, potState: 'pasta-in', potTempF: 190, potBurnerLevel: 0, potPastaSec: 300, potPastaCook: 300, potPastaInSimSec: 400, potPastaInTempF: 206 } });
+    expect(pot).toContain('data-kl-pot-dial="0"');
+    expect(pot).toContain('data-kl-pot-off="1"');
+    expect(strip(pot)).toContain('off: the water is cooling; once it falls below the boil the pasta stops cooking');
+    expect(renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeActiveId: 'pastaSauce', recipePhase: 'paused', recipePausedAt: 1000, recipeStartedAt: 0, recipeCurrentStep: 0, recipeItemsInPan: [], potState: 'cold' } })).not.toContain('data-kl-pot-dial=');
+  });
+
   it('shows Celsius in judge notes on the results screen', () => {
     const rec = E.RECIPES.panSeared;
     const j = rec.judge({ maxPanTempF: 438, activeTimeSec: 600, foodInternalF: 158, itemAddTimes: { oil: 1, chicken: 2 }, itemAddPanF: { chicken: 413 }, heatRemovedAt: 5, lastTickAt: 6, doneness: { browning: 12, foodPeakF: 158, secAboveOverF: 0, set: false, stirCount: 0, unattendedSec: 0, smokeSec: 0, oil: null } });

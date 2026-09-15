@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render } from './helpers/arc_harness.js';
+import { indexOfOrThrow, sliceBetween } from './helpers/anchored_slice.js';
 
 // A non-finite value must never become a param.
 //
@@ -52,7 +53,7 @@ const PREFIXES = ['-', '.', '-.', 'e', '1e', '1e-', '+', ''];
 describe('Arc City - a half-typed number never becomes a param', () => {
   it('the source guards non-finite input before clamping', () => {
     const src = readFileSync(TOOL, 'utf8');
-    const fn = src.slice(src.indexOf('function snapToRange'), src.indexOf('function periodOf'));
+    const fn = sliceBetween(src, 'function snapToRange', 'function periodOf', { file: 'stem_tool_arccity.js', label: 'snapToRange' });
     expect(fn, 'snapToRange must reject non-finite input').toMatch(/isFinite\(val\)/);
     // The guard has to come BEFORE the snapValues branch, or the nearest-neighbour
     // walk measures Math.abs(NaN - x) and silently returns snapValues[0].
@@ -123,7 +124,7 @@ describe('Arc City - sine coaching names the on-screen control', () => {
   // Strip comments before asserting: the rule is about SHIPPED STRINGS, and the
   // explanation of why "frequency" is wrong necessarily contains the word.
   const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-  const hint = stripComments(src.slice(src.indexOf('function actionHint'), src.indexOf('function describeResult')));
+  const hint = stripComments(sliceBetween(src, 'function actionHint', 'function describeResult', { file: 'stem_tool_arccity.js', label: 'actionHint' }));
   const code = stripComments(src);
 
   it('never coaches a "frequency" control the UI does not have', () => {
@@ -137,7 +138,7 @@ describe('Arc City - sine coaching names the on-screen control', () => {
   });
 
   it('the sine gate hint offers the phase, which is the control that moves a crest', () => {
-    const sineGate = hint.slice(hint.indexOf("if (res.result === 'gate')"));
+    const sineGate = hint.slice(indexOfOrThrow(hint, "if (res.result === 'gate')", { label: 'the gate branch of actionHint' }));
     const line = sineGate.split('\n').find(l => l.includes("fam === 'sine'"));
     expect(line, 'the sine gate branch moved').toBeTruthy();
     expect(line).toMatch(/phase c/);

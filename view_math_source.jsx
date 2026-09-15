@@ -1174,7 +1174,7 @@ function MathView(props) {
                                             aria-label={isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Save edits" : "Edit problem"}
                                             onClick={() => toggleMathEdit(pIdx, problem.__viewKey, mathResourceId)}
                                             disabled={!canToggleMathEdit}
-                                            className={`min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`}
+                                            className={`min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`}
                                             title={isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Done editing" : "Edit this problem"}
                                         >
                                             {isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? <CheckCircle2 size={16} /> : <Pencil size={14} />}
@@ -1538,7 +1538,7 @@ function MathView(props) {
                                                             <div className="mt-2 space-y-2 pl-2 border-l-3 border-blue-200">
                                                                 {problem.steps.map((step, sIdx) => (
                                                                     <div key={sIdx} className="flex gap-3 items-start p-3 bg-white rounded-lg border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200" style={{ animationDelay: `${sIdx * 80}ms` }}>
-                                                                        <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-black shadow-sm">
+                                                                        <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-700 to-indigo-700 text-white rounded-full flex items-center justify-center text-xs font-black shadow-sm">
                                                                             {sIdx + 1}
                                                                         </div>
                                                                         <div className="flex-1 min-w-0">

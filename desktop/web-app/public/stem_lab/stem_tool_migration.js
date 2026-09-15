@@ -2001,7 +2001,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       // ── Tab state ──
-      var tab = d.tab || 'flight3d';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'flight3d'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['aero', 'flight3d', 'inquiry', 'navigate', 'routes', 'vformation', 'wind', 'world'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'flight3d';
       var TABS = [
         { id: 'flight3d', label: t('stem.migration.tab_3d_flight', '3D Flight'), icon: '\uD83C\uDF10' },
         { id: 'vformation', label: t('stem.migration.tab_v_formation', 'V-Formation'), icon: '\uD83E\uDEBF' },

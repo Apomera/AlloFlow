@@ -861,7 +861,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           aria-label={t('common.next')}
                                           data-help-key="wizard_content_next_btn"
                                           onClick={() => setStep(4)}
-                                          className="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
+                                          className="w-full bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                       >
                                           {t('common.next')} <ArrowRight size={18} />
                                       </button>
@@ -889,7 +889,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                       onClick={handleWizardWebFind}
                                       disabled={isFetching || !localData.searchQuery}
                                       aria-busy={isFetching}
-                                      className="bg-teal-600 text-white font-bold px-6 rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center gap-2 shadow-md"
+                                      className="bg-teal-700 text-white font-bold px-6 rounded-xl hover:bg-teal-800 disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center gap-2 shadow-md"
                                   >
                                       {isFetching ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Search size={20} aria-hidden="true"/>}
                                       {isFetching ? t('wizard.finding_button') : t('wizard.find_button')}
@@ -961,7 +961,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           <button type="button"
                                               aria-label={t('common.next')}
                                               onClick={() => setStep(4)}
-                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
+                                              className="flex-grow bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                           >
                                               {t('common.next')} <ArrowRight size={18} />
                                           </button>
@@ -1002,7 +1002,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           <button type="button"
                                               aria-label={t('common.next')}
                                               onClick={() => setStep(4)}
-                                              className="flex-grow bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
+                                              className="flex-grow bg-green-700 text-white font-bold py-3 rounded-xl hover:bg-green-800 transition-transform motion-reduce:transition-none hover:scale-[1.02] motion-reduce:hover:scale-100 active:scale-95 motion-reduce:active:scale-100 flex items-center justify-center gap-2 shadow-md"
                                           >
                                               {t('common.next')} <ArrowRight size={18} />
                                           </button>

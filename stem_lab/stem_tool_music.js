@@ -5364,7 +5364,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             // \u2550\u2550\u2550 HARMONIC SERIES \u2550\u2550\u2550
             React.createElement('div', { className: 'mt-5 rounded-2xl border border-indigo-300 bg-white p-3 shadow-sm' },
               React.createElement('h4', { className: 'text-sm font-bold text-indigo-700 mb-2' }, __alloT('stem.music.harmonic_series_why_instruments_sound_', '\uD83C\uDFB5 Harmonic Series \u2014 Why instruments sound different')),
-              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#1e1b4b', aspectRatio: '16/5' } },
+              React.createElement('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                className: 'rounded-xl overflow-hidden border border-indigo-200', style: { position: 'relative', background: '#1e1b4b', aspectRatio: '16/5' } },
+                React.createElement('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': __alloT('stem.music.enter_fullscreen', 'View the harmonic series waveform fullscreen'),
+                  'data-fs-out': __alloT('stem.music.enter_fullscreen', 'View the harmonic series waveform fullscreen'),
+                  'data-fs-in': __alloT('stem.music.exit_fullscreen', 'Exit fullscreen harmonic series waveform (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(165,180,252,0.6)', color: '#e0e7ff', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                 React.createElement('canvas', {
                   role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.music.harmonic_series_waveform_why_different', 'Harmonic series waveform — why different instruments sound different.'),
                   ref: function(cvEl) {

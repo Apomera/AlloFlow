@@ -2842,18 +2842,22 @@ function rebuildTrackMeshes(){
   const otherStretch = (j, sI) => { const d = Math.abs(t.s[j] - sI); return d > 8 && d < t.L - 8; };
   const columnClears = (x, z, top, sI) => {
     for(let j = 0; j < M; j += sampleStride){
-      if(!otherStretch(j, sI)) continue;
       const p = t.pos[j];
+      if(Math.abs(p.x - x) > ENVELOPE || Math.abs(p.z - z) > ENVELOPE) continue;   // cheap box first
       if(p.y > top + 0.5) continue;       // that track is above the column's top
+      if(!otherStretch(j, sI)) continue;
       if(Math.hypot(p.x - x, p.z - z) < ENVELOPE) return false;
     }
     return true;
   };
   const memberClears = (a, b, sI) => {  // a slanted or horizontal member vs. a 2.2 m rider envelope
     const abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z, ab2 = abx * abx + aby * aby + abz * abz || 1;
+    const midX = (a.x + b.x) / 2, midZ = (a.z + b.z) / 2, half = Math.hypot(abx, abz) / 2 + 1.6;
+    const low = Math.min(a.y, b.y) - 1.6, high = Math.max(a.y, b.y) + 1.6;
     for(let j = 0; j < M; j += sampleStride){
-      if(!otherStretch(j, sI)) continue;
       const p = t.pos[j];
+      if(Math.abs(p.x - midX) > half || Math.abs(p.z - midZ) > half || p.y > high || p.y + 2.2 < low) continue;
+      if(!otherStretch(j, sI)) continue;
       for(const lift of [0, 1.1, 2.2]){
         const py = p.y + lift;
         const u = Math.max(0, Math.min(1, ((p.x - a.x) * abx + (py - a.y) * aby + (p.z - a.z) * abz) / ab2));
@@ -3091,6 +3095,21 @@ function colorizeSpine(){
   spine.material = MAT.xray;
 }
 
+/* The Ferris wheel is park dressing at a fixed spot inside the design bounds,
+   so a big or far-flung layout could run straight through its ring. If any
+   sample comes within its footprint it moves out past the layout, along the
+   line from the layout's centre, and comes home once the track leaves. */
+const FERRIS_HOME = new THREE.Vector3(110, 0, -94), FERRIS_KEEPOUT = 26;
+function placeFerrisWheel(ctr, rad){
+  const clearAt = (x, z) => { for(let i = 0; i < M; i += 6) if(Math.hypot(track.pos[i].x - x, track.pos[i].z - z) < FERRIS_KEEPOUT) return false; return true; };
+  if(clearAt(FERRIS_HOME.x, FERRIS_HOME.z)){ ferrisWheel.position.copy(FERRIS_HOME); return; }
+  const dx = FERRIS_HOME.x - ctr.x, dz = FERRIS_HOME.z - ctr.z, len = Math.hypot(dx, dz) || 1;
+  for(let reach = rad + 40; reach < rad + 200; reach += 20){
+    const x = ctr.x + dx / len * reach, z = ctr.z + dz / len * reach;
+    if(clearAt(x, z)){ ferrisWheel.position.set(x, 0, z); return; }
+  }
+  ferrisWheel.position.set(ctr.x + dx / len * (rad + 200), 0, ctr.z + dz / len * (rad + 200));
+}
 /* ---------------- trees (deterministic scatter, avoids the track) ------- */
 const treeGroup = new THREE.Group();
 scene.add(treeGroup);
@@ -3103,6 +3122,7 @@ function rebuildTrees(){
   for(let i = 0; i < M; i += 20) box.expandByPoint(track.pos[i]);
   const ctr = box.getCenter(new THREE.Vector3());
   const rad = Math.max(box.max.x - box.min.x, box.max.z - box.min.z) * 0.5;
+  placeFerrisWheel(ctr, rad);
   const spots = [];
   for(let tries = 0; tries < 170 && spots.length < 46; tries++){
     const ang = rnd() * Math.PI * 2;
@@ -10840,6 +10860,8 @@ rootEl._lab = {
     sim.S = prev.S; camMode = prev.cam; placeTrain(); placeCamera();
     return out;
   },
+  rebuildTiming: (n = 8) => { const t0 = performance.now(); for(let i = 0; i < n; i++) fullRebuild(); return +((performance.now() - t0) / n).toFixed(1); },
+  ferrisPosition: () => ferrisWheel.position.toArray().map(v => +v.toFixed(1)),
   riderVisibility: (everyone = false) => { updateRiders(!!everyone); return { hiddenCar: everyone ? -1 : eyeCar(), visible: allRiders.map(g => g.visible) }; },
   /* park the train at arc length s for deterministic screenshots */
   place: (s, v) => { sim.S = s; if(v != null) sim.v = v; placeTrain(); updateHUD(); },

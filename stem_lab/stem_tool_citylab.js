@@ -2305,11 +2305,39 @@
       var cam = stCam[0], setCam = stCam[1];
       var stFull = React.useState(false);
       var fullscreen = stFull[0], setFullscreen = stFull[1];
+      // The 68vh growth below was the whole of 'full screen' here: on a laptop it
+      // left the model in a window, and inside the Canvas embed it was the only
+      // thing a student got. The stage now goes to the shared helper as well, so
+      // this really fills the screen; the flag still drives the taller layout and
+      // the button label, and now follows the helper rather than only the click.
+      var cityFsRef = React.useRef(null);
       var stGl = React.useState(CITY_VIEWER ? CITY_VIEWER.status() : 'failed');
       var glStatus = stGl[0], setGlStatus = stGl[1];
       var dragRef = React.useRef(null);
       var stBoardView = React.useState('use');   // 'use' | 'elevation' | 'model'
       var boardView = stBoardView[0], setBoardView = stBoardView[1];
+      // Declared here, not inside modelView(): that function returns early when
+      // WebGL is unavailable, so an effect below the branch would change the hook
+      // count between renders ("Rendered more hooks than during the previous render").
+      React.useEffect(function () {
+        var el = cityFsRef.current;
+        if (!el || typeof MutationObserver !== 'function') return;
+        var sync = function () {
+          setFullscreen(!!(el.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === el
+            || document.webkitFullscreenElement === el));
+        };
+        var mo = new MutationObserver(sync);
+        mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+        sync();
+        return function () {
+          mo.disconnect();
+          document.removeEventListener('fullscreenchange', sync);
+          document.removeEventListener('webkitfullscreenchange', sync);
+        };
+      }, [boardView, glStatus]);
       var stShortcuts = React.useState(false);
       var showShortcuts = stShortcuts[0], setShowShortcuts = stShortcuts[1];
       // Held in memory only, never in localStorage. Persisting a class set
@@ -2675,9 +2703,15 @@
           return h('span', { key: key, style: style });
         });
 
-        return h('div', { className: 'relative w-full', style: { maxWidth: '520px' } },
-          h('div', { className: 'grid gap-0', style: { gridTemplateColumns: 'repeat(12, 1fr)' } }, cells),
-          h('div', { 'aria-hidden': 'true', className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)
+        // The parcel cells are buttons, and the app's phone stylesheet gives every button a 44 px minimum, so
+        // twelve columns need 528 px: on a phone the whole STEAM Lab page scrolled sideways by 179 px (real-shell
+        // sweep, 2026-09-15). The map now scrolls inside its own box; the boundary lines stay inside the sized
+        // wrapper so their percentages still line up with the cells.
+        return h('div', { className: 'w-full overflow-x-auto', style: { WebkitOverflowScrolling: 'touch' } },
+          h('div', { className: 'relative', style: { width: 'max-content', minWidth: '100%', maxWidth: '528px' } }, // 12 columns x the 44 px touch minimum
+            h('div', { className: 'grid gap-0', style: { gridTemplateColumns: 'repeat(12, 1fr)' } }, cells),
+            h('div', { 'aria-hidden': 'true', className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)
+          )
         );
       }
 
@@ -2827,18 +2861,23 @@
               'scorecard is computed from the plan, not from the picture.'));
         }
 
-        function camBtn(label, aria, fn) {
+        // `pressed` is optional: the camera nudges are plain actions with no state,
+        // but the full-screen toggle is on or off and has to say which, or a screen
+        // reader announces the same thing in both states.
+        function camBtn(label, aria, fn, pressed) {
           return h('button', {
             type: 'button', onClick: fn, 'aria-label': aria,
+            'aria-pressed': pressed === undefined ? undefined : (pressed ? 'true' : 'false'),
             className: 'text-[0.6875rem] font-bold px-2 py-1 rounded border',
             style: { background: panelBg, color: ink, borderColor: panelBorder }
           }, label);
         }
 
-        return h('div', null,
+        return h('div', { ref: cityFsRef, 'data-allo-fs-stage': 'true',
+            style: fullscreen ? { display: 'flex', flexDirection: 'column', padding: 12, boxSizing: 'border-box' } : null },
           h('div', {
             className: 'relative w-full rounded-lg overflow-hidden',
-            style: { height: fullscreen ? '68vh' : '340px',
+            style: { height: fullscreen ? 'auto' : '340px', flex: fullscreen ? '1 1 auto' : undefined, minHeight: fullscreen ? 0 : undefined,
               background: isDark ? '#0b1220' : '#dfe6ef', touchAction: 'none' },
             onPointerDown: function (e) {
               dragRef.current = { x: e.clientX, y: e.clientY };
@@ -2873,8 +2912,11 @@
             camBtn('Reset view', 'Return the camera to its starting angle',
               function () { setCam({ rotY: 34, rotX: 26, zoom: 1 }); }),
             camBtn(fullscreen ? 'Exit full screen' : 'Full screen',
-              fullscreen ? 'Leave full screen' : 'Show the model full screen',
-              function () { setFullscreen(!fullscreen); })),
+              fullscreen ? 'Leave full screen (Escape)' : 'Show the model full screen',
+              function () {
+                if (typeof window.__alloStemFS === 'function') window.__alloStemFS(cityFsRef.current);
+                else setFullscreen(!fullscreen);
+              }, fullscreen)),
 
           h('p', { className: 'text-[0.6875rem] mt-2', style: { color: dim } },
             'Blocks are indicative massing at ' + m.metresPerStorey + ' m a storey, not a ' +

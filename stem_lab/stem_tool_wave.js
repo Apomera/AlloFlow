@@ -1946,8 +1946,13 @@ const d = labToolData.wave;
             // Canvas
 
             React.createElement("div", {
+              'data-allo-fs-stage': 'true',
+              ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
               className: "relative rounded-lg overflow-hidden border mb-3",
               style: {
+                // clamp() is right in the page. In fullscreen the stage is as tall
+                // as the screen, so let the wave use it rather than sitting in a
+                // 460px band with black above and below.
                 height: "clamp(360px, 52vw, 460px)",
                 background: "radial-gradient(circle at 24% 16%, rgba(34,211,238,0.22), transparent 30%), linear-gradient(180deg, #061827 0%, #082f49 52%, #06202f 100%)",
                 borderColor: "rgba(14,116,144,0.42)",
@@ -1955,6 +1960,15 @@ const d = labToolData.wave;
               }
             },
 
+              React.createElement('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.wave.enter_fullscreen', 'View the wave simulator fullscreen'),
+                'data-fs-out': __alloT('stem.wave.enter_fullscreen', 'View the wave simulator fullscreen'),
+                'data-fs-in': __alloT('stem.wave.exit_fullscreen', 'Exit fullscreen wave simulator (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(34,211,238,0.5)', color: '#cffafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
               React.createElement("canvas", {
                 role: "application", "aria-label": __alloT('stem.wave.aria_canvas', 'Wave simulator — arrow up/down adjusts amplitude, arrow left/right adjusts frequency, +/- adjusts speed, space pauses or resumes the animation'),
                 // Without tabIndex the canvas cannot take focus, so the onKeyDown

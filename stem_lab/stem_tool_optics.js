@@ -503,6 +503,48 @@
   //   d_i > 0 → real image (same side as light source for mirror, opposite side for lens)
   //   d_i < 0 → virtual image (opposite side for mirror, same side for lens)
   //   m = -d_i / d_o (m > 0 upright; m < 0 inverted)
+  // ── Quest-award guards ───────────────────────────────────────────────
+  // Each per-tab default below is the state the tab OPENS in. An
+  // achievement earned without moving any of them is an achievement for
+  // arriving, which is what these guards exist to prevent. Kept next to the
+  // physics rather than inside render so the tests can drive them directly.
+  // ── Persisted-array coercion ──────────────────────────────────────────────
+  // `d.x || []` only replaces a FALSY value. A restored project carrying an
+  // object, a string or a number passes straight through, and the next
+  // .map/.filter/.slice throws — which takes down the whole tool, not just the
+  // tab, because the render is one component. `quizQuestions: {}` rendered a
+  // completely blank Optics Lab.
+  //
+  // Defined here, above every call site, because the earliest use is inside the
+  // state updater that runs on every tab change.
+  function _opArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  var OP_LENS_DEFAULTS = { lensType: 'converging', lensFocal: 12, lensDo: 25 };
+  var OP_INTERFERENCE_DEFAULTS = { intLambda: 600, intSlitSep: 0.10, intScreenL: 1.0, intSlitWidth: 50 };
+  var OP_DIFFRACTION_DEFAULTS = { diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5, diffGrating: 600 };
+  function _opMatchesDefaults(state, defaults) {
+    if (!state) return true;
+    var keys = Object.keys(defaults);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var current = state[key];
+      // An absent value IS the default: the tab has not been touched.
+      if (current == null) continue;
+      if (typeof defaults[key] === 'number') {
+        if (!_isNum(current)) continue;
+        if (Math.abs(current - defaults[key]) > 1e-9) return false;
+      } else if (current !== defaults[key]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  function _opIsDefaultLensSetup(state) { return _opMatchesDefaults(state, OP_LENS_DEFAULTS); }
+  function _opIsDefaultInterferenceSetup(state) { return _opMatchesDefaults(state, OP_INTERFERENCE_DEFAULTS); }
+  function _opIsDefaultDiffractionSetup(state) { return _opMatchesDefaults(state, OP_DIFFRACTION_DEFAULTS); }
+
   function thinLens(d_o, f) {
     if (!_isNum(d_o) || d_o <= 0 || !_isNum(f) || f === 0) return { error: 'Need d_o > 0 and f ≠ 0.' };
     if (Math.abs(d_o - f) < 1e-9) return { error: 'Object at the focal point — image at infinity.' };
@@ -9542,6 +9584,30 @@
     });
   }
 
+  // ── Mastery threshold ────────────────────────────────────────────────
+  // A question used to count as MASTERED after ONE correct answer. These are
+  // four-choice items, so that is a 1-in-4 chance of being credited by
+  // guessing — and the entry stuck forever, so the Mastery tab reported a
+  // percentage partly built on luck. Two correct answers make a guess a
+  // 1-in-16 accident, and a later miss drops the question back to 'seen'
+  // so a lucky hit followed by a wrong answer cannot stay green.
+  var OP_MASTERY_CORRECT_TARGET = 2;
+  function _opQuestionMastered(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+    var correct = entry.correctCount;
+    if (typeof correct !== 'number' || !isFinite(correct)) return false;
+    // A miss since the last correct answer means the question is not settled,
+    // whatever the running total says.
+    if (entry.missedSinceCorrect === true) return false;
+    return correct >= OP_MASTERY_CORRECT_TARGET;
+  }
+  // 'Seen once' is still worth showing: it is the difference between a
+  // question a learner has never got right and one they are close on.
+  function _opQuestionSeenCorrect(entry) {
+    if (!entry || typeof entry !== 'object') return false;
+    return typeof entry.correctCount === 'number' && entry.correctCount > 0;
+  }
+
   function _pickOpticsQuizQuestions(activeTab) {
     var pool = AP_OPTICS_QUIZ.slice();
     // Shuffle
@@ -9684,7 +9750,8 @@
             simRunOnce: false, snellRun: false,
             realImageFormed: false, virtualImageFormed: false,
             tirTriggered: false,
-            interferenceViewed: false, diffractionViewed: false, polarizationExtinct: false
+            interferenceViewed: false, diffractionViewed: false, polarizationExtinct: false,
+            // Arrival is tracked separately from the award (see Quest tracking).
           };
       if (!labToolData || !labToolData.opticsLab) {
         setLabToolData(function(prev) {
@@ -9759,7 +9826,7 @@
             opMissionStage: d.opMissionStage || {},
             opMotionEnabled: d.opMotionEnabled !== false,
             aiDrafts: d.aiDrafts || {},
-            opticsRecentModes: d.opticsRecentModes || [],
+            opticsRecentModes: _opArray(d.opticsRecentModes),
             _ts: Date.now()
           };
           window.__alloflowOpticsLab = snapshot;
@@ -9820,7 +9887,7 @@
             next.opticsLab.opTopicSnapshots = snapshots;
           }
           if (patch.mode && patch.mode !== 'home' && !Object.prototype.hasOwnProperty.call(patch, 'opticsRecentModes')) {
-            var recentModes = (prev.opticsLab.opticsRecentModes || []).filter(function(mode) { return mode !== patch.mode; });
+            var recentModes = _opArray(prev.opticsLab.opticsRecentModes).filter(function(mode) { return mode !== patch.mode; });
             recentModes.unshift(patch.mode);
             next.opticsLab.opticsRecentModes = recentModes.slice(0, 6);
           }
@@ -9831,10 +9898,21 @@
           if (['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization'].indexOf(next.opticsLab.mode) !== -1) {
             next.opticsLab.lastTopicTab = next.opticsLab.mode;
           }
-          // Quest tracking
-          if (next.opticsLab.mode === 'refraction') next.opticsLab.snellRun = true;
-          if (next.opticsLab.mode === 'interference') next.opticsLab.interferenceViewed = true;
-          if (next.opticsLab.mode === 'diffraction') next.opticsLab.diffractionViewed = true;
+          // Quest tracking.
+          //
+          // These used to fire on merely ENTERING the tab, so 'View Young's
+          // double-slit fringes' was awarded to a student who clicked the
+          // tab and immediately left. Opening a page is not an observation,
+          // and an achievement that says 'view' while meaning 'arrive' is
+          // telling the student something false about what they did.
+          //
+          // Arrival now only records that the tab was OPENED. The award
+          // itself moves to an effect that waits for the student to change a
+          // parameter, which is the smallest honest definition of having
+          // looked at the pattern.
+          if (next.opticsLab.mode === 'refraction') next.opticsLab.refractionOpened = true;
+          if (next.opticsLab.mode === 'interference') next.opticsLab.interferenceOpened = true;
+          if (next.opticsLab.mode === 'diffraction') next.opticsLab.diffractionOpened = true;
           // Polarization extinction: Δθ between consecutive axes ≈ 90°
           var dT12 = Math.abs((next.opticsLab.polTheta2 || 0) - 0);
           if (next.opticsLab.mode === 'polarization' && Math.abs(dT12 - 90) < 1) next.opticsLab.polarizationExtinct = true;
@@ -9869,11 +9947,15 @@
       // Award simulation milestones from effects, never from render paths.
       React.useEffect(function() {
         if (d.tirTriggered) return;
+        // Without a mode guard this fired from ANY tab: the refraction
+        // parameters live in state whether or not the student is looking at
+        // them, so a saved project with a steep angle awarded TIR on load.
+        if (d.mode !== 'refraction') return;
         var result = snell(degToRad(d.refrTheta1 || 0), d.refrN1, d.refrN2);
         if (!result.tir) return;
         upd({ tirTriggered: true });
         if (awardXP) awardXP(10, 'OpticsLab — TIR triggered', 'opticsLab');
-      }, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);
+      }, [d.mode, d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);
 
       React.useEffect(function() {
         if (d.mode !== 'lenses') return;
@@ -9881,6 +9963,12 @@
         var signedFocal = (d.lensType || 'converging') === 'converging' ? focal : -focal;
         var result = thinLens(d.lensDo != null ? d.lensDo : 25, signedFocal);
         if (result.error) return;
+        // The tab opens on converging f=12, d_o=25, which is d_o > f and
+        // therefore ALREADY a real image: 'Form a real image with a lens'
+        // was awarded, with 10 XP, the instant the tab rendered. Forming an
+        // image means moving the object across the focal point, so the
+        // untouched default cannot be the thing that earns it.
+        if (_opIsDefaultLensSetup(d)) return;
         if (result.isReal && !d.realImageFormed) {
           upd({ realImageFormed: true });
           if (awardXP) awardXP(10, 'OpticsLab — formed a real image', 'opticsLab');
@@ -9889,6 +9977,27 @@
           if (awardXP) awardXP(10, 'OpticsLab — formed a virtual image', 'opticsLab');
         }
       }, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);
+
+      // 'View Young's double-slit fringes' and 'View a single-slit
+      // diffraction pattern' used to fire on arrival. The smallest honest
+      // reading of "view the pattern" is that the student changed something
+      // and watched it respond, so the award waits for the setup to differ
+      // from the one the tab opened with.
+      React.useEffect(function() {
+        if (d.interferenceViewed) return;
+        if (d.mode !== 'interference') return;
+        if (_opIsDefaultInterferenceSetup(d)) return;
+        upd({ interferenceViewed: true });
+        if (awardXP) awardXP(10, 'OpticsLab — explored double-slit fringes', 'opticsLab');
+      }, [d.mode, d.intLambda, d.intSlitSep, d.intScreenL, d.intSlitWidth, d.interferenceViewed]);
+
+      React.useEffect(function() {
+        if (d.diffractionViewed) return;
+        if (d.mode !== 'diffraction') return;
+        if (_opIsDefaultDiffractionSetup(d)) return;
+        upd({ diffractionViewed: true });
+        if (awardXP) awardXP(10, 'OpticsLab — explored a diffraction pattern', 'opticsLab');
+      }, [d.mode, d.diffLambda, d.diffSlitWidth, d.diffScreenL, d.diffGrating, d.diffractionViewed]);
 
       React.useEffect(function() {
         var phase = d.phenoAfterPhase || 'idle';
@@ -9925,7 +10034,7 @@
             }
             fresh.push(point || { x: width / 2, y: height / 2 });
           }
-          var combined = (d.phenoQuantumDots || []).concat(fresh);
+          var combined = _opArray(d.phenoQuantumDots).concat(fresh);
           if (combined.length > 1500) combined = combined.slice(-1500);
           upd({ phenoQuantumDots: combined, phenoQuantumCount: (d.phenoQuantumCount || 0) + perTick });
         }, rate === 'fast' ? 50 : 120);
@@ -9936,7 +10045,7 @@
       var OP_CORE_MODES = ['home', 'reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization', 'quiz', 'mastery', 'inquiry'];
       var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
       var opTotalQuestions = AP_OPTICS_QUIZ.length || 0;
-      var opMasteredCount = AP_OPTICS_QUIZ.filter(function(q) { return !!opMastery[q.q]; }).length;
+      var opMasteredCount = AP_OPTICS_QUIZ.filter(function(q) { return _opQuestionMastered(opMastery[q.q]); }).length;
       var opIsExpandedMode = OP_CORE_MODES.indexOf(d.mode) === -1;
       var showFullOpticsNav = !!d.showOpticsLibrary || opIsExpandedMode;
       React.useEffect(function() {
@@ -10125,7 +10234,14 @@
             { id: 'polarization', label: t('stem.optics.polarization', '↕ Polarization'), desc: t('stem.optics.malus_s_law', "Malus's law") },
             { id: 'phenomena', label: t('stem.optics.phenomena', '🌈 Phenomena'), desc: t('stem.optics.rainbows_mirages_after_images_color_po', 'Rainbows · mirages · after-images · color · polarized sky') },
             { id: 'calcs', label: t('stem.optics.calculators', '🧮 Calculators'), desc: t('stem.optics.14_interactive_calculators_visualizers', '14 interactive calculators + visualizers') },
-            { id: 'phenomena_db', label: t('stem.optics.encyclopedia', '📚 Encyclopedia'), desc: t('stem.optics.120_optical_phenomena', '120+ optical phenomena') },
+            // The count is DERIVED, not baked into the string. The old copy
+            // promised "120+ optical phenomena" against a database of 72, and
+            // the panel prints its real length the moment you open it, so the
+            // tooltip contradicted the tab it described. Prefixing the number
+            // also keeps it out of the 60+ translated packs that carry this
+            // key, where a hardcoded figure could only go stale again — the
+            // translated text still supplies the words after the count.
+            { id: 'phenomena_db', label: t('stem.optics.encyclopedia', '📚 Encyclopedia'), desc: OPTICAL_PHENOMENA_DB.length + ' ' + t('stem.optics.optical_phenomena', 'optical phenomena') },
             { id: 'scientists', label: t('stem.optics.scientists', '👨‍🔬 Scientists'), desc: t('stem.optics.50_optical_scientists_from_antiquity_t', '50+ optical scientists from antiquity to today') },
             { id: 'history', label: t('stem.optics.history', '📜 History'), desc: t('stem.optics.100_optics_milestones', '100+ optics milestones') },
             { id: 'instruments', label: t('stem.optics.instruments', '🔭 Instruments'), desc: t('stem.optics.30_telescopes_microscopes_cameras_lase', '30+ telescopes, microscopes, cameras, lasers, displays') },
@@ -10155,7 +10271,7 @@
             var matchesQuery = !opLibraryQuery || (tab.label + ' ' + tab.desc).toLowerCase().indexOf(opLibraryQuery) !== -1;
             var matchesGroup = opLibraryGroup === 'all'
               || (opLibraryGroup === 'recent'
-                ? (d.opticsRecentModes || []).indexOf(tab.id) !== -1
+                ? _opArray(d.opticsRecentModes).indexOf(tab.id) !== -1
                 : OP_TAB_GROUPS[tab.id] === opLibraryGroup);
             return matchesQuery && matchesGroup;
           }).map(function(tab) {
@@ -10245,7 +10361,21 @@
         d.mode === 'viz' && _renderVizPanel(d, upd, h),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
         d.mode === 'inquiry' && (function() {
-          var iq = d.snellInquiry || { n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          // `|| defaults` only covers a MISSING object, not a partial one. A
+          // restored project that carries snellInquiry without `log` (or with
+          // a non-numeric angle) crashed the whole tab on `iq.log.length` —
+          // a blank Inquiry screen with a TypeError in the console. Merge the
+          // defaults field by field and coerce the numerics, so any saved
+          // shape renders.
+          var _iqDefaults = { n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var _iqSaved = (d.snellInquiry && typeof d.snellInquiry === 'object' && !Array.isArray(d.snellInquiry))
+            ? d.snellInquiry : {};
+          var iq = Object.assign({}, _iqDefaults, _iqSaved);
+          if (!Array.isArray(iq.log)) iq.log = [];
+          if (!_isNum(iq.n1) || iq.n1 <= 0) iq.n1 = _iqDefaults.n1;
+          if (!_isNum(iq.n2) || iq.n2 <= 0) iq.n2 = _iqDefaults.n2;
+          if (!_isNum(iq.angle)) iq.angle = _iqDefaults.angle;
+          if (!_isNum(iq.wavelength)) iq.wavelength = _iqDefaults.wavelength;
           function setIQ(patch) { upd('snellInquiry', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           var rad = iq.angle * Math.PI / 180;
@@ -10257,6 +10387,31 @@
           var isTIR = sinT2 > 1;
           var theta2 = isTIR ? null : Math.asin(sinT2) * 180 / Math.PI;
           var state = isTIR ? 'tir' : nDisp > iq.n1 ? (iq.angle > 60 ? 'glancing' : 'denser') : (tirCritical != null && iq.angle > tirCritical * 0.9 ? 'nearCrit' : 'lighter');
+          // ── Predict before the answer shows ──
+          // This tab is billed as "predict TIR + dispersion", but the
+          // refracted angle, the critical angle and the TIR verdict were all
+          // on screen while it asked the student to "record a hypothesis".
+          // A hypothesis formed with the answer visible is not a prediction,
+          // and the moment a wrong one is corrected is the only moment this
+          // sandbox can teach anything.
+          //
+          // The prediction is keyed to the SETUP, so changing n1, n2 or the
+          // angle asks again rather than letting one guess unlock every
+          // configuration. Wavelength is deliberately NOT in the key: sweeping
+          // it to watch dispersion is the follow-up exploration, and
+          // re-locking on every nudge would punish exactly the right move.
+          var iqSetupKey = iq.n1.toFixed(3) + '|' + iq.n2.toFixed(3) + '|' + iq.angle;
+          var iqPredicted = iq.predictedFor === iqSetupKey && !!iq.predictedOutcome;
+          // 'tir' or 'refract' -- the one call this setup actually decides.
+          var iqActualOutcome = isTIR ? 'tir' : 'refract';
+          var iqPredictionRight = iqPredicted && iq.predictedOutcome === iqActualOutcome;
+          function iqPredict(choice) {
+            if (iqPredicted) return;
+            setIQ({ predictedFor: iqSetupKey, predictedOutcome: choice });
+            opAnnounce(choice === iqActualOutcome
+              ? 'Prediction correct. The measurements are shown.'
+              : 'Prediction incorrect. The measurements are shown.');
+          }
           var sm = ({
             tir: { label: t('stem.optics.total_internal_reflection', 'Total Internal Reflection'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.optics.angle_exceeds_critical_angle_no_light_', 'Angle exceeds critical angle. No light transmitted — all reflects back. Basis of fiber optics, diamond brilliance, prism periscopes.') },
             nearCrit: { label: t('stem.optics.near_critical', 'Near critical'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.optics.approaching_tir_boundary_refracted_ray', 'Approaching TIR boundary. Refracted ray runs nearly along the surface; transmitted intensity dropping.') },
@@ -10272,10 +10427,55 @@
           var refY = isTIR ? cy - Math.cos(rad) * len : cy + Math.cos(theta2 * Math.PI / 180) * len;
           return h('div', { className: 'opticslab-dark-inquiry', style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.optics.snell_s_law_inquiry_refraction_tir_dis', '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂, incidence angle, and wavelength, then observe where the model transitions from refraction to total internal reflection. The result updates live; record a hypothesis or pattern you notice.')),
-            h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
-            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂ and the incidence angle, then call it before you look: does this setup refract, or does the light stay trapped? The measurements appear once you have committed, and sweeping the wavelength afterwards is how you see dispersion.')),
+            // The call itself. Hidden once made for this setup, and asked
+            // again the moment n1, n2 or the angle changes.
+            !iqPredicted && h('div', {
+              className: 'opticslab-inquiry-predict',
+              role: 'group',
+              'aria-label': t('stem.optics.a11y_predict_this_setup', 'Predict this setup'),
+              style: { padding: 10, borderRadius: 8, background: '#0a0a1a', border: '1px solid ' + sm.border, marginBottom: 10 }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: sm.color, marginBottom: 6 } },
+                t('stem.optics.call_it_first', 'Call it first \u2014 n\u2081 = ') + iq.n1.toFixed(2) +
+                t('stem.optics.call_it_n2', ', n\u2082 = ') + iq.n2.toFixed(2) +
+                t('stem.optics.call_it_angle', ', \u03b8\u2081 = ') + iq.angle + '\u00b0'),
+              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                [
+                  { id: 'refract', label: t('stem.optics.predict_refract', 'It refracts through') },
+                  { id: 'tir', label: t('stem.optics.predict_tir', 'Total internal reflection') }
+                ].map(function(choice) {
+                  return h('button', {
+                    key: choice.id,
+                    type: 'button',
+                    className: 'opticslab-inquiry-predict-btn',
+                    'data-op-focusable': 'true',
+                    'data-op-inquiry-predict': choice.id,
+                    onClick: function() { iqPredict(choice.id); },
+                    style: { flex: '1 1 140px', padding: '8px 10px', borderRadius: 6, background: '#111827', color: '#e8f0f5', border: '1px solid ' + sm.border, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, choice.label);
+                })),
+              h('p', { style: { margin: '6px 0 0', fontSize: 10, opacity: 0.7, lineHeight: 1.4 } },
+                t('stem.optics.predict_no_penalty', 'Being wrong costs nothing and is the useful case \u2014 a corrected prediction is remembered better than a number you were simply shown.'))),
+            // The verdict, only after the call.
+            iqPredicted && h('div', {
+              className: 'opticslab-inquiry-verdict',
+              role: 'status',
+              style: { padding: '8px 10px', borderRadius: 8, marginBottom: 10, background: '#0a0a1a', border: '1px solid ' + (iqPredictionRight ? '#22c55e' : '#f87171') }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: iqPredictionRight ? '#86efac' : '#fca5a5', marginBottom: 3 } },
+                iqPredictionRight
+                  ? t('stem.optics.predict_right', '\u2713 Your call was right')
+                  : t('stem.optics.predict_wrong', '\u2717 Not what happens \u2014 which is the useful case')),
+              h('p', { style: { margin: 0, fontSize: 10.5, opacity: 0.85, lineHeight: 1.45 } },
+                iqActualOutcome === 'tir'
+                  ? t('stem.optics.predict_why_tir', 'No refracted ray exists: sin\u03b8\u2082 would exceed 1, so the light is trapped. That can only happen going into the LESS dense medium, past the critical angle.')
+                  : (tirCritical != null
+                      ? t('stem.optics.predict_why_under', 'The light refracts through because \u03b8\u2081 is still under the critical angle for this pair. Raise the angle and it will eventually flip.')
+                      : t('stem.optics.predict_why_no_crit', 'There is no critical angle here: n\u2081 \u2264 n\u2082, so light entering the denser medium always refracts, at any angle.')))),
+            iqPredicted && h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
+            iqPredicted && h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
+            iqPredicted && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
               [
                 { label: t('stem.optics.refracted', 'θ₂ (refracted)'), val: isTIR ? '— (TIR)' : theta2.toFixed(1) + '°' },
                 { label: t('stem.optics.critical_angle', 'Critical angle'), val: tirCritical != null ? tirCritical.toFixed(1) + '°' : '— (n₁ ≤ n₂)' },
@@ -10310,12 +10510,30 @@
                   : lam < 625 ? '#fb923c'
                   : lam < 700 ? '#ef4444'
                   : '#7f1d1d';
+                if (!iqPredicted) {
+                  return [
+                    h('text', {
+                      key: 'rayHidden',
+                      x: cx + 6, y: cy + 34,
+                      fill: '#94a3b8', fontSize: 11, fontWeight: 700
+                    }, '?'),
+                    h('text', {
+                      key: 'rayHiddenLabel',
+                      x: cx + 18, y: cy + 34,
+                      fill: '#94a3b8', fontSize: 9
+                    }, 'call it first')
+                  ];
+                }
                 return [
                   h('line', { key: 'ray', x1: cx, y1: cy, x2: refX, y2: refY, stroke: rayColor, strokeWidth: 2, strokeDasharray: isTIR ? '5 3' : '0' }),
                   h('text', { key: 'rayLabel', x: refX + 6, y: refY + 14, fill: rayColor, fontSize: 10 }, isTIR ? 'TIR (reflected)' : 'θ₂=' + theta2.toFixed(1) + '° (λ=' + lam + 'nm)')
                 ];
               })(),
-              h('text', { x: 160, y: 195, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n₁sinθ₁ = n₂(λ)·sinθ₂  →  ' + iq.n1.toFixed(2) + '·' + Math.sin(rad).toFixed(3) + ' = ' + (isTIR ? '✗' : nDisp.toFixed(2) + '·' + sinT2.toFixed(3)))
+              // The right-hand side is the answer: '✗' means no solution
+              // exists, i.e. TIR. Show the left-hand side (which the student
+              // set) and withhold the result until the call, so working the
+              // arithmetic out is the prediction rather than reading it off.
+              h('text', { x: 160, y: 195, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'n₁sinθ₁ = n₂(λ)·sinθ₂  →  ' + iq.n1.toFixed(2) + '·' + Math.sin(rad).toFixed(3) + ' = ' + (iqPredicted ? (isTIR ? '✗' : nDisp.toFixed(2) + '·' + sinT2.toFixed(3)) : '?'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
               h('label', null,
@@ -10412,7 +10630,7 @@
   // ---
   function _renderHome(d, upd, h) {
     var _hMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
-    var _hMasteredCount = AP_OPTICS_QUIZ.filter(function (q) { return !!_hMastery[q.q]; }).length;
+    var _hMasteredCount = AP_OPTICS_QUIZ.filter(function (q) { return _opQuestionMastered(_hMastery[q.q]); }).length;
     var _hTotal = AP_OPTICS_QUIZ.length;
     var _hPct = _hTotal > 0 ? Math.round((_hMasteredCount / _hTotal) * 100) : 0;
     return h('div', null,
@@ -10756,13 +10974,13 @@
   // ---
   function _renderSleuthPanel(d, upd, h, addToast) {
     var TYPES = [
-      { id: 'realInvMag',  label: 'Real, inverted, magnified',  color: '#ef4444', icon: '🔻',
+      { id: 'realInvMag',  label: 'Real, inverted, magnified',  color: '#ef4444', icon: '🔻', cue: 'Bigger than the object, and flipped.',
         rule: 'Object between f and 2f (inside 2× focal length but outside f). Image forms beyond 2f on the opposite side.' },
-      { id: 'realInvRed',  label: 'Real, inverted, reduced',     color: '#f59e0b', icon: '⬇️',
+      { id: 'realInvRed',  label: 'Real, inverted, reduced',     color: '#f59e0b', icon: '⬇️', cue: 'Smaller than the object, and flipped.',
         rule: 'Object beyond 2f. Image forms between f and 2f on the opposite side, smaller than the object.' },
-      { id: 'virtUprMag',  label: 'Virtual, upright, magnified', color: '#22c55e', icon: '🔍',
+      { id: 'virtUprMag',  label: 'Virtual, upright, magnified', color: '#22c55e', icon: '🔍', cue: 'Bigger than the object, same way up.',
         rule: 'Object inside f (between lens and focal point) for a CONVERGING lens. Image forms on the same side, magnified — this is the magnifying-glass case.' },
-      { id: 'virtUprRed',  label: 'Virtual, upright, reduced',   color: '#0ea5e9', icon: '👓',
+      { id: 'virtUprRed',  label: 'Virtual, upright, reduced',   color: '#0ea5e9', icon: '👓', cue: 'Smaller than the object, same way up.',
         rule: 'DIVERGING lens (any object position) OR convex mirror. Image is always virtual, upright, and reduced — peephole/wide-angle case.' }
     ];
     var V = [
@@ -10788,6 +11006,10 @@
         why: 'Diverging lens — ALWAYS virtual, upright, reduced. Position does not change the qualitative answer for diverging lenses. d_i = -3.75 cm. Magnification = +0.75. The closer the object, the closer the virtual image is to the object (and the magnification approaches 1 from below).' }
     ];
 
+    // `ssShown` is the de-duplication pool, so it resets to [] on the 11th
+    // draw. Counting rounds answered is what the learner means by 'how far
+    // am I', and it keeps counting past one pass through the deck.
+    var OP_SLEUTH_TOTAL_VIGNETTES = V.length;
     var ssIdx = d.ssIdx == null ? -1 : d.ssIdx;
     var ssSeed = d.ssSeed || 1;
     var ssAns = !!d.ssAns;
@@ -10823,7 +11045,7 @@
           style: { background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 10, padding: 16, marginBottom: 14 }
         },
           h('p', { style: { margin: '0 0 10px', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
-            '10 setups. Each describes an object + a lens/mirror with a given focal length. Predict the image type from 4 options: real-inverted-magnified, real-inverted-reduced, virtual-upright-magnified, virtual-upright-reduced. Coaching after each pick shows the lens-equation math + the rule that would have given you the answer faster than the math.'
+            V.length + ' setups. Each describes an object + a lens/mirror with a given focal length. Predict the image type from 4 options: real-inverted-magnified, real-inverted-reduced, virtual-upright-magnified, virtual-upright-reduced. Coaching after each pick shows the lens-equation math + the rule that would have given you the answer faster than the math.'
           ),
           h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } },
             'Sign convention reminder: + d_i = real (opposite side), – d_i = virtual (same side). + magnification = upright; – magnification = inverted.')
@@ -10843,14 +11065,17 @@
           onClick: startSs,
           'data-op-focusable': 'true',
           style: { padding: '10px 18px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
-        }, '🕵️ Start — vignette 1 of 10')
+        }, '🕵️ Start — vignette 1 of ' + V.length)
       );
     }
 
     var v = V[ssIdx];
     var pickedCorrect = ssAns && ssPick === v.correct;
     var pct = ssRounds > 0 ? Math.round((ssScore / ssRounds) * 100) : 0;
-    var allDone = ssShown.length >= V.length && ssAns;
+    // Which number this vignette IS: rounds already answered, plus this one.
+    // ssShown resets after a full pass, so it cannot carry the count.
+    var ssSolved = Math.min(ssRounds + (ssAns ? 0 : 1), OP_SLEUTH_TOTAL_VIGNETTES);
+    var allDone = ssRounds >= OP_SLEUTH_TOTAL_VIGNETTES && ssAns;
     var correctType = TYPES.filter(function(t) { return t.id === v.correct; })[0];
     var pickedType = ssPick ? TYPES.filter(function(t) { return t.id === ssPick; })[0] : null;
 
@@ -10858,7 +11083,7 @@
       h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '🕵️ Sign Convention Sleuth'),
       // Score header
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } },
-        h('span', null, 'Vignette ', h('strong', { style: { color: '#fff' } }, ssShown.length)),
+        h('span', null, 'Vignette ', h('strong', { style: { color: '#fff' } }, ssSolved)),
         h('span', null, 'Score ', h('strong', { style: { color: '#86efac' } }, ssScore + ' / ' + ssRounds)),
         ssRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: '#7dd3fc' } }, pct + '%')),
         h('span', null, 'Streak ', h('strong', { style: { color: '#fbbf24' } }, ssStreak)),
@@ -10866,7 +11091,7 @@
       ),
       // Vignette
       h('section', { style: { padding: '14px 16px', borderRadius: 12, background: 'rgba(168,85,247,0.08)', border: '2px solid rgba(168,85,247,0.40)', marginBottom: 12 } },
-        h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Vignette ' + ssShown.length + ' of ' + V.length),
+        h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Vignette ' + ssSolved + ' of ' + OP_SLEUTH_TOTAL_VIGNETTES),
         h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.55 } }, v.setup)
       ),
       // 4 type picker buttons
@@ -10894,7 +11119,13 @@
               h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, t.icon),
               h('span', { style: { color: ssAns ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
             ),
-            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: ssAns ? color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t.rule)
+            // Before the pick this shows a neutral restatement of the label, NOT
+            // `t.rule` — the rule names the setup that produces this image
+            // ('object beyond 2f', 'diverging lens'), so printing it on the button
+            // turned every vignette into a matching exercise. The rules stay on
+            // the reference cards on the start screen and come back here once the
+            // answer is in, where they are the teaching.
+            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: ssAns ? color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ssAns ? t.rule : t.cue)
           );
         })
       ),
@@ -10918,12 +11149,12 @@
               h('div', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.5 } },
                 'Final: ', h('strong', null, ssScore + ' / ' + V.length + ' (' + Math.round((ssScore / V.length) * 100) + '%)'),
                 ssScore === V.length ? ' — every image type correctly predicted. Ready for AP Physics 2 FRQ work.' :
-                ssScore >= 8 ? ' — strong sign-convention reasoning. The most-confused pair is usually realInvRed vs realInvMag (object beyond 2f vs between f and 2f) — memorize the cutoff at 2f.' :
-                ssScore >= 6 ? ' — solid baseline. Reflexes to build: diverging lens + convex mirror = ALWAYS virtual upright reduced. Object inside f for converging = magnifying glass.' :
+                ssScore >= Math.ceil(V.length * 0.8) ? ' — strong sign-convention reasoning. The most-confused pair is usually realInvRed vs realInvMag (object beyond 2f vs between f and 2f) — memorize the cutoff at 2f.' :
+                ssScore >= Math.ceil(V.length * 0.6) ? ' — solid baseline. Reflexes to build: diverging lens + convex mirror = ALWAYS virtual upright reduced. Object inside f for converging = magnifying glass.' :
                 ' — these distinctions take practice. Re-read the four type cards above + the rationales on misses, then retake. The lens equation sign convention is the foundation.'
               ),
               h('button', {
-                onClick: function() { upd({ ssIdx: -1, ssShown: [], ssScore: 0, ssRounds: 0, ssStreak: 0 }); },
+                onClick: function() { upd({ ssIdx: -1, ssShown: [], ssScore: 0, ssRounds: 0, ssStreak: 0, ssBest: 0, ssAns: false, ssPick: null }); },
                 style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, '🔄 Restart')
             )
@@ -10948,7 +11179,7 @@
   function _renderMasteryPanel(d, upd, h) {
     var mastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
     var totalQuestions = AP_OPTICS_QUIZ.length;
-    var masteredQuestions = AP_OPTICS_QUIZ.filter(function (q) { return !!mastery[q.q]; });
+    var masteredQuestions = AP_OPTICS_QUIZ.filter(function (q) { return _opQuestionMastered(mastery[q.q]); });
     var masteredCount = masteredQuestions.length;
     var pctOverall = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
 
@@ -10981,7 +11212,7 @@
 
     var conceptStats = CONCEPTS.map(function (c) {
       var qs = AP_OPTICS_QUIZ.filter(function (q) { return c.tagMatch(q.tags || []); });
-      var done = qs.filter(function (q) { return !!mastery[q.q]; });
+      var done = qs.filter(function (q) { return _opQuestionMastered(mastery[q.q]); });
       return { concept: c, questions: qs, doneCount: done.length };
     });
 
@@ -11050,17 +11281,28 @@
             h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
               cs.questions.map(function (q, i) {
                 var entry = mastery[q.q];
-                var done = !!entry;
+                var done = _opQuestionMastered(entry);
+                // A question answered right once but not yet twice is neither
+                // done nor untouched, and showing it as untouched hides real
+                // progress. Half-circle marks the middle state.
+                var partial = !done && _opQuestionSeenCorrect(entry);
                 return h('li', {
                   key: i,
                   style: {
                     display: 'flex', alignItems: 'flex-start', gap: 6,
                     fontSize: 11,
-                    color: done ? 'var(--allo-stem-text, #cbd5e1)' : 'var(--allo-stem-text-soft, #94a3b8)',
+                    color: (done || partial) ? 'var(--allo-stem-text, #cbd5e1)' : 'var(--allo-stem-text-soft, #94a3b8)',
                     lineHeight: 1.45
                   }
                 },
-                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#64748b', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('span', {
+                    // The marker is decorative; the text alternative below
+                    // carries the state for a screen reader.
+                    'aria-hidden': 'true',
+                    style: { color: done ? '#22c55e' : (partial ? '#f59e0b' : '#64748b'), fontWeight: 700, flexShrink: 0, marginTop: 1 }
+                  }, done ? '✓' : (partial ? '◐' : '○')),
+                  h('span', { className: 'op-sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } },
+                    done ? 'Mastered. ' : (partial ? 'Answered correctly once; needs one more. ' : 'Not yet answered correctly. ')),
                   h('span', { style: { flex: 1, minWidth: 0 } },
                     q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
                     done && entry.firstCorrectAt && h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
@@ -11091,7 +11333,7 @@
   }
 
   function _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb) {
-    if (!d.quizQuestions) {
+    if (!Array.isArray(d.quizQuestions) || d.quizQuestions.length === 0) {
       return h('div', null,
         h('h3', { style: { color: 'var(--op-accent-text, #7dd3fc)', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
         h('div', {
@@ -11127,7 +11369,7 @@
       h('h3', { style: { color: 'var(--op-accent-text, #7dd3fc)', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
       h('div', { style: { background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 10, padding: 14 } },
         d.quizQuestions.map(function(q, qi) {
-          var pickedIdx = (d.quizAnswers || [])[qi];
+          var pickedIdx = _opArray(d.quizAnswers)[qi];
           var isCorrect = pickedIdx === q.correct;
           return h('div', {
             key: qi,
@@ -11154,7 +11396,7 @@
                 key: ci,
                 onClick: function() {
                   if (d.quizSubmitted) return;
-                  var ans = (d.quizAnswers || []).slice();
+                  var ans = _opArray(d.quizAnswers).slice();
                   while (ans.length <= qi) ans.push(null);
                   ans[qi] = ci;
                   upd('quizAnswers', ans);
@@ -11185,7 +11427,7 @@
         }),
         !d.quizSubmitted && h('button', {
           onClick: function() {
-            var ans = d.quizAnswers || [];
+            var ans = _opArray(d.quizAnswers);
             if (ans.filter(function(a) { return a != null; }).length < d.quizQuestions.length) {
               if (addToast) addToast('Answer all 5 questions before submitting.', 'info');
               return;
@@ -11202,6 +11444,18 @@
             for (var qi = 0; qi < d.quizQuestions.length; qi++) {
               var q = d.quizQuestions[qi];
               var isCorrect = ans[qi] === q.correct;
+              if (!isCorrect) {
+                // Only recorded for a question the learner has previously got
+                // right: a miss on a question never answered correctly is
+                // simply 'not learned yet' and needs no extra state.
+                var missedEntry = nextMastery[q.q];
+                if (missedEntry) {
+                  nextMastery[q.q] = Object.assign({}, missedEntry, {
+                    missedSinceCorrect: true,
+                    lastMissedAt: nowIso
+                  });
+                }
+              }
               if (isCorrect) {
                 correct++;
                 var key = q.q;
@@ -11209,18 +11463,26 @@
                 if (existingEntry) {
                   nextMastery[key] = Object.assign({}, existingEntry, {
                     lastCorrectAt: nowIso,
-                    correctCount: (existingEntry.correctCount || 0) + 1
+                    correctCount: (existingEntry.correctCount || 0) + 1,
+                    // Answering it right again settles the question.
+                    missedSinceCorrect: false
                   });
                 } else {
                   nextMastery[key] = {
                     firstCorrectAt: nowIso,
                     lastCorrectAt: nowIso,
                     correctCount: 1,
+                    missedSinceCorrect: false,
                     tags: q.tags || []
                   };
-                  // Keep just the FIRST newly-mastered question of this
-                  // attempt for the celebration overlay (avoids stacking).
-                  if (!newlyMasteredQ) newlyMasteredQ = { question: q.q, tags: q.tags || [] };
+                }
+                // Celebrate when the question actually crosses the mastery
+                // threshold, not on the first correct answer — otherwise the
+                // overlay congratulates a coin flip. Re-read the entry we just
+                // wrote so this reflects the new count.
+                if (!newlyMasteredQ && _opQuestionMastered(nextMastery[key]) &&
+                    !_opQuestionMastered(existingEntry)) {
+                  newlyMasteredQ = { question: q.q, tags: q.tags || [] };
                 }
               }
             }
@@ -11268,7 +11530,7 @@
                             : 'Re-read the topic panels and work through 1–2 sample problems before retrying. Optics depends on sign conventions; rote memorization fails fast.';
           var rad = 36, circ = 2 * Math.PI * rad;
           var dashOff = circ - (pct / 100) * circ;
-          var ans = d.quizAnswers || [];
+          var ans = _opArray(d.quizAnswers);
           return h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': __alloT('stem.optics.a11y_quiz_results', 'Quiz results'), style: { marginTop: 8, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: 'rgba(15,23,42,0.6)' } },
             h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
               h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
@@ -15332,7 +15594,7 @@
         'The light should propagate the length of the gelatin "fiber" by bouncing off the interior walls (total internal reflection).'
       ],
       science: 'Gelatin has refractive index ~1.34, higher than air (1.00). Light entering at shallow angle hits the gelatin-air interface from inside at greater than critical angle (~48°) and undergoes total internal reflection. This is exactly how silica fiber-optic cables work, with much higher purity glass.',
-      safety: 'Never look directly into the laser. Use only laser pointers ≤ 5 mW (Class 3R or below).',
+      safety: 'Never look directly into the laser. Use only laser pointers ≤ 5 mW (Class 3R or below). Boiling water scalds — an adult should handle the dissolving and pouring, and the tray needs to cool before it goes in the fridge.',
       extension: 'Bend the gelatin gently — light should still propagate through curves. Compare with a glass fiber-optic cable.' },
     { id: 'lensTeleHomemade', title: 'Homemade refracting telescope', icon: '🔭', age: '12+', difficulty: 'Hard', time: '2 hours', cost: '$10–20',
       goal: 'Build a working refracting telescope from two lenses and PVC pipe.',
@@ -15348,15 +15610,15 @@
       extension: 'Add a third lens to make the image upright (terrestrial telescope). Or replace the objective with a curved mirror for a Newtonian reflector.' },
     { id: 'spectroscope', title: 'CD-based spectroscope', icon: '📊', age: '10+', difficulty: 'Medium', time: '30 min', cost: '$2–5',
       goal: 'Disperse light into its component colors using a CD/DVD as a diffraction grating.',
-      materials: ['Cardboard tube', 'Old CD or DVD', 'Cardboard, scissors, tape', 'Various light sources (incandescent bulb, fluorescent tube, sunlight, LED, laser)'],
+      materials: ['Cardboard tube', 'Old CD or DVD', 'Cardboard, scissors, tape', 'Various light sources (incandescent bulb, fluorescent tube, LED, streetlight)'],
       steps: [
         'Cut the CD into a wedge (be careful, edges are sharp). The shiny side faces inward; this is your grating.',
         'In one end of the tube, cut a thin slit (1 mm wide, 1 cm tall) — this admits a narrow beam of light.',
         'Mount the CD piece at the opposite end at ~45° angle. Cut an eyepiece hole on the side that lets you see the CD reflection.',
         'Aim the slit at a light source. Through the eyepiece, the CD reflects a spectrum of colors.'
       ],
-      science: 'A CD\'s data tracks (1.6 μm pitch) act as a diffraction grating. Different wavelengths constructively interfere at different angles per the grating equation d sin(θ) = mλ. Compare spectra: incandescent (smooth), fluorescent (line spectrum from mercury vapor), Sun (continuous + dark absorption lines).',
-      safety: 'CD edges can cut — handle carefully.',
+      science: 'A CD\'s data tracks (1.6 μm pitch) act as a diffraction grating. Different wavelengths constructively interfere at different angles per the grating equation d sin(θ) = mλ. Compare spectra: incandescent (smooth), fluorescent (line spectrum from mercury vapor), and daylight from a north-facing window or open sky, never the Sun itself (continuous, with dark Fraunhofer absorption lines).',
+      safety: 'CD edges can cut — handle carefully. The spectroscope concentrates whatever you point it at and you look straight down that path, so use lamps or skylight away from the Sun — never the Sun itself, and never a laser. Both can damage your eye through the slit.',
       extension: 'Photograph the spectra and measure wavelengths by comparing to a known reference (sodium streetlight gives a strong yellow doublet at 589 nm).' },
     { id: 'soapBubbleColor', title: 'Soap bubble thin-film colors', icon: '🫧', age: '6+', difficulty: 'Easy', time: '15 min', cost: '$2',
       goal: 'Observe thin-film interference colors as a soap film thins.',
@@ -17490,7 +17752,7 @@
         'Try different angles and bottle shapes.'
       ],
       science: 'The water-filled bottle acts as a cylindrical lens (curved one way, flat the other). Curved face refracts light to magnify in one direction. Combined with the bottle\'s own curved walls, this gives a soft 1.5–2× magnification.',
-      safety: 'Don\'t spill water on electronics.',
+      safety: 'Don\'t spill water on electronics. A water-filled bottle is a converging lens: do not leave it on a sunny windowsill, where it can focus sunlight sharply enough to scorch paper or furniture.',
       extension: 'Compare a square-cross-section juice box vs. a round bottle. The cylinder gives anamorphic magnification — magnified more in one direction than the other.' },
     { id: 'colorWheelMix', title: 'Newton color wheel spinner', icon: '🎨', age: '8+', difficulty: 'Easy', time: '20 min', cost: '$2',
       goal: 'Make a color wheel that appears white when spun.',
@@ -18627,8 +18889,8 @@
         'Use online spectroscopy app (PublicLab, etc.) to analyze.'
       ],
       science: 'CD\'s data tracks (1.6 μm pitch) act as diffraction grating. Smartphone camera digitizes the spectrum. Fluorescent lights show mercury emission lines (peaks at 405, 436, 546, 578 nm); incandescent shows continuous spectrum; LED shows banded structure.',
-      safety: 'CD edges are sharp.',
-      extension: 'Build a database of spectra: incandescent, halogen, CFL, LED, sodium streetlight, sunlight. Compare what you see to published reference spectra.' },
+      safety: 'CD edges are sharp. Aim the slit at lamps or at open sky away from the Sun — never at the Sun itself, and never point the phone camera at the Sun through the slit. Solar spectra need a purpose-built solar filter.',
+      extension: 'Build a database of spectra: incandescent, halogen, CFL, LED, sodium streetlight, and open sky away from the Sun. Compare what you see to published reference spectra.' },
     { id: 'pinholeIris', title: 'Build a pinhole iris diaphragm', icon: '⚪', age: '10+', difficulty: 'Medium', time: '30 min', cost: '$5',
       goal: 'Demonstrate how aperture size affects depth of field and brightness.',
       materials: ['Black cardstock', 'Pin or needle', 'Small light source', 'Camera or just eye'],

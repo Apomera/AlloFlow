@@ -162,20 +162,20 @@ window.SelHub = window.SelHub || {
       var myChangeNote   = d.myChangeNote || '';
 
       // Curve state
-      var curvePhaseIdx  = d.curvePhaseIdx || 0;
+      var curvePhaseIdx  = (Number.isInteger(d.curvePhaseIdx) && d.curvePhaseIdx >= 0 ? d.curvePhaseIdx : 0);
       var myPhase        = d.myPhase || null;
 
       // Stories state
-      var storyIdx       = d.storyIdx || 0;
+      var storyIdx       = (Number.isInteger(d.storyIdx) && d.storyIdx >= 0 ? d.storyIdx : 0);
       var storiesRead    = d.storiesRead || {};
 
       // Anchors state
-      var anchors        = d.anchors || [];
-      var newAnchor      = d.newAnchor || '';
+      var anchors        = (Array.isArray(d.anchors) ? d.anchors : []);
+      var newAnchor      = (typeof d.newAnchor === 'string' ? d.newAnchor : '');
 
       // Plan state
-      var planSteps      = d.planSteps || [];
-      var newStep        = d.newStep || '';
+      var planSteps      = (Array.isArray(d.planSteps) ? d.planSteps : []);
+      var newStep        = (typeof d.newStep === 'string' ? d.newStep : '');
 
       // Coach state
       var coachInput     = d.coachInput || '';

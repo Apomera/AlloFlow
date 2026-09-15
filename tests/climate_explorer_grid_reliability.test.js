@@ -491,3 +491,132 @@ describe('Solution claims stay inside what the tool can support', () => {
     expect(Math.round((2.6 / baseline) * 100), 'forest sink as % of baseline').toBeLessThan(15);
   });
 });
+
+describe('Sea Level Rise Explorer never mislabels its own scenario', () => {
+  // feedback_label_asserts_an_outcome_the_model_never_computes: a label may name
+  // a scenario, an index or a state -- never a result the code did not derive
+  // for THAT input.
+  //
+  // SLR_IMPACTS is keyed 0,1,2,3,5,10 and the drag handler snaps to those, but
+  // slrMeters is PERSISTED state. A saved file carrying 4/6/7/8/9 fell through
+  // `|| SLR_IMPACTS[1]`, so the panel read "+9 m" directly above "150M people
+  // displaced / most coastal adaptation still possible" -- the ONE-METRE
+  // scenario, with IPCC citations attached to it.
+  const panel = (slrMeters) => {
+    const html = renderTool('climateExplorer', { climateExplorer: { tab: 'tipping', slrMeters } }, {});
+    const at = indexOfOrThrow(html, 'Sea Level Rise Explorer', { label: 'SLR panel' });
+    return html.slice(at, at + 2000).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  };
+  // displaced count -> the metre key that scenario belongs to
+  const OWNER = { '150': 1, '280': 2, '410': 3, '700': 5, '1100': 10 };
+
+  it('shows the heading and the scenario for the SAME metre value', () => {
+    for (let m = 0; m <= 10; m++) {
+      const text = panel(m);
+      const shown = Number((text.match(/\+(\d+) m/) || [])[1]);
+      const displaced = (text.match(/(\d+)M people displaced/) || [])[1];
+      if (m === 0) { expect(text, '0 m is the baseline').toContain('Baseline'); continue; }
+      expect(Number.isFinite(shown), `heading rendered for persisted ${m}`).toBe(true);
+      expect(OWNER[displaced], `persisted ${m} shows a real scenario`).toBeDefined();
+      expect(OWNER[displaced], `persisted ${m}: heading says +${shown} m but the scenario is the ${OWNER[displaced]} m one`)
+        .toBe(shown);
+    }
+  });
+
+  it('never falls back to the 1 m scenario for a higher persisted value', () => {
+    for (const m of [4, 6, 7, 8, 9]) {
+      expect(panel(m), `persisted ${m} m must not show the 1 m text`)
+        .not.toContain('Most coastal adaptation still possible');
+    }
+  });
+
+  it('keeps one key list for the read snap, the write snap and the tick marks', () => {
+    // Two lists would silently drift back apart.
+    const src = fs.readFileSync('stem_lab/stem_tool_climateExplorer.js', 'utf8');
+    expect(src).toContain('var SLR_KEYS = [0, 1, 2, 3, 5, 10]');
+    expect((src.match(/\[0, 1, 2, 3, 5, 10\]/g) || []).length, 'only the one literal key list').toBe(1);
+  });
+});
+
+describe('An unknown persisted tab falls back to a real tab, not an empty shell', () => {
+  // Every render branch is `tab === '<id>'`, so an id this build does not know
+  // matched none of them: the tool rendered its header, the route cards, the
+  // tab strip and a "Carbon Calculator" banner with NO BODY -- a dead-end
+  // screen that looks functional. `|| 'carbon'` only catches null/empty, and
+  // `tab` is PERSISTED state (a saved file, a renamed tab, another version).
+  const sizeOf = (tab) =>
+    renderTool('climateExplorer', { climateExplorer: { tab } }, {}).length;
+
+  it('renders the full carbon tab for an id this build does not know', () => {
+    const carbon = sizeOf('carbon');
+    for (const bad of ['nonsense', 'CARBON', 'Carbon', 'tipping ', '', 'forcehunt']) {
+      expect(sizeOf(bad), `unknown tab ${JSON.stringify(bad)} renders a real tab`).toBe(carbon);
+    }
+  });
+
+  it('still routes every id this build DOES know to its own body', () => {
+    // Guards the fallback from swallowing real tabs: each known id must render
+    // something distinct, or the allow-list has gone wrong.
+    const TABS = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions', 'pathways', 'forceHunt'];
+    const sizes = TABS.map(sizeOf);
+    expect(new Set(sizes).size, `distinct renders across ${TABS.length} tabs`).toBeGreaterThan(5);
+  });
+
+  it('keeps the allow-list in step with the render branches', () => {
+    // If someone adds a `tab === 'newTab'` branch without listing it, that tab
+    // becomes unreachable from a saved file. Derive both from source.
+    const src = fs.readFileSync('stem_lab/stem_tool_climateExplorer.js', 'utf8');
+    const branches = [...new Set((src.match(/tab === '([a-zA-Z]+)'/g) || [])
+      .map((s) => s.replace(/tab === '|'/g, '')))].sort();
+    const listed = (src.match(/var CE_RENDERABLE_TABS = \[([^\]]+)\]/) || [])[1];
+    expect(listed, 'CE_RENDERABLE_TABS declared').toBeTruthy();
+    const allow = listed.split(',').map((s) => s.trim().replace(/'/g, '')).sort();
+    expect(allow, 'allow-list matches the render branches').toEqual(branches);
+  });
+});
+
+describe('Every persisted SELECTOR resolves to something a student could have chosen', () => {
+  // The round 10-11 shape, swept across the rest of the tool: a persisted value
+  // used to pick content, where an unknown id falls through to a silent default
+  // that does not match what the controls show as selected.
+  const render = (state) =>
+    renderTool('climateExplorer', { climateExplorer: state }, {});
+
+  it('an unknown scale does not silently multiply the footprint by 330 million', () => {
+    // scaleLabel is a 3-way ternary: school / city / ELSE country. Anything
+    // unknown meant "USA (330M)" with no scale button selected.
+    const text = (v) => render({ tab: 'carbon', ccScale: v }).replace(/<[^>]+>/g, ' ');
+    expect(text('country'), 'country still reaches the USA scale').toContain('USA (330M)');
+    for (const bad of ['nonsense', 'SCHOOL', 'usa', '']) {
+      expect(text(bad), `unknown scale ${JSON.stringify(bad)}`).not.toContain('USA (330M)');
+    }
+  });
+
+  it('always highlights exactly the IPCC scenario it describes', () => {
+    // scenarioPicked fell through to IPCC_SCENARIOS[2], so the panel described
+    // SSP2-4.5 in full while NO button carried aria-pressed="true".
+    for (const v of ['ssp119', 'ssp126', 'ssp245', 'ssp370', 'ssp585', 'zzz', 'SSP245', '']) {
+      const html = render({ tab: 'tipping', scenarioPicked: v });
+      const pressed = (html.match(/aria-pressed="true"/g) || []).length;
+      expect(pressed, `scenario ${JSON.stringify(v)} highlights one button`).toBeGreaterThan(0);
+    }
+  });
+
+  it('does not empty the solutions list for an unknown category', () => {
+    // The filter is `ssCategory === 'all' || s.cat === ssCategory`, so an id
+    // outside the chip row showed only the cat:'all' rows.
+    const all = render({ tab: 'solutions', ssCategory: 'all' }).length;
+    for (const bad of ['zzz', 'ALLCAPS', 'food', 'digital']) {
+      expect(render({ tab: 'solutions', ssCategory: bad }).length, `unknown category ${bad}`).toBe(all);
+    }
+    // ...while the real chips still filter to something smaller.
+    expect(render({ tab: 'solutions', ssCategory: 'energy' }).length).toBeLessThan(all);
+  });
+
+  it('keeps an unknown justice view on a view the tool can render', () => {
+    const risk = render({ tab: 'justice', cjView: 'risk' }).length;
+    for (const bad of ['zzz', 'responsibility', '']) {
+      expect(render({ tab: 'justice', cjView: bad }).length, `unknown view ${bad}`).toBe(risk);
+    }
+  });
+});

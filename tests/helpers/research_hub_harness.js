@@ -93,6 +93,7 @@ export function setupHub() {
       applyMethodPackSelection: applyMethodPackSelection,
       stripPedagogicalFootguns: stripPedagogicalFootguns,
       enforceQuestionFormat: enforceQuestionFormat,
+      aiScalarText: aiScalarText,
       FOOTGUN_KEY_PATTERNS: FOOTGUN_KEY_PATTERNS,
       STORAGE_KEY: STORAGE_KEY,
       RECOVERY_STORAGE_KEY: RECOVERY_STORAGE_KEY,

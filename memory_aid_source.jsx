@@ -3499,7 +3499,7 @@ function MemoryAidView(props) {
                   {Object.entries(MEMORY_AID_REFLECTION_LEVELS).map(([id]) => <option key={id} value={id}>{trMeta('reflection', id, 'label', MEMORY_AID_REFLECTION_LEVELS)}</option>)}
                 </select>
               </label>
-              <label className={'flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2 text-sm font-bold ' + (data.reflectionLevel === 'none' ? 'border-slate-200 bg-slate-100 text-slate-500' : 'border-amber-300 bg-amber-50 text-slate-800')}>
+              <label className={'flex min-h-11 items-center gap-3 rounded-xl border px-3 py-2 text-sm font-bold ' + (data.reflectionLevel === 'none' ? 'border-slate-200 bg-slate-100 text-slate-600' : 'border-amber-300 bg-amber-50 text-slate-800')}>
                 <input type="checkbox" aria-label={tr('settings_require_aria', 'Require explanation before AI feedback in this resource')} checked={data.reflectionLevel !== 'none' && data.reasoningRequired} disabled={data.reflectionLevel === 'none'} onChange={(event) => commitField('reasoningRequired', event.target.checked)} />
                 <span>{tr('settings_require', 'Require an explanation before AI feedback')}</span>
               </label>

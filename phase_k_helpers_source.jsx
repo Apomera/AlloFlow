@@ -2593,7 +2593,7 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
               return <mark key={pIdx} className="bg-yellow-200 text-indigo-900 px-0.5 rounded">{renderedSubParts}</mark>;
           }
           if (isCode) {
-              return <code key={pIdx} className="bg-slate-100 text-pink-600 px-1 rounded font-mono text-xs border border-slate-400">{renderedSubParts}</code>;
+              return <code key={pIdx} className="bg-slate-100 text-pink-700 px-1 rounded font-mono text-xs border border-slate-400">{renderedSubParts}</code>;
           }
           return <span key={pIdx} className="whitespace-pre-line">{renderedSubParts}</span>;
       });

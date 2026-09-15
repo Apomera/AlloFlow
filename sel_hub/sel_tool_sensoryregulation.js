@@ -206,7 +206,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
 
       function sensoryCommandPanel() {
         var profileCount = Object.keys(d.profile || {}).filter(function(k) { return !!d.profile[k]; }).length;
-        var activities = (d.regulatingActivities || []).length;
+        var activities = ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).length;
         var accommodations = (d.myAccommodations || []).length;
         var profileMix = { seek: 0, avoid: 0, mixed: 0, typical: 0 };
         Object.keys(d.profile || {}).forEach(function(k) {
@@ -284,7 +284,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         ];
         var current = d.currentNeed;
         var info = NEEDS.find(function(item) { return item.id === current; }) || null;
-        var activities = d.regulatingActivities || [];
+        var activities = (Array.isArray(d.regulatingActivities) ? d.regulatingActivities : []);
         var chosenSupport = activities.find(function(item) { return item.label === d.activeSupport; }) || null;
 
         function chooseNeed(id) {
@@ -484,19 +484,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
           var label = document.getElementById('sens-act-label').value;
           var system = document.getElementById('sens-act-system').value;
           var when = document.getElementById('sens-act-when').value;
-          if (!label || !label.trim()) return;
+          if (!label || !label.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var entry = { label: label.trim(), system: system, when: when || 'as needed' };
-          setSens({ regulatingActivities: (d.regulatingActivities || []).concat([entry]) });
+          setSens({ regulatingActivities: ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).concat([entry]) });
           document.getElementById('sens-act-label').value = '';
           document.getElementById('sens-act-when').value = '';
         }
         function removeActivity(i) {
-          var nx = (d.regulatingActivities || []).slice();
+          var nx = ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).slice();
           nx.splice(i, 1);
           setSens({ regulatingActivities: nx });
         }
 
-        var activities = d.regulatingActivities || [];
+        var activities = (Array.isArray(d.regulatingActivities) ? d.regulatingActivities : []);
 
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.10)', borderTop: '1px solid rgba(34,197,94,0.3)', borderRight: '1px solid rgba(34,197,94,0.3)', borderBottom: '1px solid rgba(34,197,94,0.3)', borderLeft: '3px solid #22c55e', marginBottom: 14, fontSize: 13, color: _senFg('#bbf7d0'), lineHeight: 1.7 } },
@@ -575,7 +575,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       // ═══════════════════════════════════════════════════════════
       function renderAccommodations() {
         function addAccommodation(value) {
-          if (!value || !value.trim()) return;
+          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var list = (d.myAccommodations || []).slice();
           if (list.indexOf(value.trim()) === -1) list.push(value.trim());
           setSens({ myAccommodations: list });
@@ -587,7 +587,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         }
         function submitInput() {
           var el = document.getElementById('sens-acc-input');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           addAccommodation(el.value);
           el.value = '';
         }
@@ -697,7 +697,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
             ) : null,
 
             // Sensory diet
-            (d.regulatingActivities || []).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
+            ((Array.isArray(d.regulatingActivities) ? d.regulatingActivities : [])).length > 0 ? h('div', { style: { marginBottom: 14, pageBreakInside: 'avoid' } },
               h('div', { style: { background: _senBg('#15803d'), color: _senFg('#fff'), padding: '6px 12px', borderRadius: 4, marginBottom: 6, fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, '🥗 My sensory diet'),
               h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _senFg('#0f172a'), fontSize: 13, lineHeight: 1.85 } },
                 d.regulatingActivities.map(function(a, i) {

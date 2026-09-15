@@ -1,7 +1,7 @@
 /**
  * AlloFlow ClozeInteractionPanel Module
  * Auto-generated. Source: view_cloze_interaction_panel_source.jsx
- * Source SHA-256: 5186f5081a25be34
+ * Source SHA-256: 71234536b61a0fb4
  */
 (function() {
   'use strict';
@@ -60,7 +60,7 @@ function ClozeInteractionPanel(props) {
             setClozeCompletedSet(/* @__PURE__ */ new Set());
             playSound("click");
           },
-          className: "text-blue-600 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1",
+          className: "text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1",
           title: t("simplified.reset_activity")
         },
         /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }),

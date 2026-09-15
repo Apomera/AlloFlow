@@ -2045,7 +2045,7 @@ window.SelHub = window.SelHub || {
                 }),
                 h('button', { 'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
                   onClick: function() {
-                    if (!aiPrompt.trim()) return;
+                    if (!aiPrompt.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
                     if (!callGemini) { addToast('AI coach not available.', 'error'); return; }
                     upd({ aiLoading: true, aiResponse: null });
                     var sysPrompt = 'You are a warm, encouraging cultural awareness coach for a ' + band + ' school student. ' +

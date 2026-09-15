@@ -1,0 +1,27 @@
+{
+ "note": "WCAG AA contrast for Tailwind pairs in one class string. Ratchet: the count may only go DOWN. Remaining entries are under review; see project_student_view_review_2026-09-14.",
+ "updated": "2026-09-15",
+ "total": 39,
+ "files": {
+  "behavior_lens_module.js": 5,
+  "concept_pictionary_source.jsx": 2,
+  "escape_room_module.js": 1,
+  "misc_components_source.jsx": 1,
+  "reading_library_module.js": 4,
+  "sped_timelines_source.jsx": 1,
+  "student_analytics_module.js": 4,
+  "teacher_source.jsx": 1,
+  "udl_walkthrough_source.jsx": 1,
+  "view_analysis_source.jsx": 1,
+  "view_dbq_source.jsx": 1,
+  "view_export_preview_source.jsx": 5,
+  "view_fab_stack_source.jsx": 1,
+  "view_history_panel_source.jsx": 2,
+  "view_info_modal_source.jsx": 1,
+  "view_math_source.jsx": 2,
+  "view_pdf_audit_source.jsx": 1,
+  "view_persona_chat_source.jsx": 1,
+  "word_sounds_module.js": 3,
+  "word_sounds_setup_source.jsx": 1
+ }
+}

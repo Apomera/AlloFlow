@@ -454,7 +454,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
         }));
         addToast(t('analysis.grammar_dismissed') || 'Grammar notices cleared.', 'success');
       },
-      className: "w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-600 hover:bg-green-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
+      className: "w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-800 hover:bg-green-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 12
     }), t('analysis.dismiss_fixed') || 'Dismiss Fixed Notices')) : /*#__PURE__*/React.createElement("div", {

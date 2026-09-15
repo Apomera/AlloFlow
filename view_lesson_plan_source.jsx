@@ -487,7 +487,7 @@ function LessonPlanView(props) {
                                             setActiveStation && setActiveStation(station);
                                             addToast && addToast('✅ STEM Station created! Open STEAM Lab to see your curated tools.');
                                         }}
-                                        className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
+                                        className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
                                     >
                                         📌 Create Station
                                     </button>
@@ -514,7 +514,7 @@ function LessonPlanView(props) {
                                                         setShowStemLab && setShowStemLab(true);
                                                         setStemLabTab && setStemLabTab('explore');
                                                     }}
-                                                    className="text-xs font-bold text-emerald-600 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                                                    className="text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
                                                 >
                                                     Open Tool →
                                                 </button>

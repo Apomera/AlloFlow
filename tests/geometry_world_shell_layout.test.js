@@ -52,3 +52,43 @@ describe('Geometry World survives the shell on a phone', () => {
     expect(host.lastIndexOf('@media (max-width: 768px)', at)).toBeGreaterThan(at - 600);
   });
 });
+
+// Same sweep, another tool: Oratory's graph canvases are authored 600 CSS px wide and the host's setupHiDPI pins
+// that width inline (style.width outranks the w-full class), so on a phone in the shell the tool scrolled 255 px
+// sideways (144-tile real-shell sweep, 2026-09-15). The logical width now fits the parent's content box.
+describe('Oratory fits its graph canvases to the phone', () => {
+  it('sizes every HiDPI canvas from the parent content box, not its 600 px attribute', () => {
+    for (const file of ['stem_lab/stem_tool_oratory.js', 'desktop/web-app/public/stem_lab/stem_tool_oratory.js']) {
+      const source = readFileSync(file, 'utf8');
+      expect(source).toContain('function fitCanvasWidth(canvas) {');
+      expect(source).toContain("var avail = parent.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);");
+      expect(source.split('window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);').length - 1).toBe(9);
+      expect(source).not.toContain('setupHiDPI(canvas, canvas._logicalW || canvas.width');
+    }
+    // the host still pins style.width, which is why the tool must pass a fitted width
+    const host = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    expect(host).toContain("canvas.style.width = logicalW + 'px';");
+  });
+});
+
+// Same sweep: City Planning Lab's parcel cells are buttons, and the app's phone stylesheet gives every button a
+// 44 px minimum, so its twelve columns need 528 px and the whole STEAM Lab page scrolled sideways by 179 px on a
+// phone. The map now scrolls inside its own box, with the boundary lines inside the sized wrapper.
+describe('City Planning Lab scrolls its parcel map inside its own box', () => {
+  it('wraps the grid in an overflow-x container sized to its content', () => {
+    for (const file of ['stem_lab/stem_tool_citylab.js', 'desktop/web-app/public/stem_lab/stem_tool_citylab.js']) {
+      const source = readFileSync(file, 'utf8');
+      const wrapper = source.indexOf("h('div', { className: 'w-full overflow-x-auto', style: { WebkitOverflowScrolling: 'touch' } },");
+      expect(wrapper, file).toBeGreaterThan(-1);
+      const sized = source.indexOf("h('div', { className: 'relative', style: { width: 'max-content', minWidth: '100%', maxWidth: '528px' } },", wrapper);
+      expect(sized).toBeGreaterThan(wrapper);
+      const grid = source.indexOf("gridTemplateColumns: 'repeat(12, 1fr)'", sized);
+      expect(grid).toBeGreaterThan(sized);
+      const lines = source.indexOf("className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)", grid);
+      expect(lines, 'boundary lines stay inside the sized wrapper').toBeGreaterThan(grid);
+      expect(lines - wrapper).toBeLessThan(700);
+    }
+    const host = readFileSync('ui_font_library_module.js', 'utf8');
+    expect(host).toMatch(/@media \(max-width: 768px\) \{\s*button, \[role="button"\], a\[href\], select/);
+  });
+});

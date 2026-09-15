@@ -8459,10 +8459,10 @@ const d = labToolData.artStudio || {};
               else harmonyType = 'rainbow';
               var hMeta = {
                 complementary: { label: __alloT('stem.artstudio.complementary_2_opposites', '⚫⚪ Complementary (2 opposites)'), desc: __alloT('stem.artstudio.maximum_contrast_pop_art_brand_accents', 'Maximum contrast. Pop art, brand accents.') },
-                triadic:       { label: __alloT('stem.artstudio.triadic_3_equidistant', '🔺 Triadic (3 equidistant)'), desc: __alloT('stem.artstudio.vibrant_but_balanced_childrens_books_c', 'Vibrant but balanced. Childrens books, cartoons.') },
+                triadic:       { label: __alloT('stem.artstudio.triadic_3_equidistant', '🔺 Triadic (3 equidistant)'), desc: __alloT('stem.artstudio.vibrant_but_balanced_childrens_books_c', 'Vibrant but balanced. Children’s books, cartoons.') },
                 tetradic:      { label: __alloT('stem.artstudio.tetradic_4_corners', '◇ Tetradic (4 corners)'), desc: __alloT('stem.artstudio.rich_palette_with_two_opposing_pairs', 'Rich palette with two opposing pairs.') },
                 analogous:     { label: __alloT('stem.artstudio.analogous_low_saturation_neighbors', '🌅 Analogous (low saturation neighbors)'), desc: __alloT('stem.artstudio.calm_harmonious_landscape_painting', 'Calm, harmonious — landscape painting.') },
-                rainbow:       { label: __alloT('stem.artstudio.rainbow_many_vivid_hues', '🌈 Rainbow (many vivid hues)'), desc: __alloT('stem.artstudio.energetic_playful_childrens_design', 'Energetic, playful — childrens design.') }
+                rainbow:       { label: __alloT('stem.artstudio.rainbow_many_vivid_hues', '🌈 Rainbow (many vivid hues)'), desc: __alloT('stem.artstudio.energetic_playful_childrens_design', 'Energetic, playful — children’s design.') }
               }[harmonyType];
               function logObs() {
                 setIQ({ log: (iq.log || []).concat([{ h: iq.baseHue, s: iq.satBlend, l: iq.litVar, r: iq.rotation, n: iq.paletteSize, t: harmonyType }]).slice(-8) });
@@ -12176,9 +12176,11 @@ const d = labToolData.artStudio || {};
 
                                   var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = img.width; c.height = img.height;
 
-                                  c.getContext('2d').drawImage(img, 0, 0);
+                                  var aiPatCtx = c.getContext('2d');
+                                  if (!aiPatCtx) return;
+                                  aiPatCtx.drawImage(img, 0, 0);
 
-                                  upd('stereoAiPatternImg', { width: img.width, height: img.height, data: c.getContext('2d').getImageData(0,0,img.width,img.height).data });
+                                  upd('stereoAiPatternImg', { width: img.width, height: img.height, data: copyArtStudioPixels(aiPatCtx.getImageData(0, 0, img.width, img.height)) });
 
                                   upd('stereoAiGen', null);
 
@@ -13005,7 +13007,9 @@ const d = labToolData.artStudio || {};
 
                         if (!c) return;
 
-                        var imgData = c.getContext('2d').getImageData(0, 0, c.width, c.height);
+                        var captureCtx = c.getContext('2d');
+                        if (!captureCtx) return;
+                        var imgData = captureCtx.getImageData(0, 0, c.width, c.height);
 
                         var kf = d.stereoAnimKeyframes ? d.stereoAnimKeyframes.slice() : [];
 
@@ -13100,7 +13104,9 @@ const d = labToolData.artStudio || {};
 
                               var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = kf.width; temp.height = kf.height;
 
-                              temp.getContext('2d').putImageData(imgData, 0, 0);
+                              var tempCtx = temp.getContext('2d');
+                              if (!tempCtx) return;
+                              tempCtx.putImageData(imgData, 0, 0);
 
                               ctx.drawImage(temp, 0, 0, 60, 60);
 
@@ -13192,7 +13198,9 @@ const d = labToolData.artStudio || {};
 
                         var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = ud.width; temp.height = ud.height;
 
-                        temp.getContext('2d').putImageData(imgData, 0, 0);
+                        var tempCtx = temp.getContext('2d');
+                        if (!tempCtx) return;
+                        tempCtx.putImageData(imgData, 0, 0);
 
                         ctx.drawImage(temp, 0, 0, 80, 80);
 
@@ -13303,9 +13311,11 @@ const d = labToolData.artStudio || {};
 
                                 var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
-                                c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                                var depthCtx = c.getContext('2d');
+                                if (!depthCtx) return;
+                                depthCtx.drawImage(img, 0, 0, 400, 400);
 
-                                var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+                                var imgData = depthCtx.getImageData(0, 0, 400, 400);
 
                                 upd('stereoAnimAiDepth', { width: 400, height: 400, data: copyArtStudioPixels(imgData) });
 
@@ -13349,7 +13359,9 @@ const d = labToolData.artStudio || {};
 
                           var temp = document.createElement('canvas'); temp.setAttribute('aria-hidden', 'true'); temp.width = ad.width; temp.height = ad.height;
 
-                          temp.getContext('2d').putImageData(imgData, 0, 0);
+                          var tempCtx = temp.getContext('2d');
+                          if (!tempCtx) return;
+                          tempCtx.putImageData(imgData, 0, 0);
 
                           ctx.drawImage(temp, 0, 0, 80, 80);
 
@@ -13596,9 +13608,11 @@ const d = labToolData.artStudio || {};
 
                                   var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
-                                  c.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                                  var depthCtx = c.getContext('2d');
+                                  if (!depthCtx) { resolve(null); return; }
+                                  depthCtx.drawImage(img, 0, 0, 400, 400);
 
-                                  var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
+                                  var imgData = depthCtx.getImageData(0, 0, 400, 400);
 
                                   resolve({ width: 400, height: 400, data: imgData.data });
 
@@ -13922,7 +13936,8 @@ const d = labToolData.artStudio || {};
 
                                   var dmc = document.getElementById('depthMapCanvas');
 
-                                  if (dmc) srcData = dmc.getContext('2d').getImageData(0, 0, dmc.width, dmc.height);
+                                  var dmcCtx = dmc ? dmc.getContext('2d') : null;
+                                  if (dmcCtx) srcData = dmcCtx.getImageData(0, 0, dmc.width, dmc.height);
 
                                 }
 

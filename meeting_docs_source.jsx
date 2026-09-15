@@ -632,7 +632,7 @@ function MeetingDocsPanel(props) {
                 <p className="text-sm font-bold text-slate-800">{draftTemplate.name} <span className="font-normal text-xs text-slate-500">— {tt('meetdocs.review_hint', 'review and edit before saving')}</span></p>
                 <div className="flex gap-2">
                   <button type="button" onClick={() => setDraft((d) => ({ ...d, stage: 'input' }))} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{tt('meetdocs.back_input', 'Back to notes')}</button>
-                  <button type="button" onClick={saveMeeting} className="min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">{tt('meetdocs.save', 'Save record')}</button>
+                  <button type="button" onClick={saveMeeting} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{tt('meetdocs.save', 'Save record')}</button>
                 </div>
               </div>
               {draft.aiUsed && <p className="text-[10px] text-slate-500 mb-2">{tt('meetdocs.certify_note', 'AI drafted this from your notes. You are certifying the final record — verify flagged items and edit anything that is wrong before saving.')}</p>}
@@ -671,7 +671,7 @@ function MeetingDocsPanel(props) {
                           </div>
                           <button type="button" aria-label={tt('meetdocs.remove_item_aria', 'Remove item') + ' ' + (i + 1)}
                             onClick={() => setDraft((d) => ({ ...d, [listKey]: d[listKey].filter((_, xi) => xi !== i) }))}
-                            className="shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-slate-400 hover:text-rose-700 hover:bg-rose-50">✕</button>
+                            className="shrink-0 min-w-9 min-h-9 inline-flex items-center justify-center rounded text-slate-600 hover:text-rose-700 hover:bg-rose-50">✕</button>
                         </div>
                       </li>
                     ))}
@@ -750,7 +750,7 @@ function MeetingDocsPanel(props) {
                         <span className="block font-bold text-sm text-slate-800">{m.title}</span>
                         <span className="block text-[10px] text-slate-500">{m.templateName} · {m.date} · {(m.actionItems || []).filter((a) => !a.done).length} {tt('meetdocs.open_short', 'open action item(s)')}</span>
                       </span>
-                      <span aria-hidden="true" className="shrink-0 text-slate-400">›</span>
+                      <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
                   </li>
                 ))}
@@ -768,7 +768,7 @@ function MeetingDocsPanel(props) {
                   <li key={item.meetingId + item.id} className={'flex items-center gap-2 p-2 rounded-xl border text-xs ' + (item.overdue ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-300')}>
                     <input type="checkbox" checked={item.done} onChange={(e) => setItemDone(item.meetingId, item.id, e.target.checked)}
                       aria-label={tt('meetdocs.done_aria', 'Mark done:') + ' ' + item.text} className="w-4 h-4 shrink-0" />
-                    <span className={'min-w-0 flex-1 ' + (item.done ? 'line-through text-slate-400' : 'text-slate-700')}>
+                    <span className={'min-w-0 flex-1 ' + (item.done ? 'line-through text-slate-600' : 'text-slate-700')}>
                       {item.text}{item.owner ? (' — ' + item.owner) : ''}
                     </span>
                     <span className="shrink-0 text-[10px] text-slate-500">

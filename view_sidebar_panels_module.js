@@ -386,7 +386,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
       disabled,
       className: premium ? `${SIDEBAR_PANEL_UI.disclosure} ${hasValue ? "border-indigo-200 bg-indigo-50/70 text-indigo-800" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}` : `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? "border-indigo-200 bg-indigo-50/60 text-indigo-800" : "border-transparent text-slate-600 hover:bg-slate-50"}`
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 font-normal" }, " ", t("common.optional")))),
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, " ", t("common.optional")))),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: `shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
   ), isOpen && /* @__PURE__ */ React.createElement(
     "textarea",
@@ -1491,7 +1491,7 @@ function MathPanel(props) {
       {
         type: "button",
         onClick: launchMaze,
-        className: "w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all motion-reduce:transition-none shadow-md flex items-center justify-center gap-2",
+        className: "w-full px-4 py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all motion-reduce:transition-none shadow-md flex items-center justify-center gap-2",
         "aria-label": t("fluency_maze.open_aria") || "Open Fluency Maze in main view"
       },
       t("fluency_maze.open_button") || "\u{1F6AA} Open Maze (full view)"
@@ -1775,7 +1775,7 @@ function DbqPanel(props) {
           addToast && addToast(t("toasts.clipboard_access_failed"), "info");
         }
       },
-      className: "px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
+      className: "px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1",
       "aria-label": t("dbq.paste_clipboard_aria") || "Paste image from clipboard"
     },
     t("dbq.paste_clipboard_button") || "\u{1F4CB} Paste Image"

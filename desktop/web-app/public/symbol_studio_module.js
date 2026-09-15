@@ -6981,7 +6981,7 @@
             gallery.forEach(function (s) { var k = s.label.trim().toLowerCase(); if (k && !seen[k]) { seen[k] = 1; ct++; } });
             savedBoards.forEach(function (b) { (b.words || []).forEach(function (w) { var k = w.label.trim().toLowerCase(); if (k && !seen[k]) { seen[k] = 1; ct++; } }); });
             if (ct === 0) return null;
-            return e('span', { style: { position: 'absolute', top: '-4px', right: '-8px', background: '#059669', color: '#fff', fontSize: '8px', fontWeight: 800, borderRadius: '6px', padding: '0 4px', lineHeight: '14px', minWidth: '14px', textAlign: 'center' } }, ct > 99 ? '99+' : ct);
+            return e('span', { style: { position: 'absolute', top: '-4px', right: '-8px', background: '#047857', color: '#fff', fontSize: '8px', fontWeight: 800, borderRadius: '6px', padding: '0 4px', lineHeight: '14px', minWidth: '14px', textAlign: 'center' } }, ct > 99 ? '99+' : ct);
           })()),
         t.label);
     }
@@ -7676,12 +7676,12 @@
             e('div', { style: { height: '12px', background: '#e5e7eb', borderRadius: '6px', overflow: 'hidden' } },
               e('div', { style: { height: '100%', width: pctDone + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a78bfa)', borderRadius: '6px', transition: 'width 0.5s' } })
             ),
-            questBoardPos >= pathLen && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 700, color: '#059669' } }, '🏆 Quest Complete! You finished the practice path!')
+            questBoardPos >= pathLen && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 700, color: '#047857' } }, '🏆 Quest Complete! You finished the practice path!')
           ),
           // Stats
           questTotal > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
             e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
-              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#059669' } }, questCorrectCount),
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#047857' } }, questCorrectCount),
               e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'correct')
             ),
             e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
@@ -7895,7 +7895,7 @@
           memWon
             ? e('div', { style: { textAlign: 'center', padding: '20px' } },
                 e('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🏆'),
-                e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#059669' } }, 'All matched in ' + memMoves + ' moves!'),
+                e('div', { style: { fontSize: '16px', fontWeight: 700, color: '#047857' } }, 'All matched in ' + memMoves + ' moves!'),
                 e('button', { onClick: function () { initializeMemory(pool); }, 'aria-label': 'Play Again', style: Object.assign({}, S.btn(PURPLE, '#fff', false), { marginTop: '12px' }) }, '🔄 Play Again')
               )
             : e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', maxWidth: '400px' } },
@@ -7947,7 +7947,7 @@
       requesting:  { icon: '🗣️', label: 'Requesting', color: '#7c3aed', words: 'want,more,help,give,get,need,can i,please,i want,open,turn on,play,read,eat,drink,go,come here,my turn,more food'.split(',') },
       rejecting:   { icon: '🚫', label: 'Rejecting', color: '#dc2626', words: 'no,stop,all done,don\'t want,not,finished,go away,yucky,leave me,enough'.split(',') },
       commenting:  { icon: '👀', label: 'Commenting', color: '#2563eb', words: 'look,funny,big,little,pretty,cool,yummy,uh oh,wow,good,bad,different,same,new,broken,hot,cold,fast,slow,loud,quiet'.split(',') },
-      social:      { icon: '👋', label: 'Social', color: '#059669', words: 'hi,bye,hello,goodbye,thank you,sorry,please,excuse me,good morning,goodnight,good job,welcome,nice,friend,share'.split(',') },
+      social:      { icon: '👋', label: 'Social', color: '#047857', words: 'hi,bye,hello,goodbye,thank you,sorry,please,excuse me,good morning,goodnight,good job,welcome,nice,friend,share'.split(',') },
       questioning: { icon: '❓', label: 'Questioning', color: '#d97706', words: 'what,where,when,who,why,how,what is,where is,can i,is it,do you'.split(',') },
       expressing:  { icon: '😊', label: 'Expressing', color: '#ec4899', words: 'happy,sad,angry,scared,tired,frustrated,excited,worried,bored,proud,silly,surprised,hurt,sick,better,love,like'.split(',') }
     };
@@ -8437,7 +8437,7 @@
           // All-time stats
           srchStats.sessions > 0 && e('div', { style: { display: 'flex', gap: '8px', width: '100%', maxWidth: '400px' } },
             e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
-              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#059669' } }, srchStats.totalCorrect),
+              e('div', { style: { fontSize: '18px', fontWeight: 800, color: '#047857' } }, srchStats.totalCorrect),
               e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'all-time correct')
             ),
             e('div', { style: { flex: 1, background: '#faf5ff', borderRadius: '8px', padding: '8px', textAlign: 'center' } },
@@ -8538,7 +8538,7 @@
             e('div', { style: { marginTop: '8px', fontSize: '12px', color: '#7c3aed', fontWeight: 600 } },
               srchSpeaking ? 'Playing...' : 'Tap 🔊 to hear again · 🐢 for slow'),
             // Reveal hint
-            srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+            srchRevealed && srchTarget && e('div', { style: { marginTop: '8px', fontSize: '16px', fontWeight: 800, color: '#047857', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               '→ ' + srchTarget.label)
           ),
           feedbackBar,
@@ -8616,7 +8616,7 @@
             e('div', { style: { marginTop: '6px', fontSize: '11px', color: '#7c3aed', fontWeight: 600 } },
               srchSpeaking ? 'Playing...' : srchSentenceTarget.length + ' words — 🔊 normal · 🐢 slow'),
             // Reveal full phrase hint
-            srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
+            srchRevealed && e('div', { style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: '#047857', background: '#dcfce7', display: 'inline-block', padding: '4px 14px', borderRadius: '8px' } },
               phraseText)
           ),
           feedbackBar,
@@ -8746,7 +8746,7 @@
               e('button', { onClick: function () { setGardenStudentView(false); }, 'aria-label': 'Teacher view', style: { fontSize: '10px', color: '#6b7280', background: 'rgba(255,255,255,0.7)', border: '1px solid #d1d5db', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer' } }, '👩‍🏫 Teacher View')),
             e('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🌱'),
             e('h2', { style: { fontSize: '22px', fontWeight: 800, color: '#1f2937', margin: '0 0 4px' } }, sName + '\'s Word Garden'),
-            e('p', { style: { fontSize: '16px', fontWeight: 600, color: '#059669', margin: 0 } }, total + ' words growing!'),
+            e('p', { style: { fontSize: '16px', fontWeight: 600, color: '#047857', margin: 0 } }, total + ' words growing!'),
             milestone && e('div', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', padding: '6px 16px', background: '#fef9c3', borderRadius: '20px', border: '2px solid #facc15', fontSize: '14px', fontWeight: 700, color: '#92400e' } }, e('span', null, milestone.icon), e('span', null, milestone.text)),
             // Lexical diversity celebration (student-friendly)
             (function () {
@@ -8861,7 +8861,7 @@
               w.hasVoice && e('p', { style: { fontSize: '11px', color: '#ec4899', margin: '4px 0 0', fontWeight: 600 } }, '❤️ This word has a loved one\'s recorded voice'))),
           // Stats
           e('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' } },
-            e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#059669' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'contexts')),
+            e('div', { style: { background: '#f0fdf4', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#047857' } }, w.uniqueContextCount), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'contexts')),
             e('div', { style: { background: '#eff6ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#2563eb' } }, w.taps || 0), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'AAC taps')),
             e('div', { style: { background: '#faf5ff', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: PURPLE } }, (function () { var tq = (w.questCorrect || 0) + (w.questWrong || 0); return tq > 0 ? Math.round(w.questCorrect / tq * 100) + '%' : '—'; })()), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'quest accuracy')),
             e('div', { style: { background: '#fefce8', borderRadius: '10px', padding: '12px', textAlign: 'center' } }, e('div', { style: { fontSize: '22px', fontWeight: 800, color: '#b45309' } }, Math.round((w.famScore || 0) * 100)), e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'familiarity %'))),
@@ -9061,7 +9061,7 @@
             var trend = thisWeek > lastWeek ? '📈' : thisWeek < lastWeek ? '📉' : '➡️';
             var trendColor = thisWeek > lastWeek ? '#059669' : thisWeek < lastWeek ? '#dc2626' : '#6b7280';
             return e('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', padding: '6px 12px', background: '#f0fdf4', borderRadius: '8px', marginBottom: '4px', fontSize: '11px' } },
-              e('span', { style: { fontWeight: 700, color: '#059669' } }, '🌿 ' + thisWeek + ' words practiced this week'),
+              e('span', { style: { fontWeight: 700, color: '#047857' } }, '🌿 ' + thisWeek + ' words practiced this week'),
               lastWeek > 0 && e('span', { style: { color: trendColor, fontWeight: 600 } }, trend + ' ' + (thisWeek > lastWeek ? '+' : '') + (thisWeek - lastWeek) + ' vs last week'));
           })(),
           // Lexical diversity — strongest single predictor of linguistic competence (AssistiveWare research)
@@ -9137,7 +9137,7 @@
                   e('span', { style: { fontSize: '12px', fontWeight: 700, color: fct.color } }, 'FCT: ' + fct.label + ' → Communication Replacements')),
                 e('p', { style: { fontSize: '11px', color: '#374151', margin: '0 0 8px', lineHeight: 1.5 } }, fct.tip),
                 mastered.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
-                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669' } }, '✅ Ready:'),
+                  e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#047857' } }, '✅ Ready:'),
                   mastered.map(function (w) { return e('span', { key: w.key, style: { padding: '1px 6px', borderRadius: '8px', background: '#dcfce7', fontSize: '10px', fontWeight: 600, color: '#15803d' } }, w.displayLabel); })),
                 growing.length > 0 && e('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' } },
                   e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#d97706' } }, '🌿 Growing:'),
@@ -10401,7 +10401,7 @@
                 // Summary row
                 e('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
                   e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
-                    e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#059669' } }, totalUtterances),
+                    e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#047857' } }, totalUtterances),
                     e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'total')
                   ),
                   e('div', { style: { flex: 1, background: '#eff6ff', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
@@ -10465,7 +10465,7 @@
                       e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'unique words')
                     ),
                     e('div', { style: { flex: 1, background: '#f0fdf4', borderRadius: '7px', padding: '6px', textAlign: 'center' } },
-                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#059669' } }, diversityPct + '%'),
+                      e('div', { style: { fontSize: '16px', fontWeight: 800, color: '#047857' } }, diversityPct + '%'),
                       e('div', { style: { fontSize: '9px', color: '#6b7280' } }, 'diversity')
                     )
                   );
@@ -10582,11 +10582,11 @@
                 e('div', { style: { display: 'flex', gap: '4px', marginTop: '6px' } },
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, true, 'manual', true); },
-                    'aria-label': 'Record successful IEP trial', style: { fontSize: '10px', background: '#dcfce7', color: '#16a34a', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': 'Record successful IEP trial', style: { fontSize: '10px', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✓ Success'),
                   e('button', {
                     onClick: function () { recordIepTrial(g.id, false, 'manual', true); },
-                    'aria-label': 'Record unsuccessful IEP trial', style: { fontSize: '10px', background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
+                    'aria-label': 'Record unsuccessful IEP trial', style: { fontSize: '10px', background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: '5px', padding: '2px 8px', cursor: 'pointer', fontWeight: 600 }
                   }, '✗ No response')
                 )
               );
@@ -11067,7 +11067,7 @@
           }).slice(0, 6);
           if (seeds.length === 0) return null;
           return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
-            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow here:'),
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#047857', whiteSpace: 'nowrap' } }, '🌱 Could grow here:'),
             seeds.map(function (w) {
               return e('button', { key: w.key, onClick: function () {
                 setBoardWords(function (prev) {
@@ -11459,7 +11459,7 @@
                       ? e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, spinner(24))
                       : word.image
                         ? e('img', { src: word.image, alt: word.label, style: { width: imgSz, height: imgSz, objectFit: 'contain', borderRadius: '6px', background: '#fff' } })
-                        : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#6b7280', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
+                        : e('div', { style: { width: imgSz, height: imgSz, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '6px', fontSize: '11px', color: '#4b5563', textAlign: 'center', padding: '4px' } }, 'Click \u2728'),
                     // Label below image (default)
                     boardTextPos === 'below' && e('span', { style: { fontSize: boardTextSize + 'px', fontWeight: 700, color: theme.textColor, textAlign: 'center', lineHeight: 1.3 } },
                       word.translatedLabel || word.label,
@@ -11556,7 +11556,7 @@
           }).slice(0, 5);
           if (needsSched.length === 0) return null;
           return e('div', { style: { flexShrink: 0, display: 'flex', gap: '6px', alignItems: 'center', padding: '6px 10px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #d1fae5', flexWrap: 'wrap' } },
-            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' } }, '🌱 Could grow in a sequence:'),
+            e('span', { style: { fontSize: '10px', fontWeight: 600, color: '#047857', whiteSpace: 'nowrap' } }, '🌱 Could grow in a sequence:'),
             needsSched.map(function (w) {
               return e('button', { key: w.key, onClick: function () {
                 setSchedInput(function (prev) { return prev ? prev + '\n' + w.displayLabel : w.displayLabel; });
@@ -12096,7 +12096,7 @@
           e('p', { style: { fontSize: '13px', color: '#6b7280', margin: '0 0 16px' } }, db.boardTitle),
           e('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' } },
             e('div', { style: { background: '#f0fdf4', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
-              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#059669' } }, db.totalTaps),
+              e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#047857' } }, db.totalTaps),
               e('div', { style: { fontSize: '10px', color: '#6b7280' } }, 'taps')),
             e('div', { style: { background: '#eff6ff', borderRadius: '12px', padding: '12px 16px', textAlign: 'center' } },
               e('div', { style: { fontSize: '28px', fontWeight: 800, color: '#2563eb' } }, db.uniqueCount),
@@ -12114,7 +12114,7 @@
           db.wishCount > 0 && e('div', { style: { marginBottom: '10px', padding: '8px 14px', background: '#faf5ff', borderRadius: '10px', border: '1px solid #c4b5fd' } },
             e('div', { style: { fontSize: '12px', fontWeight: 700, color: '#7c3aed', marginBottom: '2px' } }, '💫 ' + db.wishCount + ' wish seed' + (db.wishCount !== 1 ? 's' : '') + ' planted'),
             e('div', { style: { fontSize: '11px', color: '#6b7280' } }, db.wishLabels.join(', ') + ' — you noticed what they were reaching for')),
-          e('p', { style: { fontSize: '12px', color: '#059669', fontWeight: 600, fontStyle: 'italic', margin: 0 } }, db.wishCount > 0 ? 'The reaching is how the growing starts. 💫' : 'Every word waters the garden. 🌱'),
+          e('p', { style: { fontSize: '12px', color: '#047857', fontWeight: 600, fontStyle: 'italic', margin: 0 } }, db.wishCount > 0 ? 'The reaching is how the growing starts. 💫' : 'Every word waters the garden. 🌱'),
           e('p', { style: { fontSize: '10px', color: '#9ca3af', marginTop: '12px' } }, 'Tap anywhere to close')));
     }
     if (useBoardId) {
@@ -12352,7 +12352,7 @@
             onClick: function () { setShowCommLog(function (v) { return !v; }); },
             'aria-label': 'Toggle communication log', style: { background: showCommLog ? '#7c3aed' : '#334155', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '📋 Log (' + commLog.filter(function (c) { return c.label !== '__UTTERANCE__'; }).length + ')'),
-          e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
+          e('button', { onClick: exitUse, 'aria-label': 'Exit AAC mode', style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' } }, '✕ Exit')
         ),
         // ── Page tabs (multi-page boards) ──
         usePages && e('div', { role: 'tablist', 'aria-label': 'Communication board pages', style: { background: '#0f172a', borderBottom: '1px solid #1e293b', padding: '6px 16px', display: 'flex', gap: '6px', flexShrink: 0, overflowX: 'auto' } },
@@ -12486,7 +12486,7 @@
               e('span', { style: { color: '#a78bfa', fontWeight: 800, fontSize: '13px' } }, '\uD83D\uDCCB Session Log'),
               e('div', { style: { display: 'flex', gap: '6px' } },
                 commLog.length > 0 && e('button', { onClick: exportLog, 'aria-label': 'Export communication log', style: { background: '#1e293b', color: '#94a3b8', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDCBE CSV'),
-                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', style: { background: '#1e293b', color: '#ef4444', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
+                commLog.length > 0 && e('button', { onClick: function () { setCommLog([]); }, 'aria-label': 'Clear communication log', style: { background: '#1e293b', color: '#f87171', border: 'none', borderRadius: '5px', padding: '3px 8px', cursor: 'pointer', fontSize: '11px' } }, '\uD83D\uDDD1 Clear')
               )
             ),
             e('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
@@ -12596,7 +12596,7 @@
           }, scanPaused ? '▶ Resume' : '⏸ Pause'),
           e('button', {
             onClick: exitScan,
-            'aria-label': 'Exit scanning mode', style: { background: '#ef4444', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
+            'aria-label': 'Exit scanning mode', style: { background: '#b91c1c', color: '#fff', border: 'none', borderRadius: '7px', padding: '6px 14px', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }
           }, '✕ Exit')
         ),
         // Cell grid

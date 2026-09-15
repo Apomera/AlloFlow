@@ -581,7 +581,48 @@
           }
           var rendered;
           try { rendered = tool.render(renderCtx); }
-          catch(e) { console.error('[SelHub] Error rendering ' + id, e); return null; }
+          catch(e) {
+            console.error('[SelHub] Error rendering ' + id, e);
+            // A bare `return null` here showed the student an EMPTY SCREEN with
+            // no explanation and no way back. Their saved work still exists —
+            // say so, and always give them the door out.
+            if (!hasReact) return null;
+            var _h = ctx.React.createElement;
+            return _h('div', {
+              role: 'alert',
+              style: {
+                padding: '28px 24px', margin: 16, borderRadius: 12,
+                background: shellIsContrast ? '#000000' : '#1e293b',
+                border: '2px solid ' + (shellIsContrast ? '#ffff00' : '#f59e0b'),
+                color: shellIsContrast ? '#ffff00' : '#e2e8f0',
+                maxWidth: 560, marginLeft: 'auto', marginRight: 'auto', textAlign: 'center'
+              }
+            },
+              _h('div', { 'aria-hidden': 'true', style: { fontSize: 32, marginBottom: 10 } }, '\uD83D\uDEE0\uFE0F'),
+              _h('h2', { style: { margin: '0 0 8px', fontSize: 18, fontWeight: 800 } },
+                'This tool could not open'),
+              _h('p', { style: { margin: '0 0 6px', fontSize: 14, lineHeight: 1.55 } },
+                'Something in the saved information for this activity did not load. '
+                + 'This is not something you did wrong.'),
+              _h('p', { style: { margin: '0 0 16px', fontSize: 14, lineHeight: 1.55, fontWeight: 700 } },
+                'Your saved work has not been deleted.'),
+              _h('button', {
+                type: 'button',
+                onClick: function() {
+                  if (ctx && typeof ctx.setSelHubTool === 'function') ctx.setSelHubTool(null);
+                },
+                style: {
+                  minHeight: 44, padding: '10px 20px', borderRadius: 8, cursor: 'pointer',
+                  border: '1px solid ' + (shellIsContrast ? '#ffff00' : '#38bdf8'),
+                  background: shellIsContrast ? '#000000' : '#0ea5e9',
+                  color: shellIsContrast ? '#ffff00' : '#ffffff',
+                  fontSize: 14, fontWeight: 800
+                }
+              }, '\u2190 Back to the SEL Hub'),
+              _h('p', { style: { margin: '14px 0 0', fontSize: 12, opacity: 0.85 } },
+                'If this keeps happening, tell your teacher which activity it was.')
+            );
+          }
           if (rendered == null) return null;
           var body = rendered;
           // ── WCAG dark-shell auto-wrap ──

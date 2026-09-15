@@ -169,7 +169,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // MAP — SVG visualization
       // ═══════════════════════════════════════════════════════════
       function renderMap() {
-        var nodes = d.nodes || [];
+        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
         // Center coords
         var cx = 320, cy = 320;
         var rOuter = 230;
@@ -348,7 +348,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // LIST / EDIT — add/edit connections via form
       // ═══════════════════════════════════════════════════════════
       function renderList() {
-        var nodes = d.nodes || [];
+        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
 
         function startAdd(systemId) { setEM({ addingForSystem: systemId, editingNodeId: null }); }
         function startEdit(id) { setEM({ editingNodeId: id, addingForSystem: null }); }
@@ -365,7 +365,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
           var stress = document.getElementById('em-form-stress');
           var direction = document.getElementById('em-form-direction');
           var notes = document.getElementById('em-form-notes');
-          if (!lbl || !lbl.value.trim()) return;
+          if (!lbl || !lbl.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var entry = {
             label: lbl.value.trim(),
             strength: strength ? strength.value : 'medium',
@@ -480,7 +480,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // REFLECT — pattern questions
       // ═══════════════════════════════════════════════════════════
       function renderReflect() {
-        var nodes = d.nodes || [];
+        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
         var stressful = nodes.filter(function(n) { return n.stress === 'stressful'; });
         var fromMe = nodes.filter(function(n) { return n.direction === 'fromMe'; });
         var toMe = nodes.filter(function(n) { return n.direction === 'toMe'; });
@@ -539,7 +539,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var nodes = d.nodes || [];
+        var nodes = (Array.isArray(d.nodes) ? d.nodes : []);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _ecoFg('#fecdd3'), lineHeight: 1.55 } },

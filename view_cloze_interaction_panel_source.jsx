@@ -51,7 +51,7 @@ function ClozeInteractionPanel(props) {
                                 setClozeCompletedSet(new Set());
                                 playSound('click');
                             }}
-                            className="text-blue-600 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
+                            className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
                             title={t('simplified.reset_activity')}
                         >
                             <RefreshCw size={12}/> Reset

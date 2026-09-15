@@ -177,10 +177,35 @@ describe('every quest can actually be earned', () => {
   });
 
   it('gives each section that has a quest a matching anchor', () => {
-    // Weak but useful: a quest whose section was deleted would survive here.
+    // The old form of this test bounded quests at sections + 2, which never
+    // checked what its comment claimed: the count says nothing about WHICH
+    // section a quest belongs to, and the slack was a magic number that had to
+    // be raised every time a read-only section earned an interaction. Check the
+    // actual relationship instead — every quest must name a section that still
+    // exists. Most quest ids equal their section id; the rest either use an
+    // older spelling of it or deliberately cut across the whole tool.
     const sections = [...SRC.matchAll(/sec\('([a-z0-9]+)'/g)].map((m) => m[1]);
     expect(sections.length).toBeGreaterThanOrEqual(19);
-    expect(quests.length).toBeLessThanOrEqual(sections.length + 2);
+
+    // Quest id -> the section it is earned in, where the two names differ.
+    const ALIASES = {
+      decay: 'halflife',
+      shield: 'shielding',
+      enrich: 'enrichment',
+      dose: 'doseladder',
+      count: 'detect',
+      invsq: 'detect',
+      collective: 'lowdose',
+      incidents: 'accidents',
+    };
+    // Earned across the tool rather than inside one section.
+    const CROSS_CUTTING = new Set(['ponder', 'paths']);
+
+    const orphans = quests
+      .map((q) => q.id.replace(/^nk_/, ''))
+      .filter((id) => !CROSS_CUTTING.has(id))
+      .filter((id) => !sections.includes(ALIASES[id] || id));
+    expect(orphans, 'quest(s) point at a section that no longer exists').toEqual([]);
   });
 });
 

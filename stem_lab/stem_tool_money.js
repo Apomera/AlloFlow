@@ -4817,7 +4817,17 @@ window.StemLab = window.StemLab || {
                   ),
                   React.createElement('p', { 'aria-live': 'polite', className: 'mt-2 text-[0.6875rem] leading-relaxed text-slate-700' }, dollarAutoPlay ? __alloT('stem.money.auto_tour_status', 'Auto tour is cycling through the callouts. Choose any feature to pause and inspect it.') : React.createElement(React.Fragment, null, React.createElement('strong', { className: 'text-emerald-800' }, dollarFeatureGuide[dollarFeatureIndex].label + ': '), dollarFeatureGuide[dollarFeatureIndex].detail))
                 ),
-                showDollarLab && React.createElement('div', { className: 'mt-2 rounded-xl overflow-hidden border border-emerald-200', style: { background: '#022c22', height: 'clamp(380px, 70vw, 430px)' } },
+                showDollarLab && React.createElement('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                  className: 'mt-2 rounded-xl overflow-hidden border border-emerald-200', style: { position: 'relative', background: '#022c22', height: 'clamp(380px, 70vw, 430px)' } },
+                  React.createElement('button', {
+                    type: 'button',
+                    'data-allo-fs-btn': 'true',
+                    'aria-pressed': 'false',
+                    'aria-label': __alloT('stem.money.enter_fullscreen', 'View the banknote model fullscreen'),
+                    'data-fs-out': __alloT('stem.money.enter_fullscreen', 'View the banknote model fullscreen'),
+                    'data-fs-in': __alloT('stem.money.exit_fullscreen', 'Exit fullscreen banknote model (Escape)'),
+                    style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(110,231,183,0.55)', color: '#d1fae5', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                   React.createElement('canvas', {
                     'role': 'img',
                     tabIndex: 0,

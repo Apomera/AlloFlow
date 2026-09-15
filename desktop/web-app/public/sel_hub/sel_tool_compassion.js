@@ -185,13 +185,13 @@ window.SelHub = window.SelHub || {
 
       var activeTab    = d.activeTab || 'pillars';
       var soundOn      = d.soundOn != null ? d.soundOn : true;
-      var pillarIdx    = d.pillarIdx || 0;
-      var criticIdx    = d.criticIdx || 0;
+      var pillarIdx    = (Number.isInteger(d.pillarIdx) && d.pillarIdx >= 0 ? d.pillarIdx : 0);
+      var criticIdx    = (Number.isInteger(d.criticIdx) && d.criticIdx >= 0 ? d.criticIdx : 0);
       var criticInput  = d.criticInput || '';
       var criticShow   = d.criticShow || false;
       var criticScore  = d.criticScore || 0;
-      var letterDraft  = d.letterDraft || '';
-      var savedLetters = d.savedLetters || [];
+      var letterDraft  = (typeof d.letterDraft === 'string' ? d.letterDraft : '');
+      var savedLetters = (Array.isArray(d.savedLetters) ? d.savedLetters : []);
       var coachInput   = d.coachInput || '';
       var coachHistory = d.coachHistory || [];
       var coachLoading = d.coachLoading || false;

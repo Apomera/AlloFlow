@@ -284,7 +284,7 @@ function TimelineView(props) {
       handleAutoFixTimeline();
     },
     disabled: isAutoFixingTimeline,
-    className: "ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50",
+    className: "ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
     "aria-busy": isAutoFixingTimeline
   }, isAutoFixingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 12,
@@ -451,7 +451,7 @@ function TimelineView(props) {
     "aria-label": t('timeline.visuals.remove_text_btn') || 'Remove text from image',
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
     disabled: isGeneratingTimelineImage[idx],
-    className: "w-full mb-1 text-[10px] bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-1.5 py-0.5 rounded flex items-center justify-center gap-1 font-bold",
+    className: "w-full mb-1 text-[10px] bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-1.5 py-0.5 rounded flex items-center justify-center gap-1 font-bold",
     title: t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10,

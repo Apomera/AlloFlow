@@ -2539,7 +2539,7 @@
         queue && queue.length > 0 && e('button', {
           onClick: playingIndex !== null ? stopAll : playAll,
           className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 ' +
-            (playingIndex !== null ? 'bg-emerald-600 text-white' : 'text-emerald-700 hover:bg-emerald-50') +
+            (playingIndex !== null ? 'bg-emerald-700 text-white' : 'text-emerald-700 hover:bg-emerald-50') +
             ' rounded',
         }, playingIndex !== null ? tr('a11y_lab.screenreader.stop', '⏹ Stop') : tr('a11y_lab.screenreader.play_all', '▶ Play all')),
         queue && e('label', { className: 'text-xs text-slate-700 flex items-center gap-2' },
@@ -2572,7 +2572,7 @@
               e('button', {
                 onClick: function () { playOne(i); },
                 disabled: !ttsAvailable,
-                className: 'shrink-0 w-7 h-7 rounded-full ' + (isPlaying ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300') + ' flex items-center justify-center text-xs font-bold disabled:opacity-50',
+                className: 'shrink-0 w-7 h-7 rounded-full ' + (isPlaying ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300') + ' flex items-center justify-center text-xs font-bold disabled:opacity-50',
                 title: tr('a11y_lab.screenreader.play_one_title', 'Play this announcement'),
                 'aria-label': tr('a11y_lab.screenreader.play_one_aria', 'Play announcement') + ' ' + (i + 1),
               }, isPlaying ? '▶' : (i + 1)),

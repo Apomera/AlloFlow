@@ -1707,8 +1707,24 @@
     Object.keys(obj).forEach(function (k) {
       var v = obj[k];
       if (/question/i.test(k) && Array.isArray(v)) {
-        var cleaned = v.filter(function (item) {
-          if (typeof item !== 'string') return true;        // nested objects pass through
+        // An object that IS one question ({question: "…?"} or text/prompt/q, with no nested
+        // structure) is flattened to its text so the lanes' <li>{q}</li> renders never receive
+        // an object child (React throws on that and the whole lane goes down through the error
+        // boundary; 2026-09-15). Objects carrying nested structure (per-framing question sets)
+        // still pass through and are recursed like any other value.
+        var flattened = v.map(function (item) {
+          if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
+          var hasNested = Object.keys(item).some(function (ik) { var iv = item[ik]; return Array.isArray(iv) || (iv && typeof iv === 'object'); });
+          if (hasNested) return enforceQuestionFormat(item, depth + 1, telemetry);
+          var textKeys = ['question', 'text', 'prompt', 'q'];
+          for (var ti = 0; ti < textKeys.length; ti++) {
+            if (typeof item[textKeys[ti]] === 'string' && item[textKeys[ti]].trim()) return item[textKeys[ti]];
+          }
+          telemetry.rejected += 1; telemetry.fixedKeys.push(k);
+          return null;
+        }).filter(function (item) { return item !== null && item !== undefined; });
+        var cleaned = flattened.filter(function (item) {
+          if (typeof item !== 'string') return true;        // nested structures pass through
           var trimmed = item.trim();
           if (!trimmed.endsWith('?')) { telemetry.rejected += 1; telemetry.fixedKeys.push(k); return false; }
           if (wordCount(trimmed) > 25) { telemetry.rejected += 1; telemetry.fixedKeys.push(k); return false; }
@@ -1723,6 +1739,21 @@
     return out;
   }
 
+  // A model field the prompt declares as `string` is not guaranteed to BE a string, and React
+  // throws on an object child — one such entry blanked the whole Curriculum Audit on 2026-09-13.
+  // The lanes render several AI scalars directly ({data.analog_domain_shape.example_claim_shape},
+  // {data.dominated_candidate_id}, {data.entities_question}...), so every one goes through this:
+  // a string passes, a single-text object is flattened, anything else renders as nothing. Pure.
+  function aiScalarText(value) {
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+    var keys = ['text', 'value', 'label', 'question', 'prompt', 'name', 'shape', 'description'];
+    for (var i = 0; i < keys.length; i++) {
+      if (typeof value[keys[i]] === 'string' && value[keys[i]].trim()) return value[keys[i]];
+    }
+    return '';
+  }
   function newTraceId() {
     try {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
@@ -2066,7 +2097,7 @@
                 onClick={clearRec}
                 style={{
                   padding: '6px 12px', borderRadius: '999px',
-                  background: '#fff', color: '#64748b',
+                  background: '#fff', color: '#475569',
                   border: '1px solid #cbd5e1', fontWeight: 700, fontSize: '11px',
                   cursor: 'pointer',
                 }}
@@ -3644,6 +3675,7 @@
         ExemplarPair: ExemplarPair,
         VoiceNoteBlock: VoiceNoteBlock,
         CostMeter: CostMeter,
+        aiScalarText: aiScalarText,
       },
       constants: {
         MAX_AI_CALLS_PER_SESSION: MAX_AI_CALLS_PER_SESSION,

@@ -217,7 +217,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
       var _mounted = React.useRef(true);
       React.useEffect(function() { return function() { _mounted.current = false; }; }, []);
 
-      var tab = d.tab || 'audit';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'audit'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['action', 'audit', 'badges', 'history', 'knowbility', 'learn'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'audit';
       var auditUrl = d.auditUrl || '';
       var auditHtml = d.auditHtml || '';
       var auditResult = d.auditResult || null;

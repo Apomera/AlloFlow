@@ -1354,7 +1354,7 @@ describe('Kitchen Lab experiment bench', () => {
     expect(ids(E.RECIPES.steak)).toEqual(['pan', 'dial', 'oil', 'opt:dry', 'opt:target', 'pull']);   // poking a steak is a mistake, not a variable
     expect(ids(E.RECIPES.scrambledEggs)).toEqual(['pan', 'dial', 'stir', 'pull']);
     expect(ids(E.RECIPES.sheetPan)).toEqual(['dial', 'x:door']);                                    // an oven has no pan and no fat choice, but it has a door
-    expect(ids(E.RECIPES.pastaSauce)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'stir', 'alt', 'x:water', 'x:drop', 'x:pastaTime']);   // the pot's actions are the recipe's own variables
+    expect(ids(E.RECIPES.pastaSauce)).toEqual(['pan', 'dial', 'oil', 'opt:lid', 'stir', 'alt', 'x:water', 'x:drop', 'x:potDial', 'x:pastaTime']);   // the pot's actions are the recipe's own variables
     expect(ids(E.RECIPES.rice)).toEqual(['pan', 'dial', 'opt:ratio', 'opt:lid', 'opt:rinse', 'alt']);   // cooked in water: the altitude matters
     for (const id of benchIds()) for (const v of E.benchVariables(E.RECIPES[id])) {
       expect(v.choices.some((c) => c.id === v.textbook), id + ' ' + v.id + ' names its textbook choice').toBe(true);
@@ -1608,7 +1608,7 @@ describe('Kitchen Lab replay: the logged cook, one thing changed', () => {
     expect(source).toContain("patch.recipeLog = logEvent(prior, { k: 'add', id: itemId });");
     expect(source).toContain("recipeLog: logEvent(prior, { k: 'stir' })");
     expect(source).toContain("advance.recipeLog = logEvent(prior, { k: 'mark', id: finishing.record });");
-    expect(source).toContain("if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, { k: 'pot', action: action });");
+    expect(source).toContain("if (Object.keys(patch).length) patch.recipeLog = logEvent(prior, action === 'dial' ? { k: 'pot', action: action, level: arg } : { k: 'pot', action: action });");
     expect(source.match(/recipeLog: \[\],/g)).toHaveLength(4);
     expect(source).toContain("!isSandbox && (d.recipeLog || []).length >= 2 ? renderReplayPanel(rec, j) : null,");
   });
@@ -1647,9 +1647,9 @@ describe('Kitchen Lab forecast: if you change nothing', () => {
     expect(rice.settlesF).toBe(212);                                    // pinned while there is water
     const hot = E.forecast(E.RECIPES.rice, st({ recipeItemsInPan: ['rice'], recipeBurnerLevel: 5, recipePanTempF: 212, recipeFoodInternalF: 212, recipeMoisture: 120, recipeAbsorbed: 60, recipeOptions: {} }));
     expect(hot.marks.map((m) => m.id)).toEqual(['water', 'shade']);      // runs dry, then the floor colours
-    const pot = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'heating', potTempF: 120 }));
+    const pot = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'heating', potTempF: 120, potBurnerLevel: 9 }));
     expect(pot.marks.find((m) => m.id === 'pot').label).toBe('pot boils');
-    const pasta = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'pasta-in', potTempF: 212, potPastaSec: 200, potPastaCook: 200 }));
+    const pasta = E.forecast(E.RECIPES.pastaSauce, st({ recipeItemsInPan: ['oil', 'garlic', 'tomatoes'], recipeBurnerLevel: 3, recipePanTempF: 212, recipeMoisture: 250, potState: 'pasta-in', potTempF: 212, potPastaSec: 200, potPastaCook: 200, potBurnerLevel: 9 }));
     expect(pasta.marks.find((m) => m.id === 'pot')).toMatchObject({ label: 'pasta al dente', sec: 340 });
     const preheat = E.forecast(E.RECIPES.panSeared, st({ recipeItemsInPan: [], recipeBurnerLevel: 8, recipePanTempF: 200, recipeCurrentStep: 0 }));
     expect(preheat.marks.map((m) => m.id)).toEqual(['pan']);
@@ -1865,5 +1865,48 @@ describe('Kitchen Lab oven door, sauce lid and portfolio', () => {
     expect(text).toContain('Badges (2 of 27): First Cook, Kitchen Detective');
     expect(source).toContain("var text = portfolioText(d, units);");
     expect(source).toContain("klBenchRuns: (prior.klBenchRuns || 0) + 1");
+  });
+});
+
+describe('Kitchen Lab pot dial and lesson links', () => {
+  it('gives the pot its own burner: high when started, turned down it still boils, turned off the cooking stops', () => {
+    const started = E.potAction(E.defaultState(), 'start', 0);
+    expect(started.potBurnerLevel).toBe(9);
+    expect(E.potAction(Object.assign(E.defaultState(), { potState: 'boiling' }), 'dial', 400, 2)).toEqual({ potBurnerLevel: 2 });
+    expect(E.potAction(E.defaultState(), 'dial', 0, 2)).toEqual({});                       // a cold pot has no burner to turn
+    const cooling = E.tickPot(Object.assign(E.defaultState(), { potState: 'pasta-in', potTempF: 212, potBurnerLevel: 0, potPastaSec: 100, potPastaCook: 100 }), E.RECIPES.pastaSauce, 60);
+    expect(cooling.potTempF).toBeLessThan(212);
+    const held = E.tickPot(Object.assign(E.defaultState(), { potState: 'pasta-in', potTempF: 212, potBurnerLevel: 2, potPastaSec: 100, potPastaCook: 100 }), E.RECIPES.pastaSauce, 60);
+    expect(held.potTempF).toBe(212);
+    expect(held.potPastaCook).toBe(160);
+    const high = E.runBench(E.RECIPES.pastaSauce, 'x:potDial', 'high').result, off = E.runBench(E.RECIPES.pastaSauce, 'x:potDial', 'off').result, low = E.runBench(E.RECIPES.pastaSauce, 'x:potDial', 'low').result;
+    expect(has(off.judgement, 'Pasta underdone')).toBe(true);
+    expect(off.state.potBurnerLevel).toBe(0);
+    expect(low.simSec).toBeGreaterThan(high.simSec);                                        // a low burner brings the pot back to the boil slowly after the drop
+    expect(has(low.judgement, 'Al dente')).toBe(true);
+    // the dial is logged and replayed, and named in the timeline
+    expect(E.logToSchedule([{ t: 0, k: 'pot', action: 'start' }, { t: 400, k: 'pot', action: 'drop' }, { t: 410, k: 'pot', action: 'dial', level: 0 }], 900)).toEqual([{ level: 0, until: 400, pot: 'start' }, { level: 0, until: 410, pot: 'drop' }, { level: 0, until: 900, potLevel: 0 }]);
+    expect(E.describeEvent(E.RECIPES.pastaSauce, E.defaultState(), { k: 'pot', action: 'dial', level: 3 })).toBe('pot burner to 3');
+    expect(E.describeEvent(E.RECIPES.pastaSauce, E.defaultState(), { k: 'pot', action: 'dial', level: 0 })).toBe('pot burner off');
+    expect(source).toContain("h('input', { id: 'kl-pot-dial', type: 'range', min: 0, max: 10, step: 1,");
+  });
+
+  it('links a flagged note to the tab that teaches the reason', () => {
+    expect(E.lessonFor({ neg: true, label: '☣️ FOOD SAFETY: under 145°F', detail: 'Peak internal 137°F.' })).toEqual({ section: 'safety', label: 'Safe temperatures and resting' });
+    expect(E.lessonFor({ neg: true, label: '🌫️ Oil past its smoke point', detail: 'x' })).toEqual({ section: 'resources', label: 'Smoke points' });
+    expect(E.lessonFor({ neg: true, label: '🔥 Crust burnt', detail: 'x' }).section).toBe('maillard');
+    expect(E.lessonFor({ neg: true, label: '⚠️ Left alone', detail: 'x' }).section).toBe('heat');
+    expect(E.lessonFor({ neg: true, label: '💧 Thin sauce', detail: 'x' }).section).toBe('heat');
+    expect(E.lessonFor({ neg: true, label: '🚪 Door opened 4 times', detail: 'x' }).section).toBe('heat');
+    expect(E.lessonFor({ neg: true, label: '⏱️ Sliced straight away', detail: 'x' }).section).toBe('safety');
+    expect(E.lessonFor(null)).toBeNull();
+    expect(E.lessonFor({ neg: true, label: '⚠️ Pasta in cold water', detail: 'It sat in warm water soaking: gummy and stuck together.' }).section).toBe('heat');   // the label decides, not a word in the detail
+    // every negative note any bench run can produce finds a lesson
+    const missing = [];
+    for (const id of Object.keys(E.TEXTBOOK_COOKS)) for (const v of E.benchVariables(E.RECIPES[id])) for (const c of v.choices) {
+      E.runBench(E.RECIPES[id], v.id, c.id).result.judgement.notes.filter((n) => n.neg && !E.lessonFor(n)).forEach((n) => missing.push(id + ': ' + n.label));
+    }
+    expect([...new Set(missing)]).toEqual([]);
+    expect(source).toContain("'📖 Learn why: ' + lesson.label + ' →'");
   });
 });

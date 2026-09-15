@@ -315,7 +315,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             <MonitorPlay size={20} className="text-violet-700 shrink-0" />
             <h2 className="font-bold text-slate-800 text-base truncate">{String(ref.title || item.title || 'Teacher video')}</h2>
           </div>
-          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="text-slate-400 hover:text-slate-700 text-2xl leading-none px-2 py-1" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
+          <button type="button" onClick={onClose} data-alloflow-close-on-escape="true" className="text-slate-600 hover:text-slate-700 text-2xl leading-none px-2 py-1" aria-label={t('video_ref.close') || 'Close video card'}>×</button>
         </div>
         <div className="p-5 overflow-y-auto flex-1">
           <p className="text-xs text-slate-500 mb-3">
@@ -397,7 +397,7 @@ function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {
             </label>
           </div>
           {!hostedUrl && !videoUrl && (
-            <p className="text-xs text-slate-400 mt-3">{t('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'}</p>
+            <p className="text-xs text-slate-600 mt-3">{t('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'}</p>
           )}
         </div>
       </div>

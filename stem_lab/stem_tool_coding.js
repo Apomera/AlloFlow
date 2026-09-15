@@ -3329,7 +3329,19 @@
             // ── Right panel: Canvas + Controls (TURTLE MODE) ──
             playgroundMode === 'turtle' && React.createElement("div", { className: "flex flex-col gap-3" },
               // Canvas
-              React.createElement("div", { className: "bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
+              // The turtle canvas is a fixed 500x500 drawing scaled by w-full, so it
+              // grows with the stage and needs no fullscreen-specific sizing.
+              React.createElement("div", { "data-allo-fs-stage": "true", ref: function (node) { if (node && typeof window.__alloStemFsBind === "function") window.__alloStemFsBind(node.querySelector("[data-allo-fs-btn]"), node); },
+                className: "relative bg-slate-900 rounded-xl p-2 border border-slate-700 shadow-inner" },
+                React.createElement("button", {
+                  type: "button",
+                  "data-allo-fs-btn": "true",
+                  "aria-pressed": "false",
+                  "aria-label": t("stem.coding.enter_fullscreen", "View the turtle drawing fullscreen"),
+                  "data-fs-out": t("stem.coding.enter_fullscreen", "View the turtle drawing fullscreen"),
+                  "data-fs-in": t("stem.coding.exit_fullscreen", "Exit fullscreen turtle drawing (Escape)"),
+                  style: { position: "absolute", top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(15,23,42,0.88)", border: "1px solid rgba(148,163,184,0.55)", color: "#e2e8f0", fontSize: 16, fontWeight: 700, cursor: "pointer" }
+                }, React.createElement("span", { "aria-hidden": "true" }, "⛶")),
                 React.createElement("canvas", { tabIndex: 0,
                   ref: canvasRef, width: 500, height: 500,
                   role: "img", "aria-label": describeTurtleCanvas(),

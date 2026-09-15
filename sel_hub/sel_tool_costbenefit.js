@@ -164,7 +164,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
           // Decision header
           h('div', { style: { padding: 14, borderRadius: 10, background: _cobBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: _cobFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, 'The decision'),
-            h('div', { style: { fontSize: 18, color: _cobFg('#e9d5ff'), fontWeight: 800, lineHeight: 1.4 } }, d.decision || '(not named yet)')
+            h('div', { style: { fontSize: 18, color: _cobFg('#e9d5ff'), fontWeight: 800, lineHeight: 1.4 } }, (typeof d.decision === 'string' ? d.decision : '(not named yet)'))
           ),
 
           // The 2x2 grid
@@ -206,7 +206,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
       function renderEdit() {
         var cells = d.cells || { stPros: [], stCons: [], ltPros: [], ltCons: [] };
         function addItem(cellId, value) {
-          if (!value || !value.trim()) return;
+          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var nx = Object.assign({}, cells);
           nx[cellId] = (nx[cellId] || []).slice();
           nx[cellId].push(value.trim());
@@ -224,7 +224,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
           h('div', { style: { padding: 14, borderRadius: 10, background: _cobBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('label', { htmlFor: 'cb-decision', style: { display: 'block', fontSize: 12, color: _cobFg('#a78bfa'), fontWeight: 800, marginBottom: 6 } }, 'What decision am I weighing?'),
             h('div', { style: { fontSize: 11, color: _cobFg('#94a3b8'), marginBottom: 8, fontStyle: 'italic', lineHeight: 1.5 } }, 'Name it as concretely as you can. "Should I drop band class?" is more useful than "should I change my schedule?"'),
-            h('input', { id: 'cb-decision', type: 'text', value: d.decision || '',
+            h('input', { id: 'cb-decision', type: 'text', value: (typeof d.decision === 'string' ? d.decision : ''),
               placeholder: 'e.g. Should I tell my parents about [the thing]?',
               onChange: function(e) { setCB({ decision: e.target.value }); },
               style: { width: '100%', padding: 10, borderRadius: 6, border: '1px solid #334155', background: _cobBg('#1e293b'), color: _cobFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit' } })
@@ -237,7 +237,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
               var inputId = 'cb-input-' + cell.id;
               function submit() {
                 var el = document.getElementById(inputId);
-                if (!el || !el.value.trim()) return;
+                if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
                 addItem(cell.id, el.value);
                 el.value = '';
               }
@@ -359,7 +359,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
 
             h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #7c3aed' } },
               h('div', { style: { fontSize: 10, color: _cobFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Cost-Benefit Grid'),
-              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, d.decision || 'My decision'),
+              h('h1', { style: { margin: 0, fontSize: 22, fontWeight: 900 } }, (typeof d.decision === 'string' ? d.decision : 'My decision')),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _cobFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 

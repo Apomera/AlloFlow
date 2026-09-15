@@ -176,7 +176,7 @@ function ClassMailboxSetupView(props) {
               <div className="mb-3 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-3">
                 <p className="text-xs font-bold text-emerald-800 mb-2">{mbResumable.length === 1 ? 'A live session is still running:' : mbResumable.length + ' live sessions are still running:'}</p>
                 {mbResumable.map(s => (
-                  <button key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg p-2.5 transition-all mb-1">
+                  <button key={s.c} onClick={() => resumeMailboxLiveSession(s)} className="w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2.5 transition-all mb-1">
                     <span>{t('mailbox.resume_class') || 'Resume class'} {String(s.c).toUpperCase()}</span>
                     <span aria-hidden="true">↻</span>
                   </button>
@@ -212,7 +212,7 @@ function ClassMailboxSetupView(props) {
                   </div>
                 )}
 <p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-[11px] font-semibold text-emerald-900">{t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'}</p>
-                <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60">
+                <button onClick={startMailboxLiveSession} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60">
                   {mbBusy ? 'Starting…' : 'Teach live'}
                 </button>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -267,11 +267,11 @@ function ClassMailboxSetupView(props) {
                 <input aria-label={t('mailbox.join_link_aria') || 'Selectable mailbox live join link'} readOnly value={mbLive.joinUrl || ''} onFocus={event => event.target.select()} className="mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2">
                   <p id="alloflow-mailbox-roster-status" role="status" aria-live="polite" aria-atomic="true" className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{t('mailbox.connected_students') || 'Connected students ('}{Object.keys(mbRoster).length}{(() => { const rt = Object.values(mbRoster).filter(s => s.rtc).length; return rt ? ` · ${rt} real-time ⚡` : ''; })()})</p>
-                  {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-400">{t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'}</p>}
+                  {Object.keys(mbRoster).length === 0 && <p className="text-xs text-slate-600">{t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'}</p>}
                   {Object.keys(mbRoster).length > 0 && <ul aria-labelledby="alloflow-mailbox-roster-status" className="m-0 list-none space-y-0.5 p-0">{Object.entries(mbRoster).map(([uid, s]) => {
                     const stale = mbNow && s.at && (mbNow - s.at > 150000);
                     return (
-                      <li key={uid} className={`flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`}>
+                      <li key={uid} className={`flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-600' : 'text-slate-700'}`}>
                         <span className="min-w-0 break-words text-left font-bold">{s.name}{stale ? ' · away?' : ''}</span>
                         <span className="flex items-center gap-1 shrink-0">
                           {s.rtc && !stale && <span role="img" aria-label={t('mailbox.rtc_aria') || 'real-time connection'} title={t('mailbox.rtc_title') || 'Real-time connection'}>⚡</span>}
@@ -345,7 +345,7 @@ function ClassMailboxSetupView(props) {
                     </div>
                   )}
                 </div>
-                <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
+                <button onClick={requestEndLiveSession} className="w-full text-xs font-bold text-rose-800 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all">{t('mailbox.end_session') || 'End session'}</button>
               </div>
             )}
             {mbStatus && <p role="status" aria-live="polite" aria-atomic="true" className="text-xs text-slate-600 mt-3">{mbStatus}</p>}

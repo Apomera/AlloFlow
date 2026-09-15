@@ -1250,7 +1250,7 @@ function MathView(props) {
     "aria-label": isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Save edits" : "Edit problem",
     onClick: () => toggleMathEdit(pIdx, problem.__viewKey, mathResourceId),
     disabled: !canToggleMathEdit,
-    className: `min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`,
+    className: `min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`,
     title: isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Done editing" : "Edit this problem"
   }, isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
@@ -1507,7 +1507,7 @@ function MathView(props) {
         animationDelay: `${sIdx * 80}ms`
       }
     }, /*#__PURE__*/React.createElement("div", {
-      className: "flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-black shadow-sm"
+      className: "flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-700 to-indigo-700 text-white rounded-full flex items-center justify-center text-xs font-black shadow-sm"
     }, sIdx + 1), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 min-w-0"
     }, /*#__PURE__*/React.createElement("p", {

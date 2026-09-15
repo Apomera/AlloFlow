@@ -12,8 +12,8 @@
     "appsScripts": 6,
     "modules": 216,
     "langPacks": 63,
-    "unitTestFiles": 3970,
-    "e2eSpecs": 427
+    "unitTestFiles": 4054,
+    "e2eSpecs": 452
   },
   "commands": [
     {
@@ -4086,7 +4086,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 3970,
-    "e2e": 427
+    "unit": 4054,
+    "e2e": 452
   }
 }

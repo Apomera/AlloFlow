@@ -170,7 +170,7 @@ function LmsAuditBannerView(props) {
     t
   } = props;
   return /*#__PURE__*/React.createElement("div", {
-    className: "bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 z-[500]"
+    className: "bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between mb-2"
   }, /*#__PURE__*/React.createElement("span", {

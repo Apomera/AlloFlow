@@ -71,7 +71,7 @@ var _lazyIcon = function (name) {
               })} className="flex-1 text-left font-bold text-sm hover:underline truncate" title="Click to rename" aria-label={`Rename category ${cat.label}`}>{cat.label}</button>}<span className="text-[10px] font-bold opacity-75 whitespace-nowrap">{catItems.length} item{catItems.length === 1 ? '' : 's'}</span><button onClick={() => {
                 setCsAddingCatId(cat.id);
                 setCsAddingText('');
-              }} className="px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20" title="Add item to this category" aria-label={`Add item to ${cat.label}`} disabled={csBusyId === '__adding__'}>＋ Add</button></div><div className="p-2 space-y-1.5 bg-slate-50/50">{catItems.length === 0 && !isAddingHere && <div className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded p-2 text-center">⚠ No items in this category. Students will see an empty column.</div>}{catItems.map(item => {
+              }} className="px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20" title="Add item to this category" aria-label={`Add item to ${cat.label}`} disabled={csBusyId === '__adding__'}>＋ Add</button></div><div className="p-2 space-y-1.5 bg-slate-50/50">{catItems.length === 0 && !isAddingHere && <div className="text-[11px] text-rose-800 bg-rose-50 border border-rose-200 rounded p-2 text-center">⚠ No items in this category. Students will see an empty column.</div>}{catItems.map(item => {
                 const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
                 const isBusy = csBusyId === item.id;
                 const refineInput = csRefinementInputs[item.id] || '';
@@ -109,7 +109,7 @@ var _lazyIcon = function (name) {
                       if (e.key === 'Enter' && refineInput.trim()) {
                         csRefineItemImage(item.id);
                       }
-                    }} placeholder={t("placeholders.edit_image_prompt")} disabled={isBusy} className="flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400" aria-label={`Refinement prompt for ${item.content}`} /><button onClick={() => csRefineItemImage(item.id)} disabled={isBusy || !refineInput.trim()} className="px-2 py-1 rounded text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30" title="Apply edit prompt to this image" aria-label={t("a11y.apply_edit_prompt")}>✏️ Send</button></div>}</div>;
+                    }} placeholder={t("placeholders.edit_image_prompt")} disabled={isBusy} className="flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400" aria-label={`Refinement prompt for ${item.content}`} /><button onClick={() => csRefineItemImage(item.id)} disabled={isBusy || !refineInput.trim()} className="px-2 py-1 rounded text-[11px] font-bold bg-amber-700 hover:bg-amber-800 text-white disabled:opacity-30" title="Apply edit prompt to this image" aria-label={t("a11y.apply_edit_prompt")}>✏️ Send</button></div>}</div>;
               })}{isAddingHere && <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2"><input type="text" autoFocus={true} placeholder={t("placeholders.new_item_example")} value={csAddingText} onChange={e => setCsAddingText(e.target.value)} onKeyDown={e => {
                   if (e.key === 'Enter' && csAddingText.trim()) {
                     csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []);
@@ -117,7 +117,7 @@ var _lazyIcon = function (name) {
                     setCsAddingCatId(null);
                     setCsAddingText('');
                   }
-                }} className="flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400" aria-label={t("a11y.new_item_text")} disabled={csBusyId === '__adding__'} /><button onClick={() => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || [])} disabled={!csAddingText.trim() || csBusyId === '__adding__'} className="px-2 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-700">{csBusyId === '__adding__' ? '⏳' : 'Add'}</button><button onClick={() => {
+                }} className="flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400" aria-label={t("a11y.new_item_text")} disabled={csBusyId === '__adding__'} /><button onClick={() => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || [])} disabled={!csAddingText.trim() || csBusyId === '__adding__'} className="px-2 py-1 bg-emerald-700 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-800">{csBusyId === '__adding__' ? '⏳' : 'Add'}</button><button onClick={() => {
                   setCsAddingCatId(null);
                   setCsAddingText('');
                 }} className="px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50">Cancel</button></div>}</div></div>;

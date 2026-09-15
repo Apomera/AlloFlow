@@ -238,7 +238,7 @@ window.SelHub = window.SelHub || {
     { id: 'language_learner', label: 'Language Learner', emoji: '\uD83D\uDDE3\uFE0F', desc: 'Practice greetings in 8+ languages', check: function(d) { return (d.langPracticed || []).length >= 8; } },
     { id: 'culture_connector', label: 'Culture Connector', emoji: '\uD83E\uDD1D', desc: 'Complete 3 cultural comparisons', check: function(d) { return (d.comparisonsCompleted || 0) >= 3; } },
     { id: 'comparison_expert', label: 'Comparison Expert', emoji: '\uD83D\uDD0D', desc: 'Complete 6 cultural comparisons', check: function(d) { return (d.comparisonsCompleted || 0) >= 6; } },
-    { id: 'global_citizen', label: 'Global Citizen', emoji: '\uD83C\uDF0D', desc: 'Explore 10+ cultures with AI deep dives', check: function(d) { return (d.explored || []).length >= 10; } },
+    { id: 'global_citizen', label: 'Global Citizen', emoji: '\uD83C\uDF0D', desc: 'Explore 10+ cultures with AI deep dives', check: function(d) { return ((Array.isArray(d.explored) ? d.explored : [])).length >= 10; } },
     { id: 'quiz_master', label: 'Quiz Master', emoji: '\uD83C\uDFC6', desc: 'Score 80%+ on the Culture Quiz', check: function(d) { return d.quizBestScore >= 8; } },
     { id: 'journal_writer', label: 'Journal Writer', emoji: '\uD83D\uDCD3', desc: 'Complete 3 journal reflections', check: function(d) { return (d.journalCount || 0) >= 3; } },
     { id: 'deep_diver', label: 'Deep Diver', emoji: '\uD83E\uDD3F', desc: 'Ask 10+ follow-up questions about cultures', check: function(d) { return (d.questionsAsked || 0) >= 10; } },
@@ -557,8 +557,8 @@ window.SelHub = window.SelHub || {
       var cultureImage = d.cultureImage || null;
       var aiLoading = d.aiLoading || false;
       var imageLoading = d.imageLoading || false;
-      var exploredCultures = d.explored || [];
-      var customCulture = d.customCulture || '';
+      var exploredCultures = (Array.isArray(d.explored) ? d.explored : []);
+      var customCulture = (typeof d.customCulture === 'string' ? d.customCulture : '');
       var greeting = d.greeting || null;
       var questionsAsked = d.questionsAsked || 0;
 
@@ -950,8 +950,8 @@ window.SelHub = window.SelHub || {
         h('div', { className: 'flex items-center gap-3' },
           h('button', Object.assign({ 'aria-label': 'Back to SEL Hub', className: 'p-2 rounded-full hover:bg-cyan-100 text-cyan-600 transition-colors' }, ctx.a11yClick(function() { ctx.setSelHubTool(null); })), h(ArrowLeft, { size: 20 })),
           h('div', { className: 'flex-1' },
-            h('h2', { className: 'text-xl font-black text-slate-800' }, '\uD83C\uDF0D Culture Explorer'),
-            h('p', { className: 'text-xs text-slate-600' }, 'Every culture holds wisdom. What will you discover?')
+            h('h2', { className: 'text-xl font-black text-slate-100' }, '\uD83C\uDF0D Culture Explorer'),
+            h('p', { className: 'text-xs text-slate-300' }, 'Every culture holds wisdom. What will you discover?')
           ),
           exploredCultures.length > 0 && h('span', { className: 'bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold' }, exploredCultures.length + ' explored')
         ),
@@ -981,7 +981,40 @@ window.SelHub = window.SelHub || {
 
         // ── Topic-accent hero band per tab ──
         (function() {
-          var TAB_META = {
+              // The card's accent doubles as its border, rule and background tint, so
+      // it cannot simply be recoloured — but six of the thirteen accents fail
+      // WCAG AA as TEXT on their own tinted card (#7c3aed is 2.91:1). This
+      // lightens the accent for the title only, mixing toward white until it
+      // clears 4.5:1, leaving the card's identity colour untouched.
+      function _readableAccent(hex, tintedBg) {
+        function ch(h, i) { return parseInt(h.slice(i, i + 2), 16); }
+        function lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+        function lum(c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
+        function ratio(a, b) {
+          var x = lum(a), y = lum(b);
+          var hi = Math.max(x, y), lo = Math.min(x, y);
+          return (hi + 0.05) / (lo + 0.05);
+        }
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return hex;
+        var rgb0 = [ch(hex, 1), ch(hex, 3), ch(hex, 5)];
+        var rgb = rgb0;
+        // The card tints its background with 10% of the accent over the shell,
+        // so grade against THAT, not the bare shell — otherwise the chosen mix
+        // lands just under AA on the surface it actually sits on.
+        var shell = [15, 23, 42];
+        var bg = tintedBg || rgb0.map(function(v, i) { return v * 0.10 + shell[i] * 0.90; });
+        for (var mix = 0; mix <= 1.0001; mix += 0.02) {
+          var c = rgb.map(function(v) { return v + (255 - v) * mix; });
+          // Aim just past 4.5 rather than exactly at it: landing ON the
+          // threshold makes the result depend on a grader's rounding.
+          if (ratio(c, bg) >= 4.55) {
+            return 'rgb(' + c.map(Math.round).join(',') + ')';
+          }
+        }
+        return '#ffffff';
+      }
+
+  var TAB_META = {
             choose:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDDFA', title: 'Cultures \u2014 explore by region',                       hint: 'Curiosity beats checklist. Every culture holds wisdom worth meeting on its own terms (Geertz 1973). Start with one that interests you, not one assigned. Depth > breadth in this work.' },
             worldmap: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF0E', title: 'World Map \u2014 culture meets geography',               hint: 'Climate, terrain, trade routes shape what people eat, build, sing, and worship. Diamond 1997 (\u201CGuns, Germs, and Steel\u201D) traces it; modern critiques refine it. Geography matters; it isn\u2019t destiny.' },
             recipes:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDF72', title: 'Recipes \u2014 food carries memory',                     hint: 'Fischler 1988: food is identity made edible. Every diaspora keeps its grandmother\u2019s dishes longer than its grandmother\u2019s language. The taste IS the inheritance.' },
@@ -1009,8 +1042,9 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+
+              h('h3', { style: { color: _readableAccent(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
@@ -1066,8 +1100,8 @@ window.SelHub = window.SelHub || {
         // ═══ WORLD MAP EXPLORER ═══
         tab === 'worldmap' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF0E World Map Explorer'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Select a region to discover cultural highlights from around the world')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF0E World Map Explorer'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Select a region to discover cultural highlights from around the world')
           ),
 
           // Region selector grid
@@ -1096,7 +1130,7 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'All Regions', onClick: function() { upd('mapRegion', null); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Regions'),
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-2xl border border-cyan-200 p-4 text-center' },
               h('div', { className: 'text-3xl mb-1' }, WORLD_MAP_DATA[mapRegion].emoji),
-              h('h3', { className: 'text-lg font-black text-slate-800' }, WORLD_MAP_DATA[mapRegion].label),
+              h('h3', { className: 'text-lg font-black text-slate-100' }, WORLD_MAP_DATA[mapRegion].label),
               h('p', { className: 'text-xs text-slate-600 mt-1' }, WORLD_MAP_DATA[mapRegion].highlights.length + ' cultural highlights to explore')
             ),
 
@@ -1159,8 +1193,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL RECIPES EXPLORER ═══
         tab === 'recipes' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDF72 Cultural Recipes Explorer'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Food is a universal cultural connector. Discover dishes from around the world!')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDF72 Cultural Recipes Explorer'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Food is a universal cultural connector. Discover dishes from around the world!')
           ),
 
           // Want-to-try tracker
@@ -1220,8 +1254,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL MUSIC & DANCE ═══
         tab === 'music' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFB5 Music & Dance Traditions'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Every culture has rhythm. Explore artistic traditions from around the world.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFB5 Music & Dance Traditions'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Every culture has rhythm. Explore artistic traditions from around the world.')
           ),
 
           // Progress
@@ -1303,8 +1337,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL STORYTELLING ═══
         tab === 'stories' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDA Cultural Storytelling'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Traditional stories carry the wisdom of cultures across generations')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCDA Cultural Storytelling'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Traditional stories carry the wisdom of cultures across generations')
           ),
 
           // Progress
@@ -1398,8 +1432,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL CALENDAR ═══
         tab === 'calendar' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 Cultural Calendar'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Major celebrations from around the world, month by month')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCC5 Cultural Calendar'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Major celebrations from around the world, month by month')
           ),
 
           // Progress
@@ -1436,7 +1470,7 @@ window.SelHub = window.SelHub || {
               className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Months'),
 
             h('div', {  className: 'bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl border border-rose-200 p-4 text-center' },
-              h('h4', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
+              h('h4', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCC5 ' + CULTURAL_CALENDAR[calendarMonth].month),
               h('p', { className: 'text-xs text-slate-600' }, CULTURAL_CALENDAR[calendarMonth].celebrations.length + ' celebrations from around the world')
             ),
 
@@ -1467,8 +1501,8 @@ window.SelHub = window.SelHub || {
         // ═══ LANGUAGE CORNER ═══
         tab === 'language' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDDE3\uFE0F Language Corner'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Learn basic greetings in ' + LANGUAGE_DATA.length + ' languages')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDDE3\uFE0F Language Corner'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Learn basic greetings in ' + LANGUAGE_DATA.length + ' languages')
           ),
 
           // Greeting cards grid
@@ -1553,8 +1587,8 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURAL COMPARISON ═══
         tab === 'compare' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDD0D Cultural Comparison'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Compare two cultures side by side to discover similarities and differences')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDD0D Cultural Comparison'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Compare two cultures side by side to discover similarities and differences')
           ),
 
           // Culture inputs
@@ -1672,7 +1706,7 @@ window.SelHub = window.SelHub || {
           // Culture header + back
           h('div', {  className: 'flex items-center gap-2' },
             h('button', { 'aria-label': 'All Cultures', onClick: function() { upd('tab', 'choose'); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\u2190 All Cultures'),
-            h('h3', { id: 'culture-explore-title', className: 'text-lg font-black text-slate-800' }, selectedCulture || 'Select a culture')
+            h('h3', { id: 'culture-explore-title', className: 'text-lg font-black text-slate-100' }, selectedCulture || 'Select a culture')
           ),
 
           // Aspect selector
@@ -1698,7 +1732,7 @@ window.SelHub = window.SelHub || {
             // Greeting
             greeting && h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
               h('div', {  className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
-              h('p', { className: 'text-lg font-black text-slate-800' }, greeting),
+              h('p', { className: 'text-lg font-black text-slate-100' }, greeting),
               callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
             ),
 
@@ -1786,14 +1820,14 @@ window.SelHub = window.SelHub || {
         // ═══ CULTURE QUIZ ═══
         tab === 'quiz' && h('div', {  className: 'space-y-4' },
           h('div', {  className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC6 Culture Quiz'),
-            h('p', { className: 'text-sm text-slate-600' }, '10 questions about cultures around the world (' + gradeBand + ' level)')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC6 Culture Quiz'),
+            h('p', { className: 'text-sm text-slate-300' }, '10 questions about cultures around the world (' + gradeBand + ' level)')
           ),
 
           // Quiz not started
           !quizActive && h('div', {  className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
             h('div', {  className: 'text-5xl' }, '\uD83C\uDF0D'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Test your knowledge of world cultures! Answer 10 multiple-choice questions.'),
             quizBestScore > 0 && h('p', { className: 'text-xs text-cyan-600 font-bold' }, '\uD83C\uDFC6 Best score: ' + quizBestScore + '/10'),
             h('button', { 'aria-label': 'Start quiz', onClick: startQuiz,
               className: 'px-6 py-3 bg-cyan-700 text-white rounded-lg text-sm font-bold hover:bg-cyan-700 transition-colors'
@@ -1807,7 +1841,7 @@ window.SelHub = window.SelHub || {
               h('div', { role: 'progressbar', 'aria-label': 'Culture quiz progress', 'aria-valuemin': 1, 'aria-valuemax': quizQuestions.length, 'aria-valuenow': quizIndex + 1, 'aria-valuetext': 'Question ' + (quizIndex + 1) + ' of ' + quizQuestions.length, className: 'flex-1 bg-slate-200 rounded-full h-2' },
                 h('div', { className: 'bg-cyan-600 h-2 rounded-full transition-all', style: { width: ((quizIndex + 1) / quizQuestions.length * 100) + '%' } })
               ),
-              h('span', { className: 'text-xs font-bold text-slate-600' }, (quizIndex + 1) + '/' + quizQuestions.length)
+              h('span', { className: 'text-xs font-bold text-slate-300' }, (quizIndex + 1) + '/' + quizQuestions.length)
             ),
 
             // Score
@@ -1857,9 +1891,9 @@ window.SelHub = window.SelHub || {
           // Quiz done
           quizActive && quizDone && h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Culture quiz results', className: 'bg-white rounded-2xl border-2 border-cyan-200 p-8 text-center space-y-4' },
             h('div', {  className: 'text-5xl' }, quizScore >= 8 ? '\uD83C\uDFC6' : quizScore >= 5 ? '\u2B50' : '\uD83D\uDCDA'),
-            h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Quiz Complete!'),
             h('p', { className: 'text-3xl font-black ' + (quizScore >= 8 ? 'text-green-600' : quizScore >= 5 ? 'text-amber-600' : 'text-slate-600') }, quizScore + '/10'),
-            h('p', { className: 'text-sm text-slate-600' },
+            h('p', { className: 'text-sm text-slate-300' },
               quizScore >= 9 ? 'Amazing! You are a true culture expert!' :
               quizScore >= 7 ? 'Great job! You know a lot about world cultures!' :
               quizScore >= 5 ? 'Good effort! Keep exploring to learn more!' :
@@ -1879,8 +1913,8 @@ window.SelHub = window.SelHub || {
         // ═══ JOURNAL (enhanced with guided prompts) ═══
         tab === 'journal' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCD3 Culture Journal'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Record what you have learned and what it means to you')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCD3 Culture Journal'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Record what you have learned and what it means to you')
           ),
 
           // Stats
@@ -1988,8 +2022,8 @@ window.SelHub = window.SelHub || {
         // ═══ BADGES ═══
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC5 Badges'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Earn badges by exploring cultures, learning languages, and reflecting')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Badges'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Earn badges by exploring cultures, learning languages, and reflecting')
           ),
 
           h('div', { className: 'text-center mb-3' },

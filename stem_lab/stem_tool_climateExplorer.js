@@ -303,7 +303,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         });
       }
 
-      var tab = d.tab || 'carbon';
+      // `tab` is PERSISTED state, and every render branch is `tab === '<id>'`,
+      // so an id this build does not know (a saved file from another version, a
+      // renamed tab, a hand-edited project) rendered the header, the tab strip
+      // and a "Carbon Calculator" banner with NO BODY AT ALL -- a dead-end
+      // screen that looks functional. `|| 'carbon'` only catches null/empty.
+      // Declared here rather than reusing _CE_TABS/CE_CORE_TABS_UI below: those
+      // are assigned ~1200 lines later, and `var` hoists the declaration but
+      // not the assignment (see the CARBON/ccIndex ordering trap).
+      var CE_RENDERABLE_TABS = ['carbon', 'renewables', 'keeling', 'tipping', 'justice', 'solutions', 'pathways', 'forceHunt'];
+      var tab = CE_RENDERABLE_TABS.indexOf(d.tab) !== -1 ? d.tab : 'carbon';
       // Carbon state
       // A saved project file is INPUT: a student can hand-edit it, copy it, or
       // carry it between tool versions. `|| 0` catches null but NOT an index
@@ -326,7 +335,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       var ccFood = d.ccFood;
       var ccEnergy = d.ccEnergy;
       var ccWaste = d.ccWaste;
-      var ccScale = d.ccScale || 'school';
+      // A 3-way ternary consumes this (school / city / else COUNTRY), so any
+      // unknown persisted value silently meant "USA (330M)" -- a 330-million
+      // multiplier on the student's footprint, with no scale button showing as
+      // selected. Only the three offered ids are valid.
+      var ccScale = ['school', 'city', 'country'].indexOf(d.ccScale) !== -1 ? d.ccScale : 'school';
       var ccSchoolSize = d.ccSchoolSize || 500;
       // Renewables state
       var rsSolar = d.rsSolar != null ? d.rsSolar : 10;
@@ -342,9 +355,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       })(d.rsTimespan);
       // Justice state
       var cjRegion = d.cjRegion || null;
-      var cjView = d.cjView || 'risk';
+      // Consumed as `cjView === 'emissions' / 'risk' / 'resilience'`, so an
+      // unknown persisted value matched none and the per-region detail line
+      // vanished while a view chip still looked chosen.
+      var cjView = ['risk', 'emissions', 'resilience'].indexOf(d.cjView) !== -1 ? d.cjView : 'risk';
       // Solutions state
-      var ssCategory = d.ssCategory || 'all';
+      // The filter is `ssCategory === 'all' || s.cat === ssCategory`, so an id
+      // outside the chip row silently showed only the `cat: 'all'` rows -- a
+      // near-empty solutions list with no chip selected. SOLUTIONS carries 11
+      // cats but the chip row offers 5, so the CHIPS are the valid set: any
+      // other value is unreachable by clicking and means a stale saved file.
+      var ssCategory = ['all', 'energy', 'transport', 'nature', 'capture'].indexOf(d.ssCategory) !== -1 ? d.ssCategory : 'all';
       var ssExpanded = d.ssExpanded || null;
       var ssShowActions = d.ssShowActions || false;
       // AI state
@@ -1595,7 +1616,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             heroSignal = 0.42;
             heroTicker = t('stem.climateExplorer.hero_ppm', 'NOAA Mauna Loa monthly mean, June 2026: 431.44 ppm CO\u2082');
           }
-          return el('div', { style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+          return el('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+            el('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.climateExplorer.enter_fullscreen', 'View the atmosphere visualisation fullscreen'),
+              'data-fs-out': t('stem.climateExplorer.enter_fullscreen', 'View the atmosphere visualisation fullscreen'),
+              'data-fs-in': t('stem.climateExplorer.exit_fullscreen', 'Exit fullscreen atmosphere visualisation (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(56,189,248,0.45)', color: '#e0f2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, el('span', { 'aria-hidden': 'true' }, '⛶')),
             el('canvas', {
               role: 'img', tabIndex: 0,
               'aria-label': heroTicker + '. Atmospheric visualization responding to the current activity values.',
@@ -2641,8 +2672,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
             // ═══ IPCC FUTURE SCENARIOS EXPLORER ═══
             (function() {
-              var pickedId = d.scenarioPicked || 'ssp245';
-              var picked = IPCC_SCENARIOS.find(function(s) { return s.id === pickedId; }) || IPCC_SCENARIOS[2];
+              // Same subset-lookup shape as SLR_IMPACTS and `tab`: scenarioPicked
+              // is PERSISTED, so an id this build does not know fell through to
+              // IPCC_SCENARIOS[2] -- the panel described SSP2-4.5 in full while
+              // NO button showed aria-pressed="true". Resolve the id first, so
+              // the highlighted button and the described scenario are the same one.
+              var picked = IPCC_SCENARIOS.filter(function(s) { return s.id === d.scenarioPicked; })[0]
+                || IPCC_SCENARIOS.filter(function(s) { return s.id === 'ssp245'; })[0]
+                || IPCC_SCENARIOS[2];
+              var pickedId = picked.id;
               return el('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(30,41,59,0.4)', border: '1px solid ' + picked.color + '40', marginBottom: 16 } },
                 el('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
                   el('span', { style: { fontSize: 20 } }, '🔮'),
@@ -2738,7 +2776,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             ),
             // ═══ SEA LEVEL RISE EXPLORER ═══
             (function() {
-              var slr = d.slrMeters != null ? d.slrMeters : 1;
+              // SLR_IMPACTS is keyed 0,1,2,3,5,10 and the onChange snaps to those,
+              // but slrMeters is PERSISTED state: a saved file (or an older tool
+              // version) can carry 4/6/7/8/9, and `|| SLR_IMPACTS[1]` then showed
+              // the ONE-METRE scenario -- "150M people displaced", "most coastal
+              // adaptation still possible" -- under a heading reading "+9 m", with
+              // IPCC citations attached. Snap on READ as well as on write, so the
+              // number shown and the scenario described are always the same one.
+              var SLR_KEYS = [0, 1, 2, 3, 5, 10];
+              var slr = (function(raw) {
+                var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+                if (!isFinite(n)) return 1;
+                return SLR_KEYS.reduce(function(p, c) { return Math.abs(c - n) < Math.abs(p - n) ? c : p; }, SLR_KEYS[0]);
+              })(d.slrMeters != null ? d.slrMeters : 1);
               var SLR_IMPACTS = {
                 0:  { displaced: 0,    cities: [], desc: t('stem.climateExplorer.baseline_today_s_coastlines', 'Baseline — today\'s coastlines.') },
                 1:  { displaced: 150,  cities: ['Miami Beach', 'parts of New Orleans', 'Maldives'],
@@ -2766,16 +2816,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   el('input', { type: 'range', min: 0, max: 10, step: 1, value: slr,
                     onChange: function(e) {
                       var v = parseInt(e.target.value, 10);
-                      // Snap to known keys
-                      var keys = [0, 1, 2, 3, 5, 10];
-                      var nearest = keys.reduce(function(p, c) { return Math.abs(c - v) < Math.abs(p - v) ? c : p; }, keys[0]);
+                      // Snap to known keys (same list the read-side snap uses)
+                      var nearest = SLR_KEYS.reduce(function(p, c) { return Math.abs(c - v) < Math.abs(p - v) ? c : p; }, SLR_KEYS[0]);
                       upd('slrMeters', nearest);
                       playSound('slider');
                     },
                     'aria-label': t('stem.climateExplorer.sea_level_rise_in_meters', 'Sea level rise in meters'),
                     style: { width: '100%', accentColor: '#3b82f6', height: 24, minHeight: 24, cursor: 'pointer', touchAction: 'none' } }),
                   el('div', { style: { display: 'flex', justifyContent: 'space-between', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 9, fontWeight: 700 } },
-                    [0, 1, 2, 3, 5, 10].map(function(m) {
+                    SLR_KEYS.map(function(m) {
                       return el('span', { key: m, style: { color: slr === m ? '#60a5fa' : '#94a3b8' } }, m + ' m');
                     })
                   )

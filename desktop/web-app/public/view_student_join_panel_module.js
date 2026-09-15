@@ -40,7 +40,7 @@ function getStudentJoinThemeStyles(themeContext = {}) {
       text: "text-slate-300",
       muted: "text-slate-400",
       input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-500 focus-visible:border-indigo-400 focus-visible:ring-indigo-500",
-      primary: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-none focus-visible:ring-indigo-400",
+      primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none focus-visible:ring-indigo-400",
       focusOffset: "focus-visible:ring-offset-slate-900",
       arrow: "bg-indigo-600 text-white"
     };

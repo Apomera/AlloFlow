@@ -5632,7 +5632,7 @@
                 );
               })
             ) : null,
-            summaryForActive.items.length > 0 ? renderWordCloudItems(summaryForActive.items, tr('Approved word cloud preview')) : ce('p', { style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#f8fafc', color: '#64748b', fontSize: '0.78rem' } }, wordCloudTermsForActive.length > 0 ? tr('No terms are approved yet. Review the held terms below.') : tr('Waiting for student terms.')),
+            summaryForActive.items.length > 0 ? renderWordCloudItems(summaryForActive.items, tr('Approved word cloud preview')) : ce('p', { style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#f8fafc', color: '#475569', fontSize: '0.78rem' } }, wordCloudTermsForActive.length > 0 ? tr('No terms are approved yet. Review the held terms below.') : tr('Waiting for student terms.')),
             wordCloudTermsForActive.length > 0 ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 7 } },
               ce('div', { role: 'group', 'aria-label': tr('Filter word cloud moderation'), style: { display: 'flex', gap: 5, flexWrap: 'wrap', gridColumn: '1 / -1' } },
                 [
@@ -6592,7 +6592,7 @@
                 ) : ce('div', { style: { marginTop: 5, color: question.status === 'dismissed' ? '#64748b' : '#b45309', fontSize: '0.7rem', fontWeight: 800 } }, question.status === 'dismissed' ? tr('Your question was dismissed.') : tr('Your question is held for teacher review.'))
               );
             })
-          ) : ce('p', { style: { margin: '0.65rem 0 0', padding: '0.6rem', borderRadius: 7, background: '#f8fafc', color: '#64748b', fontSize: '0.76rem' } }, tr('No approved questions yet.'))
+          ) : ce('p', { style: { margin: '0.65rem 0 0', padding: '0.6rem', borderRadius: 7, background: '#f8fafc', color: '#475569', fontSize: '0.76rem' } }, tr('No approved questions yet.'))
         )
       );
     };

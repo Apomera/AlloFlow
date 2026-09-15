@@ -2173,7 +2173,7 @@ inputText.substring(0, 6000) + '\n' +
                   'data-escape-room-next': '',
                   'aria-label': escapeRoomState.hasStarted ? t('escape_room.resume') : t('escape_room.start'),
                   onClick: toggleTimer,
-                  className: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg shadow-green-900/50 flex items-center gap-3 mx-auto animate-pulse'
+                  className: 'bg-gradient-to-r from-green-700 to-emerald-700 hover:from-green-800 hover:to-emerald-800 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg shadow-green-900/50 flex items-center gap-3 mx-auto animate-pulse'
                 },
                   h(Play, { size: 20 }),
                   escapeRoomState.hasStarted ? t('escape_room.resume') : t('escape_room.start')
@@ -2413,7 +2413,7 @@ inputText.substring(0, 6000) + '\n' +
               'aria-busy': !!escapeRoomState.isGenerating,
               onClick: handlers.launchEscapeRoomWithSettings,
               disabled: !hasSourceOrAnalysis,
-              className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+              className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 transition-all shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
             }, h(Sparkles, { size: 18 }), ' ', t('escape_room.start'))
           )
         )
@@ -2501,7 +2501,7 @@ inputText.substring(0, 6000) + '\n' +
                       return h('div', { key: optIdx, className: 'flex items-center gap-1' },
                         h('span', {
                           className: 'w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ' +
-                            (optIdx === puzzle.correctIndex ? 'bg-green-700 text-white' : 'bg-slate-200 text-slate-500')
+                            (optIdx === puzzle.correctIndex ? 'bg-green-700 text-white' : 'bg-slate-200 text-slate-600')
                         }, String.fromCharCode(65 + optIdx)),
                         h('input', {
                           type: 'text',
@@ -2603,7 +2603,7 @@ inputText.substring(0, 6000) + '\n' +
             h('button', {
               'aria-label': t('common.confirm_and_launch_escape_room'),
               onClick: handlers.confirmEscapeRoomPreview,
-              className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-600 transition-all shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2'
+              className: 'flex-1 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 transition-all shadow-lg hover:shadow-amber-500/30 flex items-center justify-center gap-2'
             }, '\uD83D\uDE80 ' + (t('escape_room.launch') || 'Launch!'))
           )
         )

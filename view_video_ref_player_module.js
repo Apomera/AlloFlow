@@ -394,7 +394,7 @@ function VideoRefPlayerOverlay({
       event.target.value = '';
     }
   }))), !hostedUrl && !videoUrl && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-400 mt-3"
+    className: "text-xs text-slate-600 mt-3"
   }, t('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'))));
 }
 

@@ -1378,7 +1378,7 @@ Return ONLY valid JSON:
                             title={colorName} style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: drawingColor === c ? '2px solid #1e293b' : '2px solid transparent', cursor: 'pointer', transition: 'transform 0.15s', transform: drawingColor === c ? 'scale(1.2)' : 'scale(1)' }} />
                     ); })}
                 </div>
-                <button type="button" onClick={() => { setDrawings({}); }} title={t('common.clear_drawings')} aria-label={t('common.clear_all_drawings')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>🗑️ Clear</button>
+                <button type="button" onClick={() => { setDrawings({}); }} title={t('common.clear_drawings')} aria-label={t('common.clear_all_drawings')} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #fecaca', background: '#fff1f2', color: '#b91c1c', cursor: 'pointer', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>🗑️ Clear</button>
                 <div style={{ width: "1px", height: "20px", background: "#e2e8f0" }} />
                 {!isStudentChallenge && (
                     <button type="button"
@@ -1396,7 +1396,7 @@ Return ONLY valid JSON:
                             <button type="button"
                                 onClick={() => handleToggleChallenge()}
                                 title={t('common.deactivate_label_challenge')}
-                                style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#16a34a", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
+                                style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 12px", borderRadius: "6px", border: "1px solid #16a34a", background: "#15803d", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}
                             >
                                 🏆 {challengeType === 'fill-blank' ? 'Fill-in-Blank' : 'From Scratch'} ✓
                             </button>
@@ -1853,7 +1853,7 @@ Return ONLY valid JSON:
                                 <button type="button"
                                     aria-label={t('common.cancel')}
                                     onClick={() => setRefiningPanelIdx(null)}
-                                    style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
+                                    style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
                                 >✕</button>
                             </div>
                         )}
@@ -1882,7 +1882,7 @@ Return ONLY valid JSON:
                                     <button type="button"
                                         aria-label={t('common.cancel')}
                                         onClick={() => { setAnimatingPanelIdx(null); setAnimateInput(''); }}
-                                        style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
+                                        style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
                                     >✕</button>
                                 </div>
                                 <p style={{ fontSize: 10, color: '#64748b', margin: '4px 2px 0', lineHeight: 1.4 }}>
@@ -1937,7 +1937,7 @@ Return ONLY valid JSON:
                                                         onClick={() => onDeleteFrame(panelIdx, fIdx)}
                                                         aria-label={t('common.frame_delete_aria') || `Delete frame ${fIdx + 1}`}
                                                         title={t('common.frame_delete_title') || 'Delete this frame'}
-                                                        style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: '#ef4444', color: 'white', border: 'none', fontSize: 12, lineHeight: 1, cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                                                        style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: '50%', background: '#b91c1c', color: 'white', border: 'none', fontSize: 12, lineHeight: 1, cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                                     >✕</button>
                                                 )}
                                                 {/* Reorder + duplicate row beneath each thumbnail. ← → swap with
@@ -2023,7 +2023,7 @@ Return ONLY valid JSON:
                                         <button type="button"
                                             onClick={() => { setRegenFrame(null); setRegenInput(''); }}
                                             aria-label={t('common.cancel')}
-                                            style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
+                                            style={{ padding: '6px 10px', borderRadius: 6, background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer', fontSize: 12 }}
                                         >✕</button>
                                         </div>
                                     </div>

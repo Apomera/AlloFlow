@@ -561,7 +561,14 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           { q: 'Body temp 37\u00B0C in Fahrenheit?',            a: 98.6,   unit: '\u00B0F', tol: 0.1 },
         ];
 
-        var tab = d.tab || 'convert';
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'convert'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['convert', 'magHunt', 'quiz', 'table', 'wordproblem'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'convert';
         var facts = FACTS[d.category] || [];
         var factIdx = d.factIdx || 0;
         var currentFact = facts[factIdx % facts.length];
@@ -1790,7 +1797,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ═══ METRIC PREFIXES ═══
           h('div', { className: 'mt-5 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
             h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.unitconvert.metric_prefixes_powers_of_10_from_atom', '🔬 Metric Prefixes — Powers of 10 from atoms to galaxies')),
-            h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0c1a2e', aspectRatio: '16/5' } },
+            h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'rounded-xl overflow-hidden border border-blue-200', style: { position: 'relative', background: '#0c1a2e', aspectRatio: '16/5' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': t('stem.unitconvert.enter_fullscreen', 'View the metric prefix scale fullscreen'),
+                'data-fs-out': t('stem.unitconvert.enter_fullscreen', 'View the metric prefix scale fullscreen'),
+                'data-fs-in': t('stem.unitconvert.exit_fullscreen', 'Exit fullscreen metric prefix scale (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(147,197,253,0.6)', color: '#dbeafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 role: 'img', tabIndex: 0, 'aria-label': 'Unit conversion scale visualization.',
                 ref: function(cvEl) {

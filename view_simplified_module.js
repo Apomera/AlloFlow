@@ -20,6 +20,23 @@
   var Fragment = React.Fragment;
 
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// A model field the prompt declares as text is not guaranteed to BE text, and React throws
+// "Objects are not valid as a React child" on anything else - costing the whole panel rather
+// than the one value (2026-09-13: one such entry blanked an entire Curriculum Audit). The
+// level-check rubric's per-dimension `reason` is printed straight from the model, so it goes
+// through this. Text passes; a single-text object is flattened; anything else renders as
+// nothing. Pure. (The syllable list nearby already filters to strings, so it needs no guard.)
+function simplifiedAiText(value) {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  var keys = ['reason', 'text', 'value', 'label', 'explanation'];
+  for (var i = 0; i < keys.length; i++) {
+    if (typeof value[keys[i]] === 'string' && value[keys[i]].trim()) return value[keys[i]];
+  }
+  return '';
+}
+
 // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
 // the animations globally so users with that preference see static styling.
 (function () {
@@ -3582,7 +3599,7 @@ function SimplifiedView(props) {
     }, isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : generatedContent?.title || generatedContent?.topic || sourceTopic || readerText('simplified.your_reading', 'Your reading')), displayLang !== 'English' && /*#__PURE__*/React.createElement("span", {
       className: "bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold border border-blue-200"
     }, displayLang), isTeacherMode && displayInterests.length > 0 && /*#__PURE__*/React.createElement("span", {
-      className: "bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold border border-red-200 flex items-center gap-1"
+      className: "bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-bold border border-red-200 flex items-center gap-1"
     }, /*#__PURE__*/React.createElement(Heart, {
       size: 10
     }), " ", t('simplified.engagement_optimized')), isTeacherMode && typeof displayStandards === 'string' && displayStandards && /*#__PURE__*/React.createElement("span", {
@@ -3881,7 +3898,7 @@ function SimplifiedView(props) {
     alt: definitionData.word,
     className: "w-full h-32 object-contain rounded-lg bg-slate-50 border border-slate-400"
   }) : definitionData.imageLoading ? /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-center gap-2 text-xs text-indigo-500 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"
+    className: "flex items-center justify-center gap-2 text-xs text-indigo-600 h-20 bg-slate-50 rounded-lg border border-slate-400 border-dashed"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
@@ -4003,7 +4020,7 @@ function SimplifiedView(props) {
     type: "button",
     "aria-label": t('common.continue'),
     onClick: () => handleReviseSelection('custom', customReviseInstruction),
-    className: "p-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white transition-colors",
+    className: "p-1.5 bg-indigo-600 hover:bg-indigo-600 rounded-full text-white transition-colors",
     disabled: !customReviseInstruction.trim()
   }, /*#__PURE__*/React.createElement(ArrowRight, {
     size: 12
@@ -4290,7 +4307,7 @@ function SimplifiedView(props) {
       }
     })), /*#__PURE__*/React.createElement("p", {
       className: "text-[11px] text-slate-600 italic"
-    }, data.reason));
+    }, simplifiedAiText(data.reason)));
   }), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-[11px] text-slate-600 font-bold uppercase tracking-widest mt-1"
   }, /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_simple')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_aligned')), /*#__PURE__*/React.createElement("span", null, t('simplified.gauge_complex')))) : /*#__PURE__*/React.createElement("div", {
@@ -4321,7 +4338,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-100 p-2 rounded-full text-emerald-600 mt-1"
+    className: "bg-emerald-100 p-2 rounded-full text-emerald-800 mt-1"
   }, /*#__PURE__*/React.createElement(ShieldCheck, {
     size: 16
   })), /*#__PURE__*/React.createElement("div", {

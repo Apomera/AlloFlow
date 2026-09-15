@@ -18,7 +18,11 @@ describe('Migration Lab 3D flight experience', () => {
     expect(source).toContain("icon: '\\uD83E\\uDDED'");
     expect(catalog).toContain("{ id: 'migration', icon: '\\uD83E\\uDDED'");
     expect(catalog).not.toContain("{ id: 'migration', icon: '" + String.fromCodePoint(0x1F98B) + "'");
-    expect(source).toContain("var tab = d.tab || 'flight3d'");
+    // Pin the INVARIANT, not the spelling: flight3d is the default tab, and an
+    // unknown persisted id resolves to it rather than rendering an empty body.
+    // (The declaration was `d.tab || 'flight3d'`, which only caught null/empty;
+    // it is now allow-listed against the ids that actually have a render branch.)
+    expect(source).toMatch(/var tab = [^\n]*'flight3d'/);
     expect(source).toContain("'data-migration-3d-flight': 'true'");
     // The tab label used to be pinned as a source literal, which made
     // localising it look like a regression. What matters is that the 3D flight
@@ -28,6 +32,10 @@ describe('Migration Lab 3D flight experience', () => {
     const firstTab = bar.indexOf('id="migration-tab-flight3d"');
     expect(firstTab).toBeGreaterThan(-1);
     expect(bar.slice(firstTab, firstTab + 400)).toContain('3D Flight');
+    // An unknown PERSISTED tab id must resolve to the default deck, not render
+    // the chrome over an empty body (every view is a `tab === '<id>'` branch).
+    expect(renderTool('migration', { migration: { tab: 'zzz_not_a_tab' } }).length)
+      .toBe(renderTool('migration', { migration: {} }).length);
     for (const other of ['vformation', 'wind', 'routes', 'world', 'aero', 'navigate', 'inquiry']) {
       expect(bar.indexOf('id="migration-tab-' + other + '"')).toBeGreaterThan(firstTab);
     }

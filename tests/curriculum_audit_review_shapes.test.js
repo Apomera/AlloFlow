@@ -127,7 +127,15 @@ describe('view: the Content accessibility section survives object entries under 
   it('contains an unguarded render failure to the one dimension card', () => {
     console.error = () => {};
     const View = window.AlloModules.AlignmentReportView;
-    const poisoned = report({ status: 'Not Aligned', narrative: { text: 'not a string' }, studentImpacts: [], fixes: [] });
+    // `notes` is the stand-in for "a field no coercer covers". It used to be
+    // `llmReview.narrative`, but that one is now guarded at all six render sites
+    // (2026-09-15), so it no longer throws and stopped exercising the boundary.
+    // `notes` is written by the pipeline, not a model, so it is not a live crash
+    // risk — it is simply an honest example of an unguarded child, which is what
+    // this test needs. If it ever gains a guard, repoint this at another one
+    // rather than deleting the case: the boundary still has to be proven.
+    const poisoned = report({ status: 'Not Aligned', narrative: 'Most figures lack descriptions.', studentImpacts: [], fixes: [] });
+    poisoned.data.comprehensive.accessibility.notes = { text: 'not a string' };
     poisoned.data.comprehensive.vocabulary = { status: 'Not evaluated', notEvaluated: true, recommendations: ['No vocabulary evidence was available.'] };
     expect(() => mount(React.createElement(View, { generatedContent: poisoned, t: () => 'Curriculum audit summary' }))).not.toThrow();
     const failed = host.querySelector('#audit-accessibility[data-audit-section-failed="true"]');

@@ -56,6 +56,29 @@ export function resetStemLab() {
         zoom: function () {}, reset: function () {}, status: function () { return 'idle'; }
       };
     },
+    // Same contract, different host helper. Tools that orbit a model (cityLab,
+    // archStudio, ...) read `typeof makeOrbitViewer === 'function'` and fall back
+    // to a flat "3D unavailable" panel when it is missing - so without this stub
+    // their 3D board, and anything rendered inside it, is simply absent from the
+    // tree and a test asserting on it would pass or fail for the wrong reason.
+    // Shape matched to the REAL makeOrbitViewer in stem_lab_module.js, which
+    // returns exactly: attach, push, onStatusChange, status, dispose.
+    //
+    // An INCOMPLETE stub is worse than none. Tools guard on
+    // `typeof window.StemLab.makeOrbitViewer === 'function'` and fall back to
+    // their own complete internal stub when it is absent. Adding a partial one
+    // satisfies that guard and then throws on the first missing method:
+    // titration calls api.onStatusChange(setStatus) immediately after creating
+    // the viewer, which took out 58 of its tests. So this must stay in step
+    // with the host - a method the real viewer has and this one lacks is a
+    // crash, not a gap.
+    makeOrbitViewer: function () {
+      return {
+        attach: function () {}, push: function () {},
+        onStatusChange: function () {}, dispose: function () {},
+        status: function () { return 'idle'; }
+      };
+    },
     getRegisteredTools: function () {
       const self = this;
       return this._order.map(function (id) { return self._registry[id]; }).filter(Boolean);

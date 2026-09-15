@@ -121,7 +121,7 @@ function AiBackendSettingsView(props) {
 function LmsAuditBannerView(props) {
   const { addToast, isPdfDocumentIntakeCurrent, lmsAuditFetchControllerRef, lmsAuditUrls, setGenerationStep, setIsExtracting, setLmsAuditUrls, setPdfAuditResult, setPendingPdfBase64, setPendingPdfFile, startNewPdfAudit, t } = props;
   return (
-<div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 z-[500]">
+<div className="bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-sm">♿ {t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', { count: lmsAuditUrls.length }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`}</span>
             <button onClick={() => setLmsAuditUrls([])} className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md text-xs transition-colors">{t('lms.dismiss_button') || 'Dismiss'}</button>

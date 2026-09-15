@@ -291,3 +291,85 @@ describe('Advocate naming', () => {
     expect(advocacy).not.toContain("mentor: 'Lydia X.Z. Brown', context: 'On the autistic community', quote: 'Nothing about us without us.'");
   });
 });
+
+// ── A quotation and a titled work must never be confused ──
+//
+// Every VOICES card renders its `quote` wrapped in literal quotation marks and
+// italicised. Two entries were not quotations at all:
+//
+//   Brown      — the TITLE of the 2017 anthology plus a descriptive gloss,
+//                shown in quote marks as if they had said it.
+//   Asasumasu  — a polished 30-word passage cited only to "Personal blog and
+//                community writing, mid-2000s": no post, no date, no URL, so
+//                nothing a reader could check, against this file's own claim
+//                that "All quotes verifiable in the cited sources".
+//
+// Same defect class as the three fabricated quotes fixed on 2026-09-14, and
+// invisible to check_sel_quote_attribution.cjs: the string looks like a quote
+// and has a citation beside it. A tool premised on "nothing about us without
+// us" must not put words in a living person's mouth, so a card now carries
+// EITHER a verifiable `quote` OR a cited `work` — never a title as speech.
+describe('Disability Voices — quote vs. cited work', () => {
+  const source = readFileSync(sourcePath, 'utf8');
+  const voices = (() => {
+    const start = source.indexOf('var VOICES = [');
+    const end = source.indexOf('\n  ];', start);
+    expect(start, 'VOICES block moved — this suite would be vacuous').toBeGreaterThan(-1);
+    expect(end, 'VOICES block never closes').toBeGreaterThan(start);
+    // eslint-disable-next-line no-eval
+    return eval(source.slice(start + 'var VOICES = '.length, end + 4));
+  })();
+
+  it('reads a real roster (guards against an empty parse)', () => {
+    expect(voices.length).toBeGreaterThan(5);
+    voices.forEach((v) => expect(typeof v.name, 'a voice has no name').toBe('string'));
+  });
+
+  it('gives every card exactly one of quote or work', () => {
+    voices.forEach((v) => {
+      const hasQuote = typeof v.quote === 'string' && v.quote.trim().length > 0;
+      const hasWork = typeof v.work === 'string' && v.work.trim().length > 0;
+      expect(hasQuote || hasWork, `${v.name}: card would render blank`).toBe(true);
+      expect(hasQuote && hasWork, `${v.name}: both quote and work set — which is it?`).toBe(false);
+    });
+  });
+
+  it('never presents a book title as something the person said', () => {
+    // A quotation that is mostly a Title Case run with a subtitle colon is a
+    // title, not speech. Brown's entry was exactly this shape.
+    voices.filter((v) => v.quote).forEach((v) => {
+      const looksLikeTitle = /^[A-Z][^.!?]{10,}:\s+[A-Z]/.test(v.quote.trim());
+      expect(looksLikeTitle, `${v.name}: quote reads as a book title`).toBe(false);
+    });
+  });
+
+  it('backs every quotation with a checkable source', () => {
+    // A year, a journal, or a URL — something a reader can go and verify.
+    voices.filter((v) => v.quote).forEach((v) => {
+      expect(typeof v.source, `${v.name}: no source`).toBe('string');
+      expect(
+        /\d{4}|http|\.org|\.net|Repository|journal/i.test(v.source),
+        `${v.name}: source is not checkable — use \`work\` instead of a quote`,
+      ).toBe(true);
+    });
+  });
+
+  it('keeps the two reclassified entries as works, not quotes', () => {
+    const brown = voices.find((v) => /Brown/.test(v.name));
+    const kassiane = voices.find((v) => /Asasumasu/.test(v.name));
+    expect(brown, 'Brown entry missing').toBeTruthy();
+    expect(kassiane, 'Asasumasu entry missing').toBeTruthy();
+    expect(brown.quote, 'Brown: the anthology title is back in quote marks').toBeFalsy();
+    expect(kassiane.quote, 'Asasumasu: an unverifiable passage is back in quote marks').toBeFalsy();
+    // Their contributions must still be shown, not silently dropped.
+    expect(brown.work).toMatch(/All the Weight of Our Dreams/);
+    expect(kassiane.work).toMatch(/neurodivergen/i);
+  });
+
+  it('renders a work without quotation marks', () => {
+    // The renderer emits the '"' spans only when v.quote is set.
+    const block = source.slice(source.indexOf("v.quote ? h('span'"), source.indexOf('// Context'));
+    expect(block, 'the quote/work renderer moved').toContain("v.quote ? h('span'");
+    expect(block).toContain("h('span', { key: 'wk'");
+  });
+});

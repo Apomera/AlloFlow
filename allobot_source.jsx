@@ -5163,7 +5163,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         }}
                         onTouchStart={stopTouch}
                         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                        className={`${satellitePos.tr} ${satelliteBase} bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-500 border-white focus:ring-2 focus:ring-red-400`}
+                        className={`${satellitePos.tr} ${satelliteBase} bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-700 border-white focus:ring-2 focus:ring-red-400`}
                         title={onHide ? t('toolbar.hide_bot') : t('bot.sleep_title')}
                         aria-label={onHide ? t('toolbar.hide_bot') : t('bot.sleep_aria')}
                     >
@@ -5180,7 +5180,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         }}
                         onTouchStart={stopTouch}
                         onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                        className={`${satellitePos.tl} ${satelliteBase} bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100 focus:ring-2 focus:ring-indigo-400`}
+                        className={`${satellitePos.tl} ${satelliteBase} bg-white hover:bg-indigo-50 text-indigo-700 hover:text-indigo-700 border-indigo-100 focus:ring-2 focus:ring-indigo-400`}
                         title={t('bot.chat_title')}
                         aria-label={t('bot.chat_aria')}
                     >
@@ -5199,7 +5199,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             }}
                             onTouchStart={stopTouch}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`${satellitePos.br} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 border-indigo-100'}`}
+                            className={`${satellitePos.br} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${!soundEnabled ? 'bg-slate-100 text-slate-600 border-slate-200' : 'bg-white hover:bg-indigo-50 text-indigo-700 hover:text-indigo-700 border-indigo-100'}`}
                             title={soundEnabled ? t('bot.mute_on_title') : t('bot.mute_off_title')}
                             aria-label={soundEnabled ? t('bot.mute_on_aria') : t('bot.mute_off_aria')}
                             aria-pressed={!soundEnabled}
@@ -5224,7 +5224,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                             // ring makes "live" readable without colour vision, and the
                             // announcement below reports every change to a screen reader.
                             aria-pressed={!!isListening}
-                            className={`${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 ring-2 ring-offset-1 ring-red-500 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
+                            className={`${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 ring-2 ring-offset-1 ring-red-500 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >

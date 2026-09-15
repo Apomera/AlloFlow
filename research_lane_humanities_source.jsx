@@ -1404,6 +1404,8 @@
     var t = props.t, data = props.data;
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
+    // Model scalars are rendered as React children below; a non-string would crash the lane.
+    var aiScalarText = primitives.aiScalarText || function (v) { return typeof v === 'string' ? v : (v && typeof v === 'object' && !Array.isArray(v) && typeof v.text === 'string' ? v.text : (v == null || typeof v === 'object' ? '' : String(v))); };
     if (!data) return null;
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
@@ -1473,9 +1475,9 @@
           <div style={{ marginTop: '8px', padding: '8px 10px', borderRadius: '8px',
             background: '#fff', border: '1px solid #f9a8d4' }}>
             <strong style={{ fontSize: '11px', color: '#9d174d' }}>{(t('humanities.aiq_analog_domain') || 'Analog domain ({domain}):').replace('{domain}', data.analog_domain_shape.analog_domain.replace(/_/g, ' '))}</strong>
-            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_claim_shape') || 'Claim shape:'}</em> {data.analog_domain_shape.example_claim_shape}</p>
-            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_warrant_shape') || 'Warrant shape:'}</em> {data.analog_domain_shape.example_warrant_shape}</p>
-            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_qualifier_shape') || 'Qualifier shape:'}</em> {data.analog_domain_shape.example_qualifier_shape}</p>
+            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_claim_shape') || 'Claim shape:'}</em> {aiScalarText(data.analog_domain_shape.example_claim_shape)}</p>
+            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_warrant_shape') || 'Warrant shape:'}</em> {aiScalarText(data.analog_domain_shape.example_warrant_shape)}</p>
+            <p style={{ margin: '4px 0', fontSize: '11px' }}><em>{t('humanities.aiq_qualifier_shape') || 'Qualifier shape:'}</em> {aiScalarText(data.analog_domain_shape.example_qualifier_shape)}</p>
             {renderQuestions(data.analog_domain_shape.transfer_questions, t('humanities.aiq_transfer') || 'Transfer questions (translate the shape, not the content):')}
           </div>
         )}

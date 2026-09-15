@@ -686,7 +686,7 @@ function DisproAnalyzerPanel(props) {
                           </td>
                           <td className="p-1 w-10">
                             <button type="button" onClick={() => removeRow(i)} aria-label={tt('dispro.remove_row_aria', 'Remove row') + ' ' + (i + 1)}
-                              className="min-w-10 min-h-10 inline-flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50">✕</button>
+                              className="min-w-10 min-h-10 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-rose-700 hover:bg-rose-50">✕</button>
                           </td>
                         </tr>
                       ))}
@@ -802,7 +802,7 @@ function DisproAnalyzerPanel(props) {
                         <span className="block font-bold text-sm text-slate-800">{a.title}</span>
                         <span className="block text-[10px] text-slate-500">{a.date} · {a.groups.length} {tt('dispro.groups_short', 'groups')}</span>
                       </span>
-                      <span aria-hidden="true" className="shrink-0 text-slate-400">›</span>
+                      <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
                   </li>
                 ))}

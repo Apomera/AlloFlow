@@ -286,3 +286,5 @@ __pycache__/
 # Local translation refresh intermediates
 /ui_strings.js.visual-refresh-tmp
 /desktop/web-app/public/ui_strings.js.math-refinements-tmp
+# find_vacuous_pins.cjs crash-recovery journals (per-pid, never committed)
+.vacuous-pins-journal.*.json

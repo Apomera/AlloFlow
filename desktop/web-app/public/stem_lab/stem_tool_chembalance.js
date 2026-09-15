@@ -5465,7 +5465,7 @@
             ),
             // Formula input
             h('div', { className: 'chem-mass-entry bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
-              h('label', { className: 'text-[0.6875rem] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, __alloT('stem.chembalance.enter_chemical_formula', '\uD83E\uDDEE Enter Chemical Formula')),
+              h('label', { className: 'text-[0.6875rem] font-bold text-teal-700 uppercase tracking-wider block mb-1' }, __alloT('stem.chembalance.enter_chemical_formula', '\uD83E\uDDEE Enter Chemical Formula')),
               h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: __alloT('stem.chembalance.e_g_h2o_nacl_ca_oh_2', 'e.g. H2O, NaCl, Ca(OH)2'), 'aria-label': __alloT('stem.chembalance.chemical_formula_input', 'Chemical formula input'), className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-600 rounded-lg focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
               h('div', { className: 'flex flex-wrap gap-1' },
@@ -8115,7 +8115,11 @@
 
           // ── Contextual footer ──
           !isChemHub && subtool !== 'finale' && h('div', { className: 'flex flex-wrap gap-2 mt-4 pt-3 border-t border-slate-200' },
-            (subtool === 'acids' || subtool === 'pHHunt') && h('button', {
+            // 'acids' is a STALE id - the section is 'acids_bases' and nothing in
+            // CHEM_SECTIONS emits 'acids', so this guard never matched the page it
+            // was written for. Acids & Bases showed no Titration link at all while
+            // an unreachable state showed one.
+            (subtool === 'acids_bases' || subtool === 'pHHunt') && h('button', {
               type: 'button',
               onClick: function() { setStemLabTool('titrationLab'); announceToSR(__alloT('stem.chembalance.sr_opening_titration_lab', 'Opening Titration Lab')); },
               className: 'min-h-[40px] transition-colors px-3 py-2 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100'

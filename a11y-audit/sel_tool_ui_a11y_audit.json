@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T21:11:22.752Z",
+  "generatedAt": "2026-09-15T21:37:00.593Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -15,7 +15,7 @@
     "toolsWithIssues": 0,
     "toolsWithoutStandardShell": [],
     "contrastCoverage": {
-      "textNodesGraded": 18413,
+      "textNodesGraded": 18416,
       "skippedGradientBackground": 901,
       "skippedColourFromCssClass": 933,
       "note": "Skipped nodes are NOT passes. Gradient-backed text has no single background to measure; class-sourced colours cannot be resolved from SSR markup."
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430101,
+      "renderedBytes": 430164,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143367,
+          "renderedBytes": 143388,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143367,
+          "renderedBytes": 143388,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143367,
+          "renderedBytes": 143388,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -337,7 +337,7 @@
     {
       "id": "civicAction",
       "label": "Civic Action & Hope",
-      "renderedBytes": 52074,
+      "renderedBytes": 52098,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -345,7 +345,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17358,
+          "renderedBytes": 17366,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -354,7 +354,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17358,
+          "renderedBytes": 17366,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -363,7 +363,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17358,
+          "renderedBytes": 17366,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -688,7 +688,7 @@
     {
       "id": "cultureExplorer",
       "label": "Culture Explorer",
-      "renderedBytes": 100899,
+      "renderedBytes": 100923,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -696,7 +696,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 33633,
+          "renderedBytes": 33641,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -705,7 +705,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 33633,
+          "renderedBytes": 33641,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -714,7 +714,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 33633,
+          "renderedBytes": 33641,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -844,7 +844,7 @@
     {
       "id": "disabilityVoices",
       "label": "Disability Voices",
-      "renderedBytes": 82284,
+      "renderedBytes": 83199,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -852,7 +852,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 27428,
+          "renderedBytes": 27733,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -861,7 +861,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 27428,
+          "renderedBytes": 27733,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -870,7 +870,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 27428,
+          "renderedBytes": 27733,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -961,7 +961,7 @@
     {
       "id": "ethicalReasoning",
       "label": "Ethical Reasoning Lab",
-      "renderedBytes": 51060,
+      "renderedBytes": 51081,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -969,7 +969,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 17020,
+          "renderedBytes": 17027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -978,7 +978,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 17020,
+          "renderedBytes": 17027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -987,7 +987,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 17020,
+          "renderedBytes": 17027,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1936,7 +1936,7 @@
     {
       "id": "selfAdvocacy",
       "label": "Self-Advocacy Studio",
-      "renderedBytes": 111105,
+      "renderedBytes": 110907,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1944,7 +1944,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 37035,
+          "renderedBytes": 36969,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1953,7 +1953,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 37035,
+          "renderedBytes": 36969,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1962,7 +1962,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 37035,
+          "renderedBytes": 36969,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2794,7 +2794,7 @@
     {
       "id": "zones",
       "label": "Emotion Zones",
-      "renderedBytes": 95049,
+      "renderedBytes": 95046,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -2802,7 +2802,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 31635,
+          "renderedBytes": 31634,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2811,7 +2811,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 31635,
+          "renderedBytes": 31634,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -2820,7 +2820,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 31779,
+          "renderedBytes": 31778,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

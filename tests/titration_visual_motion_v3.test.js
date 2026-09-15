@@ -292,8 +292,13 @@ describe('equipment disclosure target and focus relationship', () => {
   });
 
   it('hands focus to the newly opened equipment detail without losing the button relationship', () => {
+    // Pin the BEHAVIOUR, not the spelling of a local. This selection moved into
+    // a `selectEquipment(id)` helper, so the old regex - which required the
+    // literal `+ eq.id` - went red while the focus handoff was working fine.
+    // Any identifier is accepted; what must hold is that the focus target is
+    // the equipment detail region, built from the id being selected.
     expect(SOURCE).toMatch(
-      /focusTitrationRegion\(\s*['"]titration-equipment-detail-['"]\s*\+\s*eq\.id\s*\)/,
+      /focusTitrationRegion\(\s*['"]titration-equipment-detail-['"]\s*\+\s*[A-Za-z_$][\w$.]*\s*\)/,
     );
   });
 });

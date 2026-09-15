@@ -497,7 +497,7 @@ function CanvasRecoveryDialogView(props) {
     type: "button",
     disabled: Boolean(canvasRecoveryBusyId),
     onClick: () => void removeCanvasRecoverySnapshotMedia(snapshot.id),
-    className: "min-h-11 rounded-lg bg-amber-600 px-3 py-2 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-60"
+    className: "min-h-11 rounded-lg bg-amber-700 px-3 py-2 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-60"
   }, "Confirm remove media"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: Boolean(canvasRecoveryBusyId),

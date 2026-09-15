@@ -36,6 +36,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
     document.body.appendChild(liveRegion);
   })();
 
+  // The live region above was created at load and never written to. These
+  // messages are the only feedback for a button that would otherwise do
+  // nothing at all when a field is empty.
+  var _bodAnnounce = function(msg) {
+    try {
+      var lr = document.getElementById('allo-live-body');
+      if (!lr) return;
+      lr.textContent = '';
+      setTimeout(function() { lr.textContent = String(msg || ''); }, 30);
+    } catch (e) {}
+  };
+
   function defaultState() {
     return {
       view: 'home',
@@ -310,7 +322,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         }
         function addCustom() {
           var el = document.getElementById('b-pressure-input');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
           var list = (d.pressures || []).slice();
           if (list.indexOf(el.value.trim()) === -1) list.push(el.value.trim());
           setB({ pressures: list });
@@ -410,7 +422,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
       function renderMedia() {
         function addInflow() {
           var el = document.getElementById('b-media-in');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
           var list = (d.mediaInflows || []).slice();
           list.push(el.value.trim());
           setB({ mediaInflows: list });
@@ -418,7 +430,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
         }
         function addCut() {
           var el = document.getElementById('b-media-cut');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { _bodAnnounce('Write something first, then press the button again.'); return; }
           var list = (d.mediaCuts || []).slice();
           list.push(el.value.trim());
           setB({ mediaCuts: list });

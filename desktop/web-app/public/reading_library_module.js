@@ -1243,7 +1243,7 @@
       e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
         e('span', { className: 'font-bold text-indigo-700' }, d.word),
         e('button', {
-          className: 'text-slate-400 hover:text-slate-600 text-sm px-1',
+          className: 'text-slate-600 hover:text-slate-600 text-sm px-1',
           onClick: props.onClose,
           'aria-label': tr('readinglib_close', 'Close'),
         }, '✕')
@@ -2204,7 +2204,7 @@
           title: tr('readinglib_open_original_hint', 'Open the official source page for this section'),
         }, tr('readinglib_open_original', 'Open original')) : null,
         (hasAudioTrack || hasPageAudio) && !txReady ? e('button', {
-          className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-600 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
+          className: 'px-3 py-1.5 rounded-lg text-sm font-semibold ' + (narrating ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'),
           onClick: toggleNarration,
           'aria-pressed': narrating,
           title: hasCues ? undefined : tr('readinglib_audio_no_sync', 'Human narration (no word-by-word highlighting for this book)'),
@@ -2223,7 +2223,7 @@
         // pre-recorded narration path already auto-advances, so skip it there.
         (sourcePages.length > 1 && (!(hasAudioTrack || hasPageAudio) || txReady)) ? e('button', {
           className: 'px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
-            (autoRead ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
+            (autoRead ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
           onClick: toggleAutoRead,
           'aria-pressed': autoRead,
           title: tr('readinglib_read_aloud_hint', 'Read the book aloud and turn the pages automatically'),
@@ -2240,7 +2240,7 @@
         e('div', { className: 'relative', 'data-rl-menu': 'aa' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-bold border ' +
-              (aaOpen ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+              (aaOpen ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: function () { var v = !aaOpen; closeMenus(); setAaOpen(v); },
             'aria-expanded': aaOpen,
             'aria-label': tr('readinglib_aa_label', 'Reading supports'),
@@ -2255,7 +2255,7 @@
                 return e('button', {
                   key: f.id,
                   className: 'px-2 py-1 rounded-lg text-xs font-semibold border ' + (f.cssClass ? f.cssClass + ' ' : '') +
-                    (readerPrefs.font === f.id ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                    (readerPrefs.font === f.id ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
                   onClick: function () { setReaderPrefs({ font: f.id }); },
                   'aria-pressed': readerPrefs.font === f.id,
                 }, tr('readinglib_font_' + f.id, f.label));
@@ -2285,7 +2285,7 @@
                 return e('button', {
                   key: String(opt[0]),
                   className: 'px-2 py-1 rounded-lg text-xs font-semibold border ' +
-                    (readerPrefs.lineHeight === opt[0] ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                    (readerPrefs.lineHeight === opt[0] ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
                   onClick: function () { setReaderPrefs({ lineHeight: opt[0] }); },
                   'aria-pressed': readerPrefs.lineHeight === opt[0],
                 }, opt[1]);
@@ -2297,7 +2297,7 @@
                 return e('button', {
                   key: String(opt[0]),
                   className: 'px-2 py-1 rounded-lg text-xs font-semibold border ' +
-                    (readerPrefs.letterSpacing === opt[0] ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                    (readerPrefs.letterSpacing === opt[0] ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
                   onClick: function () { setReaderPrefs({ letterSpacing: opt[0] }); },
                   'aria-pressed': readerPrefs.letterSpacing === opt[0],
                 }, opt[1]);
@@ -2309,7 +2309,7 @@
                 return e('button', {
                   key: String(opt[0]),
                   className: 'px-2 py-1 rounded-lg text-xs font-semibold border ' +
-                    (readerPrefs.wordSpacing === opt[0] ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                    (readerPrefs.wordSpacing === opt[0] ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
                   onClick: function () { setReaderPrefs({ wordSpacing: opt[0] }); },
                   'aria-pressed': readerPrefs.wordSpacing === opt[0],
                 }, opt[1]);
@@ -2334,7 +2334,7 @@
             // reading ruler
             e('button', {
               className: 'w-full px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
-                (readerPrefs.ruler ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+                (readerPrefs.ruler ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
               onClick: function () { setReaderPrefs({ ruler: !readerPrefs.ruler }); },
               'aria-pressed': readerPrefs.ruler,
               title: tr('readinglib_aa_ruler_access_hint', 'Move the reading ruler with your pointer or touch. Focus the reading page and use Up and Down arrows.'),
@@ -2349,7 +2349,7 @@
         (window.AlloModules && (window.AlloModules.FocusReaderOverlay || window.AlloModules.KaraokeReaderOverlay)) ? e('div', { className: 'relative', 'data-rl-menu': 'tools' },
           e('button', {
             className: 'px-2 py-1 rounded-lg text-sm font-semibold border ' +
-              (toolsOpen ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+              (toolsOpen ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: function () { var v = !toolsOpen; closeMenus(); setToolsOpen(v); },
             'aria-expanded': toolsOpen,
             'data-help-key': 'readinglib-tools',
@@ -2747,7 +2747,7 @@
             // meaning line by line).
             e('button', {
               className: 'px-2 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ' +
-                (bilingual ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-100'),
+                (bilingual ? 'bg-amber-700 text-white border-amber-600' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-100'),
               onClick: function () { setBilingual(!bilingual); },
               'aria-pressed': bilingual,
               title: tr('readinglib_bilingual_hint', 'Show the original text next to the translation'),
@@ -2763,7 +2763,7 @@
             lang: book.langCode || undefined,
             'data-testid': 'bilingual-original',
           },
-            e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' },
+            e('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-600 mb-1' },
               book.language + ' · ' + tr('readinglib_original', 'Original')),
             pageTextForPipeline(page).split(/\n{2,}/).map(function (par, pi) {
               return e('p', { key: pi, className: 'mb-2 whitespace-pre-line' }, par);
@@ -2873,7 +2873,7 @@
           // Bookmark the current page.
           e('button', {
             className: 'px-2 py-1.5 rounded-lg text-sm font-semibold border ' +
-              (bookmarks.indexOf(pageIdx) !== -1 ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+              (bookmarks.indexOf(pageIdx) !== -1 ? 'bg-amber-700 text-white border-amber-500' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: toggleBookmark,
             'aria-pressed': bookmarks.indexOf(pageIdx) !== -1,
             title: tr('readinglib_bookmark_hint', 'Bookmark this page'),
@@ -2882,7 +2882,7 @@
         ),
         // Saved bookmarks — jump chips with a remove (✕).
         bookmarks.length ? e('div', { className: 'flex items-center justify-center gap-1 flex-wrap mt-1.5' },
-          e('span', { className: 'text-[11px] font-semibold text-slate-400' }, tr('readinglib_bookmarks', 'Bookmarks') + ':'),
+          e('span', { className: 'text-[11px] font-semibold text-slate-600' }, tr('readinglib_bookmarks', 'Bookmarks') + ':'),
           bookmarks.map(function (bmIdx) {
             return e('span', { key: bmIdx, className: 'inline-flex items-center rounded-full border border-amber-200 bg-amber-50 overflow-hidden' },
               e('button', {
@@ -2891,7 +2891,7 @@
                 title: tr('readinglib_go_to_page', 'Go to page') + ' ' + (bmIdx + 1),
               }, '🔖 ' + (bmIdx + 1)),
               e('button', {
-                className: 'px-1.5 py-0.5 text-[11px] text-amber-500 hover:text-amber-800 hover:bg-amber-100',
+                className: 'px-1.5 py-0.5 text-[11px] text-amber-700 hover:text-amber-800 hover:bg-amber-100',
                 onClick: function () { var next = bookmarks.filter(function (n) { return n !== bmIdx; }); setBookmarks(next); saveBookmarks(book.slug, next, props.readingScope); },
                 'aria-label': tr('readinglib_remove_bookmark', 'Remove bookmark') + ' ' + (bmIdx + 1),
               }, '✕')
@@ -3373,7 +3373,7 @@
       e('div', { className: 'bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-4 max-h-full overflow-y-auto flex flex-col', role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_find_more', 'Find more books') },
         e('div', { className: 'flex items-center justify-between gap-2 mb-1' },
           e('h3', { className: 'font-extrabold text-slate-800' }, '🔎 ' + tr('readinglib_find_more_title', 'Find more public-domain books')),
-          e('button', { className: 'text-slate-400 hover:text-slate-600 px-1', onClick: props.onClose, 'aria-label': tr('readinglib_close', 'Close') }, '✕')
+          e('button', { className: 'text-slate-600 hover:text-slate-600 px-1', onClick: props.onClose, 'aria-label': tr('readinglib_close', 'Close') }, '✕')
         ),
         e('p', { className: 'text-xs text-slate-500 mb-2' },
           tr('readinglib_find_more_note', 'Search Project Gutenberg (75,000+ public-domain books). Open any at the source now; request the ones you want added to this library and share the list with your AlloFlow maintainer.')),
@@ -3411,7 +3411,7 @@
           e('span', { className: 'flex-1' }),
           e('button', {
             className: 'px-2.5 py-1 rounded-full text-xs font-semibold border ' +
-              (sortMode === 'popular' ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'),
+              (sortMode === 'popular' ? 'bg-amber-700 text-white border-amber-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'),
             onClick: toggleSort,
             'aria-pressed': sortMode === 'popular',
             title: tr('readinglib_sort_popular_hint', 'Show the most-downloaded books first'),
@@ -3427,7 +3427,7 @@
           return e('div', { className: 'flex items-center justify-between gap-2 mt-2' },
             e('div', { className: 'text-[11px] text-slate-500' }, results.length + ' ' + tr('readinglib_results', 'results')),
             importable ? e('button', {
-              className: 'px-3 py-1 rounded-lg text-xs font-semibold ' + (adding === -1 ? 'bg-emerald-300 text-white cursor-wait' : 'bg-emerald-600 text-white hover:bg-emerald-700'),
+              className: 'px-3 py-1 rounded-lg text-xs font-semibold ' + (adding === -1 ? 'bg-emerald-700 text-white cursor-wait' : 'bg-emerald-700 text-white hover:bg-emerald-800'),
               onClick: adding === -1 ? undefined : addAll,
               disabled: adding === -1,
             }, adding === -1 ? tr('readinglib_adding', 'Adding…') : '＋ ' + tr('readinglib_add_all', 'Add all') + ' (' + importable + ')') : null
@@ -3445,7 +3445,7 @@
               r.authors.length ? e('div', { className: 'text-[11px] text-slate-500' }, r.authors.join(', ')) : null,
               e('div', { className: 'flex flex-wrap gap-1 mt-1' },
                 r.subjects.map(function (s, i) { return e('span', { key: i, className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, String(s).slice(0, 40)); }),
-                e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px]' }, '⬇ ' + r.downloads.toLocaleString())
+                e('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]' }, '⬇ ' + r.downloads.toLocaleString())
               ),
               e('div', { className: 'flex flex-wrap items-center gap-2 mt-2' },
                 e('a', {
@@ -3454,11 +3454,11 @@
                 }, tr('readinglib_open_at_gutenberg', 'Open at Gutenberg')),
                 inLibrary ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200' },
                   '✓ ' + tr('readinglib_in_library', 'In your library')) :
-                !r.hasText ? e('span', { className: 'text-[11px] text-slate-400 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
+                !r.hasText ? e('span', { className: 'text-[11px] text-slate-600 italic' }, tr('readinglib_no_inapp_text', 'No in-app text (audio/scan only)')) :
                 isAdding ? e('span', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200' },
                   tr('readinglib_adding', 'Adding…')) :
                 endpoint ? e('button', {
-                  className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700',
+                  className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800',
                   onClick: function () { addNow(r); },
                   title: tr('readinglib_add_now_hint', 'Import this book into your library now'),
                 }, '＋ ' + tr('readinglib_add_now', 'Add now')) :
@@ -3488,7 +3488,7 @@
                 '✉ ' + tr('readinglib_req_email', 'Email')),
               e('button', { className: 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-indigo-800 border border-indigo-200 hover:bg-indigo-50', onClick: downloadRequests },
                 '⤓ ' + tr('readinglib_req_download', 'Download')),
-              e('button', { className: 'px-2 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100', onClick: function () { setRequests([]); saveImportRequests([]); } },
+              e('button', { className: 'px-2 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100', onClick: function () { setRequests([]); saveImportRequests([]); } },
                 tr('readinglib_req_clear', 'Clear'))
             )
           ),
@@ -3517,7 +3517,7 @@
           ),
           e('div', { className: 'flex flex-wrap gap-2' },
             props.isTeacherMode && typeof props.onSaveReadingSet === 'function' ? e('button', {
-              className: 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
+              className: 'rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
               onClick: function () { props.onSaveReadingSet(set); props.addToast && props.addToast('"' + set.title + '" ' + tr('readinglib_set_saved', 'was added to this lesson\'s resources.'), 'success'); },
             }, '📌 ' + tr('readinglib_set_save', 'Save to lesson')) : null,
             e('button', {
@@ -4175,14 +4175,14 @@
           }),
           e('button', {
             className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
-              (filters.audio ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+              (filters.audio ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: function () { setFilters(Object.assign({}, filters, { audio: !filters.audio })); },
             'aria-pressed': filters.audio,
           }, '🔊 ' + tr('readinglib_narrated_only', 'Narrated only')),
           // Hide link-out source cards so only in-app readable texts remain.
           hasCards ? e('button', {
             className: 'rounded-lg border px-3 py-2 text-sm font-semibold text-left ' +
-              (filters.fullOnly ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
+              (filters.fullOnly ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'),
             onClick: function () { setFilters(Object.assign({}, filters, { fullOnly: !filters.fullOnly })); },
             'aria-pressed': filters.fullOnly,
             title: tr('readinglib_full_only_hint', 'Hide source cards that link out to other sites; show only texts you can read inside AlloFlow'),
@@ -4245,7 +4245,7 @@
             ),
             e('div', { className: 'flex flex-wrap gap-2 pt-1' },
               typeof props.onSaveReadingSet === 'function' ? e('button', {
-                className: 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
+                className: 'rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-bold text-white hover:bg-emerald-700',
                 onClick: saveReadingSet,
               }, '📌 ' + tr('readinglib_set_save', 'Save to lesson')) : null,
               e('button', {
@@ -4297,7 +4297,7 @@
             return e('button', {
               key: l.name,
               className: 'px-2.5 py-1 rounded-full text-[12px] font-semibold border ' +
-                (active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
+                (active ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-200 hover:bg-emerald-50'),
               onClick: function () { setFilters(Object.assign({}, filters, { language: active ? '' : l.name })); },
               'aria-pressed': active,
             }, l.name + ' · ' + l.count);
@@ -4455,7 +4455,7 @@
           e('div', { className: 'bg-white rounded-2xl shadow-2xl max-w-lg w-full p-4 max-h-full overflow-y-auto', role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('readinglib_lang_options', 'Language options') },
             e('div', { className: 'flex items-center justify-between gap-2 mb-2' },
               e('h3', { className: 'font-extrabold text-slate-800' }, '🌍 ' + tr('readinglib_lang_options_title', 'Getting books in any language')),
-              e('button', { className: 'text-slate-400 hover:text-slate-600 px-1', onClick: function () { setOptionsOpen(false); }, 'aria-label': tr('readinglib_close', 'Close') }, '✕')
+              e('button', { className: 'text-slate-600 hover:text-slate-600 px-1', onClick: function () { setOptionsOpen(false); }, 'aria-label': tr('readinglib_close', 'Close') }, '✕')
             ),
             e('div', { className: 'space-y-3 text-sm text-slate-700' },
               e('div', { className: 'border border-emerald-200 bg-emerald-50 rounded-xl p-3' },

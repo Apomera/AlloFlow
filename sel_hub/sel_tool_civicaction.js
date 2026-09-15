@@ -106,6 +106,7 @@ window.SelHub = window.SelHub || {
         try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
         resolve(values);
       }
+
       function onKeyDown(event) {
         event.stopImmediatePropagation();
         if (event.key === 'Escape') { event.preventDefault(); finish(null); return; }
@@ -835,7 +836,7 @@ window.SelHub = window.SelHub || {
       var tab = d.tab || 'feelings';
       var selectedFeeling = d.feeling || null;
       var selectedCoping = d.coping || null;
-      var aiResponse = d.aiResponse || null;
+      var aiResponse = (typeof d.aiResponse === 'string' ? d.aiResponse : null);
       var _civicTier = d._civicTier || 0;
       var aiLoading = d.aiLoading || false;
       var actionPlan = d.actionPlan || null;
@@ -852,22 +853,26 @@ window.SelHub = window.SelHub || {
       var scenarioScore = d.scenarioScore || 0;
       var scenarioDone = d.scenarioDone || false;
       var scenarioChosen = d.scenarioChosen || false;
-      var plannerStep = d.plannerStep || 0;
+      var plannerStep = (Number.isInteger(d.plannerStep) && d.plannerStep >= 0 ? d.plannerStep : 0);
+      // PLANNER_STEPS is declared later in this closure, so it cannot be read
+      // here. This function is only called from the planner render, by which
+      // point the array exists — it clamps a saved index into range.
+      function _plClamp() { return Math.min(PLANNER_STEPS.length - 1, Math.max(0, plannerStep)); }
       var plannerData = d.plannerData || {};
       var selectedTemplate = d.selectedTemplate || null;
-      var earnedBadges = d.earnedBadges || [];
+      var earnedBadges = (Array.isArray(d.earnedBadges) ? d.earnedBadges : []);
 
       // New feature state vars
       var simStep = d.simStep || 0;
       var simChoices = d.simChoices || {};
       var simDone = d.simDone || false;
-      var budgetAlloc = d.budgetAlloc || null;
+      var budgetAlloc = (d.budgetAlloc && typeof d.budgetAlloc === 'object' && !Array.isArray(d.budgetAlloc)) ? d.budgetAlloc : null;
       var legBill = d.legBill || null;
       var legAllies = d.legAllies || [];
       var legAnswers = d.legAnswers || {};
       var legStep = d.legStep || 0;
       var legSupport = d.legSupport || 0;
-      var surveyQuestions = d.surveyQuestions || [];
+      var surveyQuestions = (Array.isArray(d.surveyQuestions) ? d.surveyQuestions : []);
       var surveyCustomQ = d.surveyCustomQ || '';
       var surveyCustomType = d.surveyCustomType || 'open';
       var surveyCustomOpts = d.surveyCustomOpts || '';
@@ -978,8 +983,8 @@ window.SelHub = window.SelHub || {
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
-              h('h2', { className: 'text-xl font-black text-slate-800' }, '\u270a Civic Action & Hope'),
-              h('p', { className: 'text-xs text-slate-600' }, 'Your feelings are valid. Your voice matters. Your actions count.')
+              h('h2', { className: 'text-xl font-black text-slate-100' }, '\u270a Civic Action & Hope'),
+              h('p', { className: 'text-xs text-slate-300' }, 'Your feelings are valid. Your voice matters. Your actions count.')
             )
           )
         ),
@@ -1010,7 +1015,40 @@ window.SelHub = window.SelHub || {
 
         // ── Topic-accent hero band per tab ──
         (function() {
-          var TAB_META = {
+              // The card's accent doubles as its border, rule and background tint, so
+      // it cannot simply be recoloured — but six of the thirteen accents fail
+      // WCAG AA as TEXT on their own tinted card (#7c3aed is 2.91:1). This
+      // lightens the accent for the title only, mixing toward white until it
+      // clears 4.5:1, leaving the card's identity colour untouched.
+      function _readableAccent(hex, tintedBg) {
+        function ch(h, i) { return parseInt(h.slice(i, i + 2), 16); }
+        function lin(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+        function lum(c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); }
+        function ratio(a, b) {
+          var x = lum(a), y = lum(b);
+          var hi = Math.max(x, y), lo = Math.min(x, y);
+          return (hi + 0.05) / (lo + 0.05);
+        }
+        if (!/^#[0-9a-fA-F]{6}$/.test(hex || '')) return hex;
+        var rgb0 = [ch(hex, 1), ch(hex, 3), ch(hex, 5)];
+        var rgb = rgb0;
+        // The card tints its background with 10% of the accent over the shell,
+        // so grade against THAT, not the bare shell — otherwise the chosen mix
+        // lands just under AA on the surface it actually sits on.
+        var shell = [15, 23, 42];
+        var bg = tintedBg || rgb0.map(function(v, i) { return v * 0.10 + shell[i] * 0.90; });
+        for (var mix = 0; mix <= 1.0001; mix += 0.02) {
+          var c = rgb.map(function(v) { return v + (255 - v) * mix; });
+          // Aim just past 4.5 rather than exactly at it: landing ON the
+          // threshold makes the result depend on a grader's rounding.
+          if (ratio(c, bg) >= 4.55) {
+            return 'rgb(' + c.map(Math.round).join(',') + ')';
+          }
+        }
+        return '#ffffff';
+      }
+
+  var TAB_META = {
             feelings:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83D\uDCAD', title: 'Name It \u2014 the feelings underneath the news',          hint: 'Civic pain is REAL pain. Lieberman 2007 fMRI: naming a feeling lights up the prefrontal cortex and quiets the amygdala. \u201CI\u2019m anxious about the future\u201D works on the brain the same way \u201CI\u2019m anxious about the test\u201D does.' },
             understand: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD0D', title: 'Understand It \u2014 why this hits YOU',                    hint: 'Different issues land different on different people \u2014 history, identity, lived experience all shape the response. Self-knowledge here is what separates effective civic action from performance.' },
             cope:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)',  icon: '\uD83C\uDF3F', title: 'Cope \u2014 hold the heavy without breaking',              hint: 'Activists burn out at higher rates than the general population (Plyler 2007). Sustainable change requires sustainable people. The coping is not separate from the action \u2014 it IS the long game.' },
@@ -1039,15 +1077,15 @@ window.SelHub = window.SelHub || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('h3', { style: { color: _readableAccent(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
             )
           );
         })(),
 
         // ═══ NAME IT — Feelings ═══
         tab === 'feelings' && h('div', { className: 'space-y-4' },
-          h('p', { className: 'text-sm text-slate-600 text-center' }, 'What are you feeling right now? There are no wrong answers.'),
+          h('p', { className: 'text-sm text-slate-300 text-center' }, 'What are you feeling right now? There are no wrong answers.'),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             FEELINGS_MAP.map(function(f) {
@@ -1112,8 +1150,8 @@ window.SelHub = window.SelHub || {
         // ═══ UNDERSTAND IT ═══
         tab === 'understand' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udd0d Why Does This Matter to Me?'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Understanding why you care is the first step toward meaningful action.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83d\udd0d Why Does This Matter to Me?'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Understanding why you care is the first step toward meaningful action.')
           ),
 
           h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
@@ -1159,8 +1197,8 @@ window.SelHub = window.SelHub || {
         // ═══ COPE ═══
         tab === 'cope' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf3f Healthy Ways to Hold Hard Feelings'),
-            h('p', { className: 'text-sm text-slate-600' }, 'You do not have to fix the world to take care of yourself.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udf3f Healthy Ways to Hold Hard Feelings'),
+            h('p', { className: 'text-sm text-slate-300' }, 'You do not have to fix the world to take care of yourself.')
           ),
 
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -1193,8 +1231,8 @@ window.SelHub = window.SelHub || {
         // ═══ EXPLORE ISSUES (NEW) ═══
         tab === 'explore' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf0d Explore Civic Issues'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Learn about issues that affect your community and the world. (' + gradeBand + ' level)')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udf0d Explore Civic Issues'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Learn about issues that affect your community and the world. (' + gradeBand + ' level)')
           ),
 
           !selectedIssue && h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -1237,8 +1275,8 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-4xl' }, issue.emoji),
                   h('div', null,
-                    h('h3', { className: 'text-lg font-black text-slate-800' }, issue.title),
-                    h('p', { className: 'text-sm text-slate-600' }, issue.desc)
+                    h('h3', { className: 'text-lg font-black text-slate-100' }, issue.title),
+                    h('p', { className: 'text-sm text-slate-300' }, issue.desc)
                   )
                 ),
                 h('div', { className: 'bg-teal-50 rounded-xl p-4 border border-teal-200' },
@@ -1261,8 +1299,8 @@ window.SelHub = window.SelHub || {
         // ═══ ACT ═══
         tab === 'act' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\u270a Turn Feelings Into Action'),
-            h('p', { className: 'text-sm text-slate-600' }, 'You have more power than you think. Here are concrete steps you can take.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\u270a Turn Feelings Into Action'),
+            h('p', { className: 'text-sm text-slate-300' }, 'You have more power than you think. Here are concrete steps you can take.')
           ),
 
           // Action cards
@@ -1310,31 +1348,31 @@ window.SelHub = window.SelHub || {
         // ═══ ACTION PLAN BUILDER (NEW) ═══
         tab === 'planner' && h('div', { role: 'region', 'aria-labelledby': 'cv-planner-title', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { id: 'cv-planner-title', className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdd Civic Action Plan Builder'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Build a step-by-step plan to create real change in your community.')
+            h('h3', { id: 'cv-planner-title', className: 'text-lg font-black text-slate-100' }, '\ud83d\udcdd Civic Action Plan Builder'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Build a step-by-step plan to create real change in your community.')
           ),
 
           // Progress bar
           h('div', { role: 'progressbar', 'aria-label': 'Civic action plan progress', 'aria-valuemin': 1, 'aria-valuemax': PLANNER_STEPS.length, 'aria-valuenow': plannerStep + 1, 'aria-valuetext': 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length, className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
             h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((plannerStep + 1) / PLANNER_STEPS.length * 100) + '%' } })
           ),
-          h('div', { className: 'flex justify-between text-xs text-slate-600 font-bold' },
+          h('div', { className: 'flex justify-between text-xs text-slate-300 font-bold' },
             h('span', null, 'Step ' + (plannerStep + 1) + ' of ' + PLANNER_STEPS.length),
-            h('span', null, PLANNER_STEPS[plannerStep].label)
+            h('span', null, PLANNER_STEPS[_plClamp()].label)
           ),
 
           // Current step
           h('div', { role: 'region', 'aria-labelledby': 'cv-planner-step-label', className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-3' },
-            h('h4', { id: 'cv-planner-step-label', 'aria-live': 'polite', className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[plannerStep].label),
-            h('p', { id: 'cv-planner-step-prompt', className: 'text-xs text-slate-600' }, PLANNER_STEPS[plannerStep].prompt),
+            h('h4', { id: 'cv-planner-step-label', 'aria-live': 'polite', className: 'text-sm font-bold text-teal-700' }, PLANNER_STEPS[_plClamp()].label),
+            h('p', { id: 'cv-planner-step-prompt', className: 'text-xs text-slate-600' }, PLANNER_STEPS[_plClamp()].prompt),
             h('textarea', {
               'aria-labelledby': 'cv-planner-step-label',
               'aria-describedby': 'cv-planner-step-prompt',
-              value: plannerData[PLANNER_STEPS[plannerStep].id] || '',
+              value: plannerData[PLANNER_STEPS[_plClamp()].id] || '',
               onChange: function(e) {
                 var newData = {};
                 for (var k in plannerData) { if (plannerData.hasOwnProperty(k)) newData[k] = plannerData[k]; }
-                newData[PLANNER_STEPS[plannerStep].id] = e.target.value;
+                newData[PLANNER_STEPS[_plClamp()].id] = e.target.value;
                 upd('plannerData', newData);
               },
               placeholder: 'Write your response here...',
@@ -1371,12 +1409,15 @@ window.SelHub = window.SelHub || {
                   key: key,
                   onClick: function() { upd('selectedTemplate', selectedTemplate === key ? null : key); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
-                    (selectedTemplate === key ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-teal-600 border-teal-600 hover:bg-teal-50')
+                    (selectedTemplate === key ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-teal-700 border-teal-600 hover:bg-teal-50')
                 }, tmpl.title);
               })
             ),
             selectedTemplate && (function() {
-              var tmpl = LETTER_TEMPLATES[selectedTemplate];
+              var tmpl = (selectedTemplate && Object.prototype.hasOwnProperty.call(LETTER_TEMPLATES, selectedTemplate)) ? LETTER_TEMPLATES[selectedTemplate] : null;
+              // A saved file can name a template that no longer exists; show
+              // nothing rather than throwing on tmpl.title.
+              if (!tmpl) return null;
               return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 mt-2 space-y-2' },
                 h('div', { className: 'text-sm font-bold text-slate-700' }, tmpl.title),
                 h('div', { className: 'text-xs text-slate-600 italic' }, tmpl.greeting),
@@ -1431,8 +1472,8 @@ window.SelHub = window.SelHub || {
         // ═══ CIVIC SIMULATION GAME (NEW) ═══
         tab === 'simulation' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfdb\ufe0f ' + simData.title),
-            h('p', { className: 'text-sm text-slate-600' }, simData.intro)
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udfdb\ufe0f ' + simData.title),
+            h('p', { className: 'text-sm text-slate-300' }, simData.intro)
           ),
 
           // ── Elementary: School Council Meeting ──
@@ -1442,8 +1483,8 @@ window.SelHub = window.SelHub || {
             if (!currentProposal) return null;
             return h('div', { className: 'space-y-4' },
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Proposal ' + (simStep + 1) + ' of ' + proposals.length),
-                h('span', { className: 'text-xs font-bold text-teal-600' }, 'Decisions made: ' + Object.keys(simChoices).length)
+                h('span', { className: 'text-xs font-bold text-slate-300' }, 'Proposal ' + (simStep + 1) + ' of ' + proposals.length),
+                h('span', { className: 'text-xs font-bold text-teal-300' }, 'Decisions made: ' + Object.keys(simChoices).length)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: ((simStep + 1) / proposals.length * 100) + '%' } })
@@ -1516,7 +1557,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-5 space-y-4' },
                 h('div', { className: 'flex justify-between items-center' },
                   h('span', { className: 'text-xs font-bold text-slate-600' }, 'Total Budget: $1,000,000'),
-                  h('span', { className: 'text-xs font-bold ' + (Math.abs(remaining) < 100 ? 'text-emerald-600' : 'text-amber-600') }, 'Remaining: $' + remaining.toLocaleString())
+                  h('span', { className: 'text-xs font-bold ' + (Math.abs(remaining) < 100 ? 'text-emerald-700' : 'text-amber-700') }, 'Remaining: $' + remaining.toLocaleString())
                 ),
                 cats.map(function(cat) {
                   var val = alloc[cat.id] || 0;
@@ -1524,7 +1565,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: cat.id, className: 'space-y-1' },
                     h('div', { className: 'flex justify-between items-center' },
                       h('span', { id: 'cv-budget-label-' + cat.id, className: 'text-xs font-bold text-slate-700' }, cat.label),
-                      h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
+                      h('span', { className: 'text-xs font-bold text-teal-700' }, '$' + val.toLocaleString() + ' (' + pct + '%)')
                     ),
                     h('p', { id: 'cv-budget-desc-' + cat.id, className: 'text-xs text-slate-600' }, cat.desc),
                     h('input', {
@@ -1574,7 +1615,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
-                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
                   currentStep.bills.map(function(bill) {
                     var isSelected = legBill === bill.id;
                     return h('button', { 'aria-label': bill.title,
@@ -1610,13 +1651,13 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-3' },
-                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
                   currentStep.allies.map(function(ally) {
                     var isRecruited = legAllies.indexOf(ally.id) !== -1;
                     return h('div', { key: ally.id, className: 'p-3 rounded-xl border-2 ' + (isRecruited ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') },
                       h('div', { className: 'flex justify-between items-center' },
                         h('span', { className: 'font-bold text-sm text-slate-800' }, ally.label),
-                        h('span', { className: 'text-xs font-bold text-emerald-600' }, '+' + ally.bonus + '% support')
+                        h('span', { className: 'text-xs font-bold text-emerald-700' }, '+' + ally.bonus + '% support')
                       ),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, ally.ask),
                       !isRecruited && h('div', { className: 'flex gap-2 mt-2' },
@@ -1657,7 +1698,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-indigo-600' }, 'Current Support: ' + legSupport + '%')
                 ),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4' },
-                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
                   currentStep.questions.map(function(cq, qi) {
                     var answered = legAnswers[qi] !== undefined;
                     return h('div', { key: qi, className: 'p-3 rounded-xl border-2 ' + (answered ? 'border-slate-200 bg-slate-50' : 'border-amber-300 bg-amber-50') },
@@ -1705,7 +1746,7 @@ window.SelHub = window.SelHub || {
                 ),
                 h('div', { className: 'text-xs font-bold text-slate-600 text-center' }, currentStep.title),
                 h('div', { className: 'bg-white rounded-2xl border-2 border-indigo-200 p-5 space-y-4 text-center' },
-                  h('p', { className: 'text-sm text-slate-600' }, currentStep.desc),
+                  h('p', { className: 'text-sm text-slate-300' }, currentStep.desc),
                   h('div', { className: 'bg-slate-100 rounded-full h-6 overflow-hidden relative mt-4' },
                     h('div', { className: 'h-full rounded-full transition-all ' + (passed ? 'bg-emerald-500' : 'bg-red-400'), style: { width: Math.min(legSupport, 100) + '%' } }),
                     h('div', { className: 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white', style: { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } }, legSupport + '% Support')
@@ -1714,7 +1755,7 @@ window.SelHub = window.SelHub || {
                   h('p', { className: 'text-xs text-slate-600 mt-1' }, 'Need 51% to pass'),
                   h('div', { className: 'text-4xl mt-4' }, passed ? '\ud83c\udf89' : '\ud83d\udcaa'),
                   h('h4', { className: 'text-lg font-black ' + (passed ? 'text-emerald-700' : 'text-amber-700') }, passed ? 'Your Bill Passed!' : 'Your Bill Did Not Pass'),
-                  h('p', { className: 'text-sm text-slate-600' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
+                  h('p', { className: 'text-sm text-slate-300' }, passed ? 'Congratulations! Your coalition-building and strong committee answers made the difference. This is how democracy works.' : 'Your bill fell short of 51%. Consider building a broader coalition and preparing stronger evidence next time. Many great bills take multiple attempts to pass.'),
                   h('button', { 'aria-label': 'Complete Simulation',
                     onClick: function() {
                       upd('simDone', true);
@@ -1747,13 +1788,13 @@ window.SelHub = window.SelHub || {
               });
               return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
                 h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
-                h('h4', { className: 'text-lg font-black text-slate-800' }, 'School Council Results!'),
+                h('h4', { className: 'text-lg font-black text-slate-100' }, 'School Council Results!'),
                 h('div', { className: 'flex justify-center gap-6' },
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\ude0a'), h('div', { className: 'text-sm font-bold ' + (totalH >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalH >= 0 ? '+' : '') + totalH), h('div', { className: 'text-xs text-slate-600' }, 'Happiness')),
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udcda'), h('div', { className: 'text-sm font-bold ' + (totalL >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalL >= 0 ? '+' : '') + totalL), h('div', { className: 'text-xs text-slate-600' }, 'Learning')),
                   h('div', null, h('div', { className: 'text-2xl' }, '\ud83d\udc9a'), h('div', { className: 'text-sm font-bold ' + (totalHe >= 0 ? 'text-emerald-600' : 'text-red-500') }, (totalHe >= 0 ? '+' : '') + totalHe), h('div', { className: 'text-xs text-slate-600' }, 'Health'))
                 ),
-                h('p', { className: 'text-sm text-slate-600' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
+                h('p', { className: 'text-sm text-slate-300' }, 'Every decision has trade-offs. Great civic leaders think about how their choices affect everyone, not just themselves.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ simStep: 0, simChoices: {}, simDone: false }); },
                   className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
@@ -1769,7 +1810,7 @@ window.SelHub = window.SelHub || {
               return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 space-y-4' },
                 h('div', { className: 'text-center' },
                   h('div', { className: 'text-4xl' }, '\ud83d\udcb0'),
-                  h('h4', { className: 'text-lg font-black text-slate-800' }, 'Budget Results: Community Reactions')
+                  h('h4', { className: 'text-lg font-black text-slate-100' }, 'Budget Results: Community Reactions')
                 ),
                 cats.map(function(cat) {
                   var val = alloc[cat.id] || 0;
@@ -1779,7 +1820,7 @@ window.SelHub = window.SelHub || {
                   return h('div', { key: cat.id, className: 'bg-white rounded-xl border p-3 ' + (isHigh ? 'border-emerald-300' : isLow ? 'border-red-300' : 'border-slate-200') },
                     h('div', { className: 'flex justify-between' },
                       h('span', { className: 'text-xs font-bold text-slate-700' }, cat.label),
-                      h('span', { className: 'text-xs font-bold text-teal-600' }, '$' + val.toLocaleString())
+                      h('span', { className: 'text-xs font-bold text-teal-700' }, '$' + val.toLocaleString())
                     ),
                     h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, reaction)
                   );
@@ -1796,8 +1837,8 @@ window.SelHub = window.SelHub || {
             if (gradeBand === 'high') {
               return h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
                 h('div', { className: 'text-4xl' }, '\ud83c\udfdb\ufe0f'),
-                h('h4', { className: 'text-lg font-black text-slate-800' }, 'Legislative Simulation Complete!'),
-                h('p', { className: 'text-sm text-slate-600' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
+                h('h4', { className: 'text-lg font-black text-slate-100' }, 'Legislative Simulation Complete!'),
+                h('p', { className: 'text-sm text-slate-300' }, 'You experienced the full legislative process: drafting, coalition-building, committee testimony, and the floor vote. Real democracy requires patience, persuasion, and persistence.'),
                 h('button', { 'aria-label': 'Try Again',
                   onClick: function() { updMulti({ legStep: 0, legBill: null, legAllies: [], legAnswers: {}, legSupport: 0, simDone: false }); },
                   className: 'px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700'
@@ -1812,8 +1853,8 @@ window.SelHub = window.SelHub || {
         // ═══ COMMUNITY SURVEY BUILDER (NEW) ═══
         tab === 'survey' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcca Community Survey Builder'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Create a survey to learn about community needs. Add template questions or write your own.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83d\udcca Community Survey Builder'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Create a survey to learn about community needs. Add template questions or write your own.')
           ),
 
           // Survey title
@@ -1848,7 +1889,7 @@ window.SelHub = window.SelHub || {
                 },
                   h('div', { className: 'flex justify-between items-center' },
                     h('span', null, tmpl.q),
-                    alreadyAdded ? h('span', { className: 'text-xs font-bold text-emerald-600' }, '\u2705 Added') : h('span', { className: 'text-xs font-bold text-teal-500' }, '+ Add')
+                    alreadyAdded ? h('span', { className: 'text-xs font-bold text-emerald-700' }, '\u2705 Added') : h('span', { className: 'text-xs font-bold text-teal-700' }, '+ Add')
                   ),
                   h('span', { className: 'text-xs text-slate-600 block mt-0.5' }, tmpl.type === 'choice' ? 'Multiple choice' : 'Open-ended')
                 );
@@ -1969,8 +2010,8 @@ window.SelHub = window.SelHub || {
         // ═══ RIGHTS & DISSENT (sections-aware; flat fallback for elementary/high) ═══
         tab === 'rights' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83d\udcdc ' + rightsInfo.title),
-            h('p', { className: 'text-sm text-slate-600' }, rightsInfo.intro)
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83d\udcdc ' + rightsInfo.title),
+            h('p', { className: 'text-sm text-slate-300' }, rightsInfo.intro)
           ),
 
           // Two-level nav (sections + items) when rightsInfo.sections exists; flat fallback otherwise
@@ -2013,10 +2054,10 @@ window.SelHub = window.SelHub || {
               ),
 
               // Section intro
-              h('p', { className: 'text-xs text-slate-600 italic px-1' }, activeSection.intro),
+              h('p', { className: 'text-xs text-slate-300 italic px-1' }, activeSection.intro),
 
               // Item pills (second-level nav within active section)
-              h('div', { className: 'flex gap-1 bg-indigo-50/50 rounded-lg p-1 border border-indigo-100 overflow-x-auto' },
+              h('div', { className: 'flex gap-1 bg-slate-800/50 rounded-lg p-1 border border-slate-700 overflow-x-auto' },
                 activeSection.items.map(function(it, ii) {
                   var isExplored = sectionExplored.indexOf(ii) !== -1;
                   var isCurrent = rightsIdx === ii;
@@ -2041,7 +2082,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                     className: 'flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ' +
-                      (isCurrent ? 'bg-white text-indigo-700 shadow-sm border border-indigo-600' : isExplored ? 'text-emerald-600/70' : 'text-slate-400 hover:text-slate-700')
+                      (isCurrent ? 'bg-white text-indigo-700 shadow-sm border border-indigo-600' : isExplored ? 'text-emerald-300' : 'text-slate-300 hover:text-white')
                   }, it.icon + ' ' + (ii + 1));
                 })
               ),
@@ -2065,7 +2106,7 @@ window.SelHub = window.SelHub || {
                 callTTS && h('button', {
                   'aria-label': 'Hear this read aloud',
                   onClick: function() { callTTS(item.title + '. ' + item.body); },
-                  className: 'text-xs text-indigo-500 hover:text-indigo-700 font-bold'
+                  className: 'text-xs text-indigo-700 hover:text-indigo-800 font-bold'
                 }, '\ud83d\udd0a Hear this read aloud')
               ),
 
@@ -2167,7 +2208,7 @@ window.SelHub = window.SelHub || {
                     ),
                     callTTS && h('button', { 'aria-label': 'Hear this read aloud',
                       onClick: function() { callTTS(right.right + '. ' + right.explain + '. Your responsibility: ' + right.responsibility); },
-                      className: 'text-xs text-indigo-500 hover:text-indigo-700 font-bold'
+                      className: 'text-xs text-indigo-700 hover:text-indigo-800 font-bold'
                     }, '\ud83d\udd0a Hear this read aloud')
                   ),
                   h('div', { className: 'bg-amber-50 rounded-2xl border-2 border-amber-200 p-5 space-y-3' },
@@ -2226,8 +2267,8 @@ window.SelHub = window.SelHub || {
         // ═══ SERVICE LEARNING PROJECT PLANNER (NEW) ═══
         tab === 'service' && h('div', { role: 'region', 'aria-labelledby': 'cv-service-title', className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { id: 'cv-service-title', className: 'text-lg font-black text-slate-800' }, '\ud83e\udd1d Service Learning Project Planner'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
+            h('h3', { id: 'cv-service-title', className: 'text-lg font-black text-slate-100' }, '\ud83e\udd1d Service Learning Project Planner'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Plan a community service project from start to finish. Choose a template or design your own.')
           ),
 
           // Template selection
@@ -2349,7 +2390,7 @@ window.SelHub = window.SelHub || {
             var tmpl = SERVICE_TEMPLATES.find(function(t) { return t.id === serviceTemplate; });
             return h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
               h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
-              h('h4', { className: 'text-lg font-black text-slate-800' }, 'Service Project Complete!'),
+              h('h4', { className: 'text-lg font-black text-slate-100' }, 'Service Project Complete!'),
               tmpl && h('p', { className: 'text-sm font-bold text-teal-700' }, tmpl.title),
               h('div', { className: 'flex justify-center gap-6' },
                 h('div', null,
@@ -2368,7 +2409,7 @@ window.SelHub = window.SelHub || {
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I learned: ' + (serviceNotes.reflect || '(complete the Reflect phase above)')),
                 h('p', { className: 'text-xs text-slate-600' }, '\u2022 What I would do differently: ________')
               ),
-              h('p', { className: 'text-sm text-slate-600' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
+              h('p', { className: 'text-sm text-slate-300' }, 'Service is not just about helping others \u2014 it transforms you too. The skills you built here will serve you for a lifetime.'),
               h('button', { 'aria-label': 'Plan Another Project',
                 onClick: function() { updMulti({ serviceTemplate: null, servicePhase: 0, serviceNotes: {}, serviceHours: 0, serviceDone: false }); },
                 className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700'
@@ -2380,8 +2421,8 @@ window.SelHub = window.SelHub || {
         // ═══ CIVIC SKILLS QUIZ (NEW) ═══
         tab === 'quiz' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfc6 Civic Skills Quiz'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Test your knowledge of civic concepts! (' + gradeBand + ' level)')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udfc6 Civic Skills Quiz'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Test your knowledge of civic concepts! (' + gradeBand + ' level)')
           ),
 
           !quizDone && (function() {
@@ -2390,8 +2431,8 @@ window.SelHub = window.SelHub || {
             return h('div', { className: 'space-y-4' },
               // Progress
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Question ' + (quizIdx + 1) + ' of ' + quizQuestions.length),
-                h('span', { className: 'text-xs font-bold text-teal-600' }, 'Score: ' + quizScore + '/' + quizQuestions.length)
+                h('span', { className: 'text-xs font-bold text-slate-300' }, 'Question ' + (quizIdx + 1) + ' of ' + quizQuestions.length),
+                h('span', { className: 'text-xs font-bold text-teal-300' }, 'Score: ' + quizScore + '/' + quizQuestions.length)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: (quizIdx / quizQuestions.length * 100) + '%' } })
@@ -2452,9 +2493,9 @@ window.SelHub = window.SelHub || {
           // Quiz results
           quizDone && h('div', { className: 'bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border-2 border-teal-200 p-6 text-center space-y-4' },
             h('div', { className: 'text-4xl' }, quizScore === quizQuestions.length ? '\ud83c\udfc6' : quizScore >= quizQuestions.length * 0.7 ? '\ud83c\udf1f' : '\ud83d\udcaa'),
-            h('h4', { className: 'text-lg font-black text-slate-800' }, 'Quiz Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Quiz Complete!'),
             h('p', { className: 'text-2xl font-bold text-teal-700' }, quizScore + ' / ' + quizQuestions.length),
-            h('p', { className: 'text-sm text-slate-600' },
+            h('p', { className: 'text-sm text-slate-300' },
               quizScore === quizQuestions.length ? 'Perfect score! You are a civic knowledge champion!' :
               quizScore >= quizQuestions.length * 0.7 ? 'Great job! You have a strong understanding of civic concepts.' :
               'Good effort! Keep learning \u2014 civic knowledge is a superpower.'
@@ -2469,8 +2510,8 @@ window.SelHub = window.SelHub || {
         // ═══ COMMUNITY CHANGE SCENARIOS (NEW) ═══
         tab === 'scenarios' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udfad Community Change Scenarios'),
-            h('p', { className: 'text-sm text-slate-600' }, 'What would you do? Make choices and see how effective different approaches are.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udfad Community Change Scenarios'),
+            h('p', { className: 'text-sm text-slate-300' }, 'What would you do? Make choices and see how effective different approaches are.')
           ),
 
           !scenarioDone && (function() {
@@ -2478,8 +2519,8 @@ window.SelHub = window.SelHub || {
             if (!scenario) return null;
             return h('div', { className: 'space-y-4' },
               h('div', { className: 'flex justify-between items-center' },
-                h('span', { className: 'text-xs font-bold text-slate-600' }, 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length),
-                h('span', { className: 'text-xs font-bold text-teal-600' }, 'Total Score: ' + scenarioScore)
+                h('span', { className: 'text-xs font-bold text-slate-300' }, 'Scenario ' + (scenarioIdx + 1) + ' of ' + scenarios.length),
+                h('span', { className: 'text-xs font-bold text-teal-300' }, 'Total Score: ' + scenarioScore)
               ),
               h('div', { className: 'bg-slate-100 rounded-full h-2 overflow-hidden' },
                 h('div', { className: 'bg-teal-500 h-full rounded-full transition-all', style: { width: (scenarioIdx / scenarios.length * 100) + '%' } })
@@ -2536,9 +2577,9 @@ window.SelHub = window.SelHub || {
           // Scenario results
           scenarioDone && h('div', { className: 'bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6 text-center space-y-4' },
             h('div', { className: 'text-4xl' }, '\ud83c\udfc5'),
-            h('h4', { className: 'text-lg font-black text-slate-800' }, 'Scenarios Complete!'),
+            h('h4', { className: 'text-lg font-black text-slate-100' }, 'Scenarios Complete!'),
             h('p', { className: 'text-2xl font-bold text-indigo-700' }, scenarioScore + ' / ' + (scenarios.length * 5) + ' points'),
-            h('p', { className: 'text-sm text-slate-600' },
+            h('p', { className: 'text-sm text-slate-300' },
               scenarioScore >= scenarios.length * 4 ? 'Outstanding civic leadership! You consistently chose the most effective approaches.' :
               scenarioScore >= scenarios.length * 3 ? 'Great civic instincts! You are on your way to being a skilled advocate.' :
               'Good start! Civic skills grow with practice. Try again and explore different choices.'
@@ -2582,8 +2623,8 @@ window.SelHub = window.SelHub || {
           }
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
-              h('h3', { className: 'text-lg font-black text-slate-800' }, '🗺 Power Map'),
-              h('p', { className: 'text-sm text-slate-600' }, 'Plot stakeholders on two axes: their POSITION on your issue (left = against, right = for) and their POWER (bottom = low, top = high). The top-right is your gold — high power, already on your side. The top-left is your obstacle — high power, against. Use this to plan WHERE to spend your time.')
+              h('h3', { className: 'text-lg font-black text-slate-100' }, '🗺 Power Map'),
+              h('p', { className: 'text-sm text-slate-300' }, 'Plot stakeholders on two axes: their POSITION on your issue (left = against, right = for) and their POWER (bottom = low, top = high). The top-right is your gold — high power, already on your side. The top-left is your obstacle — high power, against. Use this to plan WHERE to spend your time.')
             ),
             // SVG map
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 p-4' },
@@ -2618,7 +2659,7 @@ window.SelHub = window.SelHub || {
             // Controls
             h('div', { className: 'bg-white rounded-2xl border border-slate-300 p-4' },
               h('h4', { className: 'text-xs font-bold text-slate-700 uppercase tracking-widest mb-3' }, 'Stakeholders'),
-              h('button', { onClick: addStakeholder, className: 'px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold mb-3' }, '+ Add stakeholder'),
+              h('button', { onClick: addStakeholder, className: 'px-3 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold mb-3' }, '+ Add stakeholder'),
               h('div', { className: 'space-y-2' },
                 stakeholders.map(function(s) {
                   return h('div', { key: s.id, className: 'flex items-center gap-2 p-2 bg-slate-50 rounded-lg' },
@@ -2689,10 +2730,10 @@ window.SelHub = window.SelHub || {
 
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
-              h('h3', { className: 'text-lg font-black text-slate-800' }, '🤝 Allies Web'),
-              h('p', { className: 'text-sm text-slate-600' }, 'Who has your back? List the people and groups that already support you. Coverage check at the bottom shows whether you have someone for each kind of support — gaps are useful information.')
+              h('h3', { className: 'text-lg font-black text-slate-100' }, '🤝 Allies Web'),
+              h('p', { className: 'text-sm text-slate-300' }, 'Who has your back? List the people and groups that already support you. Coverage check at the bottom shows whether you have someone for each kind of support — gaps are useful information.')
             ),
-            h('button', { onClick: addAlly, className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold' }, '+ Add an ally'),
+            h('button', { onClick: addAlly, className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold' }, '+ Add an ally'),
 
             allies.length === 0 && h('div', { className: 'bg-white p-6 rounded-xl text-center text-slate-500 border-2 border-dashed border-slate-300' },
               'No allies listed yet. Tap "Add an ally" to start.'),
@@ -2772,10 +2813,10 @@ window.SelHub = window.SelHub || {
           var pct = sorted.length > 0 ? Math.round((doneCount / sorted.length) * 100) : 0;
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
-              h('h3', { className: 'text-lg font-black text-slate-800' }, '📅 Action Timeline'),
-              h('p', { className: 'text-sm text-slate-600' }, 'Big civic action = many small milestones. List them in order. Check off as you finish. Pacing matters — most action campaigns stall because milestones got vague.')
+              h('h3', { className: 'text-lg font-black text-slate-100' }, '📅 Action Timeline'),
+              h('p', { className: 'text-sm text-slate-300' }, 'Big civic action = many small milestones. List them in order. Check off as you finish. Pacing matters — most action campaigns stall because milestones got vague.')
             ),
-            h('button', { onClick: addMilestone, className: 'px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-bold' }, '+ Add a milestone'),
+            h('button', { onClick: addMilestone, className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold' }, '+ Add a milestone'),
 
             sorted.length > 0 && h('div', { className: 'bg-white rounded-xl border-2 border-teal-200 p-4' },
               h('div', { className: 'flex items-baseline justify-between mb-2' },
@@ -2820,7 +2861,7 @@ window.SelHub = window.SelHub || {
             upd('talkDraft', Object.assign({}, currentDraft, (function() { var o = {}; o[field] = value; return o; })()));
           }
           function saveDraft() {
-            if (!currentDraft.topic || !currentDraft.topic.trim()) return;
+            if (!currentDraft.topic || !currentDraft.topic.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
             upd('talkTopics', topics.concat([Object.assign({}, currentDraft, { id: 't_' + Date.now(), savedOn: new Date().toISOString().slice(0, 10) })]));
             upd('talkDraft', { topic: '', otherView: '', commonGround: '', myPoint: '', evidence: '', question: '' });
             if (addToast) addToast('Conversation prep saved', 'success');
@@ -2829,8 +2870,8 @@ window.SelHub = window.SelHub || {
           var stepsComplete = ['topic','otherView','commonGround','myPoint','evidence','question'].filter(function(k) { return (currentDraft[k] || '').trim().length > 5; }).length;
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
-              h('h3', { className: 'text-lg font-black text-slate-800' }, '💬 Talk Prep'),
-              h('p', { className: 'text-sm text-slate-600' }, 'Hard civic conversations go better with prep. Walk through six fields below to think before you talk. The goal isn\'t to win — it\'s to be heard AND to hear.')
+              h('h3', { className: 'text-lg font-black text-slate-100' }, '💬 Talk Prep'),
+              h('p', { className: 'text-sm text-slate-300' }, 'Hard civic conversations go better with prep. Walk through six fields below to think before you talk. The goal isn\'t to win — it\'s to be heard AND to hear.')
             ),
             h('div', { className: 'bg-white rounded-2xl border-2 border-teal-200 p-4' },
               h('div', { className: 'mb-2 flex items-baseline justify-between' },
@@ -2858,7 +2899,7 @@ window.SelHub = window.SelHub || {
                 );
               }),
               h('button', { onClick: saveDraft, disabled: stepsComplete < 3,
-                className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (stepsComplete >= 3 ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed') },
+                className: 'px-4 py-2 rounded-lg text-sm font-bold ' + (stepsComplete >= 3 ? 'bg-teal-700 text-white' : 'bg-slate-300 text-slate-700 cursor-not-allowed') },
                 stepsComplete < 3 ? 'Draft at least 3 fields to save' : '✓ Save this prep')
             ),
             // Saved preps
@@ -2884,8 +2925,8 @@ window.SelHub = window.SelHub || {
         // ═══ HOPE ═══
         tab === 'hope' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\ud83c\udf05 Cultivating Hope'),
-            h('p', { className: 'text-sm text-slate-600' }, 'Hope is not the belief that things will be easy. It is the belief that things can be better \u2014 and the courage to work toward it.')
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\ud83c\udf05 Cultivating Hope'),
+            h('p', { className: 'text-sm text-slate-300' }, 'Hope is not the belief that things will be easy. It is the belief that things can be better \u2014 and the courage to work toward it.')
           ),
 
           // Hope anchors — people who changed things
@@ -2906,7 +2947,7 @@ window.SelHub = window.SelHub || {
 
           // Changemaker Profiles (NEW - grade-adapted)
           h('div', { className: 'space-y-3 mt-4' },
-            h('h4', { className: 'text-xs font-bold text-purple-600 uppercase tracking-widest' }, '\u2728 Changemaker Profiles (' + gradeBand + ')'),
+            h('h4', { className: 'text-xs font-bold text-purple-300 uppercase tracking-widest' }, '\u2728 Changemaker Profiles (' + gradeBand + ')'),
             changemakers.map(function(cm, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl border border-purple-200 p-4 hover:border-purple-400 transition-colors' },
                 h('div', { className: 'flex items-start gap-3' },
@@ -2918,7 +2959,7 @@ window.SelHub = window.SelHub || {
                       h('span', { className: 'bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold' }, cm.theme)
                     ),
                     h('p', { className: 'text-xs text-slate-600 leading-relaxed mt-1' }, cm.bio),
-                    h('p', { className: 'text-xs text-purple-500 font-bold mt-1' }, '\u23f0 ' + cm.age)
+                    h('p', { className: 'text-xs text-purple-600 font-bold mt-1' }, '\u23f0 ' + cm.age)
                   )
                 )
               );
@@ -2953,7 +2994,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-teal-800 italic leading-relaxed' },
               '"You are not obligated to complete the work, but neither are you free to abandon it."'
             ),
-            h('p', { className: 'text-xs text-teal-500 mt-1 font-bold' }, '\u2014 Rabbi Tarfon, Pirkei Avot 2:16')
+            h('p', { className: 'text-xs text-teal-700 mt-1 font-bold' }, '\u2014 Rabbi Tarfon, Pirkei Avot 2:16')
           )
         ),
 

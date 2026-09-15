@@ -2908,7 +2908,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: () => subInputRef.current?.click(),
-                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+                style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
               }, tr('＋ Add submissions')),
               queue.length > 0 && /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: clearQueue,
@@ -2961,7 +2961,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                   type: 'button',
                   onClick: saveAllGradedToGradebook,
                   title: tr('Write every graded submission to the local gradebook'),
-                  style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                  style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                 }, '💾 Save all graded (' + gradedCount + ')');
               })(),
               bulkGrading && /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
@@ -3623,7 +3623,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                               Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('button', {
                                 type: 'button',
                                 onClick: () => saveRowToGradebook(idx),
-                                style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                                style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                               }, tr('💾 Save to gradebook')),
                               Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: '0.78rem', color: '#64748b' } },
                                 (() => { const summary = rowGradeSummary(idx); return 'Avg: ' + (summary.average == null ? '—' : summary.average + '/100') + ' · ' + summary.scored + ' of ' + summary.total + (summary.expectedCountKnown ? ' expected' : ' captured') + ' responses scored'; })()

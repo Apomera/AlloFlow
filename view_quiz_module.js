@@ -1682,7 +1682,7 @@ function SequenceSenseCard(p) {
     onClick: function () {
       answerVerify('yes');
     },
-    className: "flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors motion-reduce:transition-none"
+    className: "flex-1 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition-colors motion-reduce:transition-none"
   }, "✓ Yes, correct"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
@@ -3563,7 +3563,7 @@ function LiveResultsDashboard(p) {
     type: "button",
     onClick: pushExplainerToStudents,
     disabled: pushState.pushing,
-    className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed ? 'bg-emerald-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
+    className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed ? 'bg-emerald-700 text-white' : 'bg-amber-700 hover:bg-amber-800 text-white') + ' disabled:opacity-50',
     "aria-label": pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
     "data-help-key": "quiz_push_to_students_btn",
     title: t("tooltips.send_explainer_to_students")
@@ -6390,7 +6390,7 @@ function AssessmentPresentationItem(p) {
     body = /*#__PURE__*/React.createElement("div", {
       className: "p-8 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-end gap-3 justify-center"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-3xl tracking-widest text-slate-400"
+      className: "text-3xl tracking-widest text-slate-600"
     }, "____________"), q.unit && /*#__PURE__*/React.createElement("span", {
       className: "text-2xl font-bold text-slate-700"
     }, q.unit));
@@ -7547,7 +7547,7 @@ function QuizView(props) {
     onClick: function () {
       setDismissedExplainerTs(_pushedExplainer.ts);
     },
-    className: "text-xs font-bold px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700"
+    className: "text-xs font-bold px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-800"
   }, "✓ Got it"))))) : null;
   var modeBanner = _showModeBanner ? /*#__PURE__*/React.createElement("div", {
     key: "mode-banner",
@@ -8984,7 +8984,7 @@ function QuizView(props) {
       }
     },
     disabled: isPresentationMode || isReviewGame || isEditingQuiz || !!sessionData?.quizState?.isActive || ['connected-room', 'lesson-board'].includes(sessionData?.escapeRoomState?.mode) && sessionData.escapeRoomState.isActive,
-    className: `flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`,
+    className: `flex items-center gap-2 min-h-11 px-3 py-2 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-800 border border-purple-200 hover:bg-purple-50'}`,
     title: isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title'),
     "aria-label": t('escape_room.title')
   }, escapeRoomState.isActive ? /*#__PURE__*/React.createElement(XCircle, {
@@ -9162,7 +9162,7 @@ function QuizView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleEndLiveSession,
-    className: "bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm flex items-center gap-2"
+    className: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(XCircle, {
     size: 14
   }), " ", t('session.action_end')))) : isReviewGame ? (() => {
@@ -9827,7 +9827,7 @@ function QuizView(props) {
     "aria-label": isFactChecking[i] ? t('quiz.verifying') : q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'),
     onClick: () => handleFactCheck(i),
     disabled: isFactChecking[i],
-    className: "absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none",
+    className: "absolute bottom-2 right-2 p-1.5 text-yellow-800 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors motion-reduce:transition-none",
     title: t('quiz.regenerate_check')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,

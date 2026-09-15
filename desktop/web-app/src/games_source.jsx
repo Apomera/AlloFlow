@@ -450,7 +450,7 @@ const SpeakButton = ({ text, size = 13, className = "" }) => {
   return (
     <button
       onClick={handleClick}
-      className={`inline-flex items-center justify-center w-11 h-11 rounded-full shrink-0 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-600 motion-safe:animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
+      className={`inline-flex items-center justify-center w-11 h-11 rounded-full shrink-0 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors ${isThisPlaying ? 'bg-rose-100 hover:bg-rose-200 text-rose-700 motion-safe:animate-pulse' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-600'} ${className}`}
       aria-label={ariaLabel}
       aria-pressed={isThisPlaying}
       title={title}
@@ -470,7 +470,7 @@ const GameReviewScreen = ({ score, title, items, onPlayAgain, onClose, t }) => {
   const total = items.length;
   return (
     <div role="region" aria-labelledby={reviewTitleId} className={`mt-4 bg-white rounded-2xl border-2 border-indigo-100 shadow-lg overflow-hidden${useReducedMotion() ? '' : ' animate-in fade-in slide-in-from-bottom-2 duration-300'}`}>
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 text-white text-center">
+      <div className="bg-gradient-to-r from-indigo-700 to-purple-700 p-4 text-white text-center">
         <h3 id={reviewTitleId} className="text-xl font-black">{title || "Review"}</h3>
         <div className="flex items-center justify-center gap-4 mt-2">
           <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-bold">{score} pts</span>
@@ -743,7 +743,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
               <span className={`inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? 'bg-white/10 text-slate-100 border-white/20' : 'bg-slate-100 text-slate-700 border-slate-200'}`}>
-                <RefreshCw size={10} className={isFullscreen ? 'text-slate-300' : 'text-slate-600'} aria-hidden="true" /> {t('memory.moves')}: {moves}
+                <RefreshCw size={10} className={isFullscreen ? 'text-slate-600' : 'text-slate-600'} aria-hidden="true" /> {t('memory.moves')}: {moves}
               </span>
               <span className={`relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? 'transition-all' : ''} ${scoreDelta !== null ? (scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? 'scale-105' : ''}` : `ring-2 ring-red-400 ${!useReducedMotion() ? 'scale-105' : ''}`) : ''} ${isFullscreen ? 'bg-indigo-500/20 text-indigo-100 border-indigo-400/40' : 'bg-indigo-100 text-indigo-700 border-indigo-200'}`}>
                 <Trophy size={10} className="text-yellow-500" aria-hidden="true" /> {t('memory.score')}: {score}
@@ -795,7 +795,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       </div>
       {!isWon && totalPairs > 0 && (
         <div className="mb-5">
-          <div className={`flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-300' : 'text-slate-600'}`}>
+          <div className={`flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? 'text-slate-600' : 'text-slate-600'}`}>
             <span>{t('memory.pairs')}</span>
             <span>{progressPct}%</span>
           </div>
@@ -817,12 +817,12 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
           const stars = perfect ? 3 : great ? 2 : 1;
           const accuracy = moves > 0 ? Math.round((totalPairs / moves) * 100) : 100;
           const cardBg = isFullscreen ? 'bg-white/10 border-white/20 backdrop-blur-md' : 'bg-white border-slate-200';
-          const labelColor = isFullscreen ? 'text-slate-300' : 'text-slate-600';
+          const labelColor = isFullscreen ? 'text-slate-600' : 'text-slate-600';
           const valueColor = isFullscreen ? 'text-white' : 'text-slate-900';
           return (
           <div role="status" className={`flex flex-col items-center justify-center py-8 px-4 text-center${useReducedMotion() ? '' : ' animate-in zoom-in duration-300'}`}>
             {!useReducedMotion() && <ConfettiExplosion />}
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-600'}`}>
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-lg ${isFullscreen ? 'bg-yellow-400/20 text-yellow-300 ring-2 ring-yellow-400/40' : 'bg-yellow-100 text-yellow-700'}`}>
               <Trophy size={40} className="fill-current" aria-hidden="true" />
             </div>
             <h2 className={`text-2xl font-black mb-3 ${isFullscreen ? 'text-white' : 'text-slate-800'}`}>{t('memory.victory')}</h2>
@@ -857,7 +857,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
               type="button"
               aria-label={t('common.start_game')}
               onClick={initializeGame}
-              className="min-h-11 bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 motion-safe:hover:shadow-indigo-500/50 motion-safe:hover:scale-105 motion-safe:transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="min-h-11 bg-gradient-to-br from-indigo-700 to-indigo-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/30 motion-safe:hover:shadow-indigo-500/50 motion-safe:hover:scale-105 motion-safe:transition-all motion-safe:active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
               {t('memory.play_again')}
             </button>
@@ -2610,7 +2610,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                <button type="button"
                                    data-help-key="concept_sort_retry_incorrect"
                                    onClick={retryIncorrect}
-                                   className="px-4 py-1.5 rounded-full text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 shadow-md transition-colors"
+                                   className="px-4 py-1.5 rounded-full text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-colors"
                                    aria-label={(t('concept_sort.retry_incorrect') || 'Fix the {count} incorrect').replace('{count}', String(incorrectPlacedCount))}
                                >
                                    {(t('concept_sort.retry_incorrect') || 'Fix the {count} incorrect').replace('{count}', String(incorrectPlacedCount))}
@@ -3391,7 +3391,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   return (
       <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="cause-effect-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}`}>
           <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
+          <div className="bg-gradient-to-r from-orange-700 to-teal-700 p-3 sm:p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
               <div>
                   <h3 id="cause-effect-game-title" className="font-bold text-xl flex items-center gap-2">
                       <ArrowRight size={24} aria-hidden="true"/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
@@ -3816,7 +3816,7 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   return (
     <div ref={gameContainerRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tchart-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${reducedMotion ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
+      <div className="bg-gradient-to-r from-cyan-700 to-indigo-700 p-4 text-white flex flex-wrap justify-between items-center gap-3 shadow-md z-30">
         <div>
           <h3 id="tchart-game-title" className="font-bold text-xl flex items-center gap-2">
             <ArrowRight size={24} aria-hidden="true"/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
@@ -4746,7 +4746,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   return (
     <div ref={pipelineDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="pipeline-game-title" className={`fixed inset-0 z-[200] bg-slate-50 flex flex-col${useReducedMotion() ? '' : ' animate-in zoom-in-95'}` }>
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
-      <div className="bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30">
+      <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-700 p-4 text-white flex justify-between items-center shadow-md z-30">
         <div>
           <h3 id="pipeline-game-title" className="font-bold text-xl flex items-center gap-2">
             <GitMerge size={24}/> {t('games.pipeline.title') || 'Pipeline Builder'}
@@ -4898,13 +4898,13 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   <div className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-[3px] z-20 transition-all flex items-center justify-center
                     ${isSource ? 'bg-indigo-500 border-indigo-600 scale-125 shadow-lg shadow-indigo-300' : connFrom ? 'bg-indigo-500 border-indigo-600' : 'bg-white border-slate-300 hover:border-indigo-400 hover:bg-indigo-50'}
                   `}>
-                    <ArrowRight size={12} className={`${isSource || connFrom ? 'text-white' : 'text-slate-400'}`}/>
+                    <ArrowRight size={12} className={`${isSource || connFrom ? 'text-white' : 'text-slate-600'}`}/>
                   </div>
 
                   {/* Branching badge */}
                   {isBranching && (
                     <div className={`absolute -right-2 -top-2 z-30 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black shadow-md border-2 border-white
-                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : `bg-amber-400 text-amber-900 ${!useReducedMotion() ? 'animate-pulse motion-reduce:animate-none' : ''}`}
+                      ${currentOutCount >= outCount ? 'bg-green-700 text-white' : `bg-amber-400 text-amber-900 ${!useReducedMotion() ? 'animate-pulse motion-reduce:animate-none' : ''}`}
                     `}>
                       <GitMerge size={10}/> {currentOutCount}/{outCount}
                     </div>
@@ -4934,7 +4934,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
 
                   {/* Step number badge for completed pipeline */}
                   {isComplete && (
-                    <div className="absolute -top-3 -left-1 bg-green-600 text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                    <div className="absolute -top-3 -left-1 bg-green-700 text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white">
                       {step.originalIndex + 1}
                     </div>
                   )}
@@ -5510,7 +5510,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                              ring-1 ring-slate-300 ring-inset
                              print:bg-white print:text-black print:ring-slate-500
                              ${isSelected ? 'bg-yellow-200 ring-2 ring-yellow-400 z-10' : isActiveWord ? 'bg-yellow-50' : ''}
-                             ${isError ? 'text-red-500 bg-red-50' : isCorrect ? 'text-green-600' : 'text-slate-800'}
+                             ${isError ? 'text-red-700 bg-red-50' : isCorrect ? 'text-green-600' : 'text-slate-800'}
                           `}
                           role="gridcell"
                           aria-rowindex={r + 1}
@@ -7220,12 +7220,12 @@ const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGa
 // out of scope for v1).
 const _MultiZoneColorMap = {
   indigo:  { panel: 'bg-indigo-50/70',  header: 'bg-indigo-600 text-white',  dot: 'text-indigo-500',  ring: 'ring-indigo-300', border: 'border-indigo-200' },
-  emerald: { panel: 'bg-emerald-50/70', header: 'bg-emerald-600 text-white', dot: 'text-emerald-500', ring: 'ring-emerald-300', border: 'border-emerald-200' },
-  amber:   { panel: 'bg-amber-50/70',   header: 'bg-amber-600 text-white',   dot: 'text-amber-500',   ring: 'ring-amber-300',   border: 'border-amber-200' },
+  emerald: { panel: 'bg-emerald-50/70', header: 'bg-emerald-700 text-white', dot: 'text-emerald-500', ring: 'ring-emerald-300', border: 'border-emerald-200' },
+  amber:   { panel: 'bg-amber-50/70',   header: 'bg-amber-700 text-white',   dot: 'text-amber-500',   ring: 'ring-amber-300',   border: 'border-amber-200' },
   rose:    { panel: 'bg-rose-50/70',    header: 'bg-rose-600 text-white',    dot: 'text-rose-500',    ring: 'ring-rose-300',    border: 'border-rose-200' },
-  sky:     { panel: 'bg-sky-50/70',     header: 'bg-sky-600 text-white',     dot: 'text-sky-500',     ring: 'ring-sky-300',     border: 'border-sky-200' },
+  sky:     { panel: 'bg-sky-50/70',     header: 'bg-sky-700 text-white',     dot: 'text-sky-500',     ring: 'ring-sky-300',     border: 'border-sky-200' },
   violet:  { panel: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500',  ring: 'ring-violet-300',  border: 'border-violet-200' },
-  cyan:    { panel: 'bg-cyan-50/70',    header: 'bg-cyan-600 text-white',    dot: 'text-cyan-500',    ring: 'ring-cyan-300',    border: 'border-cyan-200' },
+  cyan:    { panel: 'bg-cyan-50/70',    header: 'bg-cyan-700 text-white',    dot: 'text-cyan-500',    ring: 'ring-cyan-300',    border: 'border-cyan-200' },
   red:     { panel: 'bg-red-50/70',     header: 'bg-red-600 text-white',     dot: 'text-red-500',     ring: 'ring-red-300',     border: 'border-red-200' },
 };
 const MultiZoneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey, gameLabel, zoneConfig, layoutMode = 'columns', captionText = "" }) => {

@@ -12328,12 +12328,12 @@ var EXPEDITION_CONNECTIONS = [
         });
       }
 
-      var howls = (d.howls || DEFAULT_HOWLS);
-      var activeIds = d.activeHowls || howls.map(function(h2) { return h2.id; });
+      var howls = (Array.isArray(d.howls) ? d.howls : DEFAULT_HOWLS);
+      var activeIds = Array.isArray(d.activeHowls) ? d.activeHowls : howls.map(function(h2) { return h2.id; });
       var activeHowls = howls.filter(function(h2) { return activeIds.indexOf(h2.id) >= 0; });
-      var qid = d.currentQuarter || currentQuarterId();
+      var qid = (typeof d.currentQuarter === 'string' ? d.currentQuarter : currentQuarterId());
       var goals = (d.goalsByQuarter && d.goalsByQuarter[qid]) || {};
-      var checkins = d.weeklyCheckins || [];
+      var checkins = (Array.isArray(d.weeklyCheckins) ? d.weeklyCheckins : []);
       var quarterCheckins = checkins.filter(function(c) { return c.quarter === qid; });
       var view = d.view || 'home';
 
@@ -12790,7 +12790,7 @@ var EXPEDITION_CONNECTIONS = [
         var thisWeekCheckin = quarterCheckins.find(function(c) { return c.week === wid; });
         var hasGoals = Object.keys(goals).length > 0;
         var howlsHit = activeHowls.length;
-        var todayPulses = d.pulses || [];
+        var todayPulses = (Array.isArray(d.pulses) ? d.pulses : []);
         var todayISO_ = todayISO();
         var todaysPulse = todayPulses.find(function(p) { return p.date === todayISO_; });
         var rhythm = computeRhythm(todayPulses);
@@ -13093,7 +13093,7 @@ var EXPEDITION_CONNECTIONS = [
           var newPerHowl = Object.assign({}, current.perHowl);
           newPerHowl[howlId] = Object.assign({}, newPerHowl[howlId] || {}, { [field]: value });
           var newEntry = Object.assign({}, current, { perHowl: newPerHowl });
-          var newCheckins = (d.weeklyCheckins || []).filter(function(c) { return !(c.week === wid && c.quarter === qid); });
+          var newCheckins = ((Array.isArray(d.weeklyCheckins) ? d.weeklyCheckins : [])).filter(function(c) { return !(c.week === wid && c.quarter === qid); });
           newCheckins.push(newEntry);
           setHowl({ weeklyCheckins: newCheckins });
         }
@@ -13482,7 +13482,7 @@ var EXPEDITION_CONNECTIONS = [
       // ═══════════════════════════════════════════════════════
       function renderPulse() {
         var today = todayISO();
-        var pulses = d.pulses || [];
+        var pulses = (Array.isArray(d.pulses) ? d.pulses : []);
         var todaysPulse = pulses.find(function(p) { return p.date === today; });
         var rhythm = computeRhythm(pulses);
         var paused = d.pulsePaused && d.pulsePaused > today;

@@ -3148,7 +3148,21 @@
         var layoutNote = cfg.substrate === 'model'
           ? 'Columns are depth through the model; the lit band is the J-lens subspace. Position is schematic — it is not where anything sits in a real network.'
           : 'Laid out back to front. The workspace nodes are scattered on purpose: being distributed IS the claim. Position is schematic — this is not anatomy.';
-        return h('section', { className: 'cns-net', 'aria-labelledby': 'cns-net-title', style: { borderColor: C.border } },
+        // The whole section fullscreens, not just the diagram: the step slider and
+        // its readout are how a student moves through the run, and the diagram means
+        // nothing without them.
+        return h('section', { className: 'cns-net', 'aria-labelledby': 'cns-net-title', 'data-allo-fs-stage': 'true',
+            ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+            style: { position: 'relative', borderColor: C.border } },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': 'View the network diagram fullscreen',
+            'data-fs-out': 'View the network diagram fullscreen',
+            'data-fs-in': 'Exit fullscreen network diagram (Escape)',
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + C.border, color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('div', { className: 'cns-section-heading' },
             h('div', null,
               h('span', { className: 'cns-step' }, 'SAME FIVE NUMBERS, DRAWN AS A NETWORK'),

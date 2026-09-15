@@ -347,7 +347,7 @@ function ClassMailboxSetupView(props) {
   }, mbResumable.length === 1 ? 'A live session is still running:' : mbResumable.length + ' live sessions are still running:'), mbResumable.map(s => /*#__PURE__*/React.createElement("button", {
     key: s.c,
     onClick: () => resumeMailboxLiveSession(s),
-    className: "w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg p-2.5 transition-all mb-1"
+    className: "w-full flex items-center justify-between gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2.5 transition-all mb-1"
   }, /*#__PURE__*/React.createElement("span", null, t('mailbox.resume_class') || 'Resume class', " ", String(s.c).toUpperCase()), /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "\u21BB"))), /*#__PURE__*/React.createElement("button", {
@@ -404,7 +404,7 @@ function ClassMailboxSetupView(props) {
   }, t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.'), /*#__PURE__*/React.createElement("button", {
     onClick: startMailboxLiveSession,
     disabled: mbBusy,
-    className: "w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl p-3 transition-all disabled:opacity-60"
+    className: "w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60"
   }, mbBusy ? 'Starting…' : 'Teach live'), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
@@ -630,7 +630,7 @@ function ClassMailboxSetupView(props) {
     }, _obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')), _obs > 0 && _self > 0 ? ', ' : '', _self > 0 && /*#__PURE__*/React.createElement("span", null, _self + ' ' + (t('takehome.evidence_self') || 'self-checked')), ')'), ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : '', ' · ' + ev.title);
   }))), /*#__PURE__*/React.createElement("button", {
     onClick: requestEndLiveSession,
-    className: "w-full text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all"
+    className: "w-full text-xs font-bold text-rose-800 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all"
   }, t('mailbox.end_session') || 'End session')), mbStatus && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",

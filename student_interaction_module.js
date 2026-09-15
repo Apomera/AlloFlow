@@ -106,7 +106,7 @@ function getStudentInteractionThemeStyles(themeContext = {}) {
       text: "text-slate-300",
       muted: "text-slate-400",
       input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-500 focus:ring-indigo-500/40 focus:border-indigo-400",
-      primary: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-none",
+      primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none",
       secondary: "bg-slate-950 border border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white",
       focusOffset: "focus:ring-offset-slate-900",
       positive: "bg-emerald-950 border-emerald-700 text-emerald-100",

@@ -30,6 +30,17 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
+  // Module-scope so the card components declared above the render closure can
+  // speak: they sit ABOVE `var addToast`, so a toast is not in scope for them.
+  var _advAnnounce = function(msg) {
+    try {
+      var lr = document.getElementById('allo-live-advocacy');
+      if (!lr) return;
+      lr.textContent = '';
+      setTimeout(function() { lr.textContent = String(msg || ''); }, 30);
+    } catch (e) {}
+  };
+
   // Reduced-motion CSS (WCAG 2.3.3) + focus-visible rings (WCAG 2.4.7) — scoped
   // to this tool's class so it doesn't bleed into the rest of AlloFlow. Tool uses
   // short progress-bar and hover transitions; respect users who opt out of motion.
@@ -6763,7 +6774,7 @@ window.SelHub = window.SelHub || {
       setData(Object.assign({}, data, { rights: r }));
     }
     function addCustom() {
-      if (!form.text.trim()) return;
+      if (!form.text.trim()) { _advAnnounce('Write the right you want to add, then press the button again.'); return; }
       var r = (data.rights || []).concat([form.text.trim()]);
       var refl = Object.assign({}, data.reflections || {});
       if (form.why.trim()) refl[form.text.trim()] = form.why.trim();
@@ -7048,7 +7059,7 @@ window.SelHub = window.SelHub || {
     ];
 
     function add() {
-      if (!form.what.trim()) return;
+      if (!form.what.trim()) { _advAnnounce('Write something first, then press the button again.'); return; }
       var b = Object.assign({ id: adv_id(), createdAt: adv_today() }, form);
       setData({ boundaries: [b].concat(data.boundaries || []) });
       setForm({ what: '', why: '', script: '', category: 'social' });

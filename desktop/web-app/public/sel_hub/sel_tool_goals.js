@@ -1462,7 +1462,7 @@ window.SelHub = window.SelHub || {
         };
 
         var addStep = function(goalId, text) {
-          if (!text.trim()) return;
+          if (!text.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           sfxClick();
           var next = goals.map(function(g) {
             if (g.id !== goalId) return g;

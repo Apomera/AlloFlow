@@ -196,7 +196,16 @@ describe('UDLGuideModal collapse-to-bar', () => {
 
     act(() => { collapseBtn(el).click(); });
     expect(el.querySelector('[role="group"]')).toBeNull();      // transcript is gone from view
-    expect(el.textContent).toContain('chat_guide.header');       // …but the bar is there
+    // The bar is still there, and it is NAMED. The title now resolves through
+    // tx(), so an unresolved key yields real words instead of leaking
+    // "chat_guide.header" into the UI — the collapsed dialog must never be
+    // left anonymous (4.1.2), which is what this row is really guarding.
+    const bar = el.querySelector('[role="dialog"]');
+    expect(bar).not.toBeNull();
+    const barTitle = el.querySelector('#udl-guide-title-collapsed');
+    expect(barTitle).not.toBeNull();
+    expect(barTitle.textContent.trim()).toBe('AI Guide & Assistant');
+    expect(bar.getAttribute('aria-labelledby')).toBe('udl-guide-title-collapsed');
 
     const restore = Array.from(el.querySelectorAll('button'))
       .find(b => b.getAttribute('aria-label') === 'chat_guide.restore');
@@ -427,8 +436,12 @@ describe('persistent Allobot work controls', () => {
     const props = makeProps({ udlMessages: [{ role: 'model', type: 'choices', operationKind: 'command', operationId: 'r', operationStatus: 'review', text: 'Choose a step', choices: [],
       commandReview: { requestId: 'r', params: { step: 2 }, fields: { step: { label: 'Step number', type: 'integer', min: 1, required: true } } } }] });
     const el = mount(props); const field = el.querySelector('input[name="step"]');
-    expect(field.closest('label').textContent).toBe('Step number');
+    // A required field says so in TEXT (3.3.2): `required` alone is enforced
+    // by the browser but never shown, so the rule was invisible until submit
+    // failed. The label still leads with the field's own name.
+    expect(field.closest('label').textContent).toBe('Step number (required)');
     expect(field.type).toBe('number'); expect(field.required).toBe(true);
+    expect(field.getAttribute('aria-required')).toBe('true');
     act(() => field.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
     expect(props.handleSendUDLMessage).toHaveBeenCalledWith({ action: 'command-params', requestId: 'r', params: { step: 2 } });
   });

@@ -1963,7 +1963,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                     <div className="font-bold text-sm text-slate-800 truncate">{group.name}</div>
                     <div className="text-[11px] text-slate-600">{normalizedStudentQuery ? `${shownStudents.length} of ${gStudents.length} matching` : `${gStudents.length} student${gStudents.length !== 1 ? 's' : ''}`} · {group.profile?.gradeLevel || '—'} · {group.profile?.leveledTextLanguage || '—'}</div>
                   </div>
-                  <ChevronDown size={16} className={`text-slate-400 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={16} className={`text-slate-600 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
                 {isExpanded && (
                   <div id={'roster-group-' + gId} className="p-4 space-y-3 border-t border-slate-100 bg-white">
@@ -2000,7 +2000,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                           <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium">
                             {name}
                             {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                              <span className="text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                              <span className="text-[11px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded-full font-mono" title={`${rosterKey.progressHistory[name].length} sessions`}>
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
@@ -2020,7 +2020,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <button type="button" onClick={() => onApplyGroup(gId)} className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5">
                         <Sparkles size={12} /> {t('roster.apply_to_generator') || 'Apply to Generator'}
                       </button>
-                      <button type="button" onClick={() => handleRemoveGroup(gId)} className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none sm:ml-auto flex items-center gap-1.5">
+                      <button type="button" onClick={() => handleRemoveGroup(gId)} className="px-3 py-1.5 bg-red-50 text-red-800 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none sm:ml-auto flex items-center gap-1.5">
                         <Trash2 size={12} /> {t('roster.delete_group') || 'Delete Group'}
                       </button>
                     </div>
@@ -2085,7 +2085,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                    {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                  </select>
                  <button type="button" onClick={handleAddStudent} disabled={!rosterAdjIsValid || !rosterAnimalIsValid || studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS} title={studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS ? 'Maximum ' + ALLO_ROSTER_MAX_STUDENTS + ' codenames reached' : undefined}
-                   className="w-full sm:w-auto min-h-10 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center justify-center gap-1">
+                   className="w-full sm:w-auto min-h-10 px-3 py-1.5 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-800 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center justify-center gap-1">
                    <Plus size={14} /> {t('roster.add_student') || 'Add'}
                  </button>
                </div>
@@ -2105,7 +2105,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                   <span key={name} className="inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200">
                     {name}
                     {rosterKey?.progressHistory?.[name]?.length > 0 && (
-                      <span className="text-[11px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
+                      <span className="text-[11px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded-full font-mono ml-0.5" title={`${rosterKey.progressHistory[name].length} sessions`}>
                         {rosterKey.progressHistory[name].length}s
                       </span>
                     )}
@@ -2955,7 +2955,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                 🔥 x{teamStreak}
               </div>
             )}
-            <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse motion-reduce:animate-none' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
+            <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-600 text-white animate-pulse motion-reduce:animate-none' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
               <Clock size={14} className="inline mr-1" />
               {formatTime(timeRemaining)}
             </div>
@@ -3261,7 +3261,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                       const orderIndices = sequenceOrder;
                       handleSubmitAnswer(currentPuzzle.id, orderIndices, 'sequence');
                     }}
-                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
+                    className="w-full p-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                   >
                     {t('escape_room.check_sequence')}
                   </button>
@@ -3292,7 +3292,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                           aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
                           className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
-                            isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
+                            isSelected ? 'bg-purple-600 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
                           }`}
                         >
@@ -3321,7 +3321,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                           aria-label={isMatched ? `${item} - ${t('escape_room.matched') || 'matched'}` : isSelected ? `${item} - ${t('escape_room.selected') || 'selected'}` : item}
                           className={`w-full p-3 rounded-lg text-left font-medium transition-all motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                             isMatched ? 'bg-green-700 text-white opacity-60' :
-                            isSelected ? 'bg-purple-500 text-white ring-2 ring-purple-300' :
+                            isSelected ? 'bg-purple-600 text-white ring-2 ring-purple-300' :
                             'bg-slate-700 text-white hover:bg-slate-600'
                           }`}
                         >
@@ -3344,7 +3344,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
                 {matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && (
                   <button type="button"
                     onClick={() => handleSubmitAnswer(currentPuzzle.id, matchingPairs, 'matching')}
-                    className="w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
+                    className="w-full p-4 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
                   >
                     {t('escape_room.submit_answer')}
                   </button>
@@ -3529,7 +3529,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
             </span>
           )}
           {isPaused && (
-            <span className="text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none">
+            <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none">
               ⏸️ {t('escape_room.game_paused')}
             </span>
           )}
@@ -3538,7 +3538,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
           <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">
             {studentsAssigned} {t('escape_room.teams_competing', { count: allTeams.length })}
           </span>
-          <span className={`px-3 py-1 rounded-full font-mono font-bold text-sm ${timeRemaining < 60 ? 'bg-red-500 text-white' : 'bg-slate-700 text-white'}`}>
+          <span className={`px-3 py-1 rounded-full font-mono font-bold text-sm ${timeRemaining < 60 ? 'bg-red-600 text-white' : 'bg-slate-700 text-white'}`}>
             <Clock size={12} className="inline mr-1" />
             {formatTime(timeRemaining)}
           </span>
@@ -3550,7 +3550,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
           </button>
           <button type="button"
             onClick={requestEndGame} disabled={controlBusy}
-            className="px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors motion-reduce:transition-none whitespace-nowrap"
+            className="px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white transition-colors motion-reduce:transition-none whitespace-nowrap"
           >
             {t('escape_room.end_game')}
           </button>
@@ -4525,9 +4525,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                              onChange={(e) => handleModeChange({target:{value:'boss-battle'}}, e.target.value)}
                              disabled={quizBusy || (!['lobby', 'idle'].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0)}
                              className={`text-xs font-bold px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${
-                                 bossDifficulty === 'easy' ? 'bg-emerald-600 border-emerald-500 text-white' :
+                                 bossDifficulty === 'easy' ? 'bg-emerald-700 border-emerald-500 text-white' :
                                  bossDifficulty === 'hard' ? 'bg-red-600 border-red-500 text-white' :
-                                 'bg-amber-500 border-amber-400 text-white'
+                                 'bg-amber-700 border-amber-400 text-white'
                              } ${(!['lobby', 'idle'].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0) ? 'opacity-60 cursor-not-allowed' : ''}`}
                              title={(!['lobby', 'idle'].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0) ? t('quiz.boss.difficulty_locked') : t('quiz.boss.select_difficulty')}
                          >
@@ -5035,7 +5035,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          ) : (
                              <button type="button" aria-label={phase === 'revealed' ? t('quiz.restart_question') : t('quiz.start_question')}
                                 onClick={handleStartQuestion} disabled={quizBusy || !question || ['boss-defeated', 'class-defeated', 'battle-complete', 'closed'].includes(phase)} data-help-key="quiz_start_question_btn"
-                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
                              >
                                  <Play size={24} className="fill-current"/> {phase === 'revealed' ? t('quiz.restart_question') : t('quiz.start_question')}
                              </button>
@@ -5980,7 +5980,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
                   <button
                       type="submit"
                       disabled={!draft.trim()}
-                      className="px-3 py-1.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
                   >{t('dashboard.comments.save_btn') || 'Save'}</button>
                   {list.length === 0 && (
                       <button
@@ -6430,7 +6430,7 @@ const LearnerProgressView = React.memo(({
                             <div className="text-2xl font-black text-indigo-900">{globalPoints.toLocaleString()}</div>
                         </div>
                         {stats.trend > 0 && (
-                            <div className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
+                            <div className="text-xs font-bold text-green-800 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
                                 <TrendingUp size={12} /> +{stats.trend} XP
                             </div>
                         )}
@@ -6569,7 +6569,7 @@ const LearnerProgressView = React.memo(({
                                             </span>
                                         ))}
                                         {stats.masteredPhonemes.length > 12 && (
-                                            <span className="px-2 py-0.5 bg-green-50 text-green-600 text-xs font-bold rounded-full">
+                                            <span className="px-2 py-0.5 bg-green-50 text-green-800 text-xs font-bold rounded-full">
                                                 +{stats.masteredPhonemes.length - 12} more
                                             </span>
                                         )}
@@ -6852,7 +6852,7 @@ const LearnerProgressView = React.memo(({
                         const w = window.open('', '_blank');
                         if (w) { w.document.write(html); w.document.close(); }
                     }}
-                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                     data-help-key="learner_progress_print_report_btn"
                 >
                     <Printer size={16} /> Print Progress Report
@@ -6860,7 +6860,7 @@ const LearnerProgressView = React.memo(({
                 {isParentMode && onShareWithTeacher && (
                     <button type="button"
                         onClick={onShareWithTeacher}
-                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
+                        className="px-5 py-2.5 bg-gradient-to-r from-indigo-700 to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all motion-reduce:transition-none hover:scale-[1.02] flex items-center gap-2 text-sm"
                         data-help-key="learner_progress_share_teacher_btn"
                     >
                         <Share2 size={16} /> Share Progress with Teacher
@@ -7665,7 +7665,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                 {dashboardData.length > 0 && (<>
                     <button type="button"
                         onClick={handleExportCSV} data-help-key="dashboard_export_csv_btn"
-                        className="text-xs font-bold text-green-600 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-green-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-green-800 hover:text-green-800 hover:bg-green-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-green-200 shadow-sm flex items-center gap-1"
                         title={t('dashboard.export_csv_tooltip')}
                         aria-label={t('dashboard.export_csv_tooltip')}
                     >
@@ -7673,7 +7673,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                     </button>
                     <button type="button"
                         onClick={handleExportResearchPDF} data-help-key="dashboard_export_research_btn"
-                        className="text-xs font-bold text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-purple-200 shadow-sm flex items-center gap-1"
+                        className="text-xs font-bold text-purple-800 hover:text-purple-800 hover:bg-purple-50 px-2 sm:px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none border border-purple-200 shadow-sm flex items-center gap-1"
                         title={t('research.export_apa_title')}
                         aria-label={t('teacher.research.export_btn_aria') || 'Export Research Report'}
                     >
@@ -7748,7 +7748,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                         {selectedStudent.studentNickname.charAt(0).toUpperCase()}
                                     </div>
                                     {gradedIds.has(selectedStudent.id) && (
-                                        <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
+                                        <div className="absolute -bottom-1 -right-1 bg-green-700 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
                                             <CheckCircle2 size={12} />
                                         </div>
                                     )}
@@ -8015,14 +8015,14 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                      <div role="tabpanel" id="teacher-dashboard-panel-students" aria-labelledby="teacher-dashboard-tab-students" tabIndex={0} className="max-w-6xl mx-auto space-y-6 animate-in motion-reduce:animate-none fade-in slide-in-from-left-4 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4">
-                                 <div className="bg-blue-100 p-3 rounded-full text-blue-600"><Users size={24}/></div>
+                                 <div className="bg-blue-100 p-3 rounded-full text-blue-800"><Users size={24}/></div>
                                  <div>
                                      <div className="text-2xl font-black text-slate-800">{dashboardData.length}</div>
                                      <div className="text-xs font-bold text-slate-600 uppercase">{t('dashboard.stats.students_loaded')}</div>
                                  </div>
                              </div>
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 relative group cursor-pointer hover:border-indigo-300 transition-colors motion-reduce:transition-none">
-                                 <div className="bg-green-100 p-3 rounded-full text-green-600"><Upload size={24}/></div>
+                                 <div className="bg-green-100 p-3 rounded-full text-green-800"><Upload size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-green-700">{t('dashboard.stats.add_files')}</div>
                                      <div className="text-xs text-slate-600">{t('dashboard.stats.click_upload')}</div>
@@ -8035,7 +8035,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                  />
                              </div>
                              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-400 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors motion-reduce:transition-none" onClick={handleClearAll} role="button" tabIndex="0" aria-label={t('dashboard.stats.clear_dashboard')} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClearAll(e))}>
-                                 <div className="bg-red-100 p-3 rounded-full text-red-600"><Trash2 size={24}/></div>
+                                 <div className="bg-red-100 p-3 rounded-full text-red-800"><Trash2 size={24}/></div>
                                  <div>
                                      <div className="text-sm font-bold text-red-700">{t('dashboard.stats.clear_dashboard')}</div>
                                      <div className="text-xs text-slate-600">{t('dashboard.stats.clear_desc')}</div>
@@ -8114,7 +8114,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                                              {student.studentNickname.charAt(0).toUpperCase()}
                                                          </div>
                                                          {isGraded && (
-                                                             <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border border-white shadow-sm">
+                                                             <div className="absolute -bottom-1 -right-1 bg-green-700 text-white rounded-full p-0.5 border border-white shadow-sm">
                                                                  <CheckCircle2 size={8} />
                                                              </div>
                                                          )}
@@ -8404,7 +8404,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
                                  <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto">{t('behavior_lens.hub.subtitle') || 'Functional Behavior Assessment, ABC data collection, and Behavior Intervention Plan tools.'}</p>
                                  <button type="button"
                                      onClick={() => { if (onOpenBehaviorLens) onOpenBehaviorLens(); }}
-                                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none text-sm flex items-center gap-2 mx-auto"
+                                     className="px-6 py-3 bg-gradient-to-r from-orange-700 to-amber-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none text-sm flex items-center gap-2 mx-auto"
                                  >
                                      🔍 {t('behavior_lens.hub.open_btn') || 'Open BehaviorLens'}
                                  </button>

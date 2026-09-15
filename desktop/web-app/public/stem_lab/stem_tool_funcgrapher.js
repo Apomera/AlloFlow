@@ -1557,7 +1557,17 @@ window.StemLab = window.StemLab || {
                 React.createElement('span', { className: 'text-lg' }, '\uD83D\uDCCA'),
                 React.createElement('h3', { className: 'text-sm font-bold text-indigo-700' }, __alloT('stem.funcgrapher.function_zoo_six_common_function_shape', 'Function Zoo \u2014 Six common function shapes'))
               ),
-              React.createElement('div', { className: 'rounded-xl overflow-hidden border border-indigo-200', style: { background: '#020210', aspectRatio: '16/6' } },
+              React.createElement('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                className: 'rounded-xl overflow-hidden border border-indigo-200', style: { position: 'relative', background: '#020210', aspectRatio: '16/6' } },
+                React.createElement('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': __alloT('stem.funcgrapher.enter_fullscreen', 'View the Function Zoo fullscreen'),
+                  'data-fs-out': __alloT('stem.funcgrapher.enter_fullscreen', 'View the Function Zoo fullscreen'),
+                  'data-fs-in': __alloT('stem.funcgrapher.exit_fullscreen', 'Exit fullscreen Function Zoo (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(165,180,252,0.6)', color: '#e0e7ff', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                 React.createElement('p', { id: 'funcgrapher-zoo-description', className: typeof srOnly === 'string' ? srOnly : 'sr-only', style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, 'Six coordinate plots compare common function shapes: linear is a straight rising line, quadratic is a U-shaped curve, cubic is an S-shaped curve, exponential rises increasingly quickly, logarithmic rises increasingly slowly, and sine repeats in a wave.'),
                 React.createElement('canvas', {
                   role: 'img',

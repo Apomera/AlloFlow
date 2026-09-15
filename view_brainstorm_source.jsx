@@ -341,7 +341,7 @@ function BrainstormView(props) {
                             <button
                                 aria-label={t('common.toggle_edit_brainstorm')}
                                 onClick={handleToggleIsEditingBrainstorm}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`}
                             >
                                 {isEditingBrainstorm ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
                                 {isEditingBrainstorm ? t('common.done_editing') : t('brainstorm.edit')}

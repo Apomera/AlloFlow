@@ -1222,6 +1222,8 @@
     var t = props.t, data = props.data;
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
+    // Model scalars are rendered as React children below; a non-string would crash the lane.
+    var aiScalarText = primitives.aiScalarText || function (v) { return typeof v === 'string' ? v : (v && typeof v === 'object' && !Array.isArray(v) && typeof v.text === 'string' ? v.text : (v == null || typeof v === 'object' ? '' : String(v))); };
     if (!data) return null;
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
@@ -1246,7 +1248,7 @@
         {data.dominated_candidate_id && (
           <p style={{ marginTop: '6px', fontSize: '12px', color: '#1e293b' }}>
             <strong style={{ color: '#9a3412' }}>{t('engineering.dominated_id') || 'AI flags as possibly dominated:'} </strong>
-            <code>{data.dominated_candidate_id}</code>
+            <code>{aiScalarText(data.dominated_candidate_id)}</code>
           </p>
         )}
         {renderQuestions(data.why_might_be_dominated_questions, t('engineering.q_why_dominated') || 'Why might it be dominated?')}

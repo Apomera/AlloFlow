@@ -251,7 +251,7 @@ exports[`Arc City — adjudication + SR narration per level (golden master) > L9
 exports[`Arc City — module contract > board readouts for screen readers (snapshot) 1`] = `
 {
   "L1": "Arc City, level: First Light. Author a straight-line beam. The dark node to light is at x 8, y 4. Aim the beam through any gates, over any walls, to reach the node.",
-  "L10": "Arc City, The Gauntlet: an adaptive capstone — one challenge from every function family, weakest first.",
+  "L10": "Arc City, The Gauntlet: an adaptive capstone — one challenge from each function family you have solved, weakest first.",
   "L11": "Arc City, Re-Target: Slide: match the ghost curve — overlay your parabola onto the faint target by adjusting h, k (a is fixed this level). Keep your curve within 0.3 units of the ghost the whole way across.",
   "L12": "Arc City, Re-Target: Flip & Stretch: match the ghost curve — overlay your parabola onto the faint target by adjusting a, h, k. Keep your curve within 0.35 units of the ghost the whole way across.",
   "L13": "Arc City, Re-Target: The Wave: match the ghost curve — overlay your sine wave onto the faint target by adjusting a, b, c (k is fixed this level). Keep your curve within 0.3 units of the ghost the whole way across. You can stretch this wave left-to-right by changing its period — a move that is invisible on a parabola, so it is taught here on a wave.",
@@ -860,7 +860,7 @@ exports[`Arc City — module contract > level geometry (snapshot) 1`] = `
     "dx": 0.05,
     "family": "gauntlet",
     "gates": [],
-    "hint": "The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, logarithm, and cubic — to win.",
+    "hint": "The Gauntlet: one challenge from each function family you have already solved, ordered to put your weakest first. Re-light a node with each to win. Solve more families on their own — exponential, logarithm, cubic — and a fresh run will include those too.",
     "id": "L10",
     "node": {
       "r": 0.5,

@@ -1534,7 +1534,7 @@ function LiveSessionDockView(props) {
       style: {
         border: '1px solid #0369a1',
         borderRadius: 7,
-        background: '#0284c7',
+        background: '#0369a1',
         color: 'white',
         padding: '0.26rem 0.5rem',
         fontSize: '0.66rem',

@@ -1,10 +1,45 @@
 {
   "passed": true,
   "transport": "Production Class Mailbox adapter and Code.gs sandbox",
+  "mailboxVersion": 24,
   "browsers": 4,
+  "sharing": {
+    "privateNoSharedWrites": true,
+    "optionalNameBlank": true,
+    "otherLearnersExcluded": true,
+    "separateTeacherDemonstration": true,
+    "htmlAndTextDownloads": true,
+    "restartClearsView": true
+  },
+  "adaptiveReplay": {
+    "draftReload": true,
+    "feedbackReload": true,
+    "privateNoSharedWrites": true,
+    "pausedControls": true,
+    "finalePreserved": true,
+    "restartClearsView": true
+  },
+  "world": {
+    "beforeComparison": true,
+    "builtLandmarks": true
+  },
+  "finale": {
+    "completed": true,
+    "studentReload": true,
+    "privateNoSharedWrites": true,
+    "separateTeacherPlan": true,
+    "pausedEditsDisabled": true,
+    "export": true,
+    "restartClearsView": true
+  },
+  "constructionGoals": {
+    "selectionsPrivate": true,
+    "studentReload": true,
+    "teacherRemount": true
+  },
   "ai": "Fixture provider; invalid then repaired JSON",
-  "writes": 33,
-  "completedDocumentChars": 8892,
+  "writes": 37,
+  "completedDocumentChars": 9030,
   "scans": [
     {
       "label": "import review",
@@ -76,6 +111,26 @@
     },
     {
       "label": "completed class learning",
+      "violations": []
+    },
+    {
+      "label": "private completed finale restored",
+      "violations": []
+    },
+    {
+      "label": "private adaptive route restored",
+      "violations": []
+    },
+    {
+      "label": "private learning summary preview",
+      "violations": []
+    },
+    {
+      "label": "separate learner learning summary",
+      "violations": []
+    },
+    {
+      "label": "teacher demonstration summary",
       "violations": []
     }
   ],

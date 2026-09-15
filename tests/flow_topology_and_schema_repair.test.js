@@ -3,8 +3,11 @@ import fs from 'node:fs';
 
 const renderer = fs.readFileSync('view_renderers_source.jsx', 'utf8');
 const generator = fs.readFileSync('generate_dispatcher_source.jsx', 'utf8');
-const appSource = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-const builtApp = fs.readFileSync('desktop/web-app/src/App.jsx', 'utf8');
+// The organizer connection persistence moved out of the monolith into the extracted
+// host handlers (2026-09; the pins below used to read AlloFlowANTI.txt + the generated
+// App.jsx and went red when the code moved, not when it broke). Pin the SOURCE that owns
+// it now; the built module is minified, so a text pin there would be vacuous.
+const hostHandlers = fs.readFileSync('host_handlers_source.jsx', 'utf8');
 
 const normalizerStart = renderer.indexOf('const VISUAL_ORGANIZER_SECTION_SPECS');
 const normalizerEnd = renderer.indexOf('const FlowTopologyBoard', normalizerStart);
@@ -12,6 +15,29 @@ const normalizerSource = renderer.slice(normalizerStart, normalizerEnd);
 const normalizeVisualOrganizerData = Function(normalizerSource + '\nreturn normalizeVisualOrganizerData;')();
 
 describe('visual organizer schema repair and flow topology', () => {
+  // 2026-09-15: a {text: '…'} item reached `<li>{item}</li>` in the cause-and-effect renderer and
+  // React throws on an object child, taking the organizer down through the error boundary.
+  it('flattens object-shaped branch items to their text and drops text-less ones', () => {
+    const out = normalizeVisualOrganizerData({
+      main: 'Water cycle',
+      structureType: 'Cause and Effect',
+      branches: [
+        { title: 'Causes', items: ['Sun heats the ocean', { text: 'Warm air rises' }, { label: 'Vapour cools' }, { weight: 3 }, 42, null] },
+        { title: 'Effects', items: [{ text: '  ' }, 'Clouds form'] },
+      ],
+    }, 'Cause and Effect');
+    expect(out.branches[0].items).toEqual(['Sun heats the ocean', 'Warm air rises', 'Vapour cools', '42']);
+    expect(out.branches[1].items).toEqual(['Clouds form']);
+    expect(out.branches.every((b) => b.items.every((item) => typeof item === 'string'))).toBe(true);
+    expect(out.schemaValidation.repairs).toContain('branch-0-item-text');
+    expect(out.schemaValidation.repairs).toContain('branch-1-item-text');
+  });
+  it('leaves all-string items untouched and records no item repair', () => {
+    const out = normalizeVisualOrganizerData({ main: 'M', structureType: 'T-Chart', branches: [{ title: 'A', items: ['x', 'y'] }, { title: 'B', items: ['z'] }] }, 'T-Chart');
+    expect(out.branches.map((b) => b.items)).toEqual([['x', 'y'], ['z']]);
+    expect(out.schemaValidation.repairs.filter((r) => /item-text/.test(r))).toEqual([]);
+  });
+
   it('repairs legacy flow destinations into labeled edge objects and drops unsafe targets', () => {
     const repaired = normalizeVisualOrganizerData({
       main: 'Review',
@@ -98,11 +124,9 @@ describe('visual organizer schema repair and flow topology', () => {
   });
 
   it('persists sanitized connection objects and backward-compatible target arrays', () => {
-    for (const source of [appSource, builtApp]) {
-      expect(source).toContain("field === 'connections'");
-      expect(source).toContain('branch.connections = newConnections');
-      expect(source).toContain('branch.connectsTo = newConnections.map(connection => connection.target)');
-      expect(source).toContain('target === branchIndex');
-    }
+    expect(hostHandlers).toContain("field === 'connections'");
+    expect(hostHandlers).toContain('branch.connections = newConnections;');
+    expect(hostHandlers).toContain('branch.connectsTo = newConnections.map(connection => connection.target);');
+    expect(hostHandlers).toContain('target === branchIndex');
   });
 });

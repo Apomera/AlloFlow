@@ -585,7 +585,7 @@ function BrandProfileEditor(props) {
   }, draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: removeLogo,
-    className: "px-3 py-1.5 rounded-lg text-red-600 text-xs font-medium hover:bg-red-50"
+    className: "px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50"
   }, t('brand.logo_remove', 'Remove')), /*#__PURE__*/React.createElement("input", {
     ref: fileInputRef,
     "aria-label": t('brand.logo_file', 'Upload logo image file'),
@@ -756,7 +756,7 @@ function BrandProfileEditor(props) {
     onClick: function () {
       makeActive(draft.id);
     },
-    className: "w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors"
+    className: "w-full px-3 py-1.5 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 transition-colors"
   }, t('brand.set_active', 'Set as active brand')))))), deleteRequest && /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4",
     role: "presentation",

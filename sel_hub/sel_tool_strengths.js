@@ -828,7 +828,7 @@ window.SelHub = window.SelHub || {
 
   function checkBadges(d, awardXP, addToast) {
     var earned = d.badges || {};
-    var selected = d.selectedStrengths || [];
+    var selected = (Array.isArray(d.selectedStrengths) ? d.selectedStrengths : []);
     var reflections = d.reflections || [];
     var scenariosDone = d.scenariosDone || [];
     var topScenarios = d.topScenarios || 0;
@@ -934,7 +934,7 @@ window.SelHub = window.SelHub || {
         })();
 
         var tab = d.tab || 'discover';
-        var selectedStrengths = d.selectedStrengths || [];
+        var selectedStrengths = (Array.isArray(d.selectedStrengths) ? d.selectedStrengths : []);
         var reflections = d.reflections || [];
         var reflectionInput = d.reflectionInput || '';
         var currentPromptIdx = d.currentPromptIdx || 0;
@@ -1103,7 +1103,7 @@ window.SelHub = window.SelHub || {
         var bgDark = _strBg('#0f172a');
 
         return h('div', { className: 'selh-strengths', style: { display: 'flex', flexDirection: 'column', height: '100%', background: bgDark, color: _strFg('#e2e8f0'), fontFamily: '"Inter", system-ui, sans-serif', overflow: 'hidden' } },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (typeof d._srMsg === 'string' ? d._srMsg : '')),
           // Surface 988 / Crisis Text Line block when any AI-input turn was tier-3.
           (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) && window.SelHub.renderCrisisResources(h, band),
 

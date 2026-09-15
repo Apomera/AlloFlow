@@ -190,8 +190,20 @@ describe('Optics Lab refinements', () => {
     const source = readFileSync('stem_lab/stem_tool_optics.js', 'utf8');
 
     expect(source).toContain('Award simulation milestones from effects, never from render paths.');
-    expect(source).toContain("}, [d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);");
+    // Pin the INVARIANT (milestones live in effects, and every one is scoped to
+    // its own tab) rather than a literal dependency array: the TIR effect gained
+    // a d.mode guard on 2026-09-15 because without it a saved project with a
+    // steep angle awarded TIR on load, from any tab.
+    expect(source).toContain("}, [d.mode, d.refrN1, d.refrN2, d.refrTheta1, d.tirTriggered]);");
     expect(source).toContain("}, [d.mode, d.lensType, d.lensFocal, d.lensDo, d.realImageFormed, d.virtualImageFormed]);");
+    // Each award effect must bail out when the student is on another tab.
+    const awardEffects = source.split('React.useEffect(function() {').filter(function(chunk) {
+      return /upd\(\{ (?:tirTriggered|realImageFormed|interferenceViewed|diffractionViewed)/.test(chunk.slice(0, 1200));
+    });
+    expect(awardEffects.length).toBeGreaterThanOrEqual(3);
+    for (const chunk of awardEffects) {
+      expect(chunk.slice(0, 700)).toMatch(/d\.mode !== '(refraction|lenses|interference|diffraction)'/);
+    }
     expect(source).not.toContain('Quest auto-tracking on the calc render');
     expect(source).not.toContain('Set later via upd to avoid re-render storm');
   });

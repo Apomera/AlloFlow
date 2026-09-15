@@ -1412,7 +1412,14 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Defaults ──
-      var tab = d.tab || 'sir';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'sir'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['battle', 'challenge', 'contacttrace', 'history', 'inquiry', 'interventions', 'learn', 'outbreak', 'outbreakmap', 'r0explorer', 'scenarios', 'seir', 'sir', 'vaccination'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'sir';
       var r0 = d.r0 != null ? d.r0 : 2.5;
       var vaccRate = d.vaccRate != null ? d.vaccRate : 0;
       var infectPeriod = d.infectPeriod != null ? d.infectPeriod : 10;

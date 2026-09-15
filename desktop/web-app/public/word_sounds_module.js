@@ -2330,7 +2330,7 @@ const WS_CORE = createWordSoundsCore();
                     key: i,
                     className: `px-4 py-2 rounded-xl text-xl font-bold transition-all duration-200 ${
                         highlightedSyllableIndex === i
-                          ? "bg-sky-500 text-white scale-110 shadow-lg"
+                          ? "bg-sky-700 text-white scale-110 shadow-lg"
                           : "bg-white border-2 border-sky-200 text-sky-700"
                       }`,
                   },
@@ -2664,7 +2664,7 @@ const WS_CORE = createWordSoundsCore();
                 "aria-label": t("common.volume"),
                 onClick: () => onPlayAudio(data.word),
                 className:
-                  "w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50",
+                  "w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-700 to-purple-700 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50",
                 title: ts("word_sounds.hear_word_again") || "Hear Word Again",
               },
               /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
@@ -6117,7 +6117,7 @@ const WS_CORE = createWordSoundsCore();
                     {
                       "aria-label": ts("word_sounds.hear_word_again") || "Play word audio",
                       onClick: () => onPlayAudio(data.word),
-                      className: `w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 group relative mb-4 mx-auto overflow-hidden ${playingIndex === -1 ? "bg-violet-400 text-white ring-4 ring-violet-200 scale-110 shadow-violet-300/50" : "bg-violet-100 hover:bg-violet-200 text-violet-600"}`,
+                      className: `w-32 h-32 rounded-full flex items-center justify-center transition-all shadow-lg hover:scale-105 active:scale-95 group relative mb-4 mx-auto overflow-hidden ${playingIndex === -1 ? "bg-violet-600 text-white ring-4 ring-violet-200 scale-110 shadow-violet-300/50" : "bg-violet-100 hover:bg-violet-200 text-violet-600"}`,
                     },
                     data.image
                       ? /*#__PURE__*/ React.createElement("img", {
@@ -6416,7 +6416,7 @@ const WS_CORE = createWordSoundsCore();
                             onPlayAudio(opt, true);
                           },
                           className:
-                            "absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-500 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
+                            "absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-700 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
                           title: showLetterHints
                             ? `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
                             : `Listen to Sound ${idx + 1}`,
@@ -6932,7 +6932,7 @@ const WS_CORE = createWordSoundsCore();
                   "span",
                   {
                     className:
-                      "inline-block bg-rose-100 text-rose-600 px-4 py-2 rounded-full text-sm font-bold",
+                      "inline-block bg-rose-100 text-rose-700 px-4 py-2 rounded-full text-sm font-bold",
                   },
                   '\u274C "',
                   // Sound-only mode masks chip text \u2014 don't leak the printed
@@ -7006,7 +7006,7 @@ const WS_CORE = createWordSoundsCore();
                       "button",
                       {
                         onClick: () => handleWordClick(item),
-                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${isShaking ? "bg-red-100 border-red-300 text-red-600 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
+                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
                       },
                       soundOnlyMode ? "🔊" : item.text,
                     ),
@@ -15992,7 +15992,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   handleAudio(word);
                                 },
                                 className:
-                                  "absolute top-1 right-1 w-8 h-8 bg-pink-100 hover:bg-pink-500 hover:text-white text-pink-600 rounded-lg flex items-center justify-center shadow-sm transition-all z-10",
+                                  "absolute top-1 right-1 w-8 h-8 bg-pink-100 hover:bg-pink-700 hover:text-white text-pink-700 rounded-lg flex items-center justify-center shadow-sm transition-all z-10",
                                 title: t(
                                   "common.listen_to_this_option",
                                 ),
@@ -16241,7 +16241,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "div",
                     {
                       key: idx,
-                      className: `w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all ${isCorrect ? "border-green-400 bg-green-50 text-green-700 scale-105" : isWrong ? "border-rose-400 bg-rose-50 text-rose-600 animate-pulse motion-reduce:animate-none" : "border-slate-200 bg-slate-50 text-slate-600"}`,
+                      className: `w-11 h-13 border-2 rounded-lg flex items-center justify-center text-xl font-bold uppercase transition-all ${isCorrect ? "border-green-400 bg-green-50 text-green-700 scale-105" : isWrong ? "border-rose-400 bg-rose-50 text-rose-700 animate-pulse motion-reduce:animate-none" : "border-slate-200 bg-slate-50 text-slate-600"}`,
                     },
                     userAnswer?.[idx]?.toUpperCase() || "_",
                   );
@@ -16278,7 +16278,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.voice_input"),
                     onClick: checkSpellingBee,
                     disabled: !userAnswer,
-                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-500 hover:bg-amber-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-amber-700 hover:bg-amber-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
                   },
                   ts("word_sounds.spelling_bee_check") || "Check Spelling ✓",
                 ),
@@ -16651,7 +16651,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.voice_input"),
                     onClick: checkMissingLetter,
                     disabled: !userAnswer,
-                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-500 hover:bg-emerald-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                    className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-700 hover:bg-emerald-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
                   },
                   ts("word_sounds.check_answer") || "Check Answer \u2713",
                 ),
@@ -17692,7 +17692,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           /*#__PURE__*/ React.createElement("span", { className: "absolute -top-2 -left-2 w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center" }, i + 1),
                           img
                             ? /*#__PURE__*/ React.createElement("img", { src: smSrc(img), alt: smTileName(placed), draggable: false, className: "w-full h-full object-contain rounded-xl p-1 pointer-events-none" })
-                            : /*#__PURE__*/ React.createElement("span", { className: "text-2xl text-slate-400" }, "?"),
+                            : /*#__PURE__*/ React.createElement("span", { className: "text-2xl text-slate-600" }, "?"),
                         );
                       }),
                     ),
@@ -17762,7 +17762,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "div",
             {
               className:
-                "bg-gradient-to-br from-violet-600 to-purple-700 rounded-3xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto text-white",
+                "bg-gradient-to-br from-violet-700 to-purple-700 rounded-3xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto text-white",
             },
             /*#__PURE__*/ React.createElement(
               "div",
@@ -18318,7 +18318,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "div",
             {
               className:
-                "bg-gradient-to-r from-violet-600 to-purple-600 p-3 flex items-center justify-between text-white shadow-sm cursor-move",
+                "bg-gradient-to-r from-violet-700 to-purple-700 p-3 flex items-center justify-between text-white shadow-sm cursor-move",
             },
             /*#__PURE__*/ React.createElement(
               "div",
@@ -18460,7 +18460,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "div",
             {
               className:
-                "bg-gradient-to-r from-violet-600 to-purple-600 p-4 text-white",
+                "bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white",
             },
             /*#__PURE__*/ React.createElement(
               "div",
@@ -18790,7 +18790,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "aria-label": t("common.review_and_edit_word_list"),
                     onClick: () => setShowReviewPanel(true),
                     className:
-                      "flex items-center gap-1 px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md",
+                      "flex items-center gap-1 px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors shadow-md",
                     title: t("common.review_and_edit_word_list"),
                   },
                   ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
@@ -18824,7 +18824,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   {
                     "aria-label": t("common.confirm"),
                     onClick: () => setIsEditing((prev) => !prev),
-                    className: `p-1.5 rounded-full transition-colors flex items-center justify-center ${isEditing ? "bg-amber-100 text-amber-600 ring-2 ring-amber-300" : "bg-white/10 text-white hover:bg-white/20"}`,
+                    className: `p-1.5 rounded-full transition-colors flex items-center justify-center ${isEditing ? "bg-amber-100 text-amber-800 ring-2 ring-amber-300" : "bg-white/10 text-white hover:bg-white/20"}`,
                     title: isEditing
                       ? ts("common.done") || "Done"
                       : ts("common.edit") || "Edit",
@@ -19118,7 +19118,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     try { localStorage.removeItem("alloGardenPhonicsWords"); } catch (e3) {}
                     if (addToast) addToast("🌱 Garden words loaded! Activities will use the student\u2019s vocabulary.", "success");
                   },
-                  className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors whitespace-nowrap"
+                  className: "px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors whitespace-nowrap"
                 }, ts("word_sounds.use_garden_words") || "📖 Use Garden Words"),
                 React.createElement("button", {
                   onClick: function () { setShowGardenBanner(false); },
@@ -19211,7 +19211,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             "div",
             {
               className:
-                "bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-inner",
+                "bg-gradient-to-r from-indigo-700 to-violet-700 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-inner",
             },
               /*#__PURE__*/ React.createElement(
               "div",
@@ -19355,7 +19355,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     type: "button",
                     onClick: retryLastAudio,
                     className:
-                      "px-3 py-1 rounded-lg bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400",
+                      "px-3 py-1 rounded-lg bg-amber-700 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400",
                   },
                   ts("word_sounds.audio_retry") || "🔊 Try again",
                 ),

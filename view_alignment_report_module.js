@@ -955,9 +955,9 @@ function VocabularySection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " Literacy-coach review (AI)"), v.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " Literacy-coach review (AI)"), auditText(v.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2"
-  }, v.llmReview.narrative), v.llmReview.corrections && v.llmReview.corrections.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, auditText(v.llmReview.narrative)), v.llmReview.corrections && v.llmReview.corrections.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
@@ -1151,9 +1151,9 @@ function EngagementSection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " UDL + DOK review (AI)"), e.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " UDL + DOK review (AI)"), auditText(e.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2"
-  }, e.llmReview.narrative), e.llmReview.dokAssessment && /*#__PURE__*/React.createElement("p", {
+  }, auditText(e.llmReview.narrative)), e.llmReview.dokAssessment && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2 italic"
   }, '"' + e.llmReview.dokAssessment + '"'), e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
@@ -1248,9 +1248,9 @@ function AccessibilitySection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " Accessibility-specialist review (AI)"), a.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " Accessibility-specialist review (AI)"), auditText(a.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-3"
-  }, a.llmReview.narrative), a.llmReview.studentImpacts && a.llmReview.studentImpacts.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, auditText(a.llmReview.narrative)), a.llmReview.studentImpacts && a.llmReview.studentImpacts.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
@@ -1424,9 +1424,9 @@ function AccuracySection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " Fact-checker review (AI)"), a.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " Fact-checker review (AI)"), auditText(a.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-3"
-  }, a.llmReview.narrative), a.llmReview.claimsToVerify && a.llmReview.claimsToVerify.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, auditText(a.llmReview.narrative)), a.llmReview.claimsToVerify && a.llmReview.claimsToVerify.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
@@ -1538,9 +1538,9 @@ function DifferentiationSection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " UDL specialist review (AI)"), d.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " UDL specialist review (AI)"), auditText(d.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2"
-  }, d.llmReview.narrative), d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, auditText(d.llmReview.narrative)), d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mb-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
@@ -1613,7 +1613,7 @@ function CognitiveLoadSection(p) {
       key: i,
       className: "flex items-center justify-between gap-2"
     }, /*#__PURE__*/React.createElement("span", null, s.label), /*#__PURE__*/React.createElement("span", {
-      className: 'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-400 italic')
+      className: 'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-600 italic')
     }, s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'));
   }))), c.recommendations && c.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-amber-50 border border-amber-200 rounded mb-3"
@@ -1631,9 +1631,9 @@ function CognitiveLoadSection(p) {
     className: "text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🤖"), " Pacing review (AI)"), c.llmReview.narrative && /*#__PURE__*/React.createElement("p", {
+  }, "🤖"), " Pacing review (AI)"), auditText(c.llmReview.narrative) && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-900 mb-2"
-  }, c.llmReview.narrative), c.llmReview.specificAdjustments && c.llmReview.specificAdjustments.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, auditText(c.llmReview.narrative)), c.llmReview.specificAdjustments && c.llmReview.specificAdjustments.length > 0 && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-indigo-800 mb-1"
   }, "Specific adjustments:"), /*#__PURE__*/React.createElement("ul", {
     className: "list-disc ml-5 text-sm text-indigo-900 space-y-1"
@@ -2144,7 +2144,7 @@ function ExecutiveSummary(p) {
     onClick: function () {
       p.onGeneratePreCheck(topRecs);
     },
-    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
+    className: "flex-shrink-0 px-4 py-2 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2",
     title: "Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers."
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"

@@ -50,7 +50,7 @@ function SocraticChat({
   const RefreshCw = window.RefreshCw || noop;
   const Send = window.Send || noop;
   const _container = chatStyles.container || "bg-white border-2 border-teal-500 shadow-2xl";
-  const _header = chatStyles.header || "bg-teal-600 text-white";
+  const _header = chatStyles.header || "bg-teal-700 text-white";
   const _body = chatStyles.body || "bg-slate-50";
   const _modelBubble = chatStyles.modelBubble || "bg-white text-slate-700 border border-slate-400";
   const _userBubble = chatStyles.userBubble || "bg-teal-700 text-white";
@@ -150,7 +150,7 @@ function SocraticChat({
         "aria-label": t("socratic.title")
       },
       socraticMessages.map((msg, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, /* @__PURE__ */ React.createElement("div", { className: `max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === "user" ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}` }, msg.role === "user" ? msg.text : renderFormattedText(msg.text)))),
-      isSocraticThinking && /* @__PURE__ */ React.createElement("div", { className: "flex items-start", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: `${_thinkingBubble} p-2 rounded-xl rounded-bl-none text-xs italic flex items-center gap-1 shadow-sm` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin", "aria-hidden": "true" }), " ", t("socratic.thinking")))
+      isSocraticThinking && /* @__PURE__ */ React.createElement("div", { className: "flex items-start", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: `${_thinkingBubble} p-2 rounded-xl rounded-bl-none text-xs italic flex items-center gap-1 shadow-sm` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("socratic.thinking")))
     ),
     /* @__PURE__ */ React.createElement("form", { className: `p-3 ${_inputArea} flex gap-2 shrink-0`, onSubmit: handleSubmitForm }, /* @__PURE__ */ React.createElement(
       "button",
@@ -200,7 +200,7 @@ function SocraticChat({
         disabled: !socraticInput.trim() || isSocraticThinking,
         className: `p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`
       },
-      isSocraticThinking ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 16, "aria-hidden": "true" })
+      isSocraticThinking ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 16, "aria-hidden": "true" })
     ))
   );
 }

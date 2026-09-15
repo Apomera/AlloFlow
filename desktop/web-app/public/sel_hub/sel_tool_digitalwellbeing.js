@@ -4107,7 +4107,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
 
       // Self-Check state
       var scAnswers     = d.scAnswers || {};            // { questionId: 0..3 }
-      var scQuestionIdx = d.scQuestionIdx != null ? d.scQuestionIdx : 0;
+      var scQuestionIdx = (Number.isInteger(d.scQuestionIdx) && d.scQuestionIdx >= 0 && d.scQuestionIdx < SELF_CHECK_QUESTIONS.length) ? d.scQuestionIdx : 0;
       var scShowResults = !!d.scShowResults;
 
       // Toolkit state
@@ -5609,7 +5609,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
       // Tab 5 — When You're Struggling (Crisis)
       // ─────────────────────────────────────────────
       function addAdult() {
-        if (!newAdultName || !newAdultName.trim()) return;
+        if (!newAdultName || !newAdultName.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
         var na = trustedAdults.concat([{ name: newAdultName.trim(), role: newAdultRole.trim() || 'trusted adult' }]);
         upd({ trustedAdults: na, newAdultName: '', newAdultRole: '' });
         if (announceToSR) announceToSR('Added ' + newAdultName + ' to your circle');

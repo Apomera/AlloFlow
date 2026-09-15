@@ -714,7 +714,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var webglErrState = useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
-      var tab = d.tab || 'sonar';
+      // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+      // id this build does not know matched NONE of them: the tool rendered its
+      // header and tab strip over an empty body -- a dead end that looks functional.
+      // `|| 'sonar'` only catches null/empty. Allow-list the ids that actually have a
+      // branch. Declared here, at the READ site, because any existing tab-id array
+      // is assigned further down and `var` hoists the declaration, not the value.
+      var TAB_IDS = ['biology', 'cave3d', 'doppler', 'ecology', 'sonar', 'sweepHunt', 'waves'];
+      var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'sonar';
       var TABS = [
         { id: 'sonar', label: t('stem.echolocation.sonar_vision', 'Sonar Vision'), icon: '\uD83E\uDD87' },
         { id: 'cave3d', label: t('stem.echolocation.3d_cave', '3D Cave'), icon: '\uD83D\uDD26' },

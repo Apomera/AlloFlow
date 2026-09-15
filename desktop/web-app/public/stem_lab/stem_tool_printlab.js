@@ -501,6 +501,11 @@
   function PrintPreview(props) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), controllerRef = React.useRef(null);
+    // Fullscreen stage: the whole preview section, so the rotate / zoom / reset
+    // buttons come with the model. The flag follows the stage's marker because
+    // Escape leaves fullscreen without passing through the button.
+    var fsStageRef = React.useRef(null);
+    var _fs = React.useState(false), isFs = _fs[0], setIsFs = _fs[1];
     var _status = React.useState('loading'), status = _status[0], setStatus = _status[1];
     var signature = [props.format, props.unitMm, props.revision, props.glbRoot ? 'glb' : '', props.bytes ? props.bytes.byteLength : 0].join('|');
 
@@ -593,8 +598,30 @@
       };
     }, [signature, props.recipe, props.bytes, props.glbRoot, props.ready]);
 
+    React.useEffect(function () {
+      var el = fsStageRef.current;
+      if (!el || typeof MutationObserver !== 'function') return;
+      var sync = function () {
+        setIsFs(!!(el.hasAttribute('data-allo-fullscreen-active')
+          || document.fullscreenElement === el
+          || document.webkitFullscreenElement === el));
+      };
+      var mo = new MutationObserver(sync);
+      mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+      document.addEventListener('fullscreenchange', sync);
+      document.addEventListener('webkitfullscreenchange', sync);
+      sync();
+      return function () {
+        mo.disconnect();
+        document.removeEventListener('fullscreenchange', sync);
+        document.removeEventListener('webkitfullscreenchange', sync);
+      };
+    }, []);
+
     function useController(method, value) { return function () { var c = controllerRef.current; if (c && c[method]) c[method](value); }; }
-    return h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-950 p-3', 'aria-labelledby': 'print-lab-preview-title' },
+    return h('section', { ref: fsStageRef, 'data-allo-fs-stage': 'true',
+      className: 'rounded-2xl border border-slate-700 bg-slate-950 p-3' + (isFs ? ' flex flex-col' : ''),
+      'aria-labelledby': 'print-lab-preview-title' },
       h('div', { className: 'mb-2 flex flex-wrap items-center justify-between gap-2' },
         h('div', null,
           h('h3', { id: 'print-lab-preview-title', className: 'text-sm font-black text-white' }, '3D preview'),
@@ -605,10 +632,24 @@
           h('button', { type: 'button', onClick: useController('rotate', Math.PI / 8), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_rotate_model_right', 'Rotate model right') }, '↷'),
           h('button', { type: 'button', onClick: useController('zoom', 0.82), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_zoom_preview_in', 'Zoom preview in') }, '+'),
           h('button', { type: 'button', onClick: useController('zoom', 1.22), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white', 'aria-label': __alloT('stem.printlab.a11y_zoom_preview_out', 'Zoom preview out') }, '−'),
-          h('button', { type: 'button', onClick: useController('reset'), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white' }, 'Reset')
+          h('button', { type: 'button', onClick: useController('reset'), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white' }, 'Reset'),
+          // Sits with the other view controls rather than floating over the model,
+          // so it is reachable in the same tab order and never covers the preview.
+          h('button', {
+            type: 'button',
+            onClick: function () { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(fsStageRef.current); },
+            'aria-pressed': isFs ? 'true' : 'false',
+            'aria-label': isFs
+              ? __alloT('stem.printlab.exit_fullscreen', 'Exit fullscreen 3D preview (Escape)')
+              : __alloT('stem.printlab.enter_fullscreen', 'View the 3D preview fullscreen'),
+            className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white'
+          }, h('span', { 'aria-hidden': 'true' }, isFs ? '✕' : '⛶'))
         )
       ),
-      h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'printlab-preview-desc', className: 'block h-[360px] w-full rounded-xl bg-[#07111f]', 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') }),
+      h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'printlab-preview-desc',
+        // h-[360px] is right in the page; in fullscreen it would leave the model
+        // the same size in a screen-tall box, so the canvas takes the free space.
+        className: 'block w-full rounded-xl bg-[#07111f] ' + (isFs ? 'flex-1 min-h-0' : 'h-[360px]'), 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') }),
       h('p', { id: 'printlab-preview-desc', className: 'sr-only' }, __alloT('stem.printlab.a11y_preview_static_description', 'This preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.'))
     );
   }

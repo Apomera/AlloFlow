@@ -491,6 +491,14 @@
   // richer focus styles still win: theirs load later and at higher specificity.
   st.textContent += '[data-stem-tool-shell] :is(button,a,input,select,textarea,summary,[role=tab],[role=button],[role=slider],[tabindex]):focus-visible{outline:3px solid currentColor;outline-offset:2px}' +
     '@media (prefers-reduced-motion:reduce){[data-stem-tool-shell] *,[data-stem-tool-shell] *::before,[data-stem-tool-shell] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}';
+  // Fullscreen sizing floor. Most STEM stages carry a fixed or clamped height that
+  // is right in the page - 260px, clamp(360px,52vw,460px), maxHeight 480px - and
+  // which, left alone, makes "fullscreen" a small picture centred in black. The
+  // marker attribute __alloStemFS sets is the one thing every fullscreen stage has
+  // in common, so the override lives here rather than in 60 separate inline styles.
+  // Only the stage itself is touched; what a tool lays out inside it is its own.
+  st.textContent += '[data-allo-fullscreen-active]{max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important}' +
+    '[data-allo-fullscreen-active]>canvas,[data-allo-fullscreen-active]>div>canvas{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important}';
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -675,6 +683,48 @@
           }
           _stemFsEnter(el);
         } catch (e) { try { if (!el.__alloFsOn) _stemFsEnter(el); } catch (e2) {} }
+      };
+    }
+
+    // Fullscreen button binder for tools that hold no React state.
+    // Roughly half the STEM tools keep their state in ctx.toolData and declare no
+    // hooks, so they cannot re-render a button label from a useState flag. Without
+    // this their fullscreen button would keep saying "Fullscreen" while the tool
+    // already filled the screen, and a screen-reader user would have no way to tell
+    // the state at all. __alloStemFsBind(btn, stage) toggles the stage, then keeps
+    // the button's accessible name, aria-pressed and glyph in step with the stage's
+    // marker attribute - including when Escape leaves fullscreen without passing
+    // through the click handler. Labels arrive already translated via data-fs-in /
+    // data-fs-out, so this helper never has to know about i18n.
+    if (typeof window !== 'undefined' && !window.__alloStemFsBind) {
+      window.__alloStemFsBind = function (btn, stage) {
+        if (!btn || !stage || btn.__alloFsBound === stage) return;
+        btn.__alloFsBound = stage;
+        var labelIn = btn.getAttribute('data-fs-in') || 'Exit fullscreen (Esc)';
+        var labelOut = btn.getAttribute('data-fs-out') || 'Fullscreen';
+        var sync = function () {
+          var on = stage.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === stage
+            || document.webkitFullscreenElement === stage;
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+          btn.setAttribute('aria-label', on ? labelIn : labelOut);
+          btn.setAttribute('title', on ? labelIn : labelOut);
+          var glyph = btn.firstElementChild;
+          if (glyph) glyph.textContent = on ? '✕' : '⛶';
+        };
+        try {
+          var mo = new MutationObserver(sync);
+          mo.observe(stage, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+          document.addEventListener('fullscreenchange', sync);
+          document.addEventListener('webkitfullscreenchange', sync);
+        } catch (e) {}
+        btn.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (typeof window.__alloStemFS === 'function') window.__alloStemFS(stage);
+          sync();
+        });
+        sync();
       };
     }
 

@@ -1166,6 +1166,8 @@
     var data = props.data;
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
+    // Model scalars are rendered as React children below; a non-string would crash the lane.
+    var aiScalarText = primitives.aiScalarText || function (v) { return typeof v === 'string' ? v : (v && typeof v === 'object' && !Array.isArray(v) && typeof v.text === 'string' ? v.text : (v == null || typeof v === 'object' ? '' : String(v))); };
     if (!data) return null;
     return (
       <div role="status" aria-live="polite" style={{
@@ -1224,8 +1226,8 @@
                 </div>
               );
             })}
-            {data.entities_question && <p style={{ marginTop: '6px', fontSize: '12px', color: '#1e293b' }}>{data.entities_question}</p>}
-            {data.relationships_question && <p style={{ marginTop: '4px', fontSize: '12px', color: '#1e293b' }}>{data.relationships_question}</p>}
+            {data.entities_question && <p style={{ marginTop: '6px', fontSize: '12px', color: '#1e293b' }}>{aiScalarText(data.entities_question)}</p>}
+            {data.relationships_question && <p style={{ marginTop: '4px', fontSize: '12px', color: '#1e293b' }}>{aiScalarText(data.relationships_question)}</p>}
           </div>
         )}
         {another && (

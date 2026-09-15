@@ -672,17 +672,17 @@ window.SelHub = window.SelHub || {
         var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
         // Check-in state
-        var checkIns       = d.checkIns || [];
+        var checkIns       = (Array.isArray(d.checkIns) ? d.checkIns : []);
         var ciMood         = d.ciMood != null ? d.ciMood : null;
         var ciEnergy       = recordedEnergy({ energy: d.ciEnergy });
         var ciThoughts     = d.ciThoughts || '';
-        var ciTriggers     = d.ciTriggers || [];
+        var ciTriggers     = (Array.isArray(d.ciTriggers) ? d.ciTriggers : []);
         var ciGratitude    = d.ciGratitude || '';
 
         // Journal state
         var journalEntries = d.journalEntries || [];
         var jPromptIdx     = d.jPromptIdx || 0;
-        var jText          = d.jText || '';
+        var jText          = (typeof d.jText === 'string' ? d.jText : '');
         var jViewingPast   = d.jViewingPast || false;
         var jRevision      = d.jRevision || null;
         var journalFocusRequest = React.useRef(null);
@@ -998,7 +998,7 @@ window.SelHub = window.SelHub || {
             ),
             h('p', { style: { fontSize: 14, lineHeight: 1.6, color: _jouFg('#cbd5e1') } }, 'Choose a mood only if one fits. Feelings can be mixed or hard to name. Energy and all details are optional; you do not need to explain or feel differently.'),
             h('button', { style: Object.assign({}, journalButton, { width: '100%', marginBottom: 12 }), onClick: function() { journalFocus('sel-journal-entry'); upd({ activeTab: 'journal', letterMode: null, letterViewingPast: false, jViewingPast: false, jNotice: 'Check-in skipped. No entry was added. Any check-in choices stay in this activity until you return or clear them.' }); } }, 'Skip check-in and write'),
-            h('p', { id: 'sel-checkin-status', role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#e2e8f0') } }, d.ciNotice || ''),
+            h('p', { id: 'sel-checkin-status', role: 'status', 'aria-live': 'polite', style: { fontSize: 14, lineHeight: 1.5, color: _jouFg('#e2e8f0') } }, (typeof d.ciNotice === 'string' ? d.ciNotice : '')),
             streak > 0 && h('div', { style: { textAlign: 'center', marginBottom: 12, fontSize: 12, color: _jouFg('#f59e0b') } },
               '\uD83D\uDD25 ' + streak + '-day streak!'
             ),

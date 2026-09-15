@@ -1137,7 +1137,7 @@ const WS_CORE = createWordSoundsCore();
         return (
             <div ref={modalRootRef} tabIndex={-1} className="fixed inset-0 z-[400] bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={T('word_sounds.voice_pack_dialog_label', 'Phoneme Voice Pack editor')}>
                 <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
-                    <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white">
+                    <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-violet-700 to-purple-700 text-white">
                         <div>
                             <h2 className="text-lg font-black flex items-center gap-2">🎙️ {T('word_sounds.voice_pack_title', 'Voice Pack: record your own sounds')}</h2>
                             <p className="text-xs text-white/80">{recordedCount} / {allKeys.length} {T('word_sounds.voice_pack_recorded', 'sounds recorded')}</p>
@@ -1150,7 +1150,7 @@ const WS_CORE = createWordSoundsCore();
                             {lib.packs.map((p) => <option key={p.id} value={p.id}>{(p.kind === 'student-voice' ? '🧒 ' : '🎓 ') + (p.name || 'Untitled') + (p.studentName ? ': ' + p.studentName : '')}</option>)}
                         </select>
                         <button type="button" onClick={newPack} className="px-2 py-1 rounded-lg bg-white border border-slate-300 font-bold text-slate-600 hover:bg-slate-100">➕ {T('word_sounds.voice_pack_new', 'New')}</button>
-                        <button type="button" onClick={deletePack} disabled={lib.packs.length <= 1} className={`px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? 'text-slate-300 border-slate-200 cursor-not-allowed' : 'text-rose-600 border-rose-200 hover:bg-rose-50'}`}>🗑️ {T('word_sounds.voice_pack_delete', 'Delete')}</button>
+                        <button type="button" onClick={deletePack} disabled={lib.packs.length <= 1} className={`px-2 py-1 rounded-lg border font-bold ${lib.packs.length <= 1 ? 'text-slate-300 border-slate-200 cursor-not-allowed' : 'text-rose-800 border-rose-200 hover:bg-rose-50'}`}>🗑️ {T('word_sounds.voice_pack_delete', 'Delete')}</button>
                         {isStudent ? <input type="text" value={pack.studentName || ''} onChange={(e) => setStudentName(e.target.value)} placeholder={T('word_sounds.voice_pack_student_name', 'Student name (optional)')} aria-label={T('word_sounds.voice_pack_student_name_label', 'Student name')} className="border border-slate-300 rounded-lg px-2 py-1 text-xs ml-auto min-w-[120px]" /> : null}
                     </div>
                     <div className="px-5 py-2.5 border-b border-slate-200 flex items-center gap-3 flex-wrap text-xs">
@@ -1175,7 +1175,7 @@ const WS_CORE = createWordSoundsCore();
                         <div className="mx-5 mt-3 p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-xs text-amber-900">
                             <div className="font-bold mb-1">⚠️ {T('word_sounds.voice_pack_consent_title', 'Recording a student voice')}</div>
                             <p className="mb-2">{T('word_sounds.voice_pack_consent_body', "A student's voice recording is a confidential, biometric-adjacent record. It stays on this device, is never uploaded by this tool (the AI check, if you turn it on, is the only thing that sends a clip out), and you can delete it any time. Confirm you have permission to record this student.")}</p>
-                            <button type="button" onClick={giveConsent} className="px-3 py-1.5 rounded-lg bg-amber-500 text-white font-bold hover:bg-amber-600 transition-colors">{T('word_sounds.voice_pack_consent_ok', 'I have permission, start recording')}</button>
+                            <button type="button" onClick={giveConsent} className="px-3 py-1.5 rounded-lg bg-amber-700 text-white font-bold hover:bg-amber-800 transition-colors">{T('word_sounds.voice_pack_consent_ok', 'I have permission, start recording')}</button>
                         </div>
                     ) : null}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1255,7 +1255,7 @@ const WS_CORE = createWordSoundsCore();
                                                     {has ? (
                                                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                                             {hasRef ? <button type="button" onClick={() => playCompare(key)} className="text-[10px] font-bold text-amber-700 hover:underline">🔁 {T('word_sounds.voice_pack_compare', 'compare')}</button> : null}
-                                                            <span className="text-[10px] text-slate-400">{T('word_sounds.voice_pack_me', 'me:')}</span>
+                                                            <span className="text-[10px] text-slate-600">{T('word_sounds.voice_pack_me', 'me:')}</span>
                                                             <button type="button" onClick={() => rateSelf(key, 'good')} aria-label={T('word_sounds.voice_pack_self_good', 'I think {label} sounds right', { label: label })} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'good' ? '' : 'opacity-30'} hover:opacity-100`}>😀</button>
                                                             <button type="button" onClick={() => rateSelf(key, 'retry')} aria-label={T('word_sounds.voice_pack_self_retry', 'I want to try {label} again', { label: label })} className={`text-sm leading-none transition-opacity ${selfChecks[key] === 'retry' ? '' : 'opacity-30'} hover:opacity-100`}>🤔</button>
                                                             {checkBadge(key)}
@@ -1263,7 +1263,7 @@ const WS_CORE = createWordSoundsCore();
                                                     ) : null}
                                                 </div>
                                                 <button type="button" onClick={() => playReference(key)} disabled={!hasRef} aria-label={T('word_sounds.voice_pack_hear_model', 'Hear the model sound {label}', { label: label })} title={T('word_sounds.voice_pack_hear_model_title', 'Hear the model (default) sound')} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRef ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
-                                                <button type="button" onClick={() => startRecording(key)} disabled={!consentOk} aria-label={rec ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? 'bg-red-500 text-white animate-pulse motion-reduce:animate-none' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{rec ? '⏹' : '🎙️'}</button>
+                                                <button type="button" onClick={() => startRecording(key)} disabled={!consentOk} aria-label={rec ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${rec ? 'bg-red-600 text-white animate-pulse motion-reduce:animate-none' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{rec ? '⏹' : '🎙️'}</button>
                                                 <button type="button" onClick={() => playClip(key)} disabled={!has} aria-label={T('word_sounds.voice_pack_play_recording', 'Play your recording of {label}', { label: label })} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${has ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
                                                 <button type="button" onClick={() => clearClip(key)} disabled={!has} aria-label={T('word_sounds.voice_pack_clear', 'Clear {label}', { label: label })} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${has ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
                                             </div>
@@ -1287,7 +1287,7 @@ const WS_CORE = createWordSoundsCore();
                                                 {slot.hint ? <div className="text-[10px] text-slate-500 leading-snug">{slot.hint}</div> : null}
                                             </div>
                                             <button type="button" onClick={() => playInstrReference(slot.id)} disabled={!hasRefI} aria-label={T('word_sounds.voice_pack_hear_default_for', 'Hear the default for {label}', { label: slot.label })} title={T('word_sounds.voice_pack_hear_default', 'Hear the default')} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasRefI ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>👂</button>
-                                            <button type="button" onClick={() => startRecording(slot.id, { instr: true, label: slot.label })} disabled={!consentOk} aria-label={recI ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: slot.label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: slot.label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? 'bg-red-500 text-white animate-pulse motion-reduce:animate-none' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{recI ? '⏹' : '🎙️'}</button>
+                                            <button type="button" onClick={() => startRecording(slot.id, { instr: true, label: slot.label })} disabled={!consentOk} aria-label={recI ? T('word_sounds.voice_pack_stop_recording', 'Stop recording {label}', { label: slot.label }) : T('word_sounds.voice_pack_record', 'Record {label}', { label: slot.label })} className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors ${recI ? 'bg-red-600 text-white animate-pulse motion-reduce:animate-none' : (consentOk ? 'bg-violet-100 text-violet-700 hover:bg-violet-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed')}`}>{recI ? '⏹' : '🎙️'}</button>
                                             <button type="button" onClick={() => playInstrClip(slot.id)} disabled={!hasI} aria-label={T('word_sounds.voice_pack_play_recording', 'Play your recording of {label}', { label: slot.label })} className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${hasI ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed'}`}>🔊</button>
                                             <button type="button" onClick={() => clearInstrClip(slot.id)} disabled={!hasI} aria-label={T('word_sounds.voice_pack_clear', 'Clear {label}', { label: slot.label })} className={`w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors ${hasI ? 'text-rose-500 hover:bg-rose-50' : 'text-slate-200 cursor-not-allowed'}`}>🗑️</button>
                                         </div>
@@ -2978,7 +2978,7 @@ const WS_CORE = createWordSoundsCore();
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in">
                 <div ref={setupDialogRef} role="dialog" aria-modal="true" aria-label={tf('word_sounds.setup_dialog_label', 'Word Sounds setup')} tabIndex={-1} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-400 focus:outline-none">
-                    <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0">
+                    <div className="bg-gradient-to-r from-violet-700 to-indigo-700 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
                                 <Sparkles size={32} className="text-yellow-300 animate-pulse motion-reduce:animate-none" />
@@ -3014,7 +3014,7 @@ const WS_CORE = createWordSoundsCore();
                             <button type="button"
                                 aria-label={t('common.show')}
                                 data-help-key="ws_gen_review_btn" onClick={onShowReview}
-                                className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
+                                className="px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold text-sm flex items-center gap-2 transition-colors shadow-sm"
                             >
                                 <Eye size={14} />
                                 Review Words
@@ -3056,7 +3056,7 @@ const WS_CORE = createWordSoundsCore();
                                                         }
                                                     }).catch(() => { window.__kokoroTTSDownloading = false; });
                                                 }}
-                                                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs transition-colors shadow-sm"
+                                                className="px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-bold text-xs transition-colors shadow-sm"
                                             >
                                                 Use Kokoro Voice
                                             </button>
@@ -3089,7 +3089,7 @@ const WS_CORE = createWordSoundsCore();
                                     <button type="button" data-help-key="ws_gen_mode_assessment"
                                         onClick={() => { setSessionType('assessment'); setIncludeLessonPlan(false); }}
                                         aria-pressed={sessionType === 'assessment'}
-                                        className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'assessment' ? 'bg-amber-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+                                        className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'assessment' ? 'bg-amber-700 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                                         📊 {tf('word_sounds.mode_assessment', 'Assessment')}
                                     </button>
                                 </div>
@@ -3335,7 +3335,7 @@ const WS_CORE = createWordSoundsCore();
                                             const c = countSyllables(w);
                                             return c >= syllableRange.min && c <= syllableRange.max;
                                         }).length === 0 && (
-                                            <p className="text-red-500 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100">
+                                            <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100">
                                                 ⚠️ No words match range ({syllableRange.min}-{syllableRange.max}). Adjust Syllables or range.
                                             </p>
                                         )}
@@ -3378,7 +3378,7 @@ const WS_CORE = createWordSoundsCore();
                                                         input.value = '';
                                                     }
                                                 }}
-                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-colors"
+                                                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold rounded-lg transition-colors"
                                             >
                                                 + Add
                                             </button>
@@ -3568,9 +3568,9 @@ const WS_CORE = createWordSoundsCore();
                                     disabled={selectedIndices.size === 0 || isProcessing}
                                     className={`px-8 py-4 rounded-2xl font-black text-xl shadow-xl transition-all flex items-center gap-3 ${
                                         selectedIndices.size > 0 && !isProcessing
-                                            ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110'
+                                            ? 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white hover:scale-105 active:scale-95 hover:shadow-2xl hover:brightness-110'
                                             : isProcessing
-                                                ? 'bg-violet-400 text-white cursor-wait'
+                                                ? 'bg-violet-600 text-white cursor-wait'
                                                 : 'bg-slate-100 text-slate-600 cursor-not-allowed'
                                     }`}
                                 >

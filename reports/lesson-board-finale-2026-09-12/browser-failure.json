@@ -1,0 +1,90 @@
+{
+  "message": "locator.click: Target crashed \nBrowser logs:\n\n<launching> C:\\Users\\cabba\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-CY1yJ5 --remote-debugging-pipe --no-startup-window\n<launched> pid=22444\n[pid=22444][err] [0915/175514.182:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175518.766:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175521.439:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175525.056:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175526.394:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175530.416:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175533.296:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175538.029:INFO:CONSOLE:29905] \"%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold\", source: desktop/web-app/node_modules/react-dom/umd/react-dom.development.js (29905)\n[pid=22444][err] [0915/175538.399:ERROR:content\\browser\\network_service_instance_impl.cc:703] Network service crashed or was terminated, restarting service.\n[pid=22444][err] [0915/175538.465:ERROR:content\\browser\\gpu\\gpu_process_host.cc:999] GPU process exited unexpectedly: exit_code=143\n[pid=22444][err] [0915/175538.465:WARNING:content\\browser\\gpu\\gpu_process_host.cc:1441] The GPU process has crashed 1 time(s)\nCall log:\n\u001b[2m  - waiting for locator('[data-board-play-solo]')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-board-play-solo=\"true\">Review completed solo board</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\check_lesson_board_finale.cjs:11:2068",
+  "results": [
+    {
+      "width": 1280,
+      "scans": [
+        {
+          "label": "teacher detects revealing visual coverage",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "balanced text choices and separate question clue",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "teacher visual challenge preview",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "guided first exploration",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "visual response by keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "text equivalent and guide restored",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "first build complete",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture sequence with keyboard",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "picture configuration choices",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed visual expedition",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "finale correction feedback",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "completed written finale",
+          "violations": [],
+          "overflow": false
+        },
+        {
+          "label": "communication-tool finale",
+          "violations": [],
+          "overflow": false
+        }
+      ],
+      "reviewedVisualActivities": 3,
+      "visualBalanceRepair": true,
+      "finaleCorrection": true,
+      "finaleReload": true,
+      "finaleExport": true,
+      "oralFinale": true,
+      "gameScoresUnchanged": true,
+      "backupRoundtrip": true,
+      "guideReload": true,
+      "pictureChoiceKeyboard": true,
+      "pictureSequenceKeyboard": true,
+      "textModeSameResponse": true,
+      "firstBuildComplete": true,
+      "expeditionComplete": true
+    }
+  ],
+  "errors": []
+}

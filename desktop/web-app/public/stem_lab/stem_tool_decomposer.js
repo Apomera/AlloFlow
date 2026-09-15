@@ -748,7 +748,14 @@
         var sel = MATERIALS.find(function(m) { return m.name === (d.selected || 'Water'); }) || MATERIALS[0];
         var totalAtoms = sel.elements.reduce(function(s, e) { return s + e.count; }, 0);
         var decomposed = d.decomposed || false;
-        var tab = d.tab || 'explore';
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'explore'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['decompHunt', 'explore', 'quiz', 'reactions', 'scenes', 'states', 'tutor', 'visualize'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'explore';
         var quizMode = d.quizMode || false;
         var quizQ = d.quizQ || null;
         var quizScore = d.quizScore || 0;
@@ -2010,7 +2017,20 @@
                 ) : null,
 
                 // Scene visual — all objects always visible
-                h('div', { className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
+                // The scene visual is the tool's main picture: the canvas plus the
+                // labelled organisms layered over it. Fullscreen takes the whole
+                // wrapper so those labels travel with the drawing.
+                h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                  className: 'relative rounded-2xl border-2 overflow-hidden mb-4', style: { borderColor: scene.accent, background: scene.bgColor, minHeight: '320px', boxShadow: '0 4px 20px ' + scene.accent + '15' } },
+                  h('button', {
+                    type: 'button',
+                    'data-allo-fs-btn': 'true',
+                    'aria-pressed': 'false',
+                    'aria-label': __alloT('stem.decomposer.enter_fullscreen', 'View the decomposer scene fullscreen'),
+                    'data-fs-out': __alloT('stem.decomposer.enter_fullscreen', 'View the decomposer scene fullscreen'),
+                    'data-fs-in': __alloT('stem.decomposer.exit_fullscreen', 'Exit fullscreen decomposer scene (Escape)'),
+                    style: { position: 'absolute', top: 8, right: 8, zIndex: 25, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + scene.accent, color: '#f8fafc', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                   // Canvas background
                   h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_visualization', 'Decomposer visualization'), 
                     ref: function(canvas) {

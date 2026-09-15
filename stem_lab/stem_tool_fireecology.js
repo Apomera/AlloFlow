@@ -2145,7 +2145,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         };
 
         // ── State ──
-        var tab = d.tab || 'indigenous';  // 'indigenous' | 'ecosystems' | 'simulator' | 'burnPlan' | 'science' | 'quiz'
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'indigenous'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['beavers', 'burnPlan', 'carbon', 'caseStudies', 'ecosystems', 'game', 'indigenous', 'mosaic', 'quiz', 'regimeHunt', 'science', 'simulator', 'smokeSeeds', 'watershed'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'indigenous';  // 'indigenous' | 'ecosystems' | 'simulator' | 'burnPlan' | 'science' | 'quiz'
         var selectedNation = d.selectedNation || null;
         var selectedEcosystem = d.selectedEcosystem || null;
         var selectedScience = d.selectedScience || null;
@@ -2890,7 +2897,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }, t('stem.fireecology.three_d_fallback', '3D was unavailable, so the accessible 2D view is active. All simulation results are preserved.')) : null,
 
               simViewMode === '3d'
-                ? h('figure', { style: { margin: 0 } },
+                ? h('figure', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { margin: 0, position: 'relative' } },
+                    h('button', {
+                      type: 'button',
+                      'data-allo-fs-btn': 'true',
+                      'aria-pressed': 'false',
+                      'aria-label': t('stem.fireecology.enter_fullscreen', 'View the forest treatment view fullscreen'),
+                      'data-fs-out': t('stem.fireecology.enter_fullscreen', 'View the forest treatment view fullscreen'),
+                      'data-fs-in': t('stem.fireecology.exit_fullscreen', 'Exit fullscreen forest treatment view (Escape)'),
+                      style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                    }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                     h('div', {
                       ref: fireEcology3DViewer.attach,
                       className: 'fireecology-sim-viewer',

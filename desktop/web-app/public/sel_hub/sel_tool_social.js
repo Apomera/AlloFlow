@@ -891,7 +891,7 @@ window.SelHub = window.SelHub || {
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Conversation state
-      var convoIdx       = d.convoIdx || 0;
+      var convoIdx       = (Number.isInteger(d.convoIdx) && d.convoIdx >= 0 ? d.convoIdx : 0);
       var convoRevealed  = d.convoRevealed || false;
       var convoPracticed = d.convoPracticed || 0;
       var convoAiResp    = d.convoAiResp || null;

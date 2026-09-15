@@ -19,7 +19,24 @@
   if (!React) { console.error('[ViewGlossaryModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Image descriptions are tied to the displayed bytes, so replacing an image cannot
+  // A model field the prompt declares as text is not guaranteed to BE text, and React throws
+// "Objects are not valid as a React child" on anything else — which costs the whole panel, not
+// the one value (2026-09-13: one such entry blanked an entire Curriculum Audit). The phonics
+// prompt asks for syllables as ["syl","la","ble"]; if a model answers [{"syllable":"syl"}...]
+// instead, the word popup a student just opened would vanish behind an error card. Render text,
+// flatten a single-text object, and show nothing for anything else. Pure.
+function glossaryAiText(value) {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  const keys = ['syllable', 'text', 'value', 'label', 'part'];
+  for (let i = 0; i < keys.length; i++) {
+    if (typeof value[keys[i]] === 'string' && value[keys[i]].trim()) return value[keys[i]];
+  }
+  return '';
+}
+
+// Image descriptions are tied to the displayed bytes, so replacing an image cannot
 // accidentally retain the previous picture's description. Matches AltText.hashImage.
 function getGlossaryImageAlt(item) {
   if (!item || item.imageDecorative === true || typeof item.imageAlt !== 'string') return '';
@@ -2346,7 +2363,7 @@ function GlossaryView(props) {
           className: "shrink-0"
         });
       } else if (isSelected) {
-        btnClass = "bg-red-500 border-red-400 text-white opacity-80";
+        btnClass = "bg-red-600 border-red-400 text-white opacity-80";
         icon = /*#__PURE__*/React.createElement(XCircle, {
           size: 16,
           className: "shrink-0"
@@ -2534,7 +2551,7 @@ function GlossaryView(props) {
     "aria-label": glossaryProgressLabel,
     className: "bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border-4 border-emerald-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"
+    className: "w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-emerald-200"
   }, /*#__PURE__*/React.createElement(CheckCircle, {
     size: 32
   })), /*#__PURE__*/React.createElement("h3", {
@@ -2626,7 +2643,7 @@ function GlossaryView(props) {
     className: "flex gap-3"
   }, rosterQueue.length > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: advanceRoster,
-    className: "flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-colors"
+    className: "flex-1 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg transition-colors"
   }, "▶ ", glossaryNextLabel, " (", rosterQueue[0], ")"), /*#__PURE__*/React.createElement("button", {
     onClick: closeScreenerResults,
     className: `${rosterQueue.length > 0 ? 'flex-1' : 'w-full'} py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg transition-colors`
@@ -3058,7 +3075,7 @@ function GlossaryView(props) {
       type: "button",
       "aria-label": 'Delete term: ' + item.term,
       onClick: () => handleDeleteGlossaryItem(idx),
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 rounded transition-colors shrink-0",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-800 hover:bg-red-100 rounded transition-colors shrink-0",
       title: t('glossary.tooltips.delete_term')
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 14
@@ -3119,7 +3136,7 @@ function GlossaryView(props) {
       "aria-label": t('common.refresh'),
       onClick: () => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
       disabled: isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx],
-      className: "w-full mb-1.5 text-[11px] bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm",
+      className: "w-full mb-1.5 text-[11px] bg-red-50 text-red-800 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm",
       title: t('glossary.auto_remove_tooltip'),
       "data-help-key": "glossary_remove_words"
     }, isGeneratingTermImage[entryKey] || isGeneratingTermImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -4002,7 +4019,7 @@ function GlossaryView(props) {
       "aria-hidden": "true"
     }, "•"), /*#__PURE__*/React.createElement("span", {
       className: "bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm"
-    }, syl));
+    }, glossaryAiText(syl)));
   }))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-red-600 text-xs font-bold py-4"
   }, t('glossary.popups.failed')), /*#__PURE__*/React.createElement("div", {

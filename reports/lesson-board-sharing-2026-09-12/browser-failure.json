@@ -1,0 +1,5 @@
+{
+  "message": "page.evaluate: Target page, context or browser has been closed\n    at scan (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\check_lesson_board_sharing.cjs:6:138)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\check_lesson_board_sharing.cjs:17:1446",
+  "results": [],
+  "errors": []
+}

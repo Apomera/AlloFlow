@@ -183,7 +183,15 @@ describe('Arc City — The Gauntlet (L10): adaptive, integrative capstone (§11)
   it('describeBoard(L10) is an honest capstone summary (no geometry it does not have)', () => {
     const s = describeBoard(levelById('L10'));
     expect(s).toMatch(/adaptive/i);
-    expect(s).toMatch(/every function family/i);
+    // It must name the families it sequences AND scope that to what the player
+    // has actually solved. gauntletOrder() only ever includes families solved
+    // standalone (>= 4 of 7), so a core-path student who skips the above-grade
+    // reach levels completes a genuine 4-of-7 run -- the unqualified "every
+    // function family" this once asserted was an overclaim, not the honest
+    // summary the test name promises.
+    expect(s).toMatch(/function family/i);
+    expect(s, 'the capstone must not claim families the run does not include')
+      .toMatch(/you have solved|you had solved|already solved/i);
     expect(s).not.toMatch(/node to light is at x undefined/); // no crash on the empty stub
   });
 

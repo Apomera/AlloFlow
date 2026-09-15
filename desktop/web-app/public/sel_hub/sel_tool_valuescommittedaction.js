@@ -203,7 +203,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
       function coreCount() { return Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] === 'core'; }).length; }
       function actionCount() {
         var total = 0;
-        Object.keys(d.actions || {}).forEach(function(k) { total += (d.actions[k] || []).length; });
+        var _acts = (d.actions && typeof d.actions === 'object' && !Array.isArray(d.actions)) ? d.actions : {};
+        Object.keys(_acts).forEach(function(k) { total += (Array.isArray(_acts[k]) ? _acts[k] : []).length; });
         return total;
       }
 
@@ -211,7 +212,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
         var core = coreCount();
         var done = 0;
         Object.keys(d.actions || {}).forEach(function(k) {
-          (d.actions[k] || []).forEach(function(a) { if (a && a.done) done += 1; });
+          (Array.isArray((d.actions || {})[k]) ? d.actions[k] : []).forEach(function(a) { if (a && a.done) done += 1; });
         });
         function stat(label, value, color) {
           return h('div', { style: { padding: 10, borderRadius: 8, background: _vcaBg('#0f172a'), border: '1px solid #1e293b' } },
@@ -432,7 +433,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
 
         function addAction(valueId) {
           var input = document.getElementById('vca-action-' + valueId);
-          if (!input || !input.value.trim()) return;
+          if (!input || !input.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var actions = Object.assign({}, (d.actions || {}));
           actions[valueId] = (actions[valueId] || []).concat([{ text: input.value.trim(), done: false }]);
           setVCA({ actions: actions });

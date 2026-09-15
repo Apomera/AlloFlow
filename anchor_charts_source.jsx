@@ -883,7 +883,7 @@ const AnchorChartView = React.memo((props) => {
         <div className="flex flex-wrap items-center gap-2">
           {isTeacherMode && <button type="button"
             onClick={() => setIsEditing((v) => !v)}
-            className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
+            className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
             aria-pressed={isEditing}
             aria-label={isEditing ? 'Finish editing' : 'Edit chart'}
             data-help-key="anchor_chart_edit_toggle"

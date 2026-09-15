@@ -7597,7 +7597,7 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var coachInput  = d.coachInput || '';
       var coachHist   = d.coachHist || [];
       var coachLoad   = d.coachLoad || false;
-      var pledge      = d.pledge || '';
+      var pledge      = (typeof d.pledge === 'string' ? d.pledge : '');
       var pledgeSaved = d.pledgeSaved || false;
       // Practice scenarios state
       var pracIdx     = d.pracIdx != null ? d.pracIdx : 0;
@@ -7610,13 +7610,13 @@ var EXTENDED_REFLECTION_PROMPTS = [
       var afterOpen   = !!d.afterOpen;
       var afterStep   = d.afterStep != null ? d.afterStep : 0;
       // Witness Log state (inside Pledge tab)
-      var witnessLog        = d.witnessLog || [];
-      var wlSaw             = d.wlSaw || '';
-      var wlDid             = d.wlDid || '';
-      var wlNext            = d.wlNext || '';
+      var witnessLog        = (Array.isArray(d.witnessLog) ? d.witnessLog : []);
+      var wlSaw             = (typeof d.wlSaw === 'string' ? d.wlSaw : '');
+      var wlDid             = (typeof d.wlDid === 'string' ? d.wlDid : '');
+      var wlNext            = (typeof d.wlNext === 'string' ? d.wlNext : '');
       // Trusted Adults state (inside Pledge tab)
-      var trustedAdults     = d.trustedAdults || [];
-      var newAdultName      = d.newAdultName || '';
+      var trustedAdults     = (Array.isArray(d.trustedAdults) ? d.trustedAdults : []);
+      var newAdultName      = (typeof d.newAdultName === 'string' ? d.newAdultName : '');
       var newAdultRole      = d.newAdultRole || '';
       // AI Rehearsal state (inside Moves tab)
       var rhShown           = !!d.rhShown;

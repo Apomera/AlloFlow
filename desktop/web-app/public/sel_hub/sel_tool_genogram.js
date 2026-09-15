@@ -169,7 +169,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // TREE — SVG visualization
       // ═══════════════════════════════════════════════════════════
       function renderTree() {
-        var people = d.people || [];
+        var people = (Array.isArray(d.people) ? d.people : []);
         var rels = d.relationships || [];
 
         if (people.length === 0) {
@@ -338,7 +338,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // PEOPLE — add / edit people
       // ═══════════════════════════════════════════════════════════
       function renderPeople() {
-        var people = d.people || [];
+        var people = (Array.isArray(d.people) ? d.people : []);
 
         function startAdd(gen) { setGEN({ addingForGen: gen, editingPersonId: null }); }
         function startEdit(id) { setGEN({ editingPersonId: id, addingForGen: null }); }
@@ -354,7 +354,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
           var yearEl = document.getElementById('gen-year');
           var aliveEl = document.getElementById('gen-alive');
           var notesEl = document.getElementById('gen-notes');
-          if (!nameEl || !nameEl.value.trim()) return;
+          if (!nameEl || !nameEl.value.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
           var entry = {
             name: nameEl.value.trim(),
             shape: shapeEl ? shapeEl.value : 'circle',
@@ -460,7 +460,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // RELATIONSHIPS
       // ═══════════════════════════════════════════════════════════
       function renderRelationships() {
-        var people = d.people || [];
+        var people = (Array.isArray(d.people) ? d.people : []);
         var rels = d.relationships || [];
 
         function nameOf(id) { var p = people.find(function(x) { return x.id === id; }); return p ? p.name : '?'; }
@@ -542,7 +542,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var people = d.people || [];
+        var people = (Array.isArray(d.people) ? d.people : []);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _genFg('#fecdd3'), lineHeight: 1.55 } },

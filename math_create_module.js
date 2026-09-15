@@ -343,7 +343,7 @@
             }).catch(error => { if (assessmentMountedRef.current) addToast('Assessment preparation failed. Please try again.', 'error'); })
               .finally(() => { assessmentRunRef.current = false; if (assessmentMountedRef.current) setAssessmentBusy(false); });
           },
-          className: "flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          className: "flex-1 py-3 bg-gradient-to-r from-indigo-700 to-blue-700 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
         }, /*#__PURE__*/React.createElement(Sparkles, {
           size: 16
         }), assessmentBusy ? " Preparing… (" : assessmentResult?.content.preparation.status === "partial" ? " Retry incomplete sections (" : " Generate All (", assessmentBlocks.reduce((s, b) => s + b.quantity, 0), " problems)"), /*#__PURE__*/React.createElement("button", { "aria-label": "Save to Resources",
@@ -365,7 +365,7 @@
             setHistory(prev => [...prev, stemAssessment]);
             addToast(t('stem.fluency.stem_assessment_saved_to_resources') + assessmentBlocks.length + ' blocks)', 'success');
           },
-          className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
+          className: "py-3 px-5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-xl text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
         }, "\uD83D\uDCBE Save to Resources")))
       : React.createElement("div", {
           className: "space-y-5 max-w-3xl mx-auto animate-in fade-in duration-200"
@@ -402,7 +402,7 @@
           className: "px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-2"
         }, "\u23F1\uFE0F " + (t('stem.fluency.probe_button') || 'Fluency Probe')), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
           onClick: () => setShowAssessmentBuilder(true),
-          className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-purple-200 hover:from-violet-600 hover:to-purple-600 transition-all flex items-center gap-2"
+          className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-700 to-purple-700 text-white shadow-lg shadow-purple-200 hover:from-violet-800 hover:to-purple-800 transition-all flex items-center gap-2"
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4"
         }, /*#__PURE__*/React.createElement("span", {

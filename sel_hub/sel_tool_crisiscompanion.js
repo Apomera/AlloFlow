@@ -1146,7 +1146,7 @@ window.SelHub = window.SelHub || {
       { id: 'spirit',   label: '🌅 Spiritual', color: '#06b6d4' }
     ];
     function save() {
-      if (!form.text.trim()) return;
+      if (!form.text.trim()) { announce('Add a few words first, then press the button again.'); return; }
       var s = Object.assign({ id: cc_id(), addedAt: cc_today(), useCount: 0 }, form);
       setData({ strategies: [s].concat(data.strategies || []) });
       setForm({ text: '', category: 'body', effective: 5 });
@@ -1202,7 +1202,7 @@ window.SelHub = window.SelHub || {
     var fs = R_CC.useState({ name: '', role: '', contact: '', when: '' });
     var form = fs[0]; var setForm = fs[1];
     function add() {
-      if (!form.name.trim()) return;
+      if (!form.name.trim()) { announce('A name is needed before this can be saved.'); return; }
       var c = Object.assign({ id: cc_id() }, form);
       setData({ contacts: [c].concat(data.contacts || []) });
       setForm({ name: '', role: '', contact: '', when: '' });
@@ -1291,7 +1291,7 @@ window.SelHub = window.SelHub || {
     var data = props.data || { items: [] };
     var setData = props.setData;
     var ns = R_CC.useState(''); var newItem = ns[0]; var setNewItem = ns[1];
-    function add() { if (!newItem.trim()) return; setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
+    function add() { if (!newItem.trim()) { announce('Write something first, then press Add.'); return; } setData({ items: [{ id: cc_id(), text: newItem.trim() }].concat(data.items || []) }); setNewItem(''); }
     function remove(id) { setData({ items: (data.items || []).filter(function(i) { return i.id !== id; }) }); }
     var items = data.items || [];
     var random = items.length > 0 ? items[Math.floor(Math.random() * items.length)] : null;
@@ -1856,7 +1856,7 @@ window.SelHub = window.SelHub || {
         var complete = items.length >= current.count;
         var allDone = gStep >= STEPS.length;
         function addItem(text) {
-          if (!text || !text.trim()) return;
+          if (!text || !text.trim()) { announce('Write something first, then press the button again.'); return; }
           var ni = Object.assign({}, gItems);
           ni[sense] = (ni[sense] || []).concat([text.trim()]);
           upd('groundItems', ni);

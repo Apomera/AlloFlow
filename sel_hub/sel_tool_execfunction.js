@@ -355,17 +355,17 @@ window.SelHub = window.SelHub || {
       var soundOn      = d.soundOn != null ? d.soundOn : true;
       var mapAnswers   = d.mapAnswers || {}; // { domainId: [score0, score1] }
       var mapDone      = d.mapDone || false;
-      var initIdx      = d.initIdx || 0;
+      var initIdx      = (Number.isInteger(d.initIdx) && d.initIdx >= 0 ? d.initIdx : 0);
       var futureNote   = d.futureNote || '';
       var savedNotes   = d.savedNotes || [];
       var fiveMinStart = d.fiveMinStart || 0; // timestamp
-      var holdIdx      = d.holdIdx || 0;
+      var holdIdx      = (Number.isInteger(d.holdIdx) && d.holdIdx >= 0 ? d.holdIdx : 0);
       var brainDump    = d.brainDump || '';
       var brainDumps   = d.brainDumps || [];
-      var planGoal     = d.planGoal || '';
+      var planGoal     = (typeof d.planGoal === 'string' ? d.planGoal : '');
       var planDeadline = d.planDeadline || '';
-      var planChunks   = d.planChunks || [''];
-      var timeGameIdx  = d.timeGameIdx || 0;
+      var planChunks   = Array.isArray(d.planChunks) ? d.planChunks : [''];
+      var timeGameIdx  = (Number.isInteger(d.timeGameIdx) && d.timeGameIdx >= 0 ? d.timeGameIdx : 0);
       var timeGuess    = d.timeGuess || '';
       var timeRevealed = d.timeRevealed || false;
       var timeScore    = d.timeScore || 0;
@@ -401,7 +401,7 @@ window.SelHub = window.SelHub || {
         } else if (confirmAction.type === 'remove-habit') {
           upd({
             confirmAction: null,
-            habits: (d.habits || []).filter(function(habit) { return habit.id !== confirmAction.habitId; })
+            habits: ((Array.isArray(d.habits) ? d.habits : [])).filter(function(habit) { return habit.id !== confirmAction.habitId; })
           });
           if (announceToSR) announceToSR('Habit removed.');
           focusExecControl('ef-habits-heading');
@@ -431,7 +431,7 @@ window.SelHub = window.SelHub || {
         var clearing = confirmAction.type === 'clear-distractions';
         var title = clearing ? 'Clear all distraction entries?' : 'Remove this habit?';
         var description = clearing
-          ? 'This permanently deletes all ' + (d.distractions || []).length + ' distraction log entries. This cannot be undone.'
+          ? 'This permanently deletes all ' + ((Array.isArray(d.distractions) ? d.distractions : [])).length + ' distraction log entries. This cannot be undone.'
           : 'This permanently removes “' + (confirmAction.habitLabel || 'this habit') + '” and its tracking history. This cannot be undone.';
         return h('div', {
           id: 'ef-destructive-confirm',
@@ -1091,7 +1091,7 @@ window.SelHub = window.SelHub || {
       // before any intervention.
       // ══════════════════════════════════════════════════════════
       if (activeTab === 'distract') {
-        var distractions = d.distractions || [];
+        var distractions = (Array.isArray(d.distractions) ? d.distractions : []);
         var triggers = [
           { id: 'phone',    label: '📱 Phone',         color: '#ef4444' },
           { id: 'social',   label: '💬 Social pull',   color: '#f59e0b' },
@@ -1230,7 +1230,7 @@ window.SelHub = window.SelHub || {
       // ── HABIT TRACKER — daily check-grid with non-punitive design ──
       // ══════════════════════════════════════════════════════════
       if (activeTab === 'habit') {
-        var habits = d.habits || [];
+        var habits = (Array.isArray(d.habits) ? d.habits : []);
         var todayIso = (function() { var n = new Date(); var y = n.getFullYear(); var m = String(n.getMonth() + 1).padStart(2, '0'); var d2 = String(n.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d2; })();
         async function addHabit() {
           var values = await askExecFunctionForm({
@@ -1305,7 +1305,7 @@ window.SelHub = window.SelHub || {
       // ── DAY PLANNER — drag-to-reorder day blocks ──
       // ══════════════════════════════════════════════════════════
       if (activeTab === 'planner') {
-        var dayBlocks = d.dayBlocks || [];
+        var dayBlocks = (Array.isArray(d.dayBlocks) ? d.dayBlocks : []);
         async function addBlock() {
           var values = await askExecFunctionForm({
             title: 'Add a day-planner block',

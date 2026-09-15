@@ -157,6 +157,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   }
 
   // ═══════════════════════════════════════════
+  // Every graph canvas is authored 600 CSS px wide, and setupHiDPI pins that width inline (style.width), which
+  // outranks the w-full class: on a phone in the STEAM Lab shell the tool scrolled 255 px sideways (measured
+  // 2026-09-15). Fit the logical width to the parent's content box; the draw code already lays out against
+  // canvas._logicalW, so a narrower graph simply redraws narrower. Height is kept so labels stay readable.
+  function fitCanvasWidth(canvas) {
+    var base = canvas._baseW || (canvas._baseW = canvas._logicalW || canvas.width);
+    var parent = canvas.parentElement;
+    if (!parent) return base;
+    var cs = window.getComputedStyle(parent);
+    var avail = parent.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    return avail > 40 ? Math.min(base, Math.floor(avail)) : base;
+  }
   // Canvas rendering functions (module-scoped)
   // ═══════════════════════════════════════════
 
@@ -166,7 +178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawProsodyCurve(canvas, pitchHistory, isDark, modelCurve) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -308,7 +320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPacingGauge(canvas, wpm, gradeLevel, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -411,7 +423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawVolumeMeter(canvas, currentDb, volumeHistory, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -509,7 +521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPauseIndicator(canvas, isPaused, pauseDuration, pauseRatio, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -665,7 +677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawVowelSpace(canvas, vowelMap, currentF1, currentF2, vowelTrail, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -816,7 +828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawIntonationPattern(canvas, patternPoints, studentCurve, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -907,7 +919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawPlaybackProsody(canvas, pitchData, volumeData, playbackProgress, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -1013,7 +1025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawProsodyComparison(canvas, pitchData1, pitchData2, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
@@ -1081,7 +1093,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
   function drawFluencyBarChart(canvas, sessions, isDark) {
     if (!canvas) return;
     if (window.StemLab && window.StemLab.setupHiDPI) {
-      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+      window.StemLab.setupHiDPI(canvas, fitCanvasWidth(canvas), canvas._logicalH || canvas.height);
     }
     var ctx2d = canvas.getContext('2d');
     if (canvas._dpr) ctx2d.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);

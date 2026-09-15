@@ -950,7 +950,7 @@ window.SelHub = window.SelHub || {
       var currentPromptIdx = d.promptIdx || 0;
       var isCircleActive = d.circleActive || false;
       var reflections = d.reflections || [];
-      var aiResponse = d.aiResponse || null;
+      var aiResponse = (typeof d.aiResponse === 'string' ? d.aiResponse : null);
       var aiLoading = d.aiLoading || false;
 
       // ── Rehearsal Role-Play state ──
@@ -1100,7 +1100,7 @@ window.SelHub = window.SelHub || {
       // ═══════════════════════════════════════
 
       return h('div', { className: 'space-y-4 animate-in fade-in duration-200' },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, (typeof d._srMsg === 'string' ? d._srMsg : '')),
 
         // ── Header ──
         h('div', { className: 'flex items-center justify-between' },
@@ -1109,8 +1109,8 @@ window.SelHub = window.SelHub || {
               h(ArrowLeft, { size: 20 })
             ),
             h('div', null,
-              h('h2', { className: 'text-xl font-black text-slate-800' }, '\uD83E\uDEB6 Restorative Circle'),
-              h('p', { className: 'text-xs text-slate-600' }, 'Community building, repair, and the wisdom of sitting in circle')
+              h('h2', { className: 'text-xl font-black text-slate-100' }, '\uD83E\uDEB6 Restorative Circle'),
+              h('p', { className: 'text-xs text-slate-300' }, 'Community building, repair, and the wisdom of sitting in circle')
             )
           )
         ),
@@ -1148,7 +1148,7 @@ window.SelHub = window.SelHub || {
 
         // ═══ HOME — Circle Types ═══
         tab === 'home' && h('div', { className: 'space-y-3' },
-          h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose the type of circle you want to facilitate today.'),
+          h('p', { className: 'text-sm text-slate-300 text-center' }, 'Choose the type of circle you want to facilitate today.'),
 
           // Circle type cards
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
@@ -1282,7 +1282,7 @@ window.SelHub = window.SelHub || {
         // ═══ CIRCLE SCRIPTS ═══
         tab === 'scripts' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDCDC Circle Scripts'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDCDC Circle Scripts'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Pre-written scripts to guide each phase of your circle. Select a section below, then choose a script to follow.'
             )
@@ -1372,7 +1372,7 @@ window.SelHub = window.SelHub || {
         // ═══ HARM REPAIR PROCESS ═══
         tab === 'harm-repair' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDE79 Harm Repair Process'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDE79 Harm Repair Process'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'A guided step-by-step restorative conversation for when harm has occurred. Each step builds understanding and leads to a repair agreement.'
             )
@@ -1472,7 +1472,7 @@ window.SelHub = window.SelHub || {
         // ═══ SCENARIOS ═══
         tab === 'scenarios' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFAD Restorative Scenarios'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFAD Restorative Scenarios'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Practice restorative thinking with realistic scenarios. Read the situation, choose a response, and see how the restorative approach unfolds.'
             )
@@ -1636,12 +1636,12 @@ window.SelHub = window.SelHub || {
 
           return h('div', { className: 'space-y-4' },
             h('div', { className: 'text-center mb-2' },
-              h('h3', { className: 'text-lg font-black text-slate-800' }, '🎭 Rehearse the conversation'),
+              h('h3', { className: 'text-lg font-black text-slate-100' }, '🎭 Rehearse the conversation'),
               h('p', { className: 'text-xs text-slate-600' }, 'Restorative work is dialogue. Practice what you would actually say before you have to say it for real.')
             ),
             // STEP 1: pick a role to rehearse
             !rcRpRole && h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-sm text-slate-600' },
+              h('p', { className: 'text-sm text-slate-300' },
                 h('strong', { className: 'text-amber-700' }, 'Pick what you want to practice. '),
                 'The AI plays the OTHER person. You play yourself. Keep responses short and real — the way you would actually talk.'),
               h('div', { className: 'grid gap-2' },
@@ -1889,7 +1889,7 @@ window.SelHub = window.SelHub || {
         // ═══ COMMUNITY AGREEMENTS BUILDER ═══
         tab === 'agreements' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDD1D Community Agreements Builder'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDD1D Community Agreements Builder'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Build your class or group agreements together. Select from suggestions or write your own. These become the foundation of your restorative community.'
             )
@@ -2007,7 +2007,7 @@ window.SelHub = window.SelHub || {
         // ═══ TALKING PIECE ═══
         tab === 'talking-piece' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDEB6 The Talking Piece'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDEB6 The Talking Piece'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'The talking piece is a sacred object passed around the circle. Only the person holding it may speak. This practice teaches us that listening is just as powerful as speaking.'
             )
@@ -2107,7 +2107,7 @@ window.SelHub = window.SelHub || {
         // ═══ RESTORATIVE QUESTIONS BANK ═══
         tab === 'questions' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2753 Restorative Questions Bank'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\u2753 Restorative Questions Bank'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Deep conversation starters organized by purpose. Use these in your circles or anytime you need a thoughtful question to open dialogue.'
             )
@@ -2204,7 +2204,7 @@ window.SelHub = window.SelHub || {
         // ═══ CIRCLE ROLE CARDS ═══
         tab === 'roles' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83D\uDE4B Circle Role Cards'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83D\uDE4B Circle Role Cards'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Every circle participant has a role. Learn what each role involves, the dos and don\'ts, and sample phrases to guide your practice.'
             )
@@ -2309,7 +2309,7 @@ window.SelHub = window.SelHub || {
         // ═══ EMPATHY MAPPING EXERCISE ═══
         tab === 'empathy-map' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83E\uDDE0 Empathy Mapping Exercise'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Understand different perspectives in a conflict by mapping what each person said, did, thought, and felt. Then find areas of overlap and build bridges.'
             )
@@ -2454,7 +2454,7 @@ window.SelHub = window.SelHub || {
         // ═══ RESTORATIVE VS PUNITIVE COMPARISON ═══
         tab === 'compare' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\u2696\uFE0F Restorative vs. Punitive'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\u2696\uFE0F Restorative vs. Punitive'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               gradeBand === 'elementary'
                 ? 'Learn the difference between punishment and making things right. Which approach helps people learn and grow?'
@@ -2546,7 +2546,7 @@ window.SelHub = window.SelHub || {
 
                   // Rating
                   h('div', { className: 'space-y-2' },
-                    h('p', { className: 'text-xs font-bold text-slate-600' },
+                    h('p', { className: 'text-xs font-bold text-slate-300' },
                       gradeBand === 'elementary'
                         ? 'Which way do you think works better?'
                         : 'Which approach do you think would be more effective and why?'
@@ -2647,7 +2647,7 @@ window.SelHub = window.SelHub || {
         // ═══ BADGES ═══
         tab === 'badges' && h('div', { className: 'space-y-4' },
           h('div', { className: 'text-center mb-2' },
-            h('h3', { className: 'text-lg font-black text-slate-800' }, '\uD83C\uDFC5 Restorative Badges'),
+            h('h3', { className: 'text-lg font-black text-slate-100' }, '\uD83C\uDFC5 Restorative Badges'),
             h('p', { className: 'text-sm text-slate-600 leading-relaxed max-w-lg mx-auto' },
               'Earn badges as you deepen your restorative practice. Each badge recognizes growth, courage, and commitment to community.'
             )

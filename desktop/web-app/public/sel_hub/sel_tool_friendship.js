@@ -536,8 +536,8 @@ window.SelHub = window.SelHub || {
       var activeTab     = d.activeTab || 'compass';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
       var myStyle       = d.myStyle || null;
-      var starterIdx    = d.starterIdx || 0;
-      var repairIdx     = d.repairIdx || 0;
+      var starterIdx    = (Number.isInteger(d.starterIdx) && d.starterIdx >= 0 ? d.starterIdx : 0);
+      var repairIdx     = (Number.isInteger(d.repairIdx) && d.repairIdx >= 0 ? d.repairIdx : 0);
       var endingIdx     = d.endingIdx || 0;
       var coachInput    = d.coachInput || '';
       var coachHistory  = d.coachHistory || [];
@@ -552,8 +552,8 @@ window.SelHub = window.SelHub || {
       var fRpEnded      = !!d.fRpEnded;
       var fRpReflection = d.fRpReflection || '';
       // Friendship journal
-      var friendNotes   = d.friendNotes || [];
-      var newNote       = d.newNote || '';
+      var friendNotes   = (Array.isArray(d.friendNotes) ? d.friendNotes : []);
+      var newNote       = (typeof d.newNote === 'string' ? d.newNote : '');
       // Digital friendship
       var digitalIdx    = d.digitalIdx || 0;
       var digitalShown  = d.digitalShown || false;

@@ -958,7 +958,7 @@ function PersonaChatView(props) {
                         </span>
                     </span>
                     <span className="flex items-center gap-2 ml-auto">
-                        <button type="button" onClick={_handleResumeSnapshot} className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
+                        <button type="button" onClick={_handleResumeSnapshot} className="text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
                             {t('persona.resume_btn') || 'Resume'}
                         </button>
                         <button type="button" onClick={_handleDiscardSnapshot} className="text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
@@ -1318,7 +1318,7 @@ function PersonaChatView(props) {
                                                                         e.stopPropagation();
                                                                         handleSpeak(msg.translation, `persona-panel-translation-${idx}`, 0);
                                                                     }}
-                                                                    className="p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50"
+                                                                    className="p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50"
                                                                 >
                                                                     <Volume2 size={12}/>
                                                                 </button>
@@ -1524,7 +1524,7 @@ function PersonaChatView(props) {
                                 {hasRenderableReflectionFeedback ? (
                                     <>
                                         <div className="text-center mb-6 relative">
-                                            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
+                                            <div className="w-20 h-20 bg-gradient-to-br from-green-700 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
                                                 <Sparkles size={40} className="fill-current" />
                                             </div>
                                             <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
@@ -1538,7 +1538,7 @@ function PersonaChatView(props) {
                                             </div>
                                             )}
                                             <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
-                                                <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"><Star size={24} className="fill-current" /></div>
+                                                <div className="w-12 h-12 bg-yellow-700 rounded-full flex items-center justify-center text-white shadow-md"><Star size={24} className="fill-current" /></div>
                                                 <div>
                                                     <div className="text-2xl font-black text-yellow-600">+{reflectionFeedbackXp} XP</div>
                                                     <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
@@ -1551,7 +1551,7 @@ function PersonaChatView(props) {
                                             </div>
                                         </div>
                                         <div className="mt-6">
-                                            <button type="button" aria-expanded={isPersonaReflectionOpen} onClick={_handleCompleteReflection} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg">
+                                            <button type="button" aria-expanded={isPersonaReflectionOpen} onClick={_handleCompleteReflection} className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg">
                                                 <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
                                             </button>
                                         </div>
@@ -1878,7 +1878,7 @@ function PersonaChatView(props) {
                       <p className="mx-auto max-w-2xl text-center text-xs leading-relaxed text-slate-600 mt-1">{inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')}</p>
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
                             <div className="mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm">
-                                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200">
+                                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200">
                                     <Quote size={22} />
                                 </div>
                                 <p className="text-sm font-semibold text-slate-700">
@@ -1991,7 +1991,7 @@ function PersonaChatView(props) {
                                                                          e.stopPropagation();
                                                                          handleSpeak(translationText, `persona-translation-${idx}`, 0);
                                                                      }}
-                                                                     className="p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+                                                                     className="p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
                                                                      title={t('common.click_to_read')}
                                                                  >
                                                                      <Volume2 size={12}/>
@@ -2039,7 +2039,7 @@ function PersonaChatView(props) {
                         {!isPersonaFreeResponse && renderPersonaTurnError()}
                         {isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && (
                             <div className="px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
-                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
                                     {!personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status')}
                                 </span>
                             </div>
@@ -2147,7 +2147,7 @@ function PersonaChatView(props) {
                             {hasRenderableReflectionFeedback ? (
                                 <>
                                     <div className="text-center mb-6 relative">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-green-700 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300">
                                             <Sparkles size={40} className="fill-current" />
                                         </div>
                                         <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
@@ -2161,7 +2161,7 @@ function PersonaChatView(props) {
                                         </div>
                                         )}
                                         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
-                                            <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md">
+                                            <div className="w-12 h-12 bg-yellow-700 rounded-full flex items-center justify-center text-white shadow-md">
                                                 <Star size={24} className="fill-current" />
                                             </div>
                                             <div>
@@ -2181,7 +2181,7 @@ function PersonaChatView(props) {
                                         <button type="button"
                                             aria-label={t('common.continue')}
                                             onClick={_handleCompleteReflection}
-                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
+                                            className="w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
                                         >
                                             <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
                                         </button>

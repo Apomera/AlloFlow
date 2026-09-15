@@ -60,7 +60,7 @@ function DbqTimer(props) {
     className: "flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     role: "status",
-    className: "text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg border border-red-200"
+    className: "text-xs font-bold text-red-700 bg-red-50 px-3 py-1 rounded-lg border border-red-200"
   }, "⏰ Time's up!"), /*#__PURE__*/React.createElement("button", {
     onClick: () => props.onDeadlineChange(null),
     className: "text-[11px] text-slate-600 hover:text-slate-700",
@@ -1008,7 +1008,7 @@ Rules:
         }
       },
       disabled: !callGemini || feedbackLoading,
-      className: "bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
+      className: "bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
       "aria-label": t("a11y.get_ai_feedback_doc")
     }, feedbackLoading ? '⏳ Analyzing...' : '✨ Check My Analysis'), feedbackNotice(`_docFeedback_${activeDoc.id}`), docFeedback && typeof docFeedback === 'object' && !docFeedback.error && /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"
@@ -1242,7 +1242,7 @@ Score according to ${gradeLevel} expectations. A 3rd grader who says "Document A
         }
       },
       disabled: !callGemini || corrobLoading,
-      className: "bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
+      className: "bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2",
       "aria-label": "Get AI feedback on corroboration analysis"
     }, corrobLoading ? '⏳ Analyzing...' : '✨ Check My Corroboration'), feedbackNotice('_corrobFeedback'), corrobFb && typeof corrobFb === 'object' && !corrobFb.error && /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-xl p-5 space-y-3"

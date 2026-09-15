@@ -178,7 +178,7 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1"
+    className: "bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shrink-0 mt-1"
   }, idx + 1), /*#__PURE__*/React.createElement("div", {
     className: "w-full min-w-0"
   }, isEditingScaffolds ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {

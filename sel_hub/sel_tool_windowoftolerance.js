@@ -227,9 +227,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       }
 
       function windowCommandPanel() {
-        var signs = (d.hyperSigns || []).length + (d.windowSigns || []).length + (d.hypoSigns || []).length;
-        var triggers = (d.triggers || []).length;
-        var practices = (d.practices || []).length;
+        var signs = ((Array.isArray(d.hyperSigns) ? d.hyperSigns : [])).length + ((Array.isArray(d.windowSigns) ? d.windowSigns : [])).length + ((Array.isArray(d.hypoSigns) ? d.hypoSigns : [])).length;
+        var triggers = ((Array.isArray(d.triggers) ? d.triggers : [])).length;
+        var practices = ((Array.isArray(d.practices) ? d.practices : [])).length;
         var zoneColor = d.currentZone === 'hyper' ? _wtFg('#ef4444') : d.currentZone === 'hypo' ? _wtFg('#0ea5e9') : d.currentZone === 'window' ? _wtFg('#14b8a6') : _wtFg('#fbbf24');
         var zoneLabel = d.currentZone === 'hyper' ? 'Hyper' : d.currentZone === 'hypo' ? 'Hypo' : d.currentZone === 'window' ? 'In window' : 'Not checked';
         function stat(label, value, color) {
@@ -291,8 +291,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           );
         }
 
-        var totalSigns = (d.hyperSigns || []).length + (d.windowSigns || []).length + (d.hypoSigns || []).length;
-        if (totalSigns === 0 && (d.triggers || []).length === 0 && (d.practices || []).length === 0) {
+        var totalSigns = ((Array.isArray(d.hyperSigns) ? d.hyperSigns : [])).length + ((Array.isArray(d.windowSigns) ? d.windowSigns : [])).length + ((Array.isArray(d.hypoSigns) ? d.hypoSigns : [])).length;
+        if (totalSigns === 0 && ((Array.isArray(d.triggers) ? d.triggers : [])).length === 0 && ((Array.isArray(d.practices) ? d.practices : [])).length === 0) {
           return h('div', null,
             windowCommandPanel(),
             h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(20,184,166,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(20,184,166,0.4)', textAlign: 'center', marginBottom: 14 } },
@@ -310,18 +310,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
         return h('div', null,
           windowCommandPanel(),
-          zone('🔺 Hyperarousal (above the window)', _wtFg('#ef4444'), d.hyperSigns || [],
+          zone('🔺 Hyperarousal (above the window)', _wtFg('#ef4444'), (Array.isArray(d.hyperSigns) ? d.hyperSigns : []),
             'Too activated. Fight or flight territory. Hard to think, hard to sit still, snappy, racing.'),
 
-          zone('🪟 In the Window (the regulated zone)', _wtFg('#14b8a6'), d.windowSigns || [],
+          zone('🪟 In the Window (the regulated zone)', _wtFg('#14b8a6'), (Array.isArray(d.windowSigns) ? d.windowSigns : []),
             'The zone where you can think and feel at the same time. You can listen, choose, learn, connect.'),
 
-          zone('🔻 Hypoarousal (below the window)', _wtFg('#0ea5e9'), d.hypoSigns || [],
+          zone('🔻 Hypoarousal (below the window)', _wtFg('#0ea5e9'), (Array.isArray(d.hypoSigns) ? d.hypoSigns : []),
             'Too shut down. Freeze or collapse territory. Foggy, slow, disconnected, going through motions.'),
 
           h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginTop: 10, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#fbbf24'), marginBottom: 8 } }, '⚡ Things that push me out of the window'),
-            (d.triggers || []).length > 0
+            ((Array.isArray(d.triggers) ? d.triggers : [])).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   d.triggers.map(function(s, i) {
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #fbbf2444', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
@@ -332,7 +332,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
           h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#a78bfa'), marginBottom: 8 } }, '🛟 Things that bring me back to the window'),
-            (d.practices || []).length > 0
+            ((Array.isArray(d.practices) ? d.practices : [])).length > 0
               ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   d.practices.map(function(s, i) {
                     return h('div', { key: i, style: { padding: '4px 10px', borderRadius: 14, background: _wtBg('#1e293b'), border: '1px solid #a78bfa44', fontSize: 12, color: _wtFg('#e2e8f0') } }, s);
@@ -360,7 +360,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         function addTo(key, value) {
-          if (!value || !value.trim()) return;
+          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var list = (d[key] || []).slice();
           if (list.indexOf(value.trim()) === -1) list.push(value.trim());
           var patch = {}; patch[key] = list;
@@ -378,7 +378,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           var inputId = 'wot-input-' + key;
           function submit() {
             var el = document.getElementById(inputId);
-            if (!el || !el.value.trim()) return;
+            if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
             addTo(key, el.value);
             el.value = '';
           }
@@ -446,7 +446,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
           if (announceToSR) announceToSR('Regulation practice selected: ' + practice);
         }
         var cur = d.currentZone;
-        var practices = d.practices || [];
+        var practices = (Array.isArray(d.practices) ? d.practices : []);
         var chosenPractice = practices.indexOf(d.selectedPractice) !== -1 ? d.selectedPractice : null;
         var zoneInfo = {
           hyper: {

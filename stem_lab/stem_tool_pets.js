@@ -934,6 +934,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       why: '9:3:4 is the signature of recessive epistasis, and BbEe x BbEe is the only cross that produces it. A plain two-gene cross with no interaction would give 9:3:3:1. Here the would-be fourth class (bbee) is not visibly distinct from the third (B_ee) — both are yellow — so the 3 and the 1 collapse into a single 4. When you see 9:3:4 in a real pedigree, one gene is masking another.' }
   ];
 
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4c: THE BUDGET RECKONING
+  // The Cost Calculator computes a real monthly figure and a real contingency
+  // target, and then asks the student nothing. A number you have read is not a
+  // number you have reckoned with, and cost is the reason animals are
+  // surrendered more than any other single factor — not cruelty, not boredom.
+  //
+  // So this is the moment the calculator was building toward: given YOUR
+  // number, what happens in the household? Three questions in a deliberate
+  // order:
+  //   1. the monthly figure, which is the one a family actually budgets against
+  //   2. the contingency fund, which is the real surrender trigger
+  //   3. who is on the hook in year 8, when the child who wanted it has gone
+  //
+  // ★ Every option is a real household answer. There is NO "correct" response
+  // in the scoring sense, because "we cannot afford this" is a GOOD outcome for
+  // a student to reach honestly — arguably the best one this module can produce.
+  // The feedback names what each answer commits them to, and the closing note
+  // says plainly that deciding not to is a real decision.
+  //
+  // `tone` drives the colour and the framing only. It is never scored, never
+  // recorded as a criterion, and the module completes on answering all three.
+  // ─────────────────────────────────────────────────────────
+  var COST_COMMITMENTS = [
+    { id: 'monthly',
+      title: 'The monthly number',
+      ask: 'Look at the monthly figure above. Could your household absorb that, every month, for the whole span — without anything else being cut?',
+      options: [
+        { id: 'comfortably', tone: 'steady',
+          label: 'Yes, comfortably. It would not change anything else.',
+          note: 'Then the monthly cost is not your constraint, and you can turn your attention to the two that are harder to see: the contingency fund below, and the time. An animal is rarely given up because the food was unaffordable. It is given up because of one bill nobody had saved for, or because the daily hours stopped being available.' },
+        { id: 'tight', tone: 'steady',
+          label: 'Yes, but it would be tight. Something else would have to give.',
+          note: 'That is the most common honest answer, and it is workable — but name the something. A budget that only balances if nothing goes wrong is not a budget, it is a hope. Write down what you would cut, then check whether you would still cut it in a month where the car also needs work. That is the test this decision actually faces.' },
+        { id: 'no', tone: 'honest',
+          label: 'No. Not reliably, not every month.',
+          note: 'Then you have learned the thing this calculator exists to tell you, and you have learned it for free rather than eighteen months in with an animal you love. This is not a failure of the exercise. Waiting, fostering, or choosing a species with a smaller monthly figure are all real options, and every one of them is better for an animal than a home that cannot sustain it.' },
+        { id: 'unsure', tone: 'unsure',
+          label: 'I genuinely do not know what our household could absorb.',
+          note: 'That is an honest answer and a common one at your age — household finances are often not discussed with the people they affect. It also means the decision is not yours to make alone yet. The useful next step is not more research on this page: it is showing this monthly figure to whoever does the budgeting and asking them directly.' }
+      ] },
+    { id: 'emergency',
+      title: 'The night it goes wrong',
+      ask: 'It is 11pm on a Sunday in year three. The animal needs emergency care and the bill is the contingency figure above. What actually happens in your household?',
+      options: [
+        { id: 'saved', tone: 'steady',
+          label: 'We have that set aside already, in cash we could reach tonight.',
+          note: 'That is the answer that makes the rest of the plan real, and it is rarer than people assume. Two things keep it true: the fund has to be genuinely reachable at 11pm on a Sunday, not tied up where it takes three days to move, and it has to be rebuilt after it is used. A contingency fund spent once and never replaced is a fund you had, not a fund you have.' },
+        { id: 'credit', tone: 'strain',
+          label: 'We would put it on a credit card and deal with it after.',
+          note: 'This is what most households actually do, so it is worth being clear-eyed rather than disapproving. It works, and it costs more than the bill: interest, and a debt arriving in a month you did not plan for. Veterinary practices increasingly ask for payment at the time of treatment, so also check that the card has room. Ask what the limit is before you need it, not in the waiting room.' },
+        { id: 'insurance', tone: 'steady',
+          label: 'We would have pet insurance for exactly this.',
+          note: 'Reasonable, and worth reading closely before you rely on it. Most policies reimburse rather than pay the practice, so you often still need the money that night. Pre-existing conditions are generally excluded, which matters most for an animal you adopt with a history, and deductibles and annual caps decide what actually comes back. Insurance changes the shape of the risk rather than removing it.' },
+        { id: 'cant', tone: 'honest',
+          label: 'Honestly? We could not. We would have to decide based on money.',
+          note: 'Saying that out loud now is worth more than any other answer on this page, because that decision is the hardest one in animal ownership and people meet it unprepared. It is exactly why the contingency figure sits in its own box rather than inside the total. If the fund cannot exist, the honest options are a species whose emergency care costs less, or waiting until it can.' }
+      ] },
+    { id: 'whoPays',
+      title: 'Year eight',
+      ask: 'Most of these animals outlast the excitement, and several outlast school. In year eight, who is feeding this animal, paying for it, and taking it to the vet?',
+      options: [
+        { id: 'adult', tone: 'steady',
+          label: 'An adult in the house, who has agreed to it and knows the numbers.',
+          note: 'That is the arrangement that holds. Every welfare organisation says the same thing for the same reason: an adult must be the responsible party, whatever the child promises at the start. Children genuinely do help, and that is worth having — but a plan that depends on a ten-year-old still being interested at eighteen is a plan with an animal at the end of it.' },
+        { id: 'me', tone: 'strain',
+          label: 'Me. I would still be the one doing it.',
+          note: 'You might well be, and people who say this at your age often mean it. Play out the calendar anyway: year eight is a job, or moving out, or a flat that does not accept pets. None of those make you irresponsible — they are just what growing up looks like. The question is not whether you would want to. It is who does it on the day you cannot, and that person should be asked now.' },
+        { id: 'notDiscussed', tone: 'unsure',
+          label: 'We have not talked about that part at all.',
+          note: 'Then that is the conversation to have first, ahead of any decision about species or breed. Nearly every surrender that begins "we did not realise" traces back to this conversation not happening. It takes ten minutes and it is the single most useful thing on this page.' },
+        { id: 'noone', tone: 'honest',
+          label: 'I do not think anyone in my household would be, that far out.',
+          note: 'Then the honest answer is not this animal, not now — and noticing it here rather than in year eight is the whole point of a lifetime calculator. Fostering gives you the animal and the experience without the decade. So does volunteering at a shelter, and both of those help an animal that already exists.' }
+      ] }
+  ];
+
   // ─────────────────────────────────────────────────────────
   // SECTION 5: MYTHS BUSTED (sourced corrections)
   // ─────────────────────────────────────────────────────────
@@ -3390,7 +3468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       'lsSeed', 'lsShown', 'lsStreak', 'lsMissed', 'lsReview', 'tfsAns', 'tfsBest', 'tfsIdx',
       'tfsOpen', 'tfsPick', 'tfsRounds', 'tfsScore', 'tfsSeed',
       'tfsShown', 'tfsStreak', 'tfsMissed', 'tfsReview', 'diagramView', 'famousFilter',
-      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk', 'speciesChecks', 'mythChecks', 'welfareApply', 'careerMatch', 'actionPlan', 'serviceCalls', 'geneGoals', 'geneGoalActive', 'geneGoalHint',
+      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk', 'speciesChecks', 'mythChecks', 'welfareApply', 'careerMatch', 'actionPlan', 'serviceCalls', 'geneGoals', 'geneGoalActive', 'geneGoalHint', 'costCommit',
       'sensoryReduceMotion', 'sensorySeen', 'sensorySpecies', 'lastView'
     ];
     var PETS_EVIDENCE_MODULE_LABELS = {
@@ -3422,6 +3500,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       quiz: '15-question quiz'
     };
     var PETS_EVIDENCE_ACTIVITY_FIELDS = {
+      picker: ['answered', 'total'],
+      cost: ['answered', 'total'],
       genetics: ['score', 'total', 'scorePct', 'criterionMet'],
       service: ['score', 'total', 'scorePct', 'criterionMet'],
       action: ['chosen', 'scales'],
@@ -3453,6 +3533,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       careSim: 'Wrote a post-week reflection'
     };
     var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
+      picker: 'Worked through the readiness checklist',
+      cost: 'Worked through the budget reckoning',
       genetics: 'Solved the Punnett square challenges',
       service: 'Ruled on every service-animal access case',
       action: 'Committed to specific next actions',
@@ -3476,6 +3558,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       sensory: 'Compared the sensory perspectives'
     };
     var PETS_ACTIVITY_COMPLETION_REASONS = {
+      picker: ['Confirmed every readiness item'],
+      cost: ['Answered every budget question'],
       genetics: ['Solved every Punnett challenge'],
       service: ['Ruled on every access case'],
       action: ['Committed to a next action'],
@@ -3717,6 +3801,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // Which Punnett goals have been solved. A plain id list: solving is a
     // fact about a cross the student actually configured, so there is no
     // per-goal payload to keep. Unknown ids are dropped on restore.
+    // One answer per budget question. Only authored questions and authored
+    // option ids survive a restore, so a hand-edited snapshot cannot render
+    // an unknown answer or mark the reckoning done with one.
+    function normalizeCostCommit(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      COST_COMMITMENTS.forEach(function(question) {
+        var picked = raw[question.id];
+        if (typeof picked !== 'string') return;
+        var valid = question.options.some(function(option) { return option.id === picked; });
+        if (valid) safe[question.id] = picked;
+      });
+      return safe;
+    }
+    // Completion is answering all three. There is deliberately NO score:
+    // 'we could not afford this' is a good outcome for a student to reach
+    // honestly, and scoring it would punish the most useful answer on the
+    // page. `honest` is counted only so the closing note can speak to it.
+    function costCommitProgress(commitments) {
+      var answered = normalizeCostCommit(commitments);
+      var done = 0, honest = 0;
+      COST_COMMITMENTS.forEach(function(question) {
+        var picked = answered[question.id];
+        if (!picked) return;
+        done += 1;
+        var option = question.options.filter(function(row) { return row.id === picked; })[0];
+        if (option && option.tone === 'honest') honest += 1;
+      });
+      return { total: COST_COMMITMENTS.length, done: done, honest: honest,
+        complete: COST_COMMITMENTS.length > 0 && done === COST_COMMITMENTS.length };
+    }
     function normalizeGeneGoals(raw) {
       if (!Array.isArray(raw)) return [];
       var valid = PUNNETT_GOALS.map(function(goal) { return goal.id; });
@@ -4187,6 +4302,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             details.caregiverSustainable === true;
         } else {
           delete details.criterionMet;
+        }
+      } else if (moduleId === 'picker') {
+        // Scoreless on purpose. The fit score is decision support, not a
+        // verdict, and 'sometimes the responsible answer is to wait' has to
+        // stay a good outcome rather than a failed criterion.
+        delete details.criterionMet;
+        delete details.scorePct;
+        delete details.score;
+        if (!hasNumber('answered') || !hasNumber('total') || details.answered !== details.total) {
+          delete details.answered;
+          delete details.total;
+        }
+      } else if (moduleId === 'cost') {
+        // Deliberately scoreless. 'We could not afford this' is a good
+        // outcome honestly reached, and a criterion flag would mark the most
+        // useful answer on the page as a failure.
+        delete details.criterionMet;
+        delete details.scorePct;
+        delete details.score;
+        if (!hasNumber('answered') || !hasNumber('total') || details.answered !== details.total) {
+          delete details.answered;
+          delete details.total;
         }
       } else if (moduleId === 'genetics') {
         // Unlike the judgement activities, this one IS gated on getting it
@@ -4938,6 +5075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       snapshot.actionPlan = normalizeActionPlan(snapshot.actionPlan);
       snapshot.serviceCalls = normalizeServiceCalls(snapshot.serviceCalls);
       snapshot.geneGoals = normalizeGeneGoals(snapshot.geneGoals);
+      snapshot.costCommit = normalizeCostCommit(snapshot.costCommit);
       // Which challenge is open, and whether its hint is showing. Scalars, but
       // an unknown goal id would render an empty panel, so they are validated.
       snapshot.geneGoalActive = PUNNETT_GOALS.some(function(goal) {
@@ -5188,6 +5326,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _careerResultRef = React.useRef(null);
     var _actionPlanRef = React.useRef(null);
     var _geneGoalsRef = React.useRef(null);
+    var _costCommitRefsHolder = React.useRef({});
+    var _costCommitRefs = _costCommitRefsHolder.current;
     var _serviceFeedbackRefsHolder = React.useRef({});
     var _serviceFeedbackRefs = _serviceFeedbackRefsHolder.current;
     // Per-claim feedback nodes for the myth check, keyed by claim id. A plain
@@ -5231,6 +5371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var actionPlan = normalizeActionPlan(d.actionPlan);
     var serviceCalls = normalizeServiceCalls(d.serviceCalls);
     var geneGoals = normalizeGeneGoals(d.geneGoals);
+    var costCommit = normalizeCostCommit(d.costCommit);
     var legacyAiResponse = typeof d.aiResponse === 'string'
       ? d.aiResponse.slice(0, 4000) : '';
     var aiResponse = aiScenarioId && Object.prototype.hasOwnProperty.call(aiDrafts, aiScenarioId)
@@ -5695,6 +5836,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return Object.keys(map || {}).filter(isTrackableModule).length;
     }
     var PETS_ACTIVITY_COMPLETION_MODULES = {
+      picker: true,
+      cost: true,
       genetics: true,
       service: true,
       action: true,
@@ -10112,6 +10255,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         if (checked) next[itemId] = true;
         else delete next[itemId];
         upd('pickReadiness', next);
+        // The checklist already existed and was already persisted; it just
+        // gated nothing, so a student could read a ranking and be done.
+        // Completion is confirming all four, never the fit score: the model
+        // is decision SUPPORT, and a high score is explicitly 'a question to
+        // investigate, not a pet recommendation'. Unchecking does not
+        // un-complete it -- completion records that the work was done.
+        var confirmedCount = PICK_READINESS_ITEMS.filter(function(item) {
+          return next[item.id] === true;
+        }).length;
+        if (confirmedCount === PICK_READINESS_ITEMS.length) {
+          completeModule('picker', 'Confirmed every readiness item', {
+            answered: confirmedCount, total: PICK_READINESS_ITEMS.length
+          });
+          petsAnnounce('All readiness items confirmed.');
+        }
       }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🏠 Pet Picker'),
@@ -10171,7 +10329,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 11, lineHeight: 1.55 } },
             'For a real or fictional household, mark an item only when it has actually been checked. Rankings remain comparison prompts until every essential is confirmed.'),
           h('div', {
-            role: 'list',
+            // No role=list here either. These are labelled checkboxes inside a
+            // <fieldset> with a <legend>, which is already the right structure
+            // for a screen reader; a list wrapper whose children are labels
+            // fails aria-required-children, and adding listitem back to the
+            // labels fails aria-allowed-role. The native semantics are correct
+            // on their own.
             style: {
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
@@ -10181,7 +10344,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var confirmed = pickReadiness[item.id] === true;
             return h('label', {
               key: item.id,
-              role: 'listitem',
+              // No role override here. A <label> may not take role=listitem
+              // (axe aria-allowed-role): its implicit role is tied to the
+              // control it labels, so overriding it strips that association
+              // from the accessibility tree. The wrapping div already carries
+              // role=list, and the label's own semantics are what a screen
+              // reader needs on a checkbox.
               htmlFor: 'pets-picker-ready-' + item.id,
               'data-pets-picker-readiness': item.id,
               style: {
@@ -11968,6 +12136,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('li', null, 'Unplanned treatment; the contingency target is savings capacity, not a forecast of what care will cost'),
             h('li', null, 'Potentially higher or more variable senior and specialty veterinary care'),
             h('li', null, 'Insurance premiums, exclusions, deductibles, financing charges, or replenishing a used reserve'))),
+        (function() {
+          // The moment the calculator was building toward. Placed AFTER the
+          // figures so the student is reckoning with numbers already on screen,
+          // and phrased against this species and this span rather than in the
+          // abstract.
+          var progress = costCommitProgress(costCommit);
+
+          function holder(questionId) {
+            if (!_costCommitRefs[questionId]) _costCommitRefs[questionId] = { current: null };
+            return _costCommitRefs[questionId];
+          }
+          function answer(questionId, optionId) {
+            if (costCommit[questionId]) return;
+            var next = Object.assign({}, costCommit);
+            next[questionId] = optionId;
+            upd('costCommit', function(current) {
+              var merged = normalizeCostCommit(current);
+              merged[questionId] = optionId;
+              return merged;
+            });
+            var after = costCommitProgress(next);
+            if (after.complete) {
+              completeModule('cost', 'Answered every budget question', {
+                answered: after.done, total: after.total
+              });
+            }
+            petsAnnounce('Answer recorded. ' + after.done + ' of ' + after.total + '.');
+            focusPetsTarget(holder(questionId));
+          }
+          function resetCommit() {
+            upd('costCommit', {});
+            petsAnnounce('Budget answers cleared.');
+          }
+
+          return h('section', {
+            className: 'petslab-cost-commit',
+            'aria-label': 'Budget reckoning',
+            style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 5 } },
+              h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, '\uD83E\uDDFE Now reckon with it'),
+              h('span', { className: 'petslab-cost-commit-progress', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+                'Answered ' + progress.done + ' of ' + progress.total)),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+              'A number you have read is not a number you have reckoned with. ',
+              h('strong', { style: { color: T.text } }, 'Cost is the single most common reason animals are given up'),
+              ' \u2014 not cruelty, not boredom. There are no right answers below, and "we could not" is a real and useful one.'),
+            COST_COMMITMENTS.map(function(question) {
+              var picked = costCommit[question.id] || null;
+              var chosen = picked && question.options.filter(function(row) { return row.id === picked; })[0];
+              return h('div', { key: question.id, className: 'petslab-cost-commit-q',
+                style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: T.warm, letterSpacing: 0.3, marginBottom: 3 } }, question.title),
+                h('p', { style: { margin: '0 0 9px', fontSize: 13, color: T.text, lineHeight: 1.6, fontWeight: 600 } }, question.ask),
+                h('div', { role: 'group', 'aria-label': question.ask, style: { display: 'grid', gap: 6 } },
+                  question.options.map(function(option) {
+                    var isPick = picked === option.id;
+                    return h('button', {
+                      key: option.id,
+                      type: 'button',
+                      className: 'petslab-cost-commit-option',
+                      'data-pets-focusable': true,
+                      'aria-pressed': isPick ? 'true' : 'false',
+                      disabled: !!picked,
+                      onClick: function() { answer(question.id, option.id); },
+                      style: {
+                        textAlign: 'left', padding: '9px 11px', borderRadius: 8,
+                        background: isPick ? 'rgba(245,158,11,0.14)' : T.card,
+                        border: '1px solid ' + (isPick ? T.accentHi : T.border),
+                        color: picked && !isPick ? T.dim : T.text,
+                        fontSize: 12.5, lineHeight: 1.5, cursor: picked ? 'default' : 'pointer',
+                        font: 'inherit', fontWeight: isPick ? 700 : 400
+                      }
+                    }, (isPick ? '\u2192 ' : '') + option.label);
+                  })),
+                chosen && h('div', {
+                  ref: function(node) { holder(question.id).current = node; },
+                  tabIndex: -1,
+                  className: 'petslab-cost-commit-note',
+                  role: 'status',
+                  style: {
+                    marginTop: 10, padding: '10px 12px', borderRadius: 8, background: T.card,
+                    border: '1px solid ' + (chosen.tone === 'honest' ? '#86efac'
+                      : (chosen.tone === 'strain' ? '#fcd34d' : T.border))
+                  }
+                },
+                  h('p', { style: { margin: 0, fontSize: 12.5, color: T.muted, lineHeight: 1.6 } }, chosen.note)));
+            }),
+            progress.complete && h('div', { className: 'petslab-cost-commit-closing', role: 'note',
+              style: { marginTop: 4, padding: '11px 13px', borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.accent } },
+              h('div', { style: { fontSize: 12.5, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+                'All three answered'),
+              h('p', { style: { margin: '0 0 9px', fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+                progress.honest > 0
+                  ? 'You answered honestly that the money or the years are not there right now, and that is the most valuable thing this page can produce. Deciding not to get an animal IS a decision, and a responsible one \u2014 fostering and shelter volunteering give you the animal without the decade.'
+                  : 'Worth doing once more with the species you would actually choose, and once with the researched numbers rather than the starter ones. The figures that matter are the local ones, and the answers can change when the monthly number does.'),
+              h('button', {
+                type: 'button',
+                className: 'petslab-cost-commit-reset',
+                'data-pets-focusable': true,
+                onClick: resetCommit,
+                style: btn({ padding: '6px 11px', fontSize: 11 })
+              }, 'Clear and answer again')));
+        })(),
         footer());
     }
 
@@ -13283,6 +13555,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return careOutcome;
         }
         if (record.moduleId === 'sensory' && x.perspectives != null) return x.perspectives + ' visual perspectives compared';
+        // Thirteen gated modules landed on the generic 'Saved activity
+        // metadata' fallback, which tells a teacher nothing about work a
+        // learner actually did. These say what happened AND what it means.
+        // Several of these activities are deliberately scoreless, so the
+        // wording must not imply a grade that was never recorded.
+        //
+        // NOTE: these helpers are sliced into a BARE VM by
+        // pets_evidence_records.test.js, so nothing here may reference a
+        // module-level constant. A `predicted` field is unique to the species
+        // checks, which keeps this guard self-contained.
+        if (x.predicted) {
+          if (x.predicted === 'skipped') return 'Read the answer without predicting first';
+          return x.criterionMet === true
+            ? 'Predicted correctly, then read the explanation'
+            : 'Predicted wrongly, then read the explanation \u2014 the useful order';
+        }
+        if (record.moduleId === 'myths' && x.score != null) {
+          // 'Believed' is the number that matters here: calling a TRUE claim
+          // false is a wrong answer but not a misconception this view targets.
+          var mythsBelieved = typeof x.believed === 'number' ? x.believed : null;
+          if (mythsBelieved === null) return x.score + ' of ' + x.total + ' claims judged correctly';
+          return mythsBelieved === 0
+            ? x.score + ' of ' + x.total + ' correct \u00b7 believed none of the myths'
+            : x.score + ' of ' + x.total + ' correct \u00b7 had believed ' + mythsBelieved +
+              ' myth' + (mythsBelieved === 1 ? '' : 's') + ' \u2014 worth naming which in class';
+        }
+        if (record.moduleId === 'welfare' && x.score != null) {
+          return x.score + ' of ' + x.total + ' welfare decisions took the best-supported option' +
+            (x.score === x.total ? '' : ' \u2014 the weaker picks are defensible, not wrong');
+        }
+        if (record.moduleId === 'service' && x.score != null) {
+          return x.score + ' of ' + x.total + ' access calls lawful' +
+            (x.score === x.total ? '' : ' \u2014 check which half of the ADA rule was missed');
+        }
+        if (record.moduleId === 'genetics' && x.score != null) {
+          return x.score + ' of ' + x.total + ' Punnett challenges solved (epistasis)';
+        }
+        if (record.moduleId === 'careers' && x.answered != null) {
+          return 'Career self-inventory completed \u2014 ranks fit, records no verdict';
+        }
+        if (record.moduleId === 'cost' && x.answered != null) {
+          return 'Budget reckoning completed \u2014 no score by design; the answers are the point';
+        }
+        if (record.moduleId === 'picker' && x.answered != null) {
+          return 'All ' + x.total + ' readiness items confirmed \u2014 not a fit score';
+        }
+        if (record.moduleId === 'action' && x.chosen != null) {
+          var actionScales = typeof x.scales === 'number' ? x.scales : 0;
+          return 'Committed to ' + x.chosen + ' action' + (x.chosen === 1 ? '' : 's') +
+            (actionScales > 1
+              ? ' across ' + actionScales + ' scales'
+              : ' at one scale \u2014 community and civic options are still open');
+        }
         if (record.kind === 'self-review' && record.moduleId === 'careSim') return 'One thing to do differently next week, in the learner’s own words';
         return record.kind === 'self-review'
           ? 'Module reviewed; no scored activity was recorded'

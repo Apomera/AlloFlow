@@ -2872,7 +2872,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: () => subInputRef.current?.click(),
-                  style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
+                  style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
                 }, tr("\uFF0B Add submissions")),
                 queue.length > 0 && /* @__PURE__ */ React.createElement("button", {
                   type: "button",
@@ -2942,7 +2942,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                     type: "button",
                     onClick: saveAllGradedToGradebook,
                     title: tr("Write every graded submission to the local gradebook"),
-                    style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                    style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                   }, "\u{1F4BE} Save all graded (" + gradedCount + ")");
                 })(),
                 bulkGrading && /* @__PURE__ */ React.createElement(
@@ -3800,7 +3800,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                             Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement("button", {
                               type: "button",
                               onClick: () => saveRowToGradebook(idx),
-                              style: { padding: "8px 16px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                              style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                             }, tr("\u{1F4BE} Save to gradebook")),
                             Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
                               "span",

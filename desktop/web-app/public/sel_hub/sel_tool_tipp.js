@@ -213,7 +213,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       }
 
       function tippCommandPanel() {
-        var log = d.log || [];
+        var log = (Array.isArray(d.log) ? d.log : []);
         var helped = log.filter(function(e) { return e.helped; }).length;
         var routes = [
           { signal: 'Too hot or impulsive', skill: 'temperature', fit: 'Fastest reset' },
@@ -300,7 +300,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
         function done(helped) {
           var entry = { date: todayISO(), skill: s.id, helped: !!helped };
-          setTIPP({ activeSkill: null, timerSeconds: 0, log: (d.log || []).concat([entry]) });
+          setTIPP({ activeSkill: null, timerSeconds: 0, log: ((Array.isArray(d.log) ? d.log : [])).concat([entry]) });
           if (addToast) addToast(helped ? 'Logged — glad it helped.' : 'Logged — try a different TIPP next time.', 'info');
           if (announceToSR) announceToSR('TIPP session logged.');
         }
@@ -355,7 +355,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
       // LOG
       // ═══════════════════════════════════════════════════════════
       function renderLog() {
-        var log = (d.log || []).slice().reverse();
+        var log = ((Array.isArray(d.log) ? d.log : [])).slice().reverse();
         var helpedCount = log.filter(function(e) { return e.helped; }).length;
         var counts = {};
         log.forEach(function(e) { counts[e.skill] = (counts[e.skill] || 0) + 1; });

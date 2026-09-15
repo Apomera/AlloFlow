@@ -52,7 +52,7 @@ function DirectionsComposerView({
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
               <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Assignment Directions'}</h2>
-              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
+              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
             </div>
             <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
             <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1" data-directions-scroll>
@@ -227,7 +227,7 @@ function DirectionsComposerView({
                     <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
                     {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
                     {o.kind === 'time' && <input type="number" min="1" max="240" value={o.minutes || 10} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const mins = Math.max(1, Math.min(240, Number(e.target.value) || 1)); list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-400 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
+                    <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
                   </div>
                 ))}
                 {/* Write-your-own comes FIRST: most goals a teacher actually wants
@@ -300,7 +300,7 @@ function DirectionsComposerView({
                 <div className="flex flex-wrap gap-1 mt-2">
                   <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
+                <p className="text-[10px] text-slate-600 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
                 {(mbDirectionsDraft?.objectives || []).length > 0 && (
                   <label className="flex items-center gap-1.5 mt-1 cursor-pointer select-none">
                     <input type="checkbox" checked={mbDirectionsDraft?.softGate === true} onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), softGate: e.target.checked }))} className="w-3.5 h-3.5 accent-amber-600" />
@@ -317,7 +317,7 @@ function DirectionsComposerView({
                 <button data-help-key="directions_add_pack" onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
                 <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
               </div>
-              <p className="text-[10px] text-slate-400 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
+              <p className="text-[10px] text-slate-600 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
             </div>
           </div>
         </div>

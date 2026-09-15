@@ -363,7 +363,7 @@ function FamilyAnnouncementsPanel(props) {
       },
       lang.native,
       " ",
-      /* @__PURE__ */ React.createElement("span", { className: "font-normal " + (on ? "text-indigo-100" : "text-slate-400") }, lang.name)
+      /* @__PURE__ */ React.createElement("span", { className: "font-normal " + (on ? "text-indigo-100" : "text-slate-600") }, lang.name)
     );
   }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" }, typeof callGemini === "function" ? /* @__PURE__ */ React.createElement(
     "button",
@@ -374,7 +374,7 @@ function FamilyAnnouncementsPanel(props) {
       className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-wait"
     },
     busyTag ? tt("famann.translating", "Translating") + " " + ((famannLangByTag(busyTag) || {}).name || "") + "…" : tt("famann.translate_all", "Translate all") + " ✨"
-  ) : /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 self-center" }, tt("famann.no_ai", "AI translation is unavailable in this host — paste translations into each language box below.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAnnouncement, className: "min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700" }, tt("famann.save", "Save announcement"))), selectedLangs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, selectedLangs.map((lang) => {
+  ) : /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 self-center" }, tt("famann.no_ai", "AI translation is unavailable in this host — paste translations into each language box below.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAnnouncement, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800" }, tt("famann.save", "Save announcement"))), selectedLangs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, selectedLangs.map((lang) => {
     const entry = (draft.translations || {})[lang.tag] || { text: "", status: "empty" };
     const stale = entry.status === "done" && entry.forText !== draft.text;
     return /* @__PURE__ */ React.createElement("div", { key: lang.tag, className: "bg-white border rounded-xl p-3 " + (entry.status === "error" ? "border-rose-300" : stale ? "border-amber-300" : "border-slate-300") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "famann-tr-" + lang.tag, className: "text-xs font-bold text-slate-700" }, lang.native, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-500" }, "(", lang.name, lang.rtl ? " · RTL" : "", ")")), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold" }, entry.status === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-rose-700" }, tt("famann.status_error", "failed — retry or paste")), stale && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, tt("famann.status_stale", "English changed since this translation")))), /* @__PURE__ */ React.createElement(
@@ -433,7 +433,7 @@ function FamilyAnnouncementsPanel(props) {
       className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
     },
     /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, a.title), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, a.date, " · ", (a.langTags || []).length, " ", tt("famann.langs_short", "language(s)"))),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-400" }, "›")
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-600" }, "›")
   )))), saved.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, tt("famann.storage_note", "Announcements live only in this browser’s storage — download packets you need to keep (Gemini Canvas may not persist storage between sessions)."))))));
 }
 

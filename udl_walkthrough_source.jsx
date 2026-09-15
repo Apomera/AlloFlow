@@ -757,7 +757,7 @@ function UdlWalkFeedbackCard({ session, teacher, anonymize, addToast, tt, onBack
             <span aria-hidden="true">✏️</span> {tt('udlwalk.edit_visit', 'Edit')}
           </button>
           <button type="button" onClick={onToggleShared} aria-pressed={!!session.sharedWithTeacher}
-            className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (session.sharedWithTeacher ? 'bg-green-600 text-white border-green-700' : 'bg-white text-green-700 border-green-300 hover:bg-green-50')}
+            className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (session.sharedWithTeacher ? 'bg-green-700 text-white border-green-700' : 'bg-white text-green-700 border-green-300 hover:bg-green-50')}
           >{session.sharedWithTeacher ? tt('udlwalk.shared_yes', '✓ Shared') : tt('udlwalk.mark_shared', 'Mark shared')}</button>
           <button type="button"
             onClick={() => { if (armDelete) { onDelete(); } else { setArmDelete(true); udlwalkAnnounce(tt('udlwalk.delete_arm_announce', 'Activate delete again to permanently remove this visit.')); } }}
@@ -1163,7 +1163,7 @@ function UdlWalkthroughPanel(props) {
                 </div>
                 <div className="flex gap-2">
                   <button type="button" onClick={discardDraft} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-600 text-sm font-bold hover:bg-slate-100">{draft.editingId ? tt('udlwalk.discard_edits', 'Discard edits') : tt('udlwalk.discard', 'Discard')}</button>
-                  <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">{draft.editingId ? tt('udlwalk.save_edits', 'Save changes') : tt('udlwalk.save', 'Save visit')}</button>
+                  <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{draft.editingId ? tt('udlwalk.save_edits', 'Save changes') : tt('udlwalk.save', 'Save visit')}</button>
                 </div>
               </div>
 
@@ -1181,7 +1181,7 @@ function UdlWalkthroughPanel(props) {
                 {UDLWALK_PHASES.map((p) => (
                   <button key={p.id} type="button" aria-pressed={draft.context.lessonPhase === p.id}
                     onClick={() => setDraft((d) => ({ ...d, context: { ...d.context, lessonPhase: p.id } }))}
-                    className={'min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold ' + (draft.context.lessonPhase === p.id ? 'bg-sky-600 text-white border-sky-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}
+                    className={'min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold ' + (draft.context.lessonPhase === p.id ? 'bg-sky-700 text-white border-sky-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}
                   >{tt('udlwalk.phase_' + p.id, p.label)}</button>
                 ))}
               </fieldset>
@@ -1216,7 +1216,7 @@ function UdlWalkthroughPanel(props) {
 
               <div className="mt-3">
                 <button type="button" aria-expanded={momentPickerOpen} onClick={() => setMomentPickerOpen((v) => !v)}
-                  className="min-h-11 w-full px-3 py-2 rounded-xl bg-sky-600 text-white text-sm font-bold hover:bg-sky-700"
+                  className="min-h-11 w-full px-3 py-2 rounded-xl bg-sky-700 text-white text-sm font-bold hover:bg-sky-800"
                 ><span aria-hidden="true">✨</span> {tt('udlwalk.student_moment', 'Student moment')} {draft.studentIndicators.length > 0 ? ('(' + draft.studentIndicators.length + ')') : ''}</button>
                 {momentPickerOpen && (
                   <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -1290,7 +1290,7 @@ function UdlWalkthroughPanel(props) {
             const sessB = sessions.find((s) => s.id === irB) || null;
             const agreement = (sessA && sessB && sessA.id !== sessB.id) ? udlwalkAgreement(sessA, sessB) : null;
             const cellView = (c) => {
-              if (!c || !c.rated) return { text: '—', cls: 'bg-slate-50 text-slate-400' };
+              if (!c || !c.rated) return { text: '—', cls: 'bg-slate-50 text-slate-600' };
               const rate = c.observed / c.rated;
               const cls = rate >= 0.7 ? 'bg-green-100 text-green-900' : rate >= 0.4 ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-900';
               return { text: Math.round(rate * 100) + '%', n: c.rated, cls };

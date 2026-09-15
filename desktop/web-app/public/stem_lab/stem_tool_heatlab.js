@@ -579,6 +579,12 @@
       // hook after a render-time conditional is the TDZ crash class that has bitten
       // other tools in this lab on navigation.
       var canvasRef = React.useRef(null);
+      // Fullscreen stage: the wrapper (stage + its controls) is what fills the
+      // screen, not the bare canvas, so the mode pills stay reachable. The canvas
+      // itself re-measures through the ResizeObserver already watching it.
+      var heatStageRef = React.useRef(null);
+      var stHeatFs = React.useState(false);
+      var heatFs = stHeatFs[0], setHeatFs = stHeatFs[1];
       var animRef = React.useRef(0);
       var roRef = React.useRef(null);
       var coolRef = React.useRef(null);
@@ -639,6 +645,32 @@
       var hotEnd = typeof d.hotEnd === 'number' ? d.hotEnd : 200;
       var racePrediction = heatRacePrediction(material, materialB);
       var raceRatioText = racePrediction.ratio >= 10 ? Math.round(racePrediction.ratio).toLocaleString() : racePrediction.ratio.toFixed(1);
+
+      // Fullscreen state follows the shared helper rather than a local guess:
+      // __alloStemFS may land in real fullscreen OR in its CSS fill-frame fallback
+      // (sandboxed embeds like Gemini Canvas refuse the real API), and Escape can
+      // leave either one without going through our button. Watching the marker
+      // attribute keeps the label honest in every one of those cases.
+      React.useEffect(function () {
+        var el = heatStageRef.current;
+        if (!el || typeof MutationObserver !== 'function') return;
+        var sync = function () {
+          var on = el.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === el
+            || document.webkitFullscreenElement === el;
+          setHeatFs(!!on);
+        };
+        var mo = new MutationObserver(sync);
+        mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+        sync();
+        return function () {
+          mo.disconnect();
+          document.removeEventListener('fullscreenchange', sync);
+          document.removeEventListener('webkitfullscreenchange', sync);
+        };
+      }, []);
 
       // ── Module 1 canvas ──────────────────────────────────────────────
       React.useEffect(function () {
@@ -1928,7 +1960,25 @@
           // 220px left the single bar floating in a third of a black field. The
           // extra height goes to the colour key, the end labels and the two-cell
           // convection tank, none of which fitted before.
-          h('div', { className: 'rounded-lg overflow-hidden border', style: { borderColor: 'rgba(251,146,60,0.35)', height: '260px' } },
+          // The stage (canvas + its fullscreen button) is one element so the helper
+          // fills the screen with a usable unit. In fullscreen the fixed 260px becomes
+          // a flex height, which is what makes the picture actually bigger — the
+          // ResizeObserver on the canvas repaints it at the new size.
+          h('div', { ref: heatStageRef, 'data-allo-fs-stage': 'true', className: 'relative rounded-lg overflow-hidden border',
+            style: heatFs
+              ? { borderColor: 'rgba(251,146,60,0.35)', height: '100%', display: 'flex', flexDirection: 'column', padding: 12, boxSizing: 'border-box' }
+              : { borderColor: 'rgba(251,146,60,0.35)', height: '260px' } },
+            h('button', {
+              type: 'button',
+              onClick: function () { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(heatStageRef.current); },
+              'aria-pressed': heatFs ? 'true' : 'false',
+              'aria-label': heatFs
+                ? t('stem.heatLab.exit_fullscreen', 'Exit fullscreen heat visualisation')
+                : t('stem.heatLab.enter_fullscreen', 'View the heat visualisation fullscreen'),
+              title: heatFs ? t('stem.common.exit_fullscreen', 'Exit fullscreen (Esc)') : t('stem.common.fullscreen', 'Fullscreen'),
+              className: 'absolute top-2 right-2 z-20',
+              style: { width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(251,146,60,0.55)', color: '#fdba74', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, heatFs ? '✕' : '⛶')),
             h('canvas', {
               ref: canvasRef,
               tabIndex: 0,
@@ -1947,7 +1997,9 @@
                 upd({ hotEnd: next });
                 if (typeof announceToSR === 'function') announceToSR('Hot end ' + next + ' degrees Celsius.');
               },
-              style: { width: '100%', height: '100%', display: 'block' }
+              style: heatFs
+                ? { width: '100%', flex: '1 1 auto', minHeight: 0, display: 'block' }
+                : { width: '100%', height: '100%', display: 'block' }
             })
           ),
           mode === 'conduction' ? h('p', {

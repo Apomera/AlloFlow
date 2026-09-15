@@ -1125,7 +1125,7 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _handleResumeSnapshot,
-    className: "text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none"
+    className: "text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none"
   }, t('persona.resume_btn') || 'Resume'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _handleDiscardSnapshot,
@@ -1541,7 +1541,7 @@ function PersonaChatView(props) {
         e.stopPropagation();
         handleSpeak(msg.translation, `persona-panel-translation-${idx}`, 0);
       },
-      className: "p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50"
+      className: "p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 12
     }))), /*#__PURE__*/React.createElement("p", {
@@ -1735,7 +1735,7 @@ function PersonaChatView(props) {
   }, hasRenderableReflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
+    className: "w-20 h-20 bg-gradient-to-br from-green-700 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 40,
     className: "fill-current"
@@ -1784,7 +1784,7 @@ function PersonaChatView(props) {
     type: "button",
     "aria-expanded": isPersonaReflectionOpen,
     onClick: _handleCompleteReflection,
-    className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
+    className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 22
   }), " ", t('common.continue') || 'Continue'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -2162,7 +2162,7 @@ function PersonaChatView(props) {
   }, inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')), (!personaState.chatHistory || personaState.chatHistory.length === 0) && /*#__PURE__*/React.createElement("div", {
     className: "mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200"
+    className: "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200"
   }, /*#__PURE__*/React.createElement(Quote, {
     size: 22
   })), /*#__PURE__*/React.createElement("p", {
@@ -2276,7 +2276,7 @@ function PersonaChatView(props) {
           e.stopPropagation();
           handleSpeak(translationText, `persona-translation-${idx}`, 0);
         },
-        className: "p-0.5 rounded text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none",
+        className: "p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none",
         title: t('common.click_to_read')
       }, /*#__PURE__*/React.createElement(Volume2, {
         size: 12
@@ -2329,7 +2329,7 @@ function PersonaChatView(props) {
   }, !isPersonaFreeResponse && renderPersonaTurnError(), isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: "px-4 pt-2 pb-0 flex justify-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in"
   }, /*#__PURE__*/React.createElement("span", {
-    className: `text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`
+    className: `text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors motion-reduce:transition-none ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`
   }, !personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status'))), (showPersonaHints || !isPersonaFreeResponse) && (personaState.suggestions || []).length > 0 && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {
     className: `px-4 pt-3 flex gap-2 ${isPersonaFreeResponse ? 'overflow-x-auto no-scrollbar pb-1' : 'flex-wrap pb-4 justify-center'}`
   }, /*#__PURE__*/React.createElement("button", {
@@ -2400,7 +2400,7 @@ function PersonaChatView(props) {
   }, hasRenderableReflectionFeedback ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-center mb-6 relative"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
+    className: "w-20 h-20 bg-gradient-to-br from-green-700 to-emerald-700 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in motion-reduce:animate-none zoom-in duration-300"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 40,
     className: "fill-current"
@@ -2449,7 +2449,7 @@ function PersonaChatView(props) {
     type: "button",
     "aria-label": t('common.continue'),
     onClick: _handleCompleteReflection,
-    className: "w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
+    className: "w-full py-4 bg-gradient-to-r from-indigo-700 to-purple-700 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-lg"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 22
   }), " ", t('common.continue') || 'Continue'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {

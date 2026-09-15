@@ -667,7 +667,7 @@ function OnboardingCoach(props) {
                     onClick={openTour}
                     style={{
                       padding: '10px 18px', borderRadius: '999px',
-                      background: '#d97706', color: '#fff', border: 'none',
+                      background: '#b45309', color: '#fff', border: 'none',
                       fontWeight: 800, fontSize: '13px', cursor: 'pointer',
                       boxShadow: '0 2px 6px rgba(217,119,6,0.45)',
                       whiteSpace: 'nowrap',

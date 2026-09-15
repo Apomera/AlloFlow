@@ -648,7 +648,7 @@ function DisproAnalyzerPanel(props) {
       className: "w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left"
     },
     /* @__PURE__ */ React.createElement("span", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold text-sm text-slate-800" }, a.title), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-500" }, a.date, " · ", a.groups.length, " ", tt("dispro.groups_short", "groups"))),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-400" }, "›")
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "shrink-0 text-slate-600" }, "›")
   )))), analyses.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[10px] text-slate-500" }, tt("dispro.storage_note", "Analyses live only in this browser’s storage. Gemini Canvas may not persist storage between sessions — export the CSV for anything you need to keep."))))));
 }
 

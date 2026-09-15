@@ -146,7 +146,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       function goto(v) { setQQ({ view: v }); }
 
       // Resolve current query
-      var currentIdx = d.manualOverride != null ? d.manualOverride : currentWeekIndex();
+      var currentIdx = Number.isInteger(d.manualOverride) && d.manualOverride >= 0 && d.manualOverride < QUERIES.length ? d.manualOverride : currentWeekIndex();
       var currentQuery = QUERIES[currentIdx];
 
       // ─── Header ───
@@ -196,12 +196,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       function renderThisWeek() {
         var q = currentQuery;
         // What has the student already written on THIS query?
-        var existing = (d.responses || []).filter(function(r) { return r.queryId === q.id; });
+        var existing = ((Array.isArray(d.responses) ? d.responses : [])).filter(function(r) { return r.queryId === q.id; });
         var draftId = 'qq-draft-' + q.id;
 
         function saveResponse() {
           var ta = document.getElementById(draftId);
-          if (!ta || !ta.value.trim()) return;
+          if (!ta || !ta.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var crewCheck = document.getElementById('qq-share-crew');
           var crewText = document.getElementById('qq-crew-version');
           var entry = {
@@ -209,7 +209,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             shareWithCrew: crewCheck ? !!crewCheck.checked : false,
             crewVersion: (crewCheck && crewCheck.checked && crewText) ? crewText.value.trim() : ''
           };
-          setQQ({ responses: (d.responses || []).concat([entry]) });
+          setQQ({ responses: ((Array.isArray(d.responses) ? d.responses : [])).concat([entry]) });
           ta.value = '';
           if (crewText) crewText.value = '';
           if (crewCheck) crewCheck.checked = false;
@@ -300,7 +300,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
 
         if (browsed) {
           // Detail view
-          var responses = (d.responses || []).filter(function(r) { return r.queryId === browsed.id; });
+          var responses = ((Array.isArray(d.responses) ? d.responses : [])).filter(function(r) { return r.queryId === browsed.id; });
           return h('div', null,
             h('button', { onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
               style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
@@ -343,7 +343,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
               h('div', { style: { fontSize: 12, color: t.color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, t.label),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
                 t.queries.map(function(q) {
-                  var hasResponse = (d.responses || []).some(function(r) { return r.queryId === q.id; });
+                  var hasResponse = ((Array.isArray(d.responses) ? d.responses : [])).some(function(r) { return r.queryId === q.id; });
                   return h('button', { key: q.id, onClick: function() { setQQ({ browseId: q.id }); },
                     style: { padding: 12, borderRadius: 8, border: '1px solid ' + t.color + '44', background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
                     h('div', { style: { fontSize: 10, color: t.color, fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
@@ -360,7 +360,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // MY PRACTICE — all past responses, dated, deletable
       // ═══════════════════════════════════════════════════════
       function renderPractice() {
-        var responses = (d.responses || []).slice();
+        var responses = ((Array.isArray(d.responses) ? d.responses : [])).slice();
         if (responses.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 24, borderRadius: 10, background: _qqBg('#0f172a'), textAlign: 'center' } },

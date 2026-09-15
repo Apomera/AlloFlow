@@ -1367,7 +1367,7 @@ window.SelHub = window.SelHub || {
             ),
             h('button', { 'aria-label': 'Add to My Circle',
               onClick: function() {
-                if (!newAdultName.trim()) return;
+                if (!newAdultName.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
                 var entry = { name: newAdultName.trim(), role: newAdultRole.trim(), category: newAdultCat, timestamp: Date.now() };
                 var updated = trustedAdults.concat([entry]);
                 upd({ trustedAdults: updated, newAdultName: '', newAdultRole: '' });

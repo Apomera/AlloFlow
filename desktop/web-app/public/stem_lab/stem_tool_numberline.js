@@ -2309,7 +2309,16 @@ window.StemLab = window.StemLab || {
                   className: 'px-3 py-2 rounded-lg text-xs font-bold border border-sky-500 text-sky-700 bg-sky-50 hover:bg-sky-100'
                 }, showIntegerLab ? t('stem.numberline.hide_integer_lab', 'Hide mini lab') : t('stem.numberline.open_integer_lab', 'Open mini lab'))
               ),
-              showIntegerLab && h('div', { className: 'mt-3 rounded-xl overflow-hidden border border-sky-200', style: { background: '#020210', aspectRatio: '16/4' } },
+              showIntegerLab && h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'mt-3 rounded-xl overflow-hidden border border-sky-200', style: { position: 'relative', background: '#020210', aspectRatio: '16/4' } },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': t('stem.numberline.enter_fullscreen', 'View the number line fullscreen'),
+                  'data-fs-out': t('stem.numberline.enter_fullscreen', 'View the number line fullscreen'),
+                  'data-fs-in': t('stem.numberline.exit_fullscreen', 'Exit fullscreen number line (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(125,211,252,0.6)', color: '#e0f2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 h('canvas', {
                   role: 'img',
                   tabIndex: 0,

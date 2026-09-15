@@ -650,7 +650,7 @@ function OnboardingCoach(props) {
             style: {
               padding: "10px 18px",
               borderRadius: "999px",
-              background: "#d97706",
+              background: "#b45309",
               color: "#fff",
               border: "none",
               fontWeight: 800,

@@ -2145,7 +2145,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         };
 
         // ── State ──
-        var tab = d.tab || 'indigenous';  // 'indigenous' | 'ecosystems' | 'simulator' | 'burnPlan' | 'science' | 'quiz'
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'indigenous'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['beavers', 'burnPlan', 'carbon', 'caseStudies', 'ecosystems', 'game', 'indigenous', 'mosaic', 'quiz', 'regimeHunt', 'science', 'simulator', 'smokeSeeds', 'watershed'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'indigenous';  // 'indigenous' | 'ecosystems' | 'simulator' | 'burnPlan' | 'science' | 'quiz'
         var selectedNation = d.selectedNation || null;
         var selectedEcosystem = d.selectedEcosystem || null;
         var selectedScience = d.selectedScience || null;

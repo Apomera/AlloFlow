@@ -79,7 +79,7 @@ function VideoLibraryOverlay({ onClose, t }) {
           href: "https://apomera.github.io/AlloFlow/",
           target: "_blank",
           rel: "noopener noreferrer",
-          className: "mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
+          className: "mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 focus-visible:ring-offset-2"
         },
         tr("video_library.open_site", "Open the AlloFlow site"),
         /* @__PURE__ */ React.createElement(ExternalLink, { size: 13, "aria-hidden": "true" })
@@ -129,7 +129,7 @@ function VideoLibraryOverlay({ onClose, t }) {
         {
           type: "button",
           onClick: onClose,
-          className: "min-h-11 px-2 py-1 text-2xl leading-none text-slate-400 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+          className: "min-h-11 px-2 py-1 text-2xl leading-none text-slate-600 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
           "aria-label": tr("video_library.close", "Close video library")
         },
         /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })

@@ -5107,12 +5107,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                       }, T('video_studio.download_vtt', '⬇ Captions (.vtt)')),
                       h('button', {
                         onClick: function () { downloadAccessPacket(v); },
-                        className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-600',
+                        className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800',
                         title: T('video_studio.access_packet_title', 'Downloads transcript, captions when available, and metadata for accessibility review.')
                       }, T('video_studio.access_packet', 'Accessibility packet')),
                       h('button', {
                         onClick: function () { downloadAccessPacket(v, { audience: 'student_family' }); },
-                        className: 'px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-600',
+                        className: 'px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-800',
                         title: T('video_studio.student_packet_title', 'Downloads a student/family-friendly packet with transcript, captions, chapters, and a plain sharing note.')
                       }, T('video_studio.student_packet', 'Student/family packet')),
                       v.vtt && h('button', {

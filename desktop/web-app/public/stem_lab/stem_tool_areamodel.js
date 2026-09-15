@@ -1185,7 +1185,19 @@ window.StemLab = window.StemLab || {
         _a.showAreaPatterns && h('div', { className: 'space-y-3' },
         h('div', { className: 'mt-2 rounded-2xl border border-blue-300 bg-white p-3 shadow-sm' },
           h('h4', { className: 'text-sm font-bold text-blue-700 mb-2' }, t('stem.areamodel.distributive_property_a_b_c_ab_ac', '\uD83D\uDD22 Distributive Property \u2014 a(b+c) = ab + ac')),
-          h('div', { className: 'rounded-xl overflow-hidden border border-blue-200', style: { background: '#0f172a', aspectRatio: '16/5' } },
+          // The aspect-ratio box keeps the diagram correctly proportioned when the
+          // stage fills the screen, so the canvas needs no fullscreen-specific size.
+          h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+            className: 'rounded-xl overflow-hidden border border-blue-200', style: { position: 'relative', background: '#0f172a', aspectRatio: '16/5' } },
+            h('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
+              'data-fs-out': t('stem.areamodel.enter_fullscreen', 'View the area diagram fullscreen'),
+              'data-fs-in': t('stem.areamodel.exit_fullscreen', 'Exit fullscreen area diagram (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(147,197,253,0.6)', color: '#dbeafe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, '\u26F6')),
             h('canvas', {
               role: 'img',
               tabIndex: 0,

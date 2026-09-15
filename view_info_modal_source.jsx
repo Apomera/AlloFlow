@@ -404,7 +404,7 @@ function OpenSourceTab({ t }) {
 
       <details className="bg-slate-50 rounded-xl border border-slate-200 group">
         <summary className="min-h-11 cursor-pointer select-none px-4 py-3 font-bold text-slate-700 text-sm flex items-center gap-2 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
-          <span aria-hidden="true" className="text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none">▸</span>
+          <span aria-hidden="true" className="text-slate-600 group-open:rotate-90 transition-transform motion-reduce:transition-none">▸</span>
           {t('about.oss_full_list_header') || 'Libraries and open resources we integrate'} ({OSS_TOTAL})
         </summary>
         <div className="px-4 pb-4 pt-1 space-y-4">
@@ -1144,7 +1144,7 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
         <span className="col-start-2 col-span-2 row-start-2 mt-2 justify-self-start max-w-full text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words sm:mt-0 sm:shrink-0 sm:whitespace-nowrap">
           {isFiltered ? resultLabel : hub.total + ' entries' + (catCount > 1 ? ' / ' + catCount + ' areas' : '')}
         </span>
-        <span aria-hidden="true" className="col-start-3 row-start-1 self-center text-slate-400 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
+        <span aria-hidden="true" className="col-start-3 row-start-1 self-center text-slate-600 group-open:rotate-90 transition-transform motion-reduce:transition-none text-xs">&gt;</span>
       </summary>
       <div className="px-4 pb-4 pt-0 space-y-4">
         <AtlasHubRoute hub={hub} visual={visual} />
@@ -1302,7 +1302,7 @@ function AtlasJourneys({ onChooseHub }) {
                 return (
                   <React.Fragment key={stop}>
                     {index > 0 && (
-                      <span aria-hidden="true" className="shrink-0 text-center font-bold text-slate-300">
+                      <span aria-hidden="true" className="shrink-0 text-center font-bold text-slate-600">
                         <span className="hidden sm:inline">&rarr;</span>
                         <span className="sm:hidden">&darr;</span>
                       </span>
@@ -1486,7 +1486,7 @@ function AtlasTab({ t, onRequestClose }) {
               </span>
             </div>
             <div className="relative">
-              <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">&#x1F50E;</span>
+              <span aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600">&#x1F50E;</span>
               <input
                 id="atlas-search-input"
                 type="search"
@@ -2373,7 +2373,7 @@ function InfoModal({
                 <label htmlFor="feature-guide-search" className="block text-xs font-bold text-slate-700 mb-1.5">Search guided workflows</label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
-                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+                    <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" aria-hidden="true" />
                     <input
                       id="feature-guide-search"
                       type="search"

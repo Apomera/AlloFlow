@@ -159,7 +159,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       }
       var view = d.view || 'home';
       var buildMode = d.buildMode === 'all' ? 'all' : 'guided';
-      var activeStep = Math.min(LETTERS.length - 1, Math.max(0, Number(d.activeStep) || 0));
+      var activeStep = Math.min(LETTERS.length - 1, Math.max(0, Math.floor(Number(d.activeStep)) || 0));
       var practiceSupport = ['full', 'starter', 'memory'].indexOf(d.practiceSupport) >= 0 ? d.practiceSupport : 'full';
       var draftedSteps = LETTERS.filter(function(L) {
         var response = (d.responses || {})[L.id];

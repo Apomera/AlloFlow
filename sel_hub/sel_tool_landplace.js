@@ -473,7 +473,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         var journal = d.journal || [];
         function addEntry() {
           var text = document.getElementById('landplace-new-entry');
-          if (!text || !text.value.trim()) return;
+          if (!text || !text.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           var entry = { date: new Date().toISOString().split('T')[0], text: text.value.trim() };
           setLP({ journal: journal.concat([entry]) });
           text.value = '';

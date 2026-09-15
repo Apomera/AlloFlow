@@ -892,7 +892,10 @@ describe('mailbox live-resource parity: durable packRef self-heal', () => {
             expect(source).toContain('setHostedFp: (fp) => { mbHostedPackFpRef.current = fp; }');
             // Student: self-heal branch reads packRef and rebuilds via getpack.
             expect(source).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
-            expect(source).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
+            // Parts are fetched by the shared concurrent helper, which appends `part`
+            // per request; the base params below are what the call site still supplies.
+            expect(source).toContain("{ a: 'getpack', id: data.packRef.id, k: data.packRef.k }");
+            expect(source).toContain('await _alloFetchMailboxPackParts(');
             expect(source).toContain('hydratedHistoryRef.current = merged;');
             // Preserve the pinned mailbox fallback + the exactly-two invariant.
             expect(source).toContain('_alloMbBridgeActive() && Array.isArray(hydratedHistoryRef.current) && hydratedHistoryRef.current.length');

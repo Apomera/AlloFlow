@@ -239,7 +239,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // ═══════════════════════════════════════════════════════════
       function renderOverview() {
         var rated = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] > 0; }).length;
-        var topFive = d.topFive || [];
+        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
 
         return h('div', null,
           authoritativeBanner(),
@@ -314,7 +314,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           if (announceToSR && strength) announceToSR(strength.label + ' rated ' + value + ' out of 5');
         }
         function toggleTop(id) {
-          var top = (d.topFive || []).slice();
+          var top = ((Array.isArray(d.topFive) ? d.topFive : [])).slice();
           var idx = top.indexOf(id);
           if (idx >= 0) {
             top.splice(idx, 1);
@@ -352,7 +352,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
               h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, v),
               virtues[v].map(function(s) {
                 var r = ratingOf(s.id);
-                var isTop = (d.topFive || []).indexOf(s.id) !== -1;
+                var isTop = ((Array.isArray(d.topFive) ? d.topFive : [])).indexOf(s.id) !== -1;
                 return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: _viaBg('#1e293b'), marginBottom: 4 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                     h('span', { style: { fontSize: 22 } }, s.icon),
@@ -383,7 +383,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // REFLECT — write notes on top 5
       // ═══════════════════════════════════════════════════════════
       function renderReflect() {
-        var topFive = d.topFive || [];
+        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
         if (topFive.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
@@ -437,7 +437,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var topFive = d.topFive || [];
+        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.55 } },

@@ -179,7 +179,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // MAP VIEW — SVG constellation
       // ═══════════════════════════════════════════════════════
       function renderMap() {
-        var conns = d.connections || [];
+        var conns = (Array.isArray(d.connections) ? d.connections : []);
         var W = 600, Hgt = 580, cx = W / 2, cy = Hgt / 2;
 
         // Lay connections out: angle by category sector center, distance by strength
@@ -306,7 +306,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       // ── CARE PULSE VIEW ──
       // A descriptive summary, not a score: the map is information, not a verdict.
       function renderPulse() {
-        var connections = d.connections || [];
+        var connections = (Array.isArray(d.connections) ? d.connections : []);
         var received = connections.filter(function(c) { return c.direction === 'to-me'; }).length;
         var given = connections.filter(function(c) { return c.direction === 'from-me'; }).length;
         var mutual = connections.filter(function(c) { return c.direction === 'mutual'; }).length;
@@ -405,7 +405,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             return;
           }
           if (editing) {
-            var newConns = (d.connections || []).map(function(c) {
+            var newConns = ((Array.isArray(d.connections) ? d.connections : [])).map(function(c) {
               if (c.id !== d.selectedConnId) return c;
               return Object.assign({}, c, { name: drafts.name.trim(), categoryId: drafts.categoryId, direction: drafts.direction, strength: drafts.strength, notes: drafts.notes });
             });
@@ -413,13 +413,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             if (announceToSR) announceToSR('Connection updated.');
           } else {
             var entry = { id: newId(), name: drafts.name.trim(), categoryId: drafts.categoryId, direction: drafts.direction, strength: drafts.strength, notes: drafts.notes };
-            setCC({ connections: (d.connections || []).concat([entry]), view: 'map', drafts: defaultState().drafts });
+            setCC({ connections: ((Array.isArray(d.connections) ? d.connections : [])).concat([entry]), view: 'map', drafts: defaultState().drafts });
             if (announceToSR) announceToSR('Connection added.');
             if (addToast) addToast('Added to your constellation.', 'success');
           }
         }
         function remove() {
-          var newConns = (d.connections || []).filter(function(c) { return c.id !== d.selectedConnId; });
+          var newConns = ((Array.isArray(d.connections) ? d.connections : [])).filter(function(c) { return c.id !== d.selectedConnId; });
           setCC({ connections: newConns, selectedConnId: null, view: 'map', drafts: defaultState().drafts });
           if (addToast) addToast('Removed.', 'info');
         }
@@ -645,7 +645,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
       }
 
       function renderPrintView() {
-        var connections = d.connections || [];
+        var connections = (Array.isArray(d.connections) ? d.connections : []);
         var byCategory = {};
         connections.forEach(function(c) {
           var key = c.categoryId || 'other';

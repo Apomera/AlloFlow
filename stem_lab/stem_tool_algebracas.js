@@ -549,7 +549,14 @@ onSpeak: function(formats) {
         };
 
         /* -- State aliases -- */
-        var tab = d.tab || 'solve';
+        // `tab` is PERSISTED state and every view is a `tab === '<id>'` branch, so an
+        // id this build does not know matched NONE of them: the tool rendered its
+        // header and tab strip over an empty body -- a dead end that looks functional.
+        // `|| 'solve'` only catches null/empty. Allow-list the ids that actually have a
+        // branch. Declared here, at the READ site, because any existing tab-id array
+        // is assigned further down and `var` hoists the declaration, not the value.
+        var TAB_IDS = ['builder', 'practice', 'scale', 'solve', 'tutor'];
+        var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'solve';
         var expression = d.expression || '';
         var mode = d.mode || 'solve';
         var result = d.result || null;
@@ -1021,7 +1028,12 @@ onSpeak: function(formats) {
             // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
             var _acDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
             var w = canvas.parentNode.offsetWidth || 400;
-            var ht = 220;
+            // 220 is the right height in the page. In fullscreen the stage is as
+            // tall as the screen, and a 220px beam stranded in a tall black field
+            // is not a bigger picture - so take the stage's height when it is
+            // filling the frame, leaving room for the button and the readings.
+            var _acFs = canvas.parentNode.hasAttribute && canvas.parentNode.hasAttribute('data-allo-fullscreen-active');
+            var ht = _acFs ? Math.max(220, (canvas.parentNode.offsetHeight || 220) - 16) : 220;
             canvas.width = Math.round(w * _acDpr);
             canvas.height = Math.round(ht * _acDpr);
             canvas.style.width = w + 'px';
@@ -1205,7 +1217,19 @@ onSpeak: function(formats) {
                   style: { padding: '8px 14px', borderRadius: '10px', background: BTN_FLAT, color: BTN_TEXT, fontWeight: '700', fontSize: '12px', cursor: 'pointer', border: 'none' } }, t('stem.algebraCAS.load_2', 'Load'))
               )
             ),
-            h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: ctx.isContrast ? '#000' : '#0f172a' } },
+            // Fullscreen stage: the beam plus the sentences under it. The picture
+            // alone does not say what "balanced" means, so the reading travels with it.
+            h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              style: { position: 'relative', borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: ctx.isContrast ? '#000' : '#0f172a' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': t('stem.algebraCAS.enter_fullscreen', 'View the balance scale fullscreen'),
+                'data-fs-out': t('stem.algebraCAS.enter_fullscreen', 'View the balance scale fullscreen'),
+                'data-fs-in': t('stem.algebraCAS.exit_fullscreen', 'Exit fullscreen balance scale (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + BORDER, color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '\u26F6')),
               h('canvas', { ref: scaleCanvasRef, role: 'img', 'aria-label': t('stem.algebraCAS.interactive_algebra_balance_scale_visu', 'Interactive algebra balance scale visualization') + ': ' + scaleEq, tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
             h('p',{style:{fontSize:13,color:TEXT,marginBottom:6}},t('stem.algebraCAS.trial_beam_meaning','The level beam shows the goal: equal sides. Open Test a value for x to check whether a particular value makes them equal.')),

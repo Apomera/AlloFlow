@@ -8347,7 +8347,7 @@ function PdfAuditView(props) {
                         <button
                           onClick={_alloLoadDesktopFolder}
                           disabled={_modalDismissBusy}
-                          className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
+                          className="px-6 py-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-xl font-bold text-sm hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg inline-flex items-center gap-2"
                         >
                           📂 {t('pdf_audit.batch.scan_folder') || 'Scan Folder (documents + PNG/JPEG/WebP, incl. subfolders)'}
                         </button>
@@ -8504,7 +8504,7 @@ function PdfAuditView(props) {
                           <button type="button" onClick={() => _runBatchSelection('retry')}
                             disabled={_modalDismissBusy || remediationReady === false}
                             data-help-key="pdf_audit_view_batch_retry_all_failed_btn"
-                            className="mt-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold disabled:opacity-50"
+                            className="mt-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded text-xs font-bold disabled:opacity-50"
                             title="Retry failed files while keeping completed results."
                           >↻ Retry all failed ({pdfBatchSummary.failed})</button>
                         )}
@@ -8741,7 +8741,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 </body></html>`);
                             win.document.close();
                             addToast(t('toasts.dashboard_opened'), 'success');
-                          }} data-help-key="pdf_audit_view_batch_dashboard_btn" className="px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
+                          }} data-help-key="pdf_audit_view_batch_dashboard_btn" className="px-4 py-3 bg-gradient-to-r from-violet-700 to-indigo-700 text-white rounded-xl text-sm font-bold hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg flex items-center gap-2">
                             📊 Dashboard
                           </button>
                         </>
@@ -8798,7 +8798,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         } finally {
                           if (_finishViewDocumentJob(_mediaToken)) setMediaDigesting(false);
                         }
-                      }} className="px-4 py-2 bg-cyan-600 text-white rounded-xl font-bold text-xs hover:bg-cyan-700 disabled:opacity-50">
+                      }} className="px-4 py-2 bg-cyan-700 text-white rounded-xl font-bold text-xs hover:bg-cyan-800 disabled:opacity-50">
                         {mediaDigesting ? '⏳ ' + (mediaDigestProgress || (t('pdf_audit.media.digesting') || 'Digesting… (large recordings take a while)')) : '▶ ' + (t('pdf_audit.media.go') || 'Digest recording')}
                       </button>
                       <span className="text-[10px] text-slate-500 ml-2">{t('pdf_audit.media.unlock_note') || 'The buttons below unlock once the digest is ready.'}</span>
@@ -9492,7 +9492,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           var updated = {...saved}; delete updated[k];
                                           try { localStorage.setItem('alloflow_custom_styles', JSON.stringify(updated)); } catch(e) {}
                                           addToast && addToast(t('toasts.deleted') + s.name + '"', 'info');
-                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-600 hover:text-red-600 hover:bg-red-50">✕</button>
+                                        }} className="px-1 py-1.5 border border-l-0 border-slate-200 rounded-r-lg text-[11px] text-red-800 hover:text-red-800 hover:bg-red-50">✕</button>
                                       </div>
                                     );
                                   })}
@@ -10091,7 +10091,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-bold text-slate-800">Knowbility</span>
                         <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
-                        <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                       </div>
                       <p className="text-[11px] text-slate-600 leading-relaxed mt-1.5">
                         <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_lead') || 'Creating an inclusive digital world for people with disabilities'}</strong> — Knowbility is
@@ -10167,7 +10167,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </div>
                     </div>
                     <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                      <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
+                      <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
                         Request a Project Inquiry →
                       </a>
                     </div>
@@ -10205,7 +10205,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 </div>
               </div>) : pdfAuditResult && pdfAuditResult.score < 0 ? (
               <div role="alert" className="rounded-2xl overflow-hidden border border-slate-400 shadow-lg">
-                <div className="p-6 text-center bg-gradient-to-r from-slate-600 to-slate-700 text-white">
+                <div className="p-6 text-center bg-gradient-to-r from-slate-700 to-slate-700 text-white">
                   <div className="text-4xl mb-2">⚠️</div>
                   <h3 className="text-lg font-bold">{t('pdf_audit.unavailable.title') || 'Audit Unavailable'}</h3>
                   <p className="text-sm opacity-80 mt-1">{t('pdf_audit.unavailable.body') || 'The AI accessibility audit could not complete. This is usually caused by a temporary API issue, rate limiting, or a very large/complex PDF.'}</p>
@@ -10415,7 +10415,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="text-[11px] text-slate-600 font-bold uppercase">{t('pdf_audit.reliability.std_dev') || 'Standard Deviation'}</div>
                           </div>
                           <div className="bg-white rounded-lg p-2 text-center border border-indigo-100">
-                            <div className={`text-lg font-black ${pdfAuditResult.reliabilityDegenerate ? 'text-slate-400' : pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.reliabilityDegenerate ? 'n/a' : pdfAuditResult.icc}</div>
+                            <div className={`text-lg font-black ${pdfAuditResult.reliabilityDegenerate ? 'text-slate-600' : pdfAuditResult.icc >= 0.75 ? 'text-green-700' : pdfAuditResult.icc >= 0.5 ? 'text-amber-700' : 'text-red-700'}`}>{pdfAuditResult.reliabilityDegenerate ? 'n/a' : pdfAuditResult.icc}</div>
                             <div className="text-[11px] text-slate-600 font-bold uppercase" title={t('pdf_audit.reliability.icc_title') || 'Custom 1−(SD/50) index; not textbook ICC'}>{t('pdf_audit.reliability.icc_label') || 'Auditor Consistency (ICC-like)'}</div>
                           </div>
                           {pdfAuditResult.cronbachAlpha !== null && !pdfAuditResult.reliabilityDegenerate && (
@@ -10427,7 +10427,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         <div className="text-[11px] text-indigo-600 space-y-0.5">
                           <div className="italic text-slate-500 normal-case">{t('pdf_audit.reliability.basis_note') || 'These figures measure how consistently the AI auditors agreed with each other across re-prompts (reproducibility) — they are NOT the measurement uncertainty of the document’s true accessibility, and a tight range does not mean the score is correct.'}</div>
-                          <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-400">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
+                          <div>SEM: ±{pdfAuditResult.scoreSEM} <span className="text-slate-600">(re-prompt spread)</span> | Range: {pdfAuditResult.scoreRange} | Auditors: {pdfAuditResult.auditorCount}/{pdfAuditResult.requestedAuditors}</div>
                           <div>Individual scores: {pdfAuditResult.scores.join(', ')}</div>
                           <div>{pdfAuditResult.reliabilityDegenerate
                             ? (pdfAuditResult.auditorCount < 2 ? '⚠️ Single pass — no cross-pass agreement to report' : '✅ Unanimous at the floor — every pass independently scored 0/100 (each pass’s own findings exceeded the 100-point deduction scale); only the variance-based index is undefined at a boundary, so it shows n/a')
@@ -10708,7 +10708,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-red-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -10737,7 +10737,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-orange-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -10763,7 +10763,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div><strong>{issue.issue}</strong>{issue.wcag && <span className="text-yellow-700 ml-1">(WCAG {issue.wcag})</span>}{issue.count > 1 && <span className="text-slate-600 ml-1" title={`Occurs ${issue.count} times in the document`}>×{issue.count}</span>}
                             {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                               <span
-                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
+                                className={`ml-2 inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}
                                 title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                               >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                             )}
@@ -10788,7 +10788,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span>{issue.issue}{issue.count > 1 && ` (×${issue.count})`}</span>
                           {issue.auditorAgreement != null && pdfAuditResult.auditorCount > 1 && (
                             <span
-                              className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-500 border border-slate-300'}`}
+                              className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded-full ${issue.auditorAgreement === pdfAuditResult.auditorCount ? 'bg-slate-700 text-white' : issue.auditorAgreement / pdfAuditResult.auditorCount >= 0.5 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-600 border border-slate-300'}`}
                               title={_agreementTooltip(issue.auditorAgreement, pdfAuditResult.auditorCount)}
                             >{issue.auditorAgreement}/{pdfAuditResult.auditorCount}</span>
                           )}
@@ -11583,7 +11583,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="text-sm font-bold text-slate-800">{t('pdf_audit.ada.heading') || 'ADA Title II & WCAG 2.2 AA'}</h4>
-                                <span className="text-[11px] font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 2027 (extended)'}</span>
+                                <span className="text-[11px] font-bold text-rose-800 bg-rose-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">{t('pdf_audit.ada.deadline_badge') || 'Deadline: April 2027 (extended)'}</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 The U.S. Department of Justice finalized a rule under <strong className="text-slate-700">{t('pdf_audit.ada.title_strong') || 'Title II of the Americans with Disabilities Act (ADA)'}</strong> requiring
@@ -11728,7 +11728,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <span className="text-[10px] font-bold text-slate-500 uppercase">Image {imgIdx + 1}</span>
                                           {idxs.length > 1 && <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold" title={(t('pdf_audit.images.dup_title') || 'This exact image appears ') + idxs.length + (t('pdf_audit.images.dup_title2') || ' times in the document — one description covers every copy.')}>×{idxs.length} {t('pdf_audit.images.dup_badge') || 'copies'}</span>}
                                           {img.isRegenerated && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">{t('pdf_audit.images.ai_generated_badge') || 'AI Generated'}</span>}
-                                          {img.type === 'decorative' && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">Decorative</span>}
+                                          {img.type === 'decorative' && <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold">Decorative</span>}
                                         </div>
                                         <textarea
                                           defaultValue={img.description || ''}
@@ -12257,7 +12257,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     <span className="font-bold">✨ Restore applied:</span>
                                     <span>{autoRestoreSummary.restored.length} word{autoRestoreSummary.restored.length === 1 ? '' : 's'} spliced back{autoRestoreSummary.unplaceable.length > 0 ? ` · ${autoRestoreSummary.unplaceable.length} in Content Recovery appendix` : ''}</span>
                                     {autoRestoreSummary.unplaceable.length > 0 && recoveryReviewIdx === null && (
-                                      <button onClick={() => { setRecoveryReviewIdx(0); setRecoveryReviewOutcomes({}); }} className="px-2 py-0.5 bg-amber-600 text-white rounded-full text-[10px] font-bold hover:bg-amber-700" title={t('pdf_audit.recovery_review.start_title') || 'Step through each word the automatic restore could not confidently place — see its original context and decide where it belongs, one at a time (like a spell checker).'}>
+                                      <button onClick={() => { setRecoveryReviewIdx(0); setRecoveryReviewOutcomes({}); }} className="px-2 py-0.5 bg-amber-700 text-white rounded-full text-[10px] font-bold hover:bg-amber-800" title={t('pdf_audit.recovery_review.start_title') || 'Step through each word the automatic restore could not confidently place — see its original context and decide where it belongs, one at a time (like a spell checker).'}>
                                         🔍 {t('pdf_audit.recovery_review.start') || 'Review one by one'}
                                       </button>
                                     )}
@@ -12279,7 +12279,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       <div className="mb-2 bg-emerald-50 border-2 border-emerald-300 rounded-xl p-2.5 text-[11px] text-emerald-900 flex items-center gap-2" role="status">
                                         <span className="font-bold">✅ {t('pdf_audit.recovery_review.done') || 'Review complete:'}</span>
                                         <span>{_ins} {t('pdf_audit.recovery_review.inserted') || 'inserted in context'} · {_items.length - _ins} {t('pdf_audit.recovery_review.kept') || 'kept in the appendix'}.</span>
-                                        <button onClick={() => setRecoveryReviewIdx(null)} className="ml-auto px-2 py-0.5 bg-emerald-600 text-white rounded text-[10px] font-bold">{t('pdf_audit.recovery_review.close') || 'Close'}</button>
+                                        <button onClick={() => setRecoveryReviewIdx(null)} className="ml-auto px-2 py-0.5 bg-emerald-700 text-white rounded text-[10px] font-bold">{t('pdf_audit.recovery_review.close') || 'Close'}</button>
                                       </div>
                                     );
                                   }
@@ -12402,7 +12402,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         ? (t('pdf_audit.recovery_review.anchor_found') || 'Found the matching spot in the remediated document — insert the word there?')
                                         : (t('pdf_audit.recovery_review.anchor_missing') || 'No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix.')}</p>
                                       <div className="flex gap-2">
-                                        <button onClick={_doInsert} disabled={!_anchorHit} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed">📍 {t('pdf_audit.recovery_review.insert') || 'Insert at match'}</button>
+                                        <button onClick={_doInsert} disabled={!_anchorHit} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-[11px] font-bold hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed">📍 {t('pdf_audit.recovery_review.insert') || 'Insert at match'}</button>
                                         <button onClick={() => _advance('kept')} className="px-3 py-1.5 bg-white border border-amber-400 text-amber-800 rounded-lg text-[11px] font-bold hover:bg-amber-100">⏭ {t('pdf_audit.recovery_review.skip') || 'Keep in appendix'}</button>
                                       </div>
                                     </div>
@@ -12551,7 +12551,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-bold text-slate-800">Knowbility</span>
                                 <span className="text-[11px] font-bold text-indigo-600 bg-indigo-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">{t('pdf_audit.knowbility.partner_badge') || 'Accessibility Partner'}</span>
-                                <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
+                                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full uppercase tracking-wider">501(c)(3) Nonprofit</span>
                               </div>
                               <p className="text-[11px] text-slate-600 leading-relaxed mt-1">
                                 <strong className="text-slate-700">{t('pdf_audit.knowbility.mission_strong') || 'Mission: Create an inclusive digital world for people with disabilities.'}</strong>{' '}
@@ -12598,7 +12598,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               </div>
                             </div>
                             <div className="mt-2 pt-2 border-t border-indigo-100 text-center">
-                              <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
+                              <a href="https://knowbility.org/services/project-inquiry" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-full text-[11px] font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-md shadow-indigo-200">
                                 Request a Project Inquiry →
                               </a>
                             </div>
@@ -12685,7 +12685,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           </p>
                           <div className="flex gap-2 mt-3">
                             <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-accept', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
-                              className="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700 transition-colors">
+                              className="px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 transition-colors">
                               ▶ Resume ({chunkResumePrompt.completedChunks}/{chunkResumePrompt.totalChunks})
                             </button>
                             <button onClick={() => { setChunkResumePrompt(null); window.dispatchEvent(new CustomEvent('alloflow:chunk-resume-decline', { detail: { documentEpoch: chunkResumePrompt.documentEpoch, runId: chunkResumePrompt.runId, runSequence: chunkResumePrompt.runSequence } })); }}
@@ -12742,12 +12742,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           const scoreColor = !_hasScore ? 'slate' : chunk.score >= 80 ? 'green' : chunk.score >= 60 ? 'amber' : 'red';
                           const scoreBg = scoreColor === 'green' ? 'bg-green-50 border-green-200' : scoreColor === 'amber' ? 'bg-amber-50 border-amber-200' : scoreColor === 'slate' ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200';
                           const scoreText = scoreColor === 'green' ? 'text-green-600' : scoreColor === 'amber' ? 'text-amber-600' : scoreColor === 'slate' ? 'text-slate-500' : 'text-red-600';
-                          const scoreDot = scoreColor === 'green' ? 'bg-green-500' : scoreColor === 'amber' ? 'bg-amber-500' : scoreColor === 'slate' ? 'bg-slate-400' : 'bg-red-500';
+                          const scoreDot = scoreColor === 'green' ? 'bg-green-700' : scoreColor === 'amber' ? 'bg-amber-700' : scoreColor === 'slate' ? 'bg-slate-600' : 'bg-red-600';
 
                           return (
                             <div key={chunk.index} className={`border-2 rounded-xl transition-all duration-300 ${isRejected ? 'bg-slate-50 border-slate-300 opacity-60' : isWorking ? 'bg-indigo-50 border-indigo-200' : scoreBg}`}>
                               <div className="flex items-center gap-2 p-2">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${isWorking ? 'bg-indigo-500 animate-pulse' : scoreDot}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${isWorking ? 'bg-indigo-600 animate-pulse' : scoreDot}`}>
                                   {isWorking ? <span className="animate-spin" aria-hidden="true">⏳</span> : chunk.index + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -12962,7 +12962,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <h4 className="text-sm font-black text-amber-900 flex-1">🧑‍⚖️ {t('pdf_audit.review_queue.heading') || 'Needs your judgment'} <span aria-live="polite">({_rfOpen.length})</span></h4>
                           <span className="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">{_rfSource.committed ? (t('pdf_audit.review_queue.current') || 'current result') : ((t('pdf_audit.review_queue.as_of') || 'as of pass') + ' ' + _rfSource.passNumber)}</span>
                           {_canTriage && _rfOpen.length > 0 && !_remediationInFlight && (
-                            <button onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : '🤖 Ask AI to resolve'}</button>
+                            <button onClick={() => _runReviewTriage(_rfOpen)} disabled={_triageBusy} className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60" title="Ask the AI to fix or judge each remaining finding. Fixes are gated (same words, images and links) and re-checked by the engines; nothing is marked reviewed for you.">{_triageBusy ? 'Asking AI…' : '🤖 Ask AI to resolve'}</button>
                           )}
                           {_rfDone > 0 && (
                             <button onClick={() => { setReviewDismissed({}); setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: null } : prev); }} className="text-[10px] font-bold text-slate-600 underline" title={t('pdf_audit.review_queue.reset_title') || 'Bring back the findings you marked as reviewed — also clears the attestations recorded for the report'}>{_rfDone} {t('pdf_audit.review_queue.reviewed') || 'reviewed'} — {t('pdf_audit.review_queue.reset') || 'reset'}</button>
@@ -13009,7 +13009,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     // loop cannot mistake this for a document edit. Rides project save and
                                     // the exported audit report.
                                     setPdfFixResult((prev) => prev ? { ...prev, reviewedFindings: { ...(prev.reviewedFindings || {}), [_k]: _at } } : prev);
-                                  }} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.'} aria-label={(t('pdf_audit.review_queue.done_aria') || 'Mark reviewed') + ': ' + f.id}>✓</button>
+                                  }} className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-emerald-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.review_queue.done_title') || 'Mark as reviewed — I checked this myself. Recorded in the audit report as a human attestation.'} aria-label={(t('pdf_audit.review_queue.done_aria') || 'Mark reviewed') + ': ' + f.id}>✓</button>
                                 </span>
                               </li>
                             ))}
@@ -13356,7 +13356,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               const _low = _ro < 80;
                               const _mid = !_low && _ro < 90;
                               return (
-                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-600'))}
+                                <_AlloQualifier className={'px-1.5 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ' + (_low ? 'bg-amber-100 text-amber-700' : (_mid ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-600'))}
                                   text={'Supplemental content-stream sequence: ' + (Math.round(_ro * 10) / 10) + '%. This is a layout diagnostic only; no saved StructTreeRoot /K fingerprint was available for this older artifact.'}>
                                   {(_low ? '⚠️ ' : '') + (t('pdf_audit.dashboard.reading_order') || 'Reading order') + ' (stream): ' + (Math.round(_ro * 10) / 10) + '%'}
                                 </_AlloQualifier>
@@ -13528,7 +13528,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📄 {pdfFixResult.pageCount} pages processed</span>
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">📝 {(pdfFixResult.extractedChars || 0).toLocaleString()} chars extracted</span>
                           <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">🌐 {(pdfFixResult.htmlChars || 0).toLocaleString()} chars HTML</span>
-                          {pdfFixResult.imageCount > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
+                          {pdfFixResult.imageCount > 0 && <span className="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">🖼️ {pdfFixResult.imageCount} images identified</span>}
                           {/* Estimated OCR quality (scanned docs only) — answers "is the searchable text we
                               embedded faithful, or garbled?". Heuristic + disclosed; never a measured accuracy. */}
                           {pdfFixResult.ocrAccuracy && typeof pdfFixResult.ocrAccuracy.score === 'number' && (() => {
@@ -13887,9 +13887,9 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                               <>
                                                 <textarea value={_issueEdit[_srcKey].draft} onChange={(e) => { const v = e.target.value; _setIssueEdit(prev => ({ ...prev, [_srcKey]: { ...prev[_srcKey], draft: v } })); }} spellCheck={false} rows={6} className="w-full bg-slate-50 border border-emerald-300 rounded p-1.5 font-mono text-[10px] leading-snug resize-y" aria-label={(t('pdf_audit.issue.edit_aria') || 'Edit the HTML for this issue') + ': ' + issue.issue} />
                                                 <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                                  <button onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-600 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
+                                                  <button onClick={() => _saveManualEdit(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving} className={'px-2 py-0.5 rounded bg-emerald-700 text-white font-bold ' + (_issueEdit[_srcKey].saving ? 'opacity-50 cursor-wait' : 'hover:bg-emerald-700')}>{_issueEdit[_srcKey].saving ? (t('pdf_audit.issue.edit_saving') || 'Re-checking…') : ('✓ ' + (t('pdf_audit.issue.edit_save') || 'Save & re-check'))}</button>
                                                   <button onClick={() => _setIssueEdit(prev => { const n = { ...prev }; delete n[_srcKey]; return n; })} disabled={!!_issueEdit[_srcKey].saving} className="px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-600 font-bold hover:bg-slate-100">{t('pdf_audit.issue.edit_cancel') || 'Cancel'}</button>
-                                                  <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
+                                                  <span className="text-[10px] text-slate-600 italic">{t('pdf_audit.issue.edit_hint') || 'Edits the HTML directly, then runs the same check the Workbench uses — no AI.'}</span>
                                                 </div>
                                                 {/* S1: or describe the fix in words — the agent edits ONLY this section (bounded), then re-checks. */}
                                                 {typeof processExpertCommand === 'function' && (
@@ -13920,7 +13920,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <div className="text-slate-600">
                                             {t('pdf_audit.issue.source_coarse') || 'This issue is document- or page-level — there is no single text spot to show.'}
                                             {_src.pages ? ' ' + (t('pdf_audit.issue.source_page_cap') || 'Page') + ' ' + _src.pages.join(', ') + '.' : ''}
-                                            {_src.rawLocation && !/^document$/i.test(_src.rawLocation) ? <> <span className="text-slate-400">{t('pdf_audit.issue.source_anchor') || 'Auditor note'}:</span> <span className="italic">“{_src.rawLocation.slice(0, 140)}”</span></> : null}
+                                            {_src.rawLocation && !/^document$/i.test(_src.rawLocation) ? <> <span className="text-slate-600">{t('pdf_audit.issue.source_anchor') || 'Auditor note'}:</span> <span className="italic">“{_src.rawLocation.slice(0, 140)}”</span></> : null}
                                           </div>
                                         )}
                                       </div>
@@ -14367,14 +14367,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <div className="space-y-1">
                             {pdfFixResult.chunkState.chunkResults.map((cr, ci) => (
                               <div key={ci} className={`flex items-center gap-2 p-1.5 rounded-lg border ${cr.score >= 80 ? 'bg-green-50 border-green-200' : cr.score >= 60 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'} transition-all`}>
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${cr.score >= 80 ? 'bg-green-500' : cr.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}>
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0 ${cr.score >= 80 ? 'bg-green-700' : cr.score >= 60 ? 'bg-amber-700' : 'bg-red-600'}`}>
                                   {ci + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-[11px] font-bold text-slate-700">Section {ci + 1}</span>
                                     <span className="text-[11px] text-slate-600">{cr.sizeKB || '?'}KB</span>
-                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-600 px-1 rounded font-bold" title={t('pdf_audit.section_map.rule_based_title') || 'Rule-based (deterministic) fixes applied'}>{cr.deterministicFixes} rule-based</span>}
+                                    {cr.deterministicFixes > 0 && <span className="text-[11px] bg-blue-100 text-blue-800 px-1 rounded font-bold" title={t('pdf_audit.section_map.rule_based_title') || 'Rule-based (deterministic) fixes applied'}>{cr.deterministicFixes} rule-based</span>}
                                     {cr.surgicalFixes > 0 && <span className="text-[11px] bg-purple-100 text-purple-600 px-1 rounded font-bold" title={t('pdf_audit.section_map.targeted_title') || 'AI-diagnosed targeted micro-fixes'}>{cr.surgicalFixes} targeted</span>}
                                     {cr.usedOriginal && <span className="text-[11px] bg-amber-100 text-amber-700 px-1 rounded font-bold" title={t('pdf_audit.section_map.ai_skipped_title') || 'AI rewrite was rejected — only rule-based fixes applied'}>{t('pdf_audit.section_map.ai_skipped') || 'AI skipped'}</span>}
                                     {cr.wasRetried && !cr.usedOriginal && <span className="text-[11px] bg-slate-100 text-slate-600 px-1 rounded font-bold">retried</span>}
@@ -15245,8 +15245,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                         <button onClick={() => _editTagAt(n, (el) => _toggleDecorativeEl(el))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-violet-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.decorative_title') || 'Mark this image as decorative (artifact — screen readers skip it) / restore as content'} aria-label="Toggle decorative">◐</button>
                                       )}
                                       {n.role === 'Table' && (<>
-                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
-                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstRowHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_rowhead_title') || 'Make the first ROW header cells (th, scope=col) — so columns are announced'} aria-label="First row as headers">⬓H</button>
+                                        <button onClick={() => _editTagAt(n, (el, doc) => _tableHeaderFix(el, doc, 'firstColHeader'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-teal-800 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.table_colhead_title') || 'Make the first COLUMN header cells (th, scope=row) — so rows are announced'} aria-label="First column as headers">▏H</button>
                                       </>)}
                                       <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'up'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_up_title') || 'Move earlier in the reading order'} aria-label="Move up">▲</button>
                                       <button onClick={() => _editTagAt(n, (el) => _moveTagEl(el, 'down'))} className="shrink-0 text-[10px] px-1 py-0.5 rounded bg-slate-200 text-slate-700 hover:bg-indigo-600 hover:text-white font-bold transition-colors" title={t('pdf_audit.taginspect.move_down_title') || 'Move later in the reading order'} aria-label="Move down">▼</button>
@@ -15286,7 +15286,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <p className="mb-2">{t('pdf_audit.gate.body') || 'The accessibility structure may not have survived saving:'} <span className="font-mono text-[11px]">{taggedGateIssue}</span></p>
                             <div className="flex gap-2 flex-wrap">
                               <button onClick={() => { try { const g = _taggedGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.unverified_downloaded') || '⚠ Unverified tagged PDF downloaded (filename marked) — verify in PAC 2024 or a screen reader before distributing.', 'warning'); } } catch (_) {} setTaggedGateIssue(null); }} className="px-3 py-1.5 bg-white border border-amber-500 text-amber-800 rounded-lg font-bold hover:bg-amber-100">⬇ {t('pdf_audit.gate.anyway') || 'Download anyway (marked unverified)'}</button>
-                              <button onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
+                              <button onClick={() => { setTaggedGateIssue(null); try { const el = document.getElementById('allo-sec-downloads'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">📝 {t('pdf_audit.gate.word_instead') || 'Use the Word or HTML download instead'}</button>
                               <button onClick={() => setTaggedGateIssue(null)} className="px-3 py-1.5 text-amber-700 font-bold hover:text-red-600">✕ {t('pdf_audit.gate.dismiss') || 'Dismiss'}</button>
                             </div>
                           </div>
@@ -15299,7 +15299,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             <div className="font-black mb-1">⚠ {t('pdf_audit.fidelity_gate.heading') || 'Review the content before distributing this document'}</div>
                             <p className="mb-2">{t('pdf_audit.fidelity_gate.body') || 'The remediated document may be missing source content'} — <span className="font-semibold">{fidelityGateIssue}</span>. {t('pdf_audit.fidelity_gate.body2') || 'A tagged PDF will look complete but could be missing text. Open the Diff to compare it against the original first.'}</p>
                             <div className="flex gap-2 flex-wrap">
-                              <button onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
+                              <button onClick={() => { setFidelityGateIssue(null); try { setDiffViewOpen(true); } catch (_) {} }} className="px-3 py-1.5 bg-emerald-700 text-white rounded-lg font-bold hover:bg-emerald-800">🔍 {t('pdf_audit.fidelity_gate.diff') || 'Open the Diff to review'}</button>
                               <button onClick={() => { try { const g = _fidelityGateBytesRef.current; if (g) { safeDownloadBlob(new Blob([g.bytes], { type: 'application/pdf' }), g.fileName); _lastTaggedDeliveryRef.current = { withheld: false }; addToast(t('toasts.fidelity_downloaded') || '⚠ Downloaded (filename marked) — verify the content against the source before distributing.', 'warning'); } } catch (_) {} setFidelityGateIssue(null); }} className="px-3 py-1.5 bg-white border border-orange-500 text-orange-800 rounded-lg font-bold hover:bg-orange-100">⬇ {t('pdf_audit.fidelity_gate.anyway') || 'Download anyway (I’ve reviewed)'}</button>
                               <button onClick={() => setFidelityGateIssue(null)} className="px-3 py-1.5 text-orange-700 font-bold hover:text-red-600">✕ {t('pdf_audit.fidelity_gate.dismiss') || 'Dismiss'}</button>
                             </div>
@@ -15310,7 +15310,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             unreadable toast cascade). */}
                         {lastTaggedReport && (
                           <div role="status" aria-live="polite" className="w-full mt-2 bg-white border-2 border-indigo-300 rounded-xl p-3 text-xs relative shadow-md">
-                            <button onClick={() => setLastTaggedReport(null)} aria-label={t('pdf_audit.tagged_report.close_aria') || 'Dismiss tagged-PDF report'} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-bold">✕</button>
+                            <button onClick={() => setLastTaggedReport(null)} aria-label={t('pdf_audit.tagged_report.close_aria') || 'Dismiss tagged-PDF report'} className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-800 text-slate-600 font-bold">✕</button>
                             <div className="font-black text-indigo-800 mb-1.5 pr-7">📄 {t('pdf_audit.tagged_report.heading') || 'Tagged PDF report'} <span className="font-normal text-slate-500">— {lastTaggedReport.file} · {lastTaggedReport.when}</span></div>
                             <ul className="space-y-1" role="list">
                               {lastTaggedReport.lines.map((l, i) => (
@@ -15343,7 +15343,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button
                           id="allo-tagged-pdf-btn"
                           onClick={() => _runOriginalTaggedPdfExport({ trigger: 'results-button' })}
-                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"}
+                          className={_hasExecutableActiveContent ? "px-4 py-2.5 bg-emerald-700 text-white rounded-xl font-bold text-sm hover:bg-emerald-800 transition-colors flex items-center gap-1.5" : "px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center gap-1.5"}
                           title={_hasExecutableActiveContent ? 'Recommended: rebuild a clean tagged PDF from the remediated content. Executable actions from the source PDF are removed; the visual layout is regenerated.' : (t('pdf_audit.tagged_pdf.title') || "Preserve the original PDF's visual layout and inject accessibility tags into its structure tree. Best for trusted textbooks, multi-column documents, and branded PDFs where visual fidelity matters.")}
                         >
                           {_hasExecutableActiveContent ? '🧼 Clean tagged PDF (recommended)' : '📄 Tagged PDF'}
@@ -15353,7 +15353,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           id="allo-tagged-pdf-btn"
                           data-help-key="pdf_audit_view_typeset_tagged_btn"
                           onClick={() => _runTypesetExport()}
-                          className="px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5"
+                          className="px-4 py-2.5 bg-gradient-to-r from-slate-700 to-slate-700 text-white rounded-xl text-xs font-bold hover:from-slate-700 hover:to-slate-800 transition-all flex items-center gap-1.5"
                           title={t('pdf_audit.tagged_pdf.typeset_title') || 'Word/PowerPoint inputs have no PDF bytes to tag — this generates a CLEAN typeset PDF from the remediated content (simple layout, NOT the original design) and runs the full tagger on it: real structure tree, verified after saving, declaration only when earned.'}
                         >
                           📄 {t('pdf_audit.tagged_pdf.typeset_label') || 'Tagged PDF (generated layout)'}
@@ -16382,7 +16382,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           formats call dedicated handlers. Replaces the old collapsed
                           "Alternative Formats" disclosure (and its open-by-default sprawl). */}
                       <details data-help-key="pdf_audit_alt_formats_summary" className="group w-full">
-                        <summary className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl font-bold text-sm cursor-pointer hover:from-teal-700 hover:to-cyan-700 transition-colors list-none">
+                        <summary className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-700 to-cyan-700 text-white rounded-xl font-bold text-sm cursor-pointer hover:from-teal-700 hover:to-cyan-700 transition-colors list-none">
                           ⬇ {t('pdf_audit.export_menu.button') || 'Export / Download'} <span className="text-xs opacity-90 group-open:rotate-180 transition-transform">▾</span>
                         </summary>
                         <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1" role="menu" aria-label={t('pdf_audit.export_menu.aria') || 'Export formats'}>
@@ -16574,7 +16574,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <button type="submit" disabled={_paletteBusy || !String(_paletteIntent || '').trim()} className={'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-violet-600 text-white shrink-0 ' + ((_paletteBusy || !String(_paletteIntent || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-violet-700')} title={t('pdf_audit.palette.ai_btn_title') || 'The AI suggests colours for the mood; we still clamp them to meet WCAG before applying.'}>✨ {t('pdf_audit.palette.ai_btn') || 'Suggest'}</button>
                               </form>
                             )}
-                            <p className="text-[10px] text-slate-400 italic">{t('pdf_audit.palette.note') || 'The AI contributes taste only — every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy.'}</p>
+                            <p className="text-[10px] text-slate-600 italic">{t('pdf_audit.palette.note') || 'The AI contributes taste only — every colour is still clamped to meet WCAG before it is applied. Presets work with no AI at all, even when the AI service is busy.'}</p>
                           </div>
                         </details>
                       )}
@@ -17350,7 +17350,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               <span className={'px-1.5 py-0.5 rounded font-bold text-[10px] uppercase ' + (audioJob.status === 'running' ? 'bg-blue-100 text-blue-700' : audioJob.status === 'complete' ? 'bg-green-100 text-green-700' : 'bg-amber-200 text-amber-800')}>{audioJob.status === 'stalled' ? (t('pdf_audit.audio.stalled') || 'rate-limited — resume in ~1 min') : audioJob.status}</span>
                               <div className="flex gap-1.5 ml-auto">
                                 {audioJob.status === 'running' && <button onClick={() => { if (audioJobRef.current) audioJobRef.current.pauseRequested = true; }} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100">⏸ {t('pdf_audit.audio.pause') || 'Pause'}</button>}
-                                {(audioJob.status === 'paused' || audioJob.status === 'stalled') && <button onClick={_runAudioJob} className="px-2 py-1 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700">▶ {t('pdf_audit.audio.resume') || 'Resume'}</button>}
+                                {(audioJob.status === 'paused' || audioJob.status === 'stalled') && <button onClick={_runAudioJob} className="px-2 py-1 bg-amber-700 text-white rounded-lg font-bold hover:bg-amber-800">▶ {t('pdf_audit.audio.resume') || 'Resume'}</button>}
                                 {audioJob.done > 0 && audioJob.status !== 'complete' && <button onClick={() => _stitchAudioJob(false)} className="px-2 py-1 bg-white border border-amber-400 rounded-lg font-bold hover:bg-amber-100" title={t('pdf_audit.audio.partial_title') || 'Stitch the finished sections into one playable file now — you can keep generating afterwards.'}>⬇ {t('pdf_audit.audio.partial') || 'Download what’s ready'}</button>}
                                 <button onClick={() => { const j = audioJobRef.current; if (j) { j.pauseRequested = true; if (j.nextIdx > 0 && j.nextIdx < j.segments.length) _saveAudioMeta(j, false, j.operationTicket); _cancelRemediationOperation(j.operationTicket); } if (audioJobRef.current === j) audioJobRef.current = null; setAudioJob(null); }} className="px-2 py-1 text-amber-700 font-bold hover:text-red-600" title={t('pdf_audit.audio.dismiss_title') || 'Close this job. Progress position is kept in the project — save the project and you can resume in a future session.'}>✕</button>
                               </div>
@@ -17847,14 +17847,14 @@ Return ONLY the plain-language summary.`, false));
                       } catch(err) { addToast(t('toasts.style_failed_try_again'), 'error'); }
                       setIsGeneratingStyle(false);
                     }}
-                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700'}`}
+                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-600 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700'}`}
                     >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
                     <button onClick={() => {
                       const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
                       if (old) { old.remove(); addToast(t('toasts.ai_style_removed'), 'info'); }
-                    }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
+                    }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-700 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
                 <p className="text-[11px] text-slate-600 mb-2">{t('pdf_audit.preview.ai_restyle_hint') || 'One-click AI restyling. These override the theme above.'}</p>
@@ -18037,7 +18037,7 @@ Return ONLY the plain-language summary.`, false));
                       <div className="flex gap-0.5" role="radiogroup">
                         {[['S','S'],['M','M'],['L','L'],['XL','XL']].map(([key, label], i) => (
                           <button key={key} data-size={key} aria-checked={i === 2 ? 'true' : 'false'} role="radio" aria-label={label + ' size'}
-                            style={i === 2 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
+                            style={i === 2 ? { background: '#4338ca', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
                             className="pdf-wordart-size-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
                               const btn = e.currentTarget;
@@ -18055,7 +18055,7 @@ Return ONLY the plain-language summary.`, false));
                       <div className="flex gap-0.5" role="radiogroup">
                         {[['left','⇤','Left'],['center','⇔','Center'],['right','⇥','Right']].map(([key, icon, label], i) => (
                           <button key={key} data-align={key} aria-checked={i === 1 ? 'true' : 'false'} role="radio" aria-label={label + ' alignment'}
-                            style={i === 1 ? { background: '#6366f1', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
+                            style={i === 1 ? { background: '#4338ca', color: 'white', borderColor: '#4f46e5' } : { background: 'white', color: '#475569', borderColor: '#e2e8f0' }}
                             className="pdf-wordart-align-btn flex-1 text-[10px] font-bold py-1 rounded border border-slate-400 transition-all"
                             onClick={(e) => {
                               const btn = e.currentTarget;
@@ -19980,7 +19980,7 @@ Return ONLY the plain-language summary.`, false));
                   })()}
 
                   {/* Upload template JSON file */}
-                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[11px] font-bold text-amber-600 hover:bg-amber-50 cursor-pointer transition-colors">
+                  <label className="mt-1.5 w-full flex items-center justify-center gap-1.5 px-2 py-1.5 border border-dashed border-amber-300 rounded-lg text-[11px] font-bold text-amber-800 hover:bg-amber-50 cursor-pointer transition-colors">
                     📂 Load Template File (.json)
                     <input type="file" accept=".json" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0]; if (!file) return;
@@ -20510,7 +20510,7 @@ Return ONLY the plain-language summary.`, false));
                   const html = getPdfPreviewHtml();
                   setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
                   downloadAccessiblePdf(html, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible');
-                }} className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
+                }} className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
                   title={t('pdf_audit.preview.print_style_title') || 'Print-style copy via your browser’s Save as PDF — tag preservation depends on the browser and this copy is not independently verified. Use Generate Tagged PDF above for the verified accessible file.'}>
                   📥 {t('pdf_audit.preview.print_style_label') || 'Save as PDF (print-style, unverified)'}
                 </button>
@@ -20847,7 +20847,7 @@ Return ONLY the plain-language summary.`, false));
                         <textarea value={_rgn.draft == null ? '' : _rgn.draft} onChange={(e) => { const v = e.target.value; _setIssueEdit((prev) => ({ ...prev, ['__region__']: { ...prev['__region__'], draft: v } })); }} rows={4}
                           className="w-full text-[11px] font-mono border border-indigo-300 rounded p-2 bg-white text-slate-800" />
                         <button onClick={() => _saveManualEdit(null, '__region__')} disabled={!!_rgn.saving || (String(_rgn.draft || '').trim() === String(_rgn.original || '').trim())}
-                          className={'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold ' + ((_rgn.saving || String(_rgn.draft || '').trim() === String(_rgn.original || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700')}>
+                          className={'px-3 py-1 rounded bg-emerald-700 text-white text-xs font-bold ' + ((_rgn.saving || String(_rgn.draft || '').trim() === String(_rgn.original || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-emerald-700')}>
                           💾 {t('pdf_audit.region.save_recheck') || 'Save (no-AI edit) & re-check'}
                         </button>
                       </div>

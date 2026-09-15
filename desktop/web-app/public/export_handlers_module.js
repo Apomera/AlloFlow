@@ -2602,7 +2602,7 @@
         userBubble: 'bg-black border-2 border-yellow-400 text-yellow-400 rounded-none',
         modelBubble: 'bg-black border-2 border-white text-white rounded-none',
         inputArea: 'bg-black border-t-4 border-yellow-400',
-        input: 'bg-black border-2 border-yellow-400 text-yellow-400 placeholder:text-yellow-700 focus:ring-0',
+        input: 'bg-black border-2 border-yellow-400 text-yellow-400 placeholder:text-yellow-600 focus:ring-0',
         button: 'bg-yellow-400 text-black font-black border-2 border-yellow-400 hover:bg-yellow-300',
         secondaryButton: 'bg-black text-yellow-400 border-2 border-white hover:bg-white hover:text-black',
         text: 'text-yellow-400', subText: 'text-white'
@@ -2616,18 +2616,18 @@
         userBubble: 'bg-indigo-900 text-indigo-100 border border-indigo-700',
         modelBubble: 'bg-slate-800 text-slate-200 border border-slate-700',
         inputArea: 'bg-slate-900 border-t border-slate-700',
-        input: 'bg-slate-800 border-slate-600 text-slate-200 focus:border-indigo-500 placeholder:text-slate-600',
+        input: 'bg-slate-800 border-slate-600 text-slate-200 focus:border-indigo-500 placeholder:text-slate-400',
         button: 'bg-indigo-700 text-indigo-100 hover:bg-indigo-600 border border-indigo-600',
-        secondaryButton: 'bg-slate-800 text-slate-600 border border-slate-600 hover:bg-slate-700',
-        text: 'text-slate-200', subText: 'text-slate-600'
+        secondaryButton: 'bg-slate-800 text-slate-300 border border-slate-600 hover:bg-slate-700',
+        text: 'text-slate-200', subText: 'text-slate-400'
       };
     }
     let bgTint = 'bg-white', bodyTint = 'bg-slate-50';
     let headerColor = 'bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900';
     let userBubbleColor = 'bg-indigo-600', accentBorder = 'border-indigo-100';
     if (colorOverlay === 'blue')   { bgTint = 'bg-blue-50';   bodyTint = 'bg-blue-50/30';   headerColor = 'bg-blue-600';   userBubbleColor = 'bg-blue-600';   accentBorder = 'border-blue-200'; }
-    else if (colorOverlay === 'peach')  { bgTint = 'bg-orange-50'; bodyTint = 'bg-orange-50/30'; headerColor = 'bg-orange-600'; userBubbleColor = 'bg-orange-600'; accentBorder = 'border-orange-200'; }
-    else if (colorOverlay === 'yellow') { bgTint = 'bg-yellow-50'; bodyTint = 'bg-yellow-50/30'; headerColor = 'bg-yellow-600'; userBubbleColor = 'bg-yellow-600'; accentBorder = 'border-yellow-200'; }
+    else if (colorOverlay === 'peach')  { bgTint = 'bg-orange-50'; bodyTint = 'bg-orange-50/30'; headerColor = 'bg-orange-700'; userBubbleColor = 'bg-orange-700'; accentBorder = 'border-orange-200'; }
+    else if (colorOverlay === 'yellow') { bgTint = 'bg-yellow-50'; bodyTint = 'bg-yellow-50/30'; headerColor = 'bg-yellow-700'; userBubbleColor = 'bg-yellow-700'; accentBorder = 'border-yellow-200'; }
     return {
       container: bgTint + ' border ' + accentBorder + ' shadow-2xl',
       header: headerColor + ' text-white shadow-sm',

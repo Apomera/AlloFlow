@@ -46,9 +46,18 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
 
   // Real autistic and disabled advocates whose work shaped — and
   // critiqued — applied behavior analysis and disability practice
-  // broadly. Each entry: name, role/biography, documented quote,
-  // on-record source citation. All quotes verifiable in the cited
-  // sources.
+  // broadly. Each entry: name, role/biography, on-record source citation,
+  // and EITHER:
+  //   `quote` — words the person verifiably said or wrote, matched against
+  //             the primary source, rendered inside quotation marks; or
+  //   `work`  — a titled work or documented contribution, rendered as a
+  //             cited title (+ optional `workNote`), NEVER in quote marks.
+  // Never both. The distinction is load-bearing: on 2026-09-14 three of these
+  // eight entries held fabricated or paraphrased sentences presented as
+  // quotations, and two more held a book title and an unverifiable passage
+  // dressed the same way. A tool premised on "nothing about us without us"
+  // must not put invented words in a living person's mouth — so if no
+  // sentence can be matched to a source a reader could check, use `work`.
   var VOICES = [
     {
       name: 'Ari Ne\'eman',
@@ -86,9 +95,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       name: 'Kassiane Asasumasu',
       role: 'Autistic and multiply disabled activist; coined the term "neurodivergent" in the early 2000s as an identity-claim alternative to deficit framings. Independent writer; not affiliated with academic institutions.',
       icon: '🌈', color: '#f472b6',
-      quote: 'Neurodivergent is not a euphemism. It does not mean "we are all the same." It means our brains diverge from a constructed norm — and divergence is information, not pathology.',
-      context: 'The term has since been adopted across disability-justice movements and corporate diversity initiatives. Asasumasu has at times pushed back when it has been diluted into a soft synonym for "different" — the original term was politically pointed: it locates the problem in the norm, not the person.',
-      source: 'Personal blog and community writing, mid-2000s; widely adopted across disability-justice movements'
+      // NOT a quotation. The previous 30-word passage here was polished prose
+      // cited only to "personal blog and community writing, mid-2000s" — no
+      // post, date, or URL, so nothing a reader could check. Under this file's
+      // own standard ("All quotes verifiable in the cited sources") that does
+      // not hold, and an unverifiable quote in quote marks is the same defect
+      // class as the three fabricated ones fixed on 2026-09-14. Her documented
+      // contribution is the coinage itself, so that is what is presented.
+      work: 'Coined "neurodivergent" and "neurodivergence" (early 2000s)',
+      workNote: 'A deliberately political coinage: it locates divergence against a constructed norm rather than inside a person.',
+      context: 'Asasumasu built the word from "neurologically divergent" for use across ALL neurological difference — not autism alone, and explicitly including people with mental illness, brain injury, and developmental disability. She has repeatedly objected when it is narrowed to mean "autistic" or softened into a synonym for "different", because the point was never politeness: it names a norm, not a deficit. The term has since been adopted across disability-justice movements and corporate diversity initiatives, often without that history.',
+      source: 'Coinage documented in community writing from the early 2000s; the attribution is widely credited across autistic-community and academic sources. Primary posts from that era are not reliably archived, so no sentence is quoted here.'
     },
     {
       name: 'Mel Baggs (1980–2020)',
@@ -102,7 +119,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       name: 'Ly Xīnzhèn M. Zhǎngsūn Brown',
       role: 'Autistic, nonbinary disability-justice attorney, organizer, and educator (they/them); published as Lydia X. Z. Brown through 2020. Chairs the American Bar Association Civil Rights & Social Justice Disability Rights Committee; policy counsel at the Center for Democracy & Technology; director of policy and advocacy at the Autistic Women & Nonbinary Network. Centers race, gender, and class in disability work.',
       icon: '⚖️', color: '#22c55e',
-      quote: 'All the Weight of Our Dreams — art and writing entirely by autistic people of color.',
+      // NOT a quotation — the title of the anthology they led, plus a gloss.
+      // Rendered inside literal quote marks it read as words Brown spoke, which
+      // is the same defect class as the fabricated quotes fixed on 2026-09-14:
+      // a tool premised on "nothing about us without us" must not put words in a
+      // living person's mouth. `work` renders as a cited title, not as speech.
+      work: 'All the Weight of Our Dreams: On Living Racialized Autism (2017)',
+      workNote: 'Art and writing entirely by autistic people of color — the anthology Brown led as lead editor.',
       context: 'The title of the 2017 anthology Brown led as lead editor — the first of its kind, collecting autistic people of color writing for themselves rather than being written about. Their wider work concerns violence against multiply-marginalised disabled people: institutionalisation, incarceration, and policing. It builds on the disability-justice framework articulated by Patty Berne, Mia Mingus, Stacey Park Milbern and others at Sins Invalid. The distinction that framework draws matters: disability rights won the ADA; disability justice asks who the ADA still leaves out, and who is criminalised for being disabled while also poor, Black, or undocumented.',
       source: 'Brown, Ashkenazy & Onaiwu, eds. (2017). All the Weight of Our Dreams: On Living Racialized Autism. DragonBee Press; Autistic Hoya blog (2011-2020); autistichoya.net'
     },
@@ -438,9 +461,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                     marginBottom: 10
                   }
                 },
-                  h('span', { style: { color: v.color, fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"'),
-                  h('span', { style: { fontSize: 15, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote),
-                  h('span', { style: { color: v.color, fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"')
+                  // A card carries EITHER a verbatim quote or a titled work —
+                  // never a title dressed as speech. Quote marks appear only
+                  // around words the person actually said or wrote; a `work`
+                  // renders as a cited title with a plain-language gloss, so a
+                  // student is never shown invented words in someone's mouth.
+                  v.quote ? h('span', { key: 'oq', style: { color: v.color, fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"') : null,
+                  v.quote
+                    ? h('span', { key: 'qt', style: { fontSize: 15, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote)
+                    : h('span', { key: 'wk', style: { fontSize: 15, color: _disFg('#e2e8f0'), fontWeight: 700, lineHeight: 1.6 } }, v.work),
+                  v.quote ? h('span', { key: 'cq', style: { color: v.color, fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"') : null,
+                  (!v.quote && v.workNote)
+                    ? h('div', { key: 'wn', style: { fontSize: 13, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } }, v.workNote)
+                    : null
                 ),
                 // Context
                 h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, v.context),

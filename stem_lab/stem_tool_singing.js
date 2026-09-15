@@ -2997,6 +2997,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 '\uD83C\uDFB9', t('stem.singing.piano_roll', 'Piano Roll')),
               h('p', { className: subTextClass + ' mb-2' },
                 t('stem.singing.your_pitch_over_time_mapped_to_musical', 'Your pitch over time, mapped to musical notes. Green = on pitch, yellow = close, red = off.')),
+              h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': t('stem.singing.enter_fullscreen', 'View the piano roll fullscreen'),
+                  'data-fs-out': t('stem.singing.enter_fullscreen', 'View the piano roll fullscreen'),
+                  'data-fs-in': t('stem.singing.exit_fullscreen', 'Exit fullscreen piano roll (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', { tabIndex: 0, 
                 ref: pitchRollCanvasRef,
                 width: 600,
@@ -3005,6 +3015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                 role: 'img',
                 'aria-label': t('stem.singing.piano_roll_showing_pitch_history_green', 'Piano roll showing pitch history. Green line indicates on-pitch singing (within 10 cents), yellow indicates close (within 25 cents), red indicates off-pitch (beyond 25 cents).')
               })
+              )
             ),
 
             // Reference tone generator

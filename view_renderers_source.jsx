@@ -234,6 +234,22 @@ const normalizeVisualOrganizerData = (input, typeOverride = '') => {
       branch.items = branch.items == null ? [] : [String(branch.items)];
       repairs.push(`branch-${index}-items`);
     }
+    // Every item must be text by the time a renderer sees it: several sites render `{item}` as a
+    // list-item child and React throws on an object (2026-09-15; the Curriculum Audit hit the
+    // same class). A model that returns {text: "…"} or {label: "…"} entries is flattened to the
+    // text; anything with no text is dropped and counted as a repair.
+    const itemText = (item) => {
+      if (typeof item === 'string') return item;
+      if (typeof item === 'number' || typeof item === 'boolean') return String(item);
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return '';
+      const candidate = [item.text, item.label, item.item, item.name, item.title, item.value].find((v) => typeof v === 'string' && v.trim());
+      return candidate ? candidate : '';
+    };
+    const textItems = branch.items.map(itemText).filter((item) => item !== '');
+    if (textItems.length !== branch.items.length || branch.items.some((item) => typeof item !== 'string')) {
+      repairs.push(`branch-${index}-item-text`);
+    }
+    branch.items = textItems;
     return branch;
   });
 
@@ -1993,7 +2009,7 @@ const renderOutlineContent = (deps) => {
                              <ArrowDown size={24} className="text-slate-600" />
                          </div>
                          <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 text-center relative shadow-lg">
-                             <div className="inline-flex items-center justify-center p-3 bg-blue-100 text-blue-600 rounded-full mb-4 shadow-sm border border-blue-200">
+                             <div className="inline-flex items-center justify-center p-3 bg-blue-100 text-blue-800 rounded-full mb-4 shadow-sm border border-blue-200">
                                  <CheckCircle2 size={24} />
                              </div>
                              {outcomeBranch ? (
@@ -2255,9 +2271,9 @@ const renderOutlineContent = (deps) => {
             const wonderBranch = branches[2] || { title: 'Wonder', items: [] };
             const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
             const STW_COLORS = {
-                sky:    { bg: 'bg-sky-50/70',    header: 'bg-sky-600 text-white',    dot: 'text-sky-500' },
+                sky:    { bg: 'bg-sky-50/70',    header: 'bg-sky-700 text-white',    dot: 'text-sky-500' },
                 violet: { bg: 'bg-violet-50/70', header: 'bg-violet-600 text-white', dot: 'text-violet-500' },
-                amber:  { bg: 'bg-amber-50/70',  header: 'bg-amber-600 text-white',  dot: 'text-amber-500' },
+                amber:  { bg: 'bg-amber-50/70',  header: 'bg-amber-700 text-white',  dot: 'text-amber-500' },
             };
             const renderSTWColumn = (branch, colorKey, hint) => {
                 const items = (branch.items || []).map(itemText).filter(Boolean);
@@ -2320,9 +2336,9 @@ const renderOutlineContent = (deps) => {
             const learnedBranch = branches[2] || { title: 'Learned', items: [] };
             const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
             const KWL_COLORS = {
-                sky:     { bg: 'bg-sky-50/70',     header: 'bg-sky-600 text-white',     dot: 'text-sky-500' },
+                sky:     { bg: 'bg-sky-50/70',     header: 'bg-sky-700 text-white',     dot: 'text-sky-500' },
                 violet:  { bg: 'bg-violet-50/70',  header: 'bg-violet-600 text-white',  dot: 'text-violet-500' },
-                emerald: { bg: 'bg-emerald-50/70', header: 'bg-emerald-600 text-white', dot: 'text-emerald-500' },
+                emerald: { bg: 'bg-emerald-50/70', header: 'bg-emerald-700 text-white', dot: 'text-emerald-500' },
             };
             const renderColumn = (branch, colorKey, placeholderWhenEmpty) => {
                 const items = (branch.items || []).map(itemText).filter(Boolean);
@@ -3758,7 +3774,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             <button
                                 onClick={checkChallenge}
                                 disabled={placedCount === 0}
-                                className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1 bg-emerald-700 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:bg-emerald-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 ✔ {t('concept_space.challenge_check') || 'Check placements'}
                             </button>
@@ -3796,7 +3812,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <button
                                         onClick={() => { setRecallAnswerMode('bank'); setTypedAnswer(''); }}
                                         aria-pressed={recallAnswerMode === 'bank' ? 'true' : 'false'}
-                                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                                     >
                                         {t('concept_space.recall_mode_bank') || 'Choose'}
                                     </button>
@@ -3805,7 +3821,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                             onClick={() => setRecallAnswerMode('typed')}
                                             aria-pressed={recallAnswerMode === 'typed' ? 'true' : 'false'}
                                             title={t('concept_space.recall_mode_typed_tooltip') || 'Expert: type the name instead of choosing it'}
-                                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'typed' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'typed' ? 'bg-sky-700 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
                                         >
                                             {t('concept_space.recall_mode_typed') || 'Type'}
                                         </button>
@@ -4005,7 +4021,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     <button
                                         type="submit"
                                         disabled={!typedAnswer.trim() || !!recallFeedback}
-                                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-sky-700 text-white hover:bg-sky-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {t('concept_space.recall_submit') || 'Check'}
                                     </button>
@@ -4104,7 +4120,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 </span>
                                 <button
                                     onClick={stopFurnish}
-                                    className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-600 border border-rose-300 hover:bg-rose-50 transition-colors"
+                                    className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-800 border border-rose-300 hover:bg-rose-50 transition-colors"
                                 >
                                     ⏹ {t('concept_space.furnish_stop') || 'Stop'}
                                 </button>
@@ -4124,7 +4140,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                             <button
                                 onClick={handleClearAllArt}
                                 aria-describedby={clearArmed ? 'cg3d-clear-armed' : undefined}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-600 border-rose-300 hover:bg-rose-50'}`}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-800 border-rose-300 hover:bg-rose-50'}`}
                                 title={t('concept_space.furnish_clear_tooltip') || 'Remove the generated art from every concept — the arrangement and the strand weights are kept'}
                             >
                                 🗑 {clearArmed
@@ -4251,7 +4267,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     <div className="absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800" role="group" aria-label={t('concept_space.art_panel_aria') || 'Concept art'}>
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="text-xs font-extrabold text-fuchsia-700 truncate pr-2">🎨 {selectedNode.label}</div>
-                            <button onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-400 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
+                            <button onClick={() => { setSelectedNode(null); selectedNodeRef.current = null; }} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 font-bold text-sm leading-none">✕</button>
                         </div>
                         {nodeArtType ? (
                             <div className="space-y-2">
@@ -4270,7 +4286,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                         </form>
                                     </>
                                 )}
-                                <button onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
+                                <button onClick={handleArtClear} className="w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50">🗑 {t('concept_space.art_remove') || 'Remove art'}</button>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -6092,7 +6108,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     }}
                                     aria-expanded={tourOpen ? 'true' : 'false'}
                                     disabled={routeEditing}
-                                    className={'flex items-center gap-1 border px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ' + (tourOpen ? 'border-cyan-400 bg-cyan-600 text-white' : 'border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50')}
+                                    className={'flex items-center gap-1 border px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 ' + (tourOpen ? 'border-cyan-400 bg-cyan-700 text-white' : 'border-cyan-300 bg-white text-cyan-800 hover:bg-cyan-50')}
                                     title={t('memory_palace.tour_tooltip') || 'Automatically travel through every locus with adjustable pacing and optional narration'}
                                 >
                                     🎬 {t('memory_palace.tour') || 'Cinematic tour'}
@@ -6189,7 +6205,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button
                                     onClick={() => setDecorMode((d) => !d)}
                                     aria-pressed={decorMode ? 'true' : 'false'}
-                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? 'bg-emerald-700 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50'}`}
                                     title={t('memory_palace.decorate_tooltip') || 'Decorate loci yourself with built-in 3D objects and stamps — instant, no AI credits needed'}
                                 >
                                     🎁 {t('memory_palace.decorate_toggle') || 'Decorate'}
@@ -6199,7 +6215,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button
                                     onClick={() => { setBuildMode((b) => !b); setPendingSpot(null); setDecorMode(false); setDirectMode(false); }}
                                     aria-pressed={buildMode ? 'true' : 'false'}
-                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50'}`}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-sky-700 border-sky-300 hover:bg-sky-50'}`}
                                     title={t('memory_palace.build_tooltip') || 'Extend the palace yourself: point at a spot on any room floor and click to add a new locus there'}
                                 >
                                     🧱 {t('memory_palace.build_toggle') || 'Build'}
@@ -6244,7 +6260,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button
                                     onClick={() => { genCancelRef.current = true; setStopRequested(true); }}
                                     disabled={stopRequested}
-                                    className="flex items-center gap-1 bg-white text-red-600 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
+                                    className="flex items-center gap-1 bg-white text-red-800 border border-red-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-50 transition-colors"
                                     title={t('memory_palace.gen_stop_tooltip') || 'Stop generating — keep what has been made so far'}
                                 >
                                     ⏹ {stopRequested ? (t('memory_palace.gen_stopping') || 'Finishing current cue…') : (t('memory_palace.gen_stop_after') || 'Stop after this cue')}
@@ -6334,7 +6350,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                     {recallEligible && (
                         <button
                             onClick={() => startRecall('bank', false, 'forward', (dueInfo.due || []).concat(dueInfo.newIds || []))}
-                            className="min-h-[44px] flex-shrink-0 flex items-center gap-1 bg-amber-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-700 transition-colors"
+                            className="min-h-[44px] flex-shrink-0 flex items-center gap-1 bg-amber-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:bg-amber-800 transition-colors"
                         >
                             🔁 {t('memory_palace.review_now') || 'Review now'}
                         </button>
@@ -6447,7 +6463,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 </button>
                                 <button type="button" onClick={saveRouteDraft} disabled={!routeHasChanges || !routeIsPreviewing || (routeHasMastery && !routeMasteryAck)}
                                     title={!routeIsPreviewing ? (t('memory_palace.route_preview_first') || 'Preview this route before saving') : undefined}
-                                    className="min-h-11 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40">
+                                    className="min-h-11 rounded-xl bg-emerald-700 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-40">
                                     ✓ {t('memory_palace.route_save') || 'Save walking route'}
                                 </button>
                                 <button type="button" onClick={resetRouteDraft} disabled={_sameRoute(routeDraft, routeDefaultOrder)}
@@ -6508,7 +6524,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             ✕ {t('memory_palace.presentation_exit') || 'Exit presentation'}
                         </button>
                         <span className="hidden truncate text-xs font-bold text-slate-200 sm:block">{data?.main || title || (t('memory_palace.title') || 'Memory Palace')}</span>
-                        <span className="hidden text-[10px] text-slate-400 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
+                        <span className="hidden text-[10px] text-slate-600 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
                     </div>
                 )}
                 {tourChapter && tourOpen && tourPlaying && !recall && (
@@ -6669,7 +6685,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         {quickCreate.error && <p className="mb-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950" role="alert">{quickCreate.error}</p>}
                                         <div className="flex flex-wrap gap-2">
                                             <button type="button" onClick={() => { setQuickCreate(null); setNearbyEmpty(null); }}
-                                                className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+                                                className="min-h-[44px] rounded-xl bg-emerald-700 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
                                                 ✓ {t('memory_palace.quick_done') || 'Done'}
                                             </button>
                                             <button type="button" onClick={() => handleQuickCreate(quickCreate.type, quickCreate, quickCreate.previous)} disabled={artBusy}
@@ -6724,7 +6740,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                         )}
                                         <button type="button"
                                             onClick={() => { setDecorMode(true); setDirectMode(false); setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(true); }}
-                                            className="min-h-[44px] rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
+                                            className="min-h-[44px] rounded-xl bg-emerald-700 px-3 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">
                                             🎁 {t('memory_palace.empty_use_builtins') || 'Use built-in cues'}
                                         </button>
                                         {_alloRuntimeAiAvailable() && (
@@ -6767,7 +6783,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     placeholder={t('memory_palace.build_name_placeholder') || 'A fact, a word, a step…'}
                                     className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
                                 />
-                                <button type="submit" disabled={!spotLabel.trim()} className="rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40">
+                                <button type="submit" disabled={!spotLabel.trim()} className="rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40">
                                     {t('memory_palace.build_place') || 'Place it'}
                                 </button>
                                 <button type="button" onClick={() => { setPendingSpot(null); setSpotLabel(''); }} className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
@@ -6790,7 +6806,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     placeholder={t('memory_palace.build_room_placeholder') || 'The Attic, Grandma\u2019s kitchen…'}
                                     className="min-w-[12rem] flex-1 rounded-lg border border-sky-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-600"
                                 />
-                                <button type="submit" disabled={!roomName.trim()} className="rounded-full bg-sky-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-40">
+                                <button type="submit" disabled={!roomName.trim()} className="rounded-full bg-sky-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-40">
                                     {t('memory_palace.build_room_add') || 'Add room'}
                                 </button>
                                 <button type="button" onClick={() => { setAddingRoom(false); setRoomName(''); }} className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100">
@@ -7205,7 +7221,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     <div className="flex flex-wrap gap-2" aria-label={t('memory_palace.self_check_result') || 'How well did you remember this locus?'}>
                                         <button
                                             onClick={() => markSelfCheck(true)}
-                                            className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                                            className="min-h-11 px-4 py-2 rounded-full text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors"
                                         >
                                             ✓ {t('memory_palace.remembered') || 'I remembered'}
                                         </button>
@@ -7250,7 +7266,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                 <button
                                     type="submit"
                                     disabled={!typedAnswer.trim()}
-                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
+                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50"
                                 >
                                     {t('memory_palace.recall_submit') || 'Check'}
                                 </button>
@@ -7609,7 +7625,7 @@ const renderInteractiveMap = (deps) => {
                                       <button
                                           onClick={handleCreateChallenge}
                                           disabled={isMapLocked}
-                                          className={`flex items-center gap-1 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                          className={`flex items-center gap-1 bg-yellow-700 hover:bg-yellow-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm ${isMapLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                                           title={t('concept_map.tooltips.convert_challenge')}
                                           aria-label={t('concept_map.tooltips.convert_challenge')}
                                       >
@@ -7649,7 +7665,7 @@ const renderInteractiveMap = (deps) => {
                                           <button aria-label={t('common.check_challenge_answer')}
                                               onClick={handleCheckChallengeRouter}
                                               disabled={isCheckingChallenge}
-                                              className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                              className="flex items-center gap-1 bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                           >
                                               {isCheckingChallenge ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <CheckCircle2 size={14} />}
                                               {isCheckingChallenge ? t('concept_map.challenge.checking') : t('concept_map.challenge.check')}
@@ -7657,7 +7673,7 @@ const renderInteractiveMap = (deps) => {
                                           {isTeacherMode && (
                                               <button
                                                   onClick={handleExitChallenge}
-                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
+                                                  className="flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-700 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors"
                                                   title={t('concept_map.challenge.exit')}
                                                   aria-label={t('concept_map.challenge.exit')}
                                               >

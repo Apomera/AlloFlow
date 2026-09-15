@@ -21954,24 +21954,24 @@ var VISUAL_ANCHORS = [
       }, [activeTab, d.cbRunning, d.cbPhase]);
 
       // Breathing state
-      var breathPatternIdx = d.breathPatternIdx || 0;
+      var breathPatternIdx = (Number.isInteger(d.breathPatternIdx) && d.breathPatternIdx >= 0 && d.breathPatternIdx < BREATH_PATTERNS.length ? d.breathPatternIdx : 0);
       var breathPhase      = d.breathPhase || null; // 'inhale','hold','exhale','holdOut',null
       var breathTimeLeft   = d.breathTimeLeft || 0;
       var breathCycle      = d.breathCycle || 0;
       var breathActive     = d.breathActive || false;
-      var breathSessions   = d.breathSessions || 0;
+      var breathSessions   = (Number.isFinite(d.breathSessions) ? d.breathSessions : 0);
       var breathPatternsUsed = d.breathPatternsUsed || {};
 
       // Body Scan state
       var scanStep         = d.scanStep != null ? d.scanStep : -1; // -1 = not started
       var scanTimeLeft     = d.scanTimeLeft || 0;
       var scanActive       = d.scanActive || false;
-      var scanSessions     = d.scanSessions || 0;
+      var scanSessions     = (Number.isFinite(d.scanSessions) ? d.scanSessions : 0);
 
       // Grounding state
       var groundStep       = d.groundStep || 0; // 0-4 = senses, 5 = done
       var groundInputs     = d.groundInputs || ['','','','',''];
-      var groundCompleted  = d.groundCompleted || 0;
+      var groundCompleted  = (Number.isFinite(d.groundCompleted) ? d.groundCompleted : 0);
 
       // Gratitude state
       var gratEntries      = d.gratEntries || [];
@@ -24902,7 +24902,7 @@ if (activeTab === 'ground5421') {
   var currentGround = GROUND_PROMPTS[g54Step];
   var isAllDone = g54Step >= GROUND_PROMPTS.length;
   function _addItem(text) {
-    if (!text.trim()) return;
+    if (!text.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
     var newAns = Object.assign({}, g54Answers);
     newAns[currentGround.sense] = (newAns[currentGround.sense] || []).concat([text.trim()]);
     if (newAns[currentGround.sense].length >= currentGround.count) {

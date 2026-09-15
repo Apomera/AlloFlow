@@ -278,6 +278,721 @@ window.StemLab = window.StemLab || {
     });
   } catch (e) {}
 
+  // ═══ Quantum numbers — pure model ══════════════════════════════════════════
+  // QUANTUM_REF states the four rules as text ("ℓ = 0 to n−1", "mₗ = −ℓ to +ℓ")
+  // and a second card hard-codes the orbital counts as [1, 3, 5, 7]. Those counts
+  // are not facts to memorise — they are 2ℓ+1, and the famous 2n² electrons per
+  // shell FALLS OUT of the four rules rather than being a separate thing to learn.
+  // Deriving them is the point; a table of the answers hides where they come from.
+  var SUBSHELL_LETTERS = ['s', 'p', 'd', 'f', 'g', 'h', 'i'];
+
+  // Orbitals in a subshell = the number of allowed mₗ values = 2ℓ+1.
+  function orbitalsInSubshell(l) {
+    if (!Number.isInteger(l) || l < 0) return NaN;
+    return 2 * l + 1;
+  }
+
+  // The allowed mₗ values themselves, −ℓ … +ℓ.
+  function magneticValues(l) {
+    if (!Number.isInteger(l) || l < 0) return [];
+    var out = [];
+    // `m + 0` normalises the -0 that `-l` produces when l is 0. It displays the
+    // same but is a different value to Object.is, and it would surface as "-0"
+    // in any join() a future caller writes.
+    for (var m = -l; m <= l; m++) out.push(m + 0);
+    return out;
+  }
+
+  // Every subshell in shell n: ℓ runs 0 … n−1, which is the rule that makes
+  // "1d" or "2f" impossible — a fact students routinely get wrong.
+  function subshellsInShell(n) {
+    if (!Number.isInteger(n) || n < 1) return [];
+    var out = [];
+    for (var l = 0; l < n; l++) {
+      var orbitals = orbitalsInSubshell(l);
+      out.push({
+        l: l,
+        label: String(n) + (SUBSHELL_LETTERS[l] || ('l=' + l)),
+        orbitals: orbitals,
+        electrons: 2 * orbitals          // Pauli: 2 per orbital, opposite spins
+      });
+    }
+    return out;
+  }
+
+  // Total electrons a shell can hold. Summing 2(2ℓ+1) for ℓ = 0…n−1 gives 2n²,
+  // so this is DERIVED, not asserted — and a test pins the two against each other.
+  function shellCapacity(n) {
+    var subs = subshellsInShell(n);
+    if (!subs.length) return NaN;
+    return subs.reduce(function (sum, s) { return sum + s.electrons; }, 0);
+  }
+
+  // Is this a legal set of quantum numbers? Returns the FIRST rule broken, so a
+  // student is told which rule rather than just "invalid".
+  function validateQuantumSet(n, l, ml, ms) {
+    if (!Number.isInteger(n) || n < 1) {
+      return { ok: false, rule: 'n must be a positive whole number (1, 2, 3, …).' };
+    }
+    if (!Number.isInteger(l) || l < 0 || l > n - 1) {
+      return { ok: false, rule: 'ℓ must run from 0 to n−1, so with n = ' + n + ' the largest allowed ℓ is ' + (n - 1) + '.' };
+    }
+    if (!Number.isInteger(ml) || ml < -l || ml > l) {
+      return { ok: false, rule: 'mₗ must lie between −ℓ and +ℓ, so with ℓ = ' + l + ' it runs ' + (-l) + ' to ' + l + '.' };
+    }
+    if (ms !== 0.5 && ms !== -0.5) {
+      return { ok: false, rule: 'mₛ is only +½ or −½.' };
+    }
+    return { ok: true, rule: 'All four rules satisfied.' };
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      SUBSHELL_LETTERS: SUBSHELL_LETTERS,
+      orbitalsInSubshell: orbitalsInSubshell,
+      magneticValues: magneticValues,
+      subshellsInShell: subshellsInShell,
+      shellCapacity: shellCapacity,
+      validateQuantumSet: validateQuantumSet
+    });
+  } catch (e) {}
+
+  // ═══ Precipitation — pure model ════════════════════════════════════════════
+  // SOLUBILITY_RULES lists thirteen rules with their exceptions. Reading them is
+  // not the skill: the skill is "mix these two solutions — does anything drop
+  // out?", which needs the rule AND its exception applied to a specific pair.
+  // Nearly every wrong answer comes from remembering the rule but not the
+  // exception, so the model returns WHICH rule decided and whether it was the
+  // exception that did it.
+  //
+  // Anions carry the rule; cations carry the exceptions. This is the standard
+  // general-chemistry table, and every entry below is checked in the test file
+  // against the rules the section already displays.
+  var SOLUBILITY_TABLE = {
+    'NO3':  { label: 'nitrate', soluble: true,  exceptions: [],
+              rule: 'All nitrates are soluble — no exceptions.' },
+    'ClO4': { label: 'perchlorate', soluble: true, exceptions: [],
+              rule: 'All perchlorates are soluble.' },
+    'CH3COO': { label: 'acetate', soluble: true, exceptions: [],
+              rule: 'All acetates are soluble.' },
+    'Cl':   { label: 'chloride', soluble: true,  exceptions: ['Ag', 'Pb', 'Hg2'],
+              rule: 'Halides are soluble EXCEPT with Ag⁺, Pb²⁺ or Hg₂²⁺.' },
+    'Br':   { label: 'bromide', soluble: true,   exceptions: ['Ag', 'Pb', 'Hg2'],
+              rule: 'Halides are soluble EXCEPT with Ag⁺, Pb²⁺ or Hg₂²⁺.' },
+    'I':    { label: 'iodide', soluble: true,    exceptions: ['Ag', 'Pb', 'Hg2'],
+              rule: 'Halides are soluble EXCEPT with Ag⁺, Pb²⁺ or Hg₂²⁺.' },
+    'SO4':  { label: 'sulfate', soluble: true,   exceptions: ['Ba', 'Pb', 'Sr', 'Ca'],
+              rule: 'Sulfates are soluble EXCEPT with Ba²⁺, Pb²⁺, Sr²⁺ or Ca²⁺.' },
+    // The "mostly insoluble" families invert: soluble:false, and the exceptions
+    // are the ions that DO dissolve.
+    'OH':   { label: 'hydroxide', soluble: false, exceptions: ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4', 'Ba'],
+              rule: 'Hydroxides are insoluble EXCEPT Group 1, NH₄⁺ and Ba²⁺.' },
+    'CO3':  { label: 'carbonate', soluble: false, exceptions: ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4'],
+              rule: 'Carbonates are insoluble EXCEPT Group 1 and NH₄⁺.' },
+    'PO4':  { label: 'phosphate', soluble: false, exceptions: ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4'],
+              rule: 'Phosphates are insoluble EXCEPT Group 1 and NH₄⁺.' },
+    'S':    { label: 'sulfide', soluble: false,   exceptions: ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4', 'Mg', 'Ca', 'Sr', 'Ba'],
+              rule: 'Sulfides are insoluble EXCEPT Group 1, NH₄⁺ and Group 2.' },
+    'CrO4': { label: 'chromate', soluble: false,  exceptions: ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4'],
+              rule: 'Chromates are insoluble EXCEPT Group 1 and NH₄⁺.' }
+  };
+
+  // Group 1 and ammonium dissolve with EVERY anion. That rule outranks the
+  // anion's own rule, which is why NaOH and Na2CO3 are soluble at all.
+  var ALWAYS_SOLUBLE_CATIONS = ['Li', 'Na', 'K', 'Rb', 'Cs', 'NH4'];
+
+  // Ion charges, so a product can be written as a REAL formula. Concatenating the
+  // ion symbols gives "BaOH" and "PbI", which are not compounds - a chemistry
+  // drill must not print a formula that cannot exist.
+  var ION_CHARGES = {
+    Li: 1, Na: 1, K: 1, Rb: 1, Cs: 1, NH4: 1, Ag: 1,
+    Mg: 2, Ca: 2, Sr: 2, Ba: 2, Pb: 2, Fe: 2, Cu: 2, Zn: 2, Hg2: 2,
+    Al: 3,
+    NO3: 1, ClO4: 1, CH3COO: 1, Cl: 1, Br: 1, I: 1, OH: 1,
+    SO4: 2, CO3: 2, S: 2, CrO4: 2,
+    PO4: 3
+  };
+
+  // Polyatomic ions need brackets when they take a subscript: Ba(OH)2, not BaOH2.
+  var POLYATOMIC = ['NH4', 'NO3', 'ClO4', 'CH3COO', 'OH', 'SO4', 'CO3', 'CrO4', 'PO4'];
+
+  function gcd2(a, b) { return b === 0 ? a : gcd2(b, a % b); }
+
+  // Criss-cross the charges, then reduce: Ca(2+) + CO3(2-) is CaCO3, not Ca2(CO3)2.
+  function saltFormula(cation, anion) {
+    var cq = ION_CHARGES[cation];
+    var aq = ION_CHARGES[anion];
+    if (!cq || !aq) return String(cation) + String(anion);
+    var g = gcd2(cq, aq);
+    var nCat = aq / g;
+    var nAn = cq / g;
+    function part(ion, count) {
+      if (count === 1) return ion;
+      return (POLYATOMIC.indexOf(ion) >= 0 ? '(' + ion + ')' : ion) + count;
+    }
+    return part(cation, nCat) + part(anion, nAn);
+  }
+
+  // Is this salt soluble? Returns the verdict AND the reasoning, so the caller
+  // can show WHY rather than just yes/no.
+  function saltSolubility(cation, anion) {
+    var entry = SOLUBILITY_TABLE[anion];
+    if (!entry) return null;
+
+    // This branch never changes the VERDICT - every insoluble family already
+    // lists the Group 1 cations among its exceptions, so the generic path below
+    // reaches the same answer. It exists for the REASON string: "Group 1 salts
+    // are soluble with every anion" is the rule a student should carry away,
+    // rather than "sodium happens to be on the carbonate exception list".
+    // Deleting it leaves the drill correct but the teaching worse.
+    if (ALWAYS_SOLUBLE_CATIONS.indexOf(cation) >= 0) {
+      return {
+        soluble: true,
+        viaException: !entry.soluble,   // the cation rescued an insoluble family
+        rule: entry.rule,
+        because: 'Group 1 and ammonium salts are soluble with every anion.'
+      };
+    }
+
+    var listed = entry.exceptions.indexOf(cation) >= 0;
+    // For a soluble family a listed cation is the exception (insoluble), and for
+    // an insoluble family a listed cation is the exception (soluble). Either way
+    // being listed FLIPS the family default.
+    var soluble = listed ? !entry.soluble : entry.soluble;
+    return {
+      soluble: soluble,
+      viaException: listed,
+      rule: entry.rule,
+      because: listed
+        ? cation + ' is one of the listed exceptions, so it goes the other way.'
+        : 'Nothing special about ' + cation + ' here, so the family rule stands.'
+    };
+  }
+
+  // Mix two soluble salts: the ions swap partners. Anything insoluble drops out.
+  // Returns every product with its verdict, so "no reaction" is explained rather
+  // than merely reported.
+  function predictPrecipitate(saltA, saltB) {
+    if (!saltA || !saltB) return null;
+    var products = [
+      { cation: saltA.cation, anion: saltB.anion },
+      { cation: saltB.cation, anion: saltA.anion }
+    ];
+    var rows = products.map(function (p) {
+      var verdict = saltSolubility(p.cation, p.anion);
+      return {
+        cation: p.cation,
+        anion: p.anion,
+        soluble: verdict ? verdict.soluble : true,
+        viaException: verdict ? verdict.viaException : false,
+        rule: verdict ? verdict.rule : '',
+        because: verdict ? verdict.because : ''
+      };
+    });
+    var solid = rows.filter(function (r) { return !r.soluble; });
+    return { products: rows, precipitates: solid, willPrecipitate: solid.length > 0 };
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      SOLUBILITY_TABLE: SOLUBILITY_TABLE,
+      ALWAYS_SOLUBLE_CATIONS: ALWAYS_SOLUBLE_CATIONS,
+      ION_CHARGES: ION_CHARGES,
+      saltFormula: saltFormula,
+      saltSolubility: saltSolubility,
+      predictPrecipitate: predictPrecipitate
+    });
+  } catch (e) {}
+
+  // ═══ Crystal packing — pure model ══════════════════════════════════════════
+  // CRYSTAL_STRUCTURES prints packing fractions as STRINGS: '52.4%', '68.0%',
+  // '74.0%'. Those are not facts to memorise — each one is
+  //     APF = (atoms per cell x sphere volume) / cube volume
+  // once you know how the cube edge `a` relates to the sphere radius `r`, and
+  // that relation is pure geometry: which direction through the cube has the
+  // spheres actually touching.
+  //
+  // Deriving it also makes the striking result visible: FCC and HCP are
+  // DIFFERENT arrangements with IDENTICAL density, because both are close-packed.
+  //
+  // Only the metallic/covalent structures are modelled. NaCl and CsCl are left
+  // to the reference table on purpose: their '~67%' depends on the cation/anion
+  // RADIUS RATIO, not on one-size sphere packing, so running them through this
+  // formula would produce a confident wrong number.
+  var PACKING_LATTICES = {
+    sc: {
+      label: 'Simple cubic',
+      atoms: 1, coord: 6,
+      touchAlong: 'cube edge',
+      aOverR: 2,                       // a = 2r
+      aFormula: 'a = 2r',
+      why: 'Spheres touch along the cube EDGE, so one edge is two radii.'
+    },
+    bcc: {
+      label: 'Body-centred cubic (BCC)',
+      atoms: 2, coord: 8,
+      touchAlong: 'body diagonal',
+      aOverR: 4 / Math.sqrt(3),        // body diagonal a*sqrt3 = 4r
+      aFormula: 'a\u221A3 = 4r',
+      why: 'The corner atoms do NOT touch each other — contact runs through the centre atom, along the body diagonal.'
+    },
+    fcc: {
+      label: 'Face-centred cubic (FCC)',
+      atoms: 4, coord: 12,
+      touchAlong: 'face diagonal',
+      aOverR: 4 / Math.sqrt(2),        // face diagonal a*sqrt2 = 4r
+      aFormula: 'a\u221A2 = 4r',
+      why: 'Contact runs across each FACE diagonal, through the face-centre atom.'
+    },
+    hcp: {
+      label: 'Hexagonal close-packed (HCP)',
+      atoms: 4, coord: 12,             // modelled via its cubic-equivalent cell
+      touchAlong: 'close-packed layer',
+      aOverR: 4 / Math.sqrt(2),
+      aFormula: 'same close-packing as FCC',
+      why: 'A different stacking order (ABAB rather than ABCABC) but the same closest packing, so the same density.'
+    },
+    diamond: {
+      label: 'Diamond cubic',
+      atoms: 8, coord: 4,
+      touchAlong: 'tetrahedral bond',
+      aOverR: 8 / Math.sqrt(3),        // nearest-neighbour a*sqrt3/4 = 2r
+      aFormula: 'a\u221A3 = 8r',
+      why: 'Only four neighbours each, held at tetrahedral angles by covalent bonds — rigid, but mostly empty space.'
+    }
+  };
+
+  // Atomic packing factor: the share of the cell volume actually inside a sphere.
+  // n(4/3 pi r^3) / a^3, with a expressed in units of r so r cancels.
+  function packingFraction(atomsPerCell, aOverR) {
+    if (!isFinite(atomsPerCell) || !isFinite(aOverR)) return NaN;
+    if (atomsPerCell <= 0 || aOverR <= 0) return NaN;
+    return (atomsPerCell * (4 / 3) * Math.PI) / Math.pow(aOverR, 3);
+  }
+
+  function latticePacking(key) {
+    var lat = PACKING_LATTICES[key];
+    if (!lat) return null;
+    var apf = packingFraction(lat.atoms, lat.aOverR);
+    return {
+      key: key,
+      label: lat.label,
+      atoms: lat.atoms,
+      coord: lat.coord,
+      aFormula: lat.aFormula,
+      touchAlong: lat.touchAlong,
+      why: lat.why,
+      packing: apf,
+      emptySpace: 1 - apf
+    };
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      PACKING_LATTICES: PACKING_LATTICES,
+      packingFraction: packingFraction,
+      latticePacking: latticePacking
+    });
+  } catch (e) {}
+
+  // ═══ Phase at a temperature — pure model ═══════════════════════════════════
+  // MELT_BOIL lists melting and boiling points as STRINGS ('−259°C'). Two
+  // questions hide in that table and neither can be asked of a string:
+  //   1. what phase is this substance at some temperature? (read the number line)
+  //   2. WHY is helium's boiling point 369 degrees below water's?
+  //
+  // Question 2 is the one that matters, and the answer is intermolecular forces,
+  // which the tool already documents in IMF_TYPES. So each substance carries the
+  // force that actually holds it together, and the panel lines the two up.
+  //
+  // Molar masses are included because the comparison only bites when mass is
+  // controlled for: ethanol is 46 g/mol and boils at 78 °C, water is 18 g/mol
+  // and boils at 100 °C. The LIGHTER one boils higher, which kills "heavier
+  // always boils higher" on the spot.
+  //
+  // mp/bp in °C at 1 atm, from the same CRC values the reference table shows.
+  var PHASE_SUBSTANCES = {
+    helium:   { label: 'Helium', formula: 'He', mp: -272, bp: -269, mass: 4,
+                imf: 'london', why: 'One tiny electron cloud — the weakest dispersion forces there are.' },
+    hydrogen: { label: 'Hydrogen', formula: 'H\u2082', mp: -259, bp: -253, mass: 2,
+                imf: 'london', why: 'Two electrons. Almost nothing to distort, so almost nothing holds it together.' },
+    nitrogen: { label: 'Nitrogen', formula: 'N\u2082', mp: -210, bp: -196, mass: 28,
+                imf: 'london', why: 'Nonpolar, but 14 electrons give it more dispersion than H\u2082.' },
+    methane:  { label: 'Methane', formula: 'CH\u2084', mp: -183, bp: -162, mass: 16,
+                imf: 'london', why: 'The C\u2013H bonds are barely polar and the tetrahedron is symmetric, so it is nonpolar overall.' },
+    ethanol:  { label: 'Ethanol', formula: 'C\u2082H\u2085OH', mp: -114, bp: 78, mass: 46,
+                imf: 'hbond', why: 'One O\u2013H group per molecule, so it hydrogen bonds \u2014 but only one.' },
+    water:    { label: 'Water', formula: 'H\u2082O', mp: 0, bp: 100, mass: 18,
+                imf: 'hbond', why: 'TWO O\u2013H bonds and two lone pairs, so each molecule can hydrogen bond four ways.' },
+    mercury:  { label: 'Mercury', formula: 'Hg', mp: -39, bp: 357, mass: 201,
+                imf: 'metallic', why: 'Metallic bonding, but unusually weak for a metal \u2014 which is why it is the only one liquid at room temperature.' },
+    iron:     { label: 'Iron', formula: 'Fe', mp: 1538, bp: 2861, mass: 56,
+                imf: 'metallic', why: 'Strong metallic bonding throughout the whole lattice, not between separate molecules.' },
+    tungsten: { label: 'Tungsten', formula: 'W', mp: 3422, bp: 5555, mass: 184,
+                imf: 'metallic', why: 'The strongest metallic bonding of any metal \u2014 which is why it survives as a lamp filament.' },
+    diamond:  { label: 'Diamond', formula: 'C', mp: 3550, bp: 4827, mass: 12,
+                imf: 'covalent', why: 'A single covalent network. Melting it means breaking actual covalent bonds, not pulling molecules apart.' }
+  };
+
+  var IMF_STRENGTH_ORDER = ['london', 'dipole', 'hbond', 'metallic', 'covalent'];
+
+  var IMF_LABELS = {
+    london:   'London dispersion only',
+    dipole:   'Dipole\u2013dipole',
+    hbond:    'Hydrogen bonding',
+    metallic: 'Metallic bonding',
+    covalent: 'Covalent network'
+  };
+
+  // Which phase at this temperature? Boundaries are inclusive on the lower side:
+  // exactly at the melting point the substance is melting, so the honest answer
+  // is "at the boundary" rather than picking a side.
+  function phaseAt(key, tempC) {
+    var sub = PHASE_SUBSTANCES[key];
+    if (!sub || !isFinite(tempC)) return null;
+    if (tempC === sub.mp) return { phase: 'melting', label: 'exactly at its melting point' };
+    if (tempC === sub.bp) return { phase: 'boiling', label: 'exactly at its boiling point' };
+    if (tempC < sub.mp) return { phase: 'solid', label: 'solid' };
+    if (tempC < sub.bp) return { phase: 'liquid', label: 'liquid' };
+    return { phase: 'gas', label: 'gas' };
+  }
+
+  // The liquid range - how wide a window this substance stays liquid in. Mercury
+  // is ~396 degrees wide, which is exactly why it worked in thermometers.
+  function liquidRange(key) {
+    var sub = PHASE_SUBSTANCES[key];
+    if (!sub) return NaN;
+    return sub.bp - sub.mp;
+  }
+
+  // Compare two substances: which boils higher, and does mass explain it?
+  // Returns massExplains:false for the pair that matters most (water vs ethanol),
+  // where the LIGHTER substance boils higher because of hydrogen bonding.
+  function compareBoiling(keyA, keyB) {
+    var a = PHASE_SUBSTANCES[keyA];
+    var b = PHASE_SUBSTANCES[keyB];
+    if (!a || !b || keyA === keyB) return null;
+    var higher = a.bp > b.bp ? a : b;
+    var lower = a.bp > b.bp ? b : a;
+    return {
+      higher: higher,
+      lower: lower,
+      gap: higher.bp - lower.bp,
+      sameImf: a.imf === b.imf,
+      // "Heavier boils higher" is the rule of thumb students over-apply.
+      massExplains: higher.mass > lower.mass
+    };
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      PHASE_SUBSTANCES: PHASE_SUBSTANCES,
+      IMF_STRENGTH_ORDER: IMF_STRENGTH_ORDER,
+      IMF_LABELS: IMF_LABELS,
+      phaseAt: phaseAt,
+      liquidRange: liquidRange,
+      compareBoiling: compareBoiling
+    });
+  } catch (e) {}
+
+  // ═══ Infrared spectroscopy — pure model ════════════════════════════════════
+  // SPECTRO_METHODS describes nine techniques in prose. One of them is genuinely
+  // computable: IR identifies functional groups by WHERE a molecule absorbs, and
+  // its own entry already carries three real bands (~3300 OH, ~1700 C=O, ~2250
+  // C≡N). Reading a spectrum means going from peaks to groups, which is the
+  // actual analytical skill and cannot be practised from a prose description.
+  //
+  // Ranges in cm⁻¹ from standard organic-chemistry correlation tables. `shape`
+  // matters as much as position: a broad 3300 is an alcohol O–H, a sharp 3300 is
+  // a terminal alkyne C–H, and confusing them is the classic beginner error.
+  var IR_BANDS = [
+    { group: 'O\u2013H (alcohol)', lo: 3200, hi: 3600, shape: 'broad', strength: 'strong',
+      tell: 'Broad because hydrogen bonding smears the frequency across a range.' },
+    { group: 'O\u2013H (carboxylic acid)', lo: 2500, hi: 3300, shape: 'very broad', strength: 'strong',
+      tell: 'Even broader than an alcohol, and it overlaps the C\u2013H region \u2014 look for a C=O near 1710 to confirm.' },
+    { group: 'N\u2013H (amine / amide)', lo: 3300, hi: 3500, shape: 'medium', strength: 'medium',
+      tell: 'A primary amine shows TWO peaks here; a secondary amine shows one.' },
+    { group: 'C\u2013H (alkyne, terminal)', lo: 3260, hi: 3330, shape: 'sharp', strength: 'strong',
+      tell: 'Sharp and narrow, unlike the broad O\u2013H that sits in the same place.' },
+    { group: 'C\u2013H (alkane)', lo: 2850, hi: 3000, shape: 'sharp', strength: 'strong',
+      tell: 'Almost every organic molecule has these, so they identify nothing on their own.' },
+    { group: 'C\u2261N (nitrile)', lo: 2220, hi: 2260, shape: 'sharp', strength: 'medium',
+      tell: 'A lone sharp peak in an otherwise empty region \u2014 hard to miss.' },
+    { group: 'C\u2261C (alkyne)', lo: 2100, hi: 2200, shape: 'sharp', strength: 'weak',
+      tell: 'Weak, and absent entirely if the alkyne is symmetric.' },
+    { group: 'C=O (ester)', lo: 1735, hi: 1750, shape: 'sharp', strength: 'strong',
+      tell: 'The HIGHEST of the carbonyls.' },
+    { group: 'C=O (aldehyde)', lo: 1720, hi: 1740, shape: 'sharp', strength: 'strong',
+      tell: 'Confirm with two weak C\u2013H peaks near 2720 and 2820.' },
+    { group: 'C=O (ketone)', lo: 1705, hi: 1725, shape: 'sharp', strength: 'strong',
+      tell: 'No O\u2013H and no aldehyde C\u2013H, so a bare carbonyl.' },
+    { group: 'C=O (carboxylic acid)', lo: 1700, hi: 1725, shape: 'sharp', strength: 'strong',
+      tell: 'Comes WITH a very broad O\u2013H from 2500\u20133300 \u2014 the pair is the giveaway.' },
+    { group: 'C=O (amide)', lo: 1630, hi: 1690, shape: 'sharp', strength: 'strong',
+      tell: 'The LOWEST carbonyl, because the nitrogen lone pair weakens the C=O.' },
+    { group: 'C=C (alkene)', lo: 1620, hi: 1680, shape: 'sharp', strength: 'medium',
+      tell: 'Overlaps the amide carbonyl, so check for N\u2013H before deciding.' }
+  ];
+
+  // Which groups could absorb here? A peak rarely names one group on its own -
+  // returning every candidate is the honest answer, and narrowing them down is
+  // the skill.
+  function irCandidates(wavenumber) {
+    if (!isFinite(wavenumber)) return [];
+    return IR_BANDS.filter(function (b) {
+      return wavenumber >= b.lo && wavenumber <= b.hi;
+    });
+  }
+
+  // Read a whole spectrum: every observed peak, matched to its candidates.
+  // Peaks that match nothing are reported too - a real spectrum has regions the
+  // correlation table does not cover, and silently dropping them would teach
+  // that every peak is diagnostic.
+  function readIrSpectrum(peaks) {
+    if (!Array.isArray(peaks)) return null;
+    var rows = peaks.map(function (p) {
+      var wn = typeof p === 'number' ? p : p.wavenumber;
+      var shape = (typeof p === 'object' && p.shape) ? p.shape : null;
+      var all = irCandidates(wn);
+      // Shape narrows the field: broad at 3300 is an O-H, sharp at 3300 is an
+      // alkyne C-H. This is the single most useful discrimination in the region.
+      var matched = shape
+        ? all.filter(function (b) { return b.shape.indexOf(shape) >= 0 || shape.indexOf(b.shape) >= 0; })
+        : all;
+      return {
+        wavenumber: wn,
+        shape: shape,
+        candidates: matched.length ? matched : all,
+        narrowedByShape: !!shape && matched.length > 0 && matched.length < all.length,
+        unmatched: all.length === 0
+      };
+    });
+    return { peaks: rows, anyUnmatched: rows.some(function (r) { return r.unmatched; }) };
+  }
+
+  // The carbonyl ordering is a real result worth stating: where a C=O absorbs
+  // tells you WHICH carbonyl it is. Returns them high to low.
+  function carbonylOrder() {
+    return IR_BANDS
+      .filter(function (b) { return b.group.indexOf('C=O') === 0; })
+      .slice()
+      .sort(function (a, b) { return b.lo - a.lo; });
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      IR_BANDS: IR_BANDS,
+      irCandidates: irCandidates,
+      readIrSpectrum: readIrSpectrum,
+      carbonylOrder: carbonylOrder
+    });
+  } catch (e) {}
+
+  // ═══ Acid strength — pure model ════════════════════════════════════════════
+  // ACID_BASE_REF lists Ka as STRINGS ('1.8 × 10⁻⁵', '~10⁷'), spanning fourteen
+  // orders of magnitude. Two things hide in that spread and neither survives as
+  // text:
+  //   1. pKa = −log₁₀(Ka) turns an unreadable exponent into a number you can
+  //      compare at a glance, and it is the SAME pKa the buffer designer uses.
+  //   2. The strong acids all give the same pH at the same concentration — the
+  //      LEVELLING effect. In water, anything stronger than H₃O⁺ is simply
+  //      converted to H₃O⁺, so "stronger" stops meaning anything.
+  //
+  // Ka values are the ones the reference table already prints.
+  var ACID_KA = {
+    hcl:     { label: 'Hydrochloric acid', formula: 'HCl', ka: 1e7, strong: true,
+               note: 'Stomach acid. Effectively 100% dissociated in water.' },
+    h2so4:   { label: 'Sulfuric acid (1st H)', formula: 'H\u2082SO\u2084', ka: 1e3, strong: true,
+               note: 'Diprotic \u2014 the SECOND proton is weak (Ka \u2248 0.012), which the table does not show.' },
+    hno3:    { label: 'Nitric acid', formula: 'HNO\u2083', ka: 20, strong: true,
+               note: 'Strong, and an oxidiser as well as an acid.' },
+    hf:      { label: 'Hydrofluoric acid', formula: 'HF', ka: 6.6e-4, strong: false,
+               note: 'WEAK as an acid and still able to dissolve glass and cause deep burns \u2014 "weak" is not "safe".' },
+    ch3cooh: { label: 'Acetic acid', formula: 'CH\u2083COOH', ka: 1.8e-5, strong: false,
+               note: 'Vinegar. The textbook weak acid.' },
+    h2co3:   { label: 'Carbonic acid', formula: 'H\u2082CO\u2083', ka: 4.3e-7, strong: false,
+               note: 'Dissolved CO\u2082. Why rain is naturally near pH 5.6, not 7.' }
+  };
+
+  // pKa = -log10(Ka). Negative for the strong acids, which is the point: a
+  // negative pKa is what "stronger than H3O+" looks like as a number.
+  function pKaOf(ka) {
+    if (!isFinite(ka) || ka <= 0) return NaN;
+    return -Math.log10(ka);
+  }
+
+  // pH of a weak monoprotic acid at concentration C, solved EXACTLY from
+  //   x²/(C − x) = Ka   →   x = (−Ka + √(Ka² + 4·Ka·C)) / 2
+  // rather than the usual x = √(Ka·C) shortcut, which breaks down once the acid
+  // is more than a few percent dissociated. A strong acid saturates at x = C.
+  function weakAcidPH(ka, molarity) {
+    if (!isFinite(ka) || !isFinite(molarity) || ka <= 0 || molarity <= 0) return NaN;
+    var x = (-ka + Math.sqrt(ka * ka + 4 * ka * molarity)) / 2;
+    if (x > molarity) x = molarity;          // fully dissociated
+    return -Math.log10(x);
+  }
+
+  // What fraction of the acid actually gave up its proton? This is what
+  // "strong" and "weak" mean, and it is invisible in a Ka string.
+  function percentDissociated(ka, molarity) {
+    if (!isFinite(ka) || !isFinite(molarity) || ka <= 0 || molarity <= 0) return NaN;
+    var x = (-ka + Math.sqrt(ka * ka + 4 * ka * molarity)) / 2;
+    return Math.min(100, (x / molarity) * 100);
+  }
+
+  // Do two acids give the same pH at this concentration? Once both are strong,
+  // water levels them: the difference in Ka stops showing up at all.
+  function levelledTogether(keyA, keyB, molarity) {
+    var a = ACID_KA[keyA];
+    var b = ACID_KA[keyB];
+    if (!a || !b) return null;
+    var pHa = weakAcidPH(a.ka, molarity);
+    var pHb = weakAcidPH(b.ka, molarity);
+    return {
+      pHa: pHa,
+      pHb: pHb,
+      gap: Math.abs(pHa - pHb),
+      // Within 0.05 pH is indistinguishable on any school meter.
+      levelled: Math.abs(pHa - pHb) < 0.05,
+      kaRatio: a.ka / b.ka
+    };
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      ACID_KA: ACID_KA,
+      pKaOf: pKaOf,
+      weakAcidPH: weakAcidPH,
+      percentDissociated: percentDissociated,
+      levelledTogether: levelledTogether
+    });
+  } catch (e) {}
+
+  // ═══ Periodic trends — pure model ══════════════════════════════════════════
+  // PERIODIC_TRENDS states six rules as prose ("Decreases →", "Increases ↓").
+  // A rule you can only read is a rule you cannot be wrong about, so the skill -
+  // "which of these two has the larger radius?" - never gets rehearsed.
+  //
+  // Everything here is graded against MEASURED values, not against a restatement
+  // of the rule. That matters because one of the six trends visibly BREAKS:
+  // atomic mass is not monotonic with atomic number (Ar > K, Te > I, Co > Ni),
+  // which is exactly why Moseley replaced Mendeleev's mass ordering with Z.
+  //
+  // Pauling electronegativity, CODATA-era atomic masses, empirical atomic radii
+  // in pm (Slater), first ionisation energies in kJ/mol.
+  var PT_ELEMENTS = {
+    H:  { z: 1,  period: 1, group: 1,  en: 2.20, mass: 1.008,  radius: 53,  ie1: 1312 },
+    Li: { z: 3,  period: 2, group: 1,  en: 0.98, mass: 6.94,   radius: 167, ie1: 520 },
+    Be: { z: 4,  period: 2, group: 2,  en: 1.57, mass: 9.012,  radius: 112, ie1: 899 },
+    B:  { z: 5,  period: 2, group: 13, en: 2.04, mass: 10.81,  radius: 87,  ie1: 801 },
+    C:  { z: 6,  period: 2, group: 14, en: 2.55, mass: 12.011, radius: 67,  ie1: 1086 },
+    N:  { z: 7,  period: 2, group: 15, en: 3.04, mass: 14.007, radius: 56,  ie1: 1402 },
+    O:  { z: 8,  period: 2, group: 16, en: 3.44, mass: 15.999, radius: 48,  ie1: 1314 },
+    F:  { z: 9,  period: 2, group: 17, en: 3.98, mass: 18.998, radius: 42,  ie1: 1681 },
+    Na: { z: 11, period: 3, group: 1,  en: 0.93, mass: 22.990, radius: 190, ie1: 496 },
+    Mg: { z: 12, period: 3, group: 2,  en: 1.31, mass: 24.305, radius: 145, ie1: 738 },
+    Al: { z: 13, period: 3, group: 13, en: 1.61, mass: 26.982, radius: 118, ie1: 578 },
+    Si: { z: 14, period: 3, group: 14, en: 1.90, mass: 28.085, radius: 111, ie1: 787 },
+    P:  { z: 15, period: 3, group: 15, en: 2.19, mass: 30.974, radius: 98,  ie1: 1012 },
+    S:  { z: 16, period: 3, group: 16, en: 2.58, mass: 32.06,  radius: 88,  ie1: 1000 },
+    Cl: { z: 17, period: 3, group: 17, en: 3.16, mass: 35.45,  radius: 79,  ie1: 1251 },
+    Ar: { z: 18, period: 3, group: 18, en: null, mass: 39.948, radius: 71,  ie1: 1521 },
+    K:  { z: 19, period: 4, group: 1,  en: 0.82, mass: 39.098, radius: 243, ie1: 419 },
+    Ca: { z: 20, period: 4, group: 2,  en: 1.00, mass: 40.078, radius: 194, ie1: 590 },
+    Br: { z: 35, period: 4, group: 17, en: 2.96, mass: 79.904, radius: 94,  ie1: 1140 },
+    I:  { z: 53, period: 5, group: 17, en: 2.66, mass: 126.90, radius: 115, ie1: 1008 },
+    Te: { z: 52, period: 5, group: 16, en: 2.10, mass: 127.60, radius: 123, ie1: 869 },
+    Cs: { z: 55, period: 6, group: 1,  en: 0.79, mass: 132.91, radius: 298, ie1: 376 }
+  };
+
+  // Each trend names the property it is really about, and which direction the
+  // property runs. `higherWins` says whether a larger raw number means "more" of
+  // the trend - radius is the only one where the rule reads as a decrease across.
+  var PT_TRENDS = {
+    radius: { label: 'Atomic radius', prop: 'radius', unit: 'pm',
+              across: 'decreases', down: 'increases',
+              why: 'Across: more protons pulling the SAME shell, so the atom shrinks. Down: a whole new shell.' },
+    en:     { label: 'Electronegativity', prop: 'en', unit: '',
+              across: 'increases', down: 'decreases',
+              why: 'Pull on a shared pair. A small, highly charged nucleus pulls hardest.' },
+    ie1:    { label: 'First ionisation energy', prop: 'ie1', unit: 'kJ/mol',
+              across: 'increases', down: 'decreases',
+              why: 'Smaller atoms hold their outer electrons closer, so more energy is needed to remove one.' },
+    mass:   { label: 'Atomic mass', prop: 'mass', unit: 'u',
+              across: 'increases', down: 'increases',
+              why: 'Usually rises with atomic number \u2014 but NOT always, which is the point.' }
+  };
+
+  // Compare two elements on one trend, GRADED AGAINST THE MEASURED VALUE.
+  // Returns which actually wins plus what the rule alone would have predicted,
+  // so a disagreement between them can be shown rather than hidden.
+  function compareTrend(trendKey, symA, symB) {
+    var trend = PT_TRENDS[trendKey];
+    var a = PT_ELEMENTS[symA];
+    var b = PT_ELEMENTS[symB];
+    if (!trend || !a || !b || symA === symB) return null;
+
+    var va = a[trend.prop];
+    var vb = b[trend.prop];
+    if (va === null || vb === null) return null;   // Ar has no Pauling EN
+
+    var actual = va > vb ? symA : (vb > va ? symB : null);
+
+    // What the rule PREDICTS, from position alone. Only decidable when the two
+    // elements share a period or a group; otherwise the rule is silent and
+    // saying so is more honest than guessing.
+    var predicted = null;
+    var basis = null;
+    if (a.period === b.period) {
+      basis = 'same period';
+      var rightward = a.group > b.group ? symA : symB;
+      var leftward = a.group > b.group ? symB : symA;
+      predicted = trend.across === 'increases' ? rightward : leftward;
+    } else if (a.group === b.group) {
+      basis = 'same group';
+      var lower = a.period > b.period ? symA : symB;
+      var upper = a.period > b.period ? symB : symA;
+      predicted = trend.down === 'increases' ? lower : upper;
+    }
+
+    return {
+      trend: trend,
+      a: symA, b: symB,
+      valueA: va, valueB: vb,
+      actual: actual,
+      predicted: predicted,
+      basis: basis,
+      // The rule is only WRONG when it committed to an answer and missed.
+      ruleHolds: predicted === null ? null : predicted === actual
+    };
+  }
+
+  // Every pair the rule commits to but gets wrong. Atomic mass has real
+  // inversions (Ar > K, Te > I); this finds them from the data rather than
+  // trusting the prose note.
+  function trendExceptions(trendKey) {
+    var syms = Object.keys(PT_ELEMENTS);
+    var out = [];
+    for (var i = 0; i < syms.length; i++) {
+      for (var j = i + 1; j < syms.length; j++) {
+        var r = compareTrend(trendKey, syms[i], syms[j]);
+        if (r && r.ruleHolds === false) {
+          out.push({ a: syms[i], b: syms[j], predicted: r.predicted, actual: r.actual });
+        }
+      }
+    }
+    return out;
+  }
+
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      PT_ELEMENTS: PT_ELEMENTS,
+      PT_TRENDS: PT_TRENDS,
+      compareTrend: compareTrend,
+      trendExceptions: trendExceptions
+    });
+  } catch (e) {}
+
 
 
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
@@ -2681,7 +3396,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }),
                     React.createElement('button', { type: 'button', 'aria-pressed': showAtomLabels, onClick: function() { upd('showAtomLabels', !showAtomLabels); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-bold' }, __alloT('stem.molecule.atom_labels', 'Atom labels'))
                   ),
-                  React.createElement("div", { 'data-molecule-viewport': true, className: "relative w-full rounded-xl overflow-hidden border", style: { height: "clamp(340px, 48vw, 440px)", background: "radial-gradient(ellipse at 50% 42%, #162b46 0%, #0d1b2e 48%, #040b18 100%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                  React.createElement("div", { 'data-molecule-viewport': true, 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: "relative w-full rounded-xl overflow-hidden border", style: { height: "clamp(340px, 48vw, 440px)", background: "radial-gradient(ellipse at 50% 42%, #162b46 0%, #0d1b2e 48%, #040b18 100%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                    React.createElement('button', {
+                      type: 'button',
+                      'data-allo-fs-btn': 'true',
+                      'aria-pressed': 'false',
+                      'aria-label': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
+                      'data-fs-out': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
+                      'data-fs-in': __alloT('stem.molecule.exit_fullscreen', 'Exit fullscreen 3D molecular model (Escape)'),
+                      style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.5)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                    }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
                       role: "img",
@@ -5086,7 +5810,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ═══ Challenges Panel ═══
             React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3 rounded-lg px-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", { open: completedChallenges.length > 0 && completedChallenges.length < MOLECULE_CHALLENGES.length },
-                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined },
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: { color: 'var(--allo-stem-text-soft, #475569)' } },
                   "🏆 Challenges (" + completedChallenges.length + "/" + MOLECULE_CHALLENGES.length + ")"
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2" },
@@ -5112,7 +5836,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ═══ AI Chemistry Tutor ═══
             React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3 rounded-lg px-2 pb-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", null,
-                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined },
+                React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none", style: { color: 'var(--allo-stem-text-soft, #475569)' } },
                   __alloT('stem.molecule.ask_the_chemistry_tutor', "🧑‍🔬 Ask the Chemistry Tutor")
                 ),
                 React.createElement("div", { className: "mt-2" },
@@ -5906,7 +6630,129 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           ),
           React.createElement('div', { className: 'mt-3 p-2 rounded-md bg-blue-50 border border-blue-200 text-[0.6875rem] text-blue-900' },
             React.createElement('strong', null, __alloT('stem.molecule.ph_scale_2', '💡 pH scale: ')), __alloT('stem.molecule.ph_0_6_acidic_ph_7_neutral_ph_8_14_bas', 'pH 0-6 acidic · pH 7 neutral · pH 8-14 basic. Each unit = 10× change in [H⁺]. Stomach acid pH 1.5, blood pH 7.4, bleach pH 12.')
-          )
+          ),
+
+          // ── How strong is strong? ─────────────────────────────────────────
+          // The table above prints Ka as strings spanning 10^7 down to 10^-7.
+          // Two things hide in that spread and neither survives as text: pKa
+          // turns an unreadable exponent into a comparable number, and at the
+          // top end the differences STOP MATTERING - water levels every strong
+          // acid to H3O+, so a 500,000x gap in Ka gives the same pH.
+          (function() {
+            var keys = Object.keys(ACID_KA);
+            var pick = keys.indexOf(d2.kaAcid) >= 0 ? d2.kaAcid : 'ch3cooh';
+            var compare = keys.indexOf(d2.kaCompare) >= 0 ? d2.kaCompare : 'hcl';
+            var molarity = (function () {
+              var x = Number(d2.kaConc);
+              return (isFinite(x) && x > 0 && x <= 1) ? x : 0.1;
+            })();
+
+            var acid = ACID_KA[pick];
+            var pKa = pKaOf(acid.ka);
+            var pH = weakAcidPH(acid.ka, molarity);
+            var pctD = percentDissociated(acid.ka, molarity);
+            var lv = levelledTogether(pick, compare, molarity);
+
+            function f(x, dp) { return isFinite(x) ? x.toFixed(dp === undefined ? 2 : dp) : '--'; }
+
+            var srKa = acid.label + ', Ka ' + acid.ka.toExponential(1) + ', pKa ' + f(pKa)
+              + '. At ' + molarity + ' molar the pH is ' + f(pH) + ' and '
+              + f(pctD) + ' percent of it has given up its proton.';
+
+            // pKa on a -8..8 line: negative pKa is what "stronger than H3O+"
+            // looks like as a number, and the line makes that visible.
+            var KW = 250, KH = 26, KLO = -8, KHI = 8;
+            function xOfPka(v) {
+              var t = (Math.max(KLO, Math.min(KHI, v)) - KLO) / (KHI - KLO);
+              return 6 + t * (KW - 12);
+            }
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-rose-300 bg-white p-3' },
+              React.createElement('div', { className: 'text-[0.8125rem] font-black text-rose-800 mb-1' },
+                __alloT('stem.molecule.ka_title', '\uD83E\uDDEA How strong is strong?')),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.ka_intro', 'Ka spans fourteen orders of magnitude in the table above. pKa makes it readable \u2014 and at the strong end the differences stop showing up at all.')),
+
+              React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'ka-acid', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.acid', 'Acid')),
+                  React.createElement('select', {
+                    id: 'ka-acid', value: pick,
+                    onChange: function (e) { setExp({ kaAcid: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.choose_acid', 'Choose an acid')
+                  }, keys.map(function (k) {
+                    return React.createElement('option', { key: k, value: k }, ACID_KA[k].label);
+                  }))),
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'ka-conc', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.concentration_m', 'Concentration (M)')),
+                  React.createElement('input', {
+                    id: 'ka-conc', type: 'number', value: molarity, step: 0.05, min: 0.01, max: 1,
+                    onChange: function (e) { setExp({ kaConc: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.concentration_m', 'Concentration in moles per litre'),
+                    'aria-valuetext': molarity + ' molar, pH ' + f(pH)
+                  }))),
+
+              React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+                React.createElement('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 text-center' },
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold text-slate-700' }, 'pKa'),
+                  React.createElement('div', { 'data-testid': 'mol-ka-pka', className: 'font-mono text-[0.75rem] font-black text-slate-900' }, f(pKa))),
+                React.createElement('div', { className: 'rounded-lg border-2 border-rose-400 bg-rose-50 p-2 text-center' },
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold text-rose-800' }, 'pH'),
+                  React.createElement('div', { 'data-testid': 'mol-ka-ph', className: 'font-mono text-[0.75rem] font-black text-slate-900' }, f(pH))),
+                React.createElement('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 text-center' },
+                  React.createElement('div', { className: 'text-[0.625rem] font-bold text-slate-700' },
+                    __alloT('stem.molecule.dissociated', 'Dissociated')),
+                  React.createElement('div', { 'data-testid': 'mol-ka-pct', className: 'font-mono text-[0.75rem] font-black text-slate-900' },
+                    f(pctD, pctD < 1 ? 2 : 1) + '%'))),
+
+              React.createElement('svg', {
+                viewBox: '0 0 ' + KW + ' ' + KH, role: 'img', 'aria-label': srKa,
+                'data-testid': 'mol-ka-line',
+                style: { width: '100%', height: 'auto', display: 'block' }, className: 'mb-2'
+              },
+                React.createElement('rect', { x: 6, y: 8, width: xOfPka(0) - 6, height: 7, fill: '#fecaca' }),
+                React.createElement('rect', { x: xOfPka(0), y: 8, width: (KW - 6) - xOfPka(0), height: 7, fill: '#e0e7ff' }),
+                React.createElement('circle', { cx: xOfPka(pKa), cy: 11.5, r: 4, fill: '#9f1239', stroke: '#ffffff', strokeWidth: 1 }),
+                React.createElement('text', { x: 6, y: KH - 3, style: { fontSize: '6px' }, fill: '#475569' }, 'pKa \u22128'),
+                React.createElement('text', { x: xOfPka(0), y: KH - 3, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#475569' }, '0'),
+                React.createElement('text', { x: KW - 6, y: KH - 3, textAnchor: 'end', style: { fontSize: '6px' }, fill: '#475569' }, '+8 weaker')),
+
+              React.createElement('div', { 'data-testid': 'mol-ka-note', className: 'rounded-lg border border-rose-200 bg-rose-50 p-2 mb-2 text-[0.6875rem] text-rose-900' },
+                acid.note),
+
+              // The levelling effect, shown by comparison rather than asserted.
+              React.createElement('div', { className: 'mb-2' },
+                React.createElement('label', { htmlFor: 'ka-compare', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                  __alloT('stem.molecule.compare_with', 'Compare with')),
+                React.createElement('select', {
+                  id: 'ka-compare', value: compare,
+                  onChange: function (e) { setExp({ kaCompare: e.target.value }); },
+                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                  'aria-label': __alloT('stem.molecule.choose_compare_acid', 'Choose an acid to compare with')
+                }, keys.map(function (k) {
+                  return React.createElement('option', { key: k, value: k }, ACID_KA[k].label);
+                }))),
+
+              lv && pick !== compare && React.createElement('div', {
+                'data-testid': 'mol-ka-levelling',
+                className: 'rounded-lg border p-2 text-[0.6875rem] ' + (lv.levelled
+                  ? 'border-amber-300 bg-amber-50 text-amber-900'
+                  : 'border-slate-300 bg-slate-50 text-slate-800')
+              },
+                React.createElement('div', { className: 'font-mono' },
+                  'pH ' + f(lv.pHa) + ' vs ' + f(lv.pHb) + '  \u00B7  Ka ratio '
+                  + (lv.kaRatio >= 1 ? lv.kaRatio : 1 / lv.kaRatio).toExponential(1) + '\u00D7'),
+                React.createElement('div', { className: 'mt-0.5' }, lv.levelled
+                  ? __alloT('stem.molecule.ka_levelled', 'Same pH despite that gap in Ka. Water LEVELS strong acids: anything stronger than H\u2083O\u207A just hands its proton to water, so "stronger" stops being measurable in water at all.')
+                  : __alloT('stem.molecule.ka_not_levelled', 'Different pH \u2014 at least one of these is weak enough that its Ka still decides the answer.'))),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-ka-sr', className: 'sr-only' }, srKa)
+            );
+          })()
         );
       }
 
@@ -5935,7 +6781,72 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('div', { className: 'text-[0.625rem] text-indigo-700' }, 'up to ' + electrons + ' e⁻')
               );
             })
-          )
+          ),
+
+          // ── Live shell explorer ──────────────────────────────────────────
+          // The cards above give the rules; the grid above hard-codes [1,3,5,7].
+          // Those counts ARE the rules applied: 2ℓ+1 orbitals, 2 electrons each.
+          // Pick a shell and watch every subshell, orbital count and the famous
+          // 2n² capacity fall out of ℓ = 0…n−1 instead of being memorised.
+          (function() {
+            var nShell = (function() {
+              var x = parseInt(d2.qnShell, 10);
+              return (!isFinite(x) || x < 1 || x > 6) ? 3 : x;
+            })();
+            var subs = subshellsInShell(nShell);
+            var cap = shellCapacity(nShell);
+
+            var srQn = 'Shell n equals ' + nShell + '. Subshells '
+              + subs.map(function (s) { return s.label; }).join(', ')
+              + '. Total ' + cap + ' electrons, which is 2 times ' + nShell + ' squared.';
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-indigo-300 bg-white p-3' },
+              React.createElement('div', { className: 'text-[0.8125rem] font-black text-indigo-800 mb-1' },
+                __alloT('stem.molecule.qn_live_title', '\uD83D\uDD2D Build a shell from the rules')),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.qn_live_intro', 'Nothing here is memorised. \u2113 runs 0 to n\u22121, each \u2113 gives 2\u2113+1 orbitals, each orbital holds 2 electrons \u2014 and 2n\u00B2 falls out.')),
+
+              React.createElement('div', { className: 'mb-3' },
+                React.createElement('label', { htmlFor: 'qn-shell', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                  __alloT('stem.molecule.shell_n', 'Shell (n)') + ': ',
+                  React.createElement('output', { htmlFor: 'qn-shell', className: 'font-mono text-indigo-800' }, String(nShell))),
+                React.createElement('input', {
+                  id: 'qn-shell', type: 'range', min: 1, max: 6, step: 1, value: nShell,
+                  onChange: function (e) { setExp({ qnShell: parseInt(e.target.value, 10) }); },
+                  className: 'w-full min-h-[44px]',
+                  'aria-label': __alloT('stem.molecule.shell_n', 'Principal quantum number n'),
+                  'aria-valuetext': 'n equals ' + nShell + ', ' + subs.length + ' subshells, ' + cap + ' electrons'
+                })),
+
+              React.createElement('div', { 'data-testid': 'mol-qn-subshells', className: 'space-y-1 mb-2' },
+                subs.map(function (s) {
+                  return React.createElement('div', {
+                    key: 'sub' + s.l,
+                    'data-qn-sub': s.label,
+                    className: 'flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 p-2'
+                  },
+                    React.createElement('span', { className: 'font-mono text-[0.8125rem] font-black text-indigo-900 w-10' }, s.label),
+                    React.createElement('span', { className: 'text-[0.625rem] text-slate-700' }, '\u2113 = ' + s.l),
+                    React.createElement('span', { className: 'text-[0.625rem] text-slate-700' },
+                      'm\u2097 = ' + magneticValues(s.l).join(', ')),
+                    React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-indigo-800' },
+                      '2(' + s.l + ')+1 = ' + s.orbitals + ' \u2192 ' + s.electrons + ' e\u207B')
+                  );
+                })),
+
+              React.createElement('div', { 'data-testid': 'mol-qn-capacity', className: 'rounded-lg border-2 border-indigo-400 bg-indigo-50 p-2 text-center' },
+                React.createElement('div', { className: 'font-mono text-[0.8125rem] font-black text-indigo-900' },
+                  subs.map(function (s) { return String(s.electrons); }).join(' + ') + ' = ' + cap + ' e\u207B'),
+                React.createElement('div', { className: 'text-[0.625rem] text-indigo-800 mt-0.5' },
+                  __alloT('stem.molecule.qn_two_n_squared', 'which is exactly 2n\u00B2 = 2 \u00D7 ') + nShell + '\u00B2 = ' + cap
+                  + __alloT('stem.molecule.qn_derived', ' \u2014 derived from the rules, not a separate fact.'))),
+
+              nShell >= 3 && React.createElement('div', { 'data-testid': 'mol-qn-note', className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.6875rem] text-amber-900' },
+                __alloT('stem.molecule.qn_exists_vs_filled', 'These subshells EXIST at this n. Which ones actually fill first is a different question \u2014 4s fills before 3d because filling follows energy, not n.')),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-qn-sr', className: 'sr-only' }, srQn)
+            );
+          })()
         );
       }
 
@@ -6184,7 +7095,115 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           ),
           React.createElement('div', { className: 'p-2 rounded-md bg-amber-50 border border-amber-200 text-[0.6875rem] text-amber-900' },
             React.createElement('strong', null, __alloT('stem.molecule.diagonal_relationship', '💡 Diagonal relationship: ')), __alloT('stem.molecule.li_mg_be_al_b_si_pairs_across_a_diagon', 'Li-Mg, Be-Al, B-Si — pairs across a diagonal share similar properties because the increases in size + charge offset.')
-          )
+          ),
+
+          // ── Predict, then check against measured values ───────────────────
+          // PERIODIC_TRENDS states the rules as prose. A rule you can only read
+          // is a rule you cannot be wrong about, so the skill - "which of these
+          // two is bigger?" - never gets rehearsed.
+          //
+          // Everything here is graded against MEASURED data, never against a
+          // restatement of the rule. That is what lets the panel show where the
+          // rule FAILS: first ionisation energy has four real subshell anomalies
+          // (Be/B, N/O, Mg/Al, P/S) and atomic mass inverts at Te/I.
+          (function() {
+            var PAIRS = [
+              { trend: 'radius', a: 'Li', b: 'F',  note: 'Straight across period 2.' },
+              { trend: 'radius', a: 'Li', b: 'Cs', note: 'Straight down group 1.' },
+              { trend: 'en',     a: 'Na', b: 'Cl', note: 'Across period 3.' },
+              { trend: 'ie1',    a: 'Na', b: 'Ar', note: 'Across period 3 \u2014 the noble gas holds hardest.' },
+              { trend: 'ie1',    a: 'N',  b: 'O',  note: 'The rule says O. The measurement says N.' },
+              { trend: 'mass',   a: 'Te', b: 'I',  note: 'The rule says I. The measurement says Te.' }
+            ];
+
+            var idx = (function () {
+              var x = parseInt(d2.ptIdx, 10);
+              return (!isFinite(x) || x < 0 || x >= PAIRS.length) ? 0 : x;
+            })();
+            var item = PAIRS[idx];
+            var picked = (d2.ptPick === item.a || d2.ptPick === item.b) ? d2.ptPick : null;
+            var r = compareTrend(item.trend, item.a, item.b);
+            var right = picked !== null && picked === r.actual;
+
+            function val(sym) {
+              var v = sym === r.a ? r.valueA : r.valueB;
+              return v + (r.trend.unit ? ' ' + r.trend.unit : '');
+            }
+
+            var srPt = 'Which has the larger ' + r.trend.label + ': ' + item.a + ' or ' + item.b + '?'
+              + (picked === null ? '' : ' ' + (right ? 'Correct. ' : 'Not quite. ')
+                  + r.actual + ' does, at ' + val(r.actual) + '.');
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-cyan-300 bg-white p-3' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                React.createElement('div', { className: 'text-[0.8125rem] font-black text-cyan-800' },
+                  __alloT('stem.molecule.pt_title', '\uD83D\uDCCA Predict, then check the measurement')),
+                React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-slate-600' },
+                  (idx + 1) + ' / ' + PAIRS.length)),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.pt_intro', 'The rules above are graded here against REAL measured values \u2014 which is the only way to find out where a rule stops working.')),
+
+              React.createElement('div', { 'data-testid': 'mol-pt-question', className: 'rounded-lg bg-slate-900 p-3 mb-2 text-center' },
+                React.createElement('div', { className: 'text-[0.75rem] text-slate-300' },
+                  __alloT('stem.molecule.pt_which_larger', 'Larger ') + r.trend.label + '?'),
+                React.createElement('div', { className: 'font-mono text-base font-bold text-white mt-1' },
+                  item.a + '  or  ' + item.b)),
+
+              picked === null
+                ? React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    [item.a, item.b].map(function (sym) {
+                      return React.createElement('button', {
+                        key: sym, type: 'button', 'data-pt-choice': sym,
+                        onClick: function () { setExp({ ptPick: sym }); },
+                        className: 'min-h-[44px] px-3 py-2 text-[0.8125rem] font-black rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-cyan-600 hover:bg-cyan-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700'
+                      }, sym);
+                    }))
+                : React.createElement('div', null,
+                    React.createElement('div', {
+                      'data-testid': 'mol-pt-verdict',
+                      className: 'rounded-lg p-2 mb-2 text-[0.75rem] font-bold ' + (right
+                        ? 'bg-emerald-50 border border-emerald-300 text-emerald-900'
+                        : 'bg-amber-50 border border-amber-300 text-amber-900')
+                    }, (right ? __alloT('stem.molecule.pt_correct', 'Correct \u2014 ') : __alloT('stem.molecule.pt_wrong', 'Not quite \u2014 '))
+                      + r.actual + ' ' + __alloT('stem.molecule.pt_measures', 'measures ') + val(r.actual)
+                      + ' ' + __alloT('stem.molecule.pt_versus', 'against ')
+                      + val(r.actual === r.a ? r.b : r.a) + '.'),
+
+                    // Rule vs measurement, side by side. When they disagree the
+                    // disagreement IS the lesson, so it is stated plainly.
+                    React.createElement('div', { 'data-testid': 'mol-pt-rule', className: 'rounded-lg border p-2 mb-2 text-[0.6875rem] ' + (r.ruleHolds === false
+                      ? 'border-rose-400 bg-rose-50 text-rose-900'
+                      : 'border-slate-300 bg-slate-50 text-slate-800') },
+                      React.createElement('div', null,
+                        React.createElement('strong', null, __alloT('stem.molecule.pt_the_rule', 'The rule: ')),
+                        r.trend.label + ' ' + r.trend.across + ' across a period, ' + r.trend.down + ' down a group.'),
+                      r.basis
+                        ? React.createElement('div', { className: 'mt-0.5' },
+                            __alloT('stem.molecule.pt_same', 'These two are in the ') + r.basis
+                            + __alloT('stem.molecule.pt_so_rule_says', ', so the rule predicts ') + r.predicted + '.')
+                        : React.createElement('div', { className: 'mt-0.5 italic' },
+                            __alloT('stem.molecule.pt_silent', 'These share neither a period nor a group, so the simple rule cannot decide \u2014 and saying so is better than guessing.')),
+                      r.ruleHolds === false && React.createElement('div', { className: 'mt-1 font-bold' },
+                        __alloT('stem.molecule.pt_rule_fails', 'The measurement disagrees with the rule. This is a REAL exception, not a rounding error.')),
+                      React.createElement('div', { className: 'mt-0.5 italic' }, r.trend.why)),
+
+                    React.createElement('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 mb-2 text-[0.6875rem] text-slate-700' }, item.note),
+
+                    React.createElement('div', { className: 'flex gap-2' },
+                      idx < PAIRS.length - 1 && React.createElement('button', {
+                        type: 'button', 'data-testid': 'mol-pt-next',
+                        onClick: function () { setExp({ ptIdx: idx + 1, ptPick: null }); },
+                        className: 'min-h-[44px] px-4 py-2 text-[0.75rem] font-bold rounded-lg bg-cyan-700 text-white hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-900'
+                      }, __alloT('stem.molecule.pt_next', 'Next pair \u2192')),
+                      React.createElement('button', {
+                        type: 'button',
+                        onClick: function () { setExp({ ptIdx: 0, ptPick: null }); },
+                        className: 'min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700'
+                      }, __alloT('stem.molecule.pt_restart', 'Start over')))),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-pt-sr', className: 'sr-only' }, srPt)
+            );
+          })()
         );
       }
 
@@ -6895,6 +7914,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
               h('span', { className: 'font-mono text-slate-900' }, val + ' ' + unit)),
             h('input', {
               id: 'allo-mol-' + key, type: 'range', min: min, max: max, step: step, value: val,
+              // The visible label shows "Ea  75 kJ/mol", but a screen reader
+              // reading only the label hears the NAME and never the setting.
+              // aria-valuetext carries the reading itself.
+              'aria-valuetext': val + ' ' + unit,
               onChange: function (e) {
                 var patch = {}; patch[key] = numOr(e.target.value, fallback);
                 try { setExp(patch); } catch (er) {}
@@ -7127,6 +8150,9 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 h('span', { className: 'font-mono text-slate-900' }, Math.round(T) + ' K  (' + Math.round(T - 273.15) + ' °C)')),
               h('input', {
                 id: 'allo-mol-thermoT', type: 'range', min: 200, max: 1400, step: 5, value: T,
+                // Matches the visible readout, so a screen reader hears the
+                // setting and not just the control's name.
+                'aria-valuetext': Math.round(T) + ' kelvin, ' + Math.round(T - 273.15) + ' degrees Celsius',
                 onChange: function (e) {
                   var nv = numOr(e.target.value, 298);
                   try { setExp({ thermoT: nv }); } catch (er) {}
@@ -8278,7 +9304,147 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 React.createElement('div', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, React.createElement('strong', null, 'Use: '), s.use)
               );
             })
-          )
+          ),
+
+          // ── Read an IR spectrum ───────────────────────────────────────────
+          // Of the nine techniques above, IR is the one a student can actually
+          // practise: it identifies functional groups by WHERE a molecule
+          // absorbs, and the entry above already carries three real bands. The
+          // skill is peaks -> groups, and the two things that make it hard are
+          // that one peak rarely names one group, and that SHAPE discriminates
+          // as much as position (broad 3300 = O-H, sharp 3300 = alkyne C-H).
+          (function() {
+            var SPECTRA = [
+              { id: 'ethanol', label: 'Unknown A', formula: 'C\u2082H\u2086O',
+                peaks: [{ wavenumber: 3350, shape: 'broad' }, { wavenumber: 2950, shape: 'sharp' }],
+                answer: 'Ethanol \u2014 an alcohol.',
+                reason: 'A broad band near 3350 is an O\u2013H, and there is no carbonyl near 1700. Alcohol, not acid.' },
+              { id: 'acetone', label: 'Unknown B', formula: 'C\u2083H\u2086O',
+                peaks: [{ wavenumber: 1715, shape: 'sharp' }, { wavenumber: 2960, shape: 'sharp' }],
+                answer: 'Acetone \u2014 a ketone.',
+                reason: 'A strong carbonyl near 1715 with NO O\u2013H and no aldehyde C\u2013H doublet. That leaves a ketone.' },
+              { id: 'aceticacid', label: 'Unknown C', formula: 'C\u2082H\u2084O\u2082',
+                peaks: [{ wavenumber: 3000, shape: 'very broad' }, { wavenumber: 1710, shape: 'sharp' }],
+                answer: 'Acetic acid \u2014 a carboxylic acid.',
+                reason: 'The PAIR is the giveaway: a very broad O\u2013H smeared across 2500\u20133300 plus a carbonyl near 1710.' },
+              { id: 'propyne', label: 'Unknown D', formula: 'C\u2083H\u2084',
+                peaks: [{ wavenumber: 3300, shape: 'sharp' }, { wavenumber: 2150, shape: 'sharp' }],
+                answer: 'Propyne \u2014 a terminal alkyne.',
+                reason: 'Sharp at 3300, not broad \u2014 so a terminal alkyne C\u2013H, not an alcohol. The weak 2150 confirms the C\u2261C.' },
+              { id: 'acetonitrile', label: 'Unknown E', formula: 'C\u2082H\u2083N',
+                peaks: [{ wavenumber: 2250, shape: 'sharp' }],
+                answer: 'Acetonitrile \u2014 a nitrile.',
+                reason: 'Almost nothing else absorbs near 2250, so a single sharp peak there is close to conclusive.' }
+            ];
+
+            var idx = (function () {
+              var x = parseInt(d2.irIdx, 10);
+              return (!isFinite(x) || x < 0 || x >= SPECTRA.length) ? 0 : x;
+            })();
+            var spec = SPECTRA[idx];
+            var revealed = d2.irRevealed === true;
+            var reading = readIrSpectrum(spec.peaks);
+
+            // Peaks drawn on a 4000 -> 400 axis, the way IR spectra are printed
+            // (wavenumber DECREASES left to right - an unexplained convention
+            // that trips students up, so the axis says so).
+            var PW = 260, PH = 70;
+            function xOf(wn) {
+              var f = (4000 - wn) / (4000 - 400);
+              return 8 + Math.max(0, Math.min(1, f)) * (PW - 16);
+            }
+
+            var srIr = spec.label + ', formula ' + spec.formula + '. Peaks at '
+              + spec.peaks.map(function (p) { return p.wavenumber + ' ' + p.shape; }).join(', ')
+              + ' reciprocal centimetres.'
+              + (revealed ? ' Answer: ' + spec.answer : '');
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-fuchsia-300 bg-white p-3' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                React.createElement('div', { className: 'text-[0.8125rem] font-black text-fuchsia-800' },
+                  __alloT('stem.molecule.ir_title', '\uD83D\uDCC8 Read an IR spectrum')),
+                React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-slate-600' },
+                  (idx + 1) + ' / ' + SPECTRA.length)),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.ir_intro', 'One peak rarely names one group. Work out what each absorption COULD be, then use the others \u2014 and the peak shape \u2014 to rule things out.')),
+
+              React.createElement('div', { 'data-testid': 'mol-ir-unknown', className: 'rounded-lg bg-slate-900 p-2 mb-2 text-center' },
+                React.createElement('div', { className: 'font-mono text-[0.8125rem] font-bold text-white' },
+                  spec.label + '  \u00B7  ' + spec.formula)),
+
+              React.createElement('svg', {
+                viewBox: '0 0 ' + PW + ' ' + PH, role: 'img', 'aria-label': srIr,
+                'data-testid': 'mol-ir-chart',
+                style: { width: '100%', height: 'auto', display: 'block' },
+                className: 'mb-2 rounded bg-slate-50 border border-slate-200'
+              },
+                [4000, 3000, 2000, 1000].map(function (tick) {
+                  return React.createElement('text', {
+                    key: 't' + tick, x: xOf(tick), y: PH - 2, textAnchor: 'middle',
+                    style: { fontSize: '6px' }, fill: '#475569'
+                  }, String(tick));
+                }),
+                spec.peaks.map(function (p, i) {
+                  var x = xOf(p.wavenumber);
+                  var broad = p.shape.indexOf('broad') >= 0;
+                  // Broad bands are drawn wide; sharp ones as a line. The picture
+                  // has to carry the same information the shape word does.
+                  return React.createElement('g', { key: 'pk' + i },
+                    broad
+                      ? React.createElement('ellipse', { cx: x, cy: 46, rx: 16, ry: 30, fill: '#c026d3', fillOpacity: 0.35 })
+                      : React.createElement('line', { x1: x, y1: 14, x2: x, y2: 58, stroke: '#a21caf', strokeWidth: 2 }),
+                    React.createElement('text', { x: x, y: 11, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#701a75' },
+                      String(p.wavenumber))
+                  );
+                }),
+                React.createElement('line', { x1: 8, y1: 58, x2: PW - 8, y2: 58, stroke: '#94a3b8', strokeWidth: 1 })),
+
+              React.createElement('div', { className: 'text-[0.625rem] text-slate-500 italic mb-2 text-center' },
+                __alloT('stem.molecule.ir_axis_note', 'Wavenumber runs HIGH to LOW left to right \u2014 an IR convention, not a mistake.')),
+
+              // Candidates per peak: the honest intermediate step.
+              React.createElement('div', { 'data-testid': 'mol-ir-candidates', className: 'space-y-1 mb-2' },
+                reading.peaks.map(function (row, i) {
+                  return React.createElement('div', {
+                    key: 'c' + i,
+                    'data-ir-peak': String(row.wavenumber),
+                    className: 'rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-2 text-[0.6875rem] text-fuchsia-900'
+                  },
+                    React.createElement('span', { className: 'font-mono font-bold' },
+                      row.wavenumber + ' cm\u207B\u00B9 (' + row.shape + ')'),
+                    React.createElement('span', { className: 'ml-2' },
+                      __alloT('stem.molecule.ir_could_be', 'could be: ')
+                      + row.candidates.map(function (c) { return c.group; }).join(', ')),
+                    row.narrowedByShape && React.createElement('div', { className: 'mt-0.5 font-bold' },
+                      __alloT('stem.molecule.ir_shape_narrowed', 'The SHAPE ruled the others out \u2014 position alone was not enough.')),
+                    React.createElement('div', { className: 'mt-0.5 italic' }, row.candidates[0] ? row.candidates[0].tell : ''));
+                })),
+
+              revealed
+                ? React.createElement('div', { 'data-testid': 'mol-ir-answer', className: 'rounded-lg border border-emerald-300 bg-emerald-50 p-2 mb-2 text-[0.6875rem] text-emerald-900' },
+                    React.createElement('div', { className: 'font-bold' }, spec.answer),
+                    React.createElement('div', { className: 'mt-0.5' }, spec.reason))
+                : React.createElement('button', {
+                    type: 'button', 'data-testid': 'mol-ir-reveal',
+                    onClick: function () { setExp({ irRevealed: true }); },
+                    className: 'min-h-[44px] px-4 py-2 mb-2 text-[0.75rem] font-bold rounded-lg bg-fuchsia-700 text-white hover:bg-fuchsia-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-900'
+                  }, __alloT('stem.molecule.ir_reveal', 'Show what it is')),
+
+              React.createElement('div', { className: 'flex gap-2' },
+                idx < SPECTRA.length - 1 && React.createElement('button', {
+                  type: 'button', 'data-testid': 'mol-ir-next',
+                  onClick: function () { setExp({ irIdx: idx + 1, irRevealed: false }); },
+                  className: 'min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-fuchsia-400 bg-white text-fuchsia-800 hover:bg-fuchsia-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-700'
+                }, __alloT('stem.molecule.ir_next', 'Next unknown \u2192')),
+                React.createElement('button', {
+                  type: 'button',
+                  onClick: function () { setExp({ irIdx: 0, irRevealed: false }); },
+                  className: 'min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-700'
+                }, __alloT('stem.molecule.ir_restart', 'Start over'))),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-ir-sr', className: 'sr-only' }, srIr)
+            );
+          })()
         );
       }
 
@@ -8307,7 +9473,86 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 })
               )
             )
-          )
+          ),
+
+          // ── Where the packing fractions come from ─────────────────────────
+          // The table above prints 52.4% / 68.0% / 74.0% as if they were facts to
+          // memorise. Each is one formula:  APF = n(4/3 pi r^3) / a^3, once you
+          // know which direction through the cube the spheres actually touch.
+          // Deriving it also surfaces the striking bit: FCC and HCP are different
+          // arrangements with identical density, because both are close-packed.
+          (function() {
+            var keys = ['sc', 'bcc', 'fcc', 'hcp', 'diamond'];
+            var pick = keys.indexOf(d2.packLattice) >= 0 ? d2.packLattice : 'fcc';
+            var lat = latticePacking(pick);
+
+            var pct = function (x) { return (x * 100).toFixed(1) + '%'; };
+
+            var srPack = lat.label + '. ' + lat.atoms + ' atoms per cell, coordination number '
+              + lat.coord + '. Packing fraction ' + pct(lat.packing) + ', so '
+              + pct(lat.emptySpace) + ' of the cell is empty space.';
+
+            // A square with one circle per atom is a schematic, not a lattice -
+            // so the bar below shows the FRACTION honestly rather than pretending
+            // to draw a unit cell in 2D.
+            var BW = 240, BH = 18;
+            var filled = Math.max(0, Math.min(1, lat.packing)) * (BW - 4);
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-violet-300 bg-white p-3' },
+              React.createElement('div', { className: 'text-[0.8125rem] font-black text-violet-800 mb-1' },
+                __alloT('stem.molecule.pack_title', '\uD83D\uDCD0 Where those percentages come from')),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.pack_intro', 'Nothing here is memorised. Count the atoms in the cell, work out how the edge relates to the radius, and the packing fraction falls out.')),
+
+              React.createElement('div', { className: 'mb-3' },
+                React.createElement('label', { htmlFor: 'pack-lattice', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                  __alloT('stem.molecule.lattice', 'Structure')),
+                React.createElement('select', {
+                  id: 'pack-lattice', value: pick,
+                  onChange: function (e) { setExp({ packLattice: e.target.value }); },
+                  className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                  'aria-label': __alloT('stem.molecule.choose_lattice', 'Choose a crystal structure')
+                }, keys.map(function (k) {
+                  return React.createElement('option', { key: k, value: k }, PACKING_LATTICES[k].label);
+                }))),
+
+              React.createElement('div', { 'data-testid': 'mol-pack-working', className: 'rounded-lg border border-violet-200 bg-violet-50 p-2 mb-2 text-[0.6875rem] text-violet-900 space-y-1' },
+                React.createElement('div', null,
+                  React.createElement('strong', null, __alloT('stem.molecule.pack_atoms', 'Atoms per cell: ')), String(lat.atoms),
+                  React.createElement('span', { className: 'ml-3' },
+                    React.createElement('strong', null, __alloT('stem.molecule.pack_coord', 'Touching neighbours: ')), String(lat.coord))),
+                React.createElement('div', null,
+                  React.createElement('strong', null, __alloT('stem.molecule.pack_contact', 'Spheres touch along the ')), lat.touchAlong,
+                  ', ' + __alloT('stem.molecule.pack_so', 'so ') + lat.aFormula),
+                React.createElement('div', { className: 'font-mono' },
+                  'APF = ' + lat.atoms + ' \u00D7 (4/3)\u03C0r\u00B3 \u00F7 a\u00B3 = ' + pct(lat.packing)),
+                React.createElement('div', { className: 'italic' }, lat.why)),
+
+              React.createElement('svg', {
+                viewBox: '0 0 ' + BW + ' ' + BH, role: 'img', 'aria-label': srPack,
+                'data-testid': 'mol-pack-bar',
+                style: { width: '100%', height: 'auto', display: 'block' }, className: 'mb-2'
+              },
+                React.createElement('rect', { x: 2, y: 2, width: BW - 4, height: BH - 4, fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1, rx: 2 }),
+                React.createElement('rect', { x: 2, y: 2, width: filled, height: BH - 4, fill: '#7c3aed', rx: 2 }),
+                React.createElement('text', { x: 6, y: BH - 6, style: { fontSize: '8px' }, fill: '#ffffff' }, pct(lat.packing)),
+                React.createElement('text', { x: BW - 6, y: BH - 6, textAnchor: 'end', style: { fontSize: '8px' }, fill: '#475569' },
+                  pct(lat.emptySpace) + ' empty')),
+
+              // The result worth noticing, stated only where it applies.
+              (pick === 'fcc' || pick === 'hcp') && React.createElement('div', {
+                'data-testid': 'mol-pack-closepacked',
+                className: 'rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-[0.6875rem] text-emerald-900'
+              }, __alloT('stem.molecule.pack_closepacked', 'FCC and HCP are DIFFERENT arrangements with the SAME density \u2014 74.0% is the densest any identical spheres can pack, whichever stacking you choose.')),
+
+              pick === 'diamond' && React.createElement('div', {
+                'data-testid': 'mol-pack-diamond',
+                className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.6875rem] text-amber-900'
+              }, __alloT('stem.molecule.pack_diamond', 'Diamond is the hardest natural material and yet two thirds of its cell is empty. Hardness comes from the BONDS, not from how tightly the atoms are packed.')),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-pack-sr', className: 'sr-only' }, srPack)
+            );
+          })()
         );
       }
 
@@ -8794,7 +10039,125 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 })
               )
             )
-          )
+          ),
+
+          // ── Will it precipitate? ──────────────────────────────────────────
+          // The tables above give the rules and their exceptions. The SKILL is
+          // "mix these two solutions - does anything drop out?", which needs the
+          // rule AND its exception applied to one specific pair. Nearly every
+          // wrong answer is the rule remembered without the exception, so the
+          // verdict names which rule decided and whether the exception did it.
+          (function() {
+            var MIXES = [
+              { a: { cation: 'Ag', anion: 'NO3', label: 'AgNO\u2083' }, b: { cation: 'Na', anion: 'Cl', label: 'NaCl' },
+                note: 'The classic silver-halide test \u2014 a white curd of AgCl.' },
+              { a: { cation: 'Ba', anion: 'Cl', label: 'BaCl\u2082' }, b: { cation: 'Na', anion: 'SO4', label: 'Na\u2082SO\u2084' },
+                note: 'BaSO\u2084 is so insoluble it is safe to swallow as an X-ray contrast agent.' },
+              { a: { cation: 'Pb', anion: 'NO3', label: 'Pb(NO\u2083)\u2082' }, b: { cation: 'K', anion: 'I', label: 'KI' },
+                note: 'PbI\u2082 falls as bright yellow flakes \u2014 the \u201Cgolden rain\u201D demo.' },
+              { a: { cation: 'Ca', anion: 'Cl', label: 'CaCl\u2082' }, b: { cation: 'Na', anion: 'CO3', label: 'Na\u2082CO\u2083' },
+                note: 'CaCO\u2083 \u2014 the same solid as limestone, chalk and kettle scale.' },
+              { a: { cation: 'Na', anion: 'NO3', label: 'NaNO\u2083' }, b: { cation: 'K', anion: 'Cl', label: 'KCl' },
+                note: 'Every possible product is a Group 1 or nitrate salt, so nothing can drop out.' },
+              { a: { cation: 'Ag', anion: 'NO3', label: 'AgNO\u2083' }, b: { cation: 'Na', anion: 'NO3', label: 'NaNO\u2083' },
+                note: 'Silver is only trouble with a halide. With nitrate on both sides there is nothing for it to fall as.' },
+              { a: { cation: 'Ba', anion: 'NO3', label: 'Ba(NO\u2083)\u2082' }, b: { cation: 'Na', anion: 'OH', label: 'NaOH' },
+                note: 'Hydroxides are mostly insoluble \u2014 but Ba\u00B2\u207A is one of the exceptions, so this one stays clear.' }
+            ];
+
+            var idx = (function() {
+              var x = parseInt(d2.pptIdx, 10);
+              return (!isFinite(x) || x < 0 || x >= MIXES.length) ? 0 : x;
+            })();
+            var mix = MIXES[idx];
+            var picked = (d2.pptPick === 'yes' || d2.pptPick === 'no') ? d2.pptPick : null;
+            var result = predictPrecipitate(mix.a, mix.b);
+            var truth = result.willPrecipitate ? 'yes' : 'no';
+            var right = picked !== null && picked === truth;
+
+            // Real formulas, charge-balanced: Ba(OH)2 not BaOH, PbI2 not PbI.
+            function ionText(row) { return saltFormula(row.cation, row.anion); }
+
+            var srPpt = picked === null
+              ? 'Mixing ' + mix.a.label + ' with ' + mix.b.label + '. Will a solid form?'
+              : (right ? 'Correct. ' : 'Not quite. ')
+                + (truth === 'yes'
+                    ? result.precipitates.map(ionText).join(' and ') + ' is insoluble, so a solid forms.'
+                    : 'Both possible products are soluble, so nothing forms.');
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-teal-300 bg-white p-3' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                React.createElement('div', { className: 'text-[0.8125rem] font-black text-teal-800' },
+                  __alloT('stem.molecule.ppt_title', '\uD83E\uDDEB Will it precipitate?')),
+                React.createElement('span', { className: 'ml-auto text-[0.625rem] font-bold text-slate-600' },
+                  (idx + 1) + ' / ' + MIXES.length)),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.ppt_intro', 'Reading the rules is not the same as using them. Swap the partners, then check every product against its own rule \u2014 including the exceptions.')),
+
+              React.createElement('div', { 'data-testid': 'mol-ppt-mix', className: 'rounded-lg bg-slate-900 p-3 mb-2 text-center' },
+                React.createElement('div', { className: 'font-mono text-sm font-bold text-white' },
+                  mix.a.label + '(aq)  +  ' + mix.b.label + '(aq)')),
+
+              picked === null
+                ? React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+                    ['yes', 'no'].map(function (choice) {
+                      return React.createElement('button', {
+                        key: choice, type: 'button',
+                        'data-ppt-choice': choice,
+                        onClick: function () { setExp({ pptPick: choice }); },
+                        className: 'min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:border-teal-600 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700'
+                      }, choice === 'yes'
+                        ? __alloT('stem.molecule.ppt_yes', 'A solid forms')
+                        : __alloT('stem.molecule.ppt_no', 'Stays clear'));
+                    }))
+                : React.createElement('div', null,
+                    React.createElement('div', {
+                      'data-testid': 'mol-ppt-verdict',
+                      className: 'rounded-lg p-2 mb-2 text-[0.75rem] font-bold ' + (right
+                        ? 'bg-emerald-50 border border-emerald-300 text-emerald-900'
+                        : 'bg-amber-50 border border-amber-300 text-amber-900')
+                    }, (right ? __alloT('stem.molecule.ppt_correct', 'Correct \u2014 ') : __alloT('stem.molecule.ppt_wrong', 'Not quite \u2014 '))
+                      + (truth === 'yes'
+                          ? result.precipitates.map(ionText).join(' and ') + __alloT('stem.molecule.ppt_forms', ' is insoluble, so a solid forms.')
+                          : __alloT('stem.molecule.ppt_none', 'both possible products are soluble, so the mixture stays clear.'))),
+
+                    // Every product, with the rule that decided it. This is the
+                    // working a student has to be able to reproduce.
+                    React.createElement('div', { 'data-testid': 'mol-ppt-working', className: 'space-y-1 mb-2' },
+                      result.products.map(function (row, i) {
+                        return React.createElement('div', {
+                          key: 'p' + i,
+                          'data-ppt-product': ionText(row),
+                          className: 'rounded-lg border p-2 text-[0.6875rem] ' + (row.soluble
+                            ? 'border-slate-200 bg-slate-50 text-slate-800'
+                            : 'border-teal-400 bg-teal-50 text-teal-900')
+                        },
+                          React.createElement('span', { className: 'font-mono font-bold' }, ionText(row)),
+                          React.createElement('span', { className: 'ml-2 font-bold' },
+                            row.soluble ? __alloT('stem.molecule.ppt_soluble', 'soluble') : __alloT('stem.molecule.ppt_insoluble', 'INSOLUBLE \u2014 this is the solid')),
+                          React.createElement('div', { className: 'mt-0.5' }, row.rule),
+                          row.viaException && React.createElement('div', { className: 'mt-0.5 font-bold' },
+                            __alloT('stem.molecule.ppt_via_exception', 'The EXCEPTION decided this one, not the family rule.'))
+                        );
+                      })),
+
+                    React.createElement('div', { className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 mb-2 text-[0.6875rem] text-slate-700' }, mix.note),
+
+                    React.createElement('div', { className: 'flex gap-2' },
+                      idx < MIXES.length - 1 && React.createElement('button', {
+                        type: 'button', 'data-testid': 'mol-ppt-next',
+                        onClick: function () { setExp({ pptIdx: idx + 1, pptPick: null }); },
+                        className: 'min-h-[44px] px-4 py-2 text-[0.75rem] font-bold rounded-lg bg-teal-700 text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-900'
+                      }, __alloT('stem.molecule.ppt_next', 'Next mixture \u2192')),
+                      React.createElement('button', {
+                        type: 'button',
+                        onClick: function () { setExp({ pptIdx: 0, pptPick: null }); },
+                        className: 'min-h-[44px] px-3 py-2 text-[0.75rem] font-bold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700'
+                      }, __alloT('stem.molecule.ppt_restart', 'Start over')))),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-ppt-sr', className: 'sr-only' }, srPpt)
+            );
+          })()
         );
       }
 
@@ -8985,7 +10348,128 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                 })
               )
             )
-          )
+          ),
+
+          // ── What phase, and WHY there? ────────────────────────────────────
+          // The table above gives mp/bp as strings. Two questions hide in it: what
+          // phase is this at some temperature (a number line answers that), and
+          // why is helium's boiling point 369 degrees below water's (only the
+          // intermolecular forces answer that). The second question is the one
+          // that matters, so the panel puts the force next to the number.
+          (function() {
+            var keys = Object.keys(PHASE_SUBSTANCES);
+            var pick = keys.indexOf(d2.phaseSub) >= 0 ? d2.phaseSub : 'water';
+            var sub = PHASE_SUBSTANCES[pick];
+            var tempC = (function () {
+              var x = Number(d2.phaseTemp);
+              return isFinite(x) ? Math.max(-273, Math.min(6000, x)) : 25;
+            })();
+
+            var state = phaseAt(pick, tempC);
+            var range = liquidRange(pick);
+
+            // Log-ish number line: the span runs -273 to 6000, so a linear scale
+            // crushes everything below zero into nothing. Map through a shifted
+            // cube root so the cryogenic end stays readable.
+            var LW = 260, LH = 34;
+            function xOf(t) {
+              var lo = -273, hi = 6000;
+              var f = (Math.cbrt(t - lo) - 0) / (Math.cbrt(hi - lo));
+              return 6 + Math.max(0, Math.min(1, f)) * (LW - 12);
+            }
+            var xMp = xOf(sub.mp), xBp = xOf(sub.bp), xNow = xOf(tempC);
+            // On a -273..6000 scale a narrow liquid window puts the two labels on
+            // top of each other (water is 9.6px apart, helium 7.9px). Nudge the
+            // TEXT apart when that happens; the tick marks stay where they are, so
+            // nothing about the data moves.
+            var LABEL_MIN_GAP = 14;
+            var labelShift = Math.max(0, (LABEL_MIN_GAP - (xBp - xMp)) / 2);
+            var xMpLabel = Math.max(10, xMp - labelShift);
+            var xBpLabel = Math.min(LW - 10, xBp + labelShift);
+
+            var phaseColour = state.phase === 'solid' ? '#3b82f6'
+              : state.phase === 'liquid' ? '#10b981'
+              : state.phase === 'gas' ? '#f59e0b' : '#8b5cf6';
+
+            var srPhase = sub.label + ' at ' + tempC + ' degrees Celsius is '
+              + state.label + '. It melts at ' + sub.mp + ' and boils at ' + sub.bp
+              + ', held together by ' + IMF_LABELS[sub.imf] + '.';
+
+            return React.createElement('div', { className: 'mt-4 rounded-xl border-2 border-sky-300 bg-white p-3' },
+              React.createElement('div', { className: 'text-[0.8125rem] font-black text-sky-800 mb-1' },
+                __alloT('stem.molecule.phase_title', '\uD83C\uDF21\uFE0F What phase \u2014 and why there?')),
+              React.createElement('p', { className: 'text-[0.6875rem] text-slate-700 mb-3' },
+                __alloT('stem.molecule.phase_intro', 'A melting point is not a property a substance simply has. It is set by what holds the particles together \u2014 so the force sits next to the number here.')),
+
+              React.createElement('div', { className: 'grid grid-cols-2 gap-2 mb-2' },
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'phase-sub', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.substance', 'Substance')),
+                  React.createElement('select', {
+                    id: 'phase-sub', value: pick,
+                    onChange: function (e) { setExp({ phaseSub: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.choose_substance', 'Choose a substance')
+                  }, keys.map(function (k) {
+                    return React.createElement('option', { key: k, value: k },
+                      PHASE_SUBSTANCES[k].label + ' (' + PHASE_SUBSTANCES[k].formula + ')');
+                  }))),
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: 'phase-temp', className: 'block text-[0.6875rem] font-bold text-slate-800 mb-1' },
+                    __alloT('stem.molecule.temperature_c', 'Temperature (\u00B0C)')),
+                  React.createElement('input', {
+                    id: 'phase-temp', type: 'number', value: tempC, step: 10, min: -273, max: 6000,
+                    onChange: function (e) { setExp({ phaseTemp: e.target.value }); },
+                    className: 'w-full min-h-[44px] text-[0.75rem] font-mono border border-slate-300 rounded-lg px-2 bg-white text-slate-900',
+                    'aria-label': __alloT('stem.molecule.temperature_c', 'Temperature in degrees Celsius'),
+                    'aria-valuetext': tempC + ' degrees Celsius, ' + sub.label + ' is ' + state.label
+                  }))),
+
+              React.createElement('div', {
+                'data-testid': 'mol-phase-verdict',
+                className: 'rounded-lg border-2 p-2 mb-2 text-center',
+                style: { borderColor: phaseColour }
+              },
+                React.createElement('div', { className: 'text-[0.875rem] font-black text-slate-900' },
+                  sub.label + ' ' + __alloT('stem.molecule.phase_is', 'is ') + state.label),
+                React.createElement('div', { className: 'font-mono text-[0.625rem] text-slate-600 mt-0.5' },
+                  'mp ' + sub.mp + ' \u00B0C  \u00B7  bp ' + sub.bp + ' \u00B0C')),
+
+              React.createElement('svg', {
+                viewBox: '0 0 ' + LW + ' ' + LH, role: 'img', 'aria-label': srPhase,
+                'data-testid': 'mol-phase-line',
+                style: { width: '100%', height: 'auto', display: 'block' }, className: 'mb-2'
+              },
+                React.createElement('rect', { x: 6, y: 8, width: xMp - 6, height: 8, fill: '#bfdbfe' }),
+                React.createElement('rect', { x: xMp, y: 8, width: Math.max(0, xBp - xMp), height: 8, fill: '#6ee7b7' }),
+                React.createElement('rect', { x: xBp, y: 8, width: Math.max(0, LW - 6 - xBp), height: 8, fill: '#fcd34d' }),
+                React.createElement('line', { x1: xNow, y1: 4, x2: xNow, y2: 20, stroke: '#0f172a', strokeWidth: 2 }),
+                React.createElement('text', { x: 6, y: LH - 4, style: { fontSize: '6px' }, fill: '#475569' }, '\u2212273'),
+                React.createElement('text', { x: xMpLabel, y: 6, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#1e40af' }, 'mp'),
+                React.createElement('text', { x: xBpLabel, y: 6, textAnchor: 'middle', style: { fontSize: '6px' }, fill: '#92400e' }, 'bp'),
+                React.createElement('text', { x: LW - 6, y: LH - 4, textAnchor: 'end', style: { fontSize: '6px' }, fill: '#475569' }, '6000 \u00B0C')),
+
+              React.createElement('div', { 'data-testid': 'mol-phase-imf', className: 'rounded-lg border border-sky-200 bg-sky-50 p-2 mb-2 text-[0.6875rem] text-sky-900' },
+                React.createElement('div', { className: 'font-bold' },
+                  __alloT('stem.molecule.held_by', 'Held together by: ') + IMF_LABELS[sub.imf]),
+                React.createElement('div', { className: 'mt-0.5' }, sub.why),
+                React.createElement('div', { className: 'mt-0.5 font-mono text-[0.625rem]' },
+                  __alloT('stem.molecule.liquid_range', 'Liquid over a ') + range + __alloT('stem.molecule.degree_window', ' degree window'))),
+
+              // The comparison that kills "heavier always boils higher".
+              (pick === 'water' || pick === 'ethanol') && React.createElement('div', {
+                'data-testid': 'mol-phase-compare',
+                className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.6875rem] text-amber-900'
+              }, __alloT('stem.molecule.phase_water_ethanol', 'Ethanol is 46 g/mol and boils at 78 \u00B0C. Water is 18 g/mol \u2014 lighter \u2014 and boils at 100 \u00B0C. Heavier does NOT always boil higher: water wins because each molecule can hydrogen bond four ways, and ethanol only has one O\u2013H.')),
+
+              pick === 'mercury' && React.createElement('div', {
+                'data-testid': 'mol-phase-mercury',
+                className: 'rounded-lg border border-amber-300 bg-amber-50 p-2 text-[0.6875rem] text-amber-900'
+              }, __alloT('stem.molecule.phase_mercury', 'A 396 degree liquid window is why mercury filled thermometers for two centuries \u2014 it stays liquid across nearly every temperature a person needs to measure.')),
+
+              React.createElement('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-testid': 'mol-phase-sr', className: 'sr-only' }, srPhase)
+            );
+          })()
         );
       }
 

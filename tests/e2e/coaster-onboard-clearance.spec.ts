@@ -40,38 +40,52 @@ const HELIX = (() => {
   return { certTurnIdx: 8, propulsion: { mode: 'chain', accel: 7.5 }, points: pts };
 })();
 
-test('the onboard rider clears supports and the station on crossing designs and every template', async ({ page }) => {
+// An out-and-back that runs straight through the Ferris wheel's home spot (110, -94).
+const WIDE = { certTurnIdx: 4, propulsion: { mode: 'chain', accel: 7.5 }, points: [
+  { x: 0, y: 3, z: 0, bank: 0 }, { x: 14, y: 4, z: 0, bank: 0 }, { x: 44, y: 30, z: 0, bank: 0 },
+  { x: 70, y: 10, z: -30, bank: 0 }, { x: 110, y: 8, z: -94, bank: 0 }, { x: 140, y: 6, z: -60, bank: 0 },
+  { x: 120, y: 5, z: -10, bank: 0 }, { x: 60, y: 4, z: 20, bank: 0 }, { x: -6, y: 3, z: 6, bank: 0 } ] };
+
+test('the onboard rider clears supports, the station and the Ferris wheel on crossing designs and every template', async ({ page }) => {
   test.setTimeout(600000);
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => { localStorage.setItem('coaster_lab_onboarding_v1', 'complete'); });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await harness.mount(page, {}, `document.querySelector('${SEL}')._lab`);
-  const report = await page.evaluate(async ({ fig8, helix, sel }) => {
+  const report = await page.evaluate(async ({ fig8, helix, wide, sel }) => {
     const lab = (document.querySelector(sel) as any)._lab;
-    const out: Record<string, { L: number; columns: number; intrusions: string[] }> = {};
-    const sweep = async (key: string) => {
+    const out: Record<string, { L: number; columns: number; intrusions: string[]; ferris: number[]; rebuildMs: number }> = {};
+    const sweep = async (key: string, seats: number[]) => {
       await new Promise(r => setTimeout(r, 150));
       const L = lab.cameraClearance(0).L;
       const intrusions: string[] = [];
-      for(let s = 0; s < L; s += 0.5){
-        const r = lab.cameraClearance(s, 0, 0.9);
+      for(const seat of seats) for(let s = 0; s < L; s += 0.5){
+        const r = lab.cameraClearance(s, seat, 0.9);
         for(const h of r.hits){
           if(h.dir === 'down' || h.name === 'station-bay-number') continue;
-          intrusions.push(r.s + ':' + h.dir + ':' + h.name + '@' + h.distance);
+          intrusions.push('seat' + seat + ':' + r.s + ':' + h.dir + ':' + h.name + '@' + h.distance);
         }
       }
       const columns = lab.supportPresentation().batches.find((b: any) => b.name === 'coaster-support-columns').count;
-      out[key] = { L, columns, intrusions };
+      out[key] = { L, columns, intrusions, ferris: lab.ferrisPosition(), rebuildMs: lab.rebuildTiming(4) };
     };
-    lab.loadDesignObject(fig8); await sweep('figure8');
-    lab.loadDesignObject(helix); await sweep('helix');
-    for(const tpl of ['looper', 'twister', 'oval']){ lab.loadTemplate(tpl); await sweep(tpl); }
+    // front row and a rear row on the crossing designs; the rear eye sits 0.7 m higher
+    lab.loadDesignObject(fig8); await sweep('figure8', [0, 2]);
+    lab.loadDesignObject(helix); await sweep('helix', [0, 2]);
+    lab.loadDesignObject(wide); await sweep('wide', [0]);
+    for(const tpl of ['looper', 'twister', 'oval']){ lab.loadTemplate(tpl); await sweep(tpl, [0]); }
     return out;
-  }, { fig8: FIG8, helix: HELIX, sel: SEL });
+  }, { fig8: FIG8, helix: HELIX, wide: WIDE, sel: SEL });
+  console.log('coaster clearance', JSON.stringify(Object.fromEntries(Object.entries(report).map(([k, r]) => [k, { L: r.L, columns: r.columns, rebuildMs: r.rebuildMs, ferris: r.ferris }]))));
   for(const [key, r] of Object.entries(report)){
     expect(r.intrusions, key + ' intrusions').toEqual([]);
     expect(r.columns, key + ' still has supports').toBeGreaterThan(50);
+    // a full rebuild (track, supports with clearance tests, trees) stays well inside a drag frame budget
+    expect(r.rebuildMs, key + ' rebuild ms').toBeLessThan(250);
   }
+  // the Ferris wheel stays home unless the track runs through it
+  expect(report.looper.ferris).toEqual([110, 0, -94]);
+  expect(report.wide.ferris).not.toEqual([110, 0, -94]);
   expect(errors).toEqual([]);
 });
 

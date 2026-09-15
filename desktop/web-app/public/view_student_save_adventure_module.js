@@ -77,9 +77,9 @@ function getStudentSaveThemeStyles(themeContext = {}) {
       livePanel: "bg-indigo-950/80 border border-indigo-700",
       liveTitle: "text-indigo-100",
       liveText: "text-indigo-200",
-      primaryTeal: "bg-teal-700 hover:bg-teal-600 text-white shadow-none",
-      primaryIndigo: "bg-indigo-600 hover:bg-indigo-500 text-white shadow-none",
-      primaryPurple: "bg-purple-600 hover:bg-purple-500 text-white shadow-none",
+      primaryTeal: "bg-teal-700 hover:bg-teal-800 text-white shadow-none",
+      primaryIndigo: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none",
+      primaryPurple: "bg-purple-600 hover:bg-purple-700 text-white shadow-none",
       secondary: "bg-slate-950 text-slate-100 border border-slate-600 hover:bg-slate-800",
       secondaryPurple: "bg-slate-950 text-slate-100 border border-slate-600 hover:bg-slate-800",
       focusOffset: "focus-visible:ring-offset-slate-900",
@@ -91,7 +91,7 @@ function getStudentSaveThemeStyles(themeContext = {}) {
   const savePanel = colorOverlay === "blue" ? "bg-blue-50 border-2 border-blue-200 shadow-blue-500/10" : colorOverlay === "peach" ? "bg-orange-50 border-2 border-orange-200 shadow-orange-500/10" : colorOverlay === "yellow" ? "bg-yellow-50 border-2 border-yellow-300 shadow-yellow-500/10" : "bg-teal-50 border-2 border-teal-200 shadow-teal-500/10";
   return {
     savePanel,
-    saveIcon: "bg-teal-100 text-teal-600",
+    saveIcon: "bg-teal-100 text-teal-700",
     saveTitle: "text-teal-900",
     saveText: "text-teal-800",
     adventurePanel: "bg-white border border-slate-400 shadow-lg shadow-purple-500/10",

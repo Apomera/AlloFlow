@@ -243,7 +243,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
             statCard('Items rated', rated + ' / ' + ITEMS.length, '#f59e0b'),
             complete ? statCard('Average', (averageScore(d.ratings)).toFixed(1) + ' / 10', '#22c55e') : null,
-            d.lastUpdated ? statCard('Updated', d.lastUpdated, _perFg('#94a3b8')) : null
+            (typeof d.lastUpdated === 'string' && d.lastUpdated) ? statCard('Updated', d.lastUpdated, _perFg('#94a3b8')) : null
           ),
 
           h('div', { style: { padding: 14, borderRadius: 10, background: _perBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },

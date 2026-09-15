@@ -3465,11 +3465,35 @@ window.StemLab = window.StemLab || {
             : null);
 
       var canvasRef = React.useRef(null);
+      // Fullscreen stage: the whole sk-stage section, so the run toolbar, the
+      // telemetry strip and the timeline scrubber stay with the simulation. The
+      // canvas is aspect-ratio 16/9 at width:100%, so it scales on its own.
+      var skFsRef = React.useRef(null);
+      var skFsState = React.useState(false), skFs = skFsState[0], setSkFs = skFsState[1];
       var animationRef = React.useRef(null);
       var playbackRef = React.useRef(null);
       var runningState = React.useState(false);
       var running = runningState[0];
       var setRunning = runningState[1];
+      React.useEffect(function () {
+        var el = skFsRef.current;
+        if (!el || typeof MutationObserver !== 'function') return;
+        var sync = function () {
+          setSkFs(!!(el.hasAttribute('data-allo-fullscreen-active')
+            || document.fullscreenElement === el
+            || document.webkitFullscreenElement === el));
+        };
+        var mo = new MutationObserver(sync);
+        mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+        document.addEventListener('fullscreenchange', sync);
+        document.addEventListener('webkitfullscreenchange', sync);
+        sync();
+        return function () {
+          mo.disconnect();
+          document.removeEventListener('fullscreenchange', sync);
+          document.removeEventListener('webkitfullscreenchange', sync);
+        };
+      }, []);
       var pausedState = React.useState(false);
       var paused = pausedState[0];
       var setPaused = pausedState[1];
@@ -4318,7 +4342,16 @@ window.StemLab = window.StemLab || {
         ),
 
         h('div', { className: 'sk-workbench' },
-          h('section', { className: 'sk-stage', 'data-skatelab-run-focus': 'true', 'aria-label': __alloT('stem.skatelab.a11y_simulation_stage', 'Simulation stage') },
+          h('section', { ref: skFsRef, 'data-allo-fs-stage': 'true', className: 'sk-stage', 'data-skatelab-run-focus': 'true', 'aria-label': __alloT('stem.skatelab.a11y_simulation_stage', 'Simulation stage'), style: { position: 'relative' } },
+            h('button', {
+              type: 'button',
+              onClick: function () { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(skFsRef.current); },
+              'aria-pressed': skFs ? 'true' : 'false',
+              'aria-label': skFs
+                ? __alloT('stem.skatelab.exit_fullscreen', 'Exit fullscreen simulation (Escape)')
+                : __alloT('stem.skatelab.enter_fullscreen', 'View the simulation fullscreen'),
+              style: { position: 'absolute', top: 14, right: 14, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(6,16,30,0.9)', border: '1px solid rgba(148,163,184,0.45)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, skFs ? '✕' : '⛶')),
             h('div', { className: 'sk-canvas-frame' },
               h('canvas', {
                 ref: canvasRef,

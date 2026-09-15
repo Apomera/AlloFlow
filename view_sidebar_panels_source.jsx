@@ -306,7 +306,7 @@ function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback,
             : <Plus size={12} className="text-slate-500 shrink-0" />}
           <span className="truncate">
             {hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? '…' : ''}"` : label}
-            {!hasValue && optional && <span className="text-slate-400 font-normal"> {t('common.optional')}</span>}
+            {!hasValue && optional && <span className="text-slate-600 font-normal"> {t('common.optional')}</span>}
           </span>
         </span>
         <ChevronDown size={12} className={`shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`} />
@@ -1589,7 +1589,7 @@ function MathPanel(props) {
                                     </p>
                                     <button type="button"
                                         onClick={launchMaze}
-                                        className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all motion-reduce:transition-none shadow-md flex items-center justify-center gap-2"
+                                        className="w-full px-4 py-2.5 bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-700 hover:to-orange-700 text-white text-sm font-bold rounded-lg transition-all motion-reduce:transition-none shadow-md flex items-center justify-center gap-2"
                                         aria-label={t('fluency_maze.open_aria') || 'Open Fluency Maze in main view'}
                                     >
                                         {t('fluency_maze.open_button') || '🚪 Open Maze (full view)'}
@@ -1866,7 +1866,7 @@ function DbqPanel(props) {
                                                     }
                                                     addToast && addToast(t("toasts.no_clipboard_image"), 'info');
                                                 } catch (err) { addToast && addToast(t("toasts.clipboard_access_failed"), 'info'); }
-                                            }} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
+                                            }} className="px-3 py-1.5 bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold rounded-lg transition-all motion-reduce:transition-none flex items-center gap-1"
                                                 aria-label={t('dbq.paste_clipboard_aria') || 'Paste image from clipboard'}>{t('dbq.paste_clipboard_button') || '📋 Paste Image'}</button>
                                         </div>
                                     </div>

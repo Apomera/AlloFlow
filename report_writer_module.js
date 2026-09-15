@@ -3630,7 +3630,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'flex flex-col gap-2 flex-shrink-0' },
                         h('button', {
                             onClick: ingestRtiExport,
-                            className: 'px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors',
+                            className: 'px-4 py-2 bg-emerald-700 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors',
                             'aria-label': 'Ingest RTI data into an IEP packet'
                         }, 'Ingest →'),
                         h('button', {
@@ -4002,7 +4002,7 @@ Return ONLY valid JSON:
                                 ),
                                 !chunk.verified && h('div', { className: 'flex items-center gap-1' },
                                     h('button', { 'aria-label': 'Verify and lock this fact chunk', className: 'px-2 py-1 bg-green-700 text-white text-[11px] rounded hover:bg-green-700', onClick: () => verifyChunk(chunk.id), title: 'Verify & Lock' }, '✅'),
-                                    h('button', { 'aria-label': 'Reject fact chunk', className: 'px-2 py-1 bg-red-100 text-red-600 text-[11px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: 'Reject' }, '✕')
+                                    h('button', { 'aria-label': 'Reject fact chunk', className: 'px-2 py-1 bg-red-100 text-red-700 text-[11px] rounded hover:bg-red-200', onClick: () => rejectChunk(chunk.id), title: 'Reject' }, '✕')
                                 )
                             )
                         )
@@ -4055,7 +4055,7 @@ Return ONLY valid JSON:
                 ),
                 // Run analysis button
                 factChunks.filter(c => c.verified).length > 0 && h('div', { className: 'pt-2' },
-                    h('button', { 'aria-label': 'Run differential analysis', className: 'w-full px-4 py-2.5 text-xs font-medium rounded-lg transition-colors ' + (runningDifferential ? 'bg-slate-300 text-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700'),
+                    h('button', { 'aria-label': 'Run differential analysis', className: 'w-full px-4 py-2.5 text-xs font-medium rounded-lg transition-colors ' + (runningDifferential ? 'bg-slate-300 text-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-violet-700 to-indigo-700 text-white hover:from-violet-700 hover:to-indigo-700'),
                         disabled: runningDifferential || hypotheses.length < 2,
                         onClick: runDifferentialAnalysis
                     }, runningDifferential ? '\u23F3 Analyzing evidence...' : '\u{1F52C} Run Differential Analysis')
@@ -4228,7 +4228,7 @@ Return ONLY valid JSON:
                                     'aria-label': 'Verify the current report against the structured scores using the inline psycheck port',
                                     className: 'text-[11px] px-2 py-1 rounded transition-colors font-medium ' + (verifyDisabled
                                         ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
-                                        : 'bg-emerald-600 text-white hover:bg-emerald-500'),
+                                        : 'bg-emerald-700 text-white hover:bg-emerald-800'),
                                     title: verifyBusy
                                         ? 'Wait for the in-flight generation / regen / edit to finish before verifying'
                                         : 'Run psycheck verification on the current report (no file roundtrip)',
@@ -4238,7 +4238,7 @@ Return ONLY valid JSON:
                             })(),
                             // Architecture C: import external JSON
                             h('label', {
-                                className: 'text-[11px] px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-500 cursor-pointer transition-colors font-medium',
+                                className: 'text-[11px] px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer transition-colors font-medium',
                                 title: 'Import a psycheck JSON discrepancy report (Architecture C)'
                             },
                                 '📥 Import discrepancy report',
@@ -4295,7 +4295,7 @@ Return ONLY valid JSON:
                                     }, '\u270F\uFE0F Edit'),
                                     // Grade-level adaptation dropdown
                                     h('select', {
-                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-600' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
+                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-800 cursor-wait border-teal-600' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
                                         'aria-label': 'Adapt grade level for ' + section,
                                         disabled: adaptingSection === section,
                                         value: '',
@@ -4308,7 +4308,7 @@ Return ONLY valid JSON:
                                         h('option', { value: 'Student-Friendly (Secondary)' }, '🧑 Student (Secondary)')
                                     ),
                                     // Regenerate button
-                                    h('button', { 'aria-label': 'Show regeneration options', className: `text-[11px] px-2 py-0.5 rounded transition-colors ${regenSection === section ? 'bg-amber-200 text-amber-700 cursor-wait' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`,
+                                    h('button', { 'aria-label': 'Show regeneration options', className: `text-[11px] px-2 py-0.5 rounded transition-colors ${regenSection === section ? 'bg-amber-200 text-amber-800 cursor-wait' : 'bg-amber-100 text-amber-700 hover:bg-amber-200'}`,
                                         disabled: regenSection === section,
                                         onClick: () => showRegenInput === section ? setShowRegenInput(null) : setShowRegenInput(section)
                                     }, regenSection === section ? '⏳ Regenerating...' : '\uD83D\uDD04 Regen')
@@ -4360,7 +4360,7 @@ Return ONLY valid JSON:
                                     onChange: e => setRegenInstructions(e.target.value)
                                 }),
                                 h('div', { className: 'flex gap-1' },
-                                    h('button', { className: 'text-[11px] px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-600 font-medium', onClick: () => regenerateSection(section, regenInstructions)
+                                    h('button', { className: 'text-[11px] px-3 py-1 rounded bg-amber-700 text-white hover:bg-amber-800 font-medium', onClick: () => regenerateSection(section, regenInstructions)
                                     }, '\u2728 Regenerate'),
                                     h('button', { 'aria-label': 'Cancel regeneration', className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => { setShowRegenInput(null); setRegenInstructions(''); }
                                     }, 'Cancel')
@@ -4376,7 +4376,7 @@ Return ONLY valid JSON:
                                         onChange: e => setEditSectionText(e.target.value)
                                     }),
                                     h('div', { className: 'flex gap-1' },
-                                        h('button', { className: 'text-[11px] px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-600 font-medium',
+                                        h('button', { className: 'text-[11px] px-3 py-1 rounded bg-emerald-700 text-white hover:bg-emerald-800 font-medium',
                                             onClick: () => { setReportSections(prev => ({ ...prev, [section]: editSectionText })); setEditingSection(null); setAccuracyResults([]); if (addToast) addToast(`"${section}" updated`, 'success'); }
                                         }, '\u2705 Save'),
                                         h('button', { 'aria-label': 'Cancel editing', className: 'text-[11px] px-2 py-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300', onClick: () => setEditingSection(null)
@@ -4567,7 +4567,7 @@ Return ONLY valid JSON:
                             h('select', { className: 'text-xs border rounded-lg px-2 py-1.5 bg-white flex-1', 'aria-label': 'Translation language', value: translationLang, onChange: e => setTranslationLang(e.target.value) },
                                 ['Spanish', 'French', 'Portuguese', 'Chinese (Simplified)', 'Chinese (Traditional)', 'Arabic', 'Vietnamese', 'Korean', 'Haitian Creole', 'Somali', 'Russian', 'German', 'Japanese', 'Tagalog', 'Hindi', 'Urdu'].map(lang => h('option', { key: lang, value: lang }, lang))
                             ),
-                            h('button', { 'aria-label': 'Translate report', className: `px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${translating ? 'bg-sky-300 text-sky-600 cursor-wait' : 'bg-sky-600 text-white hover:bg-sky-700'}`,
+                            h('button', { 'aria-label': 'Translate report', className: `px-4 py-1.5 text-xs font-medium rounded-lg transition-colors ${translating ? 'bg-sky-300 text-sky-600 cursor-wait' : 'bg-sky-700 text-white hover:bg-sky-700'}`,
                                 disabled: translating,
                                 onClick: translateReport
                             }, translating ? '⏳ Translating...' : '🌏 Translate')
@@ -4575,7 +4575,7 @@ Return ONLY valid JSON:
                         translatedReport && h('div', { className: 'mt-2 space-y-2' },
                             h('div', { className: 'flex items-center justify-between' },
                                 h('p', { className: 'text-[11px] font-medium text-sky-700' }, `Translated Report (${translationLang})`),
-                                h('button', { 'aria-label': 'Copy unreviewed translated draft', className: 'text-[11px] px-2 py-0.5 bg-sky-600 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, '📋 Copy Draft')
+                                h('button', { 'aria-label': 'Copy unreviewed translated draft', className: 'text-[11px] px-2 py-0.5 bg-sky-700 text-white rounded hover:bg-sky-700', onClick: copyTranslatedReport }, '📋 Copy Draft')
                             ),
                             h('div', { className: 'bg-white rounded-lg border border-sky-200 p-3 max-h-[300px] overflow-y-auto' },
                                 h('pre', { lang: translationMeta.code, dir: translationMeta.dir, 'aria-label': `Unreviewed ${translationLang} translated report draft`, className: 'text-[11px] text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, translatedReport)
@@ -4616,7 +4616,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'flex items-center gap-2' },
                         h('input', { type: 'text', className: 'flex-1 text-[11px] border rounded-lg px-2 py-1', placeholder: 'Report name (optional)...', 'aria-label': 'Report name', value: saveReportName, onChange: e => setSaveReportName(e.target.value) }),
                         h('button', { className: 'px-3 py-1 bg-violet-600 text-white text-[11px] font-medium rounded-lg hover:bg-violet-700 transition-colors whitespace-nowrap', onClick: saveReportToGallery }, '💾 Save Report'),
-                        h('button', { 'aria-label': 'Start a new report', className: 'px-3 py-1 bg-red-100 text-red-600 text-[11px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
+                        h('button', { 'aria-label': 'Start a new report', className: 'px-3 py-1 bg-red-100 text-red-700 text-[11px] font-medium rounded-lg hover:bg-red-200 transition-colors whitespace-nowrap', onClick: () => {
                             setConfirmationRequest({
                                 title: 'Start a new report?',
                                 message: 'All unsaved case-specific data in the current session will be cleared. This action cannot be undone.',
@@ -4634,7 +4634,7 @@ Return ONLY valid JSON:
                                 ),
                                 h('div', { className: 'flex gap-1 ms-2' },
                                     h('button', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 rounded hover:bg-violet-200', onClick: () => loadSavedReport(r) }, 'Load'),
-                                    h('button', { 'aria-label': 'Delete saved report', className: 'px-2 py-0.5 bg-red-50 text-red-500 rounded hover:bg-red-100', onClick: () => deleteSavedReport(r.id) }, '✕')
+                                    h('button', { 'aria-label': 'Delete saved report', className: 'px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100', onClick: () => deleteSavedReport(r.id) }, '✕')
                                 )
                             )
                         )

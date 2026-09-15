@@ -107,7 +107,7 @@ const SPED_BAND_META = {
   soon: { label: "Due in 30 days", order: 2, cls: "bg-yellow-50 text-yellow-900 border-yellow-300" },
   ok: { label: "On track", order: 3, cls: "bg-green-50 text-green-900 border-green-300" },
   undated: { label: "No due date", order: 4, cls: "bg-slate-100 text-slate-700 border-slate-300" },
-  done: { label: "Completed", order: 5, cls: "bg-slate-100 text-slate-500 border-slate-300" }
+  done: { label: "Completed", order: 5, cls: "bg-slate-100 text-slate-600 border-slate-300" }
 };
 function spedRollup(cases, today) {
   const counts = { overdue: 0, urgent: 0, soon: 0, ok: 0, undated: 0, done: 0 };
@@ -450,7 +450,7 @@ function SpedTimelinesPanel(props) {
       "aria-label": tt("spedtl.done_aria", "Mark complete:") + " " + c.code + " " + typeLabel(c.type),
       className: "w-4 h-4 shrink-0"
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 " + (c.completedAt ? "line-through text-slate-400" : "text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, c.code), " · ", typeLabel(c.type), c.provider ? " · " + c.provider : ""), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] text-slate-500" }, c.completedAt ? tt("spedtl.done_on", "done") + " " + c.completedAt : (c.dueDate || "—") + (c.daysUntil != null && c.daysUntil < 0 ? " · " + Math.abs(c.daysUntil) + " " + tt("spedtl.days_over", "over") : "")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 " + (c.completedAt ? "line-through text-slate-600" : "text-slate-700") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, c.code), " · ", typeLabel(c.type), c.provider ? " · " + c.provider : ""), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-[10px] text-slate-500" }, c.completedAt ? tt("spedtl.done_on", "done") + " " + c.completedAt : (c.dueDate || "—") + (c.daysUntil != null && c.daysUntil < 0 ? " · " + Math.abs(c.daysUntil) + " " + tt("spedtl.days_over", "over") : "")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

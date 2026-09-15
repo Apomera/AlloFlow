@@ -639,7 +639,8 @@ window.SelHub = window.SelHub || {
         else { if (ctx.update) ctx.update('conflicttheater', key, val); }
       };
 
-      var mode = d.mode || 'select'; // select | opt-in | scene | ending
+      var MODES = ['select', 'opt-in', 'scene', 'ending'];
+      var mode = MODES.indexOf(d.mode) !== -1 ? d.mode : 'select'; // select | opt-in | scene | ending
       var scenarioId = d.scenarioId || 'lunch-money';
       var scenario = SCENARIOS[scenarioId] || SCENARIOS['lunch-money'];
       var scene = SCENES[scenario.sceneId] || SCENES.cafeteria;
@@ -647,7 +648,7 @@ window.SelHub = window.SelHub || {
       var harmony = typeof d.harmony === 'number' ? d.harmony : scenario.initialHarmony;
       var principlesUsed = d.principlesUsed || {};
       // Initialize moods from scenario's initialMoods (per-character starting state)
-      var charMoods = d.charMoods || Object.assign({}, scenario.initialMoods || {});
+      var charMoods = (d.charMoods && typeof d.charMoods === 'object' && !Array.isArray(d.charMoods)) ? d.charMoods : Object.assign({}, scenario.initialMoods || {});
       // Default any missing characters to 'calm'
       scenario.characterIds.forEach(function(cid) { if (!charMoods[cid]) charMoods[cid] = 'calm'; });
       var addressing = d.addressing || 'both';

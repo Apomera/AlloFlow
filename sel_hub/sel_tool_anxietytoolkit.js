@@ -655,7 +655,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
       function renderParking() {
         function parkInput() {
           var el = document.getElementById('a-park-input');
-          if (!el || !el.value.trim()) return;
+          if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           var parked = (d.parkedWorries || []).concat([{ text: el.value.trim(), date: todayISO() }]);
           setA({ parkedWorries: parked });
           el.value = '';
@@ -863,7 +863,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
         function listEditor(key, title, color, starters, blurb) {
           var items = d[key] || [];
           function addItem(value) {
-            if (!value || !value.trim()) return;
+            if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
             var list = items.slice();
             if (list.indexOf(value.trim()) === -1) list.push(value.trim());
             var patch = {}; patch[key] = list;
@@ -878,7 +878,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           var inputId = 'a-pat-' + key;
           function submit() {
             var el = document.getElementById(inputId);
-            if (!el || !el.value.trim()) return;
+            if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
             addItem(el.value);
             el.value = '';
           }

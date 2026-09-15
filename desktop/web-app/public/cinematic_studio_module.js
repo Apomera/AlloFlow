@@ -1104,7 +1104,7 @@
     var vsCrossLink = props.onOpenVideoStudio ? h('div', { className: 'mb-4 rounded-lg border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs text-sky-200 flex items-center justify-between gap-3 flex-wrap' }, [
       h('span', { key: 't' }, T('cs_video_studio_hint', 'Want to record your own screen demo instead? The Video Studio records, trims, captions, and exports real video — no NotebookLM needed.')),
       h('button', { key: 'b', onClick: function () { try { props.onOpenVideoStudio(); } catch (_) {} },
-        className: 'shrink-0 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-1.5' }, T('cs_video_studio_open', '🎥 Open Video Studio'))
+        className: 'shrink-0 rounded-lg bg-sky-600 hover:bg-sky-800 text-white text-xs font-semibold px-3 py-1.5' }, T('cs_video_studio_open', '🎥 Open Video Studio'))
     ]) : null;
 
     // ── tabs ──
@@ -1163,7 +1163,7 @@
         h('span', { key: 't', className: 'text-sm font-semibold text-slate-200' }, T('cs_preview', 'Your steering prompt')),
         h('div', { key: 'btns', className: 'flex gap-2' }, [
           h('button', { key: 'c', onClick: function (e) { copy(assembled, 'Steering prompt', e.currentTarget); }, className: 'text-xs px-3 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_copy', 'Copy')),
-          h('button', { key: 'a', onClick: improvePrompt, disabled: busy, className: 'text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50' }, busy ? T('cs_refining', 'Refining...') : T('cs_improve', 'Improve with AI'))
+          h('button', { key: 'a', onClick: improvePrompt, disabled: busy, className: 'text-xs px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50' }, busy ? T('cs_refining', 'Refining...') : T('cs_improve', 'Improve with AI'))
         ])
       ]),
       h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mb-1' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
@@ -1192,7 +1192,7 @@
       symGrid,
       h('div', { key: 'n', className: 'mb-3' }, [label(T('cs_diag_notes', 'Anything else that was off?'), 'cs-dnotes'),
         h('textarea', { id: 'cs-dnotes', rows: 2, value: notes, onChange: function (e) { setNotes(e.target.value); }, className: 'w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 text-sm' })]),
-      h('button', { key: 'mk', onClick: makeRePrompt, disabled: reBusy, className: 'px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold disabled:opacity-50' }, reBusy ? T('cs_polishing', 'Polishing...') : T('cs_make_reprompt', 'Build revision prompt')),
+      h('button', { key: 'mk', onClick: makeRePrompt, disabled: reBusy, className: 'px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold disabled:opacity-50' }, reBusy ? T('cs_polishing', 'Polishing...') : T('cs_make_reprompt', 'Build revision prompt')),
       h('p', { key: 'priv', className: 'text-xs text-amber-200/80 mt-2' }, T('cs_ai_privacy', 'Copy keeps everything local. Improve with AI sends this text to Google -- do not include student names or identifying details.')),
       rePrompt ? h('div', { key: 'out', className: 'mt-3' }, [
         h('div', { key: 'l', className: 'flex flex-wrap items-center justify-between gap-2 mb-1' }, [
@@ -1224,12 +1224,12 @@
 
     var capSource = h('div', { className: 'rounded-lg border border-slate-700 bg-slate-800/50 p-3 mb-3' }, [
       h('div', { key: 'r1', className: 'flex flex-wrap items-center gap-2 mb-2' }, [
-        h('label', { key: 'pick', className: 'text-xs px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer' }, [
+        h('label', { key: 'pick', className: 'text-xs px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer' }, [
           T('cs_cap_pick', 'Choose video / audio'),
           h('input', { key: 'in', type: 'file', accept: 'video/*,audio/*', style: { display: 'none' }, onChange: function (e) { onPickVideo(e.target.files && e.target.files[0]); } })
         ]),
         vfile ? h('span', { key: 'fn', className: 'text-xs text-slate-300 truncate max-w-[14rem]' }, vfile.name) : null,
-        h('button', { key: 'go', onClick: runTranscribe, disabled: tbusy || !vfile, className: 'text-xs px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-40' }, tbusy ? T('cs_cap_working', 'Working...') : T('cs_cap_transcribe', 'Transcribe'))
+        h('button', { key: 'go', onClick: runTranscribe, disabled: tbusy || !vfile, className: 'text-xs px-3 py-2 rounded bg-emerald-600 hover:bg-emerald-800 text-white disabled:opacity-40' }, tbusy ? T('cs_cap_working', 'Working...') : T('cs_cap_transcribe', 'Transcribe'))
       ]),
       h('div', { key: 'r2', className: 'flex flex-wrap items-center gap-2 text-xs text-slate-400' }, [
         h('span', { key: 'or' }, T('cs_cap_or', 'or')),
@@ -1271,7 +1271,7 @@
       h('div', { key: 'row', className: 'flex flex-wrap items-center gap-2' }, [
         h('span', { key: 'l', className: 'text-xs text-slate-300 font-semibold' }, T('cs_cap_translate', 'Translate captions to:')),
         h('select', { key: 'sel', value: capLang, 'aria-label': 'Translation language', onChange: function (e) { setCapLang(e.target.value); setTrSegs(null); }, className: 'bg-slate-800 border border-slate-600 rounded px-2 py-1 text-xs text-slate-100' }, CAPTION_LANGS.map(function (l) { return h('option', { key: l, value: l }, l); })),
-        h('button', { key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
+        h('button', { key: 'go', onClick: translateCaptions, disabled: trBusy, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-40' }, trBusy ? T('cs_cap_translating', 'Translating...') : T('cs_cap_dotranslate', 'Translate'))
       ]),
       h('p', { key: 'priv', className: 'mt-2 text-xs text-amber-200/90' },
         T('cs_cap_privacy', 'Privacy: transcription stays on your device, but translation sends the caption TEXT to Google for AI processing. Do not translate captions that contain student names or other identifying details.')),
@@ -1313,7 +1313,7 @@
         h('input', { key: 'c', id: 'cs-co-ferpa', type: 'checkbox', className: 'min-h-6 min-w-6', checked: cFerpa, onChange: function (e) { setCFerpa(e.target.checked); } }),
         T('cs_co_ferpa', 'I have removed student names and other identifying details.')
       ]),
-      h('button', { key: 'g', onClick: runOutline, disabled: cBusy || !cDoc.trim() || !cFerpa, className: 'mt-3 px-4 py-2 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-sm font-semibold disabled:opacity-40' },
+      h('button', { key: 'g', onClick: runOutline, disabled: cBusy || !cDoc.trim() || !cFerpa, className: 'mt-3 px-4 py-2 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-700 text-white text-sm font-semibold disabled:opacity-40' },
         (cBusy && cStage === 'outline') ? T('cs_co_drafting', 'Drafting outline...') : T('cs_co_generate', 'Draft storyboard outline'))
     ]);
 
@@ -1347,7 +1347,7 @@
         ]);
       })),
       h('div', { key: 'a', className: 'flex gap-2 mt-3' }, [
-        h('button', { key: 'go', onClick: runScenes, disabled: cBusy || !cOutline.scenes.length, className: 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold disabled:opacity-40' }, (cBusy && cStage === 'scripting') ? T('cs_co_writing', 'Writing scenes...') : T('cs_co_approve', 'Approve & write scenes')),
+        h('button', { key: 'go', onClick: runScenes, disabled: cBusy || !cOutline.scenes.length, className: 'px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-800 text-white text-sm font-semibold disabled:opacity-40' }, (cBusy && cStage === 'scripting') ? T('cs_co_writing', 'Writing scenes...') : T('cs_co_approve', 'Approve & write scenes')),
         h('button', { key: 're', onClick: resetCompose, disabled: cBusy, className: 'px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm disabled:opacity-40' }, T('cs_co_startover', 'Start over'))
       ])
     ]) : null;
@@ -1356,7 +1356,7 @@
       h('div', { key: 'h', ref: composeFocusRef, tabIndex: -1, className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, [
         h('span', { key: 't', className: 'text-sm font-semibold text-emerald-300' }, cStoryboard.sb.title + ' ' + T('cs_cap_draftlabel', '(AI draft, review before use)')),
         h('div', { key: 'b', className: 'flex gap-2' }, [
-          h('button', { key: 'dl', onClick: downloadStoryboard, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white' }, T('cs_co_download', 'Download storyboard JSON')),
+          h('button', { key: 'dl', onClick: downloadStoryboard, className: 'text-xs px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white' }, T('cs_co_download', 'Download storyboard JSON')),
           h('button', { key: 're', onClick: resetCompose, className: 'text-xs px-3 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-100' }, T('cs_co_new', 'New'))
         ])
       ]),

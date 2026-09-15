@@ -192,7 +192,7 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div role="alert" aria-live="assertive" aria-atomic="true" className="w-full h-full min-h-[400px] flex flex-col items-center justify-center p-8 bg-red-50 border-2 border-red-200 rounded-xl text-center animate-in fade-in zoom-in duration-300 motion-reduce:animate-none relative z-50">
-          <div className="bg-red-100 p-4 rounded-full text-red-500 mb-4 shadow-sm">
+          <div className="bg-red-100 p-4 rounded-full text-red-700 mb-4 shadow-sm">
              <AlertCircle size={48} aria-hidden="true" />
           </div>
           <h2 className="text-xl font-black text-red-800 mb-2">{this.props.title || t('errors.component_title')}</h2>

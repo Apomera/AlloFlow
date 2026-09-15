@@ -227,7 +227,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // HOME
       // ═══════════════════════════════════════════════════════════
       function renderHome() {
-        var activities = d.plannedActivities || [];
+        var activities = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
         var planned = activities.filter(function(a) { return !a.done; }).length;
         var doneCount = activities.filter(function(a) { return a.done; }).length;
         var focused = activities.filter(function(a) { return !a.done && a.id === d.focusActivityId; })[0] || null;
@@ -293,19 +293,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // ═══════════════════════════════════════════════════════════
       function renderPlan() {
         function addActivity(label, category, energy) {
-          if (!label || !label.trim()) return;
+          if (!label || !label.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var entry = { id: uid(), label: label.trim(), category: category, day: todayISO(), done: false, energy: energy || d.energyLevel || null };
-          setBA({ plannedActivities: (d.plannedActivities || []).concat([entry]), focusActivityId: entry.id });
+          setBA({ plannedActivities: ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).concat([entry]), focusActivityId: entry.id });
           if (announceToSR) announceToSR('Activity added and set as your next action.');
         }
         function removeActivity(id) {
-          var patch = { plannedActivities: (d.plannedActivities || []).filter(function(a) { return a.id !== id; }) };
+          var patch = { plannedActivities: ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return a.id !== id; }) };
           if (d.focusActivityId === id) patch.focusActivityId = null;
           setBA(patch);
           if (announceToSR) announceToSR('Activity removed.');
         }
 
-        var planned = (d.plannedActivities || []).filter(function(a) { return !a.done; });
+        var planned = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return !a.done; });
         var energy = ENERGY_LEVELS.filter(function(item) { return item.id === d.energyLevel; })[0] || null;
         var focused = planned.filter(function(a) { return a.id === d.focusActivityId; })[0] || null;
         var focusCat = focused ? (CAT_LABELS[focused.category] || { label: focused.category, icon: '◆', color: '#64748b' }) : null;
@@ -313,7 +313,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
 
         function finishFocused() {
           if (!focused) return;
-          var nx = (d.plannedActivities || []).map(function(a) { return a.id === focused.id ? Object.assign({}, a, { done: true }) : a; });
+          var nx = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).map(function(a) { return a.id === focused.id ? Object.assign({}, a, { done: true }) : a; });
           setBA({ plannedActivities: nx, focusActivityId: null, view: 'log' });
           if (announceToSR) announceToSR('Action marked done. Recheck and rate how it went.');
         }
@@ -406,7 +406,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
             var inputId = 'ba-input-' + catId;
             function submit() {
               var el = document.getElementById(inputId);
-              if (!el || !el.value.trim()) return;
+              if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
               addActivity(el.value, catId);
               el.value = '';
             }
@@ -444,7 +444,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // LOG — mark done + rate mastery/pleasure
       // ═══════════════════════════════════════════════════════════
       function renderLog() {
-        var activities = d.plannedActivities || [];
+        var activities = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
         if (activities.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _beaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
@@ -501,7 +501,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // PATTERNS — what is lifting you, what is depleting you
       // ═══════════════════════════════════════════════════════════
       function renderPatterns() {
-        var doneActs = (d.plannedActivities || []).filter(function(a) { return a.done && a.mastery !== undefined && a.pleasure !== undefined; });
+        var doneActs = ((Array.isArray(d.plannedActivities) ? d.plannedActivities : [])).filter(function(a) { return a.done && a.mastery !== undefined && a.pleasure !== undefined; });
         if (doneActs.length < 3) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _beaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
@@ -582,7 +582,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('behavioralActiva
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var acts = d.plannedActivities || [];
+        var acts = (Array.isArray(d.plannedActivities) ? d.plannedActivities : []);
         return h('div', null,
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(16,185,129,0.10)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _beaFg('#a7f3d0'), lineHeight: 1.55 } },

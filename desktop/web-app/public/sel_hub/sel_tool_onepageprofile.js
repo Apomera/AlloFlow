@@ -188,9 +188,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       }
 
       function isEmpty() {
-        return (d.likeAdmire || []).length === 0 &&
-               (d.important || []).length === 0 &&
-               (d.howToSupport || []).length === 0;
+        return ((Array.isArray(d.likeAdmire) ? d.likeAdmire : [])).length === 0 &&
+               ((Array.isArray(d.important) ? d.important : [])).length === 0 &&
+               ((Array.isArray(d.howToSupport) ? d.howToSupport : [])).length === 0;
       }
 
       // ═══════════════════════════════════════════════════════════
@@ -216,7 +216,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(129,140,248,0.14) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14, flexWrap: 'wrap' } },
             h('div', { style: { fontSize: 56, lineHeight: 1, padding: 8, borderRadius: 10, background: _opBg('#1e293b'), border: '1px solid #334155' }, 'aria-label': 'Profile icon' }, d.photoEmoji || '🌟'),
             h('div', { style: { flex: 1, minWidth: 200 } },
-              h('div', { style: { fontSize: 22, fontWeight: 900, color: _opFg('#e0e7ff') } }, d.name || '(your name)'),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: _opFg('#e0e7ff') } }, (typeof d.name === 'string' ? d.name : '(your name)')),
               h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), marginTop: 4 } },
                 d.gradeLevel ? ('Grade ' + d.gradeLevel) : '',
                 d.gradeLevel && d.pronouns ? ' · ' : '',
@@ -261,7 +261,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       // ═══════════════════════════════════════════════════════════
       function renderEdit() {
         function addItem(sectionKey, value) {
-          if (!value || !value.trim()) return;
+          if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var current = (d[sectionKey] || []).slice();
           current.push(value.trim());
           var patch = {};
@@ -292,7 +292,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           var items = d[sectionKey] || [];
           function submitInput() {
             var el = document.getElementById(inputId);
-            if (!el || !el.value.trim()) return;
+            if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
             addItem(sectionKey, el.value);
             el.value = '';
             if (announceToSR) announceToSR('Added.');
@@ -347,7 +347,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               h('div', null,
                 h('label', { htmlFor: 'opp-name', style: { display: 'block', fontSize: 11, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My name'),
-                h('input', { id: 'opp-name', type: 'text', value: d.name || '',
+                h('input', { id: 'opp-name', type: 'text', value: (typeof d.name === 'string' ? d.name : ''),
                   onChange: function(e) { setOPP({ name: e.target.value }); },
                   style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               ),
@@ -434,7 +434,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
               h('div', { style: { fontSize: 56, lineHeight: 1, padding: 4 } }, d.photoEmoji || '🌟'),
               h('div', { style: { flex: 1 } },
                 h('div', { style: { fontSize: 10, color: _opFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'One-Page Profile'),
-                h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900, color: _opFg('#0f172a') } }, d.name || '(your name)'),
+                h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900, color: _opFg('#0f172a') } }, (typeof d.name === 'string' ? d.name : '(your name)')),
                 h('div', { style: { fontSize: 12, color: _opFg('#475569'), marginTop: 4 } },
                   d.gradeLevel ? ('Grade ' + d.gradeLevel) : '',
                   d.gradeLevel && d.pronouns ? '  ·  ' : '',

@@ -1083,7 +1083,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
             <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-slate-100">
               <div role="group" aria-label={tr('Mode')} className="flex rounded-lg overflow-hidden border border-slate-300">
                 {live && (
-                  <button type="button" aria-pressed={mode === 'live'} onClick={() => { setMode('live'); setSelectedItem(null); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'live' ? 'bg-emerald-600 text-white' : 'bg-white text-emerald-700 hover:bg-emerald-50')}>{'🟢 ' + tr('Live')}</button>
+                  <button type="button" aria-pressed={mode === 'live'} onClick={() => { setMode('live'); setSelectedItem(null); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'live' ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-700 hover:bg-emerald-50')}>{'🟢 ' + tr('Live')}</button>
                 )}
                 <button type="button" aria-pressed={mode === 'assign'} onClick={() => { setMode('assign'); setSelectedItem(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'assign' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Assign')}</button>
                 <button type="button" aria-pressed={mode === 'edit'} onClick={() => { setMode('edit'); setSelectedStudent(null); }} className={'px-3 py-1.5 text-xs font-bold ' + (mode === 'edit' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Edit room')}</button>
@@ -1092,7 +1092,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                 <button type="button" aria-pressed={view === 'map'} onClick={() => setView('map')} className={'px-3 py-1.5 text-xs font-bold ' + (view === 'map' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('Map')}</button>
                 <button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')} className={'px-3 py-1.5 text-xs font-bold ' + (view === 'list' ? 'bg-slate-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50')}>{tr('List')}</button>
               </div>
-              <button type="button" onClick={() => runSolve(false)} className={btn + ' bg-emerald-600 text-white hover:bg-emerald-700'}>✨ {tr('Auto-arrange')}</button>
+              <button type="button" onClick={() => runSolve(false)} className={btn + ' bg-emerald-700 text-white hover:bg-emerald-800'}>✨ {tr('Auto-arrange')}</button>
               <button type="button" onClick={() => runSolve(true)} title={tr('New arrangement that still honors your constraints')} className={btn + ' bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}>🔀 {tr('Reshuffle')}</button>
               <button type="button" onClick={() => setShowConstraints(v => !v)} aria-expanded={showConstraints} className={btn + ' ' + (liveScore.violations.length ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}>
                 ⚖️ {tr('Constraints')} ({seating.constraints.length}{liveScore.violations.length ? ' · ' + tr('{n} unmet', { n: liveScore.violations.length }) : ''})
@@ -1256,7 +1256,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                               const signal = entry ? liveSignalOf(entry) : null;
                               return (
                                 <td className="py-1.5 ps-3">
-                                  {!name ? <span className="text-slate-400">—</span> : !entry ? <span className="text-slate-500 italic">{tr('not joined')}</span> : (
+                                  {!name ? <span className="text-slate-600">—</span> : !entry ? <span className="text-slate-500 italic">{tr('not joined')}</span> : (
                                     <span className="inline-flex items-center gap-2 text-xs">
                                       <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
                                         {(signal ? signal.emoji + ' ' + signal.label + ' · ' : '') + (status === 'on' ? tr('active') : tr('quiet')) + (entry.xp ? ' · ' + entry.xp + ' XP' : '')}
@@ -1294,7 +1294,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                               onClick={() => live.onRecognizeStudents(podUids, tr('students in Pod {n}', { n: pod.index }))}
                               title={live.recognitionEnabled ? tr('Recognize every connected student in this pod (Live Dock reason and tokens).') : tr('Enable recognition in the Live Dock first.')}
                               aria-label={tr('Recognize Pod {n} — {k} connected students', { n: pod.index, k: podUids.length })}
-                              className={'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (disabled ? 'border-slate-200 text-slate-400 bg-slate-50' : 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100')}>
+                              className={'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (disabled ? 'border-slate-200 text-slate-600 bg-slate-50' : 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100')}>
                               {tr('Pod {n}', { n: pod.index })} ({podUids.length})
                             </button>
                           );
@@ -1337,7 +1337,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                                 {unmet && <span className="block text-amber-700">{tr('unmet in current arrangement')}</span>}
                                 {gap && <span className="block text-sky-700">{tr('add a {kind} to the map for this to work', { kind: furnitureLabel(CONSTRAINT_TYPES.filter(s => s.type === c.type)[0].anchor) })}</span>}
                               </span>
-                              <button type="button" onClick={() => removeConstraint(c.id)} aria-label={tr('Remove constraint')} className="text-slate-400 hover:text-rose-600 font-bold">✕</button>
+                              <button type="button" onClick={() => removeConstraint(c.id)} aria-label={tr('Remove constraint')} className="text-slate-600 hover:text-rose-600 font-bold">✕</button>
                             </div>
                           );
                         })}

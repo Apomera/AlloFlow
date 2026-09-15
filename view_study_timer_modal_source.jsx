@@ -165,7 +165,7 @@ function StudyTimerModal(props) {
                                 setIsStudyTimerRunning(true);
                             }
                         }}
-                        className={`flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 ${isStudyTimerRunning ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-green-700 hover:bg-green-800'}`}
+                        className={`flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 ${isStudyTimerRunning ? 'bg-amber-700 hover:bg-amber-800' : 'bg-green-700 hover:bg-green-800'}`}
                     >
                         {isStudyTimerRunning ? <Pause size={20} className="fill-current"/> : <Play size={20} className="fill-current"/>}
                         {isStudyTimerRunning ? t('timer.pause') : t('timer.start')}

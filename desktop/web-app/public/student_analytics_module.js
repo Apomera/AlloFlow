@@ -1348,11 +1348,11 @@ try {
         },
           h('button', { "aria-label": "Correct",
             onClick: onCorrect,
-            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black text-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-xl shadow-green-200 active:scale-95'
+            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-2xl font-black text-xl hover:from-green-800 hover:to-emerald-800 transition-all shadow-xl shadow-green-200 active:scale-95'
           }, '\u2705 Correct', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '1')),
           h('button', { "aria-label": "Incorrect",
             onClick: onIncorrect,
-            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-black text-xl hover:from-red-600 hover:to-rose-600 transition-all shadow-xl shadow-red-200 active:scale-95'
+            className: 'flex items-center gap-3 px-12 py-5 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-2xl font-black text-xl hover:from-red-800 hover:to-rose-800 transition-all shadow-xl shadow-red-200 active:scale-95'
           }, '\u274C Incorrect', h('kbd', { className: 'ml-2 text-sm opacity-60 bg-white/20 px-2 py-0.5 rounded' }, '2')),
           onSkip && h('button', { "aria-label": "Skip",
             onClick: onSkip,
@@ -3995,7 +3995,7 @@ try {
             ...populations.map(p => React.createElement('button', {
               key: p,
               onClick: () => openCustomQuestions(p),
-              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' + (customQuestionsPopulation === p ? 'bg-amber-500 text-white shadow' : 'bg-white border border-slate-400 text-slate-700 hover:bg-amber-50')
+              className: 'px-3 py-1.5 text-xs font-bold rounded-lg transition-all ' + (customQuestionsPopulation === p ? 'bg-amber-700 text-white shadow' : 'bg-white border border-slate-400 text-slate-700 hover:bg-amber-50')
             }, p.charAt(0).toUpperCase() + p.slice(1) + ' Survey'))
           ),
           customQuestionsDraft.length === 0
@@ -4053,7 +4053,7 @@ try {
                           React.createElement('button', {
                             disabled: cqImageGenBusy || !cqImageGenInput.prompt.trim(),
                             onClick: runCqImageGen,
-                            className: 'px-2 py-1 text-xs font-bold rounded ' + (cqImageGenBusy ? 'bg-slate-300 text-slate-600' : 'bg-amber-600 text-white hover:bg-amber-700')
+                            className: 'px-2 py-1 text-xs font-bold rounded ' + (cqImageGenBusy ? 'bg-slate-300 text-slate-600' : 'bg-amber-700 text-white hover:bg-amber-700')
                           }, cqImageGenBusy ? '…' : (cqImageGenInput.mode === 'refine' ? 'Refine' : 'Generate')),
                           React.createElement('button', {
                             onClick: () => setCqImageGenInput({ qid: null, idx: null, prompt: '', mode: 'generate', field: null }),
@@ -4070,7 +4070,7 @@ try {
                           }, 'Remove icon') : null,
                           qType === 'mcq' ? React.createElement('button', {
                             onClick: () => cqRemoveOption(q.id, idx),
-                            className: 'px-2 py-0.5 text-[11px] text-red-600 hover:bg-red-50 rounded ml-auto'
+                            className: 'px-2 py-0.5 text-[11px] text-red-800 hover:bg-red-50 rounded ml-auto'
                           }, 'Delete option') : null
                         )
                       )
@@ -4088,7 +4088,7 @@ try {
           React.createElement('div', { className: 'flex flex-wrap items-center gap-2 mt-4' },
             React.createElement('button', {
               onClick: cqAddQuestion,
-              className: 'px-3 py-1.5 text-xs font-bold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700'
+              className: 'px-3 py-1.5 text-xs font-bold bg-emerald-700 text-white rounded-lg hover:bg-emerald-700'
             }, '+ Add Question'),
             React.createElement('span', { className: 'text-xs text-slate-500 italic ml-auto' },
               customQuestionsDraft.length + ' custom question' + (customQuestionsDraft.length === 1 ? '' : 's') + ' for ' + customQuestionsPopulation),
@@ -4098,7 +4098,7 @@ try {
             }, 'Cancel'),
             React.createElement('button', {
               onClick: saveCustomQuestions,
-              className: 'px-4 py-1.5 text-xs font-bold bg-amber-600 text-white rounded-lg hover:bg-amber-700'
+              className: 'px-4 py-1.5 text-xs font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-700'
             }, 'Save Custom Items')
           )
         )
@@ -4247,7 +4247,7 @@ try {
       }, React.createElement('span', {
         className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse'
       }), 'Active') : null), React.createElement('button', {
-        className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (researchMode && researchMode.active ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'),
+        className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (researchMode && researchMode.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'),
         onClick: () => researchMode && researchMode.active ? toggleResearchMode(null) : setShowResearchSetup(true)
       }, researchMode && researchMode.active ? '\u{23F9} End Study' : '\u{1F52C} Start Study')), React.createElement('div', {
         className: 'grid grid-cols-2 gap-2'
@@ -6579,7 +6579,7 @@ try {
           end: reportEndDate
         }
       }),
-      className: "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-200"
+      className: "w-full bg-gradient-to-r from-amber-700 to-orange-700 hover:from-amber-800 hover:to-orange-800 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-200"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 18
     }), " ", t('learner.download_progress_report')))),
@@ -6613,7 +6613,7 @@ try {
       "aria-label": t('common.download'),
       "data-help-key": "dashboard_export_csv",
       onClick: handleExportCSV,
-      className: "bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+      className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 16
     }), t('class_analytics.export_csv'))
@@ -6628,7 +6628,7 @@ try {
       "aria-label": t('common.toggle_safety_flags'),
       "data-help-key": "dashboard_safety_toggle",
       onClick: () => setSafetyFlaggingVisible(prev => !prev),
-      className: `${safetyFlaggingVisible ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-400 hover:bg-slate-500'} text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm`,
+      className: `${safetyFlaggingVisible ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-600 hover:bg-slate-700'} text-white px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm`,
       title: safetyFlaggingVisible ? 'Safety flags visible — click to hide' : 'Safety flags hidden — click to show'
     }, /*#__PURE__*/React.createElement(ShieldCheck, {
       size: 16
@@ -7074,7 +7074,7 @@ try {
     }, s.nickname || s.name))), /*#__PURE__*/React.createElement("button", {
       onClick: () => launchBenchmarkProbe(probeGradeLevel, probeActivity, wordSoundsProbeForm),
       "aria-label": t('common.run_benchmark_probe'),
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-500 text-white rounded-lg font-bold text-sm hover:from-violet-600 hover:to-purple-600 transition-all shadow-md"
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-700 to-purple-700 text-white rounded-lg font-bold text-sm hover:from-violet-800 hover:to-purple-800 transition-all shadow-md"
     }, "\u25B6 Start Battery")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
@@ -7158,7 +7158,7 @@ try {
         onLaunchMathProbe(grade, form, mathProbeStudent || null);
       },
       "aria-label": "Start math probe",
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-700 to-amber-700 text-white rounded-lg font-bold text-sm hover:from-orange-800 hover:to-amber-800 transition-all shadow-md"
     }, "\u25B6 Start Math Probe")), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 text-[11px] text-slate-600 font-semibold"
     }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : probeBanksReady ? "— No math probe bank for this grade / form yet" : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
@@ -7372,10 +7372,10 @@ try {
         className: "flex items-center justify-center gap-4"
       }, /*#__PURE__*/React.createElement("button", {
         onClick: () => markWord(true),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
       }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
         onClick: () => markWord(false),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-bold text-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-lg shadow-red-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
       }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
           if (nwfProbeIndex + 1 < nwfProbeWords.length) {
@@ -7457,7 +7457,7 @@ try {
         });
         addToast(t('toasts.nwf_results_saved') + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-emerald-700 text-white rounded-lg font-bold text-sm hover:bg-emerald-800 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"),
     renderProbeInterpretation('nwf_cls', nwfProbeResults.cls, nwfProbeGrade, getSeason(), nwfProbeResults),
     /*#__PURE__*/React.createElement("button", {
@@ -7549,10 +7549,10 @@ try {
         className: "flex items-center justify-center gap-4"
       }, /*#__PURE__*/React.createElement("button", {
         onClick: () => markLetter(true),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
       }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
         onClick: () => markLetter(false),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-bold text-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-lg shadow-red-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
       }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
           if (lnfProbeIndex + 1 < lnfProbeLetters.length) {
@@ -7744,10 +7744,10 @@ try {
         className: "flex items-center justify-center gap-4"
       }, /*#__PURE__*/React.createElement("button", {
         onClick: () => markItem(true),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg shadow-green-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-xl font-bold text-lg hover:from-green-800 hover:to-emerald-800 transition-all shadow-lg shadow-green-200 active:scale-95"
       }, "\u2705 Correct"), /*#__PURE__*/React.createElement("button", {
         onClick: () => markItem(false),
-        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-bold text-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-lg shadow-red-200 active:scale-95"
+        className: "flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-red-700 to-rose-700 text-white rounded-xl font-bold text-lg hover:from-red-800 hover:to-rose-800 transition-all shadow-lg shadow-red-200 active:scale-95"
       }, "\u274C Incorrect"), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
           if (ranProbeIndex + 1 < ranProbeItems.length) {
@@ -7829,7 +7829,7 @@ try {
         });
         addToast(t('toasts.ran_results_saved') + mathProbeStudent, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-amber-700 text-white rounded-lg font-bold text-sm hover:bg-amber-800 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"), /*#__PURE__*/React.createElement("button", {
       onClick: () => printClinicalProbeReport('ran', ranProbeResults, ranProbeGrade, ranForm, mathProbeStudent),
       className: "w-full mt-1 px-4 py-1.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-100 transition-colors"
@@ -7891,7 +7891,7 @@ try {
         };
         setOrfProbeWords(updated);
       },
-      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${item.error ? 'bg-red-200 text-red-700 line-through font-bold' : 'bg-transparent hover:bg-rose-100 text-slate-800'}`
+      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${item.error ? 'bg-red-200 text-red-800 line-through font-bold' : 'bg-transparent hover:bg-rose-100 text-slate-800'}`
     }, item.word))), /*#__PURE__*/React.createElement("div", {
       className: "text-center text-xs text-slate-600"
     }, /*#__PURE__*/React.createElement("span", {
@@ -7924,7 +7924,7 @@ try {
         });
         setOrfProbeActive(false);
       },
-      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 hover:bg-amber-200 hover:ring-2 hover:ring-amber-400 ${item.error ? 'bg-red-200 text-red-700 line-through' : 'bg-transparent text-slate-800'}`
+      className: `inline-flex min-w-8 min-h-8 items-center justify-center border-0 cursor-pointer px-1 py-0.5 mx-0.5 my-0.5 rounded text-lg transition-all select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 hover:bg-amber-200 hover:ring-2 hover:ring-amber-400 ${item.error ? 'bg-red-200 text-red-800 line-through' : 'bg-transparent text-slate-800'}`
     }, item.word)))) : null), orfProbeResults && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200 p-4",
       "data-probe-results": "orf"
@@ -8111,7 +8111,7 @@ try {
         }, 1000);
         setTimeout(() => mnProbeInputRef.current?.focus(), 100);
       },
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-bold text-sm hover:from-purple-600 hover:to-indigo-600 transition-all shadow-md"
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 text-white rounded-lg font-bold text-sm hover:from-purple-800 hover:to-indigo-800 transition-all shadow-md"
     }, "\u25B6 Start Missing Number")), mnProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-purple-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -8355,7 +8355,7 @@ try {
           });
         }, 1000);
       },
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-sky-500 text-white rounded-lg font-bold text-sm hover:from-cyan-600 hover:to-sky-600 transition-all shadow-md"
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-700 to-sky-700 text-white rounded-lg font-bold text-sm hover:from-cyan-800 hover:to-sky-800 transition-all shadow-md"
     }, "\u25B6 Start QD Probe")), qdProbeActive && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
     }, /*#__PURE__*/React.createElement("div", {
@@ -8491,7 +8491,7 @@ try {
         });
         addToast(`QD results saved for ${mathProbeStudent}`, 'success');
       },
-      className: "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-600 transition-colors"
+      className: "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-800 transition-colors"
     }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
@@ -8598,7 +8598,7 @@ try {
     }, /*#__PURE__*/React.createElement("button", {
       onClick: generateRTICSV,
       "aria-label": t('common.export_rti_progress_report_as_csv'),
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-bold text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md"
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg font-bold text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md"
     }, "\uD83D\uDCCA Export RTI Report"), /*#__PURE__*/React.createElement("span", {
       className: "text-xs text-slate-600"
     }, "Download CSV with practice review groups, metrics, and educator-review suggestions")), importedStudents.length === 0 ? /*#__PURE__*/React.createElement("div", {
@@ -8747,7 +8747,7 @@ try {
       }, af.map((f, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
         title: f.detail,
-        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-600'}`
+        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
       }, f.icon, " ", f.label)));
     })()))))))), selectedStudent && /*#__PURE__*/React.createElement("div", {
       className: "absolute inset-0 bg-white flex flex-col"
@@ -8768,7 +8768,7 @@ try {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => generateStudentProgressReport(selectedStudent),
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-bold text-sm hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md",
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-700 to-purple-700 text-white rounded-lg font-bold text-sm hover:from-indigo-800 hover:to-purple-800 transition-all shadow-md",
       "data-help-key": "dashboard_print_parent_report",
       "aria-label": t('common.print_parent_friendly_progress_report')
     }, /*#__PURE__*/React.createElement(Printer, {
@@ -8789,7 +8789,7 @@ try {
         },
         studentName: selectedStudent.name
       }),
-      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-bold text-sm hover:from-amber-600 hover:to-orange-600 transition-all shadow-md",
+      className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white rounded-lg font-bold text-sm hover:from-amber-800 hover:to-orange-800 transition-all shadow-md",
       title: "Download a growth-focused report suitable for sharing with the student"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 14
@@ -9293,7 +9293,7 @@ try {
           style: {
             fontSize: '11px',
             fontWeight: 700,
-            color: '#dc2626',
+            color: '#991b1b',
             background: '#fee2e2',
             padding: '6px 10px',
             borderRadius: '6px',
@@ -9303,7 +9303,7 @@ try {
           style: {
             fontSize: '11px',
             fontWeight: 700,
-            color: '#d97706',
+            color: '#92400e',
             background: '#fef9c3',
             padding: '6px 10px',
             borderRadius: '6px',
@@ -9323,7 +9323,7 @@ try {
           style: {
             fontSize: '11px',
             fontWeight: 700,
-            color: '#16a34a',
+            color: '#166534',
             background: '#dcfce7',
             padding: '6px 10px',
             borderRadius: '6px',
@@ -9982,11 +9982,11 @@ try {
         importedStudents.length > 0 && React.createElement(React.Fragment, null,
           React.createElement("button", {
             onClick: handleExportCSV,
-            className: "bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className: "bg-emerald-700 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Download, { size: 16 }), t('class_analytics.export_csv')),
           React.createElement("button", {
             onClick: exportScreeningCSV,
-            className: "bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+            className: "bg-teal-700 hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Download, { size: 16 }), "Screening CSV"),
           React.createElement("button", {
             onClick: generateRTICSV,
@@ -10137,7 +10137,7 @@ try {
                           ),
                           student.importedName && student.importedName !== student.name && React.createElement("div", { className: "text-[10px] text-slate-500 mt-0.5" }, (t('class_analytics.imported_as') || 'was: ') + student.importedName)
                         )
-                      : React.createElement("span", { className: "text-xs text-slate-400" }, '\u2014')
+                      : React.createElement("span", { className: "text-xs text-slate-600" }, '\u2014')
                   )
                 );
               })
@@ -10293,14 +10293,14 @@ try {
     }, "|"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-slate-700"
     }, researchStudent),
-    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
-    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
+    React.createElement("button", { onClick: function() { printMeetingSummary(researchStudent); }, className: "ml-auto px-3 py-1.5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-1" }, "\uD83D\uDCCB Meeting Summary"),
+    React.createElement("button", { onClick: function() { try { var meta = window.AlloModules && window.AlloModules.StudentAnalytics && window.AlloModules.StudentAnalytics._meta; if (meta && typeof meta.buildReportWriterExport === 'function') meta.buildReportWriterExport(researchStudent); if (typeof openReportWriter === 'function') { if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false); openReportWriter(); addToast(t('toasts.sent_to_report_writer') || 'Sent to Report Writer \u2014 click Ingest to build the IEP packet.', 'success'); } else { addToast('Report Writer is not available in this build.', 'warning'); } } catch (e) {} }, className: "px-3 py-1.5 bg-gradient-to-r from-emerald-700 to-teal-700 text-white rounded-lg text-xs font-bold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-sm flex items-center gap-1", title: "Send this student's RTI/CBM data to the Report Writer to build an IEP-ready packet" }, "\uD83E\uDDFE Send to Report Writer")),
     renderInsightsPanel(researchStudent), renderProbeProgressSummary(researchStudent), typeof renderScatterPlot === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "mt-4 bg-white rounded-xl border border-slate-400 p-4"
     }, /*#__PURE__*/React.createElement("h5", {
       className: "text-xs font-bold text-slate-600 uppercase mb-3"
     }, "\uD83D\uDCC8 Practice vs Outcome"), renderScatterPlot())) : /*#__PURE__*/React.createElement("div", null,
-    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
+    importedStudents.length > 0 && React.createElement("div", { className: "mb-3 flex justify-end" }, React.createElement("button", { onClick: printClassScreeningReport, className: "px-4 py-2 bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-lg text-xs font-bold hover:from-indigo-700 hover:to-violet-700 transition-all shadow-sm flex items-center gap-2" }, "\uD83C\uDFEB Print Class Screening Report")),
     typeof renderClassInsights === 'function' && renderClassInsights(), /*#__PURE__*/React.createElement("div", {
       className: "mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
     }, importedStudents.map(s => {
@@ -10317,7 +10317,7 @@ try {
       }, anomalyFlags.map((f, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
         title: f.detail,
-        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-600'}`
+        className: `inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold ${f.severity === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-50 text-blue-800'}`
       }, f.icon, " ", f.label))), /*#__PURE__*/React.createElement("div", {
         className: "text-xs text-slate-600 mt-1"
       }, "View insights \u2192"));

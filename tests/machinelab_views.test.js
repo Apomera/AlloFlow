@@ -20,6 +20,29 @@ beforeEach(() => {
   loadTool(FILE, 'machineLab');
 });
 
+// Six cases below assert how this tool DEGRADES when no 3D viewer is available.
+// They used to get that for free, because the smoke harness had no
+// makeOrbitViewer at all. It has one now (titration crashes without it), so the
+// absence has to be stated rather than inherited - otherwise these cases quietly
+// start testing the 3D path and their names stop being true.
+//
+// The viewer is captured at MODULE LOAD (SHOP_GL / TREB_GL in the tool), not per
+// render, so the method has to be gone BEFORE loadTool - removing it around the
+// render call is too late and changes nothing.
+function withoutOrbitViewer(run) {
+  const host = window.StemLab;
+  const had = Object.prototype.hasOwnProperty.call(host, 'makeOrbitViewer');
+  const saved = host.makeOrbitViewer;
+  delete host.makeOrbitViewer;
+  try {
+    loadTool(FILE, 'machineLab');   // re-load so the tool sees no viewer
+    return run();
+  } finally {
+    if (had) host.makeOrbitViewer = saved;
+    loadTool(FILE, 'machineLab');   // leave the shared registry as we found it
+  }
+}
+
 describe('Machine Lab: every view renders at every band', () => {
   for (const view of VIEWS) {
     for (const band of BANDS) {
@@ -101,7 +124,7 @@ describe('Machine Lab: the siege view', () => {
   });
 
   it('offers a 3D wall and degrades to the diagram when WebGL is absent', () => {
-    const html = renderTool('machineLab', state({ view: 'siege' }));
+    const html = withoutOrbitViewer(() => renderTool('machineLab', state({ view: 'siege' })));
     expect(html).toContain('3D wall unavailable');
     // The 2D diagram and the course table are unaffected by the 3D failing.
     expect(html).toContain('<rect');
@@ -120,10 +143,11 @@ describe('Machine Lab: the siege view', () => {
 
 describe('Machine Lab: the build view', () => {
   it('shows the 3D container and degrades honestly when WebGL is absent', () => {
-    // The smoke harness does not stub makeOrbitViewer, so the tool takes its
-    // host-too-old path. That is exactly the degradation students on a locked
-    // down Chromebook get, and every number must survive it.
-    const html = renderTool('machineLab', state({ view: 'build' }));
+    // The harness DOES stub makeOrbitViewer now, so the absence is stated here
+    // rather than assumed. The tool then takes its host-too-old path - exactly
+    // the degradation students on a locked-down Chromebook get, and every number
+    // must survive it.
+    const html = withoutOrbitViewer(() => renderTool('machineLab', state({ view: 'build' })));
     expect(html).toContain('3D view unavailable');
     expect(html).toContain('Energy ledger');
     expect(html).toContain('Stored in the raised counterweight');
@@ -545,7 +569,7 @@ describe('Machine Lab: illustrated station navigation',()=>{
 
 describe('Machine Lab: slow playback control',()=>{
   for(const band of BANDS)for(const running of [false,true])it('shows the slow option at '+band+' running '+running,()=>{
-    const doc=new DOMParser().parseFromString(renderTool('machineLab',state({bandOverride:band,shopSlowMotion:true,shopAnimating:running,shopDemoDuration:6600})),'text/html');
+    const doc=new DOMParser().parseFromString(withoutOrbitViewer(()=>renderTool('machineLab',state({bandOverride:band,shopSlowMotion:true,shopAnimating:running,shopDemoDuration:6600}))),'text/html');
     const label=[...doc.querySelectorAll('label')].find(l=>l.textContent==='Slow motion');expect(label).toBeTruthy();expect(label.title).toContain('three times slower');const input=label.querySelector('input');expect(input.type).toBe('checkbox');expect(input.checked).toBe(true);expect(input.disabled).toBe(true); // No WebGL in this render fixture; live browser checks cover enabled playback.
     expect(doc.querySelector('.ml-shop-hud').textContent.includes('Watch in slow motion')).toBe(running);
   });

@@ -58,7 +58,8 @@ function evidenceSchemaApi() {
       normalizeCareerMatch,
       normalizeActionPlan,
       normalizeServiceCalls,
-      normalizeGeneGoals
+      normalizeGeneGoals,
+      normalizeCostCommit
     }; })()`,
     {
       AI_SCENARIOS: [{ id: 'family-pick' }, { id: 'cat-litter' }],
@@ -70,6 +71,10 @@ function evidenceSchemaApi() {
         { id: 'a', claim: 'A', verdict: true, note: 'NA', source: 'SA' },
       ],
       MYTH_CHECK_ORDER: ['m0', 't0', 'm1'],
+      COST_COMMITMENTS: [
+        { id: 'monthly', options: [{ id: 'comfortably' }, { id: 'no' }] },
+        { id: 'emergency', options: [{ id: 'saved' }, { id: 'cant' }] },
+      ],
       PUNNETT_GOALS: [{ id: 'blackToYellow' }, { id: 'nineThreeFour' }],
       SERVICE_CASES: [
         { id: 'noVest', options: [{ id: 'ask2', verdict: 'best' }, { id: 'papers', verdict: 'miss' }] },
@@ -150,6 +155,7 @@ function persistenceApi() {
     normalizeActionPlan: EVIDENCE_API.normalizeActionPlan,
     normalizeServiceCalls: EVIDENCE_API.normalizeServiceCalls,
     normalizeGeneGoals: EVIDENCE_API.normalizeGeneGoals,
+    normalizeCostCommit: EVIDENCE_API.normalizeCostCommit,
     PUNNETT_GOALS: [{ id: 'blackToYellow' }, { id: 'nineThreeFour' }],
     normalizeTrainerState: guards.normalizeTrainerState,
     normalizeCareSimState: (value) => value,

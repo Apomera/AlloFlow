@@ -376,7 +376,7 @@ function FamilyAnnouncementsPanel(props) {
                     return (
                       <button key={lang.tag} type="button" aria-pressed={on} onClick={() => toggleLang(lang.tag)}
                         className={'min-h-9 px-2.5 py-1 rounded-full border text-xs font-bold ' + (on ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
-                        {lang.native} <span className={'font-normal ' + (on ? 'text-indigo-100' : 'text-slate-400')}>{lang.name}</span>
+                        {lang.native} <span className={'font-normal ' + (on ? 'text-indigo-100' : 'text-slate-600')}>{lang.name}</span>
                       </button>
                     );
                   })}
@@ -392,7 +392,7 @@ function FamilyAnnouncementsPanel(props) {
                 ) : (
                   <p className="text-[10px] text-slate-500 self-center">{tt('famann.no_ai', 'AI translation is unavailable in this host — paste translations into each language box below.')}</p>
                 )}
-                <button type="button" onClick={saveAnnouncement} className="min-h-11 px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700">{tt('famann.save', 'Save announcement')}</button>
+                <button type="button" onClick={saveAnnouncement} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{tt('famann.save', 'Save announcement')}</button>
               </div>
 
               {selectedLangs.length > 0 && (
@@ -479,7 +479,7 @@ function FamilyAnnouncementsPanel(props) {
                         <span className="block font-bold text-sm text-slate-800">{a.title}</span>
                         <span className="block text-[10px] text-slate-500">{a.date} · {(a.langTags || []).length} {tt('famann.langs_short', 'language(s)')}</span>
                       </span>
-                      <span aria-hidden="true" className="shrink-0 text-slate-400">›</span>
+                      <span aria-hidden="true" className="shrink-0 text-slate-600">›</span>
                     </button>
                   </li>
                 ))}

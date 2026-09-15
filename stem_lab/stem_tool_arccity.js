@@ -204,7 +204,7 @@
       stages: ['L1', 'L3', 'L4', 'L5', 'L7', 'L8', 'L9'],
       world: { x0: 0, x1: 10, y0: 0, y1: 8 }, walls: [], gates: [], node: { x: 5, y: 4, r: 0.5 }, dx: 0.05,
       paramOrder: [], params: {},
-      hint: 'The Gauntlet: one challenge from every function family, ordered to put your weakest first. Re-light a node with each — line, parabola, V, sine, exponential, logarithm, and cubic — to win.'
+      hint: 'The Gauntlet: one challenge from each function family you have already solved, ordered to put your weakest first. Re-light a node with each to win. Solve more families on their own — exponential, logarithm, cubic — and a fresh run will include those too.'
     },
     {
       // ── Re-Target Yards (Transformations world, design §5 / HSF-BF.B.3). A new
@@ -1027,7 +1027,7 @@
   }
 
   function describeBoard(level) {
-    if (level.family === 'gauntlet') return 'Arc City, ' + level.title + ': an adaptive capstone — one challenge from every function family, weakest first.';
+    if (level.family === 'gauntlet') return 'Arc City, ' + level.title + ': an adaptive capstone — one challenge from each function family you have solved, weakest first.';
     if (level.goal === 'match') {
       var freeP = (level.paramOrder || []).filter(function (n) { return !(level.params[n] && level.params[n].locked); });
       var lockedP = (level.paramOrder || []).filter(function (n) { return level.params[n] && level.params[n].locked; });
@@ -1091,7 +1091,14 @@
     { id: 'tilt-threader', label: 'Tilt Threader — passed a tilted slope-gate at the right angle' },
     { id: 'sharp-shooter', label: 'Sharp Shooter — lit a node on the first shot' },
     { id: 'independent', label: 'Independent — solved with the preview hidden' },
-    { id: 'grand-tour', label: 'Grand Tour — re-lit a node with every function family in the Gauntlet' }
+    // "every family you had solved", NOT "every family". The Gauntlet is
+    // deliberately right-sized: gauntletOrder() sequences only the families the
+    // player has already solved standalone (>= GAUNTLET_MIN_FAMILIES = 4), so a
+    // core-path student who skips the above-grade reach levels (exp, log, poly)
+    // completes a genuine 4-of-7 run. The award logic is right; the old wording
+    // -- "every function family" -- claimed the other three, which is an
+    // overclaim on a badge a teacher may read as evidence.
+    { id: 'grand-tour', label: 'Grand Tour — completed a Gauntlet run, re-lighting a node with every function family you had solved' }
   ];
   function badgeLabel(id) { for (var i = 0; i < BADGES.length; i++) { if (BADGES[i].id === id) return BADGES[i].label; } return id; }
   // Returns the NEW badge ids earned by this solve (excludes already-earned).
@@ -1261,7 +1268,13 @@
 
   function levelStars(st) {
     if (!st || !st.solved) return 0;
-    if (st.flawless) return 3;
+    // ★★★ is "...AND", so read it as one: the write path only ever sets flawless
+    // on an independent solve, but this reads a SAVED record, and a corrupted or
+    // cross-version save carrying flawless WITHOUT independent produced a teacher
+    // row that said "independent: false" and "stars: 3" in the same breath —
+    // against a legend that defines ★★★ as "first try, preview-hidden". One
+    // derivation of the claim, so the row cannot contradict itself.
+    if (st.flawless && st.independent) return 3;
     if (st.independent) return 2;
     return 1;
   }
@@ -2602,6 +2615,11 @@
   function ArcCityPlay3D(props) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), packRef = React.useRef(null), sceneRef = React.useRef(props.scene);
+    // Fullscreen stage: the arena plus the caption and camera row beneath it, so
+    // the keyboard camera path survives. The canvas is width:100% with a
+    // minHeight, so it grows with the stage on its own.
+    var arcFsRef = React.useRef(null);
+    var arcFsState = React.useState(false), arcFs = arcFsState[0], setArcFs = arcFsState[1];
     sceneRef.current = props.scene;
     var statusHook = React.useState('loading'), status = statusHook[0], setStatus = statusHook[1];
     React.useEffect(function () {
@@ -2654,6 +2672,25 @@
       };
     }, []);
     React.useEffect(function () { if (packRef.current) arcSyncPlay3D(packRef.current, props.scene); }, [props.sig]);
+    React.useEffect(function () {
+      var el = arcFsRef.current;
+      if (!el || typeof MutationObserver !== 'function') return;
+      var sync = function () {
+        setArcFs(!!(el.hasAttribute('data-allo-fullscreen-active')
+          || document.fullscreenElement === el
+          || document.webkitFullscreenElement === el));
+      };
+      var mo = new MutationObserver(sync);
+      mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+      document.addEventListener('fullscreenchange', sync);
+      document.addEventListener('webkitfullscreenchange', sync);
+      sync();
+      return function () {
+        mo.disconnect();
+        document.removeEventListener('fullscreenchange', sync);
+        document.removeEventListener('webkitfullscreenchange', sync);
+      };
+    }, []);
     // The idle sway rewrites cam.theta from cam.baseTheta every frame, so baseTheta
     // is the knob to turn — writing theta directly would be undone on the next frame.
     function nudgeCam(dTheta, dPhi) {
@@ -2675,8 +2712,8 @@
         style: Object.assign({}, camBtnStyle, status !== 'ready' ? { opacity: 0.45, cursor: 'default' } : null)
       }, glyph);
     }
-    return h('div', { className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f' } },
-      h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, touchAction: 'pan-y', cursor: 'grab' } }),
+    return h('div', { ref: arcFsRef, 'data-allo-fs-stage': 'true', className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f', display: arcFs ? 'flex' : undefined, flexDirection: arcFs ? 'column' : undefined } },
+      h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, flex: arcFs ? '1 1 auto' : undefined, touchAction: 'pan-y', cursor: 'grab' } }),
       status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, color: '#e2e8f0', background: 'rgba(5,7,15,0.88)', textAlign: 'center', fontSize: 12 } }, status === 'unavailable' ? props.unavailableText : props.loadingText) : null,
       h('div', { style: { padding: '6px 10px', color: '#cbd5e1', fontSize: 11, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'space-between' } },
         h('span', { key: 'cap' }, props.captionText),
@@ -2685,7 +2722,14 @@
           camBtn('city3d-cam-right', camText.right, '\u25b6', 0.35, 0),
           camBtn('city3d-cam-up', camText.up, '\u25b2', 0, 0.12),
           camBtn('city3d-cam-down', camText.down, '\u25bc', 0, -0.12),
-          camBtn('city3d-cam-reset', camText.reset, '\u21ba', null, 0)),
+          camBtn('city3d-cam-reset', camText.reset, '\u21ba', null, 0),
+          h('button', {
+            key: 'city3d-fs', type: 'button',
+            onClick: function () { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(arcFsRef.current); },
+            'aria-pressed': arcFs ? 'true' : 'false',
+            'aria-label': arcFs ? 'Exit fullscreen 3D arena (Escape)' : 'View the 3D arena fullscreen',
+            style: camBtnStyle
+          }, h('span', { 'aria-hidden': 'true' }, arcFs ? '✕' : '⛶'))),
         h('span', { key: 'hint', 'aria-hidden': 'true', style: { opacity: 0.75 } }, props.orbitHintText)));
   }
 
@@ -2920,7 +2964,7 @@
             if (gauntlet) {
               msg += gauntlet.idx < gauntlet.total - 1
                 ? ' ' + t('arccity.stage_cleared', 'Stage cleared — press Next challenge.')
-                : ' ' + t('arccity.gauntlet_complete', 'Gauntlet complete — you re-lit a node with every function family!');
+                : ' ' + t('arccity.gauntlet_complete', 'Gauntlet complete — you re-lit a node with every function family you had solved!');
             } else if (lIdx < LEVELS.length - 1) {
               msg += ' ' + t('arccity.unlocked', 'Next level unlocked!');
             }
@@ -4331,7 +4375,7 @@
           ? (gauntlet.idx < gauntlet.total - 1
             ? h('button', { key: 'gnext', type: 'button', onClick: advanceGauntlet, 'aria-label': t('arccity.next_challenge_aria', 'Next challenge — advance to the next function family in the Gauntlet'), style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'rgba(34,211,238,0.15)', color: INK, fontSize: 14, fontWeight: 800, cursor: 'pointer' } }, t('arccity.next_challenge', 'Next challenge →'))
             : h('div', { key: 'gdonewrap', style: { marginTop: 12 } },
-              h('div', { key: 'gdone', role: 'status', style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK, fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet_done', 'Gauntlet complete — every function family used to re-light a node!')),
+              h('div', { key: 'gdone', role: 'status', style: { padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(52,211,153,0.12)', color: INK, fontSize: 14, fontWeight: 800 } }, '🏆 ' + t('arccity.gauntlet_done', 'Gauntlet complete — you re-lit a node with every function family you had solved!')),
               h('button', { key: 'grestart', type: 'button', onClick: resetGauntlet, 'aria-label': t('arccity.restart_gauntlet_aria', 'Restart the Gauntlet — clear this run and start a fresh adaptive sequence'), style: { marginTop: 10, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + BEAM, background: 'transparent', color: INK, fontSize: 13, fontWeight: 700, cursor: 'pointer' } }, '🔄 ' + t('arccity.restart_gauntlet', 'Restart Gauntlet (fresh adaptive run)'))))
           : null;
 

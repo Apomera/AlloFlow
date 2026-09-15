@@ -457,12 +457,12 @@ const _ConnectionsSection = ({ value, onChange, hint, t }) => {
 };
 const _GetFeedbackButton = ({ onClick, isLoading, disabled, t, colorClass = "emerald" }) => {
   const palette = {
-    emerald: "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700",
-    sky: "bg-sky-600 hover:bg-sky-700 text-white border-sky-700",
+    emerald: "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700",
+    sky: "bg-sky-700 hover:bg-sky-800 text-white border-sky-700",
     violet: "bg-violet-600 hover:bg-violet-700 text-white border-violet-700",
     rose: "bg-rose-600 hover:bg-rose-700 text-white border-rose-700",
-    cyan: "bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-700"
-  }[colorClass] || "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-700";
+    cyan: "bg-cyan-700 hover:bg-cyan-800 text-white border-cyan-700"
+  }[colorClass] || "bg-emerald-700 hover:bg-emerald-800 text-white border-emerald-700";
   return /* @__PURE__ */ React.createElement("div", { className: "flex justify-center pt-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1088,12 +1088,12 @@ const _entryKind = (entry) => {
 const _accentClasses = (accent, kind) => {
   const map = {
     indigo: { chip: "bg-indigo-600 text-white border-indigo-700", chipOff: "bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50", badge: "bg-indigo-100 text-indigo-800 border-indigo-300", bar: "bg-indigo-500" },
-    sky: { chip: "bg-sky-600 text-white border-sky-700", chipOff: "bg-white text-sky-700 border-sky-300 hover:bg-sky-50", badge: "bg-sky-100 text-sky-800 border-sky-300", bar: "bg-sky-500" },
+    sky: { chip: "bg-sky-700 text-white border-sky-700", chipOff: "bg-white text-sky-700 border-sky-300 hover:bg-sky-50", badge: "bg-sky-100 text-sky-800 border-sky-300", bar: "bg-sky-500" },
     violet: { chip: "bg-violet-600 text-white border-violet-700", chipOff: "bg-white text-violet-700 border-violet-300 hover:bg-violet-50", badge: "bg-violet-100 text-violet-800 border-violet-300", bar: "bg-violet-500" },
-    amber: { chip: "bg-amber-600 text-white border-amber-700", chipOff: "bg-white text-amber-800 border-amber-300 hover:bg-amber-50", badge: "bg-amber-100 text-amber-900 border-amber-300", bar: "bg-amber-500" },
+    amber: { chip: "bg-amber-700 text-white border-amber-700", chipOff: "bg-white text-amber-800 border-amber-300 hover:bg-amber-50", badge: "bg-amber-100 text-amber-900 border-amber-300", bar: "bg-amber-500" },
     rose: { chip: "bg-rose-600 text-white border-rose-700", chipOff: "bg-white text-rose-700 border-rose-300 hover:bg-rose-50", badge: "bg-rose-100 text-rose-800 border-rose-300", bar: "bg-rose-500" },
-    emerald: { chip: "bg-emerald-600 text-white border-emerald-700", chipOff: "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", bar: "bg-emerald-500" },
-    cyan: { chip: "bg-cyan-600 text-white border-cyan-700", chipOff: "bg-white text-cyan-700 border-cyan-300 hover:bg-cyan-50", badge: "bg-cyan-100 text-cyan-800 border-cyan-300", bar: "bg-cyan-500" },
+    emerald: { chip: "bg-emerald-700 text-white border-emerald-700", chipOff: "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", bar: "bg-emerald-500" },
+    cyan: { chip: "bg-cyan-700 text-white border-cyan-700", chipOff: "bg-white text-cyan-700 border-cyan-300 hover:bg-cyan-50", badge: "bg-cyan-100 text-cyan-800 border-cyan-300", bar: "bg-cyan-500" },
     slate: { chip: "bg-slate-700 text-white border-slate-800", chipOff: "bg-white text-slate-700 border-slate-300 hover:bg-slate-50", badge: "bg-slate-100 text-slate-700 border-slate-300", bar: "bg-slate-500" }
   };
   return (map[accent] || map.slate)[kind] || "";

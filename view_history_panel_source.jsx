@@ -1066,7 +1066,7 @@ function HistoryPanel(props) {
                     {(unitFilteredHistory.length > 0 || isResourceFilterActive) && (
                         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" role="search" aria-label={t('history.find_resources_aria')}>
                             <div className="relative min-w-[150px] flex-1">
-                                <Search size={14} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <Search size={14} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" />
                                 <input type="search" value={resourceSearch} onChange={(e) => setResourceSearch(e.target.value)} placeholder={t('history.search_resources_placeholder')} aria-label={t('history.search_resources_aria')} className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
                                 {resourceSearch && (
                                     <button type="button" onClick={() => setResourceSearch('')} aria-label={t('history.clear_resource_search_aria')} className="absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900">

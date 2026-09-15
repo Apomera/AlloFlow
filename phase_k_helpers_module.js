@@ -2435,7 +2435,7 @@ const formatInlineText = (text, enableGlossary = true, isDarkBg = false, deps) =
       return /* @__PURE__ */ React.createElement("mark", { key: pIdx, className: "bg-yellow-200 text-indigo-900 px-0.5 rounded" }, renderedSubParts);
     }
     if (isCode) {
-      return /* @__PURE__ */ React.createElement("code", { key: pIdx, className: "bg-slate-100 text-pink-600 px-1 rounded font-mono text-xs border border-slate-400" }, renderedSubParts);
+      return /* @__PURE__ */ React.createElement("code", { key: pIdx, className: "bg-slate-100 text-pink-700 px-1 rounded font-mono text-xs border border-slate-400" }, renderedSubParts);
     }
     return /* @__PURE__ */ React.createElement("span", { key: pIdx, className: "whitespace-pre-line" }, renderedSubParts);
   });

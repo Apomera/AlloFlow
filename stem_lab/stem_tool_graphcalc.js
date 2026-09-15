@@ -920,7 +920,23 @@
             ),
 
             // Center — Canvas
-            h('div', { className: 'graphcalc-main-panel', style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
+            // The fullscreen stage is this panel, not the bare canvas: the trace
+            // readout and trace slider below the graph are what make the picture
+            // legible to a learner who cannot read values off the curve, so they
+            // have to come along. __alloStemFsBind keeps the button's label and
+            // aria-pressed in step with the stage (this tool holds no React state).
+            h('div', { className: 'graphcalc-main-panel', 'data-allo-fs-stage': 'true',
+              ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-graphcalc-fs]'), node); },
+              style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
+              h('button', {
+                type: 'button',
+                'data-graphcalc-fs': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.graphcalc.enter_fullscreen', 'View the graph fullscreen'),
+                'data-fs-out': __alloT('stem.graphcalc.enter_fullscreen', 'View the graph fullscreen'),
+                'data-fs-in': __alloT('stem.graphcalc.exit_fullscreen', 'Exit fullscreen graph (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + gcBorder, color: gcText, fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'graphcalc-canvas-desc', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default', touchAction: d.traceMode ? 'none' : 'auto' },
                 onPointerDown: function(e) { if (!d.traceMode) return; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} updateTraceFromPointer(e); },
                 onPointerMove: function(e) { if (!d.traceMode || (e.pointerType === 'mouse' && e.buttons !== 1)) return; updateTraceFromPointer(e); } }), h('p', { id: 'graphcalc-canvas-desc', className: 'sr-only' }, __alloT('stem.graphcalc.a11y_canvas_static_description', 'The graph is drawn as a picture. Turn on Trace mode and use the Trace x slider to read each point of the curve aloud as a number.')),

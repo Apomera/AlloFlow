@@ -2675,9 +2675,15 @@
           return h('span', { key: key, style: style });
         });
 
-        return h('div', { className: 'relative w-full', style: { maxWidth: '520px' } },
-          h('div', { className: 'grid gap-0', style: { gridTemplateColumns: 'repeat(12, 1fr)' } }, cells),
-          h('div', { 'aria-hidden': 'true', className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)
+        // The parcel cells are buttons, and the app's phone stylesheet gives every button a 44 px minimum, so
+        // twelve columns need 528 px: on a phone the whole STEAM Lab page scrolled sideways by 179 px (real-shell
+        // sweep, 2026-09-15). The map now scrolls inside its own box; the boundary lines stay inside the sized
+        // wrapper so their percentages still line up with the cells.
+        return h('div', { className: 'w-full overflow-x-auto', style: { WebkitOverflowScrolling: 'touch' } },
+          h('div', { className: 'relative', style: { width: 'max-content', minWidth: '100%', maxWidth: '528px' } }, // 12 columns x the 44 px touch minimum
+            h('div', { className: 'grid gap-0', style: { gridTemplateColumns: 'repeat(12, 1fr)' } }, cells),
+            h('div', { 'aria-hidden': 'true', className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)
+          )
         );
       }
 

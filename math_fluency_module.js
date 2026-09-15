@@ -2177,7 +2177,7 @@
               h('button', { 'aria-label': tt('math_fluency.skip_problem', 'Skip problem'),
                 type: 'button', onClick: function () { submitAnswer(true); },
                 style: {
-                  padding: '12px 24px', background: '#e2e8f0', color: '#64748b',
+                  padding: '12px 24px', background: '#e2e8f0', color: '#475569',
                   fontWeight: 800, borderRadius: '12px', fontSize: '1.1rem',
                   border: 'none', cursor: 'pointer'
                 }
@@ -2540,7 +2540,7 @@
           ) : h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'),
             type: 'button', onClick: function () { setConfirmClearHistory(true); },
             style: {
-              padding: '10px 16px', background: '#f1f5f9', color: '#64748b',
+              padding: '10px 16px', background: '#f1f5f9', color: '#475569',
               fontWeight: 700, borderRadius: '12px', fontSize: '14px',
               border: 'none', cursor: 'pointer'
             }
@@ -2820,7 +2820,7 @@
         } else {
           text = tr(describePracticeSet(gradeLevel, operation, difficulty)) + ' ' + tt('math_fluency.no_reference_summary', 'Practice score only. No instructional reference is available for this grade or operation.');
         }
-        return h('div', { role: 'note', style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', border: '1px solid #fef3c7', fontSize: '12px', color: '#64748b' } }, text);
+        return h('div', { role: 'note', style: { background: '#fff', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', border: '1px solid #fef3c7', fontSize: '12px', color: '#475569' } }, text);
       })(),
 
       (function () {

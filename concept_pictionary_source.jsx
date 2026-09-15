@@ -2406,7 +2406,7 @@ const PictionaryHostView = React.memo((props) => {
                     <span className="italic">— ended without a winner</span>
                   )}
                   <div className="mt-2">
-                    <button type="button" onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-600 text-white hover:bg-emerald-700">Set up next round →</button>
+                    <button type="button" onClick={handleResetForNextRound} className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-700 text-white hover:bg-emerald-800">Set up next round →</button>
                   </div>
                 </div>
               ) : null}
@@ -2429,7 +2429,7 @@ const PictionaryHostView = React.memo((props) => {
                         <span className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0" title="Looks like the concept — your call">≈ match?</span>
                       )}
                       {roundActive && g.marked == null ? (
-                        <button type="button" onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-600 text-white hover:bg-emerald-700">✓ correct</button>
+                        <button type="button" onClick={() => handleMarkCorrect(g.id)} className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-700 text-white hover:bg-emerald-800">✓ correct</button>
                       ) : g.marked === 'correct' ? (
                         <span className="text-[10px] font-bold text-emerald-700">✓</span>
                       ) : null}
@@ -3169,7 +3169,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
               <button type="button"
                 onClick={handleSubmitGuess}
                 disabled={!guessText.trim() || !!activeRound.isPaused || connState !== 'connected'}
-                className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
+                className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40"
               >Send</button>
             </div>
           ) : null}

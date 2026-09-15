@@ -1586,6 +1586,68 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
     }
     throw lastError;
 }
+// Download every slice of a mailbox-hosted pack and return the assembled
+// string. Part 1 is fetched alone because its reply carries `of` (the total
+// slice count); the remainder are then fetched CONCURRENTLY, which is the
+// whole point of this helper. The previous shape awaited each slice before
+// requesting the next, so a 7-slice pack cost 7 serial Apps Script round
+// trips (~0.4-1.5s each) before a student saw anything.
+//
+// Concurrency is capped deliberately. getpack's server-side rate limit is
+// keyed on pack id + secret (r:pack:<id>:<k>), NOT on the participant, so an
+// entire class shares one 120-reads-per-minute budget for the same pack. An
+// unbounded Promise.all over a 40-slice pack would burn that budget and hand
+// every student a rate-limited error, which is strictly worse than being slow.
+// Four in flight keeps a 30-student class well inside the budget while still
+// collapsing the serial chain.
+//
+// `call` is injected so each site keeps its own transport: the live-session
+// path passes the plain call (its hydration coordinator owns retries and
+// cancellation), the homework path passes the retrying variant.
+// `assertOk` runs before and after every request so an aborted or superseded
+// download stops promptly instead of finishing work nobody will use.
+const ALLO_MB_PACK_FETCH_CONCURRENCY = 4;
+async function _alloFetchMailboxPackParts(call, baseParams, { assertOk = () => {}, onMeta = null } = {}) {
+    const readPart = async part => {
+        assertOk();
+        const res = await call({ ...baseParams, part });
+        assertOk();
+        // Every slice must agree on `of` and carry string data. A mismatch means
+        // the pack was republished mid-download and the slices we hold are a mix
+        // of two generations; assembling them would yield silent corruption.
+        if (!res || !Number.isSafeInteger(res.of) || res.of < 1 || typeof res.data !== 'string') {
+            throw new Error('Mailbox pack parts were incomplete or inconsistent');
+        }
+        return res;
+    };
+    const first = await readPart(1);
+    const of = first.of;
+    if (onMeta) onMeta(first);
+    const slices = new Array(of);
+    slices[0] = first.data;
+    let next = 2;
+    const worker = async () => {
+        for (;;) {
+            const part = next;
+            next += 1;
+            if (part > of) return;
+            const res = await readPart(part);
+            if (res.of !== of) throw new Error('Mailbox pack parts were incomplete or inconsistent');
+            slices[part - 1] = res.data;
+            if (onMeta) onMeta(res);
+        }
+    };
+    const lanes = Math.max(1, Math.min(ALLO_MB_PACK_FETCH_CONCURRENCY, of - 1));
+    // Promise.all rejects on the first failure, matching the old loop's
+    // fail-fast behaviour; callers already treat a throw as "retry the whole
+    // hydration", so a partial set is never assembled.
+    if (of > 1) await Promise.all(Array.from({ length: lanes }, worker));
+    assertOk();
+    for (let i = 0; i < of; i += 1) {
+        if (typeof slices[i] !== 'string') throw new Error('Mailbox pack parts were incomplete or inconsistent');
+    }
+    return { assembled: slices.join(''), of, first };
+}
 // Poll cadence policy: jittered base, stretched when the session is idle,
 // backed off geometrically on errors, and parked while the tab is hidden.
 function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount = 0, hidden = false } = {}) {
@@ -14263,7 +14325,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=04d31c9c3');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=f869157c1');
     loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=04d31c9c3');
     loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=04d31c9c3');
     loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=04d31c9c3');
@@ -14673,6 +14735,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jun 2026: Lumen — provenance-bound reactive research canvas (9 honesty-gated chart
         // types). Pairs with the lumen tile (ready:true) + _pluginOnlyTools flag in stem_lab_module.js.
         'stem_lab/stem_lumen_evidence.js',
+        'stem_lab/stem_lumen_documents.js',
         'stem_lab/stem_lumen_study.js',
         'stem_lab/stem_tool_lumen.js',
         // Jul 2026 catch-up: cellular had registerTool + tile + PLUGIN_FILES
@@ -15004,7 +15067,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             'stem_lab/stem_tool_statslab.js': ['data_kernel_loader.js'],
             // Regression mode embeds Data Plotter, which in turn owns the kernel.
             'stem_lab/stem_tool_datastudio.js': ['stem_lab/stem_tool_dataplot.js'],
-            'stem_lab/stem_lumen_study.js': ['stem_lab/stem_lumen_evidence.js'],
+            // Optional to its consumer, so nothing threw while it never loaded: Import files stayed disabled.
+            'stem_lab/stem_lumen_study.js': ['stem_lab/stem_lumen_evidence.js', 'stem_lab/stem_lumen_documents.js'],
             'stem_lab/stem_tool_lumen.js': ['stem_lab/stem_lumen_study.js'],
             // The builder owns the home chooser; per-tile loading fetches only what is declared here.
             'stem_lab/stem_tool_geometryworld.js': ['stem_lab/stem_tool_geometryworld_builder.js']
@@ -21916,18 +21980,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       const packSig = JSON.stringify([activeSessionAppId, activeSessionCode, data.packRef.id, data.packRef.k, data.packRef.t]);
                       if (packSig !== lastPackRefRef.current) {
                           const download = hydrationCoordinator.load('mailbox:' + packSig, async assertCurrentSource => {
-                              let assembled = '';
-                              let part = 1;
-                              let of = 1;
-                              do {
-                                  assertCurrentSource();
-                                  const gp = await _alloMailboxCall(_alloMbBridgeState.url, { a: 'getpack', id: data.packRef.id, k: data.packRef.k, part });
-                                  assertCurrentSource();
-                                  if (!gp || !Number.isSafeInteger(gp.of) || gp.of < 1 || typeof gp.data !== 'string' || (part > 1 && gp.of !== of)) throw new Error('Mailbox pack parts were incomplete or inconsistent');
-                                  assembled += gp.data;
-                                  of = gp.of;
-                                  part += 1;
-                              } while (part <= of);
+                              const { assembled } = await _alloFetchMailboxPackParts(
+                                  params => _alloMailboxCall(_alloMbBridgeState.url, params),
+                                  { a: 'getpack', id: data.packRef.id, k: data.packRef.k },
+                                  { assertOk: assertCurrentSource }
+                              );
                               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
                               assertCurrentSource();
                               if (!packet || packet.kind !== 'assignment' || !Array.isArray(packet.resources)) throw new Error('Mailbox pack was not a valid assignment');
@@ -35818,17 +35875,17 @@ const parseTaggedContent = (text) => {
       setShowStudentEntry(true);
       const load = async () => {
           try {
-              let assembled = '';
-              let part = 1;
-              let of = 1;
               let hostedTitle = '';
-              do {
-                  const res = await _alloMailboxCallWithRetry(entry.u, { a: 'getpack', id: entry.id, k: entry.k, part });
-                  assembled += String(res.data || '');
-                  of = res.of || 1;
-                  hostedTitle = res.title || hostedTitle;
-                  part += 1;
-              } while (part <= of && !cancelled);
+              const { assembled } = await _alloFetchMailboxPackParts(
+                  params => _alloMailboxCallWithRetry(entry.u, params),
+                  { a: 'getpack', id: entry.id, k: entry.k },
+                  {
+                      // The effect hook's `cancelled` flag is the unmount signal; throwing
+                      // here lands in the existing catch, which already no-ops when cancelled.
+                      assertOk: () => { if (cancelled) throw new Error('cancelled'); },
+                      onMeta: res => { hostedTitle = res.title || hostedTitle; }
+                  }
+              );
               if (cancelled) return;
               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
               _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack-hosted', workStory: packet && packet.workStory === true });

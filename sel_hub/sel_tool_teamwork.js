@@ -1002,7 +1002,7 @@ window.SelHub = window.SelHub || {
         var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
         // Roles state
-        var selectedRoles = d.selectedRoles || [];
+        var selectedRoles = (Array.isArray(d.selectedRoles) ? d.selectedRoles : []);
         var roleReflection = d.roleReflection || '';
         var roleReflectionSaved = d.roleReflectionSaved || false;
         var expandedRole  = d.expandedRole || null;
@@ -2481,7 +2481,7 @@ window.SelHub = window.SelHub || {
                   }),
                   h('button', { 'aria-label': '+ Add',
                     onClick: function() {
-                      if (!cat.inputVal.trim()) return;
+                      if (!cat.inputVal.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
                       var newItems = cat.items.concat([cat.inputVal.trim()]);
                       upd(cat.listKey, newItems);
                       upd(cat.inputKey, '');

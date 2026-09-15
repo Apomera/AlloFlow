@@ -597,7 +597,7 @@ window.SelHub = window.SelHub || {
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
 
       // Brain Science state
-      var brainFactIdx  = d.brainFactIdx || 0;
+      var brainFactIdx  = (Number.isInteger(d.brainFactIdx) && d.brainFactIdx >= 0 ? d.brainFactIdx : 0);
       var brainExplored = d.brainExplored || {};
 
       // Reframe state
@@ -608,12 +608,12 @@ window.SelHub = window.SelHub || {
       var reframeTotal  = d.reframeTotal || 0;
 
       // Yet Stories state
-      var storyIdx      = d.storyIdx || 0;
+      var storyIdx      = (Number.isInteger(d.storyIdx) && d.storyIdx >= 0 ? d.storyIdx : 0);
       var storiesRead   = d.storiesRead || {};
 
       // Growth Map state
-      var growthGoals   = d.growthGoals || [];
-      var newGoalText   = d.newGoalText || '';
+      var growthGoals   = (Array.isArray(d.growthGoals) ? d.growthGoals : []);
+      var newGoalText   = (typeof d.newGoalText === 'string' ? d.newGoalText : '');
 
       // AI Coach state
       var coachInput    = d.coachInput || '';
@@ -622,8 +622,8 @@ window.SelHub = window.SelHub || {
       var coachHistory  = d.coachHistory || [];
 
       // Letter to Future Me state
-      var savedLetters   = d.savedLetters || [];
-      var letterDraft    = d.letterDraft || '';
+      var savedLetters   = (Array.isArray(d.savedLetters) ? d.savedLetters : []);
+      var letterDraft    = (typeof d.letterDraft === 'string' ? d.letterDraft : '');
 
       // Stats
       var totalReframes = reframeScore || 0;
@@ -1441,7 +1441,7 @@ window.SelHub = window.SelHub || {
           { fixed: 'This behavior plan isn\u2019t working.', growth: 'The function of the behavior may not be what we assumed. Let\u2019s reassess.', research: 'Applied Behavior Analysis: behavior serves a function. When interventions fail, the hypothesis about function is wrong \u2014 not the student.' },
           { fixed: 'They\u2019re just not smart enough for this class.', growth: 'They need different preparation, not a different destination.', research: 'Mary Murphy\u2019s "Cultures of Growth": when classrooms communicate that intelligence is expandable, ALL students perform better \u2014 especially those from marginalized groups.' },
         ];
-        var tReframeIdx = d.tReframeIdx || 0;
+        var tReframeIdx = (Number.isInteger(d.tReframeIdx) && d.tReframeIdx >= 0 ? d.tReframeIdx : 0);
         var currentTR = TEACHER_REFRAMES[tReframeIdx % TEACHER_REFRAMES.length];
 
         var FEEDBACK_PHRASES = [

@@ -869,7 +869,10 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain("a: 'putpack', admin: mbConfig.admin, id, k, part: i + 1, of: parts.length, title: 'Live pack', data: parts[i]");
         // Student self-heal branch reassembles the full set from packRef via getpack.
         expect(anti).toContain('} else if (data.packRef && data.packRef.id && _alloMbBridgeActive()) {');
-        expect(anti).toContain("a: 'getpack', id: data.packRef.id, k: data.packRef.k, part");
+        // Parts are fetched by the shared concurrent helper, which appends `part`
+        // per request; the base params below are what the call site still supplies.
+        expect(anti).toContain("{ a: 'getpack', id: data.packRef.id, k: data.packRef.k }");
+        expect(anti).toContain('await _alloFetchMailboxPackParts(');
         // Large homework packs route to the mailbox host instead of dead-ending.
         expect(anti).toContain('return hostPackOnMailboxRef.current ? hostPackOnMailboxRef.current(selectedResourceIds) : null;');
         // The offline-history loader no longer clobbers a joining live student

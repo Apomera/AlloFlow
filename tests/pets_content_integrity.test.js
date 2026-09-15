@@ -506,3 +506,183 @@ describe('Pets Lab - One Health practice traces exposure pathways instead of bla
     expect(SRC).toMatch(/Latest Exposure Pathway Check is below 3\/4/);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// The five 2026-09 activity passes added roughly sixty new factual claims
+// (species prediction checks, the myth check's mixed-in TRUE statements,
+// welfare scenarios, ADA access calls, Punnett challenges, career tensions,
+// the budget reckoning). This file guarded the lab's older claims and had no
+// coverage of any of them.
+//
+// These guard the SPECIFIC, falsifiable things: a citation that must stay
+// exact, a figure that must stay hedged, and a correction that must not be
+// quietly dropped back to the thing it corrected.
+// ─────────────────────────────────────────────────────────────────────────
+
+// Whole-file regexes are the wrong instrument for these claims: nearly every
+// one appears in BOTH the original prose and the new activity table, so a
+// mutation to one copy hides behind the other. (Proven by mutation: seven
+// guards passed against a degraded file.) Scope each guard to the table that
+// owns the claim.
+function activityBlock(startMarker) {
+  const start = SRC.indexOf(startMarker);
+  if (start < 0) throw new Error('activityBlock: missing ' + startMarker);
+  const end = SRC.indexOf('\n  // \u2500\u2500\u2500\u2500\u2500', start);
+  if (end < 0) throw new Error('activityBlock: no section end after ' + startMarker);
+  return SRC.slice(start, end);
+}
+
+describe('Pets Lab — the 2026-09 activity content stays accurate', () => {
+  it('cites the service-animal exclusion regulation exactly', () => {
+    // The whole point of the out-of-control case is that exclusion is lawful
+    // under a NAMED provision. A paraphrase without the citation turns a legal
+    // fact into one person's opinion, which is what staff already believe.
+    expect(SRC).toMatch(/28 CFR 36\.302\(c\)\(2\)/);
+    expect(SRC).toMatch(/out of control and the handler does not take effective action/i);
+    expect(SRC).toMatch(/not housebroken/i);
+  });
+
+  it('keeps the two-question rule exact and the documentation limit intact', () => {
+    expect(SRC).toMatch(/exactly two questions/i);
+    // Businesses may NOT ask for papers. There is no federal registry, and the
+    // vests sold online mean nothing: dropping either half is the error that
+    // costs a legitimate handler their access.
+    const cases = activityBlock('var SERVICE_CASES = [');
+    expect(cases).toMatch(/no federal certification or registration/i);
+    expect(cases).toMatch(/may not ask for documentation/i);
+  });
+
+  it('keeps allergies and fear as invalid grounds for exclusion', () => {
+    expect(SRC).toMatch(/[Aa]llergies and fear of dogs are NOT valid grounds|allergies and fear do not justify exclusion/);
+  });
+
+  it('states the ADA scope rather than implying legal advice', () => {
+    expect(SRC).toMatch(/Educational, not legal advice/i);
+    expect(SRC).toMatch(/State law can add protections/i);
+  });
+
+  it('hedges the PTFE time-to-death figure rather than stating a hard number', () => {
+    // "5-15 minutes" is a real reported range, not a measured constant. Every
+    // place it appears must read as approximate.
+    const ptfe = [...SRC.matchAll(/[^\n]*5[–-]15[^\n]*/g)].map((m) => m[0]);
+    expect(ptfe.length).toBeGreaterThan(0);
+    for (const line of ptfe) {
+      expect(line, 'an unhedged 5-15 minute PTFE claim').toMatch(/roughly|within|deadly within|about/i);
+    }
+  });
+
+  it('keeps the bird claim about air exchange, not an allergy mechanism', () => {
+    // The quiz already rejects the anaphylaxis distractor; the species check
+    // must teach the same mechanism rather than a second explanation.
+    expect(SRC).toMatch(/one-way flow across nine air sacs|9 air sacs/i);
+    expect(SRC).toMatch(/more air per (?:kilogram|kg)/i);
+  });
+
+  it('keeps UVB decay framed as invisible, not as bulb failure', () => {
+    // The whole teaching point: the bulb still looks fine. "Replace when it
+    // burns out" is the belief that causes metabolic bone disease.
+    expect(SRC).toMatch(/lose their UVB output before they look/i);
+    expect(SRC).toMatch(/6[–-]12 months/);
+    expect(SRC).toMatch(/metabolic bone disease/i);
+  });
+
+  it('keeps the guinea-pig vitamin C claim and its human comparison', () => {
+    expect(SRC).toMatch(/cannot synthesize their own vitamin C|vitamin C deficiency/i);
+    expect(SRC).toMatch(/scurvy/i);
+  });
+
+  it('keeps the hamster/guinea-pig social rules pointing OPPOSITE ways', () => {
+    // A student who flattens these into "small pets need company" has learned
+    // the wrong thing. Both halves must survive.
+    const checks = activityBlock('var SPECIES_CHECKS = {');
+    expect(checks).toMatch(/[Ss]yrian hamsters are strictly solitary/);
+    expect(checks).toMatch(/[Gg]uinea pigs are strict herd animals/);
+  });
+
+  it('keeps the dog lifespan inversion scoped to WITHIN the species', () => {
+    // Between species the usual mammal pattern holds. Saying "bigger animals
+    // die younger" without that scope is simply false.
+    const checks = activityBlock('var SPECIES_CHECKS = {');
+    expect(checks).toMatch(/[Ww]ithin dogs the relationship REVERSES/);
+    expect(checks).toMatch(/[Bb]etween species the usual mammal pattern still holds/);
+  });
+
+  it('keeps 9:3:4 identified as epistasis, not a plain dihybrid ratio', () => {
+    const goals = activityBlock('var PUNNETT_GOALS = [');
+    expect(goals).toMatch(/9:3:4/);
+    expect(goals).toMatch(/recessive epistasis/i);
+    // 9:3:3:1 is what a NON-interacting two-gene cross gives; the contrast is
+    // the teaching point.
+    expect(goals).toMatch(/9:3:3:1/);
+  });
+
+  it('keeps the cat obligate-carnivore claim as a nutrient profile, not an ingredient rule', () => {
+    const checks = activityBlock('var SPECIES_CHECKS = {');
+    expect(checks).toMatch(/[Tt]aurine/);
+    expect(checks).toMatch(/preformed vitamin A/i);
+    // The honest nuance: a formulated food can supply these through purified
+    // or synthesized nutrients, so the line is formulation, not animal origin.
+    expect(checks).toMatch(/purified or synthesized nutrients/i);
+  });
+
+  it('hedges the career figures that are not survey medians', () => {
+    // ~70 CAABs and a ~12% vet-school admit rate are real but approximate.
+    const caab = [...SRC.matchAll(/[^\n]*70 CAABs?[^\n]*/gi)].map((m) => m[0]);
+    expect(caab.length).toBeGreaterThan(0);
+    for (const line of caab) {
+      expect(line, 'an unhedged CAAB headcount').toMatch(/about|only about|around|~/i);
+    }
+    const admit = [...SRC.matchAll(/[^\n]*12%[^\n]*(?:school|admission)[^\n]*/gi)].map((m) => m[0]);
+    for (const line of admit) {
+      expect(line, 'an unhedged vet-school admit rate').toMatch(/around|about|~/i);
+    }
+  });
+
+  it('keeps the careers panel from reading as a recommendation', () => {
+    expect(SRC).toMatch(/it is not a recommendation/i);
+    expect(SRC).toMatch(/records no verdict/i);
+  });
+
+  it('keeps ESAs distinguished from service animals by TASK TRAINING', () => {
+    expect(SRC).toMatch(/not trained to perform a task|NOT task-trained/i);
+    // Their protection is real, just located in housing rather than access.
+    expect(SRC).toMatch(/Fair Housing Act/);
+  });
+
+  it('does not overclaim what pet insurance does at the emergency', () => {
+    // Most policies reimburse rather than pay the practice, so the money is
+    // still needed that night. Saying insurance removes the risk is the error.
+    expect(SRC).toMatch(/reimburse rather than pay/i);
+    expect(SRC).toMatch(/[Pp]re-existing conditions are generally excluded/);
+  });
+
+  it('keeps the budget reckoning scoreless and says why cost matters', () => {
+    expect(SRC).toMatch(/most common reason animals are given up/i);
+    expect(SRC).toMatch(/[Tt]here are no right answers/);
+    // "We could not afford this" must stay a good outcome, not a failure.
+    expect(SRC).toMatch(/[Dd]eciding not to get an animal IS a decision/);
+  });
+
+  it('keeps the readiness checklist naming an adult primary caregiver', () => {
+    expect(SRC).toMatch(/primary caregiver—not a child|primary caregiver.{0,4}not a child/i);
+  });
+
+  it('keeps the therapy-dog reading claim honest about the evidence', () => {
+    // Children reliably report enjoying it; measurable fluency gains are not
+    // settled. The activity must not upgrade that to an established benefit.
+    const cases = activityBlock('var SERVICE_CASES = [');
+    expect(cases).toMatch(/not settled/i);
+    // The prose copy carries the same hedge; both must keep it.
+    expect(SRC.match(/not settled/gi).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('keeps the declawing claim anatomical rather than rhetorical', () => {
+    const apply = activityBlock('var WELFARE_APPLY = {');
+    expect(apply).toMatch(/third phalanx/i);
+    expect(apply).toMatch(/amputates the last bone of every toe/i);
+    // The prose card carries the same anatomical claim in its own words; both
+    // surfaces must keep it, or a student meets the rhetorical version first.
+    expect(SRC).toMatch(/last bone of each toe/i);
+    expect(SRC).toMatch(/Martell-Moran/);
+  });
+});

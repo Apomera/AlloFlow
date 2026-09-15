@@ -3695,7 +3695,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           renderMissionProgress('briefing'),
           h('div', { className: 'bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600' },
             // Planet canvas
-            h('div', { className: 'relative', style: { height: '200px' } },
+            h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'relative', style: { height: '200px' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.spaceexplorer.enter_fullscreen', 'View the planet approach view fullscreen'),
+                'data-fs-out': __alloT('stem.spaceexplorer.enter_fullscreen', 'View the planet approach view fullscreen'),
+                'data-fs-in': __alloT('stem.spaceexplorer.exit_fullscreen', 'Exit fullscreen planet approach view (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', { 
                 role: 'img',
                 style: { width: '100%', height: '100%', display: 'block' },

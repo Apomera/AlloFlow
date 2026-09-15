@@ -1425,7 +1425,8 @@ function titrAnimCanvasRef(cvEl) {
 // lab or reveal the answer for a different unknown.
 var TITRATION_SUBSTRATE_CSS =
   '.theme-dark [data-titration-instance]{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:18px}' +
-  '.theme-contrast [data-titration-instance]{background:#000000;color:#ffffff;padding:14px;border-radius:18px}';
+  '.theme-contrast [data-titration-instance]{background:#000000;color:#ffffff;padding:14px;border-radius:18px}' +
+  '.theme-dark [data-titration-instance] .titr-back{color:#22d3ee}';
 
 function titrationReferencePH(progress) {
   var p = Math.max(0, Math.min(1, Number(progress) || 0));
@@ -4689,8 +4690,13 @@ if (!safetyChecked) {
     // Back button
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back', "Back"),
       onClick: function() { setStemLabTool(null); },
-      className: "text-xs font-bold transition-colors",
-      style: { color: ctx.isContrast ? '#ffffff' : '#22d3ee' }
+      className: "text-xs font-bold transition-colors titr-back",
+      // #22d3ee (cyan-400) is a DARK-ground ink, but this tool only paints a dark
+      // substrate under .theme-dark / .theme-contrast (TITRATION_SUBSTRATE_CSS).
+      // In the default light theme the button sat on white at 1.8:1. cyan-700
+      // clears 4.5:1 on white; the dark theme restores the bright ink via CSS,
+      // so each ground keeps the ink that actually reads on it.
+      style: { color: ctx.isContrast ? '#ffffff' : '#0e7490' }
     }, __alloT('stem.titration.back_2', "\u2190 Back")),
 
     // ── Header ──
@@ -7523,9 +7529,20 @@ return React.createElement("div", {
         React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
           __alloT('stem.titration.bore_explains_tolerance', 'A tolerance is not an arbitrary number stamped on the glass \u2014 it follows from how wide the vessel is where you read it. The blue slice in each vessel below is one millilitre, drawn to scale against that vessel\'s real bore.')),
         React.createElement("div", {
+          'data-allo-fs-stage': 'true',
+          ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
           style: { position: 'relative', height: 'clamp(240px, 26vw, 340px)', borderRadius: 10, overflow: 'hidden',
             background: '#0a1420', border: '1px solid rgba(100,116,139,0.35)' }
         },
+          React.createElement('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': __alloT('stem.titration.enter_fullscreen', 'View the glassware bench fullscreen'),
+            'data-fs-out': __alloT('stem.titration.enter_fullscreen', 'View the glassware bench fullscreen'),
+            'data-fs-in': __alloT('stem.titration.exit_fullscreen', 'Exit fullscreen glassware bench (Escape)'),
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(100,116,139,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
           React.createElement("div", {
             ref: benchGlRef,
             style: { position: 'absolute', inset: 0, cursor: 'grab', touchAction: 'pan-y' },
@@ -7984,7 +8001,12 @@ return React.createElement("div", {
       React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
         [
           { key: 'ka', label: __alloT('stem.titration.acid_strength_pka', 'Acid strength (pKa)'), val: pKa, displayVal: pKa.toFixed(2), min: 2, max: 12, step: 0.1, onChange: function(v) { setBF({ ka: Math.pow(10, -v) }); } },
-          { key: 'ratio', label: __alloT('stem.titration.a_ha_ratio', '[A⁻]/[HA] ratio'), val: bf.ratio, displayVal: bf.ratio.toFixed(2), min: 0.05, max: 20, step: 0.05, onChange: function(v) { setBF({ ratio: v }); } },
+          { key: 'ratio', label: __alloT('stem.titration.a_ha_ratio', '[A⁻]/[HA] ratio'), val: bf.ratio, displayVal: bf.ratio.toFixed(2), min: 0.05, max: 20, step: 0.05, onChange: function(v) { setBF({ ratio: v }); },
+            // A bare "1.00" is not a ratio out loud. ':1' is notation, not a new
+            // string to translate - deliberately NOT a new __alloT key, because
+            // one more English key regresses completeness in all 62 packs for a
+            // colon and a digit.
+            valueText: function(v) { return v + ':1'; } },
           { key: 'startPH', label: __alloT('stem.titration.starting_ph_display_only', 'Starting pH (display only)'), val: pHcurrent, displayVal: pHcurrent.toFixed(2), min: 0, max: 14, step: 0.1, onChange: function(v) {}, readOnly: true }
         ].map(function(s) {
           return React.createElement('div', { key: s.key },
@@ -7992,9 +8014,14 @@ return React.createElement("div", {
               s.label + ': ', React.createElement('span', { className: 'font-mono text-cyan-400' }, s.displayVal)),
             s.readOnly
               ? React.createElement('output', { id: 'bf-' + s.key, className: 'block min-h-[44px] rounded-lg border border-cyan-800/40 bg-slate-900 px-3 py-2 text-base font-mono font-bold text-cyan-300', 'aria-label': s.label }, s.displayVal)
+              // The visible <label> carries the NAME and the reading separately:
+              // "Acid strength (pKa):" then a styled span holding "5.00". A screen
+              // reader following aria-label hears only the name and never the
+              // setting. displayVal is the same string a sighted student reads.
               : React.createElement('input', { id: 'bf-' + s.key, type: 'range', min: s.min, max: s.max, step: s.step, value: s.val,
                   onChange: function(e) { s.onChange(parseFloat(e.target.value)); },
-                  className: 'w-full min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 rounded', 'aria-label': s.label }));
+                  className: 'w-full min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 rounded', 'aria-label': s.label,
+                  'aria-valuetext': s.valueText ? s.valueText(s.displayVal) : s.displayVal }));
         })
       ),
       React.createElement('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },

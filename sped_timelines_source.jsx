@@ -113,7 +113,7 @@ const SPED_BAND_META = {
   soon: { label: 'Due in 30 days', order: 2, cls: 'bg-yellow-50 text-yellow-900 border-yellow-300' },
   ok: { label: 'On track', order: 3, cls: 'bg-green-50 text-green-900 border-green-300' },
   undated: { label: 'No due date', order: 4, cls: 'bg-slate-100 text-slate-700 border-slate-300' },
-  done: { label: 'Completed', order: 5, cls: 'bg-slate-100 text-slate-500 border-slate-300' },
+  done: { label: 'Completed', order: 5, cls: 'bg-slate-100 text-slate-600 border-slate-300' },
 };
 
 function spedRollup(cases, today) {
@@ -467,7 +467,7 @@ function SpedTimelinesPanel(props) {
                   <li key={c.id} className={'flex items-center gap-2 p-2 rounded-xl border text-xs ' + (c.band === 'overdue' ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-300')}>
                     <input type="checkbox" checked={!!c.completedAt} onChange={(e) => setDone(c.id, e.target.checked)}
                       aria-label={tt('spedtl.done_aria', 'Mark complete:') + ' ' + c.code + ' ' + typeLabel(c.type)} className="w-4 h-4 shrink-0" />
-                    <span className={'min-w-0 flex-1 ' + (c.completedAt ? 'line-through text-slate-400' : 'text-slate-700')}>
+                    <span className={'min-w-0 flex-1 ' + (c.completedAt ? 'line-through text-slate-600' : 'text-slate-700')}>
                       <span className="font-bold">{c.code}</span> · {typeLabel(c.type)}{c.provider ? (' · ' + c.provider) : ''}
                     </span>
                     <span className="shrink-0 text-[10px] text-slate-500">

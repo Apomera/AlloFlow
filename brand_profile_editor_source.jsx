@@ -358,7 +358,7 @@ function BrandProfileEditor(props) {
                 <div className="flex-1">
                   <div className="flex gap-2">
                     <button type="button" onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
-                    {draft.logo && draft.logo.src && <button type="button" onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-600 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
+                    {draft.logo && draft.logo.src && <button type="button" onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
                     <input ref={fileInputRef} aria-label={t('brand.logo_file', 'Upload logo image file')} type="file" accept="image/*" onChange={onLogoFile} className="hidden" />
                   </div>
                   {draft.logo && draft.logo.src && (
@@ -417,7 +417,7 @@ function BrandProfileEditor(props) {
             </div>
             <div className="p-3 border-t border-slate-200 bg-slate-50 flex flex-col gap-2">
               <button type="button" onClick={save} disabled={!validation.ok} className={'w-full px-3 py-2 rounded-lg text-sm font-bold transition-colors ' + (validation.ok ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed')}>{t('brand.save', 'Save profile')}</button>
-              {draft.id && draft.id !== activeId && <button type="button" onClick={function () { makeActive(draft.id); }} className="w-full px-3 py-1.5 rounded-lg bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors">{t('brand.set_active', 'Set as active brand')}</button>}
+              {draft.id && draft.id !== activeId && <button type="button" onClick={function () { makeActive(draft.id); }} className="w-full px-3 py-1.5 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 transition-colors">{t('brand.set_active', 'Set as active brand')}</button>}
             </div>
           </aside>
         </div>

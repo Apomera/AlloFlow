@@ -2786,7 +2786,24 @@ var require_tmp_research_hub_entry = __commonJS({
         Object.keys(obj).forEach(function(k) {
           var v = obj[k];
           if (/question/i.test(k) && Array.isArray(v)) {
-            var cleaned = v.filter(function(item) {
+            var flattened = v.map(function(item) {
+              if (!item || typeof item !== "object" || Array.isArray(item)) return item;
+              var hasNested = Object.keys(item).some(function(ik) {
+                var iv = item[ik];
+                return Array.isArray(iv) || iv && typeof iv === "object";
+              });
+              if (hasNested) return enforceQuestionFormat(item, depth + 1, telemetry);
+              var textKeys = ["question", "text", "prompt", "q"];
+              for (var ti = 0; ti < textKeys.length; ti++) {
+                if (typeof item[textKeys[ti]] === "string" && item[textKeys[ti]].trim()) return item[textKeys[ti]];
+              }
+              telemetry.rejected += 1;
+              telemetry.fixedKeys.push(k);
+              return null;
+            }).filter(function(item) {
+              return item !== null && item !== void 0;
+            });
+            var cleaned = flattened.filter(function(item) {
               if (typeof item !== "string") return true;
               var trimmed = item.trim();
               if (!trimmed.endsWith("?")) {
@@ -2812,6 +2829,16 @@ var require_tmp_research_hub_entry = __commonJS({
           }
         });
         return out;
+      }
+      function aiScalarText(value) {
+        if (typeof value === "string") return value;
+        if (typeof value === "number" || typeof value === "boolean") return String(value);
+        if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+        var keys = ["text", "value", "label", "question", "prompt", "name", "shape", "description"];
+        for (var i = 0; i < keys.length; i++) {
+          if (typeof value[keys[i]] === "string" && value[keys[i]].trim()) return value[keys[i]];
+        }
+        return "";
       }
       function newTraceId() {
         try {
@@ -3207,7 +3234,7 @@ var require_tmp_research_hub_entry = __commonJS({
                 padding: "6px 12px",
                 borderRadius: "999px",
                 background: "#fff",
-                color: "#64748b",
+                color: "#475569",
                 border: "1px solid #cbd5e1",
                 fontWeight: 700,
                 fontSize: "11px",
@@ -4740,7 +4767,8 @@ var require_tmp_research_hub_entry = __commonJS({
             SuggestionBadge,
             ExemplarPair,
             VoiceNoteBlock,
-            CostMeter
+            CostMeter,
+            aiScalarText
           },
           constants: {
             MAX_AI_CALLS_PER_SESSION,

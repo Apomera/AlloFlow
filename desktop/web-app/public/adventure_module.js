@@ -115,7 +115,7 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
       "aria-label": t("common.create_storybook"),
       onClick: onExport,
       disabled: isProcessing,
-      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(BookOpen, { size: 18, "aria-hidden": "true" }),
     isProcessing ? t("adventure.storybook_writing") : t("adventure.storybook")
@@ -126,7 +126,7 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
         onClose();
         if (onContinue) onContinue();
       },
-      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     /* @__PURE__ */ React.createElement(MapIcon, { size: 18, "aria-hidden": "true" }),
     " ",

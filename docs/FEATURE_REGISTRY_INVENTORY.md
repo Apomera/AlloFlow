@@ -20,8 +20,8 @@ narrative lives in `FEATURE_INVENTORY.md`; this file is the count-and-name layer
 | appsScripts | 6 |
 | modules | 216 |
 | langPacks | 63 |
-| unitTestFiles | 3970 |
-| e2eSpecs | 427 |
+| unitTestFiles | 4054 |
+| e2eSpecs | 452 |
 
 ## Command palette
 
@@ -642,5 +642,5 @@ accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controll
 
 ## Tests
 
-- Unit test files: 3970
-- End-to-end specs: 427
+- Unit test files: 4054
+- End-to-end specs: 452

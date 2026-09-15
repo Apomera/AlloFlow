@@ -9632,7 +9632,7 @@ const _downloadBRF = (brf) => {
                                     aria-label={'Glossary image size ' + opt.label + ' ' + opt.px + ' pixels'}
                                     aria-pressed={isActive}
                                     className={'px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ' + (isActive
-                                      ? 'bg-emerald-600 text-white border-emerald-700'
+                                      ? 'bg-emerald-700 text-white border-emerald-700'
                                       : 'bg-white text-slate-600 border-slate-300 hover:bg-emerald-50')}
                                   >
                                     {opt.label}
@@ -10201,7 +10201,7 @@ const _downloadBRF = (brf) => {
                       <button type="button" disabled={!activeTrackedChange} onClick={() => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, 'accept')} className="h-8 rounded border border-emerald-500 bg-white px-2 text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-40">Accept</button>
                       <button type="button" disabled={!activeTrackedChange} onClick={() => activeTrackedChange && applyTrackedChangeDecision(activeTrackedChange.id, 'reject')} className="h-8 rounded border border-red-400 bg-white px-2 text-[11px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-40">Reject</button>
                       <span className="mx-0.5 h-6 w-px bg-slate-300" aria-hidden="true"></span>
-                      <button id="builder-new-comment" type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-700" title="Comment on the selected text (Ctrl+Alt+M)">New Comment</button>
+                      <button id="builder-new-comment" type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-700 px-2.5 text-[11px] font-bold text-white shadow-sm hover:bg-amber-800" title="Comment on the selected text (Ctrl+Alt+M)">New Comment</button>
                       <button type="button" onClick={() => openReviewComments(activeCommentId)} aria-pressed={showNavigationPane && navigationPaneTab === 'comments'} aria-controls="document-builder-navigation" className="h-8 rounded border border-amber-500 bg-white px-2.5 text-[11px] font-bold text-amber-800 hover:bg-amber-50">Comments ({unresolvedReviewCommentCount})</button>
                       <button type="button" onClick={openWordCountDetails} aria-expanded={showWordCountDetails} aria-controls="builder-word-count-panel" aria-keyshortcuts="Control+Shift+G" className="h-8 rounded border border-indigo-500 bg-white px-2.5 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50">Word Count</button>
                       <span className="text-[10px] font-medium text-slate-600">{pendingTrackedChangeCount ? `${pendingTrackedChangeCount} pending change${pendingTrackedChangeCount === 1 ? '' : 's'}` : selectionStatistics.active ? `${selectionStatistics.words.toLocaleString()} selected / ${wordCount.toLocaleString()} total words` : `${wordCount.toLocaleString()} words`} &middot; {documentStatistics.readingMinutes || 0} min reading time</span>
@@ -10707,7 +10707,7 @@ const _downloadBRF = (brf) => {
                         <div ref={rulerRef} role="group" aria-describedby="builder-ruler-help" onClick={handleRulerClick} className="relative h-9 min-w-64 flex-1 cursor-crosshair select-none overflow-hidden rounded border border-slate-400 bg-white shadow-inner" aria-label={`Paragraph ruler, ${paragraphContentWidth} inches wide. Click to add a ${rulerTabAlignment} tab stop.`} title={`Click to add a ${rulerTabAlignment} tab stop. Drag indent and tab markers; use arrow keys for precise movement.`}>
                           <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: 'linear-gradient(to right,#cbd5e1 1px,transparent 1px)', backgroundSize: `${100 / Math.max(1, paragraphContentWidth * 4)}% 100%` }} aria-hidden="true"></div>
                           {Array.from({ length: Math.floor(paragraphContentWidth) + 1 }, (_, inch) => (
-                            <span key={'ruler-inch-' + inch} className="pointer-events-none absolute top-2 -translate-x-1/2 text-[8px] font-mono text-slate-400" style={{ left: `${(inch / paragraphContentWidth) * 100}%` }} aria-hidden="true">{inch}</span>
+                            <span key={'ruler-inch-' + inch} className="pointer-events-none absolute top-2 -translate-x-1/2 text-[8px] font-mono text-slate-600" style={{ left: `${(inch / paragraphContentWidth) * 100}%` }} aria-hidden="true">{inch}</span>
                           ))}
                           {paragraphLayout.tabStops.map((tab, index) => (
                             <button key={tab.id || index} type="button" role="slider" aria-orientation="horizontal" aria-describedby="builder-ruler-help" aria-label={`${tab.alignment} tab stop`} aria-valuemin={0.125} aria-valuemax={paragraphContentWidth - 0.125} aria-valuenow={tab.position} aria-valuetext={`${tab.alignment} tab at ${tab.position} inches`} onPointerDown={(event) => startTabStopDrag(tab, index, event)} onKeyDown={(event) => handleTabStopKeyDown(tab, index, event)} onDoubleClick={() => removeRulerTabStop(index)} className="absolute top-0 z-30 flex h-3 min-w-3 -translate-x-1/2 items-center justify-center rounded-b border border-violet-800 bg-violet-600 px-0.5 text-[7px] font-black uppercase leading-none text-white focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-1" style={{ left: `${(tab.position / paragraphContentWidth) * 100}%` }} title={`${tab.alignment} tab at ${tab.position} in. Drag or use arrows; Enter changes type; Delete removes.`}>{tab.alignment.charAt(0)}</button>
@@ -10946,14 +10946,14 @@ const _downloadBRF = (brf) => {
                                   <button type="button" onClick={() => jumpToHeading(heading)} aria-current={activeHeadingIndex === heading.index ? 'location' : undefined}
                                     className={`min-w-0 flex-1 truncate rounded px-1.5 py-1 text-left text-[11px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ${activeHeadingIndex === heading.index ? 'font-bold text-indigo-800' : 'text-slate-700 hover:text-indigo-700'}`}
                                     style={{ paddingLeft: Math.min(30, 6 + (heading.level - 1) * 8) }}>
-                                    <span className="mr-1 text-[9px] font-bold text-slate-400">H{heading.level}</span>{heading.text}
+                                    <span className="mr-1 text-[9px] font-bold text-slate-600">H{heading.level}</span>{heading.text}
                                   </button>
                                   {heading.movable ? (
                                     <div className="flex shrink-0 items-center" role="group" aria-label={'Reorder ' + heading.text}>
                                       <button type="button" onClick={() => moveOutlineSection(heading.index, heading.previousIndex)} disabled={heading.previousIndex == null} className="h-6 w-6 rounded text-[11px] font-black text-slate-600 hover:bg-indigo-100 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-25" aria-label={'Move ' + heading.text + ' up'} title="Move section up">↑</button>
                                       <button type="button" onClick={() => moveOutlineSection(heading.index, heading.nextIndex)} disabled={heading.nextIndex == null} className="h-6 w-6 rounded text-[11px] font-black text-slate-600 hover:bg-indigo-100 hover:text-indigo-800 disabled:cursor-not-allowed disabled:opacity-25" aria-label={'Move ' + heading.text + ' down'} title="Move section down">↓</button>
                                     </div>
-                                  ) : <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[8px] font-bold uppercase text-slate-500">Pinned</span>}
+                                  ) : <span className="shrink-0 rounded bg-slate-100 px-1 py-0.5 text-[8px] font-bold uppercase text-slate-600">Pinned</span>}
                                 </div>
                               ))}
                             </>
@@ -11251,7 +11251,7 @@ const _downloadBRF = (brf) => {
                         <section id="builder-navigation-panel-comments" role="tabpanel" aria-labelledby="builder-navigation-tab-comments" aria-label="Document comments" className="flex min-h-0 flex-1 flex-col">
                           <div className="space-y-2 border-b border-slate-200 bg-amber-50 px-2 py-2">
                             <div className="flex flex-wrap items-center gap-2">
-                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-600 px-2.5 text-[11px] font-bold text-white hover:bg-amber-700">New comment</button>
+                              <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={addReviewComment} aria-keyshortcuts="Control+Alt+M" className="h-8 rounded bg-amber-700 px-2.5 text-[11px] font-bold text-white hover:bg-amber-800">New comment</button>
                               <label className="ml-auto inline-flex cursor-pointer items-center gap-1 text-[10px] font-semibold text-amber-900">
                                 <input type="checkbox" checked={showResolvedComments} onChange={(event) => setShowResolvedComments(event.target.checked)} className="accent-amber-700" />
                                 Show resolved
@@ -11293,10 +11293,10 @@ const _downloadBRF = (brf) => {
                                             <div className="flex items-center gap-1.5">
                                               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[8px] font-black" style={{ backgroundColor: identity.soft, color: identity.ink, border: '1px solid ' + identity.accent }} aria-hidden="true">{identity.initials}</span>
                                               <strong className="min-w-0 flex-1 truncate text-[10px]" style={{ color: identity.ink }}>{identity.name}</strong>
-                                              <span className="text-[8px] font-black uppercase tracking-wide text-slate-400">{messageIndex === 0 ? 'Topic' : `Reply ${messageIndex}`}</span>
+                                              <span className="text-[8px] font-black uppercase tracking-wide text-slate-600">{messageIndex === 0 ? 'Topic' : `Reply ${messageIndex}`}</span>
                                             </div>
                                             <p className="mt-1 whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-700">{message.text}</p>
-                                            <time className="mt-1 block text-right text-[8px] font-medium text-slate-400" dateTime={message.at || undefined}>{message.at && !Number.isNaN(Date.parse(message.at)) ? new Date(message.at).toLocaleString() : 'Recently'}</time>
+                                            <time className="mt-1 block text-right text-[8px] font-medium text-slate-600" dateTime={message.at || undefined}>{message.at && !Number.isNaN(Date.parse(message.at)) ? new Date(message.at).toLocaleString() : 'Recently'}</time>
                                           </li>
                                         );
                                       })}
@@ -11622,7 +11622,7 @@ const _downloadBRF = (brf) => {
                                 <article key={issue.source + '-' + issue.id} className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
                                   <div className="flex items-start justify-between gap-2"><h4 className="text-[10px] font-black text-slate-800">{issue.title}</h4><span className={`rounded px-1.5 py-0.5 text-[8px] font-bold uppercase ${['critical', 'serious', 'high'].includes(issue.severity) ? 'bg-red-100 text-red-800' : ['moderate', 'medium'].includes(issue.severity) ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-700'}`}>{issue.severity}</span></div>
                                   <p className="mt-1 text-[9px] leading-snug text-slate-600">{issue.message}</p>
-                                  <p className="mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">{issue.source}</p>
+                                  <p className="mt-1 text-[8px] font-bold uppercase tracking-wide text-slate-600">{issue.source}</p>
                                 </article>
                               ))}
                               {!advancedReviewIssues.length && <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center text-[10px] text-slate-600">No findings are available in the current review data. Run the Builder audit for this HTML version.</div>}
@@ -11706,7 +11706,7 @@ const _downloadBRF = (brf) => {
                           <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
                             <table className="w-full border-collapse text-[11px]">
                               <caption className="sr-only">Document and selection statistics</caption>
-                              <thead className="bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-500">
+                              <thead className="bg-slate-100 text-[9px] font-black uppercase tracking-wider text-slate-600">
                                 <tr><th scope="col" className="px-2 py-1 text-left">Statistic</th><th scope="col" className="px-2 py-1 text-right">Document</th>{selectionStatistics.active && <th scope="col" className="px-2 py-1 text-right">Selection</th>}</tr>
                               </thead>
                               <tbody>

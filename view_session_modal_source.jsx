@@ -681,7 +681,7 @@ function SessionModal({
           <div className="mb-6 text-center animate-in slide-in-from-bottom-2 motion-reduce:animate-none">
             <button type="button"
               onClick={handleSetShowGroupModalToTrue}
-              className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3"
+              className="w-full bg-gradient-to-r from-violet-700 to-purple-700 hover:from-violet-800 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3"
             >
               <Users size={20} aria-hidden="true" />
               <div className="text-left">

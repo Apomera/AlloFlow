@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "type": "lesson-board-finale",
+  "boardTitle": "The Waterworks Board",
+  "status": "reviewed",
+  "project": {
+    "name": "Observation bridge",
+    "effect": {
+      "kind": "path",
+      "targetId": "sequence"
+    },
+    "location": "Cycle mechanism"
+  },
+  "evidence": [
+    {
+      "location": "Heating station",
+      "concept": "Temperature changes",
+      "sourceQuote": "Water evaporates when heated. Water vapor condenses when cooled. Precipitation returns water to the ground. Water collects in rivers and lakes.",
+      "explanation": "Heating produces water vapor through evaporation; cooling vapor produces droplets through condensation."
+    },
+    {
+      "location": "Cycle mechanism",
+      "concept": "Water-cycle processes",
+      "sourceQuote": "Water evaporates when heated. Water vapor condenses when cooled. Precipitation returns water to the ground. Water collects in rivers and lakes.",
+      "explanation": "Evaporation forms vapor, condensation forms droplets, precipitation returns water to the ground, and water collects."
+    }
+  ],
+  "response": {
+    "mode": "text",
+    "text": "Our private finale plan uses the bridge to investigate the connection between temperature changes and the sequence of water-cycle processes.",
+    "explainedAloud": false
+  },
+  "checks": {
+    "boardRule": true,
+    "distinctConcepts": true,
+    "responseProvided": true,
+    "selfReview": {
+      "connection": true,
+      "evidence": true,
+      "purpose": true
+    }
+  },
+  "explanationAssessment": "Self or teacher review; explanation meaning is not automatically graded."
+}

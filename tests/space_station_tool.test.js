@@ -240,7 +240,15 @@ describe('space station tool', () => {
       // from a pose the student never chose is worse than opening there.
       expect(source).toContain('cv._issSetView = function (name, immediate)');
       expect(source).toContain('if (_prefersReducedMotion || immediate)');
-      expect(source).toContain("if (!immediate) announceToSR(name + ' camera view selected.');");
+      // Pin the INVARIANT, not the wording: the announcement must stay behind
+      // `if (!immediate)` so the silent restore path cannot start narrating.
+      // This used to pin the whole English sentence, which made it fail the
+      // moment that string was extracted for translation -- a spelling pin on
+      // a line whose text is expected to change. See
+      // feedback_moved_code_breaks_text_pin_tests.
+      expect(source).toMatch(/if \(!immediate\) announceToSR\(/);
+      // The restore call itself must still pass `immediate = true`.
+      expect(source).toContain('cv._issSetView(d.mapView, true);');
     });
   });
 
@@ -2831,4 +2839,220 @@ describe('space station tool', () => {
     // suite grew — a timeout here reads as "the tool is unregistered", which is
     // alarming and wrong. Same convention as the axe tests below.
   }, 30000);
+});
+
+describe('an unknown persisted tab resolves to a real tab', () => {
+  // The panel is a ternary chain ending in `renderQuiz()`, so an id this build
+  // does not know did NOT blank the page -- it silently showed the QUIZ under a
+  // heading no tab was selected for. Worse, the panel's
+  // `aria-labelledby: 'iss-tab-' + tab` then referenced an element that does not
+  // exist (WCAG 1.3.1 / 4.1.2), and no tab reported aria-selected="true".
+  const labelTarget = (html) => {
+    const id = (html.match(/aria-labelledby="(iss-tab-[^"]*)"/) || [])[1];
+    return { id, exists: id ? html.includes('id="' + id + '"') : false };
+  };
+
+  it('keeps the tabpanel label pointing at a tab that exists', () => {
+    for (const tab of ['map', 'quiz', 'zzz_not_a_tab', 'MAP', '']) {
+      const html = mountWithSeed({ tab });
+      const { id, exists } = labelTarget(html);
+      expect(exists, `tab ${JSON.stringify(tab)} labelled by ${id}`).toBe(true);
+    }
+  });
+
+  it('always marks one tab selected, and never silently opens the quiz', () => {
+    const known = mountWithSeed({ tab: 'map' });
+    const selectedOn = (h) => (h.match(/aria-selected="true"/g) || []).length;
+    for (const tab of ['zzz_not_a_tab', 'MAP', 'Quiz']) {
+      const html = mountWithSeed({ tab });
+      expect(selectedOn(html), `tab ${tab} marks a selection`).toBe(selectedOn(known));
+      // and it lands on the 3-D Station, not the certification exam
+      expect(html).not.toContain('FLIGHT-CONTROLLER EXAM');
+    }
+    // the real quiz tab still reaches the exam
+    expect(mountWithSeed({ tab: 'quiz' })).toContain('FLIGHT-CONTROLLER EXAM');
+  });
+
+  it('derives the allow-list from TABS so a new tab is covered for free', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const src = readFileSync(filePath, 'utf8');
+      expect(src, filePath).toContain('var TAB_IDS = TABS.map(');
+      expect(src, filePath).toContain("TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'map'");
+    });
+  });
+});
+
+describe('every press-and-hold control claims the touch gesture', () => {
+  // A press-and-hold with no `touch-action: none` is claimed by the browser for
+  // page scrolling on a touchscreen, so the hold never starts. The 3-D canvas
+  // and the thruster buttons already set it; four interior controls did not.
+  // General check: compare the touchAction COUNT against the draggable /
+  // holdable surfaces, not just "is it present somewhere".
+  // ★Set it in CSS, not as an inline `style` prop. These buttons carried NO
+  // style prop, and adding one changed how React reconciles them -- it turned
+  // the Harmony cabin-stow GL test red (the astronaut reached HULL CONTACT
+  // before the catch). A class rule fixes the touch defect with no React-side
+  // change at all. Verified by running that GL test against both shapes.
+  it('covers every press-and-hold control with a touch-action rule, in both copies', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const src = readFileSync(filePath, 'utf8');
+      const at = src.indexOf('{touch-action:none}');
+      expect(at, 'touch-action rule present in ' + filePath).toBeGreaterThan(-1);
+      const rule = src.slice(Math.max(0, at - 260), at);
+      ['.iss-interior-controls button', '[data-iss-interior-worksite-action]',
+       '[data-iss-interior-capillary-action]', '[data-iss-interior-observation-action]']
+        .forEach((sel) => expect(rule, sel + ' covered in ' + filePath).toContain(sel));
+      // the handlers those selectors target must still exist
+      ['worksiteHold(true)', 'capillaryHold(true)', 'observationHold(true)', 'setControl(true)']
+        .forEach((handler) => expect(src, handler + ' in ' + filePath).toContain('onPointerDown: ' + handler));
+    });
+  });
+
+  it('ships the rule with the interior tab', () => {
+    const html = mountWithSeed({ tab: 'interior' });
+    expect(html).toContain('data-iss-interior-worksite-action="true"');
+    expect(html).toContain('{touch-action:none}');
+  });
+
+  // A screen-reader user on a translated host got a MIX: most diagram
+  // descriptions came through the pack, but 19 were raw English string
+  // concatenation, so they stayed English no matter what pack was loaded.
+  // These two tests keep that from creeping back. They are DERIVED from the
+  // source rather than pinning a hand-written list, so a NEW diagram that
+  // forgets __alloT fails here instead of shipping half-translated.
+  it('routes every aria-label and screen-reader summary through __alloT', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const src = readFileSync(filePath, 'utf8');
+
+      // Case 1: 'aria-label': <expression>. Anything whose expression contains
+      // a single-quoted English phrase (3+ letters, a space, 3+ letters) but
+      // no __alloT is an untranslated literal.
+      const raw = [];
+      const re = /'aria-label':\s*([^\n]{0,400})/g;
+      let m;
+      while ((m = re.exec(src))) {
+        const expr = m[1];
+        if (expr.includes('__alloT')) continue;
+        // `'aria-label': aria` / `summary` / `label` reference a variable that
+        // is built (and translated) elsewhere; only literals matter here.
+        if (!/'[A-Za-z]{3,}[^']*\s[A-Za-z]{3,}/.test(expr)) continue;
+        raw.push(expr.slice(0, 90));
+      }
+      expect(raw, 'untranslated aria-label literals in ' + filePath).toEqual([]);
+
+      // Case 2: the `var aria =` / `var summary =` builders feeding those
+      // labels. Each must start from a translated template.
+      const builders = src.match(/var (?:aria|summary) = [^\n]{0,400}/g) || [];
+      const rawBuilders = builders
+        .filter((b) => !b.includes('__alloT'))
+        .map((b) => b.slice(0, 90));
+      expect(rawBuilders, 'untranslated aria/summary builders in ' + filePath).toEqual([]);
+    });
+  });
+
+  // The R7 landmine: __alloT('key', 'text ' + value) puts an interpolated
+  // FALLBACK under a static key. It reads fine until a pack supplies that key,
+  // and then the NUMBER SILENTLY VANISHES. The house fix is a {value1}
+  // placeholder filled by __alloFill AFTER translation.
+  it('never hides a value inside a translation fallback', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const src = readFileSync(filePath, 'utf8');
+      const interpolated = (src.match(/__alloT\('[^']+',\s*'[^']*'\s*\+/g) || []);
+      expect(interpolated, 'interpolated __alloT fallbacks in ' + filePath).toEqual([]);
+
+      // Every {valueN} in a fallback must actually be supplied by an
+      // __alloFill on the same call, or the placeholder renders literally.
+      const fills = (src.match(/__alloT\('[^']+',\s*'[^']*\{value\d+\}[^']*'\)/g) || []);
+      fills.forEach((call) => {
+        const at = src.indexOf(call);
+        const before = src.slice(Math.max(0, at - 12), at);
+        expect(before, 'placeholder text not wrapped in __alloFill: ' + call.slice(0, 70))
+          .toContain('__alloFill(');
+      });
+    });
+  });
+
+  // The R9 `tab` defect, one level down. Every one of these is PERSISTED
+  // state, and every one of them falls through to a working default view when
+  // it holds an unknown id -- so the page looks fine. What breaks is quieter:
+  // nothing keeps aria-pressed (no view/mode/scenario reads as current), and
+  // the raw junk id reaches a live region or a data- attribute verbatim.
+  // A saved project from another build, or a renamed id, is all it takes.
+  describe('persisted selectors survive an unknown id', () => {
+    beforeEach(() => {
+      resetStemLab();
+      loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
+    });
+
+    const SELECTORS = [
+      ['mapView', 'map', 'overview'],
+      ['opsMode', 'operations', 'integrated'],
+      ['opsFocus', 'operations', 'all'],
+      ['opsScenario', 'operations', 'custom'],
+      ['opsEmergency', 'operations', 'leak'],
+      ['cupolaScene', 'interior', 'day'],
+      ['cupolaTarget', 'interior', 'day'],
+      ['sleepSpot', 'interior', 'bag'],
+      ['interiorRoom', 'interior', 'harmony'],
+      ['dockResult', 'missions', 'complete'],
+    ];
+
+    it.each(SELECTORS)('renders %s junk exactly like its default', (key, tab, def) => {
+      const good = mountWithSeed({ ...BASE, tab, [key]: def });
+      const junk = mountWithSeed({ ...BASE, tab, [key]: 'zzz_not_a_value' });
+      // Byte-identical is the right bar here: these tools have no randomised
+      // content on these tabs, and anything less lets a mislabel through.
+      expect(junk, key + ' junk render differs from its default').toBe(good);
+      // And the junk id must never be echoed anywhere a user can perceive it.
+      expect(junk).not.toContain('zzz_not_a_value');
+    });
+
+    // A clamp that swallows VALID input would be worse than the bug it fixes,
+    // so pin that every legitimate id still renders its own distinct thing.
+    const VALID = [
+      ['mapView', 'map', ['overview', 'truss', 'labs', 'russian', 'nadir']],
+      ['opsMode', 'operations', ['integrated', 'power', 'eclss', 'thermal', 'attitude', 'debris', 'human', 'emergency', 'rendezvous']],
+      ['opsFocus', 'operations', ['all', 'power', 'air', 'water', 'thermal', 'attitude']],
+      ['opsScenario', 'operations', ['custom', 'nominal', 'science', 'eclipse', 'crew', 'fault']],
+      ['cupolaTarget', 'interior', ['day', 'aurora', 'night']],
+    ];
+
+    it.each(VALID)('keeps every valid %s id distinct', (key, tab, ids) => {
+      const renders = ids.map((id) => mountWithSeed({ ...BASE, tab, interiorRoom: tab === 'interior' ? 'cupola' : BASE.interiorRoom, [key]: id }));
+      expect(new Set(renders).size, key + ': a valid id was clamped away').toBe(ids.length);
+    });
+
+    // Derive the allow-lists from the source so a NEW id added to the UI but
+    // not to its clamp fails here rather than becoming unreachable from a
+    // saved file -- the mistake the clamp itself is guarding against.
+    it('derives each allow-list from the ids the UI can actually produce', () => {
+      TOOL_PATHS.forEach((filePath) => {
+        const src = readFileSync(filePath, 'utf8');
+
+        const mapIds = (src.match(/var MAP_VIEW_IDS = \[([^\]]+)\]/) || [])[1];
+        expect(mapIds, 'MAP_VIEW_IDS in ' + filePath).toBeTruthy();
+        ['overview', 'truss', 'labs', 'russian', 'nadir']
+          .forEach((id) => expect(mapIds).toContain("'" + id + "'"));
+
+        const modeIds = (src.match(/var OPS_MODE_IDS = \[([^\]]+)\]/) || [])[1];
+        expect(modeIds, 'OPS_MODE_IDS in ' + filePath).toBeTruthy();
+        // Every mode the ops dispatch ternary can branch to must be listed.
+        // Scope to THAT line: `mode === '...'` also appears in the cargo-state
+        // code ('held'/'secured'), which has nothing to do with ops modes.
+        const dispatchLine = (src.match(/var content\s*=\s*mode\s*===[^\n]+/) || [])[0];
+        expect(dispatchLine, 'ops dispatch line in ' + filePath).toBeTruthy();
+        const dispatched = [...new Set(
+          (dispatchLine.match(/mode\s*===\s*'([a-z]+)'/g) || [])
+            .map((m) => m.replace(/^mode\s*===\s*'/, '').replace(/'$/, '')),
+        )];
+        expect(dispatched.length, 'ops dispatch branches found').toBeGreaterThan(5);
+        dispatched.forEach((id) => expect(modeIds, id + ' missing from OPS_MODE_IDS').toContain("'" + id + "'"));
+
+        // These two derive their allow-list from the very array the buttons
+        // are built from, so they cannot drift by construction. Pin that.
+        expect(src).toContain("var focusIds = ['all'].concat(nodes.map(");
+        expect(src).toContain('var scenarioIds = [\'custom\'].concat(scenarioPresets.map(');
+      });
+    });
+  });
 });

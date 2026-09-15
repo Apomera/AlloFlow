@@ -113,7 +113,15 @@ const CASES = [
   { name: 'particle lab 3d readouts below', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { readoutsPosition: 'bottom', trace: true, systemProbe: true, preset: 'osmosis' } } },
   { name: 'particle lab 3d dark theme', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { readoutsPosition: 'left', trace: true } }, overrides: { isDark: true }, hostCard: true },
   { name: 'particle lab 3d high contrast', file: 'stem_lab/stem_tool_particlelab3d.js', id: 'particleLab3d', state: { particleLab3d: { trace: true, systemProbe: true } }, overrides: { isContrast: true } },
-  { name: 'molecule lab dark theme', file: 'stem_lab/stem_tool_molecule.js', id: 'molecule', state: { molecule: { moleculeMode: 'viewer' } }, overrides: { isDark: true } },
+  // hostCard added: without it this case audited the tool bare on a navy ground, a
+  // cascade the product never shows (see surfaceMarkup). It reported 13 contrast
+  // violations on the pathway cards - whose ink is CORRECT, because those cards are
+  // unconditionally bg-white. All 13 were false. Under the faithful substrate they
+  // vanish and two REAL defects surface instead: the Challenges and Tutor <summary>
+  // headings used a hard-coded text-slate-600 on a panel whose background is the
+  // themed --allo-stem-panel token, giving 1.93:1 in dark theme. Both now take their
+  // ink from --allo-stem-text-soft, so ink and ground move together.
+  { name: 'molecule lab dark theme', file: 'stem_lab/stem_tool_molecule.js', id: 'molecule', state: { molecule: { moleculeMode: 'viewer' } }, overrides: { isDark: true }, hostCard: true },
   { name: 'titration lab high contrast', file: 'stem_lab/stem_tool_titration.js', id: 'titrationLab', state: { titrationLab: { labTab: 'titrate', titrationReduceMotion: true } }, overrides: { isContrast: true } },
 ];
 

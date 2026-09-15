@@ -8575,7 +8575,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             {draftSaveError && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-700">{draftSaveError}</p>}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button type="button" data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button type="button" data-sf-focusable data-sf-save-close onClick={async () => { if (await persistDraftToStorage({ announce: true, allowDuringHydration: true })) { setShowCloseConfirm(false); onClose(); } }} className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button type="button" data-sf-focusable data-sf-save-close onClick={async () => { if (await persistDraftToStorage({ announce: true, allowDuringHydration: true })) { setShowCloseConfirm(false); onClose(); } }} className="px-4 py-2 bg-amber-700 text-white rounded-lg text-sm font-bold hover:bg-amber-800 transition-colors">{t("ui_common.save_draft_close")}</button>
               <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
@@ -8619,12 +8619,12 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             <div className="mt-5 flex flex-wrap justify-end gap-3">
               <button type="button" data-sf-focusable onClick={() => finishImportConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{ta('a11y.storyforge_ui_keep_current_project')}</button>
               <button type="button" data-sf-focusable onClick={() => finishImportConfirmation('checkpoint')} className="rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50">Save checkpoint &amp; import</button>
-              <button type="button" data-sf-focusable data-sf-import-confirm-action="replace" onClick={() => finishImportConfirmation(true)} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700">{ta('a11y.storyforge_ui_replace_and_import')}</button>
+              <button type="button" data-sf-focusable data-sf-import-confirm-action="replace" onClick={() => finishImportConfirmation(true)} className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800">{ta('a11y.storyforge_ui_replace_and_import')}</button>
             </div>
           </div>
         </div>
       )}
-      <div className="sf-project-header bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
+      <div className="sf-project-header bg-gradient-to-r from-rose-700 to-pink-700 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <BookOpen size={24} />
           <div className="min-w-0">
@@ -9565,7 +9565,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                           {panelSummaries.map(({ p, idx, direction, lettering, hasCaption, hasDirection, hasRough, hasBubble, hasImage, ready }) => {
                             const status = !hasCaption ? 'Needs caption' : lettering.level === 'crowded' ? 'Crowded' : !hasDirection ? 'Needs direction' : !hasRough ? 'Needs rough' : ready ? 'Ready' : 'Draft';
-                            const statusClass = ready ? 'bg-green-100 text-green-700 border-green-200' : lettering.level === 'crowded' ? 'bg-red-100 text-red-700 border-red-200' : hasCaption ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200';
+                            const statusClass = ready ? 'bg-green-100 text-green-700 border-green-200' : lettering.level === 'crowded' ? 'bg-red-100 text-red-700 border-red-200' : hasCaption ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200';
                             const jumpToPanel = () => {
                               setFocusParagraphIdx(idx);
                               setTimeout(() => {
@@ -9599,7 +9599,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                     ['Bubble', hasBubble],
                                     ['Art', hasImage],
                                   ].map(([label, ok]) => (
-                                    <span key={label} className={`text-[9px] font-black rounded-full px-1.5 py-0.5 ${ok ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>{label}</span>
+                                    <span key={label} className={`text-[9px] font-black rounded-full px-1.5 py-0.5 ${ok ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>{label}</span>
                                   ))}
                                 </div>
                               </button>
@@ -9714,7 +9714,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           language === 'other'
                             ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                             : dictation.isDictating && dictatingParagraphIdx === idx
-                            ? 'bg-red-100 border-red-300 text-red-600 animate-pulse motion-reduce:animate-none'
+                            ? 'bg-red-100 border-red-300 text-red-800 animate-pulse motion-reduce:animate-none'
                             : 'bg-blue-50 border-blue-200/50 text-blue-700 hover:bg-blue-100 hover:text-blue-700'
                         }`}
                         aria-label={language === 'other' ? 'Voice typing unavailable for a custom language' : (dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop dictation' : 'Start dictation')}
@@ -9999,7 +9999,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       dir="auto"
                       className={`w-full p-4 text-sm resize-none transition-colors ${
                         layoutMode === 'dark' ? 'bg-slate-800 text-slate-100 placeholder:text-slate-600 focus:bg-slate-700 caret-cyan-400' :
-                        layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-600 focus:bg-amber-100/50' :
+                        layoutMode === 'journal' ? 'bg-amber-50 text-amber-900 placeholder:text-amber-800 focus:bg-amber-100/50' :
                         'focus:bg-rose-50/30'
                       }`}
                       style={{
@@ -10270,7 +10270,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <div key={reference.id} className="rounded-xl border border-purple-100 bg-purple-50/30 p-3">
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">{ta('a11y.storyforge_ui_cast').replace('{0}', referenceIndex + 1)}</span>
-                              <button type="button" onClick={() => removeContinuityReference(reference.id)} className="p-1 rounded-md text-rose-600 hover:bg-rose-50" aria-label={ta('a11y.storyforge_aria_remove_cast_reference').replace('{0}', referenceIndex + 1)} title={ta('a11y.storyforge_attr_remove_cast_reference')}><Trash2 size={13} aria-hidden="true" /></button>
+                              <button type="button" onClick={() => removeContinuityReference(reference.id)} className="p-1 rounded-md text-rose-800 hover:bg-rose-50" aria-label={ta('a11y.storyforge_aria_remove_cast_reference').replace('{0}', referenceIndex + 1)} title={ta('a11y.storyforge_attr_remove_cast_reference')}><Trash2 size={13} aria-hidden="true" /></button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               {[['name','Name','Mina'],['aliases','Also known as','Min, Captain M'],['role','Role','Explorer'],['appearance','Appearance','Round glasses, warm brown skin, short curls'],['wardrobe','Wardrobe','Red jacket with a silver compass'],['props','Props','Brass compass and canvas satchel']].map(([field, label, placeholder]) => (
@@ -10907,7 +10907,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 autoFocus
                               />
                               <div className="flex gap-1 mt-1">
-                                <button type="button" onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-600 text-white rounded py-1 hover:bg-teal-700 disabled:opacity-40">{t("ui_common.apply")}</button>
+                                <button type="button" onClick={() => { if (imageEditState.prompt.trim()) refineIllustration(p.id, imageEditState.prompt); }} disabled={!imageEditState.prompt.trim()} className="flex-1 text-[11px] font-bold bg-teal-700 text-white rounded py-1 hover:bg-teal-800 disabled:opacity-40">{t("ui_common.apply")}</button>
                                 <button type="button" onClick={() => setImageEditState(null)} className="text-[11px] font-bold bg-slate-200 text-slate-600 rounded py-1 px-2 hover:bg-slate-300">{t("ui_common.cancel")}</button>
                               </div>
                             </div>
@@ -10972,13 +10972,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <Volume2 size={14} /> {isProcessing ? 'Narrating...' : (artifactType === 'comic' ? 'Narrate All Captions' : 'Narrate All Scenes')}
                   </button>
                   {isNarrating && (
-                    <button type="button" onClick={stopStoryNarration} className="px-4 py-2 bg-amber-500 text-white rounded-full text-xs font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
+                    <button type="button" onClick={stopStoryNarration} className="px-4 py-2 bg-amber-700 text-white rounded-full text-xs font-bold hover:bg-amber-800 transition-colors flex items-center gap-2">
                       <X size={14} /> Stop narration
                     </button>
                   )}
                   <button type="button"
                     onClick={() => { if (playbackIdx === -1) { setSentenceIdx(0); setPlaybackIdx(0); } else { try { audioRef.current?.pause(); } catch (_) {} setPlaybackIdx(-1); setSentenceIdx(0); } }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-full text-xs font-bold hover:bg-green-700 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-green-700 text-white rounded-full text-xs font-bold hover:bg-green-800 transition-colors flex items-center gap-2"
                   >
                     <Play size={14} /> {playbackIdx >= 0 ? 'Stop' : 'Play All'}
                   </button>
@@ -11159,7 +11159,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               <span key={wi} title={w.said ? `Said: "${w.said}"${w.lowConfidence ? ' (⚠ uncertain)' : ''}` : (w.lowConfidence ? '⚠ AI uncertain' : '')}
                                 className={`px-1 py-0.5 rounded text-xs font-medium ${w.lowConfidence ? 'ring-1 ring-amber-400 ' : ''}${
                                   w.status === 'correct' ? 'text-green-700 bg-green-100' :
-                                  w.status === 'missed' ? 'text-white bg-red-500' :
+                                  w.status === 'missed' ? 'text-white bg-red-600' :
                                   w.status === 'stumbled' ? 'text-amber-800 bg-amber-100' :
                                   w.status === 'self_corrected' ? 'text-blue-700 bg-blue-100' :
                                   w.status === 'mispronounced' ? 'text-red-700 bg-red-100' : 'text-slate-600'
@@ -11259,7 +11259,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div data-sf-review-stale role="alert" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950">
                   <p className="text-sm font-black">{ta('a11y.storyforge_ui_this_feedback_is_for_an_earlier')}</p>
                   <p className="mt-1 text-xs">{ta('a11y.storyforge_ui_the_writing_or_comic_dialogue_changed')}</p>
-                  <button type="button" onClick={clearReviewState} className="mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700">
+                  <button type="button" onClick={clearReviewState} className="mt-3 rounded-full bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800">
                     Start fresh review
                   </button>
                 </div>
@@ -11501,7 +11501,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         const beatColor = (status) =>
                           status === 'strong' ? 'bg-green-100 border-green-300 text-green-800'
                           : status === 'partial' ? 'bg-amber-100 border-amber-300 text-amber-800'
-                          : 'bg-slate-100 border-slate-300 text-slate-500';
+                          : 'bg-slate-100 border-slate-300 text-slate-600';
                         return (
                           <article key={i} className="bg-sky-50/40 border border-sky-100 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-2 gap-2">
@@ -11789,7 +11789,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="text-[11px] text-slate-600 font-bold">{ta('a11y.storyforge_ui_vocab_used')}</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
-                    <div className={`text-2xl font-black ${readingLevel ? 'text-indigo-600' : 'text-slate-300'}`}>
+                    <div className={`text-2xl font-black ${readingLevel ? 'text-indigo-600' : 'text-slate-600'}`}>
                       {readingLevel ? `${readingLevel.grade}` : '—'}
                     </div>
                     <div className="text-[11px] text-slate-600 font-bold">{ux('reading_estimate', 'Text complexity estimate')}</div>
@@ -11902,7 +11902,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div className="space-y-4">
                   {/* Score Badge */}
                   <div className="text-center">
-                    <div className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" title={ta('a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not')}>
+                    <div className="inline-block bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg" title={ta('a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not')}>
                       {gradingResult.totalScore}
                     </div>
                     <div className="text-[11px] text-slate-500 mt-1.5 font-medium">{ta('a11y.storyforge_ui_ai_estimate_draft_feedback_not_a')}</div>
@@ -12313,7 +12313,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   data-sf-publish-blocked={publishBlocked}
                   onClick={exportStorybook}
                   aria-describedby="sf-phase-requirements"
-                  className="px-8 py-4 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl text-lg font-black hover:from-rose-700 hover:to-pink-700 transition-all shadow-lg shadow-rose-200 hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-3"
+                  className="px-8 py-4 bg-gradient-to-r from-rose-700 to-pink-700 text-white rounded-2xl text-lg font-black hover:from-rose-700 hover:to-pink-700 transition-all shadow-lg shadow-rose-200 hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-3"
                 >
                   <Download size={24} /> Export {artifactType === 'comic' ? 'Comic' : 'Storybook'}
                 </button>
@@ -12361,7 +12361,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     data-sf-publish-blocked={publishBlocked}
                     onClick={saveAsSubmission}
                     aria-describedby="sf-phase-requirements"
-                    className="px-6 py-3 bg-amber-600 text-white rounded-2xl text-sm font-bold hover:bg-amber-700 transition-all shadow-lg shadow-amber-200 flex items-center gap-2"
+                    className="px-6 py-3 bg-amber-700 text-white rounded-2xl text-sm font-bold hover:bg-amber-800 transition-all shadow-lg shadow-amber-200 flex items-center gap-2"
                   >
                     <Star size={18} /> Save to Portfolio
                   </button>
@@ -12387,7 +12387,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   {vaultStorageMode === 'vault' ? 'Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser.' : 'Save a portable project package to preserve artwork and narration across browsers or devices.'}
                 </p>
                 <div className="flex flex-wrap gap-2 items-end">
-                  <button type="button" onClick={exportStoryForgeProject} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2" aria-label={ta('a11y.storyforge_attr_export_full_story_forge_project')}>
+                  <button type="button" onClick={exportStoryForgeProject} className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800 transition-colors flex items-center gap-2" aria-label={ta('a11y.storyforge_attr_export_full_story_forge_project')}>
                     <Download size={14} /> Export .storyforge
                   </button>
                   <button type="button" data-sf-import-draft onClick={importDraftJSON} className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2" aria-label={ta('a11y.storyforge_attr_import_story_forge_project')}>
@@ -12421,7 +12421,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </h4>
                 <p className="text-xs text-slate-600 mb-3">{ta('a11y.storyforge_ui_export_your_draft_as_a_file')}</p>
                 <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
-                  <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2">
+                  <button type="button" onClick={exportDraftJSON} className="px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-800 transition-colors flex items-center gap-2">
                     <Download size={14} /> Export Draft (.json)
                   </button>
                   <button type="button" data-sf-import-draft onClick={importDraftJSON} className="px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2">

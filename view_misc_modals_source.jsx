@@ -24,11 +24,22 @@ function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDi
   React.useEffect(() => () => onDirty(false), []);
   const entries = Object.entries(fields || {});
   if (!entries.length) return null;
-  return <form className="space-y-2 mt-3" onSubmit={event => { event.preventDefault(); Promise.resolve(onApply(values)).then(() => onDirty(false)).catch(() => {}); }}>
+  return <form className="space-y-2 mt-3" aria-label={tx('chat_guide.command_details', 'Command details')}
+    onSubmit={event => { event.preventDefault(); Promise.resolve(onApply(values)).then(() => onDirty(false)).catch(() => {}); }}>
     {entries.map(([key, field]) => <label key={key} className="block text-xs">
-      <span className="block mb-1 font-medium">{tx(field.labelKey || 'cmd.param_' + key, field.label || key)}</span>
+      <span className="block mb-1 font-medium">
+        {tx(field.labelKey || 'cmd.param_' + key, field.label || key)}
+        {/* 3.3.2 Labels or Instructions: `required` alone is announced by some
+            screen readers and silently enforced by the browser for everyone
+            else, so the requirement was invisible until submit failed. The
+            marker is text, not a bare "*" colour cue (1.4.1). */}
+        {field.required && <span className={`ml-1 font-normal ${styles.subText}`}>
+          {' '}{tx('common.required_marker', '(required)')}
+        </span>}
+      </span>
       <input name={key} type={field.type === 'integer' ? 'number' : 'text'} step={field.type === 'integer' ? 1 : undefined}
         min={field.min} maxLength={field.maxLength || 200} required={!!field.required} disabled={disabled}
+        aria-required={field.required ? 'true' : undefined}
         value={values[key] == null ? '' : String(values[key])}
         onChange={event => { onDirty(true); setValues(previous => ({ ...previous, [key]: event.target.value })); }}
         className={`w-full min-w-0 rounded border p-2 ${styles.input}`} />
@@ -44,15 +55,42 @@ function UDLGuideModal(props) {
   // The Talk control reflects the live voice-loop state.
   const [chatMenuOpen, setChatMenuOpen] = React.useState(false);
   const [voicePaused, setVoicePaused] = React.useState(false);
+  const chatMenuRef = React.useRef(null);
+  const chatMenuTriggerRef = React.useRef(null);
   // Escape and any outside click close the overflow menu — a menu that can
   // only be dismissed by re-clicking its own trigger is a keyboard trap.
   React.useEffect(() => {
     if (!chatMenuOpen) return undefined;
-    const onKey = (ev) => { if (ev.key === 'Escape') setChatMenuOpen(false); };
-    const onDown = () => setChatMenuOpen(false);
+    // preventDefault marks this press as consumed so the panel-level Escape
+    // handler leaves the conversation open — one press closes one layer.
+    const onKey = (ev) => {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        setChatMenuOpen(false);
+        // 2.4.3: dismissing a menu must not drop focus to <body>.
+        try { chatMenuTriggerRef.current?.focus(); } catch (_) {}
+      }
+    };
+    // The dismiss listener fired on ANY mousedown, including one landing on a
+    // menu item. React tore the item down before its click could run, so
+    // "Point things out on screen" and "Save this chat" were unreachable by
+    // mouse entirely — the menu only ever closed. Ignore presses inside it.
+    const onDown = (ev) => {
+      const menu = chatMenuRef.current;
+      if (menu && ev.target && menu.contains(ev.target)) return;
+      if (chatMenuTriggerRef.current && ev.target && chatMenuTriggerRef.current.contains(ev.target)) return;
+      setChatMenuOpen(false);
+    };
     document.addEventListener('keydown', onKey);
     document.addEventListener('mousedown', onDown);
     return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('mousedown', onDown); };
+  }, [chatMenuOpen]);
+  // Opening a menu with the keyboard must land focus on its first item, or the
+  // menu is announced and then abandoned behind the trigger (2.4.3, 4.1.2).
+  React.useEffect(() => {
+    if (!chatMenuOpen) return;
+    const first = chatMenuRef.current && chatMenuRef.current.querySelector('[role^="menuitem"]');
+    try { first?.focus(); } catch (_) {}
   }, [chatMenuOpen]);
   const {
     InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
@@ -91,6 +129,83 @@ function UDLGuideModal(props) {
       setIsConversationMode(false);
       handleSetShowUDLGuideToFalse();
   }, [handleSetShowUDLGuideToFalse, setIsConversationMode, stopLegacyDictation]);
+  // 2.1.2 No Keyboard Trap / 2.4.3 Focus Order. The panel is a non-modal
+  // dialog on purpose — a teacher works the page WHILE it is open, so focus is
+  // deliberately NOT trapped. What was missing is the pair every dialog owes a
+  // keyboard user: Escape dismisses it, and focus returns to whatever opened
+  // it instead of collapsing to <body>. The ref is read through a ref so a
+  // re-rendered closeGuide identity cannot re-fire the effect and steal focus.
+  const guideRef = React.useRef(null);
+  const closeGuideRef = React.useRef(closeGuide);
+  closeGuideRef.current = closeGuide;
+  // The Stage 6 preview overlay declares aria-modal="true" but sat inside the
+  // panel with nothing enforcing it: Tab walked straight out of the overlay
+  // into the transcript underneath, which is visually covered but still
+  // focusable (2.4.11 Focus Not Obscured, 2.4.3 Focus Order), and the close
+  // button was the only way out (2.1.2). This is a genuine modal layer, so
+  // unlike the panel itself it DOES trap Tab for as long as it is open.
+  const previewRef = React.useRef(null);
+  const closePreviewRef = React.useRef(closeBlueprintPreview);
+  closePreviewRef.current = closeBlueprintPreview;
+  React.useEffect(() => {
+      if (!blueprintPreview) return undefined;
+      const overlay = previewRef.current;
+      if (!overlay) return undefined;
+      const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      const focusable = () => Array.from(overlay.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter(el => el.offsetParent !== null || el === document.activeElement);
+      (focusable()[0] || overlay).focus();
+      const onKey = (ev) => {
+          if (ev.key === 'Escape') {
+              // Consume it so the panel-level handler does not also close the
+              // whole conversation on the same press.
+              ev.preventDefault();
+              ev.stopPropagation();
+              closePreviewRef.current();
+              return;
+          }
+          if (ev.key !== 'Tab') return;
+          const items = focusable();
+          if (!items.length) { ev.preventDefault(); return; }
+          const first = items[0];
+          const last = items[items.length - 1];
+          const active = document.activeElement;
+          if (!overlay.contains(active)) { ev.preventDefault(); first.focus(); return; }
+          if (ev.shiftKey && active === first) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && active === last) { ev.preventDefault(); first.focus(); }
+      };
+      // Capture phase: the panel's Escape listener is on document too, and the
+      // preview must win regardless of listener registration order.
+      document.addEventListener('keydown', onKey, true);
+      return () => {
+          document.removeEventListener('keydown', onKey, true);
+          try {
+              if (previousFocus && typeof previousFocus.focus === 'function' && document.contains(previousFocus)) previousFocus.focus();
+          } catch (_) {}
+      };
+  }, [blueprintPreview]);
+  React.useEffect(() => {
+      if (!showUDLGuide) return undefined;
+      const previousFocus = typeof document !== 'undefined' ? document.activeElement : null;
+      const onKey = (ev) => {
+          if (ev.key !== 'Escape') return;
+          // Let the overflow menu and the preview overlay consume Escape first;
+          // one press should close one layer, not the whole conversation.
+          if (ev.defaultPrevented) return;
+          const root = guideRef.current;
+          if (root && root.querySelector('[data-testid="bp-preview-overlay"]')) return;
+          ev.preventDefault();
+          closeGuideRef.current();
+      };
+      document.addEventListener('keydown', onKey);
+      return () => {
+          document.removeEventListener('keydown', onKey);
+          try {
+              if (previousFocus && typeof previousFocus.focus === 'function' && document.contains(previousFocus)) previousFocus.focus();
+          } catch (_) {}
+      };
+  }, [showUDLGuide]);
   React.useEffect(() => {
       if (alloVoiceActive || voicePaused || !showUDLGuide) stopLegacyDictation();
       if (!alloVoiceActive || !showUDLGuide) setIsConversationMode(false);
@@ -127,15 +242,19 @@ function UDLGuideModal(props) {
   if (!(showUDLGuide)) return null;
   if (isCollapsed) {
       return (
-        <div style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`}>
+        <div ref={guideRef} role="dialog" aria-labelledby="udl-guide-title-collapsed"
+          style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`}>
           <div className={`px-3 py-2 flex items-center gap-2 ${chatStyles.header}`}>
-              <HelpCircle size={16} />
-              <span className="font-bold text-sm">{t('chat_guide.header')}</span>
-              {isChatProcessing && <RefreshCw size={12} className="animate-spin" />}
+              <HelpCircle size={16} aria-hidden="true" />
+              <h2 id="udl-guide-title-collapsed" className="font-bold text-sm">{tx('chat_guide.header', 'AI Guide & Assistant')}</h2>
+              {/* The spinner is the only cue that a reply is still coming while
+                  the panel is collapsed, so it needs a text equivalent (1.1.1). */}
+              {isChatProcessing && <RefreshCw size={12} className="motion-safe:animate-spin" aria-hidden="true" />}
+              {isChatProcessing && <span className="sr-only" role="status">{t('bot.mood_thinking')}</span>}
               <button
                   type="button"
                   onClick={() => setIsCollapsed(false)}
-                  className="hover:bg-white/20 p-1 rounded transition-colors ml-1"
+                  className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors ml-1"
                   title={t('chat_guide.restore') || 'Restore chat'}
                   aria-label={t('chat_guide.restore') || 'Restore chat'}
               >
@@ -144,7 +263,7 @@ function UDLGuideModal(props) {
               <button
                   type="button"
                   onClick={closeGuide}
-                  className="hover:bg-white/20 p-1 rounded transition-colors"
+                  className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
                   aria-label={t('common.close')}
               >
                   <X size={16} />
@@ -154,11 +273,14 @@ function UDLGuideModal(props) {
       );
   }
   return (
-        <div style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
+        <div ref={guideRef} role="dialog" aria-labelledby="udl-guide-title"
+          style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
-            <div className="flex items-center gap-2 font-bold">
-               <HelpCircle size={18} /> {t('chat_guide.header')}
-            </div>
+            {/* A real heading, not a bold div: it names the dialog (4.1.2) and
+                gives screen-reader users a landmark to jump to (2.4.6). */}
+            <h2 id="udl-guide-title" className="flex items-center gap-2 font-bold text-base">
+               <HelpCircle size={18} aria-hidden="true" /> {tx('chat_guide.header', 'AI Guide & Assistant')}
+            </h2>
             <div className="flex items-center gap-1">
                 {/* ONE Talk control owns global app commands. Free-form
                     dictation is a separate semantic action; starting both
@@ -187,7 +309,7 @@ function UDLGuideModal(props) {
                             setUdlMessages(prev => [...prev, { role: 'model', text: t('chat_guide.talk_hint') || 'Listening for app commands. You can also ask a question or describe a multi-step request; proposed actions appear in a plan card you review before anything runs. Try “open the learning hub”, “read this page”, or “where is the export button?” Say “pause listening” to pause or “stop listening” to finish. Privacy note: this uses your selected recognition engine. On-device Whisper keeps recognition audio on this device; a browser speech service may send command audio to its provider; Gemini cloud transcription sends each completed spoken turn to Gemini only when you explicitly select it.' }]);
                         }
                     }}
-                    className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? (voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'bg-red-600 text-white border-red-400 animate-pulse') : 'border-white/40'}`}
+                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${alloVoiceActive ? (voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'bg-red-600 text-white border-red-400 motion-safe:animate-pulse') : 'border-white/40'}`}
                     title={alloVoiceActive ? (voicePaused ? t('chat_guide.talk_stop_paused_tooltip', 'Stop the paused AlloBot voice session') : t('chat_guide.talk_stop_tooltip', 'Stop AlloBot command listening')) : t('chat_guide.talk_start_tooltip', 'Start AlloBot command listening')}
                 >
                     <Headphones size={12}/> {alloVoiceActive ? (voicePaused ? t('chat_guide.talk_paused', 'Paused') : (t('chat_guide.talk_on') || 'Listening')) : (t('chat_guide.talk') || 'Talk')}
@@ -207,7 +329,7 @@ function UDLGuideModal(props) {
                         if (voicePaused) { Promise.resolve(loop.resume()).then((ok) => setVoicePaused(!ok)); }
                         else { loop.pause(); setVoicePaused(true); }
                     }}
-                    className={`hover:bg-white/20 px-2 py-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
+                    className={`hover:bg-white/20 px-2 py-1.5 min-h-[24px] rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${voicePaused ? 'bg-amber-400 text-indigo-900 border-amber-500' : 'border-white/40'}`}
                     title={voicePaused ? t('chat_guide.resume_tooltip', 'Resume AlloBot command listening') : t('chat_guide.pause_tooltip', 'Pause AlloBot command listening and release its microphone session')}
                 >
                     {voicePaused ? (t('chat_guide.resume', 'Resume')) : (t('chat_guide.pause', 'Pause'))}
@@ -218,18 +340,35 @@ function UDLGuideModal(props) {
                 <div className="relative">
                     <button
                         type="button"
+                        ref={chatMenuTriggerRef}
                         data-help-key="chat_more"
                         aria-haspopup="true"
                         aria-expanded={chatMenuOpen ? 'true' : 'false'}
                         aria-label={t('chat_guide.more_actions', 'More chat options')}
                         onClick={() => setChatMenuOpen(v => !v)}
-                        className="hover:bg-white/20 p-1 rounded transition-colors mr-1"
+                        className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors mr-1"
                         title={t('chat_guide.more_actions', 'More chat options')}
                     >
                         <ChevronDown size={18}/>
                     </button>
                     {chatMenuOpen && (
-                        <div role="menu" className="absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl">
+                        <div role="menu" ref={chatMenuRef}
+                            // A role="menu" is expected to move between its items with the
+                            // arrow keys; without this, Tab was the only way through and
+                            // it walked straight out of the menu into the panel behind.
+                            onKeyDown={(ev) => {
+                                if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Home' && ev.key !== 'End') return;
+                                ev.preventDefault();
+                                const items = Array.from(ev.currentTarget.querySelectorAll('[role^="menuitem"]'));
+                                if (!items.length) return;
+                                const at = items.indexOf(document.activeElement);
+                                const next = ev.key === 'Home' ? 0
+                                    : ev.key === 'End' ? items.length - 1
+                                    : ev.key === 'ArrowDown' ? (at + 1) % items.length
+                                    : (at - 1 + items.length) % items.length;
+                                items[next].focus();
+                            }}
+                            className="absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl">
                             <button role="menuitemcheckbox" aria-checked={isShowMeMode ? 'true' : 'false'} type="button"
                                 onClick={() => { handleToggleIsShowMeMode(); setChatMenuOpen(false); }}
                                 className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
@@ -252,7 +391,7 @@ function UDLGuideModal(props) {
                     aria-label={t('common.minimize')}
                     data-help-key="chat_expand"
                     onClick={handleToggleIsUDLGuideExpanded}
-                    className="hover:bg-white/20 p-1 rounded transition-colors"
+                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
                     title={isUDLGuideExpanded ? t('common.minimize') : t('common.maximize')}
                 >
                     {isUDLGuideExpanded ? <Minimize size={18}/> : <Maximize size={18}/>}
@@ -261,16 +400,22 @@ function UDLGuideModal(props) {
                     type="button"
                     data-help-key="chat_collapse"
                     onClick={() => setIsCollapsed(true)}
-                    className="hover:bg-white/20 p-1 rounded transition-colors"
+                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
                     title={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
                     aria-label={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
                 >
                     <ChevronDown size={18}/>
                 </button>
-                <button data-help-key="chat_close" onClick={closeGuide} className="hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
+                <button data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
-        <div className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
+        {/* 4.1.3 Status Messages. The reply arrives with no focus change, so a
+            screen-reader user got nothing. The transcript is the log; `polite`
+            + `additions` announces only the new turn rather than re-reading the
+            whole thread on every render. */}
+        <div role="log" aria-live="polite" aria-relevant="additions" aria-atomic="false"
+          aria-label={tx('chat_guide.transcript_aria', 'Conversation transcript')}
+          className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
           {udlMessages.map((msg, idx) => (
             <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               {(!msg.type || (msg.type === 'choices' && msg.operationKind)) && (
@@ -296,7 +441,7 @@ function UDLGuideModal(props) {
               {msg.type === 'choices' && !msg.operationKind && (
                   <div className={`max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none`}>
                       {renderFormattedText(msg.text)}
-                      <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={t('chat_guide.header')}>
+                      <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={tx('chat_guide.choices_group', 'Suggested replies')}>
                           {(msg.choices || []).map((choice, cIdx) => (
                               <button
                                   key={cIdx}
@@ -329,14 +474,18 @@ function UDLGuideModal(props) {
                       )}
                   </div>
               )}
+              {/* No aria-label on the button below: its own visible text
+                  ("Save Actionable") is the accessible name. The old label said
+                  "Refresh", which both misdescribed the action and broke
+                  2.5.3 Label in Name against the visible words. */}
               {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (
                 <button
-                    aria-label={t('common.refresh')}
+                  type="button"
                   data-help-key="chat_save_advice_btn" onClick={() => saveUDLAdvice(msg.text, udlMessages[idx-1]?.role === 'user' ? udlMessages[idx-1].text : 'Teacher Inquiry')}
                   disabled={isSavingAdvice}
                   className={`mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`}
                 >
-                  {isSavingAdvice ? <RefreshCw size={10} className="animate-spin" /> : <Save size={10} />}
+                  {isSavingAdvice ? <RefreshCw size={10} className="motion-safe:animate-spin" aria-hidden="true" /> : <Save size={10} aria-hidden="true" />}
                   {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
                 </button>
               )}
@@ -382,7 +531,7 @@ function UDLGuideModal(props) {
                       onClick={() => handleDeleteLessonTemplate(tpl.id)}
                       aria-label={`${t('blueprint.template_delete') || 'Delete template'}: ${tpl.name}`}
                       title={t('blueprint.template_delete') || 'Delete template'}
-                      className="text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
                     >
                       ×
                     </button>
@@ -425,7 +574,7 @@ function UDLGuideModal(props) {
                       onClick={() => handleDeleteArchivedPlan(rec.id)}
                       aria-label={`${t('blueprint.archive_delete') || 'Delete archived plan'}: ${rec.name}`}
                       title={t('blueprint.archive_delete') || 'Delete archived plan'}
-                      className="text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                      className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
                     >
                       ×
                     </button>
@@ -436,8 +585,8 @@ function UDLGuideModal(props) {
           )}
           {isChatProcessing && (
             <div className="flex items-start">
-               <div className={`p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}`}>
-                  <RefreshCw size={14} className="animate-spin" /> {t('bot.mood_thinking')}
+               <div role="status" className={`p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}`}>
+                  <RefreshCw size={14} className="motion-safe:animate-spin" aria-hidden="true" /> {t('bot.mood_thinking')}
                </div>
             </div>
           )}
@@ -527,22 +676,26 @@ function UDLGuideModal(props) {
             cannot hijack the main view. */}
         {blueprintPreview && (
           <div
-            className={`absolute inset-0 z-20 flex flex-col ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}
+            ref={previewRef}
+            tabIndex={-1}
+            className={`absolute inset-0 z-20 flex flex-col outline-none ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}
             role="dialog"
             aria-modal="true"
-            aria-label={t('blueprint.preview_step') || 'Preview this resource'}
+            aria-labelledby="bp-preview-title"
             data-testid="bp-preview-overlay"
           >
             <div className={`p-3 flex items-center justify-between shrink-0 border-b ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`}>
-              <span className={`text-sm font-bold ${chatStyles.text}`}>
-                {blueprintPreview.itemTitle || blueprintPreview.title}
-              </span>
+              {/* Naming the dialog by its own title tells the user WHICH
+                  resource opened; a static "Preview this resource" did not. */}
+              <h2 id="bp-preview-title" className={`text-sm font-bold ${chatStyles.text}`}>
+                {blueprintPreview.itemTitle || blueprintPreview.title || (t('blueprint.preview_step') || 'Preview this resource')}
+              </h2>
               <button
                 type="button"
                 data-testid="bp-preview-close"
                 onClick={closeBlueprintPreview}
                 aria-label={t('common.close')}
-                className="hover:bg-slate-500/20 p-1 rounded transition-colors"
+                className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors"
               >
                 <X size={18} />
               </button>
@@ -575,7 +728,7 @@ function UDLGuideModal(props) {
               aria-expanded={standardToolsOpen}
               aria-controls="udl-standard-tools"
               data-help-key="chat_standard_tools_toggle"
-              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`}
+              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`}
           >
               {standardToolsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
               <ShieldCheck size={11} />
@@ -594,14 +747,14 @@ function UDLGuideModal(props) {
                   </label>
               </div>
               <div className="flex gap-2 mb-2">
-                  <input aria-label={t('common.standards_region_framework_placeholder')}
+                  <input aria-label={t('standards.region_framework_placeholder')}
                       type="text"
                       value={aiStandardRegion}
                       onChange={(e) => setAiStandardRegion(e.target.value)}
                       data-help-key="standards_region_input" placeholder={t('standards.region_framework_placeholder')}
                       className={`w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`}
                   />
-                  <input aria-label={t('common.text_field')}
+                  <input aria-label={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                       type="text"
                       value={aiStandardQuery}
                       onChange={(e) => setAiStandardQuery(e.target.value)}
@@ -616,30 +769,47 @@ function UDLGuideModal(props) {
                       title={t('standards.search_button_title')}
                       aria-label={t('standards.search_button_title')}
                   >
-                      {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
+                      {isFindingStandards ? <RefreshCw size={14} className="motion-safe:animate-spin" aria-hidden="true"/> : <Search size={14} aria-hidden="true"/>}
                   </button>
               </div>
+              {/* 4.1.3: results replaced the region with no focus change, so a
+                  screen-reader user was never told the search had returned.
+                  The count is announced; the list itself is not read aloud. */}
+              <p role="status" aria-live="polite" className="sr-only">
+                  {isFindingStandards
+                      ? tx('standards.searching', 'Searching for standards…')
+                      : (suggestedStandards.length > 0
+                          ? (t('standards.results_count', { count: suggestedStandards.length })
+                              || (suggestedStandards.length + ' standards found'))
+                          : '')}
+              </p>
               {suggestedStandards.length > 0 && (
-                  <div className={`max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === 'dark' ? 'bg-slate-900 border-slate-700 divide-slate-700' : theme === 'contrast' ? 'bg-black border-white divide-white' : 'bg-white border-slate-200 divide-slate-100'}`}>
+                  <ul className={`max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === 'dark' ? 'bg-slate-900 border-slate-700 divide-slate-700' : theme === 'contrast' ? 'bg-black border-white divide-white' : 'bg-white border-slate-200 divide-slate-100'}`}>
                       {suggestedStandards.map((std, idx) => (
+                          <li key={idx}>
                           <button
-                              key={idx}
+                              type="button"
+                              // line-clamp-2 truncates the description visually, so the
+                              // rendered text is not the whole name. Spell the full
+                              // label out rather than letting the clamp decide it.
+                              aria-label={`${std.code}${std.framework ? ' (' + std.framework + ')' : ''}: ${std.description}`}
                               onClick={() => {
                                   setStandardsInput(`${std.code}: ${std.description}`);
                                   addToast(t('toasts.applied_standard', {code: std.code}), "success");
                               }}
-                              className={`w-full text-left p-2 transition-colors group flex flex-col gap-1 ${theme === 'dark' ? 'hover:bg-indigo-900/50' : theme === 'contrast' ? 'hover:bg-yellow-900' : 'hover:bg-green-50'}`}
+                              className={`w-full text-left p-2 min-h-[24px] transition-colors group flex flex-col gap-1 ${theme === 'dark' ? 'hover:bg-indigo-900/50' : theme === 'contrast' ? 'hover:bg-yellow-900' : 'hover:bg-green-50'}`}
                           >
-                              <div className="flex justify-between items-start gap-1">
+                              <span className="flex justify-between items-start gap-1">
                                   <span className={`text-[11px] font-bold px-1 rounded border ${theme === 'dark' ? 'bg-indigo-900 text-indigo-200 border-indigo-700' : theme === 'contrast' ? 'bg-black text-yellow-400 border-yellow-400' : 'bg-indigo-50 text-indigo-700 border-indigo-100'}`}>{std.code}</span>
                                   <span className={`text-[11px] uppercase ml-auto ${chatStyles.subText}`}>{std.framework}</span>
-                              </div>
-                              <p className={`text-[11px] leading-snug line-clamp-2 ${chatStyles.text}`}>
+                              </span>
+                              <span className={`block text-[11px] leading-snug line-clamp-2 ${chatStyles.text}`}>
                                   {std.description}
-                              </p>
+                              </span>
                           </button>
+                          </li>
                       ))}
-                  </div>
+                  </ul>
               )}
           </div>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
@@ -654,7 +824,7 @@ function UDLGuideModal(props) {
                       value={udlStandardFramework}
                       onChange={(e) => setUdlStandardFramework(e.target.value)}
                       className={`flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
-                      aria-label={t('standards.consult_header')}
+                      aria-label={tx('standards.framework_aria', 'Standards framework')}
                   >
                       <option value="Common Core ELA">{t('standards.frameworks.ccss_ela')}</option>
                       <option value="Common Core Math">{t('standards.frameworks.ccss_math')}</option>
@@ -664,7 +834,7 @@ function UDLGuideModal(props) {
                       <option value="CASEL Competencies">{t('standards.frameworks.casel')}</option>
                       <option value="Texas Essential Knowledge and Skills (TEKS)">{t('standards.frameworks.teks')}</option>
                   </select>
-                  <select aria-label={t('common.selection')}
+                  <select aria-label={tx('standards.grade_aria', 'Grade level')}
                       data-help-key="chat_grade_select"
                       value={udlStandardGrade}
                       onChange={(e) => setUdlStandardGrade(e.target.value)}
@@ -685,7 +855,7 @@ function UDLGuideModal(props) {
                       <option value="12th Grade">{t('standards.grades.12')}</option>
                   </select>
                   <button
-                      aria-label={t('common.continue')}
+                      aria-label={t('standards.consult_btn_title')}
                       data-help-key="chat_consult_btn"
                       onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
                       className={`p-1.5 rounded transition-colors border ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
@@ -698,14 +868,17 @@ function UDLGuideModal(props) {
           </div>
           <div className={`flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${
              !isAutoFillMode && !hasUsedAutoFill
-                ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse'
+                ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm motion-safe:animate-pulse'
                 : `border border-transparent px-1 ${chatStyles.subText}`
           }`}>
-             <input aria-label={t('common.toggle_blueprint_mode') || 'Toggle Blueprint Mode'}
+             {/* No aria-label here on purpose: the visible <label htmlFor> below
+                 already names this checkbox. An aria-label would OVERRIDE that
+                 visible text and break 2.5.3 Label in Name for voice control. */}
+             <input
                 type="checkbox"
                 checked={isAutoFillMode}
                 onChange={handleAutoFillToggle}
-                className={`rounded h-3.5 w-3.5 cursor-pointer ${theme === 'contrast' ? 'bg-black border-yellow-400 checked:bg-yellow-400' : 'border-slate-300 text-indigo-600 focus:ring-indigo-500'}`}
+                className={`rounded h-6 w-6 shrink-0 cursor-pointer ${theme === 'contrast' ? 'bg-black border-yellow-400 checked:bg-yellow-400' : 'border-slate-300 text-indigo-600 focus:ring-indigo-500'}`}
                 id="udl-autofill-check"
                 data-help-key="chat_autofill"
              />
@@ -716,7 +889,7 @@ function UDLGuideModal(props) {
              </label>
           </div>
           <div className="flex gap-2">
-             <input aria-label={t('common.enter_udl_input')}
+             <input aria-label={tx('chat_guide.input_aria', 'Ask the UDL guide a question')}
                 ref={udlInputRef}
                 type="text"
                 value={udlInput}
@@ -734,7 +907,9 @@ function UDLGuideModal(props) {
                 data-help-key="chat_input"
              />
              <button
-                 aria-label={t('common.show')}
+                 aria-label={isShowMeMode
+                     ? tx('chat_guide.send_showme_aria', 'Show me where this is on screen')
+                     : tx('chat_guide.send_aria', 'Send message')}
                 onClick={() => handleSendUDLMessage()}
                 disabled={!udlInput.trim() || isChatProcessing}
                 className={`p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`}
@@ -2170,7 +2345,7 @@ function AIBackendModalBody(props) {
                   <div className="rounded-xl border border-green-200 bg-green-50 p-3">
                     <p className="text-xs font-black text-green-900">✅ {(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
                     <p className="text-[11px] text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
-                    <button data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
+                    <button data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
                   </div>
                 )}
                 {guidedTestVisible && (<>
