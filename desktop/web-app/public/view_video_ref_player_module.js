@@ -308,7 +308,7 @@ function VideoRefPlayerOverlay({
     type: "button",
     onClick: onClose,
     "data-alloflow-close-on-escape": "true",
-    className: "text-slate-400 hover:text-slate-700 text-2xl leading-none px-2 py-1",
+    className: "text-slate-600 hover:text-slate-700 text-2xl leading-none px-2 py-1",
     "aria-label": t('video_ref.close') || 'Close video card'
   }, "\xD7")), /*#__PURE__*/React.createElement("div", {
     className: "p-5 overflow-y-auto flex-1"

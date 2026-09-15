@@ -491,6 +491,14 @@
   // richer focus styles still win: theirs load later and at higher specificity.
   st.textContent += '[data-stem-tool-shell] :is(button,a,input,select,textarea,summary,[role=tab],[role=button],[role=slider],[tabindex]):focus-visible{outline:3px solid currentColor;outline-offset:2px}' +
     '@media (prefers-reduced-motion:reduce){[data-stem-tool-shell] *,[data-stem-tool-shell] *::before,[data-stem-tool-shell] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}';
+  // Fullscreen sizing floor. Most STEM stages carry a fixed or clamped height that
+  // is right in the page - 260px, clamp(360px,52vw,460px), maxHeight 480px - and
+  // which, left alone, makes "fullscreen" a small picture centred in black. The
+  // marker attribute __alloStemFS sets is the one thing every fullscreen stage has
+  // in common, so the override lives here rather than in 60 separate inline styles.
+  // Only the stage itself is touched; what a tool lays out inside it is its own.
+  st.textContent += '[data-allo-fullscreen-active]{max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important}' +
+    '[data-allo-fullscreen-active]>canvas,[data-allo-fullscreen-active]>div>canvas{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important}';
   if (document.head) document.head.appendChild(st);
 })();
 

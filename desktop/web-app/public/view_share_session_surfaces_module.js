@@ -507,7 +507,7 @@ function ClassMailboxSetupView(props) {
     const rt = Object.values(mbRoster).filter(s => s.rtc).length;
     return rt ? ` · ${rt} real-time ⚡` : '';
   })(), ")"), Object.keys(mbRoster).length === 0 && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-400"
+    className: "text-xs text-slate-600"
   }, t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'), Object.keys(mbRoster).length > 0 && /*#__PURE__*/React.createElement("ul", {
     "aria-labelledby": "alloflow-mailbox-roster-status",
     className: "m-0 list-none space-y-0.5 p-0"
@@ -515,7 +515,7 @@ function ClassMailboxSetupView(props) {
     const stale = mbNow && s.at && mbNow - s.at > 150000;
     return /*#__PURE__*/React.createElement("li", {
       key: uid,
-      className: `flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`
+      className: `flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-600' : 'text-slate-700'}`
     }, /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 break-words text-left font-bold"
     }, s.name, stale ? ' · away?' : ''), /*#__PURE__*/React.createElement("span", {
