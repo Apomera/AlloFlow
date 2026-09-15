@@ -473,7 +473,8 @@ describe('homework QR hardening', () => {
     expect(rootSource).toContain('<AssignmentCenterModal');
     expect(rootSource).toContain('homeworkExpiryDays * 24 * 60 * 60 * 1000');
     expect(shareSessionSurfacesSource).toContain('Selectable homework link');
-    expect(rootSource).toContain('Homework ready ·');
+    // The homework strip became a header pill (2026-09-14): the host passes mode: 'homework' on liveStatus.
+    expect(rootSource).toContain("{ mode: 'homework', nickname: studentNickname");
     expect(sessionModalSource).toContain('isProjectionMode');
     expect(sessionModalSource).toContain('Live session readiness');
     expect(sessionModalSource).toContain('Selectable student join link');

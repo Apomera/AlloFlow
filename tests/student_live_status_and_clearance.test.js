@@ -59,7 +59,7 @@ describe('student live-session status lives in the header', () => {
   });
 
   it('is fed by the host with nickname, AI status, connection, host state, and the three actions', () => {
-    const site = anti.indexOf('liveStatus={!isTeacherMode && activeSessionCode ? {');
+    const site = anti.indexOf('liveStatus={!isTeacherMode && !activeSessionCode &&');
     expect(site).toBeGreaterThan(0);
     const props = anti.slice(site, anti.indexOf('} : null}', site));
     for (const field of ['nickname: studentNickname', 'aiConfigured: studentAiConfigured', 'aiSetupAllowed: studentAiSetupAllowed', 'connection: liveSessionConnectionState.status', 'hostState: liveHostConnectionState', 'retryConnection: retryLiveSessionConnection', 'leave: leaveLiveSession', 'changeCodename: () => setShowStudentWelcome(true)']) {
@@ -72,9 +72,9 @@ describe('student live-session status lives in the header', () => {
     expect(anti).toContain("window.__alloQrStudentMode?.type === 'mailbox-live' && (mbJoinError || (mbJoinStatus && !activeSessionCode)) && (");
     expect(anti).not.toContain("(liveJoinStatus || activeSessionCode) && (");
     expect(anti).not.toContain("(mbJoinStatus || activeSessionCode) && (");
-    // Codename lives in the header popover now; the strips no longer carry it
-    // (the homework-ready strip, a different mode, still does).
-    expect(anti.match(/studentNickname \? 'Change codename' : 'Set codename'/g)?.length).toBe(1);
+    // Codename lives in the header popover now; the strips no longer carry it.
+    // ...and since the homework strip moved too, no strip carries it any more.
+    expect(anti.match(/studentNickname \? 'Change codename' : 'Set codename'/g)).toBeNull();
     expect(antiMirror).toBe(anti);
   });
 });
@@ -137,7 +137,7 @@ describe('teacher signals live in the header popover (2026-09-14)', () => {
   const anti = read('AlloFlowANTI.txt');
   const header = read('view_header_source.jsx');
   it('the host feeds signal options, the current signal, send, clear and the privacy note through liveStatus', () => {
-    const site = anti.indexOf('liveStatus={!isTeacherMode && activeSessionCode ? {');
+    const site = anti.indexOf('liveStatus={!isTeacherMode && !activeSessionCode &&');
     const props = anti.slice(site, anti.indexOf("})() : null } : null}", site));
     for (const s of ['signals: (user && user.uid) ? (() => {', 'LIVE_SIGNAL_FRESH_MS', "options: LIVE_SIGNAL_OPTIONS.map(", 'send: (id) => {', 'clear: () => {', "privacyNote: t('live_signals.privacy_note')"]) expect(props).toContain(s);
     // Enum-only: send refuses ids outside LIVE_SIGNAL_OPTIONS.
@@ -154,6 +154,26 @@ describe('teacher signals live in the header popover (2026-09-14)', () => {
     expect(header).toContain("{_liveSignalCurrent && <span aria-hidden=\"true\" title={_liveSignalCurrent.label}>{_liveSignalCurrent.emoji}</span>}");
     expect(header).toContain("onClick={() => liveStatus.signals.clear()}");
     expect(read('view_header_module.js')).toContain('data-live-signals');
+    expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
+  });
+});
+
+describe('homework-mode students get the same header status control (2026-09-14)', () => {
+  const anti = read('AlloFlowANTI.txt');
+  const header = read('view_header_source.jsx');
+  it('the fixed homework strip is gone and liveStatus carries mode: homework for the assignment entry types', () => {
+    expect(anti).not.toContain("t('mailbox.homework_ready') || 'Homework ready ·'");
+    expect(anti).toContain("liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? {");
+    expect(anti.match(/studentNickname \? 'Change codename' : 'Set codename'/g)).toBeNull();
+    expect(read('desktop/web-app/src/AlloFlowANTI.txt')).toBe(anti);
+  });
+  it('the header shows a violet Homework pill whose popover has codename and AI but no code, connection, signals or leave', () => {
+    expect(header).toContain("const _isHomeworkStatus = !!(liveStatus && liveStatus.mode === 'homework');");
+    expect(header).toContain("{!isTeacherMode && (activeSessionCode || _isHomeworkStatus) && (");
+    expect(header).toContain("data-live-status-mode={_isHomeworkStatus ? 'homework' : 'live'}");
+    expect(header).toContain("${_isHomeworkStatus ? 'bg-violet-600 border-violet-300/60' : _liveTone}");
+    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className=\"font-bold text-slate-600\">{t('session.code') || 'Class code'}</span>");
+    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className=\"font-bold text-slate-600\">{'Connection'}</span>");
     expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
   });
 });

@@ -425,6 +425,7 @@ function HeaderBar(props) {
     : _liveConnectionStatus === 'access-required' ? (t('live_connection.access') || 'Access needed')
     : (t('live_connection.connected') || 'Connected');
   const _liveTone = _liveHostStale ? 'bg-rose-600 border-rose-300/60' : _liveConnected ? 'bg-emerald-600 border-emerald-300/60' : 'bg-amber-600 border-amber-300/60';
+  const _isHomeworkStatus = !!(liveStatus && liveStatus.mode === 'homework');
   const _liveSignalCurrent = (liveStatus && liveStatus.signals && liveStatus.signals.current && Array.isArray(liveStatus.signals.options))
     ? (liveStatus.signals.options.find((opt) => opt.id === liveStatus.signals.current) || null)
     : null;
@@ -923,7 +924,7 @@ function HeaderBar(props) {
                     <span className="hidden lg:inline">{t('session.join')}</span>
                   </button>
                 )}
-                {!isTeacherMode && activeSessionCode && (
+                {!isTeacherMode && (activeSessionCode || _isHomeworkStatus) && (
                   <div className="relative">
                     <button type="button"
                       onClick={() => setIsLiveStatusOpen(open => !open)}
@@ -931,26 +932,27 @@ function HeaderBar(props) {
                       aria-expanded={isLiveStatusOpen}
                       data-help-key="header_live_status"
                       data-live-status-trigger=""
-                      title={'Live session status'}
-                      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-black text-white transition-colors ${_liveTone}`}
+                      data-live-status-mode={_isHomeworkStatus ? 'homework' : 'live'}
+                      title={_isHomeworkStatus ? 'Homework status' : 'Live session status'}
+                      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-black text-white transition-colors ${_isHomeworkStatus ? 'bg-violet-600 border-violet-300/60' : _liveTone}`}
                     >
-                      <Wifi size={16} className={_liveConnected ? 'animate-pulse motion-reduce:animate-none' : ''} aria-hidden="true" />
-                      <span>{t('header.live_session') || 'Live:'} {activeSessionCode}</span>
+                      {_isHomeworkStatus ? <BookOpen size={16} aria-hidden="true" /> : <Wifi size={16} className={_liveConnected ? 'animate-pulse motion-reduce:animate-none' : ''} aria-hidden="true" />}
+                      <span>{_isHomeworkStatus ? 'Homework' : ((t('header.live_session') || 'Live:') + ' ' + activeSessionCode)}</span>
                       {_liveSignalCurrent && <span aria-hidden="true" title={_liveSignalCurrent.label}>{_liveSignalCurrent.emoji}</span>}
-                      <span className="sr-only">{_liveConnectionLabel}{_liveSignalCurrent ? '. Signal sent: ' + _liveSignalCurrent.label : ''}</span>
+                      <span className="sr-only">{_isHomeworkStatus ? ((liveStatus && liveStatus.nickname) || 'Student') : _liveConnectionLabel}{_liveSignalCurrent ? '. Signal sent: ' + _liveSignalCurrent.label : ''}</span>
                     </button>
                     {isLiveStatusOpen && (
                       <>
                         <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className="absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-2xl border border-slate-200 p-3 z-[100] text-left text-slate-800">
                           <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2 mb-2">
-                            <h2 id="header-live-status-title" className="text-sm font-black text-slate-800">{'Live session'}</h2>
+                            <h2 id="header-live-status-title" className="text-sm font-black text-slate-800">{_isHomeworkStatus ? 'Homework' : 'Live session'}</h2>
                             <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">✕</button>
                           </div>
                           <div className="space-y-1.5 text-xs">
-                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>
+                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>}
                             <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Codename'}</span><span className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</span></div>
                             <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'AI'}</span><span>{_liveAiLabel}</span></div>
-                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Connection'}</span><span className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</span></div>
+                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Connection'}</span><span className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</span></div>}
                           </div>
                           {liveStatus && liveStatus.signals && Array.isArray(liveStatus.signals.options) && liveStatus.signals.options.length > 0 && (
                             <fieldset className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" data-live-signals="">
