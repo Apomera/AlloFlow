@@ -2482,7 +2482,19 @@
     }
     var t = props.t;
     return h('div', null,
-      h('div', { style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + viewBorder('#334155'), background: viewBg('#030714') } },
+      h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+          style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + viewBorder('#334155'), background: viewBg('#030714') } },
+        h('button', {
+          type: 'button',
+          'data-allo-fs-btn': 'true',
+          'aria-pressed': 'false',
+          'aria-label': t('stem.astronomy.enter_fullscreen', 'View the observatory fullscreen'),
+          'data-fs-out': t('stem.astronomy.enter_fullscreen', 'View the observatory fullscreen'),
+          'data-fs-in': t('stem.astronomy.exit_fullscreen', 'Exit fullscreen observatory (Escape)'),
+          // Top-LEFT: the catalogue attribution badge already owns the top-right
+          // corner, and covering a licence credit is not an option.
+          style: { position: 'absolute', top: 12, left: 12, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(3,7,18,0.85)', border: '1px solid rgba(148,163,184,0.5)', color: '#cbd5e1', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+        }, h('span', { 'aria-hidden': 'true' }, '⛶')),
         h('div', { ref: host, id: 'astronomy-observatory-3d', className: 'astr-focus', tabIndex: 0, role: 'group', 'aria-label': props.sceneLabel, 'aria-describedby': 'astronomy-observatory-camera-help astronomy-observatory-summary', style: { position: 'relative', height: 'clamp(380px, 56vw, 620px)', width: '100%', outlineOffset: -4 } }),
         h('div', { style: { position: 'absolute', top: 12, right: 12, pointerEvents: 'none', padding: '6px 9px', borderRadius: 8, background: 'rgba(3,7,18,.8)', color: '#cbd5e1', fontSize: 11, letterSpacing: 0.6, maxWidth: '45%', textAlign: 'right' } },
           catalog && !catalog.fallback ? t('stem.astronomy.obs_catalog_badge', 'HYG v4.1 stars · CC BY-SA 4.0') : t('stem.astronomy.obs_catalog_fallback_badge', 'Built-in bright stars only')),
