@@ -24036,7 +24036,17 @@ const d = labToolData.waterCycle || {};
               // Dissolve the outer rim into the fog colour. Raising scene fog
               // enough to hide the plane's edge washed the depth grading out of
               // the whole scene, so the fade is painted only where it is needed.
-              var oceanRimX3d = Math.min(1, Math.max(0, (oceanLocalX3d + 9) / 3.2));
+              // Fade BOTH x edges, the way the y term already does with abs().
+              // The far edge (-9, open water) keeps its original 3.2 span so the
+              // tuned horizon is unchanged. The near edge (+9) was previously
+              // unfaded -- (x+9)/3.2 saturates for every x > -5.8 -- so the plane
+              // ended in a hard bright cut 6.5 units PAST the shoreline (+2.5),
+              // reading as a rectangular slab floating at the bottom of frame.
+              // It gets a wider 4.5 span because it is nearest the camera, where
+              // a tight fade would band visibly.
+              var oceanRimFar3d = Math.min(1, Math.max(0, (oceanLocalX3d + 9) / 3.2));
+              var oceanRimNear3d = Math.min(1, Math.max(0, (9 - oceanLocalX3d) / 4.5));
+              var oceanRimX3d = Math.min(oceanRimFar3d, oceanRimNear3d);
               var oceanRimY3d = Math.min(1, Math.max(0, (5 - Math.abs(oceanLocalY3d)) / 2.2));
               oceanGradeColor3d.lerp(oceanFogColor3d, (1 - Math.min(oceanRimX3d, oceanRimY3d)) * 0.9);
               oceanColorAttribute3d.setXYZ(oceanColorIndex3d,
@@ -29191,10 +29201,21 @@ const d = labToolData.waterCycle || {};
             hydroPoints >= 80 ? 'Hydro Explorer' :
             hydroPoints >= 40 ? 'Watershed Scout' :
             hydroPoints >= 20 ? 'Droplet' : 'Observer';
-          var weatherLabel = currentTemp < 0 ? 'Cold-surface scenario' :
+          // Every branch here names the SCENARIO the sliders describe, never a
+          // weather outcome. Surface temperature alone cannot produce fog or
+          // rain -- those need moisture and a dewpoint spread this model does
+          // not carry -- and the 2-18 band contains the default climTemp of 15,
+          // so the old 'Fog and rain' label asserted precipitation to every
+          // student on first open, over a scene showing neither.
+          // The bands tile the whole -20..45 slider with no holes. The previous
+          // boundaries left 0, 1 and 2 C reporting 'Balanced cycle' -- water's
+          // freezing point, labelled as balanced, while -1 C correctly read as
+          // cold -- so sweeping the slider through 0 moved the label AWAY from
+          // cold exactly where ice matters most. 18 C fell through the same way.
+          var weatherLabel = currentTemp <= 2 ? 'Cold-surface scenario' :
             currentTemp > 30 ? 'Hot-surface scenario' :
             currentSolar < 0.3 ? 'Night cycle' :
-            currentTemp > 2 && currentTemp < 18 ? 'Fog and rain' :
+            currentTemp < 18 ? 'Mild-surface scenario' :
             'Balanced cycle';
           var evaporationIndex = Math.max(0.2, Math.min(2, currentSolar * (currentTemp / 15)));
           var wcClimateInterpretation = evaporationIndex >= 1.35 ? 'Evaporation is accelerated by the current solar energy and temperature; wind changes how vapor is transported.' : evaporationIndex <= 0.7 ? 'Evaporation is slower because solar energy or temperature is lower; wind can still transport vapor after it leaves.' : 'Evaporation is moderate: solar energy and temperature are near the teaching baseline; wind changes transport.';
