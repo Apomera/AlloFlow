@@ -424,8 +424,24 @@ function HeaderBar(props) {
     : _liveConnectionStatus === 'failed' ? (t('live_connection.failed') || 'Connection lost')
     : _liveConnectionStatus === 'access-required' ? (t('live_connection.access') || 'Access needed')
     : (t('live_connection.connected') || 'Connected');
-  const _liveTone = _liveHostStale ? 'bg-rose-600 border-rose-300/60' : _liveConnected ? 'bg-emerald-600 border-emerald-300/60' : 'bg-amber-600 border-amber-300/60';
+  // The contrast theme is black + yellow only; a green/amber/red pill is off
+  // palette there, so state is carried by the label instead (2026-09-15).
+  const _liveTone = theme === 'contrast'
+    ? 'bg-black border-yellow-400 !text-yellow-400'
+    // 600-weight fills read 3.3-3.8:1 against white text; the 700/800 shades
+    // clear 4.5:1 (measured in Chromium 2026-09-15).
+    : _liveHostStale ? 'bg-rose-700 border-rose-300/60' : _liveConnected ? 'bg-emerald-700 border-emerald-300/60' : 'bg-amber-800 border-amber-300/60';
   const _isHomeworkStatus = !!(liveStatus && liveStatus.mode === 'homework');
+  // Theme tokens for the status popover (2026-09-15). It was hard-coded light,
+  // so in dark/contrast themes a white card with slate text sat under a dark
+  // header. _skin is the same source the Text/Voice panels use.
+  const _liveDark = theme === 'dark' || theme === 'contrast';
+  const _livePanel = _liveDark ? _skin.panel : 'bg-white border-slate-200 text-slate-800';
+  const _liveDivider = _liveDark ? _skin.divider : 'border-slate-200';
+  const _liveLabel = _liveDark ? _skin.label : 'text-slate-600';
+  const _liveMuted = _liveDark ? _skin.muted : 'text-slate-500';
+  const _liveSurface = _liveDark ? _skin.surface : 'bg-slate-50 border-slate-200';
+  const _liveChoice = _liveDark ? _skin.field : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100';
   const _liveSignalCurrent = (liveStatus && liveStatus.signals && liveStatus.signals.current && Array.isArray(liveStatus.signals.options))
     ? (liveStatus.signals.options.find((opt) => opt.id === liveStatus.signals.current) || null)
     : null;
@@ -934,51 +950,52 @@ function HeaderBar(props) {
                       data-live-status-trigger=""
                       data-live-status-mode={_isHomeworkStatus ? 'homework' : 'live'}
                       title={_isHomeworkStatus ? 'Homework status' : 'Live session status'}
-                      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-black text-white transition-colors ${_isHomeworkStatus ? 'bg-violet-600 border-violet-300/60' : _liveTone}`}
+                      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl border px-3 text-xs font-black text-white transition-colors ${_isHomeworkStatus ? (theme === 'contrast' ? 'bg-black border-yellow-400 !text-yellow-400' : 'bg-violet-700 border-violet-300/60') : _liveTone}`}
                     >
                       {_isHomeworkStatus ? <BookOpen size={16} aria-hidden="true" /> : <Wifi size={16} className={_liveConnected ? 'animate-pulse motion-reduce:animate-none' : ''} aria-hidden="true" />}
                       <span>{_isHomeworkStatus ? 'Homework' : ((t('header.live_session') || 'Live:') + ' ' + activeSessionCode)}</span>
                       {_liveSignalCurrent && <span aria-hidden="true" title={_liveSignalCurrent.label}>{_liveSignalCurrent.emoji}</span>}
+                      {theme === 'contrast' && !_isHomeworkStatus && <span className="font-bold">· {_liveConnectionLabel}</span>}
                       <span className="sr-only">{_isHomeworkStatus ? ((liveStatus && liveStatus.nickname) || 'Student') : _liveConnectionLabel}{_liveSignalCurrent ? '. Signal sent: ' + _liveSignalCurrent.label : ''}</span>
                     </button>
                     {isLiveStatusOpen && (
                       <>
-                        <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className="absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-xl shadow-2xl border border-slate-200 p-3 z-[100] text-left text-slate-800">
-                          <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2 mb-2">
-                            <h2 id="header-live-status-title" className="text-sm font-black text-slate-800">{_isHomeworkStatus ? 'Homework' : 'Live session'}</h2>
-                            <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className="min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500">✕</button>
+                        <div ref={_liveStatusRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-live-status-title" data-live-status-dialog="" className={`absolute top-full right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl shadow-2xl border p-3 z-[100] text-left ${_livePanel}`}>
+                          <div className={`flex items-center justify-between gap-2 border-b pb-2 mb-2 ${_liveDivider}`}>
+                            <h2 id="header-live-status-title" className="text-sm font-black">{_isHomeworkStatus ? 'Homework' : 'Live session'}</h2>
+                            <button type="button" data-autofocus onClick={handleCloseLiveStatus} aria-label={t('common.close') || 'Close'} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 ${_liveDark ? _skin.dismiss : 'text-slate-500 hover:text-red-700'}`}>✕</button>
                           </div>
                           <div className="space-y-1.5 text-xs">
-                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>}
-                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Codename'}</span><span className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</span></div>
-                            <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'AI'}</span><span>{_liveAiLabel}</span></div>
-                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className="font-bold text-slate-600">{'Connection'}</span><span className={_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800'} role="status">{_liveConnectionLabel}</span></div>}
+                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className={`font-bold ${_liveLabel}`}>{t('session.code') || 'Class code'}</span><span className="font-mono font-bold">{activeSessionCode}</span></div>}
+                            <div className="flex items-baseline justify-between gap-3"><span className={`font-bold ${_liveLabel}`}>{'Codename'}</span><span className="truncate">{(liveStatus && liveStatus.nickname) || ('Student')}</span></div>
+                            <div className="flex items-baseline justify-between gap-3"><span className={`font-bold ${_liveLabel}`}>{'AI'}</span><span>{_liveAiLabel}</span></div>
+                            {!_isHomeworkStatus && <div className="flex items-baseline justify-between gap-3"><span className={`font-bold ${_liveLabel}`}>{'Connection'}</span><span className={_liveDark ? 'font-bold' : (_liveConnected ? 'font-bold text-emerald-700' : 'font-bold text-amber-800')} role="status">{_liveConnectionLabel}</span></div>}
                           </div>
                           {liveStatus && liveStatus.signals && Array.isArray(liveStatus.signals.options) && liveStatus.signals.options.length > 0 && (
-                            <fieldset className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2" data-live-signals="">
-                              <legend className="px-1 text-[11px] font-bold uppercase tracking-wide text-slate-600">{t('live_signals.title') || 'Send your teacher a signal'}</legend>
+                            <fieldset className={`mt-3 rounded-lg border p-2 ${_liveSurface}`} data-live-signals="">
+                              <legend className={`px-1 text-[11px] font-bold uppercase tracking-wide ${_liveLabel}`}>{t('live_signals.title') || 'Send your teacher a signal'}</legend>
                               <div className="flex flex-col gap-1.5">
                                 {liveStatus.signals.options.map((opt) => (
-                                  <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-xs font-semibold leading-tight ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? 'border-amber-400 bg-amber-100 text-amber-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100'}`}>
+                                  <button key={opt.id} type="button" aria-pressed={_liveSignalCurrent ? _liveSignalCurrent.id === opt.id : false} onClick={() => { liveStatus.signals.send(opt.id); handleCloseLiveStatus(); }} className={`min-h-9 rounded-lg border px-2.5 py-1.5 text-left text-xs font-semibold leading-tight ${_liveSignalCurrent && _liveSignalCurrent.id === opt.id ? (_liveDark ? _skin.accent : 'border-amber-400 bg-amber-100 text-amber-900') : _liveChoice}`}>
                                     <span aria-hidden="true">{opt.emoji} </span>{opt.label}
                                   </button>
                                 ))}
                               </div>
                               {_liveSignalCurrent && (
-                                <button type="button" onClick={() => liveStatus.signals.clear()} className="mt-1.5 text-[11px] font-bold text-indigo-700 hover:text-indigo-900">{t('live_signals.clear') || 'Clear my signal'}</button>
+                                <button type="button" onClick={() => liveStatus.signals.clear()} className={`mt-1.5 text-[11px] font-bold ${_liveDark ? _skin.action : 'text-indigo-700 hover:text-indigo-900'}`}>{t('live_signals.clear') || 'Clear my signal'}</button>
                               )}
-                              <p className="mt-1.5 text-[10px] leading-snug text-slate-500">{liveStatus.signals.privacyNote}</p>
+                              <p className={`mt-1.5 text-[10px] leading-snug ${_liveMuted}`}>{liveStatus.signals.privacyNote}</p>
                             </fieldset>
                           )}
                           <div className="mt-3 flex flex-wrap gap-2">
                             {liveStatus && typeof liveStatus.changeCodename === 'function' && (
-                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.changeCodename(); }} className="rounded-lg border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100">{liveStatus.nickname ? 'Change codename' : 'Set codename'}</button>
+                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.changeCodename(); }} className={`rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100'}`}>{liveStatus.nickname ? 'Change codename' : 'Set codename'}</button>
                             )}
                             {!_liveConnected && liveStatus && typeof liveStatus.retryConnection === 'function' && (
-                              <button type="button" onClick={() => liveStatus.retryConnection()} className="rounded-lg bg-amber-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-amber-800">{t('mailbox.retry') || 'Retry'}</button>
+                              <button type="button" onClick={() => liveStatus.retryConnection()} className={`rounded-lg px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.accent : 'bg-amber-700 text-white hover:bg-amber-800'}`}>{t('mailbox.retry') || 'Retry'}</button>
                             )}
                             {liveStatus && typeof liveStatus.leave === 'function' && (
-                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.leave(); }} className="ml-auto rounded-lg border border-rose-300 bg-white px-2.5 py-1.5 text-xs font-bold text-rose-800 hover:bg-rose-50">{t('mailbox.leave_session') || 'Leave session'}</button>
+                              <button type="button" onClick={() => { handleCloseLiveStatus(); liveStatus.leave(); }} className={`ml-auto rounded-lg border px-2.5 py-1.5 text-xs font-bold ${_liveDark ? _skin.surface : 'border-rose-300 bg-white text-rose-800 hover:bg-rose-50'}`}>{t('mailbox.leave_session') || 'Leave session'}</button>
                             )}
                           </div>
                         </div>

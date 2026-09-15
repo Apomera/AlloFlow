@@ -43,7 +43,8 @@ describe('student live-session status lives in the header', () => {
   });
 
   it('colours the button by connection state, stale host first', () => {
-    expect(header).toContain("const _liveTone = _liveHostStale ? 'bg-rose-600 border-rose-300/60' : _liveConnected ? 'bg-emerald-600 border-emerald-300/60' : 'bg-amber-600 border-amber-300/60'");
+    // (fills darkened to 700/800 for contrast, and the contrast theme overrides them: see below)
+    expect(header).toContain("_liveHostStale ? 'bg-rose-700 border-rose-300/60' : _liveConnected ? 'bg-emerald-700 border-emerald-300/60' : 'bg-amber-800 border-amber-300/60'");
     expect(header).toContain("const _liveConnected = !_liveHostStale && (_liveConnectionStatus === 'connected' || _liveConnectionStatus === 'idle')");
   });
 
@@ -171,9 +172,38 @@ describe('homework-mode students get the same header status control (2026-09-14)
     expect(header).toContain("const _isHomeworkStatus = !!(liveStatus && liveStatus.mode === 'homework');");
     expect(header).toContain("{!isTeacherMode && (activeSessionCode || _isHomeworkStatus) && (");
     expect(header).toContain("data-live-status-mode={_isHomeworkStatus ? 'homework' : 'live'}");
-    expect(header).toContain("${_isHomeworkStatus ? 'bg-violet-600 border-violet-300/60' : _liveTone}");
-    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className=\"font-bold text-slate-600\">{t('session.code') || 'Class code'}</span>");
-    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className=\"font-bold text-slate-600\">{'Connection'}</span>");
+    expect(header).toContain("bg-violet-700 border-violet-300/60");
+    // (the row labels moved to the themed _liveLabel token, 2026-09-15)
+    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className={`font-bold ${_liveLabel}`}>{t('session.code') || 'Class code'}</span>");
+    expect(header).toContain("{!_isHomeworkStatus && <div className=\"flex items-baseline justify-between gap-3\"><span className={`font-bold ${_liveLabel}`}>{'Connection'}</span>");
+    expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
+  });
+});
+
+describe('the status pill and popover follow the app theme (2026-09-15)', () => {
+  const header = read('view_header_source.jsx');
+  it('the popover takes its colours from _headerPanelSkin in dark and contrast', () => {
+    expect(header).toContain("const _liveDark = theme === 'dark' || theme === 'contrast';");
+    expect(header).toContain("const _livePanel = _liveDark ? _skin.panel : 'bg-white border-slate-200 text-slate-800';");
+    // No hard-coded light surface left on the dialog itself.
+    const start = header.indexOf('data-live-status-dialog=""');
+    const dialog = header.slice(start, header.indexOf('<div aria-hidden="true" className="fixed inset-0 z-[90]" onClick={handleCloseLiveStatus}>', start));
+    expect(dialog).not.toMatch(/className="[^"]*\bbg-white\b/);
+    expect(dialog).not.toMatch(/className="[^"]*\btext-slate-800\b/);
+    expect(dialog).toContain('${_livePanel}');
+    expect(dialog).toContain('${_liveLabel}');
+    expect(dialog).toContain('${_liveSurface}');
+  });
+
+  it('uses the contrast palette for the pill and puts the state in the label there', () => {
+    expect(header).toContain("const _liveTone = theme === 'contrast'\n    ? 'bg-black border-yellow-400 !text-yellow-400'");
+    expect(header).toContain("theme === 'contrast' ? 'bg-black border-yellow-400 !text-yellow-400' : 'bg-violet-700 border-violet-300/60'");
+    expect(header).toContain("{theme === 'contrast' && !_isHomeworkStatus && <span className=\"font-bold\">· {_liveConnectionLabel}</span>}");
+  });
+
+  it('fills the pill at 700/800 weight so white text clears 4.5:1 (measured in Chromium)', () => {
+    for (const cls of ['bg-rose-700', 'bg-emerald-700', 'bg-amber-800', 'bg-violet-700']) expect(header).toContain(cls);
+    for (const cls of ['bg-rose-600 border-rose-300/60', 'bg-emerald-600 border-emerald-300/60', 'bg-amber-600 border-amber-300/60', 'bg-violet-600 border-violet-300/60']) expect(header).not.toContain(cls);
     expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
   });
 });
