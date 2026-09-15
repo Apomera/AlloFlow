@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "kind": "alloflow-remediation-completion",
+  "source": {
+    "path": "/Users/hubby/AlloFlow/el_proposal_upload.pdf",
+    "sizeBytes": 160778,
+    "sha256": "20f1b86da5d32b509e150ca5a86959a714d0c13557e78d68b47b487d8a100401"
+  },
+  "compatibility": {
+    "optionsSha256": "cc3336895c87b150085357801f3af1feea2810f455146c186e644d4147015a15",
+    "engineSha256": "6192dcfed6607f3df6b787f4a5a0b4d1033fcba878810f74b842bad53d3421c8"
+  },
+  "attempt": {
+    "jobId": null,
+    "attemptId": null,
+    "attemptNumber": 0
+  },
+  "completedAt": "2026-08-19T13:16:31.509Z",
+  "artifacts": [
+    {
+      "role": "accessibleHtml",
+      "relativePath": "el_proposal_upload-accessible.html",
+      "sizeBytes": 30631,
+      "sha256": "6ccce2c8673283727e2b6986476721b532e9a3e4d50cf2bcd32e5c8f3179c06c"
+    },
+    {
+      "role": "report",
+      "relativePath": "el_proposal_upload-remediation-report.json",
+      "sizeBytes": 1561,
+      "sha256": "e74de0514251c5d77468ead5fa2acdff8d1e26df13f0c1616557a25dd44f1cc0"
+    }
+  ]
+}

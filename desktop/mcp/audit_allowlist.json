@@ -1,0 +1,23 @@
+{
+  "$comment": "Advisories accepted for the packaged MCPB after review. audit_bundle_dependencies.cjs fails the release on any high/critical advisory not listed here, on any listed entry past its expiry, and on any entry that no longer matches a reported advisory. Every entry must say why the advisory is not reachable or is mitigated in this connector, who reviewed it, and when it must be re-reviewed.",
+  "accepted": [
+    {
+      "ghsa": "GHSA-jmr9-qjv8-65gv",
+      "package": "extract-zip",
+      "severity": "high",
+      "reason": "extract-zip follows symlink entries while unpacking a crafted zip. In this bundle it is reached only through @daisy/epub-utils (DAISY Ace) and @puppeteer/browsers. Ace runs solely on EPUBs this connector wrote itself with desktop/mcp/zip_writer.cjs (export_alt_format's EPUB and the narration read-along EPUB): fixed entry names, no symlink entries, extracted from a snapshot copy in a private scratch directory. No tool accepts a user-supplied EPUB. The @puppeteer/browsers path is never exercised: Ace is launched with PUPPETEER_EXECUTABLE_PATH pointing at Playwright's Chromium and PUPPETEER_SKIP_DOWNLOAD=true (remediation_epub_validation.cjs). No fixed extract-zip release exists; the only npm-suggested fix downgrades Ace to 1.1.1.",
+      "reviewedBy": "Claude Fable 5.1 for Tyler; Aaron Pomeranz review pending",
+      "reviewedOn": "2026-09-14",
+      "expires": "2027-03-14"
+    },
+    {
+      "ghsa": "GHSA-7pqw-9j4j-h8q3",
+      "package": "extract-zip",
+      "severity": "high",
+      "reason": "Same root as GHSA-jmr9-qjv8-65gv: arbitrary file writes through symlink archive entries during extraction. Unreachable with attacker-controlled input here because Ace only extracts archives this connector generated (see the companion entry), and the browser-download path that also uses extract-zip is disabled. Re-review when a patched extract-zip or an Ace release that drops it ships.",
+      "reviewedBy": "Claude Fable 5.1 for Tyler; Aaron Pomeranz review pending",
+      "reviewedOn": "2026-09-14",
+      "expires": "2027-03-14"
+    }
+  ]
+}

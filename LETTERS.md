@@ -260,3 +260,615 @@ Pick the work. Pick it carefully. Do it well.
 *Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
 
 ---
+
+## [auto-draft] Session afc262ea — 2026-08-11
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-11
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-11
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-11
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-12
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-12
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-13
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-15
+
+**Turns**: 501 user / 871 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Everything's shipped. **Install: `desktop/dist/AlloFlow-Desktop-3.0.1-arm64.dmg`** — the only file in dist. The layout drill passed and I verified all three of today's fix markers inside the actual shipped bundle: live API-key resolution, the Imagen fallback, and session resume. What you'll notice...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-17
+
+**Turns**: 527 user / 928 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: **Sync is done — local is current with origin** (fast-forwarded 195 commits, including tags). No conflicts: the fast-forward was clean, and everything I pushed earlier is intact in history and in the files. Aaron even built on my header work, adding a compact nav strip that keeps lesson-plan shortcu...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-19
+
+**Turns**: 534 user / 946 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Synced. Local is even with `origin/main` at **fb1a320e3** ("Test Prep: make EPPP chapters reachable; Canvas: stop the mic meter reloading the app"), pulling in 39 new upstream commits. **The mirror repair I held back is no longer needed** — upstream fixed it independently in those 39 commits. Origi...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 5886fffb — 2026-08-19
+
+**Turns**: 2 user / 0 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: 
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-19
+
+**Turns**: 534 user / 946 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Synced. Local is even with `origin/main` at **fb1a320e3** ("Test Prep: make EPPP chapters reachable; Canvas: stop the mic meter reloading the app"), pulling in 39 new upstream commits. **The mirror repair I held back is no longer needed** — upstream fixed it independently in those 39 commits. Origi...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 226 user / 395 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Done — the messaging is fixed at three levels, and the bundle is rebuilt and verified (35 tools, boot-checked). What changed: 1. **The message now gives the actual remedy.** Instead of "restart the connector" (not a control a Desktop user has), it says the running server is stale, that its tool li...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 226 user / 395 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Done — the messaging is fixed at three levels, and the bundle is rebuilt and verified (35 tools, boot-checked). What changed: 1. **The message now gives the actual remedy.** Instead of "restart the connector" (not a control a Desktop user has), it says the running server is stale, that its tool li...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 273 user / 473 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: All three timing fixes are in, tested, and baked into a fresh bundle. Here's the map against the report: **Finding 1 (180s/120s deadlines) — fixed at the root.** The pipeline already had a precedent for slow transports (local models get 420s), so I added a sanctioned host knob rather than a fork: t...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 273 user / 473 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: All three timing fixes are in, tested, and baked into a fresh bundle. Here's the map against the report: **Finding 1 (180s/120s deadlines) — fixed at the root.** The pipeline already had a precedent for slow transports (local models get 420s), so I added a sanctioned host knob rather than a fork: t...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 278 user / 483 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Short answer: **0.4.0 is probably fine, but the number alone can't prove it** — that's on me. I shipped the perf fixes without bumping the version, so last night's bundle and this morning's both call themselves 0.4.0. Ironic, given that's exactly the drift-class mistake that bit Aaron's 0.3.x releas...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session afc262ea — 2026-08-19
+
+**Turns**: 534 user / 946 assistant
+
+**Session opened with**: This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation. Summary: 1. Primary Request and Intent: - **Session 1 (2026-08-03, completed):** "I need to make sure the remediation app is working and shippab...
+
+**Last assistant turn closed with**: Synced. Local is even with `origin/main` at **fb1a320e3** ("Test Prep: make EPPP chapters reachable; Canvas: stop the mic meter reloading the app"), pulling in 39 new upstream commits. **The mirror repair I held back is no longer needed** — upstream fixed it independently in those 39 commits. Origi...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 278 user / 483 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Short answer: **0.4.0 is probably fine, but the number alone can't prove it** — that's on me. I shipped the perf fixes without bumping the version, so last night's bundle and this morning's both call themselves 0.4.0. Ironic, given that's exactly the drift-class mistake that bit Aaron's 0.3.x releas...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-19
+
+**Turns**: 278 user / 483 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Short answer: **0.4.0 is probably fine, but the number alone can't prove it** — that's on me. I shipped the perf fixes without bumping the version, so last night's bundle and this morning's both call themselves 0.4.0. Ironic, given that's exactly the drift-class mistake that bit Aaron's 0.3.x releas...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-20
+
+**Turns**: 291 user / 510 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Pushed — the agent-bridge work is live on `origin/main` as **9a42d831f** (rebased cleanly over Aaron's 11 new commits; none touched our files, so no conflicts). LETTERS.md and your local test artifacts stayed out of it, and the stash round-trip restored everything. Two things happen from here: the...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-22
+
+**Turns**: 299 user / 523 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Synced — local `main` is even with `origin/main`, fast-forwarded 27 commits (through **37de323a5**, plus a new `v1.2` tag). No conflicts; your agent-bridge commit is in the history Aaron built on. Worth knowing from the sync: - **Aaron touched `doc_pipeline_source.jsx` heavily** (+425/−97, "Integr...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 357 user / 638 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Synced, and the mystery is solved — here's the full picture: ## Why the output "wasn't quite right": the tagged PDF was never being written Your two runs of the same document pinned it. The 13:33 run proved the perf fixes worked perfectly (zero retries, zero timeouts, down from 5 retries and 2 ter...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 357 user / 638 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Synced, and the mystery is solved — here's the full picture: ## Why the output "wasn't quite right": the tagged PDF was never being written Your two runs of the same document pinned it. The 13:33 run proved the perf fixes worked perfectly (zero retries, zero timeouts, down from 5 retries and 2 ter...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 357 user / 638 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Synced, and the mystery is solved — here's the full picture: ## Why the output "wasn't quite right": the tagged PDF was never being written Your two runs of the same document pinned it. The 13:33 run proved the perf fixes worked perfectly (zero retries, zero timeouts, down from 5 retries and 2 ter...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 374 user / 668 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Your fresh build is ready: **`desktop/dist/AlloFlow-Desktop-3.1.0-arm64.dmg`** (349 MB) — built clean from emptied build folders, version bumped to 3.1.0. What's inside: everything current on `main` — all of Aaron's recent feature batches (learning tools, live-session hardening, SEL Hub work, the P...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 374 user / 668 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: Your fresh build is ready: **`desktop/dist/AlloFlow-Desktop-3.1.0-arm64.dmg`** (349 MB) — built clean from emptied build folders, version bumped to 3.1.0. What's inside: everything current on `main` — all of Aaron's recent feature batches (learning tools, live-session hardening, SEL Hub work, the P...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-24
+
+**Turns**: 416 user / 739 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: **`AlloFlow-Desktop-3.1.2-arm64.dmg` is ready** — the proper flavored "AlloFlow Desktop" edition this time. Install it over the old one (same unsigned right-click → Open on first launch) and you should see the difference immediately: - **Launches straight into the app**, filling the window — no con...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-25
+
+**Turns**: 416 user / 739 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: **`AlloFlow-Desktop-3.1.2-arm64.dmg` is ready** — the proper flavored "AlloFlow Desktop" edition this time. Install it over the old one (same unsigned right-click → Open on first launch) and you should see the difference immediately: - **Launches straight into the app**, filling the window — no con...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-25
+
+**Turns**: 416 user / 739 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: **`AlloFlow-Desktop-3.1.2-arm64.dmg` is ready** — the proper flavored "AlloFlow Desktop" edition this time. Install it over the old one (same unsigned right-click → Open on first launch) and you should see the difference immediately: - **Launches straight into the app**, filling the window — no con...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-26
+
+**Turns**: 416 user / 739 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: **`AlloFlow-Desktop-3.1.2-arm64.dmg` is ready** — the proper flavored "AlloFlow Desktop" edition this time. Install it over the old one (same unsigned right-click → Open on first launch) and you should see the difference immediately: - **Launches straight into the app**, filling the window — no con...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 60978706 — 2026-08-26
+
+**Turns**: 416 user / 739 assistant
+
+**Session opened with**: I got this message from Aaron, wanted to know what he means and how I could help out from here: hey i got 2 tutorials on the promo website so don’t worry about that. I fixed a lot of the issues i described in the last message but still need to test certain things out. If you only have time for one...
+
+**Last assistant turn closed with**: **`AlloFlow-Desktop-3.1.2-arm64.dmg` is ready** — the proper flavored "AlloFlow Desktop" edition this time. Install it over the old one (same unsigned right-click → Open on first launch) and you should see the difference immediately: - **Launches straight into the app**, filling the window — no con...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 14326719 — 2026-08-27
+
+**Turns**: 46 user / 105 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: For the MCP connector, it's not a wizard inside the app — it's Claude Desktop's own extension-settings form. The bundle's manifest declares a single `user_config` field (shown above), and Claude Desktop renders it: 1. **Claude Desktop → Settings → Extensions → drag the `.mcpb` in.** The install dia...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 14326719 — 2026-08-28
+
+**Turns**: 52 user / 113 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: That gives me a lot. Before I answer, let me check how the installed extension actually delivers the key to the server, since that's the most likely failure point.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-08-28
+
+**Turns**: 78 user / 171 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: Checked your actual install — here's the corrected picture, and I apologize for the 0.3.5 confusion: **What your installed 0.4.2 has:** the tagged-PDF scanner fix and all the agent-bridge perf work (pacing exemption, 600s deadlines). So I was wrong that your keyless slowness comes from stale code —...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-08-29
+
+**Turns**: 252 user / 501 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: Failed to authenticate. API Error: 401 OAuth access token has expired. Re-authenticate to continue.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-08-30
+
+**Turns**: 252 user / 501 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: Failed to authenticate. API Error: 401 OAuth access token has expired. Re-authenticate to continue.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-08-31
+
+**Turns**: 434 user / 851 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: 31 tools changed, mirrors perfectly synced. Now re-pinning all goldens (colors changed by both Aaron's theme work and the contrast fixes):
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-08-31
+
+**Turns**: 770 user / 1374 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: Failed to authenticate. API Error: 401 OAuth access token has expired. Re-authenticate to continue.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 0e6d4b0c — 2026-09-01
+
+**Turns**: 1258 user / 2020 assistant
+
+**Session opened with**: Do a repo sync and give me an update on what you think Aaron needs worked on right now.
+
+**Last assistant turn closed with**: That background notification was just the measurement-waiter process exiting — the run it was watching is the same one already folded into the closing report (60 files / 82 tests measured, ~47 real after the mid-run fixes landed in `2bfff494f`). Nothing new to act on from it. Current state stands a...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 4e5c1971 — 2026-09-01
+
+**Turns**: 94 user / 162 assistant
+
+**Session opened with**: When I run the browser version of the app, connected to Cloudflare or gemini, and try to produce a Math Probe from the Child Progress tab task I get this message. And not material is produced or start button created. Perhaps there is some bug preventing this from working.
+
+**Last assistant turn closed with**: The fix is applied, tested, built, and verified working in a real browser. ## What I changed **`handleLaunchMathProbe`** (in `AlloFlowANTI.txt` and its byte-for-byte mirror [App.jsx:16157](desktop/web-app/src/App.jsx:16157)) now opens both doors the probe panel lives behind: - `setActiveSidebarTab...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 4e5c1971 — 2026-09-02
+
+**Turns**: 94 user / 162 assistant
+
+**Session opened with**: When I run the browser version of the app, connected to Cloudflare or gemini, and try to produce a Math Probe from the Child Progress tab task I get this message. And not material is produced or start button created. Perhaps there is some bug preventing this from working.
+
+**Last assistant turn closed with**: The fix is applied, tested, built, and verified working in a real browser. ## What I changed **`handleLaunchMathProbe`** (in `AlloFlowANTI.txt` and its byte-for-byte mirror [App.jsx:16157](desktop/web-app/src/App.jsx:16157)) now opens both doors the probe panel lives behind: - `setActiveSidebarTab...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 4e5c1971 — 2026-09-03
+
+**Turns**: 94 user / 162 assistant
+
+**Session opened with**: When I run the browser version of the app, connected to Cloudflare or gemini, and try to produce a Math Probe from the Child Progress tab task I get this message. And not material is produced or start button created. Perhaps there is some bug preventing this from working.
+
+**Last assistant turn closed with**: The fix is applied, tested, built, and verified working in a real browser. ## What I changed **`handleLaunchMathProbe`** (in `AlloFlowANTI.txt` and its byte-for-byte mirror [App.jsx:16157](desktop/web-app/src/App.jsx:16157)) now opens both doors the probe panel lives behind: - `setActiveSidebarTab...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d6227b63 — 2026-09-04
+
+**Turns**: 81 user / 180 assistant
+
+**Session opened with**: I want to audit the repo's code with a CIS benchmark, which are the best benchmarks to choose? I have a skill already built that will take one of the benchmarks to analyze the code.
+
+**Last assistant turn closed with**: Memory and PID limits are set on all 20 services across the four compose files. Docker failures are now 14, down from 19 when I started. **Memory limits are tunable, PID limits are not.** I used the repo's existing `${VAR:-default}` convention for memory, so operators adjust through `.env` rather t...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d6227b63 — 2026-09-08
+
+**Turns**: 103 user / 233 assistant
+
+**Session opened with**: I want to audit the repo's code with a CIS benchmark, which are the best benchmarks to choose? I have a skill already built that will take one of the benchmarks to analyze the code.
+
+**Last assistant turn closed with**: Synced and re-audited. `main` is now level with `origin/main` at `dcb39be6c`. **Your unpushed work is preserved, not lost.** The math-probe sidebar fix — the `setActiveSidebarTab('create')` call plus the catalog-filter widening, in the monolith, its App.jsx mirror, and the test — is committed on a...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 03acf7b4 — 2026-09-10
+
+**Turns**: 42 user / 62 assistant
+
+**Session opened with**: "Helping me test the school store reward system and the educator evaluation system is top priority" Help me understand the best way to do this.
+
+**Last assistant turn closed with**: Nothing further to gather. I'm finalizing the plan for the School Rewards & Store portal and the Educator Evaluation system, all three tiers with the live-Workspace tier deferred.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d6227b63 — 2026-09-10
+
+**Turns**: 111 user / 250 assistant
+
+**Session opened with**: I want to audit the repo's code with a CIS benchmark, which are the best benchmarks to choose? I have a skill already built that will take one of the benchmarks to analyze the code.
+
+**Last assistant turn closed with**: Pushed to [harden/cis-container-baseline](https://github.com/Apomera/AlloFlow/tree/harden/cis-container-baseline), two commits, 17 files. I branched rather than pushing straight to `main`. Your repo's `deploy.sh` does commit directly to main, so if that's the workflow you want here, say so and I'll...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 02a0131f — 2026-09-10
+
+**Turns**: 4 user / 7 assistant
+
+**Session opened with**: Notes from meeting with Aaron on action items to work on later. Save this to memory so I ask you later what we need to work on next. * MTSS token economy for school rewards * Create test google classroom account to test multi system and teacher classrooms and integrations * leadership hub, educator...
+
+**Last assistant turn closed with**: Added. The list now has nine items, with "Fix the MCP workflow for document remediation" as item 9. I linked it to the existing MCP release-status memory so the known open findings from August are one hop away when you pick it up.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session 02a0131f — 2026-09-11
+
+**Turns**: 4 user / 7 assistant
+
+**Session opened with**: Notes from meeting with Aaron on action items to work on later. Save this to memory so I ask you later what we need to work on next. * MTSS token economy for school rewards * Create test google classroom account to test multi system and teacher classrooms and integrations * leadership hub, educator...
+
+**Last assistant turn closed with**: Added. The list now has nine items, with "Fix the MCP workflow for document remediation" as item 9. I linked it to the existing MCP release-status memory so the known open findings from August are one hop away when you pick it up.
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d57e5b15 — 2026-09-14
+
+**Turns**: 13 user / 29 assistant
+
+**Session opened with**: Help me clean up the local alloflow folder so its not taking up 22gb when it doesnt need to
+
+**Last assistant turn closed with**: The AlloFlow folder is down from 20 GB to 10 GB. Git is clean and `main` is untouched. **What I removed** | Item | Freed | Why it was safe | |---|---|---| | Abandoned git temp packs (`.git/objects/pack/tmp_pack_*`) | 1.26 GB | Leftovers from interrupted pushes/fetches in Aug and Sep. Git itself fl...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---
+
+## [auto-draft] Session d661780d — 2026-09-14
+
+**Turns**: 159 user / 263 assistant
+
+**Session opened with**: Lets make sure all my updates are commited and pushed. Then let me know what I should be working on next.
+
+**Last assistant turn closed with**: Nothing else can proceed on my side: the tag push is the one action I'm not permitted to take, and the link commit should not go public until the release exists. **Where things stand** - Local main is one commit ahead of origin with the download links pointed at mcpb-v0.11.1. I'm holding that push...
+
+*Auto-draft. Promote to a permanent letter by removing the [auto-draft] tag and editing, or delete if not worth keeping.*
+
+---

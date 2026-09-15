@@ -20,7 +20,9 @@ not require an AlloFlow account, institution account, Cloudflare Worker, or paid
 
 Claude Desktop supplies the Node runtime for this extension; other MCP hosts need Node 20 or newer
 on PATH. PDF/UA validation (veraPDF) and EPUB validation (EPUBCheck) need a local Java runtime;
-`remediation_capabilities` reports whether Java, Chromium, EPUBCheck and Ace are available.
+`remediation_capabilities` reports whether Java, Chromium, EPUBCheck and Ace are available
+(`javaAvailable` comes from a real `java -version`, so the macOS stub that exists without a runtime
+reports false), and `connectorVersion` shows which build is running.
 Chromium is a one-time download through `remediation_setup`.
 
 ## Folder processing and narration
@@ -90,6 +92,17 @@ built the exact bytes from this repository:
 The CycloneDX file covers packaged npm dependencies. vendor-manifest.json records the SHA-256 and
 byte count of every separately bundled browser-runtime asset; THIRD_PARTY_NOTICES.md documents those
 third-party components.
+
+## Accepted dependency advisories
+
+The release build audits the dependencies actually packaged and fails on any high or critical
+advisory that has not been reviewed. Reviewed advisories are recorded in
+desktop/mcp/audit_allowlist.json with the reason they are not reachable or are mitigated in this
+connector, who reviewed them, and an expiry after which the release fails again until they are
+re-reviewed. The build log prints every accepted advisory. As of 0.11.3 the accepted entries are
+two extract-zip advisories reached through DAISY Ace: Ace here only unpacks EPUBs this connector
+wrote itself, never a user-supplied archive, and the browser-download path that also uses
+extract-zip is disabled. No patched extract-zip exists.
 
 ## Registry discovery
 

@@ -1,0 +1,46 @@
+{
+  "input": "/Users/hubby/AlloFlow/el_proposal_upload.pdf",
+  "files": {
+    "accessibleHtml": "/Users/hubby/AlloFlow/bridge-demo/el_proposal_upload-accessible.html",
+    "report": "/Users/hubby/AlloFlow/bridge-demo/el_proposal_upload-remediation-report.json",
+    "completionManifest": "/Users/hubby/AlloFlow/bridge-demo/el_proposal_upload-remediation-completion.json"
+  },
+  "verdict": {
+    "level": "caution",
+    "reviewCount": 0,
+    "cautionCount": 2
+  },
+  "beforeScore": 61,
+  "afterScore": 88,
+  "aiVerificationIncomplete": true,
+  "scoreSource": "deterministic-only",
+  "estimatedMinimumScore": 88,
+  "integrityCoverage": 100,
+  "integrityWarning": null,
+  "fidelityNotes": [],
+  "verificationState": "partial",
+  "verificationHtmlBound": true,
+  "remainingAxeViolations": 0,
+  "remainingEqualAccessFailures": 0,
+  "taggedPdfDelivery": null,
+  "taggedPdfExportMode": null,
+  "activeContentScanVerified": false,
+  "activeContentDetected": false,
+  "auditCoverage": {
+    "configuredAuditorCap": 5,
+    "requestedAuditors": 3,
+    "completedAuditors": 3,
+    "sliced": false
+  },
+  "taggedPdfError": "active_content_scan_unavailable",
+  "runId": "run-mt032new-v0r8rl",
+  "stats": {
+    "apiCalls": 14,
+    "visionCalls": 3,
+    "retries": 5,
+    "recoveredRetries": 3,
+    "authThrottles": 0,
+    "terminalFailures": 2
+  },
+  "note": "Scores and the verdict come from AlloFlow's honesty-gated verification. Review the fidelity notes and spot-check the output before distributing; the tagged PDF only carries a PDF/UA declaration when it earned one."
+}

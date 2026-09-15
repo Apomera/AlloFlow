@@ -10948,6 +10948,12 @@ var createDocPipeline = function(deps) {
         const boundDestination = anchor => {
           const href = destination(anchor);
           if (!href.startsWith('#')) return href;
+          // A skip link targets a landmark by id, and a landmark's text is the whole region it
+          // wraps. Binding it by content signature (below) made every fix that changed any text
+          // inside <main> — an entity repair, a typo — look like a retargeted link and rejected the
+          // candidate as link-destination-changed at link:1. Skip links are navigation aids, not
+          // content references: their destination is preserved when the id still resolves.
+          if (skipLink(anchor) && anchor.ownerDocument.getElementById(href.slice(1))) return 'skip:' + href;
           let id; try { id = decodeURIComponent(href.slice(1)); } catch (_) { return href; }
           const target = anchor.ownerDocument.getElementById(id);
           if (!target) return href;

@@ -2,15 +2,35 @@
 const fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto'),{spawn}=require('child_process');
 const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
 const fileDigest=p=>new Promise((resolve,reject)=>{const hash=crypto.createHash('sha256'),stream=fs.createReadStream(p);stream.on('data',b=>hash.update(b));stream.on('error',reject);stream.on('end',()=>resolve(hash.digest('hex')));});
+const {spawnSync}=require('child_process');
+let javaProbe=null;
+// Java presence is decided by a successful `java -version`, never by a file existing on PATH: macOS
+// ships a /usr/bin/java stub that is present (and executable) with no runtime installed and only
+// prints "Unable to locate a Java Runtime". A positive result is cached for the process lifetime; a
+// negative one is re-probed after 60 s so a runtime installed mid-session is noticed without restart.
+function javaRuntime(bin){
+  const java=bin||(process.env.JAVA_HOME?path.join(process.env.JAVA_HOME,'bin',process.platform==='win32'?'java.exe':'java'):'java');
+  const now=Date.now();
+  if(javaProbe&&javaProbe.java===java&&(javaProbe.present||now-javaProbe.at<60000))return javaProbe;
+  let present=false,version=null,error=null;
+  try{
+    const r=spawnSync(java,['-version'],{encoding:'utf8',timeout:15000,windowsHide:true,stdio:['ignore','pipe','pipe']});
+    const out=(String(r.stderr||'')+String(r.stdout||'')).trim();
+    if(r.error)error=r.error.message;
+    else if(r.status!==0)error=out.split(/\r?\n/)[0]||('java -version exited with status '+r.status);
+    else{present=true;const m=out.match(/version "([^"]+)"/);version=m?m[1]:null;}
+  }catch(e){error=e.message;}
+  javaProbe={java,present,version,error,at:now};
+  return javaProbe;
+}
 function runtime() {
   const jar=process.env.ALLOFLOW_MCP_EPUBCHECK_JAR||path.join(__dirname,'vendor','epubcheck','epubcheck.jar');
   let ace=null;try{ace=require.resolve('@daisy/ace-cli/bin/ace.js',{paths:[__dirname,path.join(__dirname,'runtime')]});}catch(_){}
-  const java=process.env.JAVA_HOME?path.join(process.env.JAVA_HOME,'bin',process.platform==='win32'?'java.exe':'java'):'java';
-  const javaPresent=path.isAbsolute(java)?fs.existsSync(java):(process.env.PATH||'').split(path.delimiter).some(p=>fs.existsSync(path.join(p,process.platform==='win32'?'java.exe':'java')));
-  return {jar,ace,java,javaPresent,nodeSupported:Number(process.versions.node.split('.')[0])>=20};
+  const probe=javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN||null);
+  return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,nodeSupported:Number(process.versions.node.split('.')[0])>=20};
 }
 function capabilities() {
-  const r=runtime();return {epubcheck:{installed:fs.existsSync(r.jar),version:'5.3.0',javaAvailable:r.javaPresent},ace:{installed:!!r.ace,version:'1.4.6',nodeSupported:r.nodeSupported},scope:'Automated EPUB format and accessibility checks; human review remains necessary.'};
+  const r=runtime();return {epubcheck:{installed:fs.existsSync(r.jar),version:'5.3.0',javaAvailable:r.javaPresent,javaVersion:r.javaVersion},ace:{installed:!!r.ace,version:'1.4.6',nodeSupported:r.nodeSupported},scope:'Automated EPUB format and accessibility checks; human review remains necessary.'};
 }
 function fingerprint() {
   const r=runtime(),parts=[__filename,path.join(__dirname,'remediation_ace_worker.cjs'),path.join(__dirname,'vendor','manifest.json')];
@@ -114,4 +134,4 @@ async function validate(filePath,options={}) {
     }
   }
 }
-module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run};
+module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime};

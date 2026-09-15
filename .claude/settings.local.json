@@ -94,7 +94,8 @@
       "Bash(node _audit_help_anchors.cjs)",
       "Bash(awk '{print $1}')",
       "Bash(node -e \"let s=require\\('fs'\\).readFileSync\\('help_strings.js','utf8'\\).replace\\(/^\\\\/\\\\/[^\\\\n]*\\\\n/gm,''\\).trim\\(\\); const h=eval\\('\\('+s+'\\)'\\); console.log\\('Total keys:', Object.keys\\(h\\).length\\);\")",
-      "Bash(bash deploy.sh \"help_strings: 107 entries closing help-mode-blind gap on 14 components + audit scripts\")"
+      "Bash(bash deploy.sh \"help_strings: 107 entries closing help-mode-blind gap on 14 components + audit scripts\")",
+      "Bash(git checkout *)"
     ],
     "additionalDirectories": [
       "\\tmp"
@@ -105,8 +106,14 @@
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "node .claude/hooks/extract-signals.mjs" },
-          { "type": "command", "command": "node .claude/hooks/append-letter.mjs" }
+          {
+            "type": "command",
+            "command": "node .claude/hooks/extract-signals.mjs"
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/append-letter.mjs"
+          }
         ]
       }
     ]

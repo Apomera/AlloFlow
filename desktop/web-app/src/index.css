@@ -18,6 +18,40 @@ code {
 }
 
 /*
+ * Safari draws a native <select> at its intrinsic ~24px and ignores padding,
+ * height and min-height while `appearance` is the default menulist. Chrome and
+ * Firefox honor them, so every select in the app was 44px tall everywhere
+ * except Safari, where it rendered as a thin strip misaligned beside 44px
+ * inputs and buttons, and the `min-height: 44px` touch floor below (WCAG
+ * 2.5.8) silently did nothing on iPad. `-webkit-appearance: menulist-button`
+ * does not help in current WebKit either; only `appearance: none` does, so
+ * the arrow is drawn here as a background. Multi-row selects keep their native
+ * list box, and a select that already opts out (Tailwind `appearance-none`)
+ * is left to its own chevron.
+ */
+select:not([multiple]):not([size]):not(.appearance-none) {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 1rem 1rem;
+    padding-right: 2rem;
+}
+.theme-dark select:not([multiple]):not([size]):not(.appearance-none),
+.theme-contrast select:not([multiple]):not([size]):not(.appearance-none) {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e2e8f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+}
+@media (forced-colors: active) {
+    select:not([multiple]):not([size]):not(.appearance-none) {
+        appearance: auto;
+        -webkit-appearance: auto;
+        background-image: none;
+        padding-right: 0.75rem;
+    }
+}
+
+/*
  * Touch-device affordances.
  *
  * Scoped to `pointer: coarse` so desktop layout is untouched: these rules only

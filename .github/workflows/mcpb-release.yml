@@ -73,6 +73,11 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Install Chromium for app-to-MCP parity
         run: npx playwright install chromium
+      # EPUBCheck is not in git (vendor/epubcheck is fetched and hash-verified at build time), but
+      # the parity smoke stages the vendor directory and verifies every manifest entry, so it must
+      # exist before that step runs. mcpb-v0.11.2 failed here on the runner for exactly this reason.
+      - name: Materialize manifest-verified EPUBCheck dependencies
+        run: node desktop/mcp/fetch_epubcheck.cjs
       - name: Verify canonical app-to-MCP parity
         run: npm run verify:mcp-parity
       - name: Verify MCP durability, cancellation, packaging, and release triggers
@@ -116,15 +121,21 @@ jobs:
           }
       - name: Build, officially validate, extract, and boot-check the exact MCPB
         run: node desktop/mcp/build_mcpb.cjs
+      # Fails on any high/critical advisory in the staged bundle that is not listed, with a written
+      # justification and an expiry, in desktop/mcp/audit_allowlist.json. Accepted advisories are
+      # printed here so the release log carries the disclosure; expired or stale entries also fail.
       - name: Audit the dependencies actually bundled
-        run: npm audit --omit=dev --audit-level=high --prefix desktop/dist/mcpb/staging
+        run: node desktop/mcp/audit_bundle_dependencies.cjs --prefix desktop/dist/mcpb/staging --level high
       - name: Write checksums, dependency SBOM, and vendor evidence
         shell: pwsh
         run: |
           $dist = 'desktop/dist/mcpb'
           $artifact = Get-Item "$dist/alloflow-remediation.mcpb"
           $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $artifact.FullName).Hash.ToLowerInvariant()
-          "$hash  $($artifact.Name)" | Set-Content -Encoding ascii "$dist/SHA256SUMS.txt"
+          # LF, no BOM: Set-Content on the Windows runner wrote CRLF, so `sha256sum -c SHA256SUMS.txt`
+          # (the check the release notes and pilot guide tell people to run) failed on macOS and
+          # Linux with "alloflow-remediation.mcpb\r: No such file or directory" (seen on mcpb-v0.11.3).
+          [IO.File]::WriteAllText((Join-Path (Get-Location) "$dist/SHA256SUMS.txt"), "$hash  $($artifact.Name)`n", (New-Object System.Text.UTF8Encoding $false))
           $manifestVersion = node -p "require('./desktop/mcp/build_mcpb.cjs').buildManifest().version"
           node desktop/mcp/build_registry_metadata.cjs --artifact "$dist/alloflow-remediation.mcpb" --tag "mcpb-v$manifestVersion" --output "$dist/server.json"
           npm sbom --prefix "$dist/staging" --omit=dev --sbom-format=cyclonedx |
