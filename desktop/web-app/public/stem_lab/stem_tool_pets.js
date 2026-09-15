@@ -197,6 +197,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-myth-num{display:inline-grid;place-items:center;flex:0 0 26px;width:26px;height:26px;border:2px solid rgba(251,146,60,.55);border-radius:50%;color:#fdba74;font-size:12px;font-weight:900;line-height:1;}',
       '.petslab-myth-tag{color:#fb923c;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;}',
       '.petslab-myth-claim{margin-top:2px;color:#fef3e2;font-size:13px;font-weight:800;line-height:1.4;}',
+      '.petslab-myth-check{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px;}',
+      '.petslab-myth-answer:focus-visible{outline:2px solid #fbbf24;outline-offset:3px;border-radius:8px;}',
       '.petslab-zoonosis{position:relative;overflow:hidden;padding:12px 12px 12px 15px;border-radius:11px;margin-bottom:8px;}',
       '.petslab-zoonosis::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#fbbf24,#b45309);}',
       '.petslab-zoonosis-agent{padding:2px 8px;border:1px solid;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;white-space:nowrap;}',
@@ -865,6 +867,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { term: 'Service dog vs ESA', def: 'Service dog = task-trained for a disability (ADA: full public access). Emotional support animal = comfort by presence (FHA + sometimes DOT only; no public access).' }
   ];
 
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4b: PUNNETT GOALS — give the sandbox a question
+  // The Punnett square was a genuine two-locus explorer and the maths is
+  // thoroughly tested, but nothing ever ASKED the student for anything. A
+  // student could set two parents, look at 16 squares, and leave having learned
+  // nothing. That is the classic sandbox-with-no-question gap.
+  //
+  // These are goal-directed: configure a cross that satisfies a condition. The
+  // student has to reason backwards from an outcome to the genotypes that
+  // produce it, which is the thing Punnett squares are actually for.
+  //
+  // ★ Every goal targets EPISTASIS — `ee` masking B/b entirely — because that
+  // is the genuinely hard idea here and the one a ratio table alone never
+  // teaches. `check` receives the parent genotypes and the phenotype counts out
+  // of 16, and must be a pure function of those.
+  //
+  // ★ Solution counts below were computed by enumerating all 81 pairings
+  // (scratchpad/solve_goals.js) and are pinned by test, so a goal can never
+  // become unsatisfiable without the suite going red.
+  // ─────────────────────────────────────────────────────────
+  var PUNNETT_GOALS = [
+    { id: 'blackToYellow',
+      title: 'Two black parents, a yellow puppy',
+      ask: 'Set up a cross where BOTH parents are black, yet at least one of the sixteen puppies is yellow.',
+      hint: 'Yellow is not a B/b colour at all. Ask what has to be true at the E locus for pigment to be hidden, and whether a black dog can carry that hidden without showing it.',
+      solutions: 4,
+      // Both parents black, at least one yellow offspring.
+      check: function(p1, p2, counts, phen) {
+        return phen(p1) === 'Black' && phen(p2) === 'Black' && counts.Yellow > 0;
+      },
+      why: 'Both parents are black because each carries at least one B and at least one E. But a black dog can be Ee — carrying a single hidden e — and two Ee parents have a one-in-four chance of pairing e with e. An ee puppy makes no coat pigment it can show, so it is yellow no matter what its B/b genotype says. This is epistasis: the E locus overrides the B locus rather than blending with it.' },
+    { id: 'neitherParent',
+      title: 'A puppy unlike either parent',
+      ask: 'Set up a cross where NO puppy is the same colour as either parent. Not one of the sixteen.',
+      hint: 'You need each parent to supply exactly what the other is missing. One parent has pigment but the wrong B/b; the other has the right B/b but cannot show it.',
+      solutions: 2,
+      check: function(p1, p2, counts, phen) {
+        var parents = [phen(p1), phen(p2)];
+        var present = ['Black', 'Chocolate', 'Yellow'].filter(function(colour) {
+          return counts[colour] > 0;
+        });
+        return present.length > 0 && present.every(function(colour) {
+          return parents.indexOf(colour) < 0;
+        });
+      },
+      why: 'A pure chocolate parent (bbEE) crossed with a yellow parent carrying black pigment (BBee) gives every puppy one B and one E. All sixteen are black — a colour neither parent has. The chocolate parent supplied the E that lets pigment show; the yellow parent supplied the B. Neither could display what it was carrying, and together they produced something new. This is why "the puppies will look like the parents" is not a rule.' },
+    { id: 'yellowBreedsTrue',
+      title: 'Yellow that breeds true',
+      ask: 'Set up a cross of TWO YELLOW parents where every single one of the sixteen puppies is also yellow.',
+      hint: 'This one is easier than it looks, and the reason is the whole point. What do all yellow Labs have in common at the E locus?',
+      solutions: 9,
+      check: function(p1, p2, counts, phen) {
+        return phen(p1) === 'Yellow' && phen(p2) === 'Yellow' && counts.Yellow === 16;
+      },
+      why: 'Any yellow Lab is already ee — that is what makes it yellow. Two ee parents can only pass e, so every puppy is ee and therefore yellow, whatever happens at the B locus. Yellow breeds true in a way black does not. Note what is still hidden: those puppies carry B or b underneath, which shows in nose and eye-rim pigment, and a bbee dog has a brown nose while a BBee dog has a black one.' },
+    { id: 'nineThreeFour',
+      title: 'The textbook ratio',
+      ask: 'Find the single cross that produces exactly 9 black, 3 chocolate and 4 yellow.',
+      hint: 'A 9:3:4 ratio comes from both parents being heterozygous at both loci. There is exactly one way to do that.',
+      solutions: 1,
+      check: function(p1, p2, counts) {
+        return counts.Black === 9 && counts.Chocolate === 3 && counts.Yellow === 4;
+      },
+      why: '9:3:4 is the signature of recessive epistasis, and BbEe x BbEe is the only cross that produces it. A plain two-gene cross with no interaction would give 9:3:3:1. Here the would-be fourth class (bbee) is not visibly distinct from the third (B_ee) — both are yellow — so the 3 and the 1 collapse into a single 4. When you see 9:3:4 in a real pedigree, one gene is masking another.' }
+  ];
+
   // ─────────────────────────────────────────────────────────
   // SECTION 5: MYTHS BUSTED (sourced corrections)
   // ─────────────────────────────────────────────────────────
@@ -890,6 +959,131 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     { myth: '"Indoor cats are bored / cruel to keep inside."',
       truth: 'Indoor cats live substantially longer on average — outdoor access adds traffic, fights, predators, and infectious disease. (The popular "2–5 years outdoors" number is shakier than it sounds; it leans on feral-colony data rather than owned cats, so treat the direction as solid and the multiplier as rough.) Free-roaming cats also kill an estimated 1.3–4 BILLION birds and 6.3–22.3 BILLION mammals a year in the US — a wide range, midpoint ~2.4 billion birds, and mostly attributable to unowned cats. Solution = indoor cats + environmental enrichment (vertical space, food puzzles, window perches, leash-walking, catios). Bored ≠ outside-only fix.',
       source: 'Loss et al. 2013 (Nature Communications) + American Bird Conservancy + AVMA' }
+  ];
+
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 5b: MYTH CHECK — commit before the correction
+  // The Myths view printed each correction directly under its myth, so a
+  // student never had to decide what they believed. Reading "alpha theory is
+  // wrong" changes far less than being asked, answering "true", and being
+  // shown otherwise.
+  //
+  // ★ Every entry in MYTHS is false, so a pure myth list makes "false" a free
+  // win: notice the pattern once and you can answer the rest without thinking.
+  // The four TRUE statements below are mixed in for that reason. Each one is
+  // deliberately myth-shaped — surprising, absolute-sounding, the kind of claim
+  // a student expects to be debunked — so the answer cannot be read off the
+  // framing. They are drawn from claims the lab already sources elsewhere
+  // (dog olfactory receptors, guinea pig vitamin C, PTFE, parrot lifespans).
+  //
+  // `verdict` is the answer; `note` is what the student is told either way.
+  // MYTH_CHECK_ORDER interleaves them so true/false never runs in a block.
+  // ─────────────────────────────────────────────────────────
+  var MYTH_CHECK_TRUE = [
+    { id: 'noseReceptors',
+      claim: '"A dog has roughly 300 million olfactory receptors — about 60 times what a human has."',
+      verdict: true,
+      note: 'Humans have around 5 million; dogs around 300 million, and the olfactory part of their cortex is about 40x larger relative to brain size. This is why detection dogs can work at concentrations we cannot register at all.',
+      source: 'Covered on the Dogs page; AVMA + Hare 2017' },
+    { id: 'gpVitaminC',
+      claim: '"Guinea pigs can die of scurvy, the same vitamin C deficiency that affected sailors."',
+      verdict: true,
+      note: 'Guinea pigs are one of the few mammals — along with humans and other primates — that cannot synthesize their own vitamin C. Without a dietary source (fresh vegetables, C-stable pellets) they develop scurvy.',
+      source: 'Covered on the Small mammals page; AVMA Companion Animal' },
+    { id: 'ptfeBirds',
+      claim: '"An overheated non-stick pan can kill a pet bird in another room, even though the air seems fine to people."',
+      verdict: true,
+      note: 'This is the single most common avoidable killer of pet birds in kitchens. Birds take in far more air per kilogram than we do through a one-way flow across nine air sacs, so a concentration we barely notice can be lethal within minutes.',
+      source: 'Covered on the Birds page; AAV' },
+    { id: 'parrotLifespan',
+      claim: '"Some parrots regularly outlive their owners and need to be named in a will."',
+      verdict: true,
+      note: 'Macaws and large cockatoos commonly reach 50-80 years. Rescues are full of parrots whose owners died or could no longer care for them, so naming a successor caregiver is standard advice, not an exotic precaution.',
+      source: 'Covered on the Birds page; AAV + parrot rescue guidance' }
+  ];
+  // Index into MYTHS (m0-m6) and MYTH_CHECK_TRUE (t0-t3), interleaved so the
+  // answer never repeats more than twice in a row.
+  var MYTH_CHECK_ORDER = ['m0', 't0', 'm1', 'm2', 't1', 'm3', 'm4', 't2', 'm5', 'm6', 't3'];
+
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 5c: SERVICE ANIMAL ACCESS CALLS
+  // The Service view laid out the ADA two-question rule, the narrow lawful
+  // grounds for exclusion, and the ESA / therapy distinctions — and asked
+  // nothing. This is content people act on wrongly in BOTH directions: staff
+  // who demand papers from a legitimate handler, and staff who believe they
+  // can never ask an out-of-control animal to leave.
+  //
+  // So these are counter calls, in the voice of someone who has to decide now.
+  // Each names the rule that settles it, because the useful outcome is a
+  // student who can say WHY, not one who guesses right.
+  //
+  // ★ Scope, stated in the UI too: this is US federal law (ADA Title III,
+  // 28 CFR 36.302(c)), and state law can add protections. It is educational,
+  // not legal advice.
+  // ─────────────────────────────────────────────────────────
+  var SERVICE_CASES = [
+    { id: 'noVest',
+      setting: 'You are working the counter at a cafe.',
+      prompt: 'A customer comes in with a dog wearing no vest, no tags, and no ID card. The dog walks at their side and settles quietly under the table. What may you lawfully do?',
+      options: [
+        { id: 'ask2', label: 'Ask the two permitted questions, and serve them.', verdict: 'best' },
+        { id: 'papers', label: 'Ask to see the dog\'s service-animal certification or registration.', verdict: 'miss' },
+        { id: 'refuse', label: 'Refuse entry, since there is nothing identifying it as a service dog.', verdict: 'miss' },
+        { id: 'nothing', label: 'Say nothing at all — asking anything would be illegal.', verdict: 'ok' }
+      ],
+      rule: 'ADA: you may ask exactly two questions — is the dog a service animal required because of a disability, and what work or task has it been trained to perform.',
+      note: 'No vest, no tags and no papers is completely normal: there is no federal certification or registration for service animals, and the vests and ID cards sold online mean nothing legally. You may ask the two questions. You may not ask for documentation, ask what the person\'s disability is, or require the dog to demonstrate the task. A quietly settled dog under a table is a working dog behaving exactly as it should.',
+      alsoWrong: 'Saying nothing is not unlawful, and it is often the friendliest thing to do — but staff who believe they may never ask anything are the same staff who feel powerless later when an animal actually is out of control. Knowing the two questions exist is what makes the rest of the rule usable.' },
+    { id: 'outOfControl',
+      setting: 'You manage a grocery store.',
+      prompt: 'A dog in a service vest has been barking at other shoppers and lunging at a child. The handler tells it to stop, it does not, and they carry on shopping. What does the ADA allow?',
+      options: [
+        { id: 'vest', label: 'Nothing — it is wearing a service vest, so it has full access rights.', verdict: 'miss' },
+        { id: 'remove', label: 'Ask that the animal be removed, and offer to serve the person without it.', verdict: 'best' },
+        { id: 'banPerson', label: 'Ask both the handler and the animal to leave the store.', verdict: 'miss' },
+        { id: 'police', label: 'Call the police to have them removed.', verdict: 'miss' }
+      ],
+      rule: '28 CFR 36.302(c)(2): a service animal may be excluded if it is out of control and the handler does not take effective action, or if it is not housebroken.',
+      note: 'This is the half of the rule people forget. Access is not unconditional: an out-of-control animal whose handler does not effectively correct it may lawfully be asked to leave. The vest is irrelevant in both directions — it never granted the access, and it does not protect behaviour like this. Critically, you exclude the ANIMAL, not the person: the handler must still be offered goods and services without the dog. That provision protects legitimate handlers too, because it is what distinguishes a trained working dog from a pet in a costume.',
+      alsoWrong: 'Removing the person as well converts a lawful animal exclusion into disability discrimination, and calling the police escalates something the regulation already lets you handle with a sentence.' },
+    { id: 'esaRestaurant',
+      setting: 'You are a restaurant host.',
+      prompt: 'Someone arrives with a cat in a carrier and shows you a letter on a website letterhead describing it as an emotional support animal. They ask to be seated. What is the correct call?',
+      options: [
+        { id: 'seat', label: 'Seat them — an ESA letter carries the same access rights as a service animal.', verdict: 'miss' },
+        { id: 'lecture', label: 'Tell them the letter is fraudulent and refuse to serve them.', verdict: 'miss' },
+        { id: 'manager', label: 'Seat them rather than risk an ADA complaint.', verdict: 'ok' },
+        { id: 'declineKindly', label: 'Explain that ESAs do not have public-access rights, and offer a seat outdoors or a takeaway order.', verdict: 'best' }
+      ],
+      rule: 'ESAs are not service animals under the ADA. Their federal protection is in housing (Fair Housing Act); airlines dropped ESA accommodation in 2021.',
+      note: 'An emotional support animal provides comfort by its presence and is not trained to perform a task, which is exactly the line the ADA draws. ESAs have real protection where they matter most — a no-pets rental must accommodate a valid ESA letter — but a restaurant is not required to seat one. Declining politely, and offering an alternative that still serves the person, is both lawful and decent.',
+      alsoWrong: 'Seating them to avoid a complaint is understandable and harms nobody, but a business that cannot tell the categories apart also cannot apply the two-question rule when a real service dog arrives. And declaring the letter fraudulent is a judgement you cannot make at a host stand: some ESA letters come from a genuine treating provider.' },
+    { id: 'allergyStaff',
+      setting: 'You are a school office administrator.',
+      prompt: 'A staff member says they are allergic to dogs and asks you to keep a student\'s service dog out of the shared office. What does the law require?',
+      options: [
+        { id: 'exclude', label: 'Exclude the dog — a documented allergy outweighs access.', verdict: 'miss' },
+        { id: 'accommodate', label: 'Keep the access and find a way to separate them, such as different rooms or schedules.', verdict: 'best' },
+        { id: 'ignore', label: 'Tell the staff member allergies are not your problem.', verdict: 'miss' },
+        { id: 'doctor', label: 'Ask the student for medical documentation of their need for the dog.', verdict: 'miss' }
+      ],
+      rule: 'Allergies and fear of dogs are not valid grounds for excluding a service animal. Both people are accommodated, usually by increasing distance.',
+      note: 'The regulation is explicit that allergies and fear do not justify exclusion, and school staff who believe otherwise are the most common way a student quietly loses access. The answer is not to rank one person over the other: put them in different rooms, adjust schedules or routes, improve ventilation. Both needs are real and both are accommodated.',
+      alsoWrong: 'Dismissing the allergy is its own failure — that person also has a right to a workable environment, and treating it as fake is how the arrangement collapses. And asking the student for medical documentation is one of the questions the ADA specifically forbids.' },
+    { id: 'therapyVisit',
+      setting: 'You run a school library.',
+      prompt: 'A volunteer offers to bring their registered therapy dog to a reading session. A parent objects that the school must allow it because "therapy dogs have the same rights as service dogs." Who is right?',
+      options: [
+        { id: 'parent', label: 'The parent — therapy dogs have public-access rights.', verdict: 'miss' },
+        { id: 'never', label: 'Therapy dogs are never allowed in schools.', verdict: 'miss' },
+        { id: 'invite', label: 'The school decides: therapy animals visit by invitation, so you may say yes or no.', verdict: 'best' },
+        { id: 'sameAsEsa', label: 'They have the same standing as an emotional support animal in housing.', verdict: 'miss' }
+      ],
+      rule: 'Therapy animals work with the people they visit, not their handler, and have no automatic access. Visits happen by invitation of the facility.',
+      note: 'All three categories differ here. A service dog is task-trained for its own handler and has ADA public access. An ESA supports its owner and is protected mainly in housing. A therapy dog is temperament-tested to comfort OTHER people and is invited in by a facility, which is free to decline, set conditions, or schedule it. Reading-to-dogs programmes are popular and children reliably report enjoying them, though whether they measurably improve reading fluency is not settled.',
+      alsoWrong: 'Banning them outright throws away something that works well as a motivation and anxiety support, and the ESA comparison mixes up two different animals with two different jobs.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -945,6 +1139,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       where: 'Aquariums + marine parks. Some research stations.',
       tags: ['BS+', 'apprenticeship-heavy', 'physical'] }
   ];
+
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6b: CAREER FIT — a self-inventory, not a verdict
+  // The Careers view listed eight paths with salary, schooling and Maine
+  // employers, and asked nothing. Eight cards of equal visual weight is
+  // precisely the format in which a student skims, sees "veterinarian
+  // $110,000", and stops reading.
+  //
+  // So this asks about the constraints that actually sort these paths — how
+  // many years of school you are willing to sign up for, whether you want to
+  // be in a clinic or outdoors, how much you need the first job to pay, and
+  // whether you would rather work for someone or for yourself.
+  //
+  // ★ It is deliberately NOT a recommender. It ranks fit against what the
+  // student said, shows the arithmetic, and names the tension in the top
+  // result rather than hiding it. The Pet Picker in this same lab already sets
+  // that tone: "a high score is a question to investigate, not a pet
+  // recommendation". A careers quiz that told a 15-year-old what to be would
+  // be both dishonest and unhelpful.
+  //
+  // Scores are small integers. `weight` per answer, summed per career; the
+  // matcher shows every contributing reason, so a student can disagree with a
+  // line of the reasoning rather than with a black box.
+  // ─────────────────────────────────────────────────────────
+  var CAREER_MATCH_QUESTIONS = [
+    { id: 'school',
+      prompt: 'How much more school are you actually willing to do after high school?',
+      help: 'Answer for what you want, not what sounds impressive. Every path below is a real job.',
+      options: [
+        { id: 'none', label: 'As little as possible — I want to be working and earning soon.',
+          scores: { ccpdt: 3, wildlifeRehab: 2, vetTech: 1, shelter: -1, caab: -3, vet: -3, lab: -3, marine: -2 } },
+        { id: 'two', label: 'About two years — a community college program or an apprenticeship.',
+          scores: { vetTech: 3, ccpdt: 2, wildlifeRehab: 2, shelter: 1, marine: 0, vet: -2, caab: -2, lab: -2 } },
+        { id: 'four', label: 'A four-year degree.',
+          scores: { shelter: 3, marine: 3, vetTech: 1, wildlifeRehab: 1, caab: 0, vet: 0, lab: 0, ccpdt: 0 } },
+        { id: 'grad', label: 'Graduate or professional school, however long it takes.',
+          scores: { vet: 3, caab: 3, lab: 3, marine: 1, shelter: 0, vetTech: -1, ccpdt: -1, wildlifeRehab: -1 } }
+      ] },
+    { id: 'setting',
+      prompt: 'Where do you want to spend most of your working day?',
+      help: 'Think about the room, not the job title.',
+      options: [
+        { id: 'clinic', label: 'In a clinic or hospital, hands-on with animals who are sick or hurt.',
+          scores: { vet: 3, vetTech: 3, lab: 2, caab: 1, shelter: 0, ccpdt: 0, wildlifeRehab: 0, marine: 0 } },
+        { id: 'field', label: 'Outdoors, or moving between sites rather than one building.',
+          scores: { wildlifeRehab: 3, ccpdt: 2, marine: 2, shelter: 0, vet: 0, caab: 0, vetTech: -1, lab: -2 } },
+        { id: 'people', label: 'Mostly with people — teaching, coaching, or running things.',
+          scores: { ccpdt: 3, shelter: 3, caab: 2, vet: 1, marine: 1, vetTech: 0, wildlifeRehab: 0, lab: -1 } },
+        { id: 'lab', label: 'In a lab or research setting, working on questions rather than cases.',
+          scores: { lab: 3, caab: 3, marine: 1, vet: 1, vetTech: 0, shelter: -1, ccpdt: -1, wildlifeRehab: -1 } }
+      ] },
+    { id: 'pay',
+      prompt: 'How much does the pay of your FIRST job need to matter?',
+      help: 'An honest answer here is worth more than an aspirational one. Several of these paths are genuinely low-paid at entry.',
+      options: [
+        { id: 'critical', label: 'A lot — I need to support myself from the start.',
+          scores: { vet: 2, lab: 3, vetTech: 1, shelter: 2, caab: 1, marine: -1, ccpdt: -1, wildlifeRehab: -3 } },
+        { id: 'some', label: 'Somewhat — I can start modest if it goes somewhere.',
+          scores: { vetTech: 3, shelter: 2, ccpdt: 2, caab: 1, vet: 1, marine: 1, lab: 1, wildlifeRehab: 0 } },
+        { id: 'later', label: 'Not much at first — I care more about the work than the starting number.',
+          scores: { wildlifeRehab: 3, marine: 3, ccpdt: 2, vetTech: 1, caab: 1, shelter: 0, vet: 0, lab: -1 } }
+      ] },
+    { id: 'structure',
+      prompt: 'Would you rather have a job, or build your own thing?',
+      help: 'Neither is braver. They fail in different ways.',
+      options: [
+        { id: 'employed', label: 'A job with an employer, a schedule, and a paycheck.',
+          scores: { vetTech: 3, lab: 3, shelter: 2, vet: 1, marine: 2, wildlifeRehab: 1, caab: 0, ccpdt: -2 } },
+        { id: 'own', label: 'My own practice or business, even though it is less certain.',
+          scores: { ccpdt: 3, caab: 2, vet: 2, wildlifeRehab: 0, shelter: 0, vetTech: -1, marine: -2, lab: -2 } },
+        { id: 'unsure', label: 'I genuinely do not know yet.',
+          scores: {} }
+      ] },
+    { id: 'competition',
+      prompt: 'Some of these paths have very few positions and many applicants. How do you feel about that?',
+      help: 'Marine mammal training and paid wildlife rehab are the two hardest to get into. Vet school admission is around 12% at most schools.',
+      options: [
+        { id: 'accept', label: 'Fine — I would rather aim at the thing I want and deal with the odds.',
+          scores: { marine: 2, wildlifeRehab: 2, vet: 2, caab: 1, lab: 0, shelter: 0, vetTech: 0, ccpdt: 0 } },
+        { id: 'hedge', label: 'I would rather pick something with steady demand and get good at it.',
+          scores: { vetTech: 3, shelter: 2, ccpdt: 1, lab: 1, vet: 0, caab: -1, wildlifeRehab: -2, marine: -3 } }
+      ] }
+  ];
+  // Named tensions. A matcher that only ever congratulates is useless; the top
+  // result should tell you what it will cost you, in the student's own terms.
+  var CAREER_MATCH_TENSIONS = {
+    vet: 'The schooling is long and admission is competitive (~12% at many schools), and veterinary debt-to-income is a widely discussed problem in the profession. Worth talking to a practising vet about the debt, not just the work.',
+    vetTech: 'The fastest-growing animal career and the most reliable entry point, but pay is modest for the responsibility, and burnout and turnover are well documented. Ask techs how long they have stayed and why.',
+    caab: 'There are only about 70 CAABs in North America. That is the whole field. It usually means a PhD and building your own client base afterwards.',
+    ccpdt: 'No degree required is real, and so is no salary floor. You are building a business, which means marketing and scheduling and chasing invoices as much as training dogs.',
+    wildlifeRehab: 'Mostly volunteer or stipend work; paid staff positions are rare. Many rehabbers fund it with a second job. Start by volunteering and find out whether you love it before you plan around it.',
+    shelter: 'Management, not animal handling — budgets, staffing, board meetings, and euthanasia decisions. People who take it for the animals and discover it is a management job tend not to stay.',
+    lab: 'Well paid and specialised, and it means working in animal research, which some people find they cannot do. That is worth deciding honestly before the DVM, not after.',
+    marine: 'Very few positions, intensely competitive, and physically demanding. Most entrants volunteer for years first. Also worth reading about the debate over marine mammals in human care.'
+  };
 
   // ─────────────────────────────────────────────────────────
   // SECTION 7: TAKE ACTION — concrete steps across 4 scales
@@ -2174,6 +2464,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     return choices.slice(shift).concat(choices.slice(0, shift));
   }
 
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 7c: WELFARE — APPLY THE EVIDENCE
+  // The Welfare tabs carried the argument and the citations, but the only thing
+  // the lab asked of a student was to CLICK all four: `pets_welfare_aware` was
+  // awarded for visiting, and the tool said "Welfare-Aware" on that basis.
+  //
+  // Each topic now ends in one situated decision, because these four are the
+  // debates a student will actually meet in a kitchen conversation, and the
+  // useful skill is bringing the evidence to a person who disagrees — not
+  // reciting a position.
+  //
+  // Design rules, deliberate:
+  // - The best option is never the absolutist one. Refusing to engage is not
+  //   the same as changing an outcome, and a student who learns "say no
+  //   harder" has not learned what the sources actually support.
+  // - Every option gets a real response, including the best one. A "correct"
+  //   answer that is only told "correct!" wastes the moment the student is
+  //   most ready to read.
+  // - `best` marks the strongest option; `ok` marks defensible-but-weaker, so
+  //   the feedback can say "this is not wrong, but" instead of flattening a
+  //   spectrum into right/wrong.
+  // ─────────────────────────────────────────────────────────
+  var WELFARE_APPLY = {
+    spayNeuter: {
+      prompt: 'A friend\'s family has an unspayed female cat who goes outside. They say they will "find homes for the kittens, so it is fine" and that spaying is expensive. What is the most useful thing you can tell them?',
+      options: [
+        { id: 'homes', label: 'They are right — if every kitten gets a home, there is no welfare problem.',
+          verdict: 'miss',
+          note: 'Finding homes for one litter does not close the loop. Those kittens reach breeding age in months, and shelter intake is already about 6.3 million animals a year — a home found for this litter is a home not available to an animal already waiting. The compounding calculator on this tab is the point: one unspayed female is not one litter, it is a branching line.' },
+        { id: 'cost', label: 'Point out that spaying also prevents pyometra and sharply reduces mammary cancer risk, and ask their vet or a local clinic about low-cost options.',
+          verdict: 'best',
+          note: 'This is the strongest move, because it answers the objection they actually raised. Cost is a real barrier, and low-cost and subsidised clinics exist in most areas. Pairing that with the individual-health case — pyometra is life-threatening, and spaying before the first heat drops mammary cancer risk dramatically — means you are not asking them to accept a cost for someone else\'s benefit. It is their cat\'s health too.' },
+        { id: 'shame', label: 'Tell them that not spaying is irresponsible and they are contributing to euthanasia numbers.',
+          verdict: 'miss',
+          note: 'Even though the population figures are real, this is the least likely route to a spayed cat. It puts them on the defensive over a decision they have already half-made, and it skips the barrier they named: money. The evidence works better as help than as an accusation.' },
+        { id: 'wait', label: 'Suggest they keep her indoors until they can afford the surgery.',
+          verdict: 'ok',
+          note: 'Not wrong, and worth saying as a stopgap — an indoor cat cannot be bred by roaming males. But on its own it leaves the surgery undone and the health benefits unclaimed, and "until we can afford it" tends to become indefinite. Best paired with a concrete pointer to a low-cost clinic.' }
+      ],
+      source: 'ASPCA shelter intake data + AVMA spay/neuter guidance (this tab)'
+    },
+    adoption: {
+      prompt: 'Someone tells you they want a specific breed because a family member has allergies and they have been told that breed is hypoallergenic. They are ready to buy from a breeder. What does the evidence support?',
+      options: [
+        { id: 'hypo', label: 'Agree — hypoallergenic breeds are the right call for an allergy household.',
+          verdict: 'miss',
+          note: 'No breed is truly hypoallergenic. The allergens are in saliva and dander rather than hair length, so a low-shedding coat spreads less of it around a room but does not make an allergic reaction go away. Buying on that promise risks the worst outcome for everyone: an animal rehomed a few months later when the allergies do not improve.' },
+        { id: 'rescue', label: 'Point out that breed-specific rescues exist for almost every breed, and suggest spending time with the actual animal first to see how the allergy responds.',
+          verdict: 'best',
+          note: 'This takes their constraint seriously instead of arguing with it. Breed rescues cover nearly every breed, and about a quarter of shelter dogs are purebred, so "I need this breed" and "adopt" are not in conflict nearly as often as people assume. The second half matters more: allergic response varies by individual animal, not just by breed, so meeting the specific animal is the only real test.' },
+        { id: 'never', label: 'Tell them buying from a breeder is always wrong and they should adopt whatever is available.',
+          verdict: 'miss',
+          note: 'This ignores the household constraint they described, which makes it easy to dismiss — and it sets them up to fail. A placement that does not fit the household is how animals end up back in a shelter. The adoption case is strong enough without requiring someone to pretend their constraint is not real.' },
+        { id: 'shelter', label: 'Suggest they ask the shelter to flag low-shedding animals as they come in.',
+          verdict: 'ok',
+          note: 'A reasonable practical step, and shelters will often do exactly this. It is weaker than the breed-rescue route mainly because it leaves the allergy question untested — the coat type is a proxy, and meeting the animal is the thing that actually answers it.' }
+      ],
+      source: 'ASPCA + breed-rescue guidance (this tab) and the Genetics tile'
+    },
+    declawing: {
+      prompt: 'A relative is about to declaw their cat to protect a new sofa. They are not being cruel — they genuinely believe it is a routine nail procedure. What is the most useful thing to say?',
+      options: [
+        { id: 'anatomy', label: 'Explain that it amputates the last bone of every toe, and offer to help set up scratching posts and nail caps this week.',
+          verdict: 'best',
+          note: 'Both halves are doing work. Most people who choose declawing have been told it is a nail procedure, so the anatomical fact — the claw grows from the third phalanx and cannot be taken without the bone — is genuinely new information, not a moral argument. And because the real problem is the sofa, an offer to solve it is what makes the alternative available. Correct scratching posts, regular trims, and soft nail caps address the actual behaviour.' },
+        { id: 'illegal', label: 'Tell them it is banned in most of Europe and several US states, so they should not do it.',
+          verdict: 'ok',
+          note: 'True, and worth mentioning — it signals that this is a settled question among veterinary bodies rather than one person\'s opinion. But on its own it is an appeal to authority about a sofa they still have to protect. It tends to land as "you are not allowed to", which invites an argument about who decides rather than about the cat.' },
+        { id: 'consequences', label: 'Warn them the cat may start biting and avoiding the litter box afterwards.',
+          verdict: 'ok',
+          note: 'These are documented outcomes and they matter — a declawed cat has lost its primary defence, so biting becomes the remaining option, and litter on healing amputation sites is painful enough that box avoidance is common. It is a strong argument. It is second-best here only because it predicts a future they may not believe yet, while the anatomy is a fact they can check today.' },
+        { id: 'accept', label: 'Say nothing — it is their cat and their decision.',
+          verdict: 'miss',
+          note: 'Their decision, yes. But it is being made on a false premise — that this is a nail trim — and the one thing you can offer is the information that changes it. Staying quiet protects the conversation, not the cat.' }
+      ],
+      source: 'AVMA + AAFP position statements and Martell-Moran 2018 (this tab)'
+    },
+    outdoorCats: {
+      prompt: 'A neighbour\'s indoor cat sits at the window crying to go out. They say keeping her in is cruel, and that she is well fed so she will not hunt much anyway. What does the evidence actually support?',
+      options: [
+        { id: 'fed', label: 'Agree that a well-fed cat will not hunt enough to matter.',
+          verdict: 'miss',
+          note: 'This is the specific belief the data contradicts. Predation in cats is instinctive rather than hunger-driven, so a full bowl does not switch it off. Free-roaming cats in the US kill an estimated 1.3 to 4 billion birds a year, and while most of that is attributable to unowned cats, well-fed owned cats hunt too.' },
+        { id: 'bell', label: 'Tell them to put a bell on her collar and let her out.',
+          verdict: 'miss',
+          note: 'Bells help less than people expect — roughly a 30 to 50 percent reduction in kills, not an elimination — and they do nothing at all about the risks to the cat herself. Traffic, other cats, predators, and infectious disease are the things that shorten an outdoor cat\'s life, and a bell addresses none of them.' },
+        { id: 'lifespan', label: 'Tell them outdoor cats only live 2 to 5 years.',
+          verdict: 'ok',
+          note: 'The direction is right and the underlying point is sound — cats with outdoor access do die younger. Be careful with that particular number, though: it leans on unowned and feral colony data rather than owned cats let out during the day, and it circulates in advocacy material more than in peer-reviewed work. Argue the mechanisms, which are solid, rather than a figure someone can look up and find shaky.' },
+        { id: 'enrich', label: 'Suggest the crying is unmet need rather than a need for outdoors, and offer concrete enrichment: vertical space, window perches, food puzzles, scheduled play, a catio or harness walks.',
+          verdict: 'best',
+          note: 'This takes the cat\'s frustration seriously — it is real, and "just keep her in" without changing anything is a genuinely worse life. What the evidence supports is that the underlying need is stimulation and territory, which can be met indoors. A catio or harness walking gives outdoor access without the traffic, predation, disease, and fighting that shorten outdoor cats\' lives.' },
+      ],
+      source: 'Loss et al. 2013 (Nature Communications) + AVMA and ABC guidance (this tab)'
+    }
+  };
+
   // ─────────────────────────────────────────────────────────
   // SECTION 7b: SENSORY PERSPECTIVE ("Through Their Eyes")
   //
@@ -3002,7 +3390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       'lsSeed', 'lsShown', 'lsStreak', 'lsMissed', 'lsReview', 'tfsAns', 'tfsBest', 'tfsIdx',
       'tfsOpen', 'tfsPick', 'tfsRounds', 'tfsScore', 'tfsSeed',
       'tfsShown', 'tfsStreak', 'tfsMissed', 'tfsReview', 'diagramView', 'famousFilter',
-      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk', 'speciesChecks',
+      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk', 'speciesChecks', 'mythChecks', 'welfareApply', 'careerMatch', 'actionPlan', 'serviceCalls', 'geneGoals', 'geneGoalActive', 'geneGoalHint',
       'sensoryReduceMotion', 'sensorySeen', 'sensorySpecies', 'lastView'
     ];
     var PETS_EVIDENCE_MODULE_LABELS = {
@@ -3034,6 +3422,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       quiz: '15-question quiz'
     };
     var PETS_EVIDENCE_ACTIVITY_FIELDS = {
+      genetics: ['score', 'total', 'scorePct', 'criterionMet'],
+      service: ['score', 'total', 'scorePct', 'criterionMet'],
+      action: ['chosen', 'scales'],
+      careers: ['answered', 'total'],
+      welfare: ['score', 'total', 'scorePct', 'criterionMet'],
+      myths: ['score', 'total', 'scorePct', 'believed', 'criterionMet'],
       dogs: ['predicted', 'criterionMet'],
       cats: ['predicted', 'criterionMet'],
       smallMammals: ['predicted', 'criterionMet'],
@@ -3059,6 +3453,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       careSim: 'Wrote a post-week reflection'
     };
     var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
+      genetics: 'Solved the Punnett square challenges',
+      service: 'Ruled on every service-animal access case',
+      action: 'Committed to specific next actions',
+      careers: 'Completed the career self-inventory',
+      welfare: 'Applied the evidence to all four welfare decisions',
+      myths: 'Judged every claim in Myths Busted',
       dogs: 'Predicted and checked the dog lifespan question',
       cats: 'Predicted and checked the cat nutrition question',
       smallMammals: 'Predicted and checked the small-mammal housing question',
@@ -3076,6 +3476,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       sensory: 'Compared the sensory perspectives'
     };
     var PETS_ACTIVITY_COMPLETION_REASONS = {
+      genetics: ['Solved every Punnett challenge'],
+      service: ['Ruled on every access case'],
+      action: ['Committed to a next action'],
+      careers: ['Completed the career self-inventory'],
+      welfare: ['Decided all four welfare scenarios'],
+      myths: ['Judged every myth claim'],
       dogs: ['Prediction check completed'],
       cats: ['Prediction check completed'],
       smallMammals: ['Prediction check completed'],
@@ -3101,6 +3507,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // names declared after the PETS_EVIDENCE_MODULE_LABELS marker.
     // Kept in sync with SPECIES_CHECKS by pets_species_checks.test.js.
     var PETS_SPECIES_CHECK_MODULES = ['dogs', 'cats', 'smallMammals', 'birds', 'reptiles'];
+    // Declared inside the evidence-schema region for the same reason: the
+    // tests slice that region into a bare VM, where PUNNETT_GOALS is not
+    // reachable. Kept in sync by pets_punnett_goals.test.js.
+    var PUNNETT_GOAL_COUNT = 4;
     function normalizePetsActivityCompletionReason(moduleId, reason) {
       var authored = PETS_ACTIVITY_COMPLETION_REASONS[moduleId] || [];
       if (authored.indexOf(reason) >= 0) return reason;
@@ -3242,6 +3652,275 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var record = checks && checks[speciesId];
       return !!(record && record.revealed);
     }
+    // Resolves a MYTH_CHECK_ORDER key to a uniform claim record. Myths carry
+    // their correction in `truth`; the mixed-in true statements carry `note`.
+    // Returning one shape keeps the view and the normalizer from branching on
+    // which table a claim came from.
+    function mythClaimByKey(key) {
+      key = String(key || '');
+      var digits = key.slice(1);
+      // Number('') is 0, so a bare 'm' would otherwise resolve to myth 0 and
+      // let a malformed key answer a real claim.
+      if (!/^[0-9]+$/.test(digits)) return null;
+      var index = Number(digits);
+      if (!isFinite(index)) return null;
+      if (key.charAt(0) === 'm') {
+        if (index >= MYTHS.length) return null;
+        var myth = MYTHS[index];
+        return {
+          key: key, claim: myth.myth, verdict: false,
+          note: myth.truth, source: myth.source
+        };
+      }
+      if (key.charAt(0) === 't') {
+        if (index >= MYTH_CHECK_TRUE.length) return null;
+        var item = MYTH_CHECK_TRUE[index];
+        return {
+          key: key, claim: item.claim, verdict: true,
+          note: item.note, source: item.source
+        };
+      }
+      return null;
+    }
+    function mythCheckKeys() {
+      return MYTH_CHECK_ORDER.filter(function(key) { return !!mythClaimByKey(key); });
+    }
+    // One answer per claim: true / false, and whether the correction is open.
+    // Only keys that still resolve survive a restore, so removing a myth from
+    // the table cannot leave an orphan answer behind driving the count.
+    function normalizeMythChecks(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      mythCheckKeys().forEach(function(key) {
+        var record = raw[key];
+        if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+        var answered = record.said === true || record.said === false ? record.said : null;
+        var revealed = record.revealed === true;
+        if (answered === null && !revealed) return;
+        safe[key] = { said: answered, revealed: revealed };
+      });
+      return safe;
+    }
+    // The activity is answering every claim and seeing every correction.
+    // Being wrong is the point of the view, so the score gates nothing.
+    // One decision per welfare topic. Only authored topics and authored
+    // option ids survive a restore, so a hand-edited snapshot cannot mark a
+    // topic decided with an option that does not exist.
+    // One answer per self-inventory question. Only authored questions and
+    // authored option ids survive a restore, so a hand-edited snapshot cannot
+    // score against an option that does not exist.
+    // The Take Action plan: which actions a student commits to, capped.
+    // Only ids that still exist in TAKE_ACTION survive a restore, so
+    // removing an action cannot leave an orphan inflating the count.
+    // One verdict per access case. Only authored cases and authored option
+    // ids survive a restore.
+    // Which Punnett goals have been solved. A plain id list: solving is a
+    // fact about a cross the student actually configured, so there is no
+    // per-goal payload to keep. Unknown ids are dropped on restore.
+    function normalizeGeneGoals(raw) {
+      if (!Array.isArray(raw)) return [];
+      var valid = PUNNETT_GOALS.map(function(goal) { return goal.id; });
+      var seen = {};
+      return raw.filter(function(id) {
+        if (typeof id !== 'string' || valid.indexOf(id) < 0 || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      });
+    }
+    // Evaluates every goal against the cross currently on screen. Returns
+    // which are satisfied RIGHT NOW, separately from which have ever been
+    // solved, so the UI can say 'this cross solves it' without overwriting
+    // history when the student changes a dropdown.
+    function geneGoalsState(solvedRaw, p1, p2, counts, phenotypeOf) {
+      var solved = normalizeGeneGoals(solvedRaw);
+      var nowSolved = [];
+      PUNNETT_GOALS.forEach(function(goal) {
+        var ok = false;
+        try {
+          ok = !!goal.check(p1, p2, counts, phenotypeOf);
+        } catch (e) { ok = false; }
+        if (ok) nowSolved.push(goal.id);
+      });
+      return {
+        solved: solved,
+        nowSolved: nowSolved,
+        total: PUNNETT_GOALS.length,
+        count: solved.length,
+        complete: PUNNETT_GOALS.length > 0 && solved.length === PUNNETT_GOALS.length
+      };
+    }
+    function normalizeServiceCalls(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      SERVICE_CASES.forEach(function(item) {
+        var picked = raw[item.id];
+        if (typeof picked !== 'string') return;
+        var valid = item.options.some(function(option) { return option.id === picked; });
+        if (valid) safe[item.id] = picked;
+      });
+      return safe;
+    }
+    // Completion is calling every case. `correct` counts the lawful calls
+    // and is reported, never a gate: someone who gets these wrong here is
+    // exactly the person the view is for.
+    function serviceCallsProgress(calls) {
+      var answered = normalizeServiceCalls(calls);
+      var done = 0, correct = 0;
+      SERVICE_CASES.forEach(function(item) {
+        var picked = answered[item.id];
+        if (!picked) return;
+        done += 1;
+        var option = item.options.filter(function(row) { return row.id === picked; })[0];
+        if (option && option.verdict === 'best') correct += 1;
+      });
+      return { total: SERVICE_CASES.length, done: done, correct: correct,
+        complete: SERVICE_CASES.length > 0 && done === SERVICE_CASES.length };
+    }
+    var ACTION_PLAN_MAX = 3;
+    function actionPlanIds() {
+      var ids = [];
+      Object.keys(TAKE_ACTION).forEach(function(scale) {
+        TAKE_ACTION[scale].forEach(function(action) { ids.push(action.id); });
+      });
+      return ids;
+    }
+    function actionScaleOf(actionId) {
+      var found = null;
+      Object.keys(TAKE_ACTION).forEach(function(scale) {
+        TAKE_ACTION[scale].forEach(function(action) {
+          if (action.id === actionId) found = scale;
+        });
+      });
+      return found;
+    }
+    function normalizeActionPlan(raw) {
+      if (!Array.isArray(raw)) return [];
+      var valid = actionPlanIds();
+      var seen = {};
+      return raw.filter(function(id) {
+        if (typeof id !== 'string' || valid.indexOf(id) < 0 || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      }).slice(0, ACTION_PLAN_MAX);
+    }
+    // A plan is ready at one action. The cap exists because a student who
+    // ticks all ten has not made a plan, they have made a list; choosing is
+    // the part that costs something.
+    function actionPlanProgress(plan) {
+      var chosen = normalizeActionPlan(plan);
+      var scales = {};
+      chosen.forEach(function(id) {
+        var scale = actionScaleOf(id);
+        if (scale) scales[scale] = true;
+      });
+      return {
+        chosen: chosen,
+        count: chosen.length,
+        max: ACTION_PLAN_MAX,
+        scales: Object.keys(scales).length,
+        full: chosen.length >= ACTION_PLAN_MAX,
+        ready: chosen.length > 0
+      };
+    }
+    function normalizeCareerMatch(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      CAREER_MATCH_QUESTIONS.forEach(function(question) {
+        var picked = raw[question.id];
+        if (typeof picked !== 'string') return;
+        var valid = question.options.some(function(option) { return option.id === picked; });
+        if (valid) safe[question.id] = picked;
+      });
+      return safe;
+    }
+    // Ranks the careers against what the student said and RETURNS THE
+    // REASONS, not just a number: every contributing answer is listed on the
+    // result so a student can disagree with one line of the arithmetic
+    // rather than with an opaque verdict.
+    function careerMatchRanking(picks, paths) {
+      var answered = normalizeCareerMatch(picks);
+      var reasons = {};
+      var totals = {};
+      (paths || []).forEach(function(path) { totals[path.id] = 0; reasons[path.id] = []; });
+      CAREER_MATCH_QUESTIONS.forEach(function(question) {
+        var pickedId = answered[question.id];
+        if (!pickedId) return;
+        var option = question.options.filter(function(item) { return item.id === pickedId; })[0];
+        if (!option || !option.scores) return;
+        Object.keys(option.scores).forEach(function(careerId) {
+          if (!Object.prototype.hasOwnProperty.call(totals, careerId)) return;
+          var weight = option.scores[careerId];
+          if (typeof weight !== 'number' || !isFinite(weight) || weight === 0) return;
+          totals[careerId] += weight;
+          reasons[careerId].push({ question: question.id, label: option.label, weight: weight });
+        });
+      });
+      var ranked = (paths || []).map(function(path) {
+        return { id: path.id, score: totals[path.id] || 0, reasons: reasons[path.id] || [] };
+      });
+      // Stable order: score first, then the authored order, so a tie never
+      // reshuffles between renders.
+      var order = {};
+      (paths || []).forEach(function(path, index) { order[path.id] = index; });
+      ranked.sort(function(a, b) {
+        if (b.score !== a.score) return b.score - a.score;
+        return order[a.id] - order[b.id];
+      });
+      var answeredCount = Object.keys(answered).length;
+      return {
+        ranked: ranked,
+        answered: answeredCount,
+        total: CAREER_MATCH_QUESTIONS.length,
+        complete: answeredCount === CAREER_MATCH_QUESTIONS.length
+      };
+    }
+    function normalizeWelfareApply(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      Object.keys(WELFARE_APPLY).forEach(function(topicId) {
+        var picked = raw[topicId];
+        if (typeof picked !== 'string') return;
+        var valid = WELFARE_APPLY[topicId].options.some(function(option) {
+          return option.id === picked;
+        });
+        if (valid) safe[topicId] = picked;
+      });
+      return safe;
+    }
+    // Completion is deciding on all four topics. `strong` counts the
+    // best-supported answers; it is reported, never a gate -- the point of
+    // the view is that these are arguments, not lookups.
+    function welfareApplyProgress(picks) {
+      var topics = Object.keys(WELFARE_APPLY);
+      var done = 0, strong = 0;
+      topics.forEach(function(topicId) {
+        var picked = picks && picks[topicId];
+        if (!picked) return;
+        done += 1;
+        var option = WELFARE_APPLY[topicId].options.filter(function(item) {
+          return item.id === picked;
+        })[0];
+        if (option && option.verdict === 'best') strong += 1;
+      });
+      return { total: topics.length, done: done, strong: strong,
+        complete: topics.length > 0 && done === topics.length };
+    }
+    function mythCheckProgress(checks) {
+      var keys = mythCheckKeys();
+      var done = 0, correct = 0, believed = 0;
+      keys.forEach(function(key) {
+        var record = checks && checks[key];
+        if (!record || !record.revealed || record.said === null) return;
+        done += 1;
+        var claim = mythClaimByKey(key);
+        if (record.said === claim.verdict) correct += 1;
+        // "Believed" = called a myth true, the misconception this view targets.
+        else if (claim.verdict === false && record.said === true) believed += 1;
+      });
+      return { total: keys.length, done: done, correct: correct, believed: believed,
+        complete: keys.length > 0 && done === keys.length };
+    }
+
     function normalizeAiDrafts(raw) {
       if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
       var safe = {};
@@ -3360,7 +4039,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         healthCorrect: 6, healthTotal: 6,
         welfareCorrect: 3, welfareTotal: 3,
         draftChars: 4000, revisionNoteChars: 1200, days: 7, perspectives: 3,
-        overnightEvents: 14, week: 2
+        overnightEvents: 14, week: 2, believed: 11, answered: 12, chosen: 3, scales: 4
       };
       if (Object.prototype.hasOwnProperty.call(countLimits, key) && typeof value === 'number' && isFinite(value)) {
         return Math.max(0, Math.min(countLimits[key], Math.round(value)));
@@ -3507,6 +4186,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             hasNumber('energyLeft') && details.energyLeft > 20 &&
             details.caregiverSustainable === true;
         } else {
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'genetics') {
+        // Unlike the judgement activities, this one IS gated on getting it
+        // right: a cross either satisfies the goal or it does not, and the
+        // student can keep trying until it does.
+        var geneShape = reconcileScore(PUNNETT_GOAL_COUNT);
+        if (geneShape) details.criterionMet = details.score === details.total;
+        else delete details.criterionMet;
+      } else if (moduleId === 'service') {
+        // score = lawful calls out of five. Reported, not a bar: completion
+        // is ruling on every case.
+        var serviceShape = reconcileScore(5);
+        if (serviceShape) details.criterionMet = details.score === details.total;
+        else delete details.criterionMet;
+      } else if (moduleId === 'action') {
+        // A commitment is not a score. Record how many actions and how many
+        // scales, nothing that reads as a grade.
+        delete details.criterionMet;
+        delete details.scorePct;
+        delete details.score;
+        if (!hasNumber('chosen') || details.chosen <= 0) {
+          delete details.chosen;
+          delete details.scales;
+        }
+      } else if (moduleId === 'careers') {
+        // Deliberately scoreless: there is no right answer to what someone
+        // should be. Only 'answered every question' is recorded, and no
+        // criterionMet is ever kept for this module.
+        delete details.criterionMet;
+        delete details.scorePct;
+        delete details.score;
+        if (!hasNumber('answered') || !hasNumber('total') || details.answered !== details.total) {
+          delete details.answered;
+          delete details.total;
+        }
+      } else if (moduleId === 'welfare') {
+        // score = best-supported answers out of four. Reported, not a bar:
+        // a defensible weaker answer is still a decision, and completion is
+        // deciding on every topic.
+        var welfareShape = reconcileScore(4);
+        if (welfareShape) details.criterionMet = details.score === details.total;
+        else delete details.criterionMet;
+      } else if (moduleId === 'myths') {
+        // Completion is judging every claim; the score is reported, not a bar.
+        // believed = myths the student called true, which is the number the
+        // teacher view actually cares about.
+        var mythComplete = reconcileScore(null);
+        if (mythComplete && hasNumber('believed')) {
+          details.believed = Math.max(0, Math.min(details.total, Math.round(details.believed)));
+          details.criterionMet = details.believed === 0;
+        } else {
+          delete details.believed;
           delete details.criterionMet;
         }
       } else if (PETS_SPECIES_CHECK_MODULES.indexOf(moduleId) >= 0) {
@@ -4200,6 +4932,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       snapshot.aiDrafts = normalizeAiDrafts(snapshot.aiDrafts);
       snapshot.careReflections = normalizeCareReflections(snapshot.careReflections);
       snapshot.speciesChecks = normalizeSpeciesChecks(snapshot.speciesChecks);
+      snapshot.mythChecks = normalizeMythChecks(snapshot.mythChecks);
+      snapshot.welfareApply = normalizeWelfareApply(snapshot.welfareApply);
+      snapshot.careerMatch = normalizeCareerMatch(snapshot.careerMatch);
+      snapshot.actionPlan = normalizeActionPlan(snapshot.actionPlan);
+      snapshot.serviceCalls = normalizeServiceCalls(snapshot.serviceCalls);
+      snapshot.geneGoals = normalizeGeneGoals(snapshot.geneGoals);
+      // Which challenge is open, and whether its hint is showing. Scalars, but
+      // an unknown goal id would render an empty panel, so they are validated.
+      snapshot.geneGoalActive = PUNNETT_GOALS.some(function(goal) {
+        return goal.id === snapshot.geneGoalActive;
+      }) ? snapshot.geneGoalActive : null;
+      snapshot.geneGoalHint = snapshot.geneGoalHint === true;
       snapshot.aiCritiques = normalizeAiCritiques(snapshot.aiCritiques);
       snapshot.aiRevisionNotes = normalizeAiRevisionNotes(snapshot.aiRevisionNotes);
       snapshot.aiResponse = typeof snapshot.aiResponse === 'string'
@@ -4440,6 +5184,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _lifespanQuestionRef = React.useRef(null);
     var _lifespanFeedbackRef = React.useRef(null);
     var _speciesCheckFeedbackRef = React.useRef(null);
+    var _welfareApplyFeedbackRef = React.useRef(null);
+    var _careerResultRef = React.useRef(null);
+    var _actionPlanRef = React.useRef(null);
+    var _geneGoalsRef = React.useRef(null);
+    var _serviceFeedbackRefsHolder = React.useRef({});
+    var _serviceFeedbackRefs = _serviceFeedbackRefsHolder.current;
+    // Per-claim feedback nodes for the myth check, keyed by claim id. A plain
+    // object on a ref: the set of claims is fixed, so no hook is created per row.
+    var _mythFeedbackRefsHolder = React.useRef({});
+    var _mythFeedbackRefs = _mythFeedbackRefsHolder.current;
     var _careQuestionRef = React.useRef(null);
     var _careFeedbackRef = React.useRef(null);
     var _quizQuestionRef = React.useRef(null);
@@ -4472,6 +5226,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var aiDrafts = normalizeAiDrafts(d.aiDrafts);
     var careReflections = normalizeCareReflections(d.careReflections);
     var speciesChecks = normalizeSpeciesChecks(d.speciesChecks);
+    var welfareApply = normalizeWelfareApply(d.welfareApply);
+    var careerMatch = normalizeCareerMatch(d.careerMatch);
+    var actionPlan = normalizeActionPlan(d.actionPlan);
+    var serviceCalls = normalizeServiceCalls(d.serviceCalls);
+    var geneGoals = normalizeGeneGoals(d.geneGoals);
     var legacyAiResponse = typeof d.aiResponse === 'string'
       ? d.aiResponse.slice(0, 4000) : '';
     var aiResponse = aiScenarioId && Object.prototype.hasOwnProperty.call(aiDrafts, aiScenarioId)
@@ -4651,8 +5410,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var validVisited = Object.keys(welfareVisited).filter(function(key) {
         return petsOwn(WELFARE_DATA, key);
       }).length;
-      if (validVisited >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware');
-    }, [welfareVisited, badges.pets_welfare_aware]);
+      var decided = welfareApplyProgress(welfareApply);
+      if (validVisited >= 4 && decided.complete) {
+        awardBadge('pets_welfare_aware', 'Welfare-Aware');
+      }
+    }, [welfareVisited, welfareApply, badges.pets_welfare_aware]);
 
     // Focus follows the route. Entering a module lands on its heading; coming
     // back opens the relevant catalog disclosure (if needed) and restores the
@@ -4933,6 +5695,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return Object.keys(map || {}).filter(isTrackableModule).length;
     }
     var PETS_ACTIVITY_COMPLETION_MODULES = {
+      genetics: true,
+      service: true,
+      action: true,
+      careers: true,
+      welfare: true,
+      myths: true,
       dogs: true,
       cats: true,
       smallMammals: true,
@@ -8119,6 +8887,114 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('strong', { style: { color: T.text } }, 'E'), ' allows pigment expression; ',
               h('strong', { style: { color: T.text } }, 'ee'), ' masks pigment so the dog is yellow regardless of B/b. Pick two parents to see all 16 possible offspring genotypes and the resulting phenotype ratio.'
             ),
+            (function() {
+              var phenotypeOf = function(geno) {
+                return phenotype(geno[0], geno[1], geno[2], geno[3]).color;
+              };
+              var goalState = geneGoalsState(geneGoals, pa1, pa2, counts, phenotypeOf);
+              var activeId = d.geneGoalActive || null;
+              var active = PUNNETT_GOALS.filter(function(goal) { return goal.id === activeId; })[0] || null;
+              var showHint = !!d.geneGoalHint && !!active;
+              var activeSolvedNow = active && goalState.nowSolved.indexOf(active.id) >= 0;
+              var activeSolvedEver = active && goalState.solved.indexOf(active.id) >= 0;
+
+              function pickGoal(goalId) {
+                updMulti({ geneGoalActive: goalId, geneGoalHint: false });
+                var goal = PUNNETT_GOALS.filter(function(item) { return item.id === goalId; })[0];
+                if (goal) petsAnnounce('Challenge: ' + goal.ask);
+              }
+              function clearGoal() {
+                updMulti({ geneGoalActive: null, geneGoalHint: false });
+              }
+              // Recording a solve happens on the button, not in an effect:
+              // an effect firing on every dropdown change would mark goals
+              // solved that the student never selected or noticed.
+              function recordSolve() {
+                if (!active || !activeSolvedNow || activeSolvedEver) return;
+                upd('geneGoals', function(current) {
+                  var next = normalizeGeneGoals(current);
+                  if (next.indexOf(active.id) < 0) next.push(active.id);
+                  return next;
+                });
+                var after = normalizeGeneGoals(geneGoals.concat([active.id]));
+                if (after.length === PUNNETT_GOALS.length) {
+                  completeModule('genetics', 'Solved every Punnett challenge', {
+                    score: after.length, total: PUNNETT_GOALS.length
+                  });
+                }
+                petsAnnounce('Solved: ' + active.title + '. ' + after.length + ' of ' + PUNNETT_GOALS.length + '.');
+                focusPetsTarget(_geneGoalsRef);
+              }
+
+              return h('div', {
+                className: 'petslab-gene-goals',
+                style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 12 }
+              },
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 6 } },
+                  h('strong', { style: { fontSize: 12.5, color: T.accentHi } }, '\uD83C\uDFAF Challenges'),
+                  h('span', { className: 'petslab-gene-goals-progress', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+                    'Solved ' + goalState.count + ' of ' + goalState.total)),
+                h('p', { style: { margin: '0 0 9px', fontSize: 11.5, color: T.muted, lineHeight: 1.55 } },
+                  'Reading the grid is one skill; building a cross that produces a given outcome is a harder and more useful one. Pick a challenge, then set the parents to satisfy it.'),
+                h('div', { role: 'group', 'aria-label': 'Choose a challenge', style: { display: 'grid', gap: 6, marginBottom: active ? 10 : 0 } },
+                  PUNNETT_GOALS.map(function(goal) {
+                    var done = goalState.solved.indexOf(goal.id) >= 0;
+                    var isActive = activeId === goal.id;
+                    return h('button', {
+                      key: goal.id,
+                      type: 'button',
+                      className: 'petslab-gene-goal-pick',
+                      'data-pets-focusable': true,
+                      'aria-pressed': isActive ? 'true' : 'false',
+                      onClick: function() { isActive ? clearGoal() : pickGoal(goal.id); },
+                      style: {
+                        textAlign: 'left', padding: '8px 10px', borderRadius: 8,
+                        background: isActive ? 'rgba(245,158,11,0.14)' : T.card,
+                        border: '1px solid ' + (done ? '#22c55e' : (isActive ? T.accentHi : T.border)),
+                        color: T.text, fontSize: 12, lineHeight: 1.5, cursor: 'pointer',
+                        font: 'inherit', fontWeight: isActive ? 700 : 400
+                      }
+                    }, (done ? '\u2713 ' : '') + goal.title);
+                  })),
+                active && h('div', {
+                  ref: _geneGoalsRef,
+                  tabIndex: -1,
+                  className: 'petslab-gene-goal-active',
+                  role: 'status',
+                  style: { padding: '10px 12px', borderRadius: 8, background: T.card, border: '1px solid ' + (activeSolvedNow ? '#22c55e' : T.border) }
+                },
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12.5, color: T.text, lineHeight: 1.6, fontWeight: 600 } }, active.ask),
+                  activeSolvedNow
+                    ? h('div', null,
+                        h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#86efac', marginBottom: 5 } },
+                          '\u2713 This cross satisfies it \u2014 ' + pa1 + ' \u00d7 ' + pa2 +
+                          ' gives ' + counts.Black + ' black, ' + counts.Chocolate + ' chocolate, ' + counts.Yellow + ' yellow'),
+                        h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.6 } }, active.why),
+                        !activeSolvedEver && h('button', {
+                          type: 'button',
+                          className: 'petslab-gene-goal-record',
+                          'data-pets-focusable': true,
+                          onClick: recordSolve,
+                          style: btnPrimary({ padding: '7px 11px', fontSize: 11.5 })
+                        }, 'Got it \u2014 mark this solved'),
+                        activeSolvedEver && h('div', { style: { fontSize: 11.5, color: T.dim, fontStyle: 'italic' } },
+                          'Already recorded. Try another challenge, or keep exploring this cross.'))
+                    : h('div', null,
+                        h('p', { style: { margin: '0 0 7px', fontSize: 11.5, color: T.muted, lineHeight: 1.55 } },
+                          'This cross gives ', h('strong', { style: { color: T.text } },
+                            counts.Black + ' black, ' + counts.Chocolate + ' chocolate, ' + counts.Yellow + ' yellow'),
+                          '. Not there yet \u2014 change the parents above.'),
+                        showHint
+                          ? h('p', { style: { margin: 0, fontSize: 11.5, color: T.warm, lineHeight: 1.6 } },
+                              h('strong', null, 'Hint: '), active.hint)
+                          : h('button', {
+                              type: 'button',
+                              className: 'petslab-gene-goal-hint',
+                              'data-pets-focusable': true,
+                              onClick: function() { upd('geneGoalHint', true); },
+                              style: btn({ padding: '6px 10px', fontSize: 11 })
+                            }, 'Show a hint'))));
+            })(),
             // Parent pickers
             h('div', { className: 'petslab-gene-parent-grid' },
               ['1', '2'].map(function(num) {
@@ -8176,7 +9052,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 'aria-label': __alloT('stem.pets.a11y_punnett_square_4_by_4_grid_showing_16_offspring', 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes') },
                 h('thead', null,
                   h('tr', null,
-                    h('th', { scope: 'col', style: { padding: 6, color: T.dim, fontSize: 10 } }, ''),
+                    // The corner cell of a Punnett square is genuinely empty,
+                    // but an empty <th> is an axe violation (empty-table-header)
+                    // and a screen reader announces a nameless column. Give it
+                    // a real name, hidden visually.
+                    h('th', { scope: 'col', style: { padding: 6, color: T.dim, fontSize: 10 } },
+                      h('span', {
+                        style: { position: 'absolute', width: 1, height: 1, padding: 0,
+                          margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }
+                      }, 'Parent gametes')),
                     g2.map(function(gam, i) {
                       return h('th', { key: i, scope: 'col', style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border } }, gam);
                     })
@@ -8743,6 +9627,128 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               'in libraries and schools are popular, and children reliably report enjoying them and feeling less self-conscious reading aloud. Whether they measurably improve reading fluency is ',
               h('strong', { style: { color: T.text } }, 'not settled'),
               ' — systematic reviews find the studies small, often uncontrolled, and mixed in result (Hall, Gee & Mills 2016, PLOS ONE). Treat these as a motivation and anxiety support, not as a substitute for an evidence-based reading intervention. Available at many Maine libraries.'))),
+        (function() {
+          var progress = serviceCallsProgress(serviceCalls);
+
+          // Stable per-case holder: the callback ref fills .current before the
+          // queued focus runs, which a direct read in the handler cannot do.
+          function holder(caseId) {
+            if (!_serviceFeedbackRefs[caseId]) _serviceFeedbackRefs[caseId] = { current: null };
+            return _serviceFeedbackRefs[caseId];
+          }
+          function decide(caseId, optionId) {
+            if (serviceCalls[caseId]) return;
+            var nextCalls = Object.assign({}, serviceCalls);
+            nextCalls[caseId] = optionId;
+            upd('serviceCalls', function(current) {
+              var next = normalizeServiceCalls(current);
+              next[caseId] = optionId;
+              return next;
+            });
+            var item = SERVICE_CASES.filter(function(row) { return row.id === caseId; })[0];
+            var option = item && item.options.filter(function(row) { return row.id === optionId; })[0];
+            petsAnnounce(option && option.verdict === 'best'
+              ? 'Correct call. The rule is shown.'
+              : 'Not the lawful call. The rule is shown.');
+            var after = serviceCallsProgress(nextCalls);
+            if (after.complete) {
+              completeModule('service', 'Ruled on every access case', {
+                score: after.correct, total: after.total
+              });
+            }
+            focusPetsTarget(holder(caseId));
+          }
+          function resetCalls() {
+            upd('serviceCalls', {});
+            petsAnnounce('Access calls cleared.');
+          }
+
+          return h('section', {
+            className: 'petslab-service-cases',
+            'aria-label': 'Access calls',
+            style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 5 } },
+              h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, '\u2696\uFE0F You are behind the counter'),
+              h('span', { className: 'petslab-service-progress', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+                progress.complete
+                  ? 'Called ' + progress.done + ' of ' + progress.total + ' \u00b7 ' + progress.correct + ' lawful'
+                  : 'Called ' + progress.done + ' of ' + progress.total)),
+            h('p', { style: { margin: '0 0 4px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+              'Five situations where somebody has to decide on the spot. People get these wrong in ',
+              h('strong', { style: { color: T.text } }, 'both directions'),
+              ' \u2014 demanding papers from a real handler, and believing an out-of-control animal can never be asked to leave.'),
+            h('p', { style: { margin: '0 0 12px', fontSize: 11, color: T.dim, lineHeight: 1.55, fontStyle: 'italic' } },
+              'US federal law (ADA Title III, 28 CFR 36.302). State law can add protections. Educational, not legal advice.'),
+            SERVICE_CASES.map(function(item) {
+              var picked = serviceCalls[item.id] || null;
+              var chosen = picked && item.options.filter(function(row) { return row.id === picked; })[0];
+              var best = item.options.filter(function(row) { return row.verdict === 'best'; })[0];
+              return h('div', { key: item.id, className: 'petslab-service-case',
+                style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: T.warm, letterSpacing: 0.3, marginBottom: 3 } }, item.setting),
+                h('p', { style: { margin: '0 0 9px', fontSize: 13, color: T.text, lineHeight: 1.6, fontWeight: 600 } }, item.prompt),
+                h('div', { role: 'group', 'aria-label': item.prompt, style: { display: 'grid', gap: 6 } },
+                  item.options.map(function(option) {
+                    var isPick = picked === option.id;
+                    var ring = T.border;
+                    var bg = T.card;
+                    if (picked) {
+                      if (option.verdict === 'best') { ring = '#22c55e'; bg = 'rgba(34,197,94,0.12)'; }
+                      else if (isPick) { ring = '#f87171'; bg = 'rgba(248,113,113,0.12)'; }
+                    }
+                    var marker = picked && option.verdict === 'best' ? '\u2713 ' : (picked && isPick ? '\u2717 ' : '');
+                    return h('button', {
+                      key: option.id,
+                      type: 'button',
+                      className: 'petslab-service-option',
+                      'data-pets-focusable': true,
+                      'aria-pressed': isPick ? 'true' : 'false',
+                      disabled: !!picked,
+                      onClick: function() { decide(item.id, option.id); },
+                      style: {
+                        textAlign: 'left', padding: '9px 11px', borderRadius: 8,
+                        background: bg, border: '1px solid ' + ring, color: T.text,
+                        fontSize: 12.5, lineHeight: 1.5, cursor: picked ? 'default' : 'pointer',
+                        font: 'inherit', fontWeight: isPick ? 700 : 400
+                      }
+                    }, marker + option.label);
+                  })),
+                chosen && h('div', {
+                  ref: function(node) { holder(item.id).current = node; },
+                  tabIndex: -1,
+                  className: 'petslab-service-feedback',
+                  role: 'status',
+                  style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: T.card, border: '1px solid ' + T.border }
+                },
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 5,
+                    color: chosen.verdict === 'best' ? '#86efac' : (chosen.verdict === 'ok' ? '#fcd34d' : '#fca5a5') } },
+                    chosen.verdict === 'best'
+                      ? '\u2713 That is the lawful call'
+                      : (chosen.verdict === 'ok'
+                          ? '\u25cf Lawful, but it misses something'
+                          : '\u2717 Not what the law allows')),
+                  h('div', { style: { fontSize: 11.5, color: T.accentHi, lineHeight: 1.55, marginBottom: 6, fontWeight: 600 } },
+                    item.rule),
+                  chosen.verdict !== 'best' && h('p', { style: { margin: '0 0 6px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                    h('strong', { style: { color: '#86efac' } }, '\u2713 The call: '), best.label),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } }, item.note),
+                  h('p', { style: { margin: 0, fontSize: 12, color: T.dim, lineHeight: 1.6 } }, item.alsoWrong)));
+            }),
+            progress.complete && h('div', { className: 'petslab-service-closing', role: 'note',
+              style: { marginTop: 4, padding: '11px 13px', borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.accent } },
+              h('div', { style: { fontSize: 12.5, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+                'All five called \u00b7 ' + progress.correct + ' of ' + progress.total + ' lawful'),
+              h('p', { style: { margin: '0 0 9px', fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+                'The two halves of the rule work together: a handler never has to prove anything, and an animal that is out of control can still be asked to leave. Staff who only know one half get it wrong in one direction or the other.'),
+              h('button', {
+                type: 'button',
+                className: 'petslab-service-reset',
+                'data-pets-focusable': true,
+                onClick: resetCalls,
+                style: btn({ padding: '6px 11px', fontSize: 11 })
+              }, 'Clear and call them again')));
+        })(),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'Service-animal etiquette (handlers + bystanders)'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
@@ -11022,24 +12028,158 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // MYTHS BUSTED
     // ─────────────────────────────────────────
     function renderMyths() {
+      var checks = normalizeMythChecks(d.mythChecks);
+      var keys = mythCheckKeys();
+      var progress = mythCheckProgress(checks);
+
+      // One stable holder per claim, created on demand. Stable identity is
+      // what lets the click handler queue a focus for a node that the next
+      // render has not created yet.
+      function mythFeedbackHolder(key) {
+        if (!_mythFeedbackRefs[key]) _mythFeedbackRefs[key] = { current: null };
+        return _mythFeedbackRefs[key];
+      }
+      function writeAnswer(key, said, revealed) {
+        upd('mythChecks', function(current) {
+          var next = normalizeMythChecks(current);
+          if (said === null && !revealed) delete next[key];
+          else next[key] = { said: said, revealed: revealed };
+          return next;
+        });
+      }
+      function answer(key, said) {
+        var record = checks[key];
+        if (record && record.revealed) return;
+        var claim = mythClaimByKey(key);
+        writeAnswer(key, said, true);
+        petsAnnounce(said === claim.verdict
+          ? 'Correct. Explanation shown.'
+          : 'Not correct. Explanation shown.');
+        // Recompute against the answer just given: `checks` is this render's
+        // snapshot and does not include it yet.
+        var done = 0, correct = 0, believed = 0;
+        keys.forEach(function(otherKey) {
+          var row = otherKey === key
+            ? { said: said, revealed: true }
+            : checks[otherKey];
+          if (!row || !row.revealed || row.said === null) return;
+          done += 1;
+          var other = mythClaimByKey(otherKey);
+          if (row.said === other.verdict) correct += 1;
+          else if (other.verdict === false && row.said === true) believed += 1;
+        });
+        if (done === keys.length) {
+          completeModule('myths', 'Judged every myth claim', {
+            score: correct, total: keys.length, believed: believed
+          });
+        }
+        focusPetsTarget(mythFeedbackHolder(key));
+      }
+      function resetChecks() {
+        upd('mythChecks', {});
+        petsAnnounce('Myth check cleared. Judge each claim again.');
+      }
+
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-        backBar('🧐 Myths Busted'),
-        h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-          'Seven misconceptions that mislead pet owners. Every correction has a primary-source citation.'),
-        MYTHS.map(function(m, i) {
-          // Seven identical slabs read as one wall. The numbered badge and the
-          // rail give the list rhythm and a place for the eye to land, the same
-          // treatment the species pages and the zoonosis list already use.
-          return h('div', { key: i, className: 'petslab-myth', style: { background: T.card, border: '1px solid ' + T.border } },
+        backBar('\uD83E\uDDD0 Myths Busted'),
+        h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+          'Eleven claims about pets. Some are myths that mislead owners; some are true and only sound like myths. ',
+          h('strong', { style: { color: T.text } }, 'Decide before you read the answer'),
+          ' \u2014 a belief you had to correct is remembered far better than one you were simply told. Every correction has a primary-source citation.'),
+        // Progress strip. Deliberately reports "answered", not "score": the
+        // count that matters here is how many misconceptions the student
+        // walked in holding, and that is only interesting after the fact.
+        h('div', {
+          className: 'petslab-myth-progress',
+          role: 'status',
+          style: {
+            display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center',
+            padding: '9px 12px', borderRadius: 9, marginBottom: 14,
+            background: T.cardAlt, border: '1px solid ' + T.border,
+            fontSize: 12, color: T.muted
+          }
+        },
+          h('span', null, 'Judged ',
+            h('strong', { style: { color: T.text } }, progress.done + ' of ' + progress.total)),
+          progress.complete && h('span', null, '\u00b7 Correct ',
+            h('strong', { style: { color: T.text } }, progress.correct + '/' + progress.total)),
+          progress.complete && h('span', {
+            style: { color: progress.believed > 0 ? T.warm : '#86efac', fontWeight: 700 }
+          }, progress.believed > 0
+            ? '\u00b7 ' + progress.believed + ' myth' + (progress.believed === 1 ? '' : 's') + ' you had believed'
+            : '\u00b7 No myths believed'),
+          progress.done > 0 && h('button', {
+            type: 'button',
+            className: 'petslab-myth-reset',
+            'data-pets-focusable': true,
+            onClick: resetChecks,
+            style: btn({ marginLeft: 'auto', padding: '5px 10px', fontSize: 11 })
+          }, 'Start over')),
+        keys.map(function(key, i) {
+          var claim = mythClaimByKey(key);
+          var record = checks[key] || { said: null, revealed: false };
+          var revealed = record.revealed;
+          var right = revealed && record.said === claim.verdict;
+          // A myth the student called true is the case this view exists for,
+          // so it gets its own framing rather than a generic "incorrect".
+          var believedThis = revealed && claim.verdict === false && record.said === true;
+
+          return h('div', { key: key, className: 'petslab-myth', style: { background: T.card, border: '1px solid ' + T.border } },
             h('div', { className: 'petslab-myth-head' },
               h('span', { className: 'petslab-myth-num', 'aria-hidden': 'true' }, String(i + 1)),
               h('div', { style: { minWidth: 0 } },
-                h('div', { className: 'petslab-myth-tag' }, '✖ Myth'),
-                h('div', { className: 'petslab-myth-claim' }, m.myth))),
-            h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
-              h('strong', { style: { color: T.accentHi } }, '✓ What\'s actually true: '), m.truth),
-            h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Source: ', m.source));
+                h('div', { className: 'petslab-myth-tag' },
+                  revealed ? (claim.verdict ? '\u2713 True' : '\u2716 Myth') : 'Claim'),
+                h('div', { className: 'petslab-myth-claim' }, claim.claim))),
+            !revealed && h('div', { className: 'petslab-myth-check', role: 'group',
+              'aria-label': 'Is this claim true or false? ' + claim.claim },
+              h('button', {
+                type: 'button',
+                className: 'petslab-myth-true',
+                'data-pets-focusable': true,
+                onClick: function() { answer(key, true); },
+                style: btn({ padding: '7px 16px', fontSize: 12 })
+              }, 'True'),
+              h('button', {
+                type: 'button',
+                className: 'petslab-myth-false',
+                'data-pets-focusable': true,
+                onClick: function() { answer(key, false); },
+                style: btn({ padding: '7px 16px', fontSize: 12 })
+              }, 'False')),
+            revealed && h('div', {
+              ref: function(node) { mythFeedbackHolder(key).current = node; },
+              tabIndex: -1,
+              className: 'petslab-myth-answer',
+              style: { marginTop: 4 }
+            },
+              h('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 5,
+                color: right ? '#86efac' : '#fca5a5' } },
+                right
+                  ? '\u2713 You got this one right'
+                  : (believedThis
+                      ? '\u2716 You believed this one \u2014 that is exactly why it is here'
+                      : '\u2716 Not quite \u2014 this one is actually true')),
+              h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6, marginBottom: 6 } },
+                h('strong', { style: { color: T.accentHi } },
+                  claim.verdict ? '\u2713 Why it is true: ' : '\u2713 What\'s actually true: '),
+                claim.note),
+              h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Source: ', claim.source)));
         }),
+        progress.complete && h('div', {
+          className: 'petslab-myth-closing',
+          role: 'note',
+          style: { marginTop: 14, padding: '12px 14px', borderRadius: 10,
+            background: T.cardAlt, border: '1px solid ' + T.accent }
+        },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 5 } },
+            'All ' + progress.total + ' judged'),
+          h('p', { style: { margin: 0, fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+            progress.believed > 0
+              ? 'You had believed ' + progress.believed + ' of the ' +
+                keys.filter(function(key) { return !mythClaimByKey(key).verdict; }).length +
+                ' myths. That is the ordinary result \u2014 these persist because they are repeated confidently by people who mean well. The corrections above are the ones worth carrying into a real conversation about a pet.'
+              : 'You called every myth false and every true claim true. Worth noticing which ones you were least sure about \u2014 confidence and accuracy are different things, and the sources above are what settle an argument.')),
         footer());
     }
 
@@ -11086,6 +12226,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ' from professional bodies and job listings and should carry less weight. All are ',
             h('strong', { style: { color: T.text } }, 'national'),
             ' — rural Maine pay commonly runs below a national median, and cost of living with it, so compare local postings before deciding anything. Wage data also goes stale: these are BLS OEWS 2024 medians and the 2022–2032 outlook, so check the current BLS Occupational Outlook Handbook rather than trusting a figure on this page.')),
+        (function() {
+          var result = careerMatchRanking(careerMatch, CAREER_PATHS);
+          var byId = {};
+          CAREER_PATHS.forEach(function(path) { byId[path.id] = path; });
+
+          function answer(questionId, optionId) {
+            var nextPicks = Object.assign({}, careerMatch);
+            nextPicks[questionId] = optionId;
+            upd('careerMatch', function(current) {
+              var next = normalizeCareerMatch(current);
+              next[questionId] = optionId;
+              return next;
+            });
+            var after = careerMatchRanking(nextPicks, CAREER_PATHS);
+            if (after.complete) {
+              completeModule('careers', 'Completed the career self-inventory', {
+                answered: after.answered, total: after.total
+              });
+              petsAnnounce('All questions answered. Your shortlist is shown below.');
+              focusPetsTarget(_careerResultRef);
+            } else {
+              petsAnnounce('Answer recorded. ' + after.answered + ' of ' + after.total + '.');
+            }
+          }
+          function resetMatch() {
+            upd('careerMatch', {});
+            petsAnnounce('Self-inventory cleared.');
+          }
+
+          var top = result.complete ? result.ranked.slice(0, 3) : [];
+          return h('section', {
+            className: 'petslab-career-fit',
+            'aria-label': 'Career self-inventory',
+            style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
+          },
+            h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 4 } },
+              h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, '\uD83E\uDDED Which of these would actually suit you?'),
+              h('span', { className: 'petslab-career-fit-progress', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+                'Answered ' + result.answered + ' of ' + result.total)),
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+              'Five questions about constraints that actually sort these paths. ',
+              h('strong', { style: { color: T.text } }, 'This ranks fit against what you say \u2014 it is not a recommendation'),
+              ', and it cannot know you. A high score is a path worth investigating, not an answer.'),
+            CAREER_MATCH_QUESTIONS.map(function(question) {
+              var picked = careerMatch[question.id] || null;
+              return h('div', { key: question.id, className: 'petslab-career-question',
+                style: { marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid ' + T.border } },
+                h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 3, lineHeight: 1.5 } }, question.prompt),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8, lineHeight: 1.5 } }, question.help),
+                h('div', { role: 'group', 'aria-label': question.prompt, style: { display: 'grid', gap: 6 } },
+                  question.options.map(function(option) {
+                    var isPick = picked === option.id;
+                    return h('button', {
+                      key: option.id,
+                      type: 'button',
+                      className: 'petslab-career-option',
+                      'data-pets-focusable': true,
+                      'aria-pressed': isPick ? 'true' : 'false',
+                      onClick: function() { answer(question.id, option.id); },
+                      style: {
+                        textAlign: 'left', padding: '9px 11px', borderRadius: 8,
+                        background: isPick ? 'rgba(245,158,11,0.14)' : T.cardAlt,
+                        border: '1px solid ' + (isPick ? T.accentHi : T.border),
+                        color: T.text, fontSize: 12.5, lineHeight: 1.5, cursor: 'pointer',
+                        font: 'inherit', fontWeight: isPick ? 700 : 400
+                      }
+                    }, (isPick ? '\u2713 ' : '') + option.label);
+                  })));
+            }),
+            result.complete && h('div', {
+              ref: _careerResultRef,
+              tabIndex: -1,
+              className: 'petslab-career-result',
+              role: 'status',
+              style: { marginTop: 4, padding: '12px 13px', borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.accent }
+            },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 8 } },
+                'Worth looking at first, based on what you said'),
+              top.map(function(entry, index) {
+                var path = byId[entry.id];
+                if (!path) return null;
+                return h('div', { key: entry.id, className: 'petslab-career-result-row',
+                  style: { padding: '10px 11px', borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 8 } },
+                  h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', marginBottom: 5, flexWrap: 'wrap' } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, path.icon),
+                    h('strong', { style: { color: T.text, fontSize: 13 } }, String(index + 1) + '. ' + path.title),
+                    h('span', { style: { marginLeft: 'auto', fontSize: 11, color: T.dim, fontFamily: 'monospace' } },
+                      'fit ' + (entry.score > 0 ? '+' : '') + entry.score)),
+                  // Show the arithmetic. A student should be able to disagree
+                  // with one line of it rather than with the whole result.
+                  entry.reasons.length > 0 && h('ul', {
+                    className: 'petslab-career-why',
+                    style: { margin: '0 0 6px', paddingLeft: 16, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+                    entry.reasons.filter(function(reason) { return reason.weight > 0; }).slice(0, 3).map(function(reason, i) {
+                      return h('li', { key: i }, reason.label);
+                    })),
+                  h('div', { style: { fontSize: 11.5, color: T.warm, lineHeight: 1.55 } },
+                    h('strong', null, 'The catch: '), CAREER_MATCH_TENSIONS[entry.id] || ''));
+              }),
+              h('p', { style: { margin: '4px 0 9px', fontSize: 11.5, color: T.dim, lineHeight: 1.6 } },
+                'The full list is below, and the ones this ranked lower are not worse jobs \u2014 they are worse fits for the five answers you gave today. Those answers are allowed to change. The most useful next step is not more quizzing: it is talking to somebody doing the work, or volunteering somewhere that does it.'),
+              h('button', {
+                type: 'button',
+                className: 'petslab-career-reset',
+                'data-pets-focusable': true,
+                onClick: resetMatch,
+                style: btn({ padding: '7px 11px', fontSize: 11.5 })
+              }, 'Clear and answer again')));
+        })(),
         h('div', { role: 'list',
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: 12 } },
           CAREER_PATHS.map(function(c) {
@@ -11117,7 +12366,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // TAKE ACTION
     // ─────────────────────────────────────────
     function renderAction() {
+      var plan = actionPlanProgress(actionPlan);
+
+      function toggleAction(actionId) {
+        var already = plan.chosen.indexOf(actionId) >= 0;
+        if (!already && plan.full) {
+          petsAnnounce('You already have ' + plan.max + ' actions. Remove one to add another.');
+          return;
+        }
+        upd('actionPlan', function(current) {
+          var next = normalizeActionPlan(current);
+          var at = next.indexOf(actionId);
+          if (at >= 0) next.splice(at, 1);
+          else if (next.length < ACTION_PLAN_MAX) next.push(actionId);
+          return next;
+        });
+        if (already) {
+          petsAnnounce('Removed from your plan.');
+          return;
+        }
+        // First commitment is what completes the module; the rest just refine
+        // the plan. Re-record so the evidence row tracks the latest plan.
+        var nextPlan = plan.chosen.concat([actionId]);
+        var after = actionPlanProgress(nextPlan);
+        completeModule('action', 'Committed to a next action', {
+          chosen: after.count, scales: after.scales
+        });
+        petsAnnounce('Added to your plan. ' + after.count + ' of ' + after.max + '.');
+      }
+      function clearPlan() {
+        upd('actionPlan', []);
+        petsAnnounce('Plan cleared.');
+      }
+
       function actionList(title, items) {
+
         return h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, title),
           items.map(function(a) {
@@ -11131,7 +12414,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('strong', null, 'Why: '), a.impact),
               a.url && h('a', { href: a.url, target: '_blank', rel: 'noopener',
                 style: { color: T.link, fontSize: 11, textDecoration: 'underline' },
-                'aria-label': a.what + ' — open resource (new tab)' }, '→ Open resource'));
+                'aria-label': a.what + ' \u2014 open resource (new tab)' }, '\u2192 Open resource'),
+              (function() {
+                var picked = plan.chosen.indexOf(a.id) >= 0;
+                var blocked = !picked && plan.full;
+                return h('button', {
+                  type: 'button',
+                  className: 'petslab-action-commit',
+                  'data-pets-focusable': true,
+                  'aria-pressed': picked ? 'true' : 'false',
+                  disabled: blocked,
+                  title: blocked ? 'Your plan already has ' + plan.max + ' actions.' : undefined,
+                  onClick: function() { toggleAction(a.id); },
+                  style: btn({
+                    marginTop: 8, padding: '6px 11px', fontSize: 11,
+                    background: picked ? 'rgba(34,197,94,0.16)' : T.card,
+                    border: '1px solid ' + (picked ? '#22c55e' : T.border),
+                    color: blocked ? T.dim : T.text,
+                    cursor: blocked ? 'not-allowed' : 'pointer',
+                    fontWeight: picked ? 700 : 600
+                  })
+                }, picked ? '\u2713 In my plan \u2014 remove' : (blocked ? 'Plan is full' : '+ I will do this'));
+              })());
           }));
       }
       return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
@@ -11139,6 +12443,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'Knowing how cats work doesn\'t change anything by itself. The animal-welfare picture in your community changes when people make small decisions in the same direction. Pick what fits your time + situation.')),
+        h('section', {
+          className: 'petslab-action-plan',
+          'aria-label': 'My action plan',
+          ref: _actionPlanRef,
+          tabIndex: -1,
+          style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
+        },
+          h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 6 } },
+            h('h3', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, '\uD83D\uDCCC My plan'),
+            h('span', { className: 'petslab-action-plan-count', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+              plan.count + ' of ' + plan.max + ' chosen')),
+          !plan.ready && h('p', { style: { margin: 0, fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+            'Pick up to ', h('strong', { style: { color: T.text } }, String(plan.max)),
+            ' things you will actually do, using the "I will do this" button on any card below. ',
+            h('strong', { style: { color: T.text } }, 'The cap is the point'),
+            ' \u2014 ticking all ten is a list, not a plan, and choosing is the part that costs something.'),
+          plan.ready && h('div', null,
+            h('ol', { className: 'petslab-action-plan-list',
+              style: { margin: '0 0 8px', paddingLeft: 18, fontSize: 12.5, color: T.text, lineHeight: 1.7 } },
+              plan.chosen.map(function(id) {
+                var found = null;
+                Object.keys(TAKE_ACTION).forEach(function(scale) {
+                  TAKE_ACTION[scale].forEach(function(item) { if (item.id === id) found = item; });
+                });
+                return found ? h('li', { key: id }, found.icon + ' ' + found.what) : null;
+              })),
+            h('p', { style: { margin: '0 0 9px', fontSize: 11.5, color: T.muted, lineHeight: 1.6 } },
+              plan.scales > 1
+                ? 'These span ' + plan.scales + ' different scales \u2014 personal and beyond. Welfare changes at both, and the second kind outlasts you.'
+                : 'All at one scale. That is a fine place to start; the community and civic cards change things your own household cannot.'),
+            h('button', {
+              type: 'button',
+              className: 'petslab-action-clear',
+              'data-pets-focusable': true,
+              onClick: clearPlan,
+              style: btn({ padding: '6px 11px', fontSize: 11 })
+            }, 'Clear my plan'))),
         actionList('🏠 At home', TAKE_ACTION.home),
         actionList('🏫 At school', TAKE_ACTION.school),
         actionList('🌲 In your community', TAKE_ACTION.community),
@@ -14355,6 +15696,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           'aria-labelledby': 'pets-welfare-tab-' + welfareSec,
           tabIndex: 0
         }, body),
+        (function() {
+          // One situated decision per topic, placed after the evidence rather
+          // than before it: unlike the species prediction checks, this asks the
+          // student to APPLY what they just read, not to guess it first.
+          var apply = WELFARE_APPLY[welfareSec];
+          if (!apply) return null;
+          var picked = welfareApply[welfareSec] || null;
+          var chosen = picked && apply.options.filter(function(option) {
+            return option.id === picked;
+          })[0];
+          var progress = welfareApplyProgress(welfareApply);
+
+          function choose(optionId) {
+            if (picked) return;
+            var nextPicks = Object.assign({}, welfareApply);
+            nextPicks[welfareSec] = optionId;
+            upd('welfareApply', function(current) {
+              var next = normalizeWelfareApply(current);
+              next[welfareSec] = optionId;
+              return next;
+            });
+            var option = apply.options.filter(function(item) { return item.id === optionId; })[0];
+            petsAnnounce(option && option.verdict === 'best'
+              ? 'Strongest response. Explanation shown.'
+              : 'Response recorded. Explanation shown.');
+            var after = welfareApplyProgress(nextPicks);
+            if (after.complete) {
+              completeModule('welfare', 'Decided all four welfare scenarios', {
+                score: after.strong, total: after.total
+              });
+            }
+            focusPetsTarget(_welfareApplyFeedbackRef);
+          }
+          function clearChoice() {
+            upd('welfareApply', function(current) {
+              var next = normalizeWelfareApply(current);
+              delete next[welfareSec];
+              return next;
+            });
+            petsAnnounce('Choice cleared. Decide again.');
+          }
+
+          return h('section', {
+            className: 'petslab-welfare-apply',
+            'aria-label': 'Apply the evidence',
+            style: { marginTop: 14, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent }
+          },
+            h('div', { style: { display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 6 } },
+              h('span', { style: { fontSize: 12, fontWeight: 800, color: T.accentHi, letterSpacing: 0.3 } },
+                '\u2696\uFE0F Use it in a real conversation'),
+              h('span', { className: 'petslab-welfare-apply-progress', style: { marginLeft: 'auto', fontSize: 11, color: T.dim } },
+                'Decided ' + progress.done + ' of ' + progress.total + ' topics')),
+            h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.text, lineHeight: 1.6, fontWeight: 600 } },
+              apply.prompt),
+            h('div', { role: 'group', 'aria-label': 'Choose a response', style: { display: 'grid', gap: 8 } },
+              apply.options.map(function(option) {
+                var isPick = picked === option.id;
+                var ring = T.border;
+                var bg = T.cardAlt;
+                if (picked) {
+                  // After a choice, mark the strongest option too, so a student
+                  // who picked a weaker one can see what it was.
+                  if (option.verdict === 'best') { ring = '#22c55e'; bg = 'rgba(34,197,94,0.12)'; }
+                  else if (isPick) { ring = '#fbbf24'; bg = 'rgba(251,191,36,0.12)'; }
+                }
+                var marker = picked && option.verdict === 'best' ? '\u2605 ' : (isPick ? '\u2192 ' : '');
+                return h('button', {
+                  key: option.id,
+                  type: 'button',
+                  className: 'petslab-welfare-apply-option',
+                  'data-pets-focusable': true,
+                  'aria-pressed': isPick ? 'true' : 'false',
+                  disabled: !!picked,
+                  onClick: function() { choose(option.id); },
+                  style: {
+                    textAlign: 'left', padding: '10px 12px', borderRadius: 8,
+                    background: bg, border: '1px solid ' + ring, color: T.text,
+                    fontSize: 12.5, lineHeight: 1.5, cursor: picked ? 'default' : 'pointer',
+                    font: 'inherit', fontWeight: isPick ? 700 : 400
+                  }
+                }, marker + option.label);
+              })),
+            chosen && h('div', {
+              ref: _welfareApplyFeedbackRef,
+              tabIndex: -1,
+              className: 'petslab-welfare-apply-feedback',
+              role: 'status',
+              style: { marginTop: 12, padding: '11px 13px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border }
+            },
+              h('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 6,
+                color: chosen.verdict === 'best' ? '#86efac' : (chosen.verdict === 'ok' ? '#fcd34d' : '#fca5a5') } },
+                chosen.verdict === 'best'
+                  ? '\u2605 This is the strongest response'
+                  : (chosen.verdict === 'ok'
+                      ? '\u25cf Defensible, but not the strongest'
+                      : '\u2717 The evidence does not support this')),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } }, chosen.note),
+              chosen.verdict !== 'best' && h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                h('strong', { style: { color: '#86efac' } }, '\u2605 Strongest: '),
+                apply.options.filter(function(option) { return option.verdict === 'best'; })[0].note),
+              h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', marginBottom: 9 } },
+                'Evidence: ' + apply.source),
+              h('button', {
+                type: 'button',
+                className: 'petslab-welfare-apply-retry',
+                'data-pets-focusable': true,
+                onClick: clearChoice,
+                style: btn({ padding: '7px 11px', fontSize: 11.5 })
+              }, 'Clear and decide again')));
+        })(),
         crossLink('Apply this — practical actions',
           h('span', null,
             'See ', h('strong', { style: { color: T.text } }, '🌱 Take Action'),

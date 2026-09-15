@@ -52,10 +52,40 @@ function evidenceSchemaApi() {
       normalizeAiRevisionNotes,
       normalizeCareTradeoffState,
       normalizeCareReflections,
-      normalizeSpeciesChecks
+      normalizeSpeciesChecks,
+      normalizeMythChecks,
+      normalizeWelfareApply,
+      normalizeCareerMatch,
+      normalizeActionPlan,
+      normalizeServiceCalls,
+      normalizeGeneGoals
     }; })()`,
     {
       AI_SCENARIOS: [{ id: 'family-pick' }, { id: 'cat-litter' }],
+      MYTHS: [
+        { myth: 'M0', truth: 'T0', source: 'S0' },
+        { myth: 'M1', truth: 'T1', source: 'S1' },
+      ],
+      MYTH_CHECK_TRUE: [
+        { id: 'a', claim: 'A', verdict: true, note: 'NA', source: 'SA' },
+      ],
+      MYTH_CHECK_ORDER: ['m0', 't0', 'm1'],
+      PUNNETT_GOALS: [{ id: 'blackToYellow' }, { id: 'nineThreeFour' }],
+      SERVICE_CASES: [
+        { id: 'noVest', options: [{ id: 'ask2', verdict: 'best' }, { id: 'papers', verdict: 'miss' }] },
+      ],
+      TAKE_ACTION: {
+        home: [{ id: 'enrichment' }, { id: 'firstAid' }],
+        civic: [{ id: 'puppyMill' }],
+      },
+      CAREER_MATCH_QUESTIONS: [
+        { id: 'school', options: [{ id: 'none' }, { id: 'grad' }] },
+        { id: 'setting', options: [{ id: 'clinic' }, { id: 'field' }] },
+      ],
+      WELFARE_APPLY: {
+        spayNeuter: { options: [{ id: 'cost', verdict: 'best' }, { id: 'shame', verdict: 'miss' }] },
+        adoption: { options: [{ id: 'rescue', verdict: 'best' }] },
+      },
       SPECIES_CHECKS: {
         dogs: { options: [{ id: 'bigger' }, { id: 'smaller' }, { id: 'same' }] },
         cats: { options: [{ id: 'none' }, { id: 'taste' }, { id: 'nutrients' }] },
@@ -114,6 +144,13 @@ function persistenceApi() {
     normalizeCareTradeoffState: EVIDENCE_API.normalizeCareTradeoffState,
     normalizeCareReflections: EVIDENCE_API.normalizeCareReflections,
     normalizeSpeciesChecks: EVIDENCE_API.normalizeSpeciesChecks,
+    normalizeMythChecks: EVIDENCE_API.normalizeMythChecks,
+    normalizeWelfareApply: EVIDENCE_API.normalizeWelfareApply,
+    normalizeCareerMatch: EVIDENCE_API.normalizeCareerMatch,
+    normalizeActionPlan: EVIDENCE_API.normalizeActionPlan,
+    normalizeServiceCalls: EVIDENCE_API.normalizeServiceCalls,
+    normalizeGeneGoals: EVIDENCE_API.normalizeGeneGoals,
+    PUNNETT_GOALS: [{ id: 'blackToYellow' }, { id: 'nineThreeFour' }],
     normalizeTrainerState: guards.normalizeTrainerState,
     normalizeCareSimState: (value) => value,
     normalizePetsMiniGameState: guards.normalizePetsMiniGameState,
