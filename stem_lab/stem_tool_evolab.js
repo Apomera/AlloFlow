@@ -4842,7 +4842,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.last_survivors', 'Last Survivors'), value: latest.alive + ' / ' + census, color: latest.alive < census * 0.5 ? 'text-rose-700' : 'text-emerald-700' })
             ),
             // Canvas (population view)
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
+            h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative' }, className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                'aria-label': t('stem.evolab.enter_fullscreen', 'View the population graph fullscreen'),
+                'data-fs-out': t('stem.evolab.enter_fullscreen', 'View the population graph fullscreen'),
+                'data-fs-in': t('stem.evolab.exit_fullscreen', 'Exit fullscreen population graph (Escape)'),
+                onClick: function (ev) { ev.stopPropagation(); },
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 ref: canvasRef,
                 width: 800, height: 280,
@@ -9172,8 +9183,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // Each entry has a portrait emoji, name, year, contribution, and click-to-
       // expand context. Deliberate emphasis on under-recognized figures: Wallace
       // (independently co-discovered selection but Darwin gets the credit),
-      // Mendel (ignored for 35 years), Margulis (ridiculed for endosymbiosis),
-      // McClintock (transposons, 30-year delay before Nobel), Franklin (DNA).
+      // Mendel (ignored for 34 years: published 1866, rediscovered 1900), Margulis
+      // (ridiculed for endosymbiosis), McClintock (transposons, 35 years from the
+      // 1948 work to the 1983 Nobel), Franklin (DNA). Every year gap stated in this
+      // section is checked against the entry's own dates by evolab_timeline_accuracy.
       function DiscoveryTimeline() {
         var openState = useState(null), open = openState[0], setOpen = openState[1];
         var openedState = useState([]), openedIds = openedState[0], setOpenedIds = openedState[1];
@@ -9230,9 +9243,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           },
           {
             id: 'mendel', year: 1866, name: t('stem.evolab.gregor_mendel', 'Gregor Mendel'), portrait: '🌱', country: 'Austrian Empire',
-            headline: 'Genetics — ignored for 35 years',
+            headline: 'Genetics — ignored for 34 years',
             short: 'A monk in what\'s now the Czech Republic crossed pea plants for 8 years and worked out the rules of inheritance: traits pass via discrete particles (genes) following predictable ratios. He published in 1866. Almost nobody read it.',
-            why: 'Mendel\'s work was the missing piece Darwin needed: HOW does inheritance work without blending? Darwin never knew. Mendel\'s paper sat unread until 1900 when three biologists independently rediscovered it. Mendel never knew his work would solve evolution\'s biggest puzzle. The 35-year delay shows that being right is necessary but not sufficient — you also need to be heard.',
+            why: 'Mendel\'s work was the missing piece Darwin needed: HOW does inheritance work without blending? Darwin never knew. Mendel\'s paper sat unread until 1900 when three biologists independently rediscovered it. Mendel never knew his work would solve evolution\'s biggest puzzle. The 34-year delay shows that being right is necessary but not sufficient — you also need to be heard.',
             tag: 'foundations'
           },
           {
@@ -9265,9 +9278,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           },
           {
             id: 'mcclintock', year: 1948, name: t('stem.evolab.barbara_mcclintock', 'Barbara McClintock'), portrait: '🌽', country: 'USA',
-            headline: 'Jumping genes — ignored for 30 years',
+            headline: 'Jumping genes — ignored for 35 years',
             short: 'McClintock discovered transposable elements ("jumping genes") in maize — DNA sequences that move around within a genome. Her contemporaries didn\'t believe her or understand the implications. She received the Nobel Prize in 1983 — 35 years later.',
-            why: 'McClintock\'s work upended the notion that genomes are static blueprints. Transposable elements turn out to be widespread and crucial for evolution — they\'re a major source of genetic variation, gene regulation changes, and even speciation. Her 35-year wait for recognition mirrors Mendel\'s 35-year delay. Worth noting the gendered history: she did this work in an era when women were systematically excluded from senior science roles.',
+            why: 'McClintock\'s work upended the notion that genomes are static blueprints. Transposable elements turn out to be widespread and crucial for evolution — they\'re a major source of genetic variation, gene regulation changes, and even speciation. Her 35-year wait for recognition mirrors Mendel\'s 34-year delay. Worth noting the gendered history: she did this work in an era when women were systematically excluded from senior science roles.',
             tag: 'genetics'
           },
           {
@@ -9506,7 +9519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               standards: ['HS-LS4-1', 'HS-LS4-2', 'NOS (Nature of Science)'],
               questions: [
                 'What does it tell us about science that Darwin and Wallace independently arrived at the same theory in 1858?',
-                'Mendel\'s work was ignored for 35 years. McClintock\'s for 35 years. Why does it take so long for paradigm-shifting ideas to be accepted?',
+                'Mendel\'s work was ignored for 34 years. McClintock\'s for 35 years. Why does it take so long for paradigm-shifting ideas to be accepted?',
                 'Pick one figure (Lamarck, Wallace, Margulis, McClintock, Franklin) whose contribution gets less credit than Darwin\'s. Why do you think that is?',
                 'How does the messy history of these discoveries compare to the way evolution is usually presented in textbooks?'
               ],

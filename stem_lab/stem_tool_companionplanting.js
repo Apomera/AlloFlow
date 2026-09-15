@@ -5881,6 +5881,18 @@ var d = (labToolData.companionPlanting) || {};
                 })),
 
               // ── Microscope Canvas: animated biological visualization ──
+              h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative' } },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                  'aria-label': t('stem.companionplanting.enter_fullscreen', 'View the microscope view fullscreen'),
+                  'data-fs-out': t('stem.companionplanting.enter_fullscreen', 'View the microscope view fullscreen'),
+                  'data-fs-in': t('stem.companionplanting.exit_fullscreen', 'Exit fullscreen microscope view (Escape)'),
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 role: 'img',
                 'aria-label': 'Microscope visualization of ' + plant.label + ' - ' + cgMicroscopeLayer + ' layer' + (cgMicroscopeLayer === 'chemistry' ? '. Nitrogen ' + Math.round(cgNitrogen) + ', phosphorus ' + Math.round(cgPhosphorus) + ', potassium ' + Math.round(cgPotassium) + ', pH ' + cgPH.toFixed(1) + '.' : ''),
@@ -6131,7 +6143,8 @@ var d = (labToolData.companionPlanting) || {};
                   });
                   mobs.observe(document.body, { childList: true, subtree: true });
                 }
-              }),
+              })
+              ),
 
               // ── ROOT SYSTEM VIEW ──
               cgMicroscopeLayer === 'roots' && h('div', { className: 'bg-gradient-to-b from-amber-900/30 to-amber-950/50 rounded-xl p-4 space-y-3 border border-amber-700/30' },

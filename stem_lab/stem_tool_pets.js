@@ -18604,7 +18604,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: btnPrimary({ padding: '12px 26px', fontSize: 14 })
           }, '🚪 Step into the room')
         ) : h('div', { style: { marginBottom: 12 } },
-          h('div', {
+          h('div', { 'data-allo-fs-stage': 'true',
+
             className: 'petslab-sim-stage petslab-sensory-stage',
             role: 'region',
             tabIndex: 0,
@@ -18623,6 +18624,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ref: _sensoryMountRef,
               style: { position: 'absolute', inset: 0, overflow: 'hidden', background: '#1a1410' }
             }),
+            h('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+              'aria-label': __alloT('stem.pets.enter_fullscreen', 'View the sensory view fullscreen'),
+              'data-fs-out': __alloT('stem.pets.enter_fullscreen', 'View the sensory view fullscreen'),
+              'data-fs-in': __alloT('stem.pets.exit_fullscreen', 'Exit fullscreen sensory view (Escape)'),
+              onClick: function (ev) { ev.stopPropagation(); },
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, '⛶')),
             h('div', { className: 'petslab-stage-hud petslab-stage-hud--top' },
               h('div', { className: 'petslab-hud-stack' },
                 h('span', { className: 'petslab-hud-chip' }, sp.icon + ' ', h('strong', null, sp.name + ' view')),
