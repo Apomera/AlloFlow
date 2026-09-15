@@ -1596,11 +1596,23 @@
         }, h),
         h('div', {
           'data-op-mirror-3d-scene': 'true',
+          'data-allo-fs-stage': 'true',
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
             background: 'var(--allo-stem-deeper, #08111f)', border: '1px solid var(--allo-stem-border, #334155)'
           }
         },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+            'aria-label': __alloT('stem.optics.enter_fullscreen', 'View the 3D mirror scene fullscreen'),
+            'data-fs-out': __alloT('stem.optics.enter_fullscreen', 'View the 3D mirror scene fullscreen'),
+            'data-fs-in': __alloT('stem.optics.exit_fullscreen', 'Exit fullscreen 3D mirror scene (Escape)'),
+            onClick: function (ev) { ev.stopPropagation(); },
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('div', {
             ref: opticsMirrorGlRef, role: 'group', tabIndex: 0, 'aria-roledescription': 'interactive 3D model',
             'data-a11y-static': 'true', 'data-op-mirror-3d-host': 'true',
@@ -16609,7 +16621,7 @@
       risk: 'Even brief direct Sun-gazing (without proper filters) can cause permanent solar retinopathy. The fovea has no pain nerves, so damage occurs without warning.',
       action: 'NEVER look at the Sun directly without ISO-12312-2 certified solar viewing glasses. Welding goggles ≥ Shade 14 are also safe. During totality only (a few minutes max), direct viewing is safe.',
       prevention: 'Provide certified eclipse glasses. Practice pinhole projection demos (NO direct viewing). Adult supervision required for kids.',
-      maine: 'Next major eclipse in Maine: April 2024 (just past). Future partial eclipses occur every few years. Mark your calendar for the August 2045 total solar eclipse.' },
+      maine: 'Maine saw totality on April 8, 2024, when the path crossed the Bangor area; the next total eclipse visible from Maine is in 2079. Partial eclipses occur every few years, and the filter rules above apply to every one of them — a partial eclipse is never safe to view unfiltered.' },
     { id: 'uvExposure', title: 'UV from welding/grow lights', icon: '💜', category: 'uv',
       scenario: 'A student is using a welding torch (or DJ blacklight, or plant grow light) without eye protection.',
       risk: 'Short-wavelength UV (UV-B and UV-C below 320 nm) causes "welder\'s flash" — painful corneal damage that develops 6–12 hours after exposure. Long-term exposure causes cataracts.',
