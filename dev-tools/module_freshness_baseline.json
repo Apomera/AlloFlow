@@ -1,7 +1,5 @@
 {
   "note": "Modules known to be behind their source. A NEW entry fails check_module_freshness; a rebuilt one must be removed. Regenerate deliberately with --update.",
-  "updated": "2026-09-03",
-  "stale": [
-    "research_hub_module.js"
-  ]
+  "updated": "2026-09-15",
+  "stale": []
 }

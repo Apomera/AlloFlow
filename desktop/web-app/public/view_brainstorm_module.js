@@ -492,7 +492,7 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.toggle_edit_brainstorm'),
     onClick: handleToggleIsEditingBrainstorm,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-600 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`
   }, isEditingBrainstorm ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {

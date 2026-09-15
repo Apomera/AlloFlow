@@ -1775,6 +1775,9 @@
     var t = props.t, data = props.data;
     var primitives = props.primitives || {};
     var SuggestionBadge = primitives.SuggestionBadge;
+    var aiScalarText = primitives.aiScalarText || function(v) {
+      return typeof v === "string" ? v : v && typeof v === "object" && !Array.isArray(v) && typeof v.text === "string" ? v.text : v == null || typeof v === "object" ? "" : String(v);
+    };
     if (!data) return null;
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
@@ -1818,7 +1821,7 @@
       borderRadius: "8px",
       background: "#fff",
       border: "1px solid #f9a8d4"
-    } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, (t("humanities.aiq_analog_domain") || "Analog domain ({domain}):").replace("{domain}", data.analog_domain_shape.analog_domain.replace(/_/g, " "))), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_claim_shape") || "Claim shape:"), " ", data.analog_domain_shape.example_claim_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_warrant_shape") || "Warrant shape:"), " ", data.analog_domain_shape.example_warrant_shape), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_qualifier_shape") || "Qualifier shape:"), " ", data.analog_domain_shape.example_qualifier_shape), renderQuestions(data.analog_domain_shape.transfer_questions, t("humanities.aiq_transfer") || "Transfer questions (translate the shape, not the content):")), Array.isArray(data.pressure_test_questions_by_framing) && data.pressure_test_questions_by_framing.map(function(entry, i) {
+    } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#9d174d" } }, (t("humanities.aiq_analog_domain") || "Analog domain ({domain}):").replace("{domain}", data.analog_domain_shape.analog_domain.replace(/_/g, " "))), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_claim_shape") || "Claim shape:"), " ", aiScalarText(data.analog_domain_shape.example_claim_shape)), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_warrant_shape") || "Warrant shape:"), " ", aiScalarText(data.analog_domain_shape.example_warrant_shape)), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px" } }, /* @__PURE__ */ React.createElement("em", null, t("humanities.aiq_qualifier_shape") || "Qualifier shape:"), " ", aiScalarText(data.analog_domain_shape.example_qualifier_shape)), renderQuestions(data.analog_domain_shape.transfer_questions, t("humanities.aiq_transfer") || "Transfer questions (translate the shape, not the content):")), Array.isArray(data.pressure_test_questions_by_framing) && data.pressure_test_questions_by_framing.map(function(entry, i) {
       var f = (props.journal && props.journal.framings || []).filter(function(fr) {
         return fr.id === entry.framing_id;
       })[0];
