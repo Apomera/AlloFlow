@@ -243,7 +243,7 @@ describe('fullscreen copy calls an i18n helper its tool actually defines', () =>
 // Without this they would be the only fullscreen buttons in the lab with no gate
 // at all - exactly how the original dead-button bug survived three reports.
 describe('THREE-gated stages still satisfy the fullscreen contract', () => {
-  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab'];
+  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab', 'behaviorlab', 'rocks'];
 
   CASES.forEach((name) => {
     it('stem_tool_' + name + '.js declares a wired, labelled stage', () => {
