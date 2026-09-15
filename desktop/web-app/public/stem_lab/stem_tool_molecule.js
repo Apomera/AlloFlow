@@ -3396,7 +3396,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }),
                     React.createElement('button', { type: 'button', 'aria-pressed': showAtomLabels, onClick: function() { upd('showAtomLabels', !showAtomLabels); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-bold' }, __alloT('stem.molecule.atom_labels', 'Atom labels'))
                   ),
-                  React.createElement("div", { 'data-molecule-viewport': true, className: "relative w-full rounded-xl overflow-hidden border", style: { height: "clamp(340px, 48vw, 440px)", background: "radial-gradient(ellipse at 50% 42%, #162b46 0%, #0d1b2e 48%, #040b18 100%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                  React.createElement("div", { 'data-molecule-viewport': true, 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: "relative w-full rounded-xl overflow-hidden border", style: { height: "clamp(340px, 48vw, 440px)", background: "radial-gradient(ellipse at 50% 42%, #162b46 0%, #0d1b2e 48%, #040b18 100%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                    React.createElement('button', {
+                      type: 'button',
+                      'data-allo-fs-btn': 'true',
+                      'aria-pressed': 'false',
+                      'aria-label': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
+                      'data-fs-out': __alloT('stem.molecule.enter_fullscreen', 'View the 3D molecular model fullscreen'),
+                      'data-fs-in': __alloT('stem.molecule.exit_fullscreen', 'Exit fullscreen 3D molecular model (Escape)'),
+                      style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.5)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                    }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
                       role: "img",

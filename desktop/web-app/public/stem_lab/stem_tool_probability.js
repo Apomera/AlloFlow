@@ -2948,7 +2948,17 @@ var d = (labToolData.probability) || {};
                   // ── Viewport ──
                   h('div', { style: { flex: '1 1 300px', minWidth: 260 } },
                     engine === 'ready'
-                      ? h('div', { style: { position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid ' + (isDark || isContrast ? 'rgba(100,116,139,0.45)' : '#cbd5e1'), background: isDark || isContrast ? '#0b1220' : '#f8fafc' } },
+                      ? h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                          style: { position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid ' + (isDark || isContrast ? 'rgba(100,116,139,0.45)' : '#cbd5e1'), background: isDark || isContrast ? '#0b1220' : '#f8fafc' } },
+                          h('button', {
+                            type: 'button',
+                            'data-allo-fs-btn': 'true',
+                            'aria-pressed': 'false',
+                            'aria-label': t('stem.probability.enter_fullscreen', 'View the 3D probability scene fullscreen'),
+                            'data-fs-out': t('stem.probability.enter_fullscreen', 'View the 3D probability scene fullscreen'),
+                            'data-fs-in': t('stem.probability.exit_fullscreen', 'Exit fullscreen 3D scene (Escape)'),
+                            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(100,116,139,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                           // tabIndex + keydown: OrbitControls is pointer-only, so
                           // without these the view is unreachable by keyboard.
                           // role="img" carries the description; aria-keyshortcuts

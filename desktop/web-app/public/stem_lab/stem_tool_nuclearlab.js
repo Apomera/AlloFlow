@@ -4328,7 +4328,17 @@
             })
           ),
           nkExplorationProgress('isoTried', ISOTOPES.map(function (item) { return item.id; }), 3, 'isotopes', '#a78bfa'),
-          h('div', { className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { borderColor: 'rgba(167,139,250,0.35)', height: '180px' } },
+          h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+            className: 'nk-chart-frame rounded-lg overflow-hidden border mb-2', style: { position: 'relative', borderColor: 'rgba(167,139,250,0.35)', height: '180px' } },
+            h('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.nuclearLab.enter_fullscreen', 'View the decay curve fullscreen'),
+              'data-fs-out': t('stem.nuclearLab.enter_fullscreen', 'View the decay curve fullscreen'),
+              'data-fs-in': t('stem.nuclearLab.exit_fullscreen', 'Exit fullscreen decay curve (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(167,139,250,0.55)', color: '#ede9fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, '⛶')),
             h('canvas', { ref: decayRef, role: 'img',
               'data-a11y-static': 'true',
               'aria-describedby': 'nk-decay-description',

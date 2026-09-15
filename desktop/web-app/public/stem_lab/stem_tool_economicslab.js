@@ -2987,8 +2987,20 @@ var d = labToolData || {};
 
             React.createElement('div', {
               className: 'economicslab-canvas-shell',
-              'data-economicslab-canvas-shell': 'true'
+              'data-economicslab-canvas-shell': 'true',
+              'data-allo-fs-stage': 'true',
+              ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              style: { position: 'relative' }
             },
+              React.createElement('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': t('stem.economicslab.enter_fullscreen', 'View the supply and demand graph fullscreen'),
+                'data-fs-out': t('stem.economicslab.enter_fullscreen', 'View the supply and demand graph fullscreen'),
+                'data-fs-in': t('stem.economicslab.exit_fullscreen', 'Exit fullscreen supply and demand graph (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
 
               // The inquiry tab has its own SVG visualization — don't render a
               // large permanently-empty canvas above it.

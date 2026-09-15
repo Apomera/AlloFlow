@@ -2615,6 +2615,11 @@
   function ArcCityPlay3D(props) {
     var React = props.React, h = React.createElement;
     var canvasRef = React.useRef(null), packRef = React.useRef(null), sceneRef = React.useRef(props.scene);
+    // Fullscreen stage: the arena plus the caption and camera row beneath it, so
+    // the keyboard camera path survives. The canvas is width:100% with a
+    // minHeight, so it grows with the stage on its own.
+    var arcFsRef = React.useRef(null);
+    var arcFsState = React.useState(false), arcFs = arcFsState[0], setArcFs = arcFsState[1];
     sceneRef.current = props.scene;
     var statusHook = React.useState('loading'), status = statusHook[0], setStatus = statusHook[1];
     React.useEffect(function () {
@@ -2667,6 +2672,25 @@
       };
     }, []);
     React.useEffect(function () { if (packRef.current) arcSyncPlay3D(packRef.current, props.scene); }, [props.sig]);
+    React.useEffect(function () {
+      var el = arcFsRef.current;
+      if (!el || typeof MutationObserver !== 'function') return;
+      var sync = function () {
+        setArcFs(!!(el.hasAttribute('data-allo-fullscreen-active')
+          || document.fullscreenElement === el
+          || document.webkitFullscreenElement === el));
+      };
+      var mo = new MutationObserver(sync);
+      mo.observe(el, { attributes: true, attributeFilter: ['data-allo-fullscreen-active'] });
+      document.addEventListener('fullscreenchange', sync);
+      document.addEventListener('webkitfullscreenchange', sync);
+      sync();
+      return function () {
+        mo.disconnect();
+        document.removeEventListener('fullscreenchange', sync);
+        document.removeEventListener('webkitfullscreenchange', sync);
+      };
+    }, []);
     // The idle sway rewrites cam.theta from cam.baseTheta every frame, so baseTheta
     // is the knob to turn — writing theta directly would be undone on the next frame.
     function nudgeCam(dTheta, dPhi) {
@@ -2688,8 +2712,8 @@
         style: Object.assign({}, camBtnStyle, status !== 'ready' ? { opacity: 0.45, cursor: 'default' } : null)
       }, glyph);
     }
-    return h('div', { className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f' } },
-      h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, touchAction: 'pan-y', cursor: 'grab' } }),
+    return h('div', { ref: arcFsRef, 'data-allo-fs-stage': 'true', className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f', display: arcFs ? 'flex' : undefined, flexDirection: arcFs ? 'column' : undefined } },
+      h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, flex: arcFs ? '1 1 auto' : undefined, touchAction: 'pan-y', cursor: 'grab' } }),
       status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, color: '#e2e8f0', background: 'rgba(5,7,15,0.88)', textAlign: 'center', fontSize: 12 } }, status === 'unavailable' ? props.unavailableText : props.loadingText) : null,
       h('div', { style: { padding: '6px 10px', color: '#cbd5e1', fontSize: 11, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'space-between' } },
         h('span', { key: 'cap' }, props.captionText),
@@ -2698,7 +2722,14 @@
           camBtn('city3d-cam-right', camText.right, '\u25b6', 0.35, 0),
           camBtn('city3d-cam-up', camText.up, '\u25b2', 0, 0.12),
           camBtn('city3d-cam-down', camText.down, '\u25bc', 0, -0.12),
-          camBtn('city3d-cam-reset', camText.reset, '\u21ba', null, 0)),
+          camBtn('city3d-cam-reset', camText.reset, '\u21ba', null, 0),
+          h('button', {
+            key: 'city3d-fs', type: 'button',
+            onClick: function () { if (typeof window.__alloStemFS === 'function') window.__alloStemFS(arcFsRef.current); },
+            'aria-pressed': arcFs ? 'true' : 'false',
+            'aria-label': arcFs ? 'Exit fullscreen 3D arena (Escape)' : 'View the 3D arena fullscreen',
+            style: camBtnStyle
+          }, h('span', { 'aria-hidden': 'true' }, arcFs ? '✕' : '⛶'))),
         h('span', { key: 'hint', 'aria-hidden': 'true', style: { opacity: 0.75 } }, props.orbitHintText)));
   }
 

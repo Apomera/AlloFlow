@@ -3282,8 +3282,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 React.createElement("span", null, "Epoch " + (epochIndex + 1) + " / " + EPOCHS.length),
                 React.createElement("button", { type: "button", disabled: epochIndex === EPOCHS.length - 1, onClick: function () { visitTime(EPOCHS[epochIndex + 1].t); } }, "Next epoch →")
               ),
-            React.createElement("div", { id: "universe-scene", className: "uni-scene relative rounded-xl overflow-hidden border shadow-lg", style: { height: '42vh', minHeight: '260px', maxHeight: '480px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
+            React.createElement("div", { id: "universe-scene", 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: "uni-scene relative rounded-xl overflow-hidden border shadow-lg", style: { height: '42vh', minHeight: '260px', maxHeight: '480px', background: 'radial-gradient(circle at 50% 46%, rgba(30,41,59,0.55), #03040d 74%)', borderColor: 'rgba(167,139,250,0.46)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -54px 110px rgba(2,6,23,0.84), 0 22px 52px rgba(15,23,42,0.25)' } },
 
+              React.createElement('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.universe.enter_fullscreen', 'View the universe time-lapse fullscreen'),
+                'data-fs-out': __alloT('stem.universe.enter_fullscreen', 'View the universe time-lapse fullscreen'),
+                'data-fs-in': __alloT('stem.universe.exit_fullscreen', 'Exit fullscreen universe time-lapse (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(167,139,250,0.55)', color: '#ede9fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
               React.createElement("canvas", {
                 tabIndex: 0,
                 "data-universe-canvas": "true",

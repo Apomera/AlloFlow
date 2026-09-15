@@ -1808,6 +1808,16 @@ window.StemLab = window.StemLab || {
             })),
             h('span', { id: 'semiconductor-material-help', className: 'w-full text-xs text-slate-300' }, t('stem.semiconductor.material_help', 'Choose a material, then compare its band gap and classification in the diagram.'))
           ),
+          h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+            h('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.semiconductor.enter_fullscreen', 'View the band gap diagram fullscreen'),
+              'data-fs-out': t('stem.semiconductor.enter_fullscreen', 'View the band gap diagram fullscreen'),
+              'data-fs-in': t('stem.semiconductor.exit_fullscreen', 'Exit fullscreen band gap diagram (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('canvas', { 
             id: 'semi-bandgap-canvas', width: 440, height: 240,
             className: 'block w-full max-w-5xl mx-auto rounded-lg bg-slate-950 border border-slate-500',
@@ -1831,6 +1841,7 @@ window.StemLab = window.StemLab || {
             ),
             btn('\uD83E\uDD16 AI Explain', function() { askAI('band gap of ' + mat.name + ' semiconductor'); }),
             btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
+          )
           ),
           // Stats bar
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },

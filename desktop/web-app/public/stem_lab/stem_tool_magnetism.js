@@ -9978,7 +9978,18 @@
             h('p', { style: { margin: '5px 0 0' } }, text)));
       }
       function sceneViewport(canvas, readouts, axisText) {
-        return h('div', { className: 'mag-scene-frame' },
+        return h('div', { className: 'mag-scene-frame', 'data-allo-fs-stage': 'true',
+          style: { position: 'relative' },
+          ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); } },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': __alloT('stem.magnetism.enter_fullscreen', 'View this magnetism scene fullscreen'),
+            'data-fs-out': __alloT('stem.magnetism.enter_fullscreen', 'View this magnetism scene fullscreen'),
+            'data-fs-in': __alloT('stem.magnetism.exit_fullscreen', 'Exit fullscreen magnetism scene (Escape)'),
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + BORDER, color: TEXT, fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           canvas,
           h('div', { className: 'mag-scene-hud', 'aria-hidden': 'true' },
             (readouts || []).map(function (readout, index) {

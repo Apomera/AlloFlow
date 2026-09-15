@@ -1353,7 +1353,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             // unmistakable before anyone touches a control.
             h('div', { className: 'mb-3' },
               h('p', { className: 'text-[0.6875rem] text-slate-200 font-bold mb-2' }, t('stem.moonmission.mission_profile', '\uD83D\uDDFA\uFE0F MISSION PROFILE')),
-              h('div', { className: 'relative rounded-lg overflow-hidden border border-white/10', style: { height: '190px' } },
+              h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+                className: 'relative rounded-lg overflow-hidden border border-white/10', style: { height: '190px' } },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': t('stem.moonmission.enter_fullscreen', 'View the mission profile fullscreen'),
+                  'data-fs-out': t('stem.moonmission.enter_fullscreen', 'View the mission profile fullscreen'),
+                  'data-fs-in': t('stem.moonmission.exit_fullscreen', 'Exit fullscreen mission profile (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 h('canvas', {
                   'data-profile-canvas': 'true',
                   role: 'img',

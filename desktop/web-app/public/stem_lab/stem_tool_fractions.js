@@ -11765,7 +11765,16 @@ window.StemLab = window.StemLab || {
       // \u2550\u2550\u2550 EQUIVALENT FRACTIONS \u2550\u2550\u2550
       h('div', { className: 'fraction-lab-equivalence-card mt-5', 'data-fraction-equivalence-card': 'true' },
         h('h4', { className: 'text-sm font-bold text-pink-700 mb-2' }, __alloT('stem.fractions.equivalent_fractions_same_value_differ', '\uD83C\uDF70 Equivalent Fractions \u2014 Same value, different forms')),
-        h('div', { className: 'fraction-lab-equivalence-canvas-wrap' },
+        h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, className: 'fraction-lab-equivalence-canvas-wrap', style: { position: 'relative' } },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': __alloT('stem.fractions.enter_fullscreen', 'View the equivalent fractions diagram fullscreen'),
+            'data-fs-out': __alloT('stem.fractions.enter_fullscreen', 'View the equivalent fractions diagram fullscreen'),
+            'data-fs-in': __alloT('stem.fractions.exit_fullscreen', 'Exit fullscreen equivalent fractions diagram (Escape)'),
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(249,168,212,0.6)', color: '#fce7f3', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('canvas', {
             className: 'fraction-lab-equivalence-canvas',
             role: 'img',

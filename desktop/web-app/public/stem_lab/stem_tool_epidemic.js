@@ -2660,13 +2660,26 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1 text-[0.6875rem] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')
               }, reducedMotion ? (particleRunning ? 'Hide static view' : 'Show static view') : (particleRunning ? '\u23F9 Stop' : '\u25B6 Start'))
             ),
+            // Wrapped so the fullscreen button has somewhere to sit and the live
+            // status line under the canvas stays with the picture.
+            h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.epidemic.enter_fullscreen', 'View the epidemic visualisation fullscreen'),
+                'data-fs-out': __alloT('stem.epidemic.enter_fullscreen', 'View the epidemic visualisation fullscreen'),
+                'data-fs-in': __alloT('stem.epidemic.exit_fullscreen', 'Exit fullscreen epidemic visualisation (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
             h('canvas', { role: 'img', 'data-a11y-static': 'true', 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'), 'aria-describedby': 'epidemic-particle-status',
               ref: particleRef,
               className: 'w-full rounded-xl border border-slate-400',
               style: { height: '200px', background: 'rgba(15,23,42,0.85)' }
             }),
-            h('p', { id: 'epidemic-particle-status', 'data-epi-particle-status': 'true', className: 'mt-1 text-[0.6875rem] text-slate-600', role: 'status', 'aria-live': particleRunning && !reducedMotion ? 'off' : 'polite' },
-              reducedMotion ? 'Static particle view: start it to inspect the initial agent states.' : 'Start the particle simulation to see live agent counts.')
+              h('p', { id: 'epidemic-particle-status', 'data-epi-particle-status': 'true', className: 'mt-1 text-[0.6875rem] text-slate-600', role: 'status', 'aria-live': particleRunning && !reducedMotion ? 'off' : 'polite' },
+                reducedMotion ? 'Static particle view: start it to inspect the initial agent states.' : 'Start the particle simulation to see live agent counts.')
+            )
           ),
           // Equations (grade-dependent)
           (gradeBand === '6-8' || gradeBand === '9-12') &&

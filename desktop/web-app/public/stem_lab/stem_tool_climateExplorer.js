@@ -1616,7 +1616,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
             heroSignal = 0.42;
             heroTicker = t('stem.climateExplorer.hero_ppm', 'NOAA Mauna Loa monthly mean, June 2026: 431.44 ppm CO\u2082');
           }
-          return el('div', { style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+          return el('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
+              style: { margin: '10px 24px 0', position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.25)' } },
+            el('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              'aria-label': t('stem.climateExplorer.enter_fullscreen', 'View the atmosphere visualisation fullscreen'),
+              'data-fs-out': t('stem.climateExplorer.enter_fullscreen', 'View the atmosphere visualisation fullscreen'),
+              'data-fs-in': t('stem.climateExplorer.exit_fullscreen', 'Exit fullscreen atmosphere visualisation (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(56,189,248,0.45)', color: '#e0f2fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, el('span', { 'aria-hidden': 'true' }, '⛶')),
             el('canvas', {
               role: 'img', tabIndex: 0,
               'aria-label': heroTicker + '. Atmospheric visualization responding to the current activity values.',

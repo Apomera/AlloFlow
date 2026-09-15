@@ -1429,9 +1429,20 @@ window.StemLab = window.StemLab || {
                   })
               ),
               b10Solid && h('div', {
+                'data-allo-fs-stage': 'true',
+                ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
                 className: 'relative rounded-xl border-2 border-pink-200 bg-slate-900 overflow-hidden mb-2',
                 style: { aspectRatio: '16 / 9' }
               },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': __alloT('stem.manipulatives.enter_fullscreen', 'View the base ten blocks fullscreen'),
+                  'data-fs-out': __alloT('stem.manipulatives.enter_fullscreen', 'View the base ten blocks fullscreen'),
+                  'data-fs-in': __alloT('stem.manipulatives.exit_fullscreen', 'Exit fullscreen base ten blocks (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + 'rgba(249,168,212,0.6)', color: '#fce7f3', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 h('canvas', {
                   ref: b10GlRef,
                   'data-b10-gl': 'true',

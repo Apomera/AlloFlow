@@ -7529,9 +7529,20 @@ return React.createElement("div", {
         React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
           __alloT('stem.titration.bore_explains_tolerance', 'A tolerance is not an arbitrary number stamped on the glass \u2014 it follows from how wide the vessel is where you read it. The blue slice in each vessel below is one millilitre, drawn to scale against that vessel\'s real bore.')),
         React.createElement("div", {
+          'data-allo-fs-stage': 'true',
+          ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); },
           style: { position: 'relative', height: 'clamp(240px, 26vw, 340px)', borderRadius: 10, overflow: 'hidden',
             background: '#0a1420', border: '1px solid rgba(100,116,139,0.35)' }
         },
+          React.createElement('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            'aria-label': __alloT('stem.titration.enter_fullscreen', 'View the glassware bench fullscreen'),
+            'data-fs-out': __alloT('stem.titration.enter_fullscreen', 'View the glassware bench fullscreen'),
+            'data-fs-in': __alloT('stem.titration.exit_fullscreen', 'Exit fullscreen glassware bench (Escape)'),
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(100,116,139,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
           React.createElement("div", {
             ref: benchGlRef,
             style: { position: 'absolute', inset: 0, cursor: 'grab', touchAction: 'pan-y' },
