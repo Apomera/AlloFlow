@@ -20,3 +20,10 @@ desktop/
 dev-tools/
 prismflow-deploy/
 tests/
+
+# QA evidence: screenshots, axe reports, and run logs from tool review passes.
+# 16,608 files — the entire Cloudflare asset-budget overage (31,388 of 20,000).
+# Nothing references reports/ at runtime (verified by grep over root JS/HTML and
+# the CDN URL space), so it is excluded on the same basis as tests/ and
+# dev-tools/ above: kept in Git/Codeberg, not served by alloflow-cdn.
+reports/
