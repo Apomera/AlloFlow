@@ -207,3 +207,25 @@ describe('the status pill and popover follow the app theme (2026-09-15)', () => 
     expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
   });
 });
+
+describe('header controls with a coloured fill clear 4.5:1 on white text (2026-09-15)', () => {
+  const header = read('view_header_source.jsx');
+  // Measured in Chromium against the Tailwind palette: indigo-500 4.47,
+  // emerald-600 3.77, violet-500 4.23, sky-500 2.77, teal-600 3.74, green-600
+  // 3.30, amber-600 3.19 — all below AA for white text. Their 600/700/800
+  // counterparts pass (indigo-600 6.29, emerald-700 5.48, violet-600 5.70).
+  const FAILING = ['bg-indigo-500', 'bg-emerald-500', 'bg-emerald-600', 'bg-violet-500', 'bg-sky-500', 'bg-sky-600', 'bg-teal-600', 'bg-green-600', 'bg-amber-600'];
+  it('no fill that fails with white text is paired with text-white', () => {
+    for (const cls of FAILING) {
+      const hits = header.split('\n').filter((line) => line.includes(cls) && /text-white/.test(line));
+      expect(hits, `${cls} is used with text-white: ${hits[0]?.trim().slice(0, 120)}`).toEqual([]);
+    }
+  });
+  it('the five controls that used them now use the darker shade', () => {
+    expect(header).toContain("focusMode ? 'bg-indigo-600 text-white' : _skin.chip");          // focus-mode chip
+    expect(header).toContain("isBotVisible ? 'bg-indigo-600 text-white shadow-md'");          // bot toggle
+    expect(header).toContain("'bg-violet-600 text-white shadow-lg shadow-violet-500/50'");    // teacher AI backend
+    expect(header.match(/bg-emerald-700 text-white border-emerald-300/g)?.length).toBe(2);    // session + personal AI
+    expect(read('desktop/web-app/public/view_header_module.js')).toBe(read('view_header_module.js'));
+  });
+});

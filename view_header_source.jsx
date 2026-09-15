@@ -917,7 +917,7 @@ function HeaderBar(props) {
                 {isTeacherMode && !isIndependentMode && !isParentMode && (
                   <button type="button"
                     onClick={() => activeSessionCode ? setShowSessionModal(true) : startClassSession()}
-                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-600 text-white border-emerald-300' : 'bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50'}`}
+                    className={`inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50'}`}
                     data-help-key="header_session_start"
                     title={t('session.start_tooltip')}
                     aria-label={activeSessionCode ? (t('header.live_session_code', { code: activeSessionCode }) || `Live: ${activeSessionCode}`) : (t('session.start') || t('common.connect'))}
@@ -1124,7 +1124,7 @@ function HeaderBar(props) {
                                                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-500 text-white' : _skin.chip}`}>
+                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-600 text-white' : _skin.chip}`}>
                                                         <Eye size={16} />
                                                     </div>
                                                     <div className="text-left">
@@ -1597,7 +1597,7 @@ function HeaderBar(props) {
                         <button type='button'
                           onClick={() => setShowAIBackendModal(true)}
                           data-help-key='header_student_ai_setup'
-                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-600 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
+                          className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? 'bg-emerald-700 text-white border-emerald-300' : 'bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50'}`}
                           title={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
                           aria-label={window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel}
                         >
@@ -1639,7 +1639,7 @@ function HeaderBar(props) {
                             onClick={handleToggleIsBotVisible}
                             data-help-key="header_bot_toggle"
                             aria-pressed={isBotVisible}
-                            className={`p-2 rounded-xl transition-colors ${isBotVisible ? 'bg-indigo-500 text-white shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+                            className={`p-2 rounded-xl transition-colors ${isBotVisible ? 'bg-indigo-600 text-white shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
                             title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
                             aria-label={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
                         >
@@ -1907,7 +1907,7 @@ function HeaderBar(props) {
                           data-help-key="header_ai_backend"
                           className={`px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider ${
                             (() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend && JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend !== 'gemini'; } catch { return false; } })()
-                              ? 'bg-violet-500 text-white shadow-lg shadow-violet-500/50'
+                              ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/50'
                               : 'hover:bg-white/10 text-white/80 hover:text-white border border-white/10'
                           }`}
                           title={_isCanvasEnv ? (t('header.ai_diagnostics_canvas') || 'AI Settings & Model Diagnostics') : (t('header.ai_backend_config') || 'AI Backend Configuration')}

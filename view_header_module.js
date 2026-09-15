@@ -779,7 +779,7 @@ function HeaderBar(props) {
     {
       type: "button",
       onClick: () => activeSessionCode ? setShowSessionModal(true) : startClassSession(),
-      className: `inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? "bg-emerald-600 text-white border-emerald-300" : "bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50"}`,
+      className: `inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-black border transition-colors ${activeSessionCode ? "bg-emerald-700 text-white border-emerald-300" : "bg-white text-indigo-950 border-white shadow-lg hover:bg-indigo-50"}`,
       "data-help-key": "header_session_start",
       title: t("session.start_tooltip"),
       "aria-label": activeSessionCode ? t("header.live_session_code", { code: activeSessionCode }) || `Live: ${activeSessionCode}` : t("session.start") || t("common.connect")
@@ -925,7 +925,7 @@ function HeaderBar(props) {
         "aria-describedby": "header-bionic-scope",
         className: `w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : _skin.chip}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px]" }, t("settings.text.bionic_sub")), /* @__PURE__ */ React.createElement("span", { id: "header-bionic-scope", className: "block text-[11px] mt-1" }, t("header.bionic_scope") || "Applies to supported reading passages."))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-600 text-white" : _skin.chip}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px]" }, t("settings.text.bionic_sub")), /* @__PURE__ */ React.createElement("span", { id: "header-bionic-scope", className: "block text-[11px] mt-1" }, t("header.bionic_scope") || "Applies to supported reading passages."))),
       /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${focusMode ? "bg-indigo-500" : theme === "contrast" ? "bg-yellow-400" : "bg-slate-500"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? "left-6" : "left-1"}` }))
     ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-font-size", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => setSliderFontSize(Math.max(10, baseFontSize - 1)), className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
       "input",
@@ -1260,7 +1260,7 @@ function HeaderBar(props) {
       type: "button",
       onClick: () => setShowAIBackendModal(true),
       "data-help-key": "header_student_ai_setup",
-      className: `px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? "bg-emerald-600 text-white border-emerald-300" : "bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50"}`,
+      className: `px-2.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider border ${window.__alloStudentAiConfigured ? "bg-emerald-700 text-white border-emerald-300" : "bg-amber-100 text-amber-950 border-amber-300 hover:bg-amber-50"}`,
       title: window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel,
       "aria-label": window.__alloStudentAiConfigured ? personalAIConnectedLabel : personalAIConnectLabel
     },
@@ -1299,7 +1299,7 @@ function HeaderBar(props) {
       onClick: handleToggleIsBotVisible,
       "data-help-key": "header_bot_toggle",
       "aria-pressed": isBotVisible,
-      className: `p-2 rounded-xl transition-colors ${isBotVisible ? "bg-indigo-500 text-white shadow-md" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
+      className: `p-2 rounded-xl transition-colors ${isBotVisible ? "bg-indigo-600 text-white shadow-md" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
       title: isBotVisible ? t("toolbar.hide_bot") : t("toolbar.show_bot"),
       "aria-label": isBotVisible ? t("toolbar.hide_bot") : t("toolbar.show_bot")
     },
@@ -1536,7 +1536,7 @@ function HeaderBar(props) {
         } catch {
           return false;
         }
-      })() ? "bg-violet-500 text-white shadow-lg shadow-violet-500/50" : "hover:bg-white/10 text-white/80 hover:text-white border border-white/10"}`,
+      })() ? "bg-violet-600 text-white shadow-lg shadow-violet-500/50" : "hover:bg-white/10 text-white/80 hover:text-white border border-white/10"}`,
       title: _isCanvasEnv ? t("header.ai_diagnostics_canvas") || "AI Settings & Model Diagnostics" : t("header.ai_backend_config") || "AI Backend Configuration",
       "aria-label": _isCanvasEnv ? t("header.ai_diagnostics_canvas") || "AI Settings & Model Diagnostics" : t("header.ai_backend_config") || "AI Backend Configuration"
     },
