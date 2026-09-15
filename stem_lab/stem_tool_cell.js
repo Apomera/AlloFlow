@@ -24686,7 +24686,18 @@ var d = labToolData.cell || {};
                 h('div', { 'data-cell-study-layout': true, 'data-cell-study-surface': true },
                 h('div', { 'data-cell-visual-column': true },
                 // the living cell
-                h('div', { 'data-cell-study-surface': true, 'data-cell-canvas-frame': true, className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
+                h('div', { 'data-cell-study-surface': true, 'data-allo-fs-stage': 'true', style: { position: 'relative' }, 'data-cell-canvas-frame': true, className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
+                  h('button', {
+                    type: 'button',
+                    'data-allo-fs-btn': 'true',
+                    'aria-pressed': 'false',
+                    ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                    'aria-label': __alloT('stem.cell.enter_fullscreen', 'View the cell cross-section fullscreen'),
+                    'data-fs-out': __alloT('stem.cell.enter_fullscreen', 'View the cell cross-section fullscreen'),
+                    'data-fs-in': __alloT('stem.cell.exit_fullscreen', 'Exit fullscreen cell cross-section (Escape)'),
+                    onClick: function (ev) { ev.stopPropagation(); },
+                    style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                   h('div', { 'data-cell-diagram-heading': true }, h('strong', null, ctype === 'bacterium' ? 'Bacterial cell' : ctype === 'plant' ? 'Plant cell' : 'Animal cell'), h('span', null, ctype === 'bacterium' ? 'PROKARYOTE' : 'EUKARYOTE')),
                   h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),

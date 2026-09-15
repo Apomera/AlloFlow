@@ -677,7 +677,18 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
         h('span', { className: subtitleClass }, '- drag the red star; three stations triangulate the epicenter from S-P times')
       ),
       h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
-        h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-emerald-400 bg-white') },
+        h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative' }, className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-emerald-400 bg-white') },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+            'aria-label': __alloT('stem.platetectonics.enter_fullscreen', 'View the epicentre map fullscreen'),
+            'data-fs-out': __alloT('stem.platetectonics.enter_fullscreen', 'View the epicentre map fullscreen'),
+            'data-fs-in': __alloT('stem.platetectonics.exit_fullscreen', 'Exit fullscreen epicentre map (Escape)'),
+            onClick: function (ev) { ev.stopPropagation(); },
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('canvas', {
             ref: canvasRef,
             'data-pt-epicenter-canvas': 'true',
