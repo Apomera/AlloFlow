@@ -13728,7 +13728,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   body3dStyle !== 'clinical' && expertModesAvailable && h('button', { type: 'button', className: 'anatomy-3d-procedure-button', 'data-anatomy-3d-procedure-launch': 'true', onClick: function() { var launchScenario = getAnatomyProcedureScenario({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive' }); updMulti({ _activeTab: 'procedure', procedure: normalizeAnatomyProcedureState({ caseId: systemProcedureCase, scenarioSeed: 100, approach: 'central', scenarioDifficulty: 'adaptive', planSlice: launchScenario.planSlice, feedback: 'Scenario created from the ' + sys.name + ' 3D overview. Review the scan and configure the case.' }) }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_opening_a_matching_synthetic_procedure_scenario_f', 'Opening a matching synthetic procedure scenario from the 3D body overview.')); } }, 'Open matching procedure')
                 )
               ),
-              h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
+              h('div', { className: 'anatomy-canvas-frame', 'data-anatomy-canvas-frame': 'true', 'data-allo-fs-stage': 'true', style: { position: 'relative' }, 'data-anatomy-view': bodyView3d ? '3d' : '2d' },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                  'aria-label': t('stem.anatomy.enter_fullscreen', 'View the body model fullscreen'),
+                  'data-fs-out': t('stem.anatomy.enter_fullscreen', 'View the body model fullscreen'),
+                  'data-fs-in': t('stem.anatomy.exit_fullscreen', 'Exit fullscreen body model (Escape)'),
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 bodyView3d && body3dStyle === 'realistic' && h('div', { className:'anatomy-surface-lighting', 'data-anatomy-surface-lighting':'true', role:'group', 'aria-label':t('stem.anatomy.surface_lighting','Surface lighting') },
                   [{id:'soft',label:t('stem.anatomy.light_soft','Soft')},{id:'contour',label:t('stem.anatomy.light_contour','Contour')}].map(function(light) { return h('button',{key:light.id,type:'button','data-anatomy-light-option':light.id,'aria-pressed':surfaceLighting===light.id?'true':'false',title:light.id==='soft'?t('stem.anatomy.light_soft_hint','Even light for a gentle body overview'):t('stem.anatomy.light_contour_hint','Side light to reveal surface contours'),onClick:function(){upd('_surfaceLighting',light.id);}},light.label); })
                 ),
