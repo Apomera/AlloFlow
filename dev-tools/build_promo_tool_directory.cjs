@@ -86,14 +86,38 @@ out.push('                    <p>Each link opens that tool directly — no accou
 out.push('                        into an assignment, a sub plan, or a message to a colleague and it opens on the tool they need.</p>');
 out.push('                </div>');
 out.push('                <p class="tool-directory-count">' + listed + ' tools across ' + names.length + ' areas of the STEM Lab.</p>');
+// Jump nav. The 17 group headings have carried ids since this block was first generated,
+// but nothing linked to them, so arriving at the directory still meant scrolling 250 lines
+// to reach a subject. One id map feeds both the nav and the headings below, so a renamed
+// section cannot leave the nav pointing at an anchor that no longer exists.
+const groupId = (name) => 'dir-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+out.push('                <nav class="tool-directory-jump" aria-labelledby="directory-jump-label">');
+out.push('                    <h3 id="directory-jump-label" class="tool-directory-jump-label">Jump to a subject</h3>');
+out.push('                    <ul>');
+for (const name of names) {
+  // The count is plain text inside the link, not an aria-hidden span paired with a
+  // screen-reader-only one: this site defines NO visually-hidden class (no .sr-only,
+  // no .visually-hidden anywhere in its six stylesheets), so that pattern would have
+  // rendered the alternate text visibly. The link reads "Advanced Math (5 tools)" for
+  // everyone, which needs no hidden text to be accessible.
+  out.push('                        <li><a href="#' + groupId(name) + '">' + esc(name) + ' <span class="tool-directory-jump-count">(' + groups.get(name).length + ' tools)</span></a></li>');
+}
+out.push('                    </ul>');
+out.push('                </nav>');
 for (const name of names) {
   const items = groups.get(name).sort((a, b) => a.label.localeCompare(b.label));
-  const slugId = 'dir-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slugId = groupId(name);
   out.push('                <div class="tool-directory-group">');
   out.push('                    <h3 id="' + slugId + '">' + esc(name) + '</h3>');
   out.push('                    <ul class="tool-directory-list" aria-labelledby="' + slugId + '">');
   for (const item of items) {
-    out.push('                        <li><a href="' + APP_ORIGIN + '/' + item.slug + '">' + esc(item.label) + '</a></li>');
+    // Two links per row where a landing page exists: the tool itself (what a teacher
+    // wants) and its "About" page (what a crawler can index, since the tool URL is an
+    // SPA that serves one <title> for all 149). A tool with no page keeps one link.
+    const about = fs.existsSync(path.join(ROOT, 'tool-' + item.slug + '.html'))
+      ? ' <a class="tool-directory-about" href="tool-' + item.slug + '.html" aria-label="About ' + esc(item.label) + '">About</a>'
+      : '';
+    out.push('                        <li><a href="' + APP_ORIGIN + '/' + item.slug + '">' + esc(item.label) + '</a>' + about + '</li>');
   }
   out.push('                    </ul>');
   out.push('                </div>');

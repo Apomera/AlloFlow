@@ -1,0 +1,324 @@
+/* tool-manual.css — shared styling for the per-tool teacher manuals
+   (manual-<slug>.html, hand-written, 2026-09-16).
+
+   These are prose documents, so the priorities are measure, hierarchy and print.
+   Conventions carried over from the rest of the promo site and from two defects this
+   codebase already paid for:
+
+     - #3730a3 link ink on white (10.4:1), #475569 for supporting copy (7.5:1).
+     - 44px minimum interactive height (WCAG 2.5.8).
+     - Any <a> styled as a filled button MUST also carry .btn-primary in the markup:
+       shared.css:179 recolors `main p a:not(.btn-primary):not(.btn-secondary)` to
+       indigo, which once produced a 1:1-contrast invisible button here. Raising
+       specificity does not beat it; the opt-out class is the fix.
+     - No visually-hidden class is used: the promo site defines none, so hidden-text
+       patterns render visibly (the .sr-only defect of 2026-09-15).
+
+   Both themes are defined because a teacher may open this on a dark-mode laptop and
+   shared.css does not paint this page's surfaces. */
+
+:root {
+    --mn-ink: #0f172a;
+    --mn-body: #1e293b;
+    --mn-soft: #475569;
+    --mn-line: #e2e8f0;
+    --mn-panel: #ffffff;
+    --mn-bg: #f8fafc;
+    --mn-accent: #3730a3;
+    --mn-accent-ink: #312a8f;
+    --mn-accent-soft: #eef2ff;
+    --mn-accent-bd: #c7d2fe;
+    --mn-code-bg: #f1f5f9;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --mn-ink: #e8eefc;
+        --mn-body: #d3ddf0;
+        --mn-soft: #9aa9c4;
+        --mn-line: #28354e;
+        --mn-panel: #141d30;
+        --mn-bg: #0d1424;
+        --mn-accent: #a5b4fc;
+        --mn-accent-ink: #c7d2fe;
+        --mn-accent-soft: #18233d;
+        --mn-accent-bd: #33456e;
+        --mn-code-bg: #172033;
+    }
+}
+
+body {
+    background: var(--mn-bg);
+    color: var(--mn-body);
+}
+
+.manual-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 96px 24px 48px;
+    color: var(--mn-body);
+    font-size: 1.02rem;
+    line-height: 1.75;
+}
+#manual-main,
+.manual-block {
+    scroll-margin-top: 88px;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 12px 18px;
+    background: var(--mn-panel);
+    color: var(--mn-accent);
+    font-weight: 600;
+    border-radius: 0 0 8px 0;
+}
+.skip-link:focus {
+    left: 0;
+}
+
+.manual-crumbs {
+    font-size: .9rem;
+    color: var(--mn-soft);
+    margin-bottom: 24px;
+}
+.manual-crumbs ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+.manual-crumbs li + li::before {
+    content: "/";
+    margin-right: 10px;
+    color: var(--mn-soft);
+}
+
+.manual-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--mn-accent);
+    margin: 0 0 8px;
+}
+.manual-hero h1 {
+    font-size: clamp(1.9rem, 4vw, 2.5rem);
+    line-height: 1.15;
+    color: var(--mn-ink);
+    margin: 0 0 14px;
+    text-wrap: balance;
+}
+.manual-lede {
+    font-size: 1.12rem;
+    color: var(--mn-body);
+    margin: 0 0 24px;
+}
+.manual-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin: 0 0 8px;
+}
+/* .btn-primary in the markup is load-bearing — see the file header. */
+.manual-page .manual-open {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 22px;
+    background: var(--mn-accent);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+}
+.manual-page .manual-open:hover {
+    background: var(--mn-accent-ink);
+}
+.manual-page .manual-open:visited {
+    color: #fff;
+}
+.manual-note {
+    font-size: .92rem;
+    color: var(--mn-soft);
+}
+
+.manual-toc {
+    margin: 32px 0 8px;
+    padding: 18px 22px;
+    background: var(--mn-panel);
+    border: 1px solid var(--mn-line);
+    border-radius: 10px;
+}
+.manual-toc h2 {
+    font-size: .95rem;
+    color: var(--mn-ink);
+    margin: 0 0 8px;
+}
+.manual-toc ol {
+    margin: 0;
+    padding-left: 22px;
+    color: var(--mn-soft);
+}
+.manual-toc li {
+    margin: 2px 0;
+}
+.manual-toc a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--mn-accent);
+}
+
+.manual-block {
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--mn-line);
+}
+.manual-block h2 {
+    font-size: 1.35rem;
+    color: var(--mn-ink);
+    margin: 0 0 14px;
+    text-wrap: balance;
+}
+.manual-block h3 {
+    font-size: 1.08rem;
+    color: var(--mn-ink);
+    margin: 28px 0 10px;
+}
+.manual-block p {
+    margin: 0 0 14px;
+}
+.manual-block a {
+    color: var(--mn-accent);
+}
+
+.manual-steps,
+.manual-list {
+    margin: 0 0 16px;
+    padding-left: 24px;
+}
+.manual-steps li,
+.manual-list li {
+    margin: 0 0 10px;
+}
+
+.manual-callout {
+    margin: 18px 0;
+    padding: 14px 18px;
+    background: var(--mn-accent-soft);
+    border: 1px solid var(--mn-accent-bd);
+    border-left: 4px solid var(--mn-accent);
+    border-radius: 8px;
+}
+
+/* Wide tables scroll in their own container so the page never scrolls sideways. */
+.manual-table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 18px;
+    font-size: .95rem;
+}
+.manual-table caption {
+    text-align: left;
+    font-size: .88rem;
+    color: var(--mn-soft);
+    padding-bottom: 8px;
+}
+.manual-table th,
+.manual-table td {
+    border: 1px solid var(--mn-line);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+.manual-table thead th {
+    background: var(--mn-code-bg);
+    color: var(--mn-ink);
+}
+.manual-table tbody th {
+    background: var(--mn-panel);
+    color: var(--mn-ink);
+    white-space: nowrap;
+}
+
+.manual-faq {
+    margin: 0;
+}
+.manual-faq dt {
+    font-weight: 600;
+    color: var(--mn-ink);
+    margin-top: 16px;
+}
+.manual-faq dd {
+    margin: 6px 0 0;
+    padding-left: 16px;
+    border-left: 2px solid var(--mn-line);
+}
+
+kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--mn-code-bg);
+    border: 1px solid var(--mn-line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: .88em;
+    color: var(--mn-ink);
+}
+
+.manual-footer {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 24px 56px;
+    font-size: .92rem;
+    color: var(--mn-soft);
+}
+.manual-footer a {
+    color: var(--mn-accent);
+}
+
+.manual-page a:focus-visible,
+.manual-footer a:focus-visible,
+.skip-link:focus-visible {
+    outline: 2px solid var(--mn-accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+    .manual-page {
+        padding-top: 84px;
+    }
+    .manual-table {
+        font-size: .9rem;
+    }
+}
+
+/* A teacher printing this wants the prose, not the chrome. */
+@media print {
+    .navbar,
+    .skip-link,
+    .manual-actions,
+    .manual-footer {
+        display: none !important;
+    }
+    .manual-page {
+        max-width: none;
+        padding: 0;
+        font-size: 11pt;
+    }
+    .manual-block {
+        page-break-inside: avoid;
+    }
+    .manual-callout {
+        border: 1px solid #999;
+    }
+}

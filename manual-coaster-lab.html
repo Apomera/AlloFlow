@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coaster Lab: Teacher Manual | AlloFlow</title>
+<meta name="description" content="How to teach with AlloFlow's Coaster Lab: the Build, Certify, Report and Missions panels, Explore versus Engineer mode, Ride &amp; Solve checkpoint questions, the three design challenges, and what the physics model does and does not claim.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://apomera.github.io/AlloFlow/manual-coaster-lab.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="AlloFlow">
+<meta property="og:title" content="Coaster Lab: Teacher Manual">
+<meta property="og:description" content="Teach with Coaster Lab: design a coaster, predict its forces, run the inspection, and read real telemetry. Works with AI off.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/manual-coaster-lab.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Coaster Lab: Teacher Manual">
+<meta name="twitter:description" content="Teach with Coaster Lab: design a coaster, predict its forces, run the inspection, and read real telemetry.">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="tool-manual.css">
+</head>
+<body>
+<a class="skip-link" href="#manual-main">Skip to content</a>
+<nav class="navbar" aria-label="Primary">
+    <div class="navbar-inner">
+        <a class="nav-logo" href="./">AlloFlow</a>
+        <div class="nav-links" data-site-nav="primary">
+            <a href="tools.html">Find a Tool</a>
+            <a href="features.html">Features</a>
+            <a href="manuals.html">Manuals</a>
+        </div>
+    </div>
+</nav>
+
+<main id="manual-main" class="manual-page">
+    <nav class="manual-crumbs" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="./">AlloFlow</a></li>
+            <li><a href="manuals.html">Manuals</a></li>
+            <li><a href="tool-coaster-lab.html">Coaster Lab</a></li>
+            <li aria-current="page">Teacher manual</li>
+        </ol>
+    </nav>
+
+    <header class="manual-hero">
+        <p class="manual-eyebrow">Physics &amp; Chemistry · Grades 6–12</p>
+        <h1>Coaster Lab: Teacher Manual</h1>
+        <p class="manual-lede">Students design a roller coaster in 3-D, predict what it will do to a
+            rider, then run it and compare their prediction against the model's measurements. The
+            teaching happens in the gap between the two.</p>
+        <p class="manual-actions">
+            <a class="btn-primary manual-open" href="https://alloflow-cdn.pages.dev/coaster-lab">Open Coaster Lab</a>
+            <span class="manual-note">No account. Runs in a browser. Every activity below works with AI turned off.</span>
+        </p>
+    </header>
+
+    <nav class="manual-toc" aria-labelledby="toc-heading">
+        <h2 id="toc-heading">On this page</h2>
+        <ol>
+            <li><a href="#start">The first ten minutes</a></li>
+            <li><a href="#modes">Explore or Engineer: choosing the level</a></li>
+            <li><a href="#tour">A tour of the four panels</a></li>
+            <li><a href="#walkthroughs">Three classroom walkthroughs</a></li>
+            <li><a href="#ride">Ride &amp; Solve, and the row that matters</a></li>
+            <li><a href="#evidence">What students can hand in</a></li>
+            <li><a href="#model">What the model does and does not claim</a></li>
+            <li><a href="#access">Accessibility, motion, and slower devices</a></li>
+            <li><a href="#troubleshooting">When something looks wrong</a></li>
+        </ol>
+    </nav>
+
+    <section class="manual-block" id="start" aria-labelledby="start-heading">
+        <h2 id="start-heading">1. The first ten minutes</h2>
+        <p>Open the tool. A coaster is already on screen, and it is not a demo — every glowing
+            sphere on the track is a node the student can move. That matters for the first
+            instruction you give: <em>this is your coaster, not a video.</em></p>
+        <p>The fastest honest first lesson is one loop of the cycle:</p>
+        <ol class="manual-steps">
+            <li><strong>Press <kbd>Space</kbd></strong> (or <strong>▶ Test run</strong>). The train
+                runs the circuit. The HUD along the bottom shows speed, height, seat g, side g, a
+                G-map, and an energy bar splitting kinetic, potential and heat.</li>
+            <li><strong>Ask one question before touching anything:</strong> "where was the train
+                fastest, and why there?" Students will point at the bottom of the first drop. The
+                energy bar is the argument: the blue kinetic band is widest exactly there.</li>
+            <li><strong>Change one thing.</strong> Click a node on the first hill, drag it higher, or
+                use the Height slider in the Build panel. Run it again.</li>
+            <li><strong>Read the change.</strong> Taller hill, faster valley, higher seat g. The
+                Report tab now holds telemetry for both runs.</li>
+        </ol>
+        <p class="manual-callout">If your class is new to the tool, press <strong>Start simple</strong>
+            in the Build panel first. It loads a plain oval with no loop, so the first change a
+            student makes is visible in one glance.</p>
+        <p>Students who prefer a guided path can press <strong>Begin guided build</strong>, which
+            walks the same cycle one step at a time and keeps a notebook of what they changed and
+            what happened.</p>
+    </section>
+
+    <section class="manual-block" id="modes" aria-labelledby="modes-heading">
+        <h2 id="modes-heading">2. Explore or Engineer: choosing the level</h2>
+        <p>The Certify panel has two modes, and this is the most important setting in the tool for
+            matching it to a class.</p>
+        <table class="manual-table">
+            <caption>The same coaster, two levels of demand</caption>
+            <thead>
+                <tr><th scope="col">Mode</th><th scope="col">What the student does</th><th scope="col">Good for</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">🔍 Explore</th>
+                    <td>Commits an ungraded hypothesis for each ride outcome — where the train is
+                        fastest, what happens to kinetic energy on a climb, where riders feel
+                        heaviest — then runs the ride and explains what the evidence changed.</td>
+                    <td>Middle school, mixed-readiness groups, and any class meeting energy
+                        transfer for the first time. No equations required.</td>
+                </tr>
+                <tr>
+                    <th scope="row">📐 Engineer</th>
+                    <td>Calculates actual values for the flagged checkpoints from conservation of
+                        energy and circular motion, then runs an inspection under ideal
+                        (frictionless) conditions where the math must match.</td>
+                    <td>Physics and physical science classes doing real computation. The
+                        inspection is the answer key the student cannot argue with.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Two details worth knowing. First, <strong>a match is not a score</strong> in Explore mode
+            — the tool says so on screen, deliberately, because a student whose prediction was wrong
+            and who can explain why has done the better work. Second, Engineer mode's inspection
+            runs with <strong>friction off</strong>, so conservation of energy holds exactly and a
+            correct calculation is genuinely correct. Ordinary test runs keep friction on.</p>
+        <p class="manual-callout">Explore mode also asks two questions that transfer off the screen:
+            which <strong>restraint</strong> this ride needs, and which <strong>row</strong> gets
+            pulled hardest out of its seat. Both are answered from the student's own design, not
+            from a lookup table.</p>
+    </section>
+
+    <section class="manual-block" id="tour" aria-labelledby="tour-heading">
+        <h2 id="tour-heading">3. A tour of the four panels</h2>
+        <p>The left side carries four tabs. Students will live in Build; the learning tends to land
+            in Report.</p>
+
+        <h3>Build</h3>
+        <p>Select a glowing node and it becomes editable: drag it across the ground,
+            <kbd>Shift</kbd>-drag to change height, or use the X, Z, Height and Bank sliders. The
+            <strong>Nudge</strong> selector (0.5 m fine / 2 m normal / 5 m coarse) gives keyboard and
+            switch users the same precision a mouse drag gives, and the X± / Z± buttons move the
+            selected node by that amount.</p>
+        <p>Below that, <strong>Build with pieces</strong> inserts whole editable elements — hill,
+            drop, left turn, right turn, and a ten-node vertical loop — into the segment after the
+            selected node. Every node of an inserted piece stays editable, so a loop is a starting
+            shape rather than a black box.</p>
+        <p>Other controls in Build worth naming for students:</p>
+        <ul class="manual-list">
+            <li><strong>🎲 Generate a coaster</strong> builds a complete new circuit from a number:
+                ground plan, lift, hills sized to an energy budget, turns banked from the physics.
+                Type the <em>same number</em> and everyone gets the same coaster, which is how you
+                get a whole class analysing one design.</li>
+            <li><strong>Design preflight coach</strong> flags geometry problems with numbered
+                markers on the track — a hill the train cannot clear, track dipping into the ground,
+                nodes too close together. It is a revision prompt, not a grade.</li>
+            <li><strong>Propulsion</strong>: ⛓ chain lift (releases the train at the first crest at
+                3.5 m/s) or ⚡ LSM launch with an adjustable thrust.</li>
+            <li><strong>Your train</strong>: 3 to 8 cars. This is not cosmetic — see
+                <a href="#ride">Ride &amp; Solve</a>.</li>
+            <li><strong>Export / Import</strong> copies the design as text to paste to a classmate,
+                and <strong>Lab packet</strong> bundles the design, notebook, conditions, challenge
+                and latest measured evidence.</li>
+        </ul>
+
+        <h3>Certify</h3>
+        <p>Where predictions are filed and the inspection is run. The checkpoints are marked on the
+            track as A (first crest), B (valley), C (loop apex) and D (the turn the student flagged
+            with <strong>⚑ Certify this turn</strong>). Students can flag whichever turn they want
+            the problems to ask about.</p>
+
+        <h3>Report</h3>
+        <p>The richest panel, and the one to send students to when they say the ride "felt fine."
+            It holds:</p>
+        <ul class="manual-list">
+            <li><strong>Rider safety</strong> — which restraint the measured forces demand (simple
+                lap bar, ratcheting lap bar plus belt, or over-the-shoulder harness), how hard it
+                has to hold a rider, and why real parks post a height requirement.</li>
+            <li><strong>Telemetry traces</strong> of the run, and a <strong>CSV download</strong> so
+                a class can graph the data in a spreadsheet.</li>
+            <li>An <strong>on-ride photo</strong> taken at a checkpoint, framed on the middle of the
+                train — the riders' arms and posture in it are driven by the actual forces.</li>
+            <li><strong>Park economics</strong>: excitement, intensity, nausea, ticket price and
+                daily riders, for a cross-curricular angle.</li>
+        </ul>
+
+        <h3>Missions</h3>
+        <p>Engineering challenges graded automatically from the telemetry of a real run. Three
+            built-in design challenges ship with the tool: <strong>build a smooth 20 m hill</strong>,
+            <strong>create 3 seconds of airtime</strong>, and <strong>finish below 4.0 vertical
+            g</strong>. Finish a run and any mission the design satisfied is stamped. The panel also
+            offers <strong>📋 Copy student summary</strong> as plain text and <strong>🎫 Save ride
+            card</strong>, an image of the coaster with its vitals to hand in.</p>
+    </section>
+
+    <section class="manual-block" id="walkthroughs" aria-labelledby="walk-heading">
+        <h2 id="walk-heading">4. Three classroom walkthroughs</h2>
+
+        <h3>A. Energy transfer in one class period (Explore, grades 6–8)</h3>
+        <ol class="manual-steps">
+            <li>Everyone presses <strong>Start simple</strong>, then <strong>🎲 Generate</strong>
+                with the <em>same number</em> written on the board. One coaster, whole class.</li>
+            <li>In Certify, switch to <strong>🔍 Explore</strong> and file all three hypotheses.
+                Students must commit before running — the tool will not accept a run until they do.</li>
+            <li>Run it. Open <strong>Report</strong> and find the energy bar at the moment of peak
+                speed.</li>
+            <li>Discussion: the total bar does not grow. Height is traded for speed and some is lost
+                to heat. Ask where the heat came from, then have students re-run with
+                <strong>Friction</strong> toggled off and compare.</li>
+            <li>Each student writes the claim–evidence–reasoning the Explore panel prompts for, and
+                presses <strong>Save explanation &amp; complete cycle</strong>.</li>
+        </ol>
+
+        <h3>B. Circular motion with real numbers (Engineer, grades 9–12)</h3>
+        <ol class="manual-steps">
+            <li>Students build or load a coaster with a loop, then press <strong>⚑ Certify this
+                turn</strong> on a banked turn they choose.</li>
+            <li>Switch to <strong>📐 Engineer</strong>. Calculate the flagged values by hand — speed
+                at the valley from conservation of energy, seat g from v²/r — and enter them.</li>
+            <li><strong>Check predictions</strong>, then <strong>🎢 Run inspection</strong>. The
+                inspection is frictionless, so a correct calculation matches.</li>
+            <li>Where it does not match, the productive question is almost always "what radius did
+                you use?" Turn on the <strong>Curvature heatmap</strong> in the View selector and the
+                track shows its own radius.</li>
+            <li>Extension: the Report's rider-safety card states the restraint the forces demand.
+                Ask students to redesign for the <em>same thrill with a simpler restraint</em>.</li>
+        </ol>
+
+        <h3>C. Design challenge as assessment (either mode)</h3>
+        <ol class="manual-steps">
+            <li>Assign one of the three challenges from the Missions panel — "3 seconds of airtime"
+                is the one students argue about most productively.</li>
+            <li>Require a <strong>prediction before each test run</strong>. The guided notebook keeps
+                the log automatically if they use <strong>Begin guided build</strong>.</li>
+            <li>Students submit the <strong>Lab packet</strong> or the <strong>ride card</strong>.
+                Both carry the measured evidence, so you are grading the reasoning, not whether they
+                got lucky.</li>
+            <li>Because the mission is graded from telemetry, a design that <em>almost</em> works is
+                visible: students can see how close they came and iterate.</li>
+        </ol>
+    </section>
+
+    <section class="manual-block" id="ride" aria-labelledby="ride-heading">
+        <h2 id="ride-heading">5. Ride &amp; Solve, and the row that matters</h2>
+        <p><strong>🧠 Ride &amp; Solve</strong> (or <kbd>R</kbd>) rides the coaster onboard and
+            freezes at each checkpoint with a question the student answers before the train
+            continues. Two selectors in the top bar control what it asks:</p>
+        <ul class="manual-list">
+            <li><strong>Topic</strong>: coaster physics, addition, subtraction, multiplication,
+                division, mixed math, physics and math alternating, or — only where an AI provider is
+                configured — any subject you type.</li>
+            <li><strong>Grade</strong>: auto, K–2, 3–5, 6–8, or 9–12. The math questions are built
+                from the <em>actual numbers of the student's own ride</em>: the height they are
+                falling from, the metres left in the lap, the seats in their train.</li>
+        </ul>
+        <p class="manual-callout"><strong>The arithmetic topics are the reason this tool appears in
+            more than physics.</strong> A fifth-grade class can ride a coaster they designed and do
+            division about it. Nothing in Ride &amp; Solve requires AI; the AI topic is one option
+            among eight, and the tool labels it so.</p>
+        <p>The <strong>row selector</strong> — front, middle, back — is a genuine physics control,
+            not a camera preference. A real train is a length, not a point: the back row crosses a
+            crest while the front is already descending, so the rows do not feel the same ride. Have
+            two students ride the same design in different rows and compare their seat-g traces. The
+            Report's row-by-row model shows why.</p>
+    </section>
+
+    <section class="manual-block" id="evidence" aria-labelledby="evidence-heading">
+        <h2 id="evidence-heading">6. What students can hand in</h2>
+        <table class="manual-table">
+            <caption>Artifacts, where they come from, and what they show</caption>
+            <thead>
+                <tr><th scope="col">Artifact</th><th scope="col">Where</th><th scope="col">What it evidences</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Lab packet</th><td>Build panel</td><td>Design, guided notebook, conditions, challenge, and the latest measured ride. The fullest single submission.</td></tr>
+                <tr><th scope="row">Student summary</th><td>Missions panel</td><td>Plain text for an email, doc or LMS.</td></tr>
+                <tr><th scope="row">Ride card</th><td>Missions panel</td><td>An image: the coaster, its on-ride photo, vitals, and the restraint its forces earned.</td></tr>
+                <tr><th scope="row">Telemetry CSV</th><td>Report panel</td><td>The run's data for graphing elsewhere — the bridge to a spreadsheet lesson.</td></tr>
+                <tr><th scope="row">Experiment log</th><td>Guided notebook</td><td>What the student changed, run by run, and what happened. This is the revision history.</td></tr>
+            </tbody>
+        </table>
+        <p>Everything is generated on the device and handed over by the student. The tool does not
+            submit work anywhere on its own.</p>
+    </section>
+
+    <section class="manual-block" id="model" aria-labelledby="model-heading">
+        <h2 id="model-heading">7. What the model does and does not claim</h2>
+        <p>Be straight with students about this, because it is itself a science lesson.</p>
+        <p><strong>What it models honestly.</strong> Conservation of energy along the track, speed
+            from height, seat and lateral g from track curvature and banking, rolling resistance and
+            quadratic air drag when friction is on, a train as a real length with per-row forces,
+            and the restraint class those forces would demand.</p>
+        <p><strong>What it does not do.</strong> The preflight coach is an educational geometry and
+            ideal-dynamics preview, <em>not structural approval</em> — the tool says so on the panel.
+            It does not do stress analysis on the steel, wind loading, wheel wear, or anything that
+            would let a student claim a design is safe to build. "Passing the inspection" means the
+            student's mathematics agreed with the model's mathematics under stated ideal conditions.</p>
+        <p>That distinction is worth one minute of class time. A model that agrees with you is not
+            the same as a ride that is safe, and a student who can say why has learned something
+            about modelling that transfers well beyond coasters.</p>
+    </section>
+
+    <section class="manual-block" id="access" aria-labelledby="access-heading">
+        <h2 id="access-heading">8. Accessibility, motion, and slower devices</h2>
+        <ul class="manual-list">
+            <li><strong>Motion sensitivity.</strong> <strong>Motion: Standard</strong> toggles to
+                Steady, which reduces camera shake, pulses and decorative motion. The tool also
+                respects the operating system's own reduced-motion setting automatically. For a
+                student who should not watch a moving ride at all, Steady mode plus the
+                ride-position slider lets them inspect the whole run without autoplay.</li>
+            <li><strong>Keyboard and switch access.</strong> Every node edit has a button as well as
+                a drag: Previous/Next node, X±, Z±, the Nudge size selector, and arrow keys on every
+                slider. The four panels are a proper tab list.</li>
+            <li><strong>Slower devices.</strong> <strong>FX: Full</strong> toggles to Lite, which
+                drops shadows and trees. If a Chromebook struggles, this is the first switch to
+                flip.</li>
+            <li><strong>Colour.</strong> The g-meters pair colour with a printed number, and the
+                heatmap legend states its range in units, so no reading depends on hue alone.</li>
+            <li><strong>Views for discussion.</strong> Top view, Side view, Fit coaster and Bold
+                track make the design legible on a projector. Side view is the one for comparing
+                hill heights with a class.</li>
+        </ul>
+    </section>
+
+    <section class="manual-block" id="troubleshooting" aria-labelledby="trouble-heading">
+        <h2 id="trouble-heading">9. When something looks wrong</h2>
+        <dl class="manual-faq">
+            <dt>The train rolls backwards partway up a hill.</dt>
+            <dd>That is the model working. The chain lift fixes an energy ceiling at the first crest;
+                every hill after it must be paid for out of that budget. Lower the hill or raise the
+                lift. The banner says which.</dd>
+
+            <dt>A student says the inspection is "wrong."</dt>
+            <dd>Check two things: that they used the radius of the <em>flagged</em> turn (the
+                curvature heatmap shows it), and that they compared against an inspection run rather
+                than a friction-on test run.</dd>
+
+            <dt>The ride feels different in the back row.</dt>
+            <dd>Correct, and intentional. See <a href="#ride">section 5</a>.</dd>
+
+            <dt>There is no AI hint button.</dt>
+            <dd>Expected when no AI provider is configured — which is the normal state for student
+                devices in many districts. Everything in this manual works without it.</dd>
+
+            <dt>The design preflight coach flags a ride the student likes.</dt>
+            <dd>Treat the numbered markers as revision prompts. A flagged design still runs; the
+                coach is telling the student where a rider would be hurt or the train would fail, and
+                "I chose to keep it because…" is a legitimate, gradeable answer.</dd>
+        </dl>
+    </section>
+
+    <section class="manual-block" aria-labelledby="more-heading">
+        <h2 id="more-heading">More</h2>
+        <p><a href="tool-coaster-lab.html">About Coaster Lab</a> ·
+            <a href="manuals.html">All manuals and guides</a> ·
+            <a href="tools.html#dir-physics-chemistry">Other Physics &amp; Chemistry tools</a></p>
+    </section>
+</main>
+
+<footer class="manual-footer">
+    <p><a href="tools.html">Find a Tool</a> · <a href="manuals.html">Manuals</a> ·
+        <a href="./">AlloFlow home</a></p>
+</footer>
+</body>
+</html>

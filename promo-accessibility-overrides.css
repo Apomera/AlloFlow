@@ -8,3 +8,22 @@
 .promo-home-heading { font-size:clamp(2.35rem,5.4vw,4rem); font-weight:900; line-height:1.12; letter-spacing:-0.035em; color:#0f172a; margin:18px 0 20px; }
 .promo-home-lede { font-size:1.15rem; color:#475569; max-width:720px; margin:0 auto 20px; line-height:1.72; }
 .promo-home-hero .promo-home-acronym { font-size:clamp(0.85rem,1.5vw,1rem); font-weight:600; line-height:1.6; margin:0 auto 24px; letter-spacing:normal; }
+
+/* .sr-only had NO definition anywhere on this site (2026-09-15).
+   index.html labels the homepage tool search with <label class="sr-only">, so
+   "Search AlloFlow tools" rendered as visible text inside the search box, crowding
+   the placeholder (measured 99x63px in Chromium). The class is defined here rather
+   than removed from the markup because the label is the input's accessible name:
+   deleting it would leave the search unlabelled. Standard clip-path pattern, which
+   keeps the text available to assistive technology. */
+.sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}

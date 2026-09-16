@@ -36,6 +36,73 @@
 .tool-directory-group {
     margin-bottom: 28px;
 }
+/* Pointer from the hero to the full directory (2026-09-15). Without it the complete
+   149-link list sat below ~250 lines of finder with nothing on the page or the site
+   pointing at it: the finder curates 33 tools, so a teacher after a shareable link for
+   any of the other 116 had to scroll past a search that would not find it. */
+.tool-finder-directory-cue {
+    margin: 18px 0 0;
+    font-size: .95rem;
+    color: #334155;
+}
+.tool-finder-directory-cue a {
+    color: #3730a3;
+    font-weight: 600;
+}
+/* Jump-to-a-subject nav (2026-09-15). The 17 group headings always carried ids but
+   nothing linked to them, so reaching a subject meant scrolling the whole directory.
+   Same 44px target and same #3730a3-on-#fff link colour as the lists below; the count
+   is plain visible text (this site defines no visually-hidden class), dimmed to the
+   #475569 already used for the directory count line (7.5:1 on white). */
+.tool-directory-jump {
+    margin: 0 0 32px;
+    padding: 16px 18px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+.tool-directory-jump-label {
+    font-size: .95rem;
+    color: #0f172a;
+    margin: 0 0 8px;
+}
+.tool-directory-jump ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+}
+.tool-directory-jump a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 10px;
+    color: #3730a3;
+    text-decoration: none;
+    font-size: .95rem;
+    border-radius: 6px;
+}
+.tool-directory-jump a:hover {
+    background: #eef2ff;
+    text-decoration: underline;
+}
+.tool-directory-jump a:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+}
+.tool-directory-jump-count {
+    color: #475569;
+    margin-left: 4px;
+}
+/* The directory headings are jump targets, so keep them clear of the sticky navbar. */
+.tool-directory-group h3 {
+    scroll-margin-top: 88px;
+}
+#directory-heading {
+    scroll-margin-top: 88px;
+}
 .tool-directory-group h3 {
     font-size: 1rem;
     color: #0f172a;
@@ -51,6 +118,20 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 2px 16px;
 }
+/* Each entry is one grid cell holding the tool link plus its "About" link. Without
+   this the cell's two anchors stacked and every "About" wrapped onto a second row,
+   landing under the WRONG tool name (caught by screenshot 2026-09-16; the link count
+   and target sizes all measured fine). */
+.tool-directory-list li {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0 2px;
+}
+.tool-directory-list > li > a:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
 .tool-directory-list a {
     display: flex;
     align-items: center;
@@ -60,6 +141,32 @@
     text-decoration: none;
     font-size: .95rem;
     border-radius: 6px;
+}
+/* "About" link beside each tool in the directory (2026-09-16). It points at the
+   indexable landing page (tool-<slug>.html); the tool URL itself is an SPA that serves
+   one <title> for all 149, so these pages are what a crawler can tell apart. Visible
+   text is just "About" to keep the list scannable, with the full name on aria-label so
+   the accessible name stays specific -- this site defines no visually-hidden class, so
+   a hidden-text span would render. Not inside .tool-directory-list a, which is a 44px
+   flex row; this sits inline after it. */
+.tool-directory-about {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 8px;
+    margin-left: 2px;
+    color: #475569;
+    font-size: .82rem;
+    text-decoration: underline;
+    border-radius: 6px;
+}
+.tool-directory-about:hover {
+    color: #3730a3;
+    background: #eef2ff;
+}
+.tool-directory-about:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
 }
 .tool-directory-list a:hover {
     background: #eef2ff;
