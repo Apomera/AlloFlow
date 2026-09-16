@@ -1662,13 +1662,16 @@ describe('Kitchen Lab forecast: if you change nothing', () => {
   it('is coaching: hidden in competition and in demonstrate mode, which the judge records as independent evidence', () => {
     expect(source).toContain("!inCompetition && !d.klIndependent && d.recipePhase !== 'idle' ? (function() {");
     expect(source).toContain("if (prior.klIndependent) judgement = Object.assign({}, judgement, { independent: true });");
-    const j = { score: 92, grade: 'A', notes: [], independent: true };
+    const j = { score: 92, grade: 'A', notes: [], independent: true, evidenceStatus: 'independent' };
     const h1 = E.foldRecipeHistory({}, 'steak', j, false);
-    expect(h1.steak).toMatchObject({ attempts: 1, independentRuns: 1, independentBest: 92 });
+    expect(h1.steak).toMatchObject({ attempts: 1, independentRuns: 1, supportedRuns: 0, independentBest: 92 });
     const h2 = E.foldRecipeHistory(h1, 'steak', { score: 70, grade: 'C', notes: [] }, false);
     expect(h2.steak).toMatchObject({ attempts: 2, independentRuns: 1, independentBest: 92, lastScore: 70 });
-    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: j }), 'F');
-    expect(report).toContain('cooked without coaching (demonstrate mode)');
+    // a demonstrate cook that leaned on the instruments is evidence of SUPPORT, not independence
+    const sup = E.foldRecipeHistory(h2, 'steak', { score: 95, grade: 'A', notes: [], independent: true, evidenceStatus: 'supported' }, false);
+    expect(sup.steak).toMatchObject({ independentRuns: 1, supportedRuns: 1, independentBest: 92 });
+    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: Object.assign({}, j, { evidenceLabel: 'Cooked independently' }) }), 'F');
+    expect(report).toContain('cooked independently');
   });
 });
 
@@ -1706,8 +1709,8 @@ describe('Kitchen Lab real kitchen: reading the pan without a thermometer', () =
     const st2 = Object.assign(E.defaultState(), { recipeOptions: {} });
     expect(E.describeEvent(E.RECIPES.steak, st2, { k: 'probe', reading: 141.4 })).toBe('probed the centre: 141°F');
     expect(E.describeEvent(E.RECIPES.steak, st2, { k: 'flick' })).toBe('flicked water on the pan');
-    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: { score: 95, grade: 'A', verdict: 'x', notes: [], realKitchen: true, independent: true } }), 'F');
-    expect(report).toContain('cooked in real kitchen mode (no live thermometer)');
+    const report = E.cookReport(E.RECIPES.steak, Object.assign(E.defaultState(), { recipeJudgement: { score: 95, grade: 'A', verdict: 'x', notes: [], realKitchen: true, independent: true, evidenceLabel: 'Cooked independently' } }), 'F');
+    expect(report).toContain('real kitchen mode');
   });
 
   it('the steak judge reads the rest as a duration: three minutes is the recipe, slicing at once loses the carryover', () => {
@@ -1859,7 +1862,7 @@ describe('Kitchen Lab oven door, sauce lid and portfolio', () => {
       aGradedRecipeIds: ['steak', 'rice'], klUnlockedAchievements: ['firstCook', 'kitchenDetective'], klDetectiveSolved: 5, klDetectiveCases: 6, klBenchRuns: 4 });
     const text = E.portfolioText(st, 'F');
     expect(text).toContain('2 of 12 recipes cooked · 2 mastered (an A) · 1 cooked without coaching · detective 5 of 6 cases on the first guess · bench experiments run: 4');
-    expect(text).toContain('  Pan-Seared Steak: 3 cooks · best A 92 · last B 85 · 1 without coaching (best 92) · 1 in competition · last flagged: Past your target');
+    expect(text).toContain('  Pan-Seared Steak: 3 cooks · best A 92 · last B 85 · 1 independent (best 92) · 1 in competition · last flagged: Past your target');
     expect(text).toContain('  Rice (Absorption Method): 1 cook · best A 100 · last A 100');
     expect(text).toContain('  Scrambled Eggs: not yet cooked');
     expect(text).toContain('Badges (2 of 27): First Cook, Kitchen Detective');
@@ -1908,5 +1911,36 @@ describe('Kitchen Lab pot dial and lesson links', () => {
     }
     expect([...new Set(missing)]).toEqual([]);
     expect(source).toContain("'📖 Learn why: ' + lesson.label + ' →'");
+  });
+});
+
+describe('Kitchen Lab evidence ladder (matches the 3D studio)', () => {
+  const st = (log, extra) => Object.assign(E.defaultState(), { recipeLog: log }, extra || {});
+  const jud = (independent) => ({ score: 95, grade: 'A', notes: [], independent });
+
+  it('grades a cook three ways, not two, the way the studio does', () => {
+    expect(E.evidenceStatus(st([]), jud(false))).toMatchObject({ status: 'coached' });
+    expect(E.evidenceStatus(st([]), jud(true))).toMatchObject({ status: 'independent' });
+    // the recipe ASKS for one thermometer check, so the first probe is free
+    expect(E.evidenceStatus(st([{ k: 'probe', reading: 140 }]), jud(true))).toMatchObject({ status: 'independent' });
+    expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'probe' }, { k: 'probe' }]), jud(true))).toMatchObject({ status: 'supported' });
+    expect(E.evidenceStatus(st([{ k: 'probe' }, { k: 'flick' }, { k: 'flick' }]), jud(true)).detail).toContain('2 water flicks');
+    expect(E.evidenceStatus(st([], { aiCritique: 'x' }), jud(true)).detail).toContain('the AI critique');
+    expect(E.evidenceStatus(st([]), { score: null })).toBeNull();          // the sandbox has no grade to stand behind
+    expect(E.cookSupports(st([{ k: 'probe' }, { k: 'probe' }, { k: 'flick' }]), jud(true)).count).toBe(2);
+    expect(E.cookSupports(st([{ k: 'dial', level: 9 }, { k: 'add', id: 'oil' }]), jud(true)).count).toBe(0);   // cooking is not a support
+  });
+
+  it('counts only a support-free cook as independent evidence in the record', () => {
+    let h = E.foldRecipeHistory({}, 'steak', { score: 92, grade: 'A', notes: [], evidenceStatus: 'independent' }, false);
+    expect(h.steak).toMatchObject({ independentRuns: 1, supportedRuns: 0, independentBest: 92 });
+    h = E.foldRecipeHistory(h, 'steak', { score: 99, grade: 'A', notes: [], evidenceStatus: 'supported' }, false);
+    expect(h.steak).toMatchObject({ independentRuns: 1, supportedRuns: 1, independentBest: 92 });   // a supported 99 does not beat an independent 92
+    h = E.foldRecipeHistory(h, 'steak', { score: 70, grade: 'C', notes: [], evidenceStatus: 'coached' }, false);
+    expect(h.steak).toMatchObject({ attempts: 3, independentRuns: 1, supportedRuns: 1 });
+    const text = E.portfolioText(Object.assign(E.defaultState(), { recipeHistory: h, aGradedRecipeIds: ['steak'] }), 'F');
+    expect(text).toContain('1 independent (best 92)');
+    expect(text).toContain('1 with support');
+    expect(source).toContain("j.evidenceLabel ? h('div', { 'data-kl-evidence': j.evidenceStatus,");
   });
 });

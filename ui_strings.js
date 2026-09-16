@@ -49259,7 +49259,16 @@
       "path_safety_tag": "LEARN + REHEARSE",
       "path_recipe_title": "Put skills together",
       "path_recipe_desc": "Manage a recipe with adjustable heat and pause controls. Try competition when you are ready.",
-      "path_recipe_tag": "APPLY + REFLECT"
+      "path_recipe_tag": "APPLY + REFLECT",
+      "evidence_independent": "Cooked independently",
+      "evidence_supported": "Cooked without coaching, with support",
+      "evidence_coached": "Cooked with coaching on",
+      "evidence_independent_detail": "No coaching, and no instrument beyond the one check the recipe asks for.",
+      "frame_unavailable": "The 3D view is not loading here",
+      "open_recipe_kitchen_tab": "Open the Recipe Kitchen in a new tab →",
+      "frame_why_recipe": "The two-pot pasta bench is a separate page. Everything it teaches about water, crowding and browning is also in the Recipe Sim, which runs right here.",
+      "open_studio_tab": "Open the Skills Studio in a new tab →",
+      "frame_why_studio": "The six practice stations are a separate page. If it will not open, the Safety, Knife Lab and Heat tabs here cover the same ground without 3D."
     },
     "layers_slider": "Layers",
     "learning_lab": {

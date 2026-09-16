@@ -863,6 +863,31 @@
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
+      // PERSISTED NUMBERS. `toolData` is a saved project file, i.e. INPUT: it
+      // can hold a value from another build, a hand edit, or a half-written
+      // save. `Math.max(0, Math.min(N - 1, Number(v)))` looks like a guard but
+      // is not one -- Math.min(x, NaN) is NaN, so a non-numeric value yields
+      // NaN, ARRAY[NaN] is undefined, and the next property read THROWS. And a
+      // fraction survives the clamp intact (Math.min(2, 2.7) === 2.7), so
+      // ARRAY[2.7] is undefined and throws too. The lab's error boundary is
+      // unkeyed, so either throw blanks every tool on the page.
+      // issIndex: always a valid integer index into a length-`len` array.
+      var issIndex = function (value, len, fallback) {
+        var n = Number(value);
+        if (!isFinite(n)) n = Number(fallback) || 0;
+        n = Math.floor(n);
+        if (!(n >= 0)) n = 0;
+        if (n > len - 1) n = len - 1;
+        return n < 0 ? 0 : n;
+      };
+      // issNum: a finite number in [min, max]; non-numeric falls back rather
+      // than poisoning every readout downstream with NaN.
+      var issNum = function (value, min, max, fallback) {
+        var n = Number(value);
+        if (!isFinite(n)) n = Number(fallback);
+        if (!isFinite(n)) n = min;
+        return Math.max(min, Math.min(max, n));
+      };
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
@@ -6393,6 +6418,16 @@
             h('div', null,
               h('p', { id: 'iss-dock-instructions', style: { fontSize: 12, color: SOFT, lineHeight: 1.55, margin: '0 0 8px' } },
                 __alloT('stem.spacestation.dock_help', 'Fly the capsule (left side) onto the glowing port. Arrow keys / WASD or hold a thruster button with Space or Enter: → thrusts forward, ← brakes, ↑/↓ steer radially. Dock slower than 0.6 m/s, inside the corridor. With ORBITAL PHYSICS ON, watch the counter-intuitive part: thrusting forward also pushes you upward off the approach line — orbits are not roads.')),
+              h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                'aria-label': __alloT('stem.spacestation.enter_fullscreen', 'View the docking simulator fullscreen'),
+                'data-fs-out': __alloT('stem.spacestation.enter_fullscreen', 'View the docking simulator fullscreen'),
+                'data-fs-in': __alloT('stem.spacestation.exit_fullscreen', 'Exit fullscreen docking simulator (Escape)'),
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 className: 'iss-dock-canvas',
                 ref: function (cv) { if (cv) { cv._dockRealMode = dockRealMode; dockingCanvasRef(cv); } },
@@ -6402,7 +6437,8 @@
                 'aria-describedby': 'iss-dock-instructions iss-dock-status',
                 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D',
                 style: { width: '100%', maxWidth: 820, display: 'block', margin: '0 auto', borderRadius: 12, border: '1px solid #334155', background: '#050a18', cursor: 'crosshair' }
-              }),
+              })
+              ),
               h('div', { id: 'iss-dock-status', className: 'iss-sr-only', 'data-dock-hud': 'true', 'aria-live': 'off', 'aria-atomic': 'true' }, 'Phase far field · range 192 m · relative speed 1.00 m/s · stopping margin 185.3 m · fuel 100%'),
               h('div', { role: 'group', 'aria-label': __alloT('stem.spacestation.a11y_thruster_controls', 'Thruster controls'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 8 } },
                 [['back', '←', 'Brake'], ['up', '↑', 'Radial out'], ['down', '↓', 'Radial in'], ['fwd', '→', 'Forward']].map(function (b) {
@@ -6897,7 +6933,7 @@
                   canvas._issInteriorWantRoom = room.id;
                   canvas._issInteriorEvent = recordInteriorNavigation;
                   canvas._issInteriorTaskDone = roomDone;
-                  canvas._issInteriorResearchStep = Number(d.researchStep || 0);
+                  canvas._issInteriorResearchStep = issIndex(d.researchStep, 4, 0);
                   canvas._issInteriorCupolaShutters = !!d.cupolaShutters;
                   canvas._issInteriorCupolaTarget = ['day', 'aurora', 'night'].indexOf(d.cupolaTarget) >= 0 ? d.cupolaTarget : 'day';
                   canvas._issInteriorCupolaCaptured = !!d.cupolaCaptured;
@@ -7281,7 +7317,7 @@
             result ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 8, padding: 8, borderRadius: 8, color: TEXT, fontSize: 11.5, lineHeight: 1.5, background: result.success ? 'rgba(34,197,94,.12)' : 'rgba(251,191,36,.12)', borderLeft: '3px solid ' + (result.success ? '#22c55e' : '#fbbf24') } }, h('strong', { style: { color: result.success ? '#4ade80' : '#fbbf24' } }, result.success ? 'Controlled arrival: ' : 'Flight result: '), result.feedback) : null
           );
         }        function renderResearchProcedure() {
-          var step = Math.max(0, Math.min(3, Number(d.researchStep || 0)));
+          var step = issIndex(d.researchStep, 4, 0);
           var procedure = [
             ['1', 'Secure the sample', 'Latch the plant chamber inside the glovebox so water and biological material stay contained.'],
             ['2', 'Prime the wick', 'Inject water into the porous wick until capillary action reaches the root pillow.'],
@@ -7590,7 +7626,11 @@
             ), completed === INTERIOR_ROOMS.length ? '#22c55e' : '#38bdf8') : null);
       }
       // ── Mission Operations: connected station-systems sandbox ──
-      function opsClamp(value, min, max) { return Math.max(min, Math.min(max, Number(value))); }
+      // Sliders and arithmetic, not array lookups -- so a NaN here does not
+      // throw, it PRINTS. One bad persisted value put the literal text "NaN"
+      // into 19 surfaces at once, including flight rules that then read
+      // "Cabin temp NaN degrees C. Flight rule 18-27 C. Attention".
+      function opsClamp(value, min, max) { return issNum(value, min, max, min); }
       function opsControl(id, label, value, min, max, step, unit, color, field) {
         var formattedValue = Number(value).toFixed(step < 1 ? 1 : 0) + unit;
         return h('div', { className: 'iss-ops-control' },
@@ -8399,7 +8439,7 @@
           renderCrewDayTimeline(slot, index),
           h('div', { className: 'iss-visual-caption' }, h('span', null, 'The clock, not sunlight, organizes crew life.'), h('span', null, 'ORBIT ' + orbitNumber + ' / 16 · ' + phaseLabel + ' · ' + transitionLabel)));
       }      function renderDay() {
-        var idx = Math.max(0, Math.min(DAY_SCHEDULE.length - 1, d.dayIdx || 0));
+        var idx = issIndex(d.dayIdx, DAY_SCHEDULE.length, 0);
         var slot = DAY_SCHEDULE[idx];
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -8504,7 +8544,7 @@
           body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, loopLabel: 'FEEDBACK / COUNTERMEASURE LOOP', caption: 'Each astronaut is both crew member and longitudinal study.' }
         };
         var flow = flows[sys.id] || flows.water;
-        var selectedStep = Math.max(0, Math.min(flow.nodes.length, Number(d.sysStep || 0)));
+        var selectedStep = issIndex(d.sysStep, flow.nodes.length + 1, 0);
         var markerId = 'iss-flow-arrow-' + sys.id;
         var glowId = 'iss-flow-glow-' + sys.id;
         return h('div', { className: 'iss-learning-visual iss-system-visual' },
@@ -8716,7 +8756,7 @@
           h('div', { className: 'iss-visual-caption' }, h('span', null, 'Anchored to 75 m/day at 420 km in nominal conditions'), h('span', null, 'Simplified density response · not a reentry forecast')));
       }
       function renderSystems() {
-        var idx = Math.max(0, Math.min(SYSTEMS.length - 1, d.sysIdx || 0));
+        var idx = issIndex(d.sysIdx, SYSTEMS.length, 0);
         var sys = SYSTEMS[idx];
         return h('div', null,
           h('p', { style: { fontSize: 12.5, color: SOFT, lineHeight: 1.6, margin: '0 0 10px' } },
@@ -9027,7 +9067,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
             h('text', { x: x1, y: 172, textAnchor: 'end', fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[12].y)));
       }
       function renderAssemblyVisual() {
-        var step = Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx)));
+        var step = issIndex(d.assemblyIdx == null ? 11 : d.assemblyIdx, TIMELINE.length, 11);
         var thresholds = { zarya: 0, unity: 0, zvezda: 1, destiny: 2, quest: 2, truss: 3, harmony: 4, columbus: 5, kibo: 6, tranquility: 7, cupola: 7, leonardo: 8, nauka: 10 };
         var visible = MODULES.filter(function (m) { return (thresholds[m.id] == null ? 6 : thresholds[m.id]) <= step; });
         var installedNow = visible.filter(function (m) { return (thresholds[m.id] == null ? 6 : thresholds[m.id]) === step; });
@@ -9135,11 +9175,16 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
             h('div', { className: 'iss-assembly-stepper' }, h('button', { type: 'button', disabled: step === 0, onClick: function () { upd({ assemblyIdx: Math.max(0, step - 1) }); } }, '← Previous'), h('span', { role: 'status' }, (step + 1) + ' / ' + TIMELINE.length), h('button', { type: 'button', disabled: step === TIMELINE.length - 1, onClick: function () { upd({ assemblyIdx: Math.min(TIMELINE.length - 1, step + 1) }); } }, 'Next →'))));
       }
       function renderHistory() {
+        // Same guarded milestone the assembly visual uses. This used to be the
+        // raw `Math.max(0, Math.min(..., Number(d.assemblyIdx ...)))` clamp
+        // written out TWICE on one line (className and aria-current), so the
+        // value had three derivations in total and hardening one missed these.
+        var historyStep = issIndex(d.assemblyIdx == null ? 11 : d.assemblyIdx, TIMELINE.length, 11);
         return h('div', null,
           renderAssemblyVisual(),
           card(__alloT('stem.spacestation.timeline', '📜 Assembly to retirement'),
             h('div', { className: 'iss-timeline' }, TIMELINE.map(function (t2, i) {
-              return h('button', { type: 'button', className: 'iss-timeline-item iss-timeline-item-button' + (i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? ' is-active' : ''), key: i, 'data-iss-assembly-milestone': i, 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_show_station_assembly_at', 'Show station assembly at {value1}'), { value1: t2.y }), 'aria-current': i === Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx))) ? 'step' : undefined, onClick: function () { upd({ assemblyIdx: i }); }, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
+              return h('button', { type: 'button', className: 'iss-timeline-item iss-timeline-item-button' + (i === historyStep ? ' is-active' : ''), key: i, 'data-iss-assembly-milestone': i, 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_show_station_assembly_at', 'Show station assembly at {value1}'), { value1: t2.y }), 'aria-current': i === historyStep ? 'step' : undefined, onClick: function () { upd({ assemblyIdx: i }); }, style: { display: 'grid', gridTemplateColumns: '86px 1fr', gap: 10, padding: '7px 0', borderBottom: i < TIMELINE.length - 1 ? '1px solid rgba(51,65,85,0.5)' : 'none' } },
                 h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', fontFamily: 'ui-monospace, monospace' } }, t2.y),
                 h('div', { style: { fontSize: 12.5, color: TEXT, lineHeight: 1.55 } }, t2.e));
             })), '#38bdf8'),
@@ -9198,7 +9243,7 @@ __alloFill(__alloT('stem.spacestation.a11y_ground_track_all_reach', 'All {value1
           h('div', { className: 'iss-visual-caption' }, h('span', null, detail), h('span', null, outcome)));
       }
       function renderQuiz() {
-        var qi = Math.max(0, Math.min(QUIZ.length - 1, d.quizIdx || 0));
+        var qi = issIndex(d.quizIdx, QUIZ.length, 0);
         var q = QUIZ[qi];
         var picked = d.quizPicked;
         return h('div', null,

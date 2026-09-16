@@ -13593,7 +13593,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               it as the big headline (even in slate) reads as "your doc is now N/100". Render a dash
                               instead so there is no headline number, and demote the structural figure to a small
                               caption below. The "re-run for a full score" CTA lives in the sub-line beneath. */}
-                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-400' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
+                          <div className={`text-3xl font-black ${_aiIncomplete ? 'text-slate-600' : (blendedAfter || 0) < 50 ? 'text-red-600' : (blendedAfter || 0) < 80 ? 'text-amber-600' : 'text-green-600'}`}
                             title={_aiIncomplete ? (t('pdf_audit.score.after_incomplete_title') || 'No verified score yet — the AI semantic audit was throttled and did not finish. Re-run for a full score. The structural-only number is shown below.') : undefined}>
                             {_aiIncomplete
                               ? (<span aria-label={t('pdf_audit.score.after_incomplete_aria') || 'No verified score yet — re-run for a full score'}>{'—'}</span>)
@@ -13680,7 +13680,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           {_aiIncomplete ? (
                           <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.det_only_incomplete') || 'structural/automated checks only; AI semantic audit incomplete \u2014 re-run for a full score'}</span>
                           ) : pdfFixResult._scoreIsBlended ? (<>
-                          <span className="text-slate-400">{'\u00b7'}</span>
+                          <span className="text-slate-600">{'\u00b7'}</span>
                           <_AlloQualifier className="text-blue-700 font-bold" text={t('pdf_audit.score.automated_label') || 'Automated WCAG \u2014 the stricter of axe-core / IBM Equal Access, run on the HTML reconstruction (passes by construction; blind to byte-level PDF tagging \u2014 see the PDF/UA badge).'}>{t('pdf_audit.score.automated_short') || 'automated'}: {(pdfAuditResult?.hasSearchableText === false) ? 'n/a' : (initialAxe ?? '?')}{'\u2192'}{afterDet ?? '?'}</_AlloQualifier>
                           <span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.governing_lead') || 'headline = the lower (governing) layer'}{(typeof afterAi === 'number' && typeof afterDet === 'number') ? ' (' + ((afterAi <= afterDet) ? (t('pdf_audit.score.content_short') || 'content') : (t('pdf_audit.score.automated_short') || 'automated')) + ')' : ''}</span>
                           </>) : (<span className="text-slate-600">{'\u2014'} {t('pdf_audit.score.ai_only_note') || 'AI content rubric only (automated checks unavailable)'}</span>)}
@@ -13901,7 +13901,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                         className="flex-1 min-w-0 px-2 py-1 text-[10px] border border-indigo-300 rounded focus:ring-2 focus:ring-indigo-400" />
                                                       <button onClick={() => _applyScopedIntent(issue, _srcKey)} disabled={!!_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()} className={'px-2 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0 ' + ((_issueEdit[_srcKey].saving || !((_issueEdit[_srcKey] && _issueEdit[_srcKey].intent) || '').trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700')} title={t('pdf_audit.issue.ai_btn_title') || 'The AI edits ONLY this section (bounded), then re-checks — accept or revert.'}>✨ {t('pdf_audit.issue.ai_btn') || 'Apply with AI'}</button>
                                                     </div>
-                                                    <span className="text-[10px] text-slate-400 italic">{t('pdf_audit.issue.ai_scoped_hint') || 'Scoped to this section only — bounded so the agent can’t touch the rest of the document.'}</span>
+                                                    <span className="text-[10px] text-slate-600 italic">{t('pdf_audit.issue.ai_scoped_hint') || 'Scoped to this section only — bounded so the agent can’t touch the rest of the document.'}</span>
                                                   </div>
                                                 )}
                                               </>
@@ -13913,7 +13913,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           <>
                                             <div className="font-bold text-slate-500 mb-1">{t('pdf_audit.issue.source_context') || 'Context (text around this issue)'}</div>
                                             <div className="bg-slate-50 border border-slate-200 rounded p-1.5 leading-relaxed">
-                                              <span className="text-slate-400">…{_src.before} </span><mark className="bg-amber-200 text-amber-900 font-semibold px-0.5 rounded">{_src.snippet}</mark><span className="text-slate-400"> {_src.after}…</span>
+                                              <span className="text-slate-600">…{_src.before} </span><mark className="bg-amber-200 text-amber-900 font-semibold px-0.5 rounded">{_src.snippet}</mark><span className="text-slate-600"> {_src.after}…</span>
                                             </div>
                                           </>
                                         ) : (
@@ -15203,7 +15203,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 <span className="block text-[10px] text-slate-500 mt-0.5">Auto-detected: {_dm.lang || '(none — defaulting to en)'}. Confirm or correct — important for bilingual docs.</span>
                               </label>
                               <label className="block">
-                                <span className="text-[11px] font-bold text-slate-600">Author <span className="font-normal text-slate-400">(optional)</span></span>
+                                <span className="text-[11px] font-bold text-slate-600">Author <span className="font-normal text-slate-600">(optional)</span></span>
                                 <input type="text" value={curAuthor} onChange={e => setMeta({ author: e.target.value })} className="mt-0.5 w-full px-2 py-1 border border-slate-300 rounded text-xs" placeholder="e.g. your school or district" aria-label={t('pdf_audit.meta.author_aria') || 'Document author for the tagged PDF (optional)'} />
                               </label>
                             </div>

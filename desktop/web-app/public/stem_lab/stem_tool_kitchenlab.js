@@ -2237,14 +2237,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // the first thing the judge flagged last time. The picker shows it so the
   // student picks the next cook with a reason.
   function foldRecipeHistory(history, recipeId, judgement, isCompetition) {
-    var prev = (history || {})[recipeId] || { attempts: 0, bestScore: null, bestGrade: null, lastScore: null, lastGrade: null, lastIssue: null, competitionRuns: 0, independentRuns: 0, independentBest: null };
+    var prev = (history || {})[recipeId] || { attempts: 0, bestScore: null, bestGrade: null, lastScore: null, lastGrade: null, lastIssue: null, competitionRuns: 0, independentRuns: 0, supportedRuns: 0, independentBest: null };
     var firstIssue = (judgement.notes || []).filter(function(n) { return n.neg; })[0];
     var next = {
       attempts: prev.attempts + 1,
       competitionRuns: prev.competitionRuns + (isCompetition ? 1 : 0),
       // cooks done without coaching (forecast, target ranges, the notes): the independent evidence
-      independentRuns: (prev.independentRuns || 0) + (judgement.independent ? 1 : 0),
-      independentBest: judgement.independent && (prev.independentBest == null || judgement.score > prev.independentBest) ? judgement.score : (prev.independentBest == null ? null : prev.independentBest),
+      // only a cook that took no support counts as independent evidence (the studio's bar)
+      independentRuns: (prev.independentRuns || 0) + (judgement.evidenceStatus === 'independent' ? 1 : 0),
+      supportedRuns: (prev.supportedRuns || 0) + (judgement.evidenceStatus === 'supported' ? 1 : 0),
+      independentBest: judgement.evidenceStatus === 'independent' && (prev.independentBest == null || judgement.score > prev.independentBest) ? judgement.score : (prev.independentBest == null ? null : prev.independentBest),
       lastScore: judgement.score, lastGrade: judgement.grade,
       lastIssue: firstIssue ? firstIssue.label.replace(/^[^A-Za-z☣]+/, '').trim() : null,
       bestScore: prev.bestScore == null || judgement.score > prev.bestScore ? judgement.score : prev.bestScore,
@@ -2263,7 +2265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     var food = rec.sandbox ? sandboxFood(state.sandboxFood) : null;
     var lines = [];
     lines.push('Kitchen Lab cook report — ' + rec.name + (food ? ' (' + food.name + ')' : '') + ' — ' + new Date().toLocaleDateString());
-    lines.push(j.score == null ? 'No grade (free cook). ' + (j.verdict || '') : 'Score ' + j.score + ' · Grade ' + j.grade + (j.compResult ? ' · competition ' + j.compResult.finalScore : '') + (j.realKitchen ? ' · cooked in real kitchen mode (no live thermometer)' : j.independent ? ' · cooked without coaching (demonstrate mode)' : '') + ' — ' + (j.verdict || ''));
+    lines.push(j.score == null ? 'No grade (free cook). ' + (j.verdict || '') : 'Score ' + j.score + ' · Grade ' + j.grade + (j.compResult ? ' · competition ' + j.compResult.finalScore : '') + (j.evidenceLabel ? ' · ' + j.evidenceLabel.toLowerCase() + (j.evidenceDetail ? ' (' + j.evidenceDetail.replace(/\.$/, '') + ')' : '') : '') + (j.realKitchen ? ' · real kitchen mode' : '') + ' — ' + (j.verdict || ''));
     lines.push('');
     lines.push('Set-up: ' + mat.name + (oil ? ' · ' + oil.oil + ' (smokes at ' + T(oil.smokeF) + ')' : '') + (opts.length ? ' · ' + opts.join(' · ') : ''));
     lines.push('Cook time ' + klClock(state.recipeSimElapsedSec || 0) + ((rec.simSpeedMultiplier || 1) > 1 ? ' (' + rec.simSpeedMultiplier + '× sim)' : '') + ' · food in pan ' + klClock(state.recipeActiveTimeSec || 0) + ' · pan peak ' + T(state.recipeMaxPanTempF || 70) + ' · food peak ' + T(state.recipeFoodPeakF || 40));
@@ -2649,6 +2651,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     return rows;
   }
 
+  // ─── Evidence status ───
+  // The 3D Skills Studio grades a demonstration three ways, not two: coached,
+  // completed WITH SUPPORT (hints used or corrections made), or completed
+  // independently. The Recipe Sim recorded any demonstrate-mode cook as fully
+  // independent, which overstated it against the studio's own bar. A cook's
+  // supports are the aids it actually took: thermometer probes and water
+  // flicks in real-kitchen mode (the numbers it was meant to do without) and
+  // the AI critique, all of which the log already records.
+  function cookSupports(state, judgement) {
+    var log = (state && state.recipeLog) || [];
+    var probes = log.filter(function(e) { return e.k === 'probe'; }).length;
+    var flicks = log.filter(function(e) { return e.k === 'flick'; }).length;
+    var parts = [];
+    // Probing is the habit the judge ASKS for, so the first one is free; it is
+    // leaning on the instrument past that which counts as support.
+    if (probes > 1) parts.push(probes + ' thermometer ' + (probes === 1 ? 'probe' : 'probes'));
+    if (flicks) parts.push(flicks + ' water ' + (flicks === 1 ? 'flick' : 'flicks'));
+    if (state && state.aiCritique) parts.push('the AI critique');
+    return { count: (probes > 1 ? probes - 1 : 0) + flicks + (state && state.aiCritique ? 1 : 0), parts: parts };
+  }
+  function evidenceStatus(state, judgement) {
+    if (!judgement || judgement.score == null) return null;      // the sandbox has no grade to stand behind
+    if (!judgement.independent) return { status: 'coached', label: 'Cooked with coaching on' };
+    var sup = cookSupports(state, judgement);
+    if (sup.count > 0) return { status: 'supported', label: 'Cooked without coaching, with support', detail: 'Used ' + sup.parts.join(' and ') + '.' };
+    return { status: 'independent', label: 'Cooked independently', detail: 'No coaching, and no instrument beyond the one check the recipe asks for.' };
+  }
+
   // ─── Lessons behind the notes ───
   // A judge's flag names a result; the tab that teaches the reason is one click
   // away. Matched on the note's words, so new recipes get the links for free.
@@ -2687,7 +2717,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       var hh = hist[r.id];
       if (!hh) { lines.push('  ' + r.name + ': not yet cooked'); return; }
       lines.push('  ' + r.name + ': ' + hh.attempts + (hh.attempts === 1 ? ' cook' : ' cooks') + ' · best ' + hh.bestGrade + ' ' + hh.bestScore + ' · last ' + hh.lastGrade + ' ' + hh.lastScore +
-        (hh.independentRuns ? ' · ' + hh.independentRuns + ' without coaching (best ' + hh.independentBest + ')' : '') + (hh.competitionRuns ? ' · ' + hh.competitionRuns + ' in competition' : '') + (hh.lastIssue ? ' · last flagged: ' + hh.lastIssue : ''));
+        (hh.independentRuns ? ' · ' + hh.independentRuns + ' independent (best ' + hh.independentBest + ')' : '') + (hh.supportedRuns ? ' · ' + hh.supportedRuns + ' with support' : '') + (hh.competitionRuns ? ' · ' + hh.competitionRuns + ' in competition' : '') + (hh.lastIssue ? ' · last flagged: ' + hh.lastIssue : ''));
     });
     var unlocked = (state.klUnlockedAchievements || []).map(function(id) { var a = ACHIEVEMENTS.find(function(x) { return x.id === id; }); return a ? a.name : null; }).filter(Boolean);
     lines.push('');
@@ -3816,7 +3846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     color: 'orange',
     category: 'applied',
     // Pure engine pieces for tests/kitchenlab_recipe_engine.test.js; the host never reads this.
-    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
+    engine: { burnerTargetTemp: burnerTargetTemp, ovenTargetTemp: ovenTargetTemp, tickPanTemp: tickPanTemp, advanceDoneness: advanceDoneness, getRecipeThermal: getRecipeThermal, klSizzleLevel: klSizzleLevel, PAN_MATERIALS: PAN_MATERIALS, panMaterial: panMaterial, SMOKE_POINTS: SMOKE_POINTS, SANDBOX_FOODS: SANDBOX_FOODS, sandboxFood: sandboxFood, recipeDoneness: recipeDoneness, recipeIngredients: recipeIngredients, oilFor: oilFor, browningLabel: browningLabel, optionValue: optionValue, localizeTemps: localizeTemps, fToC: fToC, microCook: microCook, dangerClock: dangerClock, doublingMinutes: doublingMinutes, foldRecipeHistory: foldRecipeHistory, cookReport: cookReport, optionFactor: optionFactor, cookThroughSec: cookThroughSec, minutesToBrowning: minutesToBrowning, COMPETITION_CONSTRAINTS: COMPETITION_CONSTRAINTS, initialMoisture: initialMoisture, evapFactor: evapFactor, boilCap: boilCap, vesselWaterScale: vesselWaterScale, vesselHasWater: vesselHasWater, klBoilLevel: klBoilLevel, simulateCook: simulateCook, TEXTBOOK_COOKS: TEXTBOOK_COOKS, textbookFor: textbookFor, benchVariables: benchVariables, benchSetup: benchSetup, applyBenchSetup: applyBenchSetup, runBench: runBench, describeCook: describeCook, benchNumbers: benchNumbers, detectiveCases: detectiveCases, detectiveCase: detectiveCase, nextDetectiveCase: nextDetectiveCase, sameEvidence: sameEvidence, detectiveKey: detectiveKey, seededShuffle: seededShuffle, traceMarksFor: traceMarksFor, benchLiveHint: benchLiveHint, tickPot: tickPot, potAction: potAction, POT_BOILING_F: POT_BOILING_F, PASTA_AL_DENTE_SEC: PASTA_AL_DENTE_SEC, logToSchedule: logToSchedule, replayVariables: replayVariables, replaySetup: replaySetup, runReplay: runReplay, describeEvent: describeEvent, forecast: forecast, recipeTargetF: recipeTargetF, waterFlickCue: waterFlickCue, fatCue: fatCue, thermometerNote: thermometerNote, detectiveWorksheet: detectiveWorksheet, portfolioText: portfolioText, cookSupports: cookSupports, evidenceStatus: evidenceStatus, lessonFor: lessonFor, LESSONS: LESSONS, peekOven: peekOven, ovenDoorNote: ovenDoorNote, OVEN_PEEK_DROP_F: OVEN_PEEK_DROP_F, boilingPointF: boilingPointF, boilCookRate: boilCookRate, ALTITUDES: ALTITUDES, HEAT_MICRO_SEC: HEAT_MICRO_SEC, HEAT_DEFAULT_FOOD: HEAT_DEFAULT_FOOD, TECHNIQUES: TECHNIQUES, ACHIEVEMENTS: ACHIEVEMENTS, RECIPES: RECIPES, RECIPE_CATALOG: RECIPE_CATALOG, defaultState: defaultState },
     questHooks: [
       { id: 'open_safety', label: 'Open Kitchen Safety School', icon: '🛡️',
         check: function(d) { return !!(d && d.klViewedSafety); },
@@ -5474,6 +5504,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var judgement = rec.judge(snapshot, prior);
             // Demonstrate mode (no coaching aids) is evidence a teacher wants recorded
             if (prior.klIndependent) judgement = Object.assign({}, judgement, { independent: true });
+            var ev = evidenceStatus(prior, judgement);
+            if (ev) judgement = Object.assign({}, judgement, { evidenceStatus: ev.status, evidenceLabel: ev.label, evidenceDetail: ev.detail || null });
             if (prior.klRealKitchen && judgement.score != null) {
               var thermo = thermometerNote(rec, prior);
               if (thermo) {
@@ -5758,10 +5790,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             var histP = d.recipeHistory || {}, recsP = RECIPE_CATALOG.filter(function(r) { return r.unlocked; });
             var cookedP = recsP.filter(function(r) { return histP[r.id]; }).length, masteredP = recsP.filter(function(r) { return (d.aGradedRecipeIds || []).indexOf(r.id) !== -1; }).length;
             var indepP = recsP.filter(function(r) { return histP[r.id] && histP[r.id].independentRuns; }).length;
+            var supP = recsP.filter(function(r) { return histP[r.id] && histP[r.id].supportedRuns; }).length;
             return h('div', { 'data-kl-portfolio': cookedP + '/' + recsP.length, style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10, padding: '10px 14px', background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: 10 } },
               h('span', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)' } }, '📁 Your record'),
               h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', flex: 1, minWidth: 220 } },
-                cookedP + ' of ' + recsP.length + ' cooked · ' + masteredP + ' mastered · ' + indepP + ' without coaching · detective ' + (d.klDetectiveSolved || 0) + '/' + (d.klDetectiveCases || 0) + ' · ' + (d.klUnlockedAchievements || []).length + ' of ' + ACHIEVEMENTS.length + ' badges'),
+                cookedP + ' of ' + recsP.length + ' cooked · ' + masteredP + ' mastered · ' + indepP + ' independent' + (supP ? ' · ' + supP + ' with support' : '') + ' · detective ' + (d.klDetectiveSolved || 0) + '/' + (d.klDetectiveCases || 0) + ' · ' + (d.klUnlockedAchievements || []).length + ' of ' + ACHIEVEMENTS.length + ' badges'),
               h('button', { type: 'button', 'data-kl-portfolio-copy': d.klPortfolioCopied || 'idle',
                 onClick: function() {
                   var text = portfolioText(d, units);
@@ -7163,6 +7196,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             );
           })(),
 
+          // ─── What this cook is evidence of (mirrors the 3D studio's ladder) ───
+          j.evidenceLabel ? h('div', { 'data-kl-evidence': j.evidenceStatus, style: Object.assign({}, cardStyle(), {
+              borderLeft: '4px solid ' + (j.evidenceStatus === 'independent' ? '#86efac' : j.evidenceStatus === 'supported' ? '#fbbf24' : '#7dd3fc') }) },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: j.evidenceStatus === 'independent' ? '#86efac' : j.evidenceStatus === 'supported' ? '#fde68a' : '#7dd3fc' } },
+              (j.evidenceStatus === 'independent' ? '✓ ' : j.evidenceStatus === 'supported' ? '◐ ' : '○ ') +
+              __alloT('stem.kitchenlab.evidence_' + j.evidenceStatus, j.evidenceLabel)),
+            j.evidenceDetail ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, lineHeight: 1.5 } },
+              j.evidenceStatus === 'independent' ? __alloT('stem.kitchenlab.evidence_independent_detail', j.evidenceDetail) : j.evidenceDetail) : null) : null,
+
           // ─── Your cook, one thing changed (the bench for the cook just done) ───
           !isSandbox && (d.recipeLog || []).length >= 2 ? renderReplayPanel(rec, j) : null,
 
@@ -7577,6 +7619,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
       // The 3D Recipe Kitchen (stem_lab/kitchen_studio/recipe_lab.html): the two
       // pasta cooks with a Three.js bench and the moisture / crowding / pan-size
       // model this tab's physics now borrows from. Reached from the recipe list.
+      // An iframe that fails renders nothing and reports nothing, so the panel
+      // behind it carries the explanation and the way out. The frame sits on
+      // top; if it loads, this is never seen.
+      function frameFallback(href, label, why) {
+        return h('div', { 'data-kl-frame-fallback': label, style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24, textAlign: 'center', background: 'rgba(15,23,42,0.6)', border: '1px dashed rgba(148,163,184,0.5)', borderRadius: 16 } },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: 34 } }, '🧑‍🍳'),
+          h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a' } }, __alloT('stem.kitchenlab.frame_unavailable', 'The 3D view is not loading here')),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, maxWidth: 520 } }, why),
+          h('a', { href: href, target: '_blank', rel: 'noopener', style: { fontSize: 13, fontWeight: 700, color: '#7dd3fc' } }, label));
+      }
+      function frameWrap(href, label, why, frame) {
+        // the fallback is underneath; a frame that loads covers it completely
+        return h('div', { style: { position: 'relative', width: '100%', height: 'min(1100px, 85vh)', minHeight: 640 } },
+          frameFallback(href, label, why), frame);
+      }
       function renderRecipeKitchen() {
         return h('div', null,
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', margin: '0 0 12px' } },
@@ -7584,12 +7641,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               style: { padding: '8px 14px', background: 'rgba(15,23,42,0.6)', color: '#fde68a', border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.back_to_recipe_sim', '← Back to the recipe list')),
             h('a', { href: 'stem_lab/kitchen_studio/recipe_lab.html', target: '_blank', rel: 'noopener', style: { color: '#fde68a', fontSize: 13 } }, __alloT('stem.kitchenlab.open_recipe_kitchen', 'Open the Recipe Kitchen in a full window'))),
-          h('iframe', { src: 'stem_lab/kitchen_studio/recipe_lab.html', title: __alloT('stem.kitchenlab.recipe_kitchen_frame', 'Kitchen Lab 3D Recipe Kitchen'), style: { width: '100%', height: 'min(1100px, 85vh)', minHeight: 640, border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } }));
+          frameWrap('stem_lab/kitchen_studio/recipe_lab.html',
+            __alloT('stem.kitchenlab.open_recipe_kitchen_tab', 'Open the Recipe Kitchen in a new tab →'),
+            __alloT('stem.kitchenlab.frame_why_recipe', 'The two-pot pasta bench is a separate page. Everything it teaches about water, crowding and browning is also in the Recipe Sim, which runs right here.'),
+            h('iframe', { src: 'stem_lab/kitchen_studio/recipe_lab.html', title: __alloT('stem.kitchenlab.recipe_kitchen_frame', 'Kitchen Lab 3D Recipe Kitchen'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
       }
       function renderStudio() {
         return h('div', null,
           h('p', { style: { margin: '0 0 12px', fontSize: 13 } }, h('a', { href: 'stem_lab/kitchen_studio/index.html', target: '_blank', rel: 'noopener', style: { color: '#fde68a' } }, __alloT('stem.kitchenlab.open_studio', 'Open the skills studio in a full window'))),
-          h('iframe', { src: 'stem_lab/kitchen_studio/index.html', title: __alloT('stem.kitchenlab.studio_frame', 'Kitchen Lab 3D Skills Studio'), style: { width: '100%', height: 'min(1100px, 85vh)', minHeight: 640, border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } }));
+          frameWrap('stem_lab/kitchen_studio/index.html',
+            __alloT('stem.kitchenlab.open_studio_tab', 'Open the Skills Studio in a new tab →'),
+            __alloT('stem.kitchenlab.frame_why_studio', 'The six practice stations are a separate page. If it will not open, the Safety, Knife Lab and Heat tabs here cover the same ground without 3D.'),
+            h('iframe', { src: 'stem_lab/kitchen_studio/index.html', title: __alloT('stem.kitchenlab.studio_frame', 'Kitchen Lab 3D Skills Studio'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
       }
 
       // Sizzle audio lives only while the cockpit is on screen and cooking

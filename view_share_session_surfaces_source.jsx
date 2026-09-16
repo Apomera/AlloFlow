@@ -204,7 +204,7 @@ function ClassMailboxSetupView(props) {
                         <Copy size={15} />
                       </button>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">{t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'}</p>
+                    <p className="text-[10px] text-slate-600 mt-1">{t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'}</p>
                     <div className="flex gap-2 mt-2">
                       <button onClick={rotateMailboxAdmin} disabled={mbBusy || mbResumable.length > 0} className="flex-1 text-[10px] font-bold border border-slate-300 rounded-md px-2 py-1.5 disabled:opacity-50" title={mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'}>{t('mailbox.rotate_token') || 'Rotate token'}</button>
                       {mbResumable.length > 0 && <button onClick={closeAllMailboxSessions} disabled={mbBusy} className="flex-1 text-[10px] font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50">{t('mailbox.close_all_sessions') || 'Close all sessions'}</button>}
@@ -287,7 +287,7 @@ function ClassMailboxSetupView(props) {
                 <button onClick={shareFullPackToMailbox} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2">
                   {t('mailbox.re_send_full_pack_troubleshooting_it') || 'Re-send full pack (troubleshooting — it already syncs automatically)'}
                 </button>
-                <p className="text-[10px] text-slate-400 mb-2 text-center">{t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'}</p>
+                <p className="text-[10px] text-slate-600 mb-2 text-center">{t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'}</p>
                 <div className="border-t border-indigo-100 pt-2 mb-2">
                   {mbDirectionsDraft ? (
                     <div className="space-y-1 mb-2">
@@ -313,10 +313,10 @@ function ClassMailboxSetupView(props) {
                   <button onClick={sendPackHome} disabled={mbBusy} className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60">
                     <FolderDown size={13} /> {t('mailbox.send_home_saves_on_student_devices') || 'Send home (saves on student devices)'}
                   </button>
-                  <p className="text-[10px] text-slate-400 mt-1 text-center">{t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'}</p>
+                  <p className="text-[10px] text-slate-600 mt-1 text-center">{t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'}</p>
                   {Object.keys(mbHwEvidence).length > 0 && (
                     <div className="border-t border-indigo-100 pt-2 mt-2" role="region" aria-label={t('takehome.evidence_title') || 'Homework check-ins'}>
-                      <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-400">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
+                      <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-600">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
                       {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
                         // Split the count: goals the device observed vs goals the
                         // student ticked. Both are formative — but "3 of 4 recorded"
@@ -329,7 +329,7 @@ function ClassMailboxSetupView(props) {
                             <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
                             {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
                             {(_obs > 0 || _self > 0) && (
-                              <span className="text-slate-400">
+                              <span className="text-slate-600">
                                 {' ('}
                                 {_obs > 0 && <span className="text-emerald-700">{_obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')}</span>}
                                 {_obs > 0 && _self > 0 ? ', ' : ''}

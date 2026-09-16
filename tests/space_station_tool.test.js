@@ -3056,3 +3056,85 @@ describe('every press-and-hold control claims the touch gesture', () => {
     });
   });
 });
+
+// `toolData` is a SAVED PROJECT FILE, i.e. INPUT. It can carry a value from
+// another build, a hand edit, or a half-written save. The numeric fields were
+// all written as `Math.max(0, Math.min(N - 1, Number(v)))`, which LOOKS like a
+// guard and is not one:
+//   * Math.min(x, NaN) is NaN, so a non-numeric value gives NaN, ARRAY[NaN] is
+//     undefined, and the next property read THROWS. The lab's error boundary is
+//     unkeyed, so one throw blanks every tool on the page -- not just this one.
+//   * A fraction survives the clamp intact (Math.min(2, 2.7) === 2.7), and
+//     ARRAY[2.7] is undefined too. A clamp bounds a value; it does not make it
+//     an index.
+// Measured before the fix: 16 hard crashes across 5 of the 6 indices, plus the
+// literal text "NaN" in 19 separate ops surfaces.
+describe('a hostile saved file cannot crash the tool', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
+  });
+
+  // Array indices: a bad value must never reach ARRAY[...] as NaN or a float.
+  const INDEX_FIELDS = [
+    ['assemblyIdx', 'history'],
+    ['dayIdx', 'day'],
+    ['sysIdx', 'systems'],
+    ['sysStep', 'systems'],
+    ['quizIdx', 'quiz'],
+    ['researchStep', 'interior'],
+  ];
+  // Numbers that feed sliders, arithmetic and readouts: a bad value must never
+  // be PRINTED as NaN.
+  const VALUE_FIELDS = [
+    ['opsCrew', 'operations'],
+    ['opsResearch', 'operations'],
+    ['opsArrayAngle', 'operations'],
+    ['opsBattery', 'operations'],
+    ['opsScrub', 'operations'],
+  ];
+  const HOSTILE = ['abc', '', 2.7, -5, 9999, true, null, {}, []];
+
+  it.each([...INDEX_FIELDS, ...VALUE_FIELDS])(
+    'renders %s without throwing or printing NaN, whatever the save holds',
+    (key, tab) => {
+      HOSTILE.forEach((value) => {
+        const label = key + ' = ' + JSON.stringify(value);
+        let html;
+        expect(() => {
+          html = mountWithSeed({ ...BASE, tab, interiorRoom: 'destiny', [key]: value });
+        }, label + ' threw').not.toThrow();
+        expect(html, label + ' rendered nothing').toBeTruthy();
+        // A student must never be shown "NaN" where a number belongs -- and a
+        // screen-reader user must never hear "Cabin temp NaN degrees C".
+        expect(html, label + ' printed NaN').not.toContain('NaN');
+        expect(html, label + ' printed undefined').not.toContain('undefined');
+      });
+    },
+  );
+
+  // Guard the guards: pin that the hardened helpers exist and are actually used
+  // at every index site, so a future edit cannot quietly reintroduce the raw
+  // Math.min pattern on a persisted value.
+  it('routes every persisted index through the integer guard', () => {
+    TOOL_PATHS.forEach((filePath) => {
+      const src = readFileSync(filePath, 'utf8');
+      expect(src, 'issIndex helper in ' + filePath).toContain('var issIndex = function (value, len, fallback)');
+      expect(src, 'issNum helper in ' + filePath).toContain('var issNum = function (value, min, max, fallback)');
+      // Math.floor is what separates an index guard from a mere clamp.
+      expect(src).toMatch(/var issIndex = function[^}]*Math\.floor\(n\)/);
+      ['d.assemblyIdx', 'd.dayIdx', 'd.sysIdx', 'd.sysStep', 'd.quizIdx', 'd.researchStep']
+        .forEach((field) => {
+          const uses = (src.match(new RegExp('issIndex\\([^)]*' + field.replace('.', '\\.'), 'g')) || []).length;
+          expect(uses, field + ' not routed through issIndex in ' + filePath).toBeGreaterThan(0);
+        });
+      // And the old shape must be gone from those sites. Strip line comments
+      // first: the fix's own explanatory comment quotes the pattern it
+      // replaced, and a raw whole-file regex cannot tell code from prose.
+      // (The working tree is CRLF, so strip the \r before anchoring on $.)
+      const code = src.replace(/\r/g, '').split('\n')
+        .map((line) => line.replace(/^\s*\/\/.*$/, '')).join('\n');
+      expect(code).not.toMatch(/Math\.min\([^)]*Number\(d\.(assemblyIdx|dayIdx|sysIdx|sysStep|quizIdx|researchStep)/);
+    });
+  });
+});

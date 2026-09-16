@@ -278,7 +278,7 @@ describe('°C mode across the tool', () => {
     expect(pan).not.toContain('data-kl-peek=');                      // a stovetop has no door
     const picker = renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeHistory: { steak: { attempts: 1, bestScore: 92, bestGrade: 'A', lastScore: 92, lastGrade: 'A', competitionRuns: 0, independentRuns: 1, independentBest: 92 } }, aGradedRecipeIds: ['steak'], klUnlockedAchievements: ['firstCook'], klDetectiveSolved: 2, klDetectiveCases: 3 } });
     expect(picker).toContain('data-kl-portfolio="1/12"');
-    expect(strip(picker)).toContain('1 of 12 cooked · 1 mastered · 1 without coaching · detective 2/3 · 1 of 27 badges');
+    expect(strip(picker)).toContain('1 of 12 cooked · 1 mastered · 1 independent · detective 2/3 · 1 of 27 badges');
     expect(picker).toContain('data-kl-portfolio-copy="idle"');
   });
 
@@ -295,6 +295,31 @@ describe('°C mode across the tool', () => {
     expect(pot).toContain('data-kl-pot-off="1"');
     expect(strip(pot)).toContain('off: the water is cooling; once it falls below the boil the pasta stops cooking');
     expect(renderTool('kitchenLab', { kitchenLab: { activeSection: 'recipe', recipeActiveId: 'pastaSauce', recipePhase: 'paused', recipePausedAt: 1000, recipeStartedAt: 0, recipeCurrentStep: 0, recipeItemsInPan: [], potState: 'cold' } })).not.toContain('data-kl-pot-dial=');
+  });
+
+  it('states on the results screen what the cook is evidence of', () => {
+    const base = { activeSection: 'recipe', recipeActiveId: 'steak', recipePhase: 'done', recipeStartedAt: 0, recipeSimElapsedSec: 600 };
+    const mk = (extra) => renderTool('kitchenLab', { kitchenLab: Object.assign({}, base, { recipeJudgement: Object.assign({ score: 95, grade: 'A', verdict: 'x', notes: [] }, extra) }) });
+    const ind = mk({ evidenceStatus: 'independent', evidenceLabel: 'Cooked independently', evidenceDetail: 'No coaching, and no instrument beyond the one check the recipe asks for.' });
+    expect(ind).toContain('data-kl-evidence="independent"');
+    expect(strip(ind)).toContain('✓ Cooked independently');
+    const sup = mk({ evidenceStatus: 'supported', evidenceLabel: 'Cooked without coaching, with support', evidenceDetail: 'Used 3 thermometer probes.' });
+    expect(sup).toContain('data-kl-evidence="supported"');
+    expect(strip(sup)).toContain('Used 3 thermometer probes.');
+    expect(mk({ evidenceStatus: 'coached', evidenceLabel: 'Cooked with coaching on' })).toContain('data-kl-evidence="coached"');
+    expect(mk({})).not.toContain('data-kl-evidence=');          // a cook from before the ladder carries no claim
+  });
+
+  it('explains itself when a 3D frame cannot load, instead of leaving a blank rectangle', () => {
+    for (const [section, key, why] of [['studio', 'Open the Skills Studio', 'Safety, Knife Lab and Heat tabs'], ['recipeKitchen', 'Open the Recipe Kitchen', 'also in the Recipe Sim']]) {
+      const html = renderTool('kitchenLab', { kitchenLab: { activeSection: section } });
+      expect(html).toContain('data-kl-frame-fallback=');
+      const text = strip(html);
+      expect(text).toContain('The 3D view is not loading here');
+      expect(text).toContain(why);                       // it names what to do instead
+      expect(text).toContain(key);                       // and a way to open it directly
+      expect(html).toContain('<iframe');                 // the frame is still there and covers this when it loads
+    }
   });
 
   it('shows Celsius in judge notes on the results screen', () => {

@@ -65,7 +65,9 @@ const WIDGETS = [
 
   // B15
   { file: 'stem_lab/stem_tool_dataplot.js', toolId: 'dataPlot', data: { dataPlot: { activeTab: 'inquiry' } } },
-  { file: 'stem_lab/stem_tool_money.js', toolId: 'moneyMath', data: { moneyMath: { tab: 'inquiry' } } },
+  // moneyMath bridges hub state: it reads ctx.toolData._moneyMath, not a `moneyMath` bucket, so the old
+  // { moneyMath: {...} } seed never reached it and every tab rendered the default coins view (2026-09-15).
+  { file: 'stem_lab/stem_tool_money.js', toolId: 'moneyMath', data: { _moneyMath: { tab: 'inquiry' } } },
   { file: 'stem_lab/stem_tool_universe.js', toolId: 'universe', data: { universe: { showHubbleInquiry: true } } },
   { file: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', data: { dissection: { specimen: 'frog', currentLayer: 0 } } },
 

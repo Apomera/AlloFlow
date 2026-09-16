@@ -46,7 +46,11 @@ describe('PDF audit modal first-start visibility', () => {
   it('will not let Escape or a backdrop click silently abort an in-flight audit', () => {
     expect(view).toContain('const _modalDismissBusy = _modalWorkBusy || pdfAuditLoading;');
     expect(view).toContain('if (e.target === e.currentTarget && !_modalDismissBusy) {');
-    expect(view).toContain("if (e.key === 'Escape' && !_modalDismissBusy) {");
+    // The Escape branch also stopPropagation()s so Esc peels ONE overlay at a time (b4d7ed714), so the guard
+    // is nested rather than in the same condition. Assert the GUARANTEE — Escape cannot dismiss while busy —
+    // instead of one exact spelling, which is what made this pin go stale while the behaviour stayed correct.
+    const escapeBranch = between(view, "if (e.key === 'Escape') {", '_requestCloseAudit();');
+    expect(escapeBranch).toContain('!_modalDismissBusy');
     // The explicit close button deliberately stays on _modalWorkBusy so a stranded loading
     // flag can never trap the user inside the modal.
     expect(view).toContain('disabled={_modalWorkBusy}');

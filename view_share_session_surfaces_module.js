@@ -387,7 +387,7 @@ function ClassMailboxSetupView(props) {
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 15
   }))), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-400 mt-1"
+    className: "text-[10px] text-slate-600 mt-1"
   }, t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2 mt-2"
   }, /*#__PURE__*/React.createElement("button", {
@@ -507,7 +507,7 @@ function ClassMailboxSetupView(props) {
     const rt = Object.values(mbRoster).filter(s => s.rtc).length;
     return rt ? ` · ${rt} real-time ⚡` : '';
   })(), ")"), Object.keys(mbRoster).length === 0 && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-400"
+    className: "text-xs text-slate-600"
   }, t('mailbox.waiting_for_students_to_scan') || 'Waiting for students to scan…'), Object.keys(mbRoster).length > 0 && /*#__PURE__*/React.createElement("ul", {
     "aria-labelledby": "alloflow-mailbox-roster-status",
     className: "m-0 list-none space-y-0.5 p-0"
@@ -515,7 +515,7 @@ function ClassMailboxSetupView(props) {
     const stale = mbNow && s.at && mbNow - s.at > 150000;
     return /*#__PURE__*/React.createElement("li", {
       key: uid,
-      className: `flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-400' : 'text-slate-700'}`
+      className: `flex items-start justify-between text-xs py-0.5 ${stale ? 'text-slate-600' : 'text-slate-700'}`
     }, /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 break-words text-left font-bold"
     }, s.name, stale ? ' · away?' : ''), /*#__PURE__*/React.createElement("span", {
@@ -537,7 +537,7 @@ function ClassMailboxSetupView(props) {
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2"
   }, t('mailbox.re_send_full_pack_troubleshooting_it') || 'Re-send full pack (troubleshooting — it already syncs automatically)'), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-400 mb-2 text-center"
+    className: "text-[10px] text-slate-600 mb-2 text-center"
   }, t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-indigo-100 pt-2 mb-2"
   }, mbDirectionsDraft ? /*#__PURE__*/React.createElement("div", {
@@ -601,7 +601,7 @@ function ClassMailboxSetupView(props) {
   }, /*#__PURE__*/React.createElement(FolderDown, {
     size: 13
   }), " ", t('mailbox.send_home_saves_on_student_devices') || 'Send home (saves on student devices)'), /*#__PURE__*/React.createElement("p", {
-    className: "text-[10px] text-slate-400 mt-1 text-center"
+    className: "text-[10px] text-slate-600 mt-1 text-center"
   }, t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'), Object.keys(mbHwEvidence).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "border-t border-indigo-100 pt-2 mt-2",
     role: "region",
@@ -609,7 +609,7 @@ function ClassMailboxSetupView(props) {
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[10px] font-bold text-indigo-700 mb-1"
   }, "\uD83D\uDCE5 ", t('takehome.evidence_title') || 'Homework check-ins', " ", /*#__PURE__*/React.createElement("span", {
-    className: "font-normal text-slate-400"
+    className: "font-normal text-slate-600"
   }, "(", t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade', ")")), Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
     // Split the count: goals the device observed vs goals the
     // student ticked. Both are formative — but "3 of 4 recorded"
@@ -624,7 +624,7 @@ function ClassMailboxSetupView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       className: 'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')
     }, ev.name), ' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals'), (_obs > 0 || _self > 0) && /*#__PURE__*/React.createElement("span", {
-      className: "text-slate-400"
+      className: "text-slate-600"
     }, ' (', _obs > 0 && /*#__PURE__*/React.createElement("span", {
       className: "text-emerald-700"
     }, _obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')), _obs > 0 && _self > 0 ? ', ' : '', _self > 0 && /*#__PURE__*/React.createElement("span", null, _self + ' ' + (t('takehome.evidence_self') || 'self-checked')), ')'), ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : '', ' · ' + ev.title);

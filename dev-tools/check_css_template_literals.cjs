@@ -73,6 +73,8 @@ function looksLikeCSS(content) {
 }
 
 const findings = [];
+const unparseable = [];
+const otherParseErrors = [];
 
 for (const file of files) {
   const src = fs.readFileSync(file, 'utf-8');
@@ -84,7 +86,21 @@ for (const file of files) {
       locations: true,
     });
   } catch (e) {
-    // Skip un-parseable files (rare; would be flagged by other checks)
+    // A file that will not parse BECAUSE of a template is the very bug this
+    // gate is named for: an unescaped backtick closes the CSS template early
+    // and acorn reports "Unterminated template". Swallowing it made this gate
+    // vacuous -- no input could ever produce a finding (proven 2026-09-15).
+    // Acorn's message varies: a stray backtick mid-file reports "Unexpected
+    // token", and only a trailing one says "Unterminated template". So the
+    // decisive signal is that the file CONTAINS CSS-like template content and
+    // will not parse -- that is this gate's bug class either way.
+    if (looksLikeCSS(src) && /`/.test(src)) {
+      unparseable.push({ file: path.relative(ROOT, file), message: (e.message || '').slice(0, 90) });
+    } else {
+      // Other syntax errors are caught by check_render_refs / check_free_vars
+      // (verified), but say so rather than hiding them.
+      otherParseErrors.push(path.relative(ROOT, file));
+    }
     continue;
   }
 
@@ -163,7 +179,27 @@ if (findings.length > 0) {
   }
 }
 
-console.log('  ' + (findings.length === 0 ? '✅' : '❌') + ' ' + findings.length + ' stray backtick(s) found in ' + files.length + ' files.');
+if (unparseable.length > 0) {
+  console.log('═══ ✗ TEMPLATE-RELATED PARSE FAILURE (' + unparseable.length + ') ═══');
+  console.log('     An unescaped backtick closes the CSS template early and the rest');
+  console.log('     of the file parses as garbled JS.');
+  console.log('');
+  for (const u of unparseable) {
+    console.log('  ✗ ' + u.file);
+    console.log('      ' + u.message);
+    console.log('');
+  }
+}
+
+if (otherParseErrors.length > 0) {
+  console.log('  note: ' + otherParseErrors.length + ' file(s) skipped for unrelated syntax errors');
+  console.log('        (check_render_refs / check_free_vars report those): ' + otherParseErrors.slice(0, 3).join(', '));
+  console.log('');
+}
+
+const failures = findings.length + unparseable.length;
+console.log('  ' + (failures === 0 ? '✅' : '❌') + ' ' + findings.length + ' stray backtick(s), '
+  + unparseable.length + ' template parse failure(s) across ' + files.length + ' files.');
 console.log('');
 
-process.exit(findings.length > 0 ? 1 : 0);
+process.exit(failures > 0 ? 1 : 0);
