@@ -24004,10 +24004,22 @@ const d = labToolData.waterCycle || {};
             sunOrb3d.add(new THREE.Mesh(new THREE.SphereGeometry(1.75, 20, 14), sunHaloMat3d));
             sunOrb3d.position.set(-13, 9, -20);
             scene.add(sunOrb3d);
+            // The moon is built the way the sun above it is: a disc plus a soft
+            // additive halo. Without the halo it was a bare flat disc pasted on
+            // the sky, and every cloud puff that passed behind it showed as a
+            // hard-edged rectangle because nothing softened the transition.
+            var moonOrb3d = new THREE.Group();
             var moonMat3d = new THREE.MeshBasicMaterial({ color: 0xdbeafe, transparent: true, opacity: 0, fog: false });
+            var moonHaloMat3d = new THREE.MeshBasicMaterial({
+              color: 0xbfdbfe, transparent: true, opacity: 0, depthWrite: false,
+              blending: THREE.AdditiveBlending, fog: false
+            });
             var moon3d = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 14), moonMat3d);
-            moon3d.position.set(12, 8, -22);
-            scene.add(moon3d);
+            moonOrb3d.add(moon3d);
+            // 2.5x the disc radius, matching the sun's 1.75/0.7 halo ratio.
+            moonOrb3d.add(new THREE.Mesh(new THREE.SphereGeometry(1.38, 18, 14), moonHaloMat3d));
+            moonOrb3d.position.set(12, 8, -22);
+            scene.add(moonOrb3d);
             scene.add(world3d);
 
             var oceanMat = new THREE.MeshPhysicalMaterial({
@@ -26068,7 +26080,71 @@ const d = labToolData.waterCycle || {};
 
             var labelTextures3d = [];
             var processLabels3d = {};
-            function makeProcessLabel3d(labelKey, labelText, accentColor, position) {
+            // Standard label geometry: a 512x128 canvas drawn at sprite scale
+            // 2.8 x 0.7. Anything that changes one must reconsider the others.
+            var WC_LABEL_BASE_FONT_PX_3D = 31;
+            var WC_LABEL_BASE_SCALE_X_3D = 2.8;
+            // Usable text width inside the plate's 8..504 rounded-rect bounds.
+            var WC_LABEL_LIMIT_PX_3D = 476;
+            // Text is redrawn rather than re-authored, so the rounded-rect plate
+            // and its accent border survive a resize untouched.
+            function wcDrawLabelText3d(labelContext, labelText, fontPx) {
+              labelContext.save();
+              // Clear only the interior; the plate and its border stay.
+              labelContext.beginPath();
+              labelContext.rect(14, 18, 484, 92);
+              labelContext.clip();
+              labelContext.clearRect(14, 18, 484, 92);
+              labelContext.fillStyle = 'rgba(3, 18, 31, 0.82)';
+              labelContext.fillRect(14, 18, 484, 92);
+              labelContext.font = '600 ' + fontPx + 'px system-ui, sans-serif';
+              labelContext.textAlign = 'center';
+              labelContext.textBaseline = 'middle';
+              labelContext.fillStyle = '#f0f9ff';
+              labelContext.fillText(labelText, 256, 65);
+              labelContext.restore();
+            }
+
+            // ★ Narrowing a label sprite SHRINKS ITS TEXT. Every label is drawn on
+            // the same 512x128 canvas, so on-screen text size is proportional to
+            // sprite width: at scale 1.45 the text renders at 52% of a standard
+            // 2.8-wide label's. Thirteen labels had been narrowed over successive
+            // passes to stop banners overlapping, and each one silently shrank its
+            // own text -- worst in the Storm Lab, where the densest science labels
+            // ("Upper + ice crystals", "Thunder pressure wave") ended up smallest.
+            //
+            // Always set a label's width THROUGH this helper, never by calling
+            // sprite.scale.set directly: it raises the font in inverse proportion
+            // so on-screen text size stays constant, and caps it so a very narrow
+            // sprite cannot overflow its plate.
+            function wcSetLabelWidth3d(labelSprite, scaleX, scaleY) {
+              if (!labelSprite) return labelSprite;
+              labelSprite.scale.set(scaleX, scaleY, 1);
+              if (!labelSprite._wcLabelContext) return labelSprite;
+              var widthRatio = scaleX / WC_LABEL_BASE_SCALE_X_3D;
+              var fontPx = WC_LABEL_BASE_FONT_PX_3D / (widthRatio || 1);
+              // The plate is 496px wide inside its border. Cap the font so the
+              // longest strings still fit; ~0.54em is the mean advance for
+              // 600-weight system-ui, and measureText confirms the real width.
+              var maxFont = Math.max(
+                WC_LABEL_BASE_FONT_PX_3D,
+                Math.floor(WC_LABEL_LIMIT_PX_3D / Math.max(1, labelSprite._wcLabelText.length * 0.54))
+              );
+              fontPx = Math.round(Math.min(fontPx, maxFont));
+              labelSprite._wcLabelContext.font = '600 ' + fontPx + 'px system-ui, sans-serif';
+              var measured = labelSprite._wcLabelContext.measureText(labelSprite._wcLabelText);
+              if (measured && measured.width > WC_LABEL_LIMIT_PX_3D) {
+                fontPx = Math.max(
+                  WC_LABEL_BASE_FONT_PX_3D,
+                  Math.floor(fontPx * WC_LABEL_LIMIT_PX_3D / measured.width)
+                );
+              }
+              wcDrawLabelText3d(labelSprite._wcLabelContext, labelSprite._wcLabelText, fontPx);
+              if (labelSprite._wcLabelTexture) labelSprite._wcLabelTexture.needsUpdate = true;
+              return labelSprite;
+            }
+
+            function makeProcessLabel3d(labelKey, labelText, accentColor, position, fontPx) {
               var labelCanvas3d = document.createElement('canvas');
               labelCanvas3d.width = 512;
               labelCanvas3d.height = 128;
@@ -26090,11 +26166,7 @@ const d = labToolData.waterCycle || {};
               labelContext3d.lineWidth = 5;
               labelContext3d.strokeStyle = accentColor;
               labelContext3d.stroke();
-              labelContext3d.font = '600 31px system-ui, sans-serif';
-              labelContext3d.textAlign = 'center';
-              labelContext3d.textBaseline = 'middle';
-              labelContext3d.fillStyle = '#f0f9ff';
-              labelContext3d.fillText(labelText, 256, 65);
+              wcDrawLabelText3d(labelContext3d, labelText, fontPx || WC_LABEL_BASE_FONT_PX_3D);
               var labelTexture3d = new THREE.CanvasTexture(labelCanvas3d);
               labelTexture3d.minFilter = THREE.LinearFilter;
               labelTexture3d.generateMipmaps = false;
@@ -26104,7 +26176,13 @@ const d = labToolData.waterCycle || {};
                 depthTest: false, depthWrite: false
               }));
               labelSprite3d.position.set(position[0], position[1], position[2]);
-              labelSprite3d.scale.set(2.8, 0.7, 1);
+              labelSprite3d.scale.set(WC_LABEL_BASE_SCALE_X_3D, 0.7, 1);
+              // Kept so wcSetLabelWidth3d can redraw the text at a compensating
+              // size when a caller narrows the sprite.
+              labelSprite3d._wcLabelText = labelText;
+              labelSprite3d._wcLabelCanvas = labelCanvas3d;
+              labelSprite3d._wcLabelContext = labelContext3d;
+              labelSprite3d._wcLabelTexture = labelTexture3d;
               labelSprite3d.renderOrder = 20;
               labelSprite3d.visible = false;
               processLabels3d[labelKey] = labelSprite3d;
@@ -26133,7 +26211,7 @@ const d = labToolData.waterCycle || {};
             );
             if (windTransportLabel3d) {
               delete processLabels3d.wind_transport;
-              windTransportLabel3d.scale.set(2.35, 0.59, 1);
+              wcSetLabelWidth3d(windTransportLabel3d, 2.35, 0.59);
               windTransportLabel3d.visible = false;
             }
             var orographicLiftLabel3d = makeProcessLabel3d(
@@ -26141,7 +26219,7 @@ const d = labToolData.waterCycle || {};
             );
             if (orographicLiftLabel3d) {
               delete processLabels3d.orographic_lift;
-              orographicLiftLabel3d.scale.set(2.05, 0.52, 1);
+              wcSetLabelWidth3d(orographicLiftLabel3d, 2.05, 0.52);
               orographicLiftLabel3d.visible = false;
             }
             var rainShadowLabel3d = makeProcessLabel3d(
@@ -26149,7 +26227,7 @@ const d = labToolData.waterCycle || {};
             );
             if (rainShadowLabel3d) {
               delete processLabels3d.rain_shadow;
-              rainShadowLabel3d.scale.set(1.6, 0.4, 1);
+              wcSetLabelWidth3d(rainShadowLabel3d, 1.6, 0.4);
               rainShadowLabel3d.visible = false;
             }
             var stormMeltingLayerLabel3d = makeProcessLabel3d(
@@ -26157,7 +26235,7 @@ const d = labToolData.waterCycle || {};
             );
             if (stormMeltingLayerLabel3d) {
               delete processLabels3d.storm_melting_layer;
-              stormMeltingLayerLabel3d.scale.set(1.75, 0.44, 1);
+              wcSetLabelWidth3d(stormMeltingLayerLabel3d, 1.75, 0.44);
               stormMeltingLayerLabel3d.visible = false;
             }
             var stormFreezingLayerLabel3d = makeProcessLabel3d(
@@ -26165,7 +26243,7 @@ const d = labToolData.waterCycle || {};
             );
             if (stormFreezingLayerLabel3d) {
               delete processLabels3d.storm_freezing_layer;
-              stormFreezingLayerLabel3d.scale.set(1.75, 0.44, 1);
+              wcSetLabelWidth3d(stormFreezingLayerLabel3d, 1.75, 0.44);
               stormFreezingLayerLabel3d.visible = false;
             }
             var stormUpperChargeLabel3d = makeProcessLabel3d(
@@ -26173,7 +26251,7 @@ const d = labToolData.waterCycle || {};
             );
             if (stormUpperChargeLabel3d) {
               delete processLabels3d.storm_upper_charge;
-              stormUpperChargeLabel3d.scale.set(1.55, 0.39, 1);
+              wcSetLabelWidth3d(stormUpperChargeLabel3d, 1.55, 0.39);
               stormUpperChargeLabel3d.visible = false;
             }
             var stormLowerChargeLabel3d = makeProcessLabel3d(
@@ -26181,7 +26259,7 @@ const d = labToolData.waterCycle || {};
             );
             if (stormLowerChargeLabel3d) {
               delete processLabels3d.storm_lower_charge;
-              stormLowerChargeLabel3d.scale.set(1.45, 0.36, 1);
+              wcSetLabelWidth3d(stormLowerChargeLabel3d, 1.45, 0.36);
               stormLowerChargeLabel3d.visible = false;
             }
             var stormPressureWaveLabel3d = makeProcessLabel3d(
@@ -26189,7 +26267,7 @@ const d = labToolData.waterCycle || {};
             );
             if (stormPressureWaveLabel3d) {
               delete processLabels3d.storm_pressure_wave;
-              stormPressureWaveLabel3d.scale.set(1.65, 0.41, 1);
+              wcSetLabelWidth3d(stormPressureWaveLabel3d, 1.65, 0.41);
               stormPressureWaveLabel3d.visible = false;
             }
             var canopyInterceptionLabel3d = makeProcessLabel3d(
@@ -26197,7 +26275,7 @@ const d = labToolData.waterCycle || {};
             );
             if (canopyInterceptionLabel3d) {
               delete processLabels3d.canopy_interception;
-              canopyInterceptionLabel3d.scale.set(2.25, 0.56, 1);
+              wcSetLabelWidth3d(canopyInterceptionLabel3d, 2.25, 0.56);
               canopyInterceptionLabel3d.visible = false;
             }
             var urbanStormwaterLabel3d = makeProcessLabel3d(
@@ -26205,7 +26283,7 @@ const d = labToolData.waterCycle || {};
             );
             if (urbanStormwaterLabel3d) {
               delete processLabels3d.urban_stormwater;
-              urbanStormwaterLabel3d.scale.set(2.05, 0.52, 1);
+              wcSetLabelWidth3d(urbanStormwaterLabel3d, 2.05, 0.52);
               urbanStormwaterLabel3d.visible = false;
             }
             var meadowInfiltrationLabel3d = makeProcessLabel3d(
@@ -26213,7 +26291,7 @@ const d = labToolData.waterCycle || {};
             );
             if (meadowInfiltrationLabel3d) {
               delete processLabels3d.meadow_infiltration;
-              meadowInfiltrationLabel3d.scale.set(2.2, 0.55, 1);
+              wcSetLabelWidth3d(meadowInfiltrationLabel3d, 2.2, 0.55);
               meadowInfiltrationLabel3d.visible = false;
             }
             var waterTableLabel3d = makeProcessLabel3d(
@@ -26221,7 +26299,7 @@ const d = labToolData.waterCycle || {};
             );
             if (waterTableLabel3d) {
               delete processLabels3d.water_table;
-              waterTableLabel3d.scale.set(1.6, 0.4, 1);
+              wcSetLabelWidth3d(waterTableLabel3d, 1.6, 0.4);
               waterTableLabel3d.visible = false;
             }
             var sedimentTransportLabel3d = makeProcessLabel3d(
@@ -26231,7 +26309,7 @@ const d = labToolData.waterCycle || {};
             );
             if (sedimentTransportLabel3d) {
               delete processLabels3d.sediment_transport;
-              sedimentTransportLabel3d.scale.set(2.05, 0.51, 1);
+              wcSetLabelWidth3d(sedimentTransportLabel3d, 2.05, 0.51);
               sedimentTransportLabel3d.visible = false;
             }
             var floodplainStorageLabel3d = makeProcessLabel3d(
@@ -26239,7 +26317,7 @@ const d = labToolData.waterCycle || {};
             );
             if (floodplainStorageLabel3d) {
               delete processLabels3d.floodplain_storage;
-              floodplainStorageLabel3d.scale.set(2.0, 0.5, 1);
+              wcSetLabelWidth3d(floodplainStorageLabel3d, 2.0, 0.5);
               floodplainStorageLabel3d.visible = false;
             }
             var snowStorageLabelCanvas3d = document.createElement('canvas');
@@ -26259,6 +26337,9 @@ const d = labToolData.waterCycle || {};
                 depthTest: false, depthWrite: false
               }));
               snowStorageLabel3d.position.set(9.25, 2.15, -3.45);
+              // Not a makeProcessLabel3d product: it owns a 512x160 canvas and
+              // redraws itself with its own two-line layout in
+              // updateSnowStorageLabel3d, so it sets its scale directly.
               snowStorageLabel3d.scale.set(2.75, 0.86, 1);
               snowStorageLabel3d.renderOrder = 21;
               snowStorageLabel3d.visible = false;
@@ -28146,7 +28227,11 @@ const d = labToolData.waterCycle || {};
               sunHaloMat3d.opacity = 0.03 + daylight3d * 0.2;
               sunOrb3d.position.y = 5.5 + daylight3d * 5.2;
               sunOrb3d.scale.setScalar(1 + Math.sin(visualTime3d * 0.7) * 0.025);
+              // One source of truth for "how much moon is there": the halo is a
+              // fraction of the disc's own opacity, so it can never glow around
+              // an invisible moon in daylight.
               moonMat3d.opacity = Math.max(0, (0.42 - daylight3d) * 1.8);
+              moonHaloMat3d.opacity = moonMat3d.opacity * 0.34;
               stars3d.material.opacity = Math.max(0.04, (1 - daylight3d) * 0.78);
               distantCloudMat3d.opacity = 0.16 + storminess3d * 0.28;
               cloudSpriteMats3d.forEach(function(cloudSpriteMat3d, cloudSpriteIndex3d) {
