@@ -11677,6 +11677,24 @@ const AlloFlowContent = () => {
     __alloHostHandlersCache = create(__alloHostDeps);
     return __alloHostHandlersCache;
   };
+  // Non-fatal variant for HOUSEKEEPING calls.
+  //
+  // A student on a slow phone crashed with "[HostHandlers] module not loaded"
+  // while joining a live session: a workspace reset ran before the module had
+  // registered on window, the accessor above threw, and the throw escaped to
+  // the ErrorBoundary — a blank fatal screen instead of a lesson. The module
+  // itself was fine (the loader retries and it was registered by the time the
+  // report was written); the call simply landed inside the load window.
+  //
+  // Throwing is right for a handler the user explicitly invoked: failing loudly
+  // beats a dead button. It is wrong for cleanup the user never asked for, where
+  // the only honest outcome is "skip it". So this returns null instead, and the
+  // housekeeping callers below no-op rather than take the app down. It does NOT
+  // suppress the load failure: the retry the accessor kicks off still runs, and
+  // a genuinely missing module still throws at the first real handler call.
+  const _alloHostHandlersOptional = () => {
+    try { return _alloHostHandlers(); } catch (_) { return null; }
+  };
     const lastHandleSpeakRef = useRef(null);
   const { t, setUiLanguage, currentUiLanguage, isTranslating } = React.useContext(LanguageContext);
   const [user, setUser] = useState(auth.currentUser);
@@ -28671,7 +28689,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Files the live plan+run into the archive. Only a plan that actually RAN is
   // worth keeping — a never-executed plan is what templates are for — so this
   // is safe to call unconditionally at every site that destroys the live plan.
-  const archiveLivePlan = (...__a) => _alloHostHandlers().archiveLivePlan(...__a);
+  // Housekeeping, not user-invoked: filing the outgoing plan must never be the
+  // reason a workspace clear takes the whole app down (see the student crash
+  // noted on _alloHostHandlersOptional). Skipping it loses an archive row, which
+  // is recoverable; throwing loses the session.
+  const archiveLivePlan = (...__a) => {
+    const handlers = _alloHostHandlersOptional();
+    return handlers ? handlers.archiveLivePlan(...__a) : undefined;
+  };
   const handleRestoreArchivedPlan = (...__a) => _alloHostHandlers().handleRestoreArchivedPlan(...__a);
   const handleDeleteArchivedPlan = (id) => {
     const lib = _blueprintArchiveLib();
@@ -34119,7 +34144,12 @@ const parseTaggedContent = (text) => {
   };
   const _restoreBuilderDraftFromProject = async (...__a) => _alloHostHandlers()._restoreBuilderDraftFromProject(...__a);
 
-  const resetCanvasWorkspaceSettings = (...__a) => _alloHostHandlers().resetCanvasWorkspaceSettings(...__a);
+  // Same reset path, same reasoning: settings fall back to their defaults if the
+  // module is not up yet, which is exactly what a reset was heading toward.
+  const resetCanvasWorkspaceSettings = (...__a) => {
+    const handlers = _alloHostHandlersOptional();
+    return handlers ? handlers.resetCanvasWorkspaceSettings(...__a) : undefined;
+  };
 
   const clearCanvasWorkspaceState = (options = {}) => {
       cancelActiveProjectLoad();
@@ -40502,11 +40532,36 @@ const parseTaggedContent = (text) => {
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-indigo-100 bg-indigo-50 text-indigo-700 shadow-sm">
                   <FileText size={26} aria-hidden="true" />
                 </div>
+                {/* A student reaching this empty state is not about to author
+                    anything — they joined a class or opened a homework link and
+                    nothing has arrived yet. "Source Material" plus "generate
+                    entry points for your curriculum" is the teacher's job
+                    description, and telling a waiting student to configure a
+                    curriculum reads as an instruction they cannot follow. The
+                    action buttons below were already teacher-gated; this is the
+                    copy above them catching up. Live and homework differ because
+                    the honest next step differs: a live student waits for the
+                    teacher, a homework student whose pack never lands needs a
+                    new link. */}
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">
-                  {t('common.ready') || 'Workspace ready'}
+                  {!isTeacherMode && !isIndependentMode
+                    ? (t('input.empty_student_eyebrow') || 'Connected')
+                    : (t('common.ready') || 'Workspace ready')}
                 </p>
-                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('tools.source') || 'Source Material'}</h2>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc')}</p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{
+                  !isTeacherMode && !isIndependentMode
+                    ? (isStudentLinkMode
+                        ? (t('input.empty_student_homework_heading') || 'Loading your homework')
+                        : (t('input.empty_student_heading') || 'Waiting for your class'))
+                    : (t('tools.source') || 'Source Material')
+                }</h2>
+                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{
+                  !isTeacherMode && !isIndependentMode
+                    ? (isStudentLinkMode
+                        ? (t('input.empty_desc_student_homework') || 'Your homework is loading. If nothing appears, ask your teacher for a new link or QR code.')
+                        : (t('input.empty_desc_student_live') || 'You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.'))
+                    : (isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc'))
+                }</p>
                 {isTeacherMode && !guidedMode && (
                   <div className="mt-8 w-full max-w-2xl">
                     <button

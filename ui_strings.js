@@ -3590,7 +3590,12 @@
     "qs_generate_sub": "AI writes it for you",
     "qs_write": "Write or paste text",
     "qs_write_sub": "Use your own material",
-    "quickstart_heading": "Or choose a starting point"
+    "quickstart_heading": "Or choose a starting point",
+    "empty_student_eyebrow": "Connected",
+    "empty_student_heading": "Waiting for your class",
+    "empty_desc_student_live": "You are connected. Activities will appear here as soon as your teacher shares them — you do not need to do anything.",
+    "empty_student_homework_heading": "Loading your homework",
+    "empty_desc_student_homework": "Your homework is loading. If nothing appears, ask your teacher for a new link or QR code."
   },
   "universal": {
     "title": "Universal Settings",
