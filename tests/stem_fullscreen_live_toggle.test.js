@@ -270,3 +270,59 @@ describe('THREE-gated stages still satisfy the fullscreen contract', () => {
     });
   });
 });
+
+// Toggling fullscreen many times must not accumulate keydown listeners or leave
+// the stage permanently styled. Runs the REAL helper out of stem_lab_module.js.
+function loadHelper() {
+  const host = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+  const start = host.indexOf('var _stemFsProps =');
+  const end = host.indexOf('// Fullscreen button binder');
+  // The slice ends inside the `if (!window.__alloStemFS) { ... }` guard, so it
+  // carries one unmatched closing brace. Trim back to the last balanced point.
+  let seg = host.slice(start, end);
+  seg = seg.slice(0, seg.lastIndexOf('};') + 2);
+  // eslint-disable-next-line no-new-func
+  new Function('window', 'document', seg)(window, document);
+}
+
+describe('fill-frame toggling does not leak', () => {
+  beforeEach(() => { delete window.__alloStemFS; loadHelper(); });
+
+  it('adds and removes exactly one Escape listener per cycle', () => {
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    let added = 0, removed = 0;
+    const origAdd = document.addEventListener.bind(document);
+    const origRem = document.removeEventListener.bind(document);
+    document.addEventListener = (t, f, o) => { if (t === 'keydown') added += 1; return origAdd(t, f, o); };
+    document.removeEventListener = (t, f, o) => { if (t === 'keydown') removed += 1; return origRem(t, f, o); };
+
+    for (let i = 0; i < 5; i += 1) {
+      window.__alloStemFS(el);   // enter (no real fullscreen in jsdom)
+      window.__alloStemFS(el);   // leave
+    }
+    document.addEventListener = origAdd;
+    document.removeEventListener = origRem;
+
+    expect(added).toBe(5);
+    expect(removed).toBe(5);
+    // and the stage is left clean
+    expect(el.hasAttribute('data-allo-fullscreen-active')).toBe(false);
+    expect(el.style.position).toBe('');
+    expect(el.style.width).toBe('');
+    el.remove();
+  });
+
+  it('Escape leaves fullscreen and restores the element', () => {
+    const el = document.createElement('div');
+    el.style.setProperty('height', '260px');
+    document.body.appendChild(el);
+    window.__alloStemFS(el);
+    expect(el.getAttribute('data-allo-fullscreen-active')).toBe('true');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(el.hasAttribute('data-allo-fullscreen-active')).toBe(false);
+    // the tool's own height survives the round trip
+    expect(el.style.height).toBe('260px');
+    el.remove();
+  });
+});
