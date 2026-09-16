@@ -4375,7 +4375,18 @@ window.StemLab = window.StemLab || {
             // sizes its bases from (width - 80) / seqLen, which goes negative
             // and throws out of createRadialGradient, taking the whole tool
             // down with it.
-            h("div", { className: "relative w-full", style: { height: 240 } },
+            h("div", { className: "relative w-full", 'data-allo-fs-stage': 'true', style: { height: 240 } },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                'aria-label': __alloT('stem.dna.enter_fullscreen', 'View the DNA model fullscreen'),
+                'data-fs-out': __alloT('stem.dna.enter_fullscreen', 'View the DNA model fullscreen'),
+                'data-fs-in': __alloT('stem.dna.exit_fullscreen', 'Exit fullscreen DNA model (Escape)'),
+                onClick: function (ev) { ev.stopPropagation(); },
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h("canvas", { ref: _dnaCanvasRef, className: "block w-full", style: { width: '100%', height: 240, display: 'block', visibility: dnaGlLive ? 'hidden' : 'visible' }, tabIndex: 0, role: "img", 'aria-label': 'DNA helix: ' + dnaSeq }),
               dnaShowGl && h("canvas", {
                 role: 'img',

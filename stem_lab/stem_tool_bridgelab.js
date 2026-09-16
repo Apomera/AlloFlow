@@ -1395,12 +1395,24 @@
             });
             return h('div', { style: { marginBottom: 8 } },
               h('div', {
+                'data-allo-fs-stage': 'true',
                 style: {
                   position: 'relative', height: 340, borderRadius: 12, overflow: 'hidden',
                   background: 'var(--allo-stem-deeper, #0a0e1a)',
                   border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8
                 }
               },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                  'aria-label': __alloT('stem.bridgelab.enter_fullscreen', 'View the 3D bridge fullscreen'),
+                  'data-fs-out': __alloT('stem.bridgelab.enter_fullscreen', 'View the 3D bridge fullscreen'),
+                  'data-fs-in': __alloT('stem.bridgelab.exit_fullscreen', 'Exit fullscreen 3D bridge (Escape)'),
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 h('div', {
                   ref: bridgeGlRef,
                   // The canvas inside is aria-hidden, and the elevation below is

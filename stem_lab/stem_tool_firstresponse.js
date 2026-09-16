@@ -5806,6 +5806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', null,
               h('div', {
                 ref: BODY3D.attach, tabIndex: 0, role: 'group',
+                'data-allo-fs-stage': 'true',
                 'aria-label': __alloT('stem.firstresponse.b3d_viewer_label', 'Body diagram, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every target here is also a button below.'),
                 onKeyDown: function (e) {
                   var k = e.key, handled = true;
@@ -5821,6 +5822,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 },
                 style: { position: 'relative', width: '100%', height: 320, borderRadius: 10, overflow: 'hidden', background: '#0b1220', border: '1px solid ' + T.border }
               },
+                h('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                  'aria-label': __alloT('stem.firstresponse.enter_fullscreen', 'View the body diagram fullscreen'),
+                  'data-fs-out': __alloT('stem.firstresponse.enter_fullscreen', 'View the body diagram fullscreen'),
+                  'data-fs-in': __alloT('stem.firstresponse.exit_fullscreen', 'Exit fullscreen body diagram (Escape)'),
+                  onClick: function (ev) { ev.stopPropagation(); },
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 st3 !== 'ready' && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: T.muted, lineHeight: 1.55 } },
                   st3 === 'failed'
                     ? __alloT('stem.firstresponse.b3d_failed', '3D view unavailable on this device or network. Every target and every step is a button below — nothing here needs the picture.')
