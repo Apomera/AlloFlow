@@ -13564,6 +13564,20 @@ window.StemLab = window.StemLab || {
 
   function AquariumHabitat3DViewport(props) {
     var React = props.React;
+    // This component sits at module scope, OUTSIDE the render function where
+    // `t`/`__alloT` are pulled off ctx, and neither call site passes a
+    // translator down. Calling a bare t() here is a render crash, not a
+    // missing translation - so resolve through props/ctx when one is actually
+    // available and fall back to the English default otherwise.
+    var __alloT = function (key, fallback) {
+      var fn = (props && typeof props.t === 'function') ? props.t : null;
+      if (!fn) {
+        try { fn = (typeof ctx !== 'undefined' && ctx && typeof ctx.t === 'function') ? ctx.t : null; } catch (e) { fn = null; }
+      }
+      var value = null;
+      if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+      return (value == null) ? (fallback != null ? fallback : key) : value;
+    };
     var canvasRef = React.useRef(null), engineRef = React.useRef(null), latestRef = React.useRef(props), focusRef = React.useRef(null);
     latestRef.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
@@ -13645,9 +13659,9 @@ window.StemLab = window.StemLab || {
         'data-allo-fs-btn': 'true',
         'aria-pressed': 'false',
         ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
-        'aria-label': t('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
-        'data-fs-out': t('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
-        'data-fs-in': t('stem.aquarium.exit_fullscreen', 'Exit fullscreen aquarium (Escape)'),
+        'aria-label': __alloT('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
+        'data-fs-out': __alloT('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
+        'data-fs-in': __alloT('stem.aquarium.exit_fullscreen', 'Exit fullscreen aquarium (Escape)'),
         onClick: function (ev) { ev.stopPropagation(); },
         style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
       }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),

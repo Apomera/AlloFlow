@@ -13564,6 +13564,20 @@ window.StemLab = window.StemLab || {
 
   function AquariumHabitat3DViewport(props) {
     var React = props.React;
+    // This component sits at module scope, OUTSIDE the render function where
+    // `t`/`__alloT` are pulled off ctx, and neither call site passes a
+    // translator down. Calling a bare t() here is a render crash, not a
+    // missing translation - so resolve through props/ctx when one is actually
+    // available and fall back to the English default otherwise.
+    var __alloT = function (key, fallback) {
+      var fn = (props && typeof props.t === 'function') ? props.t : null;
+      if (!fn) {
+        try { fn = (typeof ctx !== 'undefined' && ctx && typeof ctx.t === 'function') ? ctx.t : null; } catch (e) { fn = null; }
+      }
+      var value = null;
+      if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+      return (value == null) ? (fallback != null ? fallback : key) : value;
+    };
     var canvasRef = React.useRef(null), engineRef = React.useRef(null), latestRef = React.useRef(props), focusRef = React.useRef(null);
     latestRef.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
@@ -13638,8 +13652,19 @@ window.StemLab = window.StemLab || {
       var actions = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', '+': 'in', '=': 'in', '-': 'out', Home: 'reset' };
       if (actions[event.key]) { event.preventDefault(); moveCamera(actions[event.key]); }
     }
-    return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
+    return React.createElement('div', { className: 'aquarium-3d-viewport', 'data-allo-fs-stage': 'true', 'data-3d-status': status, 'data-camera-focus': focused ? focused.kind + ':' + focused.id : '' },
       React.createElement('style', null, '.aquarium-3d-viewport{position:relative;min-width:0;background:#07151d;color:#e2f4f5;border-radius:16px;overflow:hidden}.aquarium-3d-canvas{display:block;width:100%;height:clamp(320px,44vw,480px);outline-offset:-4px}.aquarium-3d-canvas:focus-visible{outline:3px solid #fbbf24}.aquarium-camera-bar{display:flex;gap:6px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;background:#102a32;border-top:1px solid #31525a}.aquarium-camera-presets{display:flex;flex-wrap:wrap;gap:5px}.aquarium-camera-bar button,.aquarium-3d-error button{min-height:40px;min-width:44px;border:1px solid #54777e;border-radius:9px;background:#183c45;color:#e4f5f4;padding:7px 12px;font-size:12px;font-weight:700}.aquarium-camera-bar button[aria-pressed=true]{background:#b9ebe2;color:#0c333c;border-color:#d8fff6}.aquarium-camera-bar button:focus-visible,.aquarium-3d-error button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-3d-help{margin:0;padding:9px 14px 12px;font-size:12px;line-height:1.5;color:#aecbd1}.aquarium-3d-loading{position:absolute;inset:0;display:grid;place-content:center;background:radial-gradient(ellipse at 50% 30%,#174b5a,#07151d);text-align:center;color:#bdebe8;font-size:14px}.aquarium-3d-error{padding:12px 16px;background:#18303b;font-size:13px;line-height:1.5}.aquarium-3d-error p{margin:0 0 8px}.aquarium-camera-bar button{touch-action:manipulation}@media(max-width:480px){.aquarium-3d-canvas{height:270px}.aquarium-camera-bar{padding:9px}.aquarium-camera-bar button{min-height:44px;padding:7px 10px}}.aquarium-closeup-controls{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:#163740;border-top:1px solid #31525a}.aquarium-closeup-controls button{min-height:44px;border:1px solid #76a59f;border-radius:9px;padding:8px 12px;background:#c2eee0;color:#173f3e;font-size:12px;font-weight:750}.aquarium-closeup-controls button:disabled{opacity:.5;cursor:not-allowed}.aquarium-closeup-controls button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.aquarium-closeup-controls p{flex-basis:100%;min-width:0;margin:0;font-size:12px;line-height:1.5;color:#c1ddda}.aquarium-camera-zoom{display:flex;gap:5px;margin-left:auto}.aquarium-closeup-controls .aquarium-camera-zoom button{min-width:44px;padding:7px 10px;background:#183c45;color:#e4f5f4;border-color:#54777e}.aquarium-camera-options{border-top:1px solid #31525a;background:#102a32}.aquarium-camera-options summary{box-sizing:border-box;min-height:44px;padding:12px 14px;cursor:pointer;font-size:12px;font-weight:750;color:#c1ddda}.aquarium-camera-options summary:focus-visible{outline:3px solid #fbbf24;outline-offset:-3px}.aquarium-camera-options[open] summary{border-bottom:1px solid #31525a}.aquarium-camera-options .aquarium-camera-bar{border-top:0}'),
+      React.createElement('button', {
+        type: 'button',
+        'data-allo-fs-btn': 'true',
+        'aria-pressed': 'false',
+        ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+        'aria-label': __alloT('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
+        'data-fs-out': __alloT('stem.aquarium.enter_fullscreen', 'View the 3D aquarium fullscreen'),
+        'data-fs-in': __alloT('stem.aquarium.exit_fullscreen', 'Exit fullscreen aquarium (Escape)'),
+        onClick: function (ev) { ev.stopPropagation(); },
+        style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
       status === 'error' ? React.createElement(React.Fragment, null,
         props.fallback || null,
         React.createElement('div', { className: 'aquarium-3d-error', role: 'status' }, React.createElement('p', null, props.fallback ? '3D is unavailable on this device right now. Your illustrated aquarium and all care controls are available.' : 'The 3D view is unavailable. Use the accessible habitat plan and object controls.'),
