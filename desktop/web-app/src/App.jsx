@@ -398,12 +398,20 @@ function _alloMbInstallBridge(cfg) {
     sendNudge: null,          // set by the teacher/student RTC plumbing
   };
   _alloMbSchedulePump(200);
+  // Hold the Apps Script container open for as long as this bridge lives. The
+  // teacher's start sequence is the first traffic the deployment sees, so the
+  // ping matters most right here: without it the container is cold again by
+  // the next teacher action and that action eats the boot cost.
+  try { _alloMbBridgeState.stopKeepAlive = _alloMbStartKeepAlive(cfg.url); } catch (_) { _alloMbBridgeState.stopKeepAlive = null; }
   return _alloMbBridgeState;
 }
 function _alloMbTeardownBridge() {
   const st = _alloMbBridgeState;
   if (!st) return;
   if (st.pumpTimer) { try { clearTimeout(st.pumpTimer); } catch (_) {} }
+  // Leaving this interval running would keep pinging a mailbox the teacher has
+  // already left, which is both pointless traffic and a leak across sessions.
+  if (typeof st.stopKeepAlive === 'function') { try { st.stopKeepAlive(); } catch (_) {} }
   _alloMbBridgeState = null;
 }
 function _alloMbSetNudgeSender(fn) {
@@ -1481,13 +1489,43 @@ function _alloCleanMailboxUrl(value) {
         return '';
     }
 }
-async function _alloMailboxCall(execUrl, payload, timeoutMs = 8000) {
+// Apps Script containers go COLD. A deployment that has not been hit in a few
+// minutes can take 10-20s just to boot before it runs a line of handler code,
+// and session start is the worst case: it is the first traffic the script has
+// seen, and it fires a serial chain (session-doc write -> join -> dget) where
+// EVERY hop pays that boot cost if the container is still waking. An 8s abort
+// turns a slow-but-working start into "Mailbox error: timeout".
+//
+// So the ceiling is per-call-kind rather than one global number:
+//   - polls stay at 8s. A hung poll on a phone radio SHOULD abort fast; the
+//     poll loop re-fires seconds later and nothing is lost.
+//   - writes and session setup get 25s, because there is no loop behind them.
+//     Aborting one does not retry it later, it fails the teacher's action.
+// _ALLO_MB_SLOW_ACTIONS is the list of actions that pay the cold-start cost
+// and have no loop to recover: they default to the longer ceiling unless a
+// caller passes an explicit timeoutMs.
+// Last time ANY mailbox call succeeded. Two uses: the keep-alive decides whether
+// a ping is even needed, and a failure trace reports the idle gap so a cold
+// start is distinguishable from a network fault. Declared ABOVE _alloMailboxCall
+// on purpose: `let` hoists into a temporal dead zone, so a declaration placed
+// after the function would make the FIRST call throw a ReferenceError.
+let _alloMbLastContactAt = 0;
+const ALLO_MB_TIMEOUT_MS = 8000;
+const ALLO_MB_SLOW_TIMEOUT_MS = 25000;
+const _ALLO_MB_SLOW_ACTIONS = new Set(['open', 'join', 'dget', 'dset', 'dpatch', 'ddel', 'putpack', 'getpack', 'claim', 'auth', 'mysessions', 'putsubmission']);
+function _alloMailboxTimeoutFor(payload) {
+    const action = String((payload && payload.a) || '');
+    return _ALLO_MB_SLOW_ACTIONS.has(action) ? ALLO_MB_SLOW_TIMEOUT_MS : ALLO_MB_TIMEOUT_MS;
+}
+async function _alloMailboxCall(execUrl, payload, timeoutMs = null) {
     // Hard timeout: on mobile radios a fetch can hang indefinitely (radio
     // wake, captive portals, flaky Wi-Fi). Without this, the FIRST join poll
     // hanging meant the student sat on a dead screen until they refreshed —
     // aborting lets the poll/retry loops do their job.
+    const effectiveTimeoutMs = Number(timeoutMs) > 0 ? Number(timeoutMs) : _alloMailboxTimeoutFor(payload);
     const controller = (typeof AbortController === 'function') ? new AbortController() : null;
-    const abortTimer = controller ? setTimeout(() => { try { controller.abort(); } catch (_) {} }, timeoutMs) : null;
+    const abortTimer = controller ? setTimeout(() => { try { controller.abort(); } catch (_) {} }, effectiveTimeoutMs) : null;
+    const startedAt = Date.now();
     let res;
     try {
         res = await fetch(execUrl, {
@@ -1500,6 +1538,30 @@ async function _alloMailboxCall(execUrl, payload, timeoutMs = 8000) {
     } catch (fetchErr) {
         const err = new Error('Mailbox error: ' + (fetchErr?.name === 'AbortError' ? 'timeout' : 'unreachable'));
         err.code = 'allo/mailbox-' + (fetchErr?.name === 'AbortError' ? 'timeout' : 'unreachable');
+        // Record what actually happened so a timeout report can be diagnosed
+        // instead of inferred: which action, how long we waited, and how long
+        // the deployment had been idle (a large idle gap points at cold start,
+        // a small one at the network or the proxy).
+        err.elapsedMs = Date.now() - startedAt;
+        try {
+            // _alloSessionSyncTrace is a const declared far below this function;
+            // naming it directly here would be a temporal-dead-zone ReferenceError
+            // on the first failure. Reach the same ring buffer through the window
+            // handle it publishes, which exists by the time any call can fail.
+            const traceBuffer = (typeof window !== 'undefined')
+                ? (window.__alloSessionSyncTrace || (window.__alloSessionSyncTrace = []))
+                : null;
+            if (traceBuffer) traceBuffer.push({
+                at: new Date().toISOString(),
+                event: 'mailbox:call-failed',
+                a: String((payload && payload.a) || ''),
+                ms: err.elapsedMs,
+                budgetMs: effectiveTimeoutMs,
+                idleMs: _alloMbLastContactAt ? (startedAt - _alloMbLastContactAt) : -1,
+                code: String(err.code || '').slice(0, 40),
+            });
+            if (traceBuffer && traceBuffer.length > 200) traceBuffer.splice(0, traceBuffer.length - 200);
+        } catch (_) {}
         throw err;
     } finally {
         if (abortTimer) clearTimeout(abortTimer);
@@ -1514,7 +1576,30 @@ async function _alloMailboxCall(execUrl, payload, timeoutMs = 8000) {
         err.retryAfterMs = Math.max(0, Number(parsed && parsed.retryAfterMs) || 0);
         throw err;
     }
+    _alloMbLastContactAt = Date.now();
     return parsed;
+}
+// Keep the Apps Script container warm while a session is live.
+//
+// This is the actual fix for the start-of-session timeout, not just a bigger
+// ceiling: {a:'hello'} is the cheapest action the script has (it touches no
+// Properties, no Drive, no cache), so pinging it costs almost nothing but
+// stops the container going cold between teacher actions. It is fire-and-
+// forget by design — a failed ping must never surface to the teacher, and the
+// real call's own retry/backoff still covers a genuine outage.
+const ALLO_MB_KEEPALIVE_MS = 4 * 60 * 1000;
+function _alloMbStartKeepAlive(execUrl) {
+    if (typeof window === 'undefined' || !execUrl) return () => {};
+    let stopped = false;
+    const tick = () => {
+        if (stopped) return;
+        // Skip if real traffic already kept it warm inside the window.
+        if (_alloMbLastContactAt && Date.now() - _alloMbLastContactAt < ALLO_MB_KEEPALIVE_MS) return;
+        if (typeof document !== 'undefined' && document.hidden) return;
+        _alloMailboxCall(execUrl, { a: 'hello' }, 8000).catch(() => {});
+    };
+    const id = setInterval(tick, ALLO_MB_KEEPALIVE_MS);
+    return () => { stopped = true; clearInterval(id); };
 }
 function _alloSplitPackChunks(text, size = ALLO_MB_CHUNK_CHARS) {
     const source = String(text || '');
