@@ -953,7 +953,8 @@
     "save_submit_uploads_json": "Save & Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.",
     "press_connect_self_test_again": "Press \"Connect & self-test\" here again — this notice disappears at v13.",
     "shared_activity_heading": "Shared {title}",
-    "print": "Print"
+    "print": "Print",
+    "end_failed": "The class closed on this device, but the mailbox did not confirm it. Reopen the live panel and end it again, or use \"Close all sessions\"."
   },
   "allohaven": {
     "token_cap_aria": "AlloHaven per-student session token cap",
