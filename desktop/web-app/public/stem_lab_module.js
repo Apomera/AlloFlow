@@ -497,8 +497,11 @@
   // marker attribute __alloStemFS sets is the one thing every fullscreen stage has
   // in common, so the override lives here rather than in 60 separate inline styles.
   // Only the stage itself is touched; what a tool lays out inside it is its own.
-  st.textContent += '[data-allo-fullscreen-active]{max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important}' +
-    '[data-allo-fullscreen-active]>canvas,[data-allo-fullscreen-active]>div>canvas{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important}';
+  var _fsFill = '{max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important}';
+  var _fsChild = '>canvas,%S>div>canvas{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important}';
+  ['[data-allo-fullscreen-active]', ':fullscreen', ':-webkit-full-screen'].forEach(function (sel) {
+    st.textContent += sel + _fsFill + sel + _fsChild.replace('%S', sel);
+  });
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -1259,6 +1262,26 @@
 
           function frame() {
             if (!S || S.paused) return;
+
+            // Re-measure the mount. setSize() runs ONCE at attach and the canvas is
+            // CSS 100%/100%, so anything that changes the container's box - the
+            // fullscreen helper filling the frame, an orientation change, a panel
+            // opening - stretched a stale drawing buffer rather than redrawing at
+            // the new size: a blurry picture at the wrong aspect ratio. Reached
+            // through S because frame() is a sibling scope to the attach closure
+            // that owns node/renderer/camera. Two layout reads a frame, no observer
+            // to wire up, and it mirrors what makeOrbitViewer gets from its
+            // ResizeObserver.
+            try {
+              var _bvW = S.node ? S.node.clientWidth : 0;
+              var _bvH = S.node ? S.node.clientHeight : 0;
+              if (_bvW > 0 && _bvH > 0 && (_bvW !== S.viewW || _bvH !== S.viewH)) {
+                S.viewW = _bvW; S.viewH = _bvH;
+                S.renderer.setSize(_bvW, _bvH);
+                S.camera.aspect = _bvW / _bvH;
+                S.camera.updateProjectionMatrix();
+              }
+            } catch (e) {}
 
             // Scene colours are baked at build time from the theme. If the user
             // toggles dark/light/high-contrast while sitting in this module, rebuild

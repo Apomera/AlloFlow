@@ -2393,6 +2393,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
   // pot state machine) and the free cook (no judge) are not on the bench.
   // The pasta pot's constants (tickPot / potAction live with the headless cook below)
   var POT_BURNER_LEVEL = 9, POT_THERMAL_SCALE = 0.015, POT_BOILING_F = 205, PASTA_AL_DENTE_SEC = 540, PASTA_DROP_COOL_F = 10;
+  // ─── Companion 3D pages ───
+  // build.js publishes 'stem_lab/kitchen_studio' to the CDN alongside the other
+  // companion apps, so the two 3D pages are reachable even where the host does
+  // not serve the repo tree. Same resolution order the other tools use:
+  // a bundled desktop app resolves against its own document, a local or
+  // AlloFlow host against the origin, anything else against the CDN.
+  var KITCHEN_STUDIO_CDN = 'https://alloflow-cdn.pages.dev/stem_lab/kitchen_studio/index.html';
+  var RECIPE_LAB_CDN = 'https://alloflow-cdn.pages.dev/stem_lab/kitchen_studio/recipe_lab.html';
+  function companionUrl(path, cdnUrl) {
+    try {
+      var loc = window.location || {};
+      var host = loc.hostname || '';
+      var pathname = loc.pathname || '';
+      var isLocalHost = /^(localhost|127\.0\.0\.1)$/i.test(host);
+      var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);
+      var isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+      if (isDesktopBundled) return new URL(path, loc.href).toString();
+      if (isLocalHost || isAlloHosted) return new URL('/' + String(path).replace(/^\/+/, ''), loc.origin).toString();
+    } catch (_) { /* fall through to the CDN */ }
+    return cdnUrl;
+  }
+
   // ─── The oven door ───
   // Opening an oven door lets a rush of hot air out: the cavity drops about
   // 25°F and the element spends minutes bringing it back. The peek is an action
@@ -7640,19 +7662,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('button', { type: 'button', onClick: function() { setSection('recipe'); }, 'data-kl-back': 'recipe',
               style: { padding: '8px 14px', background: 'rgba(15,23,42,0.6)', color: '#fde68a', border: '1px solid rgba(251,146,60,0.4)', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
               __alloT('stem.kitchenlab.back_to_recipe_sim', '← Back to the recipe list')),
-            h('a', { href: 'stem_lab/kitchen_studio/recipe_lab.html', target: '_blank', rel: 'noopener', style: { color: '#fde68a', fontSize: 13 } }, __alloT('stem.kitchenlab.open_recipe_kitchen', 'Open the Recipe Kitchen in a full window'))),
-          frameWrap('stem_lab/kitchen_studio/recipe_lab.html',
+            h('a', { href: companionUrl('stem_lab/kitchen_studio/recipe_lab.html', RECIPE_LAB_CDN), target: '_blank', rel: 'noopener', style: { color: '#fde68a', fontSize: 13 } }, __alloT('stem.kitchenlab.open_recipe_kitchen', 'Open the Recipe Kitchen in a full window'))),
+          frameWrap(companionUrl('stem_lab/kitchen_studio/recipe_lab.html', RECIPE_LAB_CDN),
             __alloT('stem.kitchenlab.open_recipe_kitchen_tab', 'Open the Recipe Kitchen in a new tab →'),
             __alloT('stem.kitchenlab.frame_why_recipe', 'The two-pot pasta bench is a separate page. Everything it teaches about water, crowding and browning is also in the Recipe Sim, which runs right here.'),
-            h('iframe', { src: 'stem_lab/kitchen_studio/recipe_lab.html', title: __alloT('stem.kitchenlab.recipe_kitchen_frame', 'Kitchen Lab 3D Recipe Kitchen'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
+            h('iframe', { src: companionUrl('stem_lab/kitchen_studio/recipe_lab.html', RECIPE_LAB_CDN), title: __alloT('stem.kitchenlab.recipe_kitchen_frame', 'Kitchen Lab 3D Recipe Kitchen'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
       }
       function renderStudio() {
         return h('div', null,
-          h('p', { style: { margin: '0 0 12px', fontSize: 13 } }, h('a', { href: 'stem_lab/kitchen_studio/index.html', target: '_blank', rel: 'noopener', style: { color: '#fde68a' } }, __alloT('stem.kitchenlab.open_studio', 'Open the skills studio in a full window'))),
-          frameWrap('stem_lab/kitchen_studio/index.html',
+          h('p', { style: { margin: '0 0 12px', fontSize: 13 } }, h('a', { href: companionUrl('stem_lab/kitchen_studio/index.html', KITCHEN_STUDIO_CDN), target: '_blank', rel: 'noopener', style: { color: '#fde68a' } }, __alloT('stem.kitchenlab.open_studio', 'Open the skills studio in a full window'))),
+          frameWrap(companionUrl('stem_lab/kitchen_studio/index.html', KITCHEN_STUDIO_CDN),
             __alloT('stem.kitchenlab.open_studio_tab', 'Open the Skills Studio in a new tab →'),
             __alloT('stem.kitchenlab.frame_why_studio', 'The six practice stations are a separate page. If it will not open, the Safety, Knife Lab and Heat tabs here cover the same ground without 3D.'),
-            h('iframe', { src: 'stem_lab/kitchen_studio/index.html', title: __alloT('stem.kitchenlab.studio_frame', 'Kitchen Lab 3D Skills Studio'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
+            h('iframe', { src: companionUrl('stem_lab/kitchen_studio/index.html', KITCHEN_STUDIO_CDN), title: __alloT('stem.kitchenlab.studio_frame', 'Kitchen Lab 3D Skills Studio'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', border: '1px solid #64748b', borderRadius: 16, background: '#f5f4eb' } })));
       }
 
       // Sizzle audio lives only while the cockpit is on screen and cooking
