@@ -20321,7 +20321,10 @@ test('no a11y violations', async () => {
               style: btn('#f1f5f9', '#374151', false),
               title: __alloT('stem.applab.import_html_file', 'Import HTML file'),
               'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') }, '📂'),
-            h('button', { onClick: function() { setFullscreen(!fullscreen); if (typeof window.__alloStemFS === 'function') window.__alloStemFS(appFsRef.current); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
+            h('button', { onClick: function() { setFullscreen(!fullscreen); if (typeof window.__alloStemFS === 'function') window.__alloStemFS(appFsRef.current); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': fullscreen
+                ? __alloT('stem.applab.exit_fullscreen', 'Exit fullscreen preview (Escape)')
+                : __alloT('stem.applab.enter_fullscreen', 'View the preview fullscreen') },
+              h('span', { 'aria-hidden': 'true' }, fullscreen ? '🗗' : '⛶'))
           ),
           // The file input lives OUTSIDE the toolbar, which only renders once
           // an app is loaded — otherwise importInputRef would be null on the
