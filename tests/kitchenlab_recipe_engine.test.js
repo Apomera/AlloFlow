@@ -1003,7 +1003,10 @@ describe('Kitchen Lab reaches the 3D Recipe Kitchen from the recipe list', () =>
   it('renders the Recipe Kitchen as a sub-view of the Recipe Sim tab', () => {
     expect(source).toContain("var section = view === 'recipeKitchen' ? 'recipe' : view;");
     expect(source).toContain("else if (view === 'recipeKitchen') content = renderRecipeKitchen();");
-    expect(source).toContain("src: 'stem_lab/kitchen_studio/recipe_lab.html'");
+    // the companion pages are published to the CDN too (build.js asset list), so the
+    // src is RESOLVED, not a bare relative path that only works at the repo root
+    expect(source).toContain("h('iframe', { src: companionUrl('stem_lab/kitchen_studio/recipe_lab.html', RECIPE_LAB_CDN)");
+    expect(source).toContain("var RECIPE_LAB_CDN = 'https://alloflow-cdn.pages.dev/stem_lab/kitchen_studio/recipe_lab.html';");
     expect(source).toContain("'data-kl-open-kitchen': 'true', onClick: function() { setSection('recipeKitchen'); }");
     expect(source).toContain("'data-kl-back': 'recipe'");
   });
@@ -1942,5 +1945,21 @@ describe('Kitchen Lab evidence ladder (matches the 3D studio)', () => {
     expect(text).toContain('1 independent (best 92)');
     expect(text).toContain('1 with support');
     expect(source).toContain("j.evidenceLabel ? h('div', { 'data-kl-evidence': j.evidenceStatus,");
+  });
+});
+
+describe('Kitchen Lab companion 3D pages resolve off the repo root', () => {
+  it('falls back to the CDN on a foreign host instead of a path that 404s', () => {
+    // build.js publishes 'stem_lab/kitchen_studio' to the CDN for exactly this case
+    const build = readFileSync('build.js', 'utf8');
+    expect(build).toContain("'stem_lab/kitchen_studio'");
+    // the same resolution order the other companion-page tools use
+    expect(source).toContain("var isDesktopBundled = !!window._isDesktopBundledApp || (isLocalHost && pathname.indexOf('/app/') === 0);");
+    expect(source).toContain("if (isLocalHost || isAlloHosted) return new URL('/' + String(path)");
+    expect(source).toContain("return cdnUrl;");
+    // every reference to a companion page goes through it: no bare relative src or href left
+    expect(source).not.toMatch(/src: 'stem_lab\/kitchen_studio\//);
+    expect(source).not.toMatch(/href: 'stem_lab\/kitchen_studio\//);
+    expect(source.match(/companionUrl\('stem_lab\/kitchen_studio\//g)).toHaveLength(6);   // 2 frames + 2 links + 2 fallback hrefs
   });
 });
