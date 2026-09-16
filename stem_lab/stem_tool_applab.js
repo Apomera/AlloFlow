@@ -18818,6 +18818,12 @@ test('no a11y violations', async () => {
       var _suggestions = useState([]); var suggestions = _suggestions[0]; var setSuggestions = _suggestions[1];
       var _sugLoading = useState(false); var sugLoading = _sugLoading[0]; var setSugLoading = _sugLoading[1];
       var _fullscreen = useState(false); var fullscreen = _fullscreen[0]; var setFullscreen = _fullscreen[1];
+      // 'Fullscreen' here only grew the preview to 80vh. That is a useful
+      // reading height in the page, but it is not fullscreen, and inside the
+      // sandboxed Canvas embed it is barely a change. The stage now also goes
+      // to the shared helper, which fills the screen for real where the host
+      // allows it and CSS-fills the frame where it refuses.
+      var appFsRef = React.useRef(null);
       var _iframeErrors = useState([]); var iframeErrors = _iframeErrors[0]; var setIframeErrors = _iframeErrors[1];
       var iframeRef = useRef(null);
       var importInputRef = useRef(null);
@@ -20315,7 +20321,7 @@ test('no a11y violations', async () => {
               style: btn('#f1f5f9', '#374151', false),
               title: __alloT('stem.applab.import_html_file', 'Import HTML file'),
               'aria-label': __alloT('stem.applab.import_html_file_2', 'Import HTML file') }, '📂'),
-            h('button', { onClick: function() { setFullscreen(!fullscreen); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
+            h('button', { onClick: function() { setFullscreen(!fullscreen); if (typeof window.__alloStemFS === 'function') window.__alloStemFS(appFsRef.current); }, style: btn('#f1f5f9', '#374151', false), 'aria-pressed': fullscreen, 'aria-label': __alloT('stem.applab.toggle_fullscreen', 'Toggle fullscreen') }, fullscreen ? '🗗' : '⛶')
           ),
           // The file input lives OUTSIDE the toolbar, which only renders once
           // an app is loaded — otherwise importInputRef would be null on the
@@ -20704,7 +20710,7 @@ test('no a11y violations', async () => {
           ),
 
           // Preview iframe with error capture
-          h('div', { style: { flex: showCode ? 1 : 1, display: 'flex', flexDirection: 'column', minHeight: fullscreen ? '80vh' : '300px', position: 'relative' } },
+          h('div', { ref: appFsRef, 'data-allo-fs-stage': 'true', style: { flex: showCode ? 1 : 1, display: 'flex', flexDirection: 'column', minHeight: fullscreen ? '80vh' : '300px', position: 'relative' } },
             h('iframe', {
               ref: iframeRef,
               // srcDoc carries an injected reporter — see withErrorReporter.

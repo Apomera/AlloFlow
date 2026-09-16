@@ -3104,7 +3104,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   })
                 ),
 
-                // Vowel space canvas
+                // Vowel space canvas. Unlike the thin meters elsewhere in this tool
+                // this is a 500x400 plot a learner reads positions off, so it earns
+                // a fullscreen of its own.
+                h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative' } },
+                  h('button', {
+                    type: 'button',
+                    'data-allo-fs-btn': 'true',
+                    'aria-pressed': 'false',
+                    ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                    'aria-label': __alloT('stem.oratory.enter_fullscreen', 'View the vowel space fullscreen'),
+                    'data-fs-out': __alloT('stem.oratory.enter_fullscreen', 'View the vowel space fullscreen'),
+                    'data-fs-in': __alloT('stem.oratory.exit_fullscreen', 'Exit fullscreen vowel space (Escape)'),
+                    onClick: function (ev) { ev.stopPropagation(); },
+                    style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                 h('canvas', { tabIndex: 0, ref: vowelCanvasRef,
                   width: 500,
                   height: 400,
@@ -3113,7 +3127,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   'aria-label': 'Vowel space scatterplot showing F1 and F2 formant positions. Current F1: ' +
                     Math.round(currentF1) + ' Hz, F2: ' + Math.round(currentF2) + ' Hz. ' +
                     'Using ' + (VOWEL_MAPS[vowelLang] || VOWEL_MAPS.en).name + ' vowel map.'
-                }),
+                })
+                ),
 
                 // Readout
                 h('div', { className: 'flex items-center justify-between text-xs' },
