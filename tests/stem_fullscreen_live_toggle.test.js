@@ -246,7 +246,7 @@ describe('fullscreen copy calls an i18n helper its tool actually defines', () =>
 // Without this they would be the only fullscreen buttons in the lab with no gate
 // at all - exactly how the original dead-button bug survived three reports.
 describe('THREE-gated stages still satisfy the fullscreen contract', () => {
-  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab', 'behaviorlab', 'rocks', 'astronomy', 'ecosystem', 'archstudio', 'renewables', 'cephalopodlab', 'aquaculture', 'birdlab', 'anatomy', 'aquarium', 'cell', 'optics', 'nutritionlab', 'roadready', 'evolab', 'pets', 'companionplanting', 'dna', 'firstresponse', 'applab', 'autorepair', 'oratory'];
+  const CASES = ['arccity', 'echotrainer', 'magnetism', 'molecule', 'probability', 'spaceexplorer', 'titration', 'fireecology', 'weldlab', 'dinolab', 'behaviorlab', 'rocks', 'astronomy', 'ecosystem', 'archstudio', 'renewables', 'cephalopodlab', 'aquaculture', 'birdlab', 'anatomy', 'aquarium', 'cell', 'optics', 'nutritionlab', 'roadready', 'evolab', 'pets', 'companionplanting', 'dna', 'firstresponse', 'applab', 'autorepair', 'oratory', 'coasterlab'];
 
   CASES.forEach((name) => {
     it('stem_tool_' + name + '.js declares a wired, labelled stage', () => {
@@ -262,7 +262,9 @@ describe('THREE-gated stages still satisfy the fullscreen contract', () => {
         // dinoLab calls it "Focus model" / "Exit focus view" - a better name for
         // what it does than "fullscreen", and renaming good copy to satisfy a
         // matcher would be the test wagging the tool.
-        || (/Exit focus view/i.test(src) && /Focus model/i.test(src));
+        || (/Exit focus view/i.test(src) && /Focus model/i.test(src))
+        // coasterlab: 'Scene focus' / 'Restore panels', also better names than 'fullscreen'.
+        || (/Restore panels/i.test(src) && /Scene focus/i.test(src));
       expect(labelled, 'no state-dependent fullscreen label').toBe(true);
       expect(src).toContain('aria-pressed');
     });
