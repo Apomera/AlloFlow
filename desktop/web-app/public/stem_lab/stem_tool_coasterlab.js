@@ -8372,6 +8372,10 @@ sceneFocusButton.addEventListener('click', () => {
   sceneFocus = !sceneFocus;
   if(!sceneFocus) clearStationViews();
   rootEl.dataset.sceneFocus = String(sceneFocus);
+  rootEl.setAttribute('data-allo-fs-stage', 'true');
+  try {
+    if (typeof window.__alloStemFS === 'function') window.__alloStemFS(rootEl);
+  } catch (e) {}
   updateViewClearance();
   sceneFocusButton.setAttribute('aria-pressed', String(sceneFocus));
   sceneFocusButton.textContent = sceneFocus ? 'Restore panels' : 'Scene focus';

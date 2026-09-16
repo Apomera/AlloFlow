@@ -17094,6 +17094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     : __alloT('stem.cephalopodlab.rotate_and_click', '🔍 Drag to rotate · click a structure')),
                 anat3d === 'failed' ? anatFlatDiagram : h('div', {
                     ref: CEPH3D.attach, tabIndex: 0, role: 'group',
+                    'data-allo-fs-stage': 'true',
                     'aria-label': __alloT('stem.cephalopodlab.anat3d_label', 'Octopus anatomy, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every structure here is also a button in the All regions list below.'),
                     onKeyDown: function(e) {
                       var k = e.key, handled = true;
@@ -17109,6 +17110,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     },
                     style: { position: 'relative', width: '100%', height: 320, borderRadius: 12,
                       overflow: 'hidden', background: '#0b1220', border: '1px solid rgba(100,116,139,0.3)' } },
+                    h('button', {
+                      type: 'button',
+                      'data-allo-fs-btn': 'true',
+                      'aria-pressed': 'false',
+                      ref: function (btn) { if (btn && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(btn, btn.closest('[data-allo-fs-stage]')); },
+                      'aria-label': __alloT('stem.cephalopodlab.enter_fullscreen', 'View the 3D octopus anatomy fullscreen'),
+                      'data-fs-out': __alloT('stem.cephalopodlab.enter_fullscreen', 'View the 3D octopus anatomy fullscreen'),
+                      'data-fs-in': __alloT('stem.cephalopodlab.exit_fullscreen', 'Exit fullscreen octopus anatomy (Escape)'),
+                      onClick: function (ev) { ev.stopPropagation(); },
+                      style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(167,139,250,0.55)', color: '#ede9fe', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                    }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                   anat3d !== 'ready' && h('div', { style: { position: 'absolute', inset: 0, display: 'flex',
                       alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18,
                       fontSize: 12, color: '#94a3b8', lineHeight: 1.55 } },

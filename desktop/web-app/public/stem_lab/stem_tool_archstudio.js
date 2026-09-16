@@ -2057,7 +2057,9 @@ function __alloAST(k, fb) {
     zoom_in: 'Zoom drawing in', zoom_out: 'Zoom drawing out', fit: 'Fit drawing',
     zoom: '{value}% of fit', viewport: 'Drawing viewport',
     zoom_help: 'Focus the drawing to pan with arrow keys. Use + and − to zoom, and 0 to fit. Measurements can also be entered in the coordinate fields.',
-    display: 'Drawing display controls', summary: 'Drawing summary'
+    display: 'Drawing display controls', summary: 'Drawing summary',
+    enter_fullscreen: 'View the drawing fullscreen',
+    exit_fullscreen: 'Exit fullscreen drawing (Escape)'
   };
   function archDrawingZoom(value, direction) {
     var current = Number(value);
@@ -2112,7 +2114,18 @@ function __alloAST(k, fb) {
       }
     }
     var labels = props.labels;
-    return el('div', { className: 'arch-drawing-reader' },
+    // Stage = the whole reader: the zoom controls are the only non-drag path to
+    // change the view, so fullscreen has to keep them.
+    return el('div', { className: 'arch-drawing-reader', 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+      el('button', {
+        type: 'button',
+        'data-allo-fs-btn': 'true',
+        'aria-pressed': 'false',
+        'aria-label': (labels.enter_fullscreen || 'View the drawing fullscreen'),
+        'data-fs-out': (labels.enter_fullscreen || 'View the drawing fullscreen'),
+        'data-fs-in': (labels.exit_fullscreen || 'Exit fullscreen drawing (Escape)'),
+        style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+      }, el('span', { 'aria-hidden': 'true' }, '⛶')),
       el('div', { role: 'group', 'aria-label': labels.display, className: 'arch-drawing-zoom-controls' },
         el('button', { type: 'button', disabled: zoom <= 1, 'aria-label': labels.zoom_out, onClick: function () { change('out'); } }, '−'),
         el('button', { type: 'button', onClick: function () { change('fit'); } }, labels.fit),

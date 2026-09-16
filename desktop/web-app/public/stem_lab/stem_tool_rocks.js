@@ -6450,6 +6450,16 @@ const d = labToolData.rocks || {};
                     // builds its scene once per attach, so re-keying is what makes
                     // React unmount and remount the node and get a clean rebuild
                     // when the student picks a different mineral.
+                    React.createElement("div", { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+                      React.createElement('button', {
+                        type: 'button',
+                        'data-allo-fs-btn': 'true',
+                        'aria-pressed': 'false',
+                        'aria-label': t('stem.rocks.enter_fullscreen', 'View the crystal model fullscreen'),
+                        'data-fs-out': t('stem.rocks.enter_fullscreen', 'View the crystal model fullscreen'),
+                        'data-fs-in': t('stem.rocks.exit_fullscreen', 'Exit fullscreen crystal model (Escape)'),
+                        style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                      }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                     React.createElement("div", {
                       key: 'crystal-' + selMineral.id,
                       ref: rkCrystalRef,
@@ -6496,6 +6506,7 @@ const d = labToolData.rocks || {};
                           }),
                           atomLabel);
                       })
+                    )
                     ),
 
                     // Why the structure explains the property — the actual payoff.

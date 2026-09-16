@@ -21634,8 +21634,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   'aria-describedby': 'nutrition-bm-desc',
                   onKeyDown: bmKeys,
                   className: 'relative rounded-2xl overflow-hidden border-2 border-slate-800 nutritionlab-bm-frame focus:outline-none focus:ring-4 ring-fuchsia-500/50',
+                  'data-allo-fs-stage': 'true',
                   style: { height: 430, background: '#0b1220' }
                 },
+                  h('button', {
+                    type: 'button',
+                    'data-allo-fs-btn': 'true',
+                    'aria-pressed': 'false',
+                    ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                    'aria-label': __alloT('stem.nutritionlab.enter_fullscreen', 'View the 3D body model fullscreen'),
+                    'data-fs-out': __alloT('stem.nutritionlab.enter_fullscreen', 'View the 3D body model fullscreen'),
+                    'data-fs-in': __alloT('stem.nutritionlab.exit_fullscreen', 'Exit fullscreen 3D body model (Escape)'),
+                    onClick: function (ev) { ev.stopPropagation(); },
+                    style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                  }, h('span', { 'aria-hidden': 'true' }, '⛶')),
                   h('div', { ref: nutriBody3dAttach, style: { position: 'absolute', inset: 0 } }),
                   st3d !== 'ready' && h('div', {
                     role: 'status',

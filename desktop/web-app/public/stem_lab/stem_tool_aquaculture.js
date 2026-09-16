@@ -11570,7 +11570,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
               'Cast off in ' + active3DScenario.name)) : null,
-          sim.active ? h('div', { className: 'aq-3d-sim-shell', style: { position: 'relative' } },
+          sim.active ? h('div', { className: 'aq-3d-sim-shell', 'data-allo-fs-stage': 'true', style: { position: 'relative' } },
+            h('button', {
+              type: 'button',
+              'data-allo-fs-btn': 'true',
+              'aria-pressed': 'false',
+              ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+              'aria-label': __alloT('stem.aquaculture.enter_fullscreen', 'View the farm simulator fullscreen'),
+              'data-fs-out': __alloT('stem.aquaculture.enter_fullscreen', 'View the farm simulator fullscreen'),
+              'data-fs-in': __alloT('stem.aquaculture.exit_fullscreen', 'Exit fullscreen farm simulator (Escape)'),
+              style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(94,234,212,0.55)', color: '#ccfbf1', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+            }, h('span', { 'aria-hidden': 'true' }, '⛶')),
             h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D aquaculture farm simulator', 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P C Escape', onPointerDown: function (event) { try { event.currentTarget.focus(); } catch (error) {} }, onFocus: function (event) { event.currentTarget.style.outline = '3px solid #5eead4'; event.currentTarget.style.outlineOffset = '-3px'; }, onBlur: function (event) { event.currentTarget.style.outline = 'none'; }, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: active3DScenario.scene.sky, outline: 'none' },
               'aria-label': active3DScenario.name + ' 3D Bagaduce River farm scene. ' + active3DCurrent.narrative + ' WASD or arrow keys to pilot, F to drop a seeded line, P for a surface sample, and C for a crop-depth sample at the lease.' }),
             hud.decisionPending ? h('div', {

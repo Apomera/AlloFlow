@@ -4842,7 +4842,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h(StatCard, { label: t('stem.evolab.last_survivors', 'Last Survivors'), value: latest.alive + ' / ' + census, color: latest.alive < census * 0.5 ? 'text-rose-700' : 'text-emerald-700' })
             ),
             // Canvas (population view)
-            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
+            h('div', { 'data-allo-fs-stage': 'true', style: { position: 'relative' }, className: 'bg-white rounded-xl shadow border border-slate-300 overflow-hidden' },
+              h('button', {
+                type: 'button',
+                'data-allo-fs-btn': 'true',
+                'aria-pressed': 'false',
+                ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+                'aria-label': t('stem.evolab.enter_fullscreen', 'View the population graph fullscreen'),
+                'data-fs-out': t('stem.evolab.enter_fullscreen', 'View the population graph fullscreen'),
+                'data-fs-in': t('stem.evolab.exit_fullscreen', 'Exit fullscreen population graph (Escape)'),
+                onClick: function (ev) { ev.stopPropagation(); },
+                style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+              }, h('span', { 'aria-hidden': 'true' }, '⛶')),
               h('canvas', {
                 ref: canvasRef,
                 width: 800, height: 280,

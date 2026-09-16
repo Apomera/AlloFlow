@@ -4764,7 +4764,16 @@ dataRef.current = d;
               // diagram is on screen. The 2D canvas below stays in the DOM either
               // way — the Space-to-reinforce shortcut gates on its presence, and
               // its rAF loop owns the position interpolation this scene reads.
-              bl3dOn && React.createElement("div", { style: { padding: '10px 12px 12px' } },
+              bl3dOn && React.createElement("div", { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative', padding: '10px 12px 12px' } },
+                React.createElement('button', {
+                  type: 'button',
+                  'data-allo-fs-btn': 'true',
+                  'aria-pressed': 'false',
+                  'aria-label': t('stem.behaviorlab.enter_fullscreen', 'View the operant chamber fullscreen'),
+                  'data-fs-out': t('stem.behaviorlab.enter_fullscreen', 'View the operant chamber fullscreen'),
+                  'data-fs-in': t('stem.behaviorlab.exit_fullscreen', 'Exit fullscreen operant chamber (Escape)'),
+                  style: { position: 'absolute', top: 8, right: 8, zIndex: 20, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+                }, React.createElement('span', { 'aria-hidden': 'true' }, '⛶')),
                 React.createElement("div", {
                   ref: BL_CHAMBER3D.attach, tabIndex: 0, role: 'group',
                   'data-behaviorlab-3d': 'true',

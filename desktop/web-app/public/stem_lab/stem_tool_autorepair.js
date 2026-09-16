@@ -20358,6 +20358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', {
           ref: V.attach,
           className: 'ar-bay-viewport',
+          'data-allo-fs-stage': 'true',
           'data-ar-bay-state': cfg.engineState || 'inspection',
           'data-ar-selected-part': cfg.selected || '',
           tabIndex: 0,
@@ -20372,6 +20373,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             border: '1px solid ' + T.border
           }
         },
+          h('button', {
+            type: 'button',
+            'data-allo-fs-btn': 'true',
+            'aria-pressed': 'false',
+            ref: function (b) { if (b && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(b, b.closest('[data-allo-fs-stage]')); },
+            'aria-label': __alloT('stem.autorepair.enter_fullscreen', 'View the 3D bay fullscreen'),
+            'data-fs-out': __alloT('stem.autorepair.enter_fullscreen', 'View the 3D bay fullscreen'),
+            'data-fs-in': __alloT('stem.autorepair.exit_fullscreen', 'Exit fullscreen 3D bay (Escape)'),
+            onClick: function (ev) { ev.stopPropagation(); },
+            style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid ' + T.border, color: isDark ? '#e2e8f0' : '#0f172a', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+          }, h('span', { 'aria-hidden': 'true' }, '⛶')),
           h('div', { className: 'ar-bay-viewport-hud', 'aria-hidden': 'true' },
             h('span', { className: 'ar-bay-viewport-hud-dot' }),
             h('b', null, '3D')),
