@@ -13570,10 +13570,10 @@ window.StemLab = window.StemLab || {
     // missing translation - so resolve through props/ctx when one is actually
     // available and fall back to the English default otherwise.
     var __alloT = function (key, fallback) {
+      // Only props are in scope here. Reaching for a module-level `ctx` would
+      // itself be a free variable (the very thing check_free_vars blocks), so
+      // the English fallback IS the contract when no translator is passed.
       var fn = (props && typeof props.t === 'function') ? props.t : null;
-      if (!fn) {
-        try { fn = (typeof ctx !== 'undefined' && ctx && typeof ctx.t === 'function') ? ctx.t : null; } catch (e) { fn = null; }
-      }
       var value = null;
       if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
       return (value == null) ? (fallback != null ? fallback : key) : value;

@@ -883,6 +883,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   function EcoMeadow3D(props) {
     var React = props.React, h = React.createElement;
+    // Module-scope component: the __alloT declared inside the render function
+    // below is NOT in scope here, and no call site passes a translator down,
+    // so a bare __alloT() call is a ReferenceError that blanks the 3D view.
+    // Only props are reachable, so the English fallback IS the contract when
+    // no translator is passed.
+    var __alloT = function (key, fallback) {
+      var fn = (props && typeof props.t === 'function') ? props.t : null;
+      var value = null;
+      if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+      return (value == null) ? (fallback != null ? fallback : key) : value;
+    };
     var host = React.useRef(null), engine = React.useRef(null), latest = React.useRef(props);
     latest.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];

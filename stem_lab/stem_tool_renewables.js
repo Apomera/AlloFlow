@@ -3498,6 +3498,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
 
   function RenewablesLandscape(props) {
     var React=props.React,h=React.createElement,mount=React.useRef(null),live=React.useRef(props),api=React.useRef(null);
+    // Module-scope component: the __alloT declared inside the render function
+    // below is NOT in scope here, and no call site passes a translator down,
+    // so a bare __alloT() call is a ReferenceError that blanks the 3D view.
+    // Resolve through props/ctx when available, English default otherwise.
+    var __alloT = function (key, fallback) {
+      // Only props are in scope here. Reaching for a module-level `ctx` would
+      // itself be a free variable (the very thing check_free_vars blocks), so
+      // the English fallback IS the contract when no translator is passed.
+      var fn = (props && typeof props.t === 'function') ? props.t : null;
+      var value = null;
+      if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+      return (value == null) ? (fallback != null ? fallback : key) : value;
+    };
     live.current=props;
     var statusPair=React.useState('loading'),status=statusPair[0],setStatus=statusPair[1],retryPair=React.useState(0);
     React.useEffect(function(){

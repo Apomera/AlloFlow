@@ -883,6 +883,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
   function EcoMeadow3D(props) {
     var React = props.React, h = React.createElement;
+    // Module-scope component: the __alloT declared inside the render function
+    // below is NOT in scope here, and no call site passes a translator down,
+    // so a bare __alloT() call is a ReferenceError that blanks the 3D view.
+    // Only props are reachable, so the English fallback IS the contract when
+    // no translator is passed.
+    var __alloT = function (key, fallback) {
+      var fn = (props && typeof props.t === 'function') ? props.t : null;
+      var value = null;
+      if (fn) { try { value = fn(key, fallback); } catch (e) { value = null; } }
+      return (value == null) ? (fallback != null ? fallback : key) : value;
+    };
     var host = React.useRef(null), engine = React.useRef(null), latest = React.useRef(props);
     latest.current = props;
     var statusState = React.useState('loading'), status = statusState[0], setStatus = statusState[1];
@@ -1839,8 +1850,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       h('div', { className: 'efw-row', style: { justifyContent: 'space-between' } }, h('h4', null, '3D woodland clearing'), h('strong', { 'data-efw-scene-time': 'true' }, props.result ? (branch === 'baseline' ? 'Baseline' : 'Experiment') + ' · time ' + (props.cursor / 10).toFixed(1) : 'Starting community')),
       h('p', null, 'Explore a meadow clearing within a larger woodland. Select an organism for a close-up, or use Forest overview to see the surrounding landscape.'),
       h('p', { 'data-efw-scene-cover': 'true' }, h('strong', null, 'Refuge cover: ' + (props.result ? props.result[branch][props.cursor].cover : props.config.cover) + '%'), ' · Leafy thickets represent shelter; upright flowering tufts represent food plants.'),
+      h('div', { 'data-allo-fs-stage': 'true', ref: function (node) { if (node && typeof window.__alloStemFsBind === 'function') window.__alloStemFsBind(node.querySelector('[data-allo-fs-btn]'), node); }, style: { position: 'relative' } },
+        h('button', {
+          type: 'button',
+          'data-allo-fs-btn': 'true',
+          'aria-pressed': 'false',
+          'aria-label': __alloT('stem.ecosystem.enter_fullscreen', 'View the 3D meadow fullscreen'),
+          'data-fs-out': __alloT('stem.ecosystem.enter_fullscreen', 'View the 3D meadow fullscreen'),
+          'data-fs-in': __alloT('stem.ecosystem.exit_fullscreen', 'Exit fullscreen meadow (Escape)'),
+          style: { position: 'absolute', top: 8, right: 8, zIndex: 25, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
+        }, h('span', { 'aria-hidden': 'true' }, '⛶')),
       h('div', { ref: host, className: 'efw-meadow-stage', style: { display: status === 'unavailable' ? 'none' : 'block' } },
         h('div', { className: 'efw-meadow-overlay', 'data-efw-selection-label': 'true' }, h('span', null, cameraMode==='soil'&&soilSample?'FOREST-FLOOR STUDY':cameraMode === 'detail' ? (showInteraction&&interaction&&!reduced?'INTERACTION STUDY':'GROUP INSPECTION') : cameraMode === 'forest' ? 'WOODLAND LANDSCAPE' : 'WOODLAND CLEARING'), h('strong', null, cameraMode==='soil'&&soilSample?'Fungi, bacteria & fallen material':(ECO_WEB_SPECIES.find(function(sp) { return sp.id === props.focus; }) || ECO_WEB_SPECIES[0]).name), h('span', null, cameraMode==='soil'&&soilSample?'Decomposers '+ecoWebFormat(soilSample.decomposers)+' · organic matter '+ecoWebFormat(soilSample.detritus)+' · nutrients '+ecoWebFormat(soilSample.nutrients):props.config.enabled[props.focus] ? ecoWebFormat(sample[props.focus]) + ' biomass index' + (sample[props.focus] === 0 ? ' · none present at this time' : markers ? ' · yellow rings mark selection' : ' · representative animals shown') : 'Not included in this community'),cameraMode==='detail'&&showInteraction&&interaction&&!reduced&&h('span',{'data-efw-interaction-overlay':'true'},'With '+interaction.name+' · representative '+(interaction.index+1)),cameraMode==='detail'&&props.focus!=='plants'&&h('span',{'data-efw-action-overlay':'true'},behaviorLabel+(behaviorLabel==='Not present'?'':' · representative '+(representativeIndex+1)+' of '+representativeCount)))),
+      ),
       cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-behavior':'true'},h('strong',null,behaviorLabel), ' · '+(behaviorLabel==='Not present'?'No representative is present at this time. ':isolate?(showInteraction&&interaction&&!reduced?'Selected animal and its behavior cue shown; surroundings simplified. ':'Representative '+(representativeIndex+1)+' of '+representativeCount+' shown; surroundings simplified. '):'Following representative '+(representativeIndex+1)+' of '+representativeCount+' at the selected time. ')+(reduced?'Motion is frozen at the starting pose.':'')),
       cameraMode==='detail'&&props.focus!=='plants'&&h('small',{'data-efw-camera-tracking-help':'true'},showInteraction?'Interaction framing keeps a steady viewing direction, including moments without a current cue.':cameraTracking==='steady'?'Steady observation follows position without orbiting as the animal turns. Ground-animal leaps rise within the view; owl flight stays centered.':'Follow heading turns the camera with the animal and follows its height. Use Steady observation to judge changes in direction and ground-animal leaps.'),
       showInteraction&&cameraMode==='detail'&&props.focus!=='plants'&&h('p',{'data-efw-interaction-caption':'true'},reduced?'Interaction framing is hidden while reduced motion freezes the starting poses.':!interaction?'No current predator or prey cue to frame. Following the selected representative.':h(React.Fragment,null,h('strong',null,focusedSpecies.name+' · representative '+(representativeIndex+1)), ' and '+interaction.name+' · representative '+(interaction.index+1)+'. Rings identify the pair. '+(isolate?'Isolation keeps these two animals visible. ':'')+'Positions show the selected sample; the behavior decision used the preceding positions. This view does not indicate a capture.')),
