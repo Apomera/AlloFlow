@@ -1933,7 +1933,7 @@ function SourceInputPanel(props) {
     sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
     sourceTopic, sourceVocabulary, standardInputValue, standardMode,
     suggestedStandards, t, targetStandards, urlSearchQuery,
-    urlToFetch
+    urlToFetch, useOwnSources, setUseOwnSources
   } = props;
   if (!expandedTools || !expandedTools.includes('source-input')) return null;
   return (
@@ -2049,7 +2049,7 @@ function SourceInputPanel(props) {
           setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards,
           showSourceGen, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
           sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests: props.studentInterests, suggestedStandards,
-          t, targetStandards
+          t, targetStandards, useOwnSources, setUseOwnSources
                 })}
                 <div className="p-4 relative">
                   <textarea

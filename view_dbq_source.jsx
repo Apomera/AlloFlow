@@ -89,6 +89,11 @@ function DbqView(props) {
     const r = studentResponses[resId] || {};
     const dbqTab = r._dbqTab || 'documents';
     const dbqActiveDoc = r._dbqActiveDoc || docs[0]?.id || 'A';
+    // The briefing card (title, historical context, print/timer, progress steps)
+    // is reference material, not work surface. On a short window, or with a long
+    // historical context, it crowded the documents into a few visible lines with
+    // no way out. It folds, and the fold is remembered with the rest of the work.
+    const headerCollapsed = !!r._dbqHeaderCollapsed;
     const feedbackRequests = React.useRef(new Map());
     const [, setFeedbackTick] = React.useState(0);
     const feedbackScope = JSON.stringify([resId, props.feedbackScopeKey || '', typeof callGemini === 'function']);
@@ -209,7 +214,12 @@ function DbqView(props) {
         letterSpacing: '0.5px'
       }}>{type === 'linked' ? 'external source' : type || 'source'}</span>;
     };
-    return <div className="space-y-0 max-w-5xl mx-auto h-full flex flex-col overflow-hidden">{!callGemini && <p role="status" className="text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3">AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric.</p>}<div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 mb-4 shrink-0"><div className="flex flex-col sm:flex-row items-start justify-between gap-3"><div className="flex-1 min-w-0"><h2 className="text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words">📜 {dbqData.title || 'Document-Based Question'}</h2>{dbqData.historicalContext && <p className="mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100"><strong>Historical Context:</strong> {dbqData.historicalContext}</p>}</div><div className="text-right shrink-0"><div className="text-2xl font-black text-amber-700">{progress.answered}/{progress.total}</div><div className="text-[11px] font-bold text-amber-500 uppercase">{t("ui_common.completed")}</div><div className="w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden" role="progressbar" aria-label={t("ui_common.completed") || "Completed"} aria-valuemin={0} aria-valuemax={progress.total || 1} aria-valuenow={progress.answered}><div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{
+    // min-h-0 lets the tab panel below actually shrink inside this column, and
+    // overflow-y-auto means a work pane that hits its own minimum scrolls the
+    // whole resource instead of being clipped by the shell.
+    return <div className="space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">{!callGemini && <p role="status" className="text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3">AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric.</p>}<div className={`bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shrink-0 ${headerCollapsed ? 'p-3 mb-2' : 'p-4 sm:p-5 mb-4'}`}><div className="flex flex-col sm:flex-row items-start justify-between gap-3"><div className="flex-1 min-w-0"><h2 className="text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words">📜 {dbqData.title || 'Document-Based Question'}</h2>{dbqData.historicalContext && !headerCollapsed && <p tabIndex={0} role="region" aria-label={t("ui_common.historical_context") || 'Historical Context'} className="mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100 overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" style={{
+              maxHeight: 'min(30vh, 220px)'
+            }}><strong>Historical Context:</strong> {dbqData.historicalContext}</p>}</div><div className="text-right shrink-0"><div className="text-2xl font-black text-amber-700">{progress.answered}/{progress.total}</div><div className="text-[11px] font-bold text-amber-500 uppercase">{t("ui_common.completed")}</div><div className="w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden" role="progressbar" aria-label={t("ui_common.completed") || "Completed"} aria-valuemin={0} aria-valuemax={progress.total || 1} aria-valuenow={progress.answered}><div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{
                 width: `${progress.total > 0 ? progress.answered / progress.total * 100 : 0}%`
               }} /></div></div></div><div className="flex gap-2 mt-3 flex-wrap"><button onClick={() => {
             const typeColors = {
@@ -323,7 +333,7 @@ function DbqView(props) {
               ps.textContent = '@media print{#pb{display:none!important}}';
               w.document.head.appendChild(ps);
             }
-          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ Print DBQ Packet</button>{<DbqTimer resourceId={resId} deadline={r._dbqTimerEnd} onDeadlineChange={value => setDbq('_dbqTimerEnd', value)} t={t} />}</div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{
+          }} className="px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-all flex items-center gap-1.5 border border-amber-200">🖨️ Print DBQ Packet</button>{<DbqTimer resourceId={resId} deadline={r._dbqTimerEnd} onDeadlineChange={value => setDbq('_dbqTimerEnd', value)} t={t} />}<button type="button" onClick={() => setDbq('_dbqHeaderCollapsed', !headerCollapsed)} aria-expanded={!headerCollapsed} className="px-3 py-1.5 bg-white text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center gap-1.5 border border-amber-300 ml-auto">{headerCollapsed ? `▾ ${t("ui_common.show_briefing") || 'Show briefing'}` : `▴ ${t("ui_common.hide_briefing") || 'Hide briefing'}`}</button></div></div><div className="flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto" role="tablist" aria-label={t("a11y.dbq_sections")}>{[['documents', `📄 Docs (${docs.length})`], ['corroboration', '🔗 Corroborate'], ['essay', '✏️ Essay'], ['rubric', '📊 Rubric']].map(([id, label]) => <button key={id} role="tab" aria-selected={dbqTab === id} onClick={() => setTab(id)} style={{
           ...tabBtnStyle(id),
           whiteSpace: 'nowrap',
           fontSize: '0.75rem'
@@ -366,6 +376,7 @@ function DbqView(props) {
         }];
         const completed = steps.filter(s => s.done).length;
         const pct = Math.round(completed / steps.length * 100);
+        if (headerCollapsed) return null;
         return <div className="px-3 py-2 bg-slate-50 border-x border-slate-200" style={{
           fontSize: '0.625rem'
         }}><div className="flex items-center gap-2 mb-1"><span className="font-bold text-slate-600">{t("ui_common.progress_label")}</span><div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden"><div className="h-full rounded-full transition-all duration-500" style={{
@@ -377,7 +388,9 @@ function DbqView(props) {
                 color: s.done ? '#22c55e' : s.partial ? '#f59e0b' : '#cbd5e1',
                 fontWeight: 700
               }}>{s.done ? '●' : s.partial ? '◐' : '○'}</span><span className="text-slate-600">{s.label}</span>{s.detail && <span className="text-slate-600">({s.detail})</span>}</div>)}</div></div>;
-      })()}<div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel">{dbqTab === 'documents' && <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"><div className="flex sm:flex-col gap-1.5 sm:w-36 shrink-0 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">{docs.map(doc => {
+      })()}<div className="flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5" role="tabpanel" style={{
+        minHeight: 'min(60vh, 420px)'
+      }}>{dbqTab === 'documents' && <div className="flex flex-col sm:flex-row gap-3 sm:gap-4"><div className="flex sm:flex-col gap-1.5 sm:w-36 shrink-0 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0">{docs.map(doc => {
               const docDone = ['historical', 'audience', 'purpose', 'pointOfView'].every(k => (happNotes[doc.id] || {})[k]);
               return <button key={doc.id} onClick={() => setDoc(doc.id)} className={`text-left p-2 sm:p-2.5 rounded-xl text-xs font-bold transition-all border-2 shrink-0 min-w-[5rem] sm:min-w-0 sm:w-full ${dbqActiveDoc === doc.id ? 'border-indigo-400 bg-indigo-50 text-indigo-800 shadow-md' : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}><div className="flex items-center justify-between gap-1"><span>Doc {doc.id}</span>{docDone && <span className="text-green-500">✓</span>}</div><div className="text-[11px] font-normal mt-0.5 truncate opacity-70 hidden sm:block">{doc.title?.replace(`Document ${doc.id}: `, '') || ''}</div></button>;
             })}</div>{activeDoc && <div className="flex-1 space-y-4 min-w-0"><div className="flex items-center gap-3 mb-2"><h3 className="text-lg font-black text-slate-800">{activeDoc.title || `Document ${activeDoc.id}`}</h3>{docTypeBadge(activeDoc.documentType)}{activeDoc.perspective && <span style={{

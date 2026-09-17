@@ -1874,7 +1874,9 @@ function SourceInputPanel(props) {
     t,
     targetStandards,
     urlSearchQuery,
-    urlToFetch
+    urlToFetch,
+    useOwnSources,
+    setUseOwnSources
   } = props;
   if (!expandedTools || !expandedTools.includes("source-input")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, showUrlInput && /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in motion-reduce:animate-none slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center bg-white p-1 rounded-lg border border-indigo-100 mb-2 shadow-sm" }, /* @__PURE__ */ React.createElement(
@@ -2007,7 +2009,9 @@ function SourceInputPanel(props) {
     studentInterests: props.studentInterests,
     suggestedStandards,
     t,
-    targetStandards
+    targetStandards,
+    useOwnSources,
+    setUseOwnSources
   }), /* @__PURE__ */ React.createElement("div", { className: "p-4 relative" }, /* @__PURE__ */ React.createElement(
     "textarea",
     {

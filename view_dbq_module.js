@@ -138,6 +138,11 @@ function DbqView(props) {
   const r = studentResponses[resId] || {};
   const dbqTab = r._dbqTab || 'documents';
   const dbqActiveDoc = r._dbqActiveDoc || docs[0]?.id || 'A';
+  // The briefing card (title, historical context, print/timer, progress steps)
+  // is reference material, not work surface. On a short window, or with a long
+  // historical context, it crowded the documents into a few visible lines with
+  // no way out. It folds, and the fold is remembered with the rest of the work.
+  const headerCollapsed = !!r._dbqHeaderCollapsed;
   const feedbackRequests = React.useRef(new Map());
   const [, setFeedbackTick] = React.useState(0);
   const feedbackScope = JSON.stringify([resId, props.feedbackScopeKey || '', typeof callGemini === 'function']);
@@ -284,21 +289,30 @@ function DbqView(props) {
       }
     }, type === 'linked' ? 'external source' : type || 'source');
   };
+  // min-h-0 lets the tab panel below actually shrink inside this column, and
+  // overflow-y-auto means a work pane that hits its own minimum scrolls the
+  // whole resource instead of being clipped by the shell.
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-0 max-w-5xl mx-auto h-full flex flex-col overflow-hidden"
+    className: "space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden"
   }, !callGemini && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3"
   }, "AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric."), /*#__PURE__*/React.createElement("div", {
-    className: "bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-5 mb-4 shrink-0"
+    className: `bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shrink-0 ${headerCollapsed ? 'p-3 mb-2' : 'p-4 sm:p-5 mb-4'}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row items-start justify-between gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-w-0"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words"
-  }, "📜 ", dbqData.title || 'Document-Based Question'), dbqData.historicalContext && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100"
+  }, "📜 ", dbqData.title || 'Document-Based Question'), dbqData.historicalContext && !headerCollapsed && /*#__PURE__*/React.createElement("p", {
+    tabIndex: 0,
+    role: "region",
+    "aria-label": t("ui_common.historical_context") || 'Historical Context',
+    className: "mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100 overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600",
+    style: {
+      maxHeight: 'min(30vh, 220px)'
+    }
   }, /*#__PURE__*/React.createElement("strong", null, "Historical Context:"), " ", dbqData.historicalContext)), /*#__PURE__*/React.createElement("div", {
     className: "text-right shrink-0"
   }, /*#__PURE__*/React.createElement("div", {
@@ -439,7 +453,12 @@ function DbqView(props) {
     deadline: r._dbqTimerEnd,
     onDeadlineChange: value => setDbq('_dbqTimerEnd', value),
     t: t
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setDbq('_dbqHeaderCollapsed', !headerCollapsed),
+    "aria-expanded": !headerCollapsed,
+    className: "px-3 py-1.5 bg-white text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center gap-1.5 border border-amber-300 ml-auto"
+  }, headerCollapsed ? `▾ ${t("ui_common.show_briefing") || 'Show briefing'}` : `▴ ${t("ui_common.hide_briefing") || 'Hide briefing'}`))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1 border-b border-slate-200 mb-0 shrink-0 bg-slate-50 rounded-t-xl px-2 pt-1 overflow-x-auto",
     role: "tablist",
     "aria-label": t("a11y.dbq_sections")
@@ -492,6 +511,7 @@ function DbqView(props) {
     }];
     const completed = steps.filter(s => s.done).length;
     const pct = Math.round(completed / steps.length * 100);
+    if (headerCollapsed) return null;
     return /*#__PURE__*/React.createElement("div", {
       className: "px-3 py-2 bg-slate-50 border-x border-slate-200",
       style: {
@@ -531,7 +551,10 @@ function DbqView(props) {
     }, "(", s.detail, ")")))));
   })(), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto bg-white rounded-b-xl border border-t-0 border-slate-200 p-3 sm:p-5",
-    role: "tabpanel"
+    role: "tabpanel",
+    style: {
+      minHeight: 'min(60vh, 420px)'
+    }
   }, dbqTab === 'documents' && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-3 sm:gap-4"
   }, /*#__PURE__*/React.createElement("div", {

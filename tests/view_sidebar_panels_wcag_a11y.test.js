@@ -17,8 +17,6 @@ describe('Sidebar Panels WCAG 2.2 controls', () => {
   });
 
   it('exposes the selected state of visual mode controls', () => {
-    expect(source).toContain("aria-pressed={factionResourceMode === 'ai'}");
-    expect(source).toContain("aria-pressed={factionResourceMode === 'manual'}");
     expect(source).toContain("aria-pressed={standardMode === 'ai'}");
     expect(source).toContain("aria-pressed={standardMode === 'manual'}");
     expect(source).toContain("aria-pressed={(window._dbqMode || 'standard') === mode}");
@@ -27,9 +25,27 @@ describe('Sidebar Panels WCAG 2.2 controls', () => {
   });
 
   it('groups related choices with programmatic labels', () => {
-    expect(source).toContain('role="group" aria-labelledby="adventure-system-state-mode-label"');
     expect(source).toContain('role="group" aria-labelledby="simplified-standard-mode-label"');
     expect(source).toContain('role="group" aria-labelledby="dbq-analysis-mode-label"');
+  });
+
+  // The adventure resource-mode control used to be a pair of aria-pressed
+  // buttons in this file, pinned by the two tests above. It moved to
+  // view_adventure_settings_source.jsx and was rebuilt as a <select>, so the old
+  // string pins failed against markup that no longer exists here. Follow the
+  // control rather than dropping the coverage: a <select> carries its own
+  // selected state, so what needs pinning now is that it is still LABELLED and
+  // still disables rather than silently ignoring a locked student.
+  it('keeps the relocated adventure resource-mode control accessible', () => {
+    const adventureSettings = readFileSync('view_adventure_settings_source.jsx', 'utf8');
+    const line = adventureSettings
+      .split(/\r?\n/)
+      .find((text) => text.includes("id={id + '-resource-mode'}"));
+
+    expect(line, 'the resource-mode control should still exist').toBeTruthy();
+    expect(line).toMatch(/aria-label=\{label\('resource_setup'/);
+    expect(line).toMatch(/value=\{resourceMode\}/);
+    expect(line).toMatch(/disabled=\{locked\(\)/);
   });
 
   it('associates the upload and disclosure relationships', () => {
