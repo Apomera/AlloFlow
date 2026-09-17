@@ -860,6 +860,48 @@ if (!window._galaxyHasLoadedOnce) {
             });
           }
 
+          // A star's colour IS the lesson here, so it must stay on screen — but half
+          // the sequence is near-white (F #f8f7ff, G #fff4ea, A #cad7ff), and using
+          // those as TEXT colour on a white card lands at 1.06-1.43:1. The class
+          // letters and the Luminosity/Mass/Lifetime values were rendering invisible.
+          // So: keep the TRUE colour for swatches (a filled shape, judged as a
+          // graphic) and darken a hue-preserving copy for anything made of letters.
+          // Scaling RGB toward black keeps the hue and the relative channel mix, so
+          // a blue O star still reads blue and an orange M star still reads orange.
+          function starTextColor(hex) {
+            var m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex || ''));
+            if (!m) return '#334155';
+            var n = parseInt(m[1], 16);
+            var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+            var lin = function (c) { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+            // contrast against white, which is what these cards sit on
+            var onWhite = function (rr, gg, bb) {
+              return 1.05 / ((0.2126 * lin(rr) + 0.7152 * lin(gg) + 0.0722 * lin(bb)) + 0.05);
+            };
+            var k = 1;
+            for (var i = 0; i < 48 && onWhite(r * k, g * k, b * k) < 4.5; i++) k *= 0.93;
+            var hx = function (c) {
+              var v = Math.max(0, Math.min(255, Math.round(c))).toString(16);
+              return v.length < 2 ? '0' + v : v;
+            };
+            return '#' + hx(r * k) + hx(g * k) + hx(b * k);
+          }
+
+          // The picker used a ⭐ emoji tinted with `color`. Emoji paint their own
+          // glyph colours, so that tint did nothing and all seven spectral classes
+          // rendered as the SAME yellow star. A filled disc actually shows the
+          // colour; the inset ring keeps a near-white star visible on a white card.
+          function starSwatch(React, color, px) {
+            return React.createElement('span', {
+              'aria-hidden': 'true',
+              className: 'inline-block rounded-full align-middle',
+              style: {
+                width: px + 'px', height: px + 'px', background: color,
+                boxShadow: 'inset 0 0 0 1px rgba(15,23,42,0.45), 0 1px 2px rgba(15,23,42,0.18)'
+              }
+            });
+          }
+
           // Main-sequence radius in solar radii. Piecewise because the mass-radius
           // relation steepens either side of ~1 M☉. Shared by the Star Life canvas
           // read-out and the Size Comparison panel so the two cannot disagree.
