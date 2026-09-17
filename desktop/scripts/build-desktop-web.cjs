@@ -104,19 +104,54 @@ function writeBuildInputFingerprint(rootDir, fingerprint) {
   );
 }
 
+/**
+ * Rename, retrying a transient Windows lock.
+ *
+ * A directory rename here fails with EPERM/EBUSY/EACCES while ANOTHER process still
+ * holds a handle on a file inside it — and something always does, for a second or two,
+ * immediately after a build writes thousands of files: Windows Defender real-time
+ * scanning (on, and this repo is not an excluded path), a file indexer, or OneDrive
+ * when it is running. The swap below is the first thing to run after the build
+ * finishes, so it lands in exactly that window.
+ *
+ * This blocked three consecutive deploys on 2026-09-16 at Step 4.5, with the same
+ * rename each time, while the same rename succeeded every time it was probed by hand
+ * seconds later. A bounded retry is the fix; the alternative on offer was bypassing a
+ * verification gate, which would have been worse.
+ */
+function renameWithRetry(from, to, label) {
+  const TRANSIENT = new Set(['EPERM', 'EBUSY', 'EACCES', 'ENOTEMPTY']);
+  const delays = [150, 400, 900, 1800, 3000];
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      fs.renameSync(from, to);
+      if (attempt) console.warn(`[AlloFlow Desktop] ${label} succeeded on attempt ${attempt + 1} (a transient lock cleared).`);
+      return;
+    } catch (error) {
+      if (!TRANSIENT.has(error.code) || attempt >= delays.length) throw error;
+      const waitMs = delays[attempt];
+      console.warn(`[AlloFlow Desktop] ${label}: ${error.code} — a scanner or sync client is still holding a file. Retrying in ${waitMs}ms.`);
+      // Synchronous sleep: this runs between two renames that must not interleave
+      // with anything else, so the process genuinely should block here.
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, waitMs);
+    }
+  }
+}
+
 function replaceWithStagedDirectory(stagedDir, targetDir, stagingRoot) {
   const previousDir = path.join(stagingRoot, 'previous-app-build');
   let movedPrevious = false;
   try {
     if (fs.existsSync(targetDir)) {
-      fs.renameSync(targetDir, previousDir);
+      renameWithRetry(targetDir, previousDir, 'moving the previous app-build aside');
       movedPrevious = true;
     }
-    fs.renameSync(stagedDir, targetDir);
+    renameWithRetry(stagedDir, targetDir, 'publishing the staged app-build');
   } catch (error) {
     if (movedPrevious && !fs.existsSync(targetDir) && fs.existsSync(previousDir)) {
       try {
-        fs.renameSync(previousDir, targetDir);
+        // The rollback races the same scanner the forward rename did.
+        renameWithRetry(previousDir, targetDir, 'restoring the previous app-build');
       } catch (restoreError) {
         const recoveryError = new Error(
           `Could not publish the staged desktop build (${error.message}) or restore the previous build (${restoreError.message}). `
