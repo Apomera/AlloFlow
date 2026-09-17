@@ -271,8 +271,16 @@ const HARNESS = `<!doctype html>
   window.__placeNpc = function (idx, x, y, z) {
     var en = window.__geoWorldEngine;
     if (!en || !en.npcs[idx]) return null;
-    en.npcs[idx].body.position.set(x, y, z);
-    return en.npcs[idx].data.name;
+    // data.position is authoritative: the animation loop rewrites body.position
+    // (and head.position) from it on EVERY frame for bob, sway and idle patrol,
+    // so writing body.position alone was erased before the next assertion ran.
+    // The loop renders at data.position + 0.5 on x/z, so subtract that here to
+    // land the NPC exactly where the caller asked.
+    var npc = en.npcs[idx];
+    npc.data.position = [x - 0.5, y, z - 0.5];
+    npc.body.position.set(x, y, z);
+    if (npc.head) npc.head.position.set(x, y + 0.95, z);
+    return npc.data.name;
   };
 
   window.__camPos = function () {
@@ -363,6 +371,10 @@ async function mountResponsive(page: Pg, bucket: Record<string, unknown>, mobile
   await page.goto(base + '/__harness');
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.geometryWorld);
   await page.evaluate(({ b, isMobile, isTablet }) => {
+    // Same bypass as mount(): the Free Build home chooser opens on every mount
+    // and its full-screen backdrop (.gwe-home-backdrop, inset:0, z-index:240)
+    // covers the viewport controls, so the fullscreen button could not be clicked.
+    (window as any).__alloGeometryWorldPendingBuild = { __e2e: true };
     if (isMobile) {
       const ua = isTablet
         ? 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148'

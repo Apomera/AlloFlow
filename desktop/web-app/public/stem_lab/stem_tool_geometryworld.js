@@ -112,6 +112,7 @@
       ".gw-root .gw-action-bar{bottom:132px!important;padding:3px;border-radius:11px;gap:3px!important}.gw-root .gw-action-bar button{min-height:34px;min-width:38px;font-size:11px!important;padding:5px 9px!important;border-radius:8px!important;border-color:#b7cfb82e!important;background:#1c4036!important;color:#e0e8da!important}.gw-root .gw-action-bar button[aria-label=\"Clear my placed blocks\"]{color:#ffc8b9!important}.gw-root .gw-coordinate-hud{background:#112d2bed!important;border-color:#b7cfb82e!important;color:#d0ddd0!important}.gw-root .gw-coordinate-hud summary{color:#d0ddd0!important}",
       ".gw-root .gw-settings-dialog,.gw-root .gw-dialog:not(.gw-dialog--intro){background:#112d2bf7!important;border-color:#aec9b647!important}.gw-root .gw-settings-header,.gw-root .gw-measure-heading{background:#173b35!important;border-color:#aec9b62e!important}.gw-root .gw-settings-section-title{color:#d4e8ca;border-color:#aec9b62e}.gw-root .gw-settings-controls>button,.gw-root .gw-settings-controls>select{background:#1c4036!important;border-color:#aec9b647!important;color:#f5f0e5!important}.gw-root .gw-measure-card{background:#112d2bf7!important;border-color:#aec9b647!important}.gw-root .gw-settings-controls input{accent-color:#b1d3a6}.gw-root .gw-settings-controls::-webkit-scrollbar,.gw-root .gw-hotbar::-webkit-scrollbar{height:3px;width:5px}.gw-root .gw-hotbar::-webkit-scrollbar-thumb{background:#7b9c87;border-radius:6px}",
       "@media(max-width:800px){.gw-root .gw-toolbar{padding:6px!important;gap:4px!important}.gw-root .gw-brand-lockup{gap:7px}.gw-root .gw-compact-action{min-width:36px;min-height:40px;padding:4px 7px}.gw-root .gw-toolbar-collapse{width:36px}.gw-root .gw-action-bar{bottom:132px!important}.gw-root .gw-touch-controls > [role=\"img\"],.gw-root .gw-touch-controls>.gw-touch-actions{bottom:calc(132px + env(safe-area-inset-bottom))!important}.gw-root .gw-touch-look-panel{top:128px!important;background:#112d2bf2;border-color:#aec9b647}.gw-root .gw-touch-look-panel input{accent-color:#b1d3a6}.gw-root .gw-touch-look-panel>.gw-touch-look-label{color:#e1eddc!important}}@media(max-width:360px){.gw-root .gw-title{font-size:12px}.gw-root .gw-brand-mark{width:26px;height:30px}.gw-root .gw-brand-mark svg{width:22px;height:22px}.gw-root .gw-lesson-title{font-size:8px!important}.gw-root .gw-shape-heading{padding:0 2px;font-size:10px}.gw-root .gw-shape-tray{gap:2px!important}}",
+      "@media(max-height:520px) and (orientation:landscape){.gw-root .gw-tutorial-shell{top:52px!important;bottom:auto!important;max-height:calc(100% - 200px)!important;overflow:auto}.gw-root .gw-tutorial-card{padding:8px 12px!important}.gw-root .gw-tutorial-instruction{font-size:11px!important;line-height:1.35!important}}",
       ".gw-root button:focus-visible,.gw-root [tabindex]:focus-visible{box-shadow:0 0 0 5px #173b35!important}.gw-root .gw-hotbar-item:focus-visible{outline:2px solid #fff!important;outline-offset:-3px!important;box-shadow:inset 0 0 0 4px #173b35!important}.gw-root .gw-hotbar-item[data-active=\"true\"]:focus-visible{outline-color:#173b35!important}",
       ".theme-contrast .gw-root,[data-stem-theme=\"contrast\"] .gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;--allo-stem-button-bg:#000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00}.theme-contrast .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-toolbar,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-settings-dialog,.gw-settings-header,.gw-measure-card,.gw-coordinate-hud){background:#000!important;border-color:#ffff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item,.gw-shape-item,.gw-shape-rotate,.gw-compact-action,.gw-action-bar button){border-color:#00ff00!important;background:#000!important;color:#00ff00!important}.theme-contrast .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-hotbar-item[data-active=\"true\"],.gw-shape-item[aria-pressed=\"true\"]){background:#ffff00!important;border-color:#fff!important;box-shadow:none!important}.theme-contrast .gw-root .gw-hotbar-item[data-active=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-hotbar-item[data-active=\"true\"]>span{color:#000!important}.theme-contrast .gw-root .gw-shape-item[aria-pressed=\"true\"]>span,[data-stem-theme=\"contrast\"] .gw-root .gw-shape-item[aria-pressed=\"true\"]>span{color:#000!important}.theme-contrast .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction),[data-stem-theme=\"contrast\"] .gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction){color:#ffff00!important}",
       ".gw-root .gw-touch-actions{gap:6px!important;right:12px!important}.gw-root .gw-touch-actions button{box-sizing:border-box;width:64px!important;height:48px!important;min-width:64px!important;min-height:48px!important;padding:3px!important;border:1px solid #afc7b677!important;border-radius:13px!important;background:#153d34f2!important;color:#f5f0e5!important;box-shadow:0 4px 14px #06251e3d,inset 0 1px 0 #edf3dc12;touch-action:manipulation!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"place\"]{background:#d4e8ca!important;border-color:#edf5e4!important;color:#173b35!important}.gw-root .gw-touch-actions button[data-gw-touch-action=\"break\"]{color:#ffd3bd!important;border-color:#edc5ae66!important}.gw-root .gw-touch-actions button:disabled{opacity:.44;box-shadow:none;cursor:default}.gw-touch-action-content{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;pointer-events:none}.gw-touch-action-content svg{width:20px;height:20px;display:block}.gw-touch-action-name{font-size:11px;font-weight:650;line-height:13px;letter-spacing:.01em}",
@@ -593,6 +594,14 @@
     { id: 'ice', name: 'Ice', color: 0xB3E5FC, emoji: '\u2744\uFE0F' },
     { id: 'lava', name: 'Lava', color: 0xFF5722, emoji: '\uD83C\uDF0B' },
     { id: 'torch', name: 'Torch', color: 0xFFA726, emoji: '\uD83D\uDD25' },
+    { id: 'obsidian', name: 'Obsidian', color: 0x2A2438, emoji: '\uD83D\uDD73\uFE0F' },
+    { id: 'marble', name: 'Marble', color: 0xF2F0EA, emoji: '\uD83C\uDFDB\uFE0F' },
+    { id: 'copper', name: 'Copper', color: 0xC97B4A, emoji: '\uD83D\uDFE0' },
+    { id: 'emerald', name: 'Emerald', color: 0x1FA463, emoji: '\uD83D\uDFE9' },
+    { id: 'amethyst', name: 'Amethyst', color: 0x8B5CF6, emoji: '\uD83D\uDFEA' },
+    { id: 'leaves', name: 'Leaves', color: 0x5E9B4B, emoji: '\uD83C\uDF43' },
+    { id: 'snow', name: 'Snow', color: 0xF7FBFF, emoji: '\u2603\uFE0F' },
+    { id: 'wool', name: 'Wool', color: 0xE8DCC8, emoji: '\uD83E\uDDF6' },
   ];
 
 
@@ -605,7 +614,11 @@
       gold:['#ffe2a0','#efb647','#b5842c'], sand:['#f0dfb7','#dbc69d','#baa77f'],
       glass:['#e4f4f7','#b5d5df','#8baec2'], water:['#80cef0','#409cdb','#2b71b5'],
       brick:['#ce8d73','#b86950','#8f503f'], ice:['#e7fbfa','#b5e2e4','#85becd'],
-      lava:['#ffd17b','#f87835','#c54827'], torch:['#ffdb86','#dd9150','#9b623b']
+      lava:['#ffd17b','#f87835','#c54827'], torch:['#ffdb86','#dd9150','#9b623b'],
+      obsidian:['#584c73','#3a3150','#241f33'], marble:['#fbfaf6','#e2ded2','#c2bdb0'],
+      copper:['#e9a877','#c97b4a','#96552f'], emerald:['#7fe0ac','#27ab6e','#15794b'],
+      amethyst:['#cbb1fb','#9a6df0','#6b45b8'], leaves:['#8fc877','#5e9b4b','#3f6f33'],
+      snow:['#ffffff','#eef6fd','#cfdfec'], wool:['#f6efe2','#e2d6c0','#bdae96']
     }[type] || ['#b4bec5','#909da6','#6e7e89'];
     var path = function(key,d,stroke,opacity,width){return el('path',{key:key,d:d,fill:'none',stroke:stroke||'#263b43',strokeWidth:width||0.75,opacity:opacity==null?0.3:opacity,strokeLinecap:'round',strokeLinejoin:'round'});};
     var details=[];
@@ -619,6 +632,14 @@
     if(type==='water') details.push(path('ripples','M6 8Q9 6 12 8T18 8T25 8M19 18Q22 17 26 15','#e0f7ff',0.75,1));
     if(type==='gold') details.push(path('glint','M23 13L23 18M20.5 15.5L25.5 15.5','#fff6d1',0.95,1.2));
     if(type==='lava') details.push(path('flow','M5 12L10 18L8 21L14 26M23 13L20 18L25 21','#ffe59a',0.9,1.4));
+    if(type==='obsidian') details.push(path('sheen','M6 12L13 16M19 17L26 13','#b9a8e8',0.55,1.1));
+    if(type==='marble') details.push(path('veins','M5 11Q10 14 13 12T20 15M7 20Q12 23 16 21','#b9b3a4',0.5,0.8));
+    if(type==='copper') details.push(path('patina','M7 15L11 17M20 16L24 14M9 21L13 23','#7fd8c0',0.65,1));
+    if(type==='emerald') details.push(path('facets','M3 9L16 5L29 9M16 5L16 16L10 26M16 16L23 26','#d6ffe9',0.5));
+    if(type==='amethyst') details.push(path('facets','M3 9L16 5L29 9M16 5L16 16L11 25M16 16L22 25','#efe4ff',0.5));
+    if(type==='leaves') [[8,15],[13,20],[21,16],[24,20],[16,9]].forEach(function(v,i){details.push(el('circle',{key:'leaf'+i,cx:v[0],cy:v[1],r:1.1,fill:i%2?'#a8d98c':'#3f6f33',opacity:0.45}));});
+    if(type==='snow') details.push(path('drift','M5 12Q10 10 14 12T27 11','#ffffff',0.9,1.4));
+    if(type==='wool') details.push(path('weave','M5 13L14 18M5 18L14 23M18 18L27 13M18 23L27 18','#b3a288',0.35,0.9));
     if(type==='torch') details.push(el('path',{key:'flame',d:'M17 3C18 7 22 8 21 12C21 16 14 18 12 13C10 9 15 7 17 3Z',fill:'#ffe49b',stroke:'#ffb74d',strokeWidth:0.8}));
     return el('svg',{className:'gw-material-swatch',viewBox:'0 0 32 32','aria-hidden':'true',focusable:'false'},
       el('ellipse',{cx:16,cy:28,rx:12,ry:3,fill:'#071c27',opacity:0.3}),
@@ -8498,7 +8519,7 @@
         // Measurements, silhouettes and exported triangles remain exact unit cells.
         // Attach after Material.clone(): three r128 does not clone shader hooks.
         engine.configureBlockFinish = function(material, type, shape, isGround) {
-          if (isGround || (shape !== 'cube' && shape !== 'halfB') || !/^(stone|wood|brick|sand|gold|diamond)$/.test(type)) return;
+          if (isGround || (shape !== 'cube' && shape !== 'halfB') || !/^(stone|wood|brick|sand|gold|diamond|obsidian|marble|copper|emerald|amethyst|wool)$/.test(type)) return;
           var finish = {
             gwBlockHalfSize: {value:new THREE.Vector3(0.5, shape === 'halfB' ? 0.25:0.5, 0.5)},
             gwBlockBevelWidth: {value:0.018},
@@ -14785,18 +14806,21 @@
         el('div', { className: 'gw-hotbar', inert: openModals.length > 0 ? '' : undefined, 'aria-hidden': openModals.length > 0 ? 'true' : undefined, style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
           BLOCK_TYPES.map(function(bt, i) {
             var isActive = i === selectedBlock;
-            var shortcut = i < 9 ? String(i + 1) : ['0','-','='][i - 9];
+            // Only 12 keyboard slots exist (1-9, 0, -, =). Materials past that are
+            // still selectable by click or arrow keys, so fall back to no shortcut
+            // rather than rendering "key undefined" into the accessible name.
+            var shortcut = i < 9 ? String(i + 1) : (['0','-','='][i - 9] || '');
             return el('div', {
               key: bt.id,
               className: 'gw-focusable gw-hotbar-item',
               'data-active': isActive ? 'true' : 'false',
               role: 'button',
               tabIndex: 0,
-              'aria-label': 'Select ' + bt.name + ' block, key ' + shortcut + (isActive ? ', currently selected' : ''),
+              'aria-label': 'Select ' + bt.name + ' block' + (shortcut ? ', key ' + shortcut : '') + (isActive ? ', currently selected' : ''),
               'aria-pressed': isActive ? 'true' : 'false',
               onClick: function() { upd('selectedBlock', i); },
               onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedBlock', i); } },
-              title: bt.name + ' (' + shortcut + ')',
+              title: shortcut ? bt.name + ' (' + shortcut + ')' : bt.name,
               style: { width: isMobile ? '30px' : '38px', height: isMobile ? '30px' : '38px', borderRadius: '7px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '14px' : '17px', cursor: 'pointer', position: 'relative', transition: 'all 0.15s ease',
                 border: isActive ? '2px solid #a78bfa' : '2px solid rgba(255,255,255,0.08)',
                 background: isActive ? 'rgba(124,58,237,0.35)' : 'rgba(255,255,255,0.03)',
