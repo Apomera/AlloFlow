@@ -92,7 +92,12 @@ describe('Kitchen Studio action evidence', () => {
 describe('Existing Kitchen Lab poultry safety regression', () => {
   // Load the real recipes through a test-only export at their registration seam.
   const source = readFileSync('stem_lab/stem_tool_kitchenlab.js', 'utf8');
-  const local = { window: { StemLab: { isRegistered: () => false, registerTool: () => {} } }, document: { getElementById: () => true }, console };
+  // The stub needs every document method the tool touches at module scope, not just the
+  // ones it needed when this was written: the tool now registers a listener while
+  // loading, and a bare `{ getElementById }` made the whole suite collapse with
+  // "document.addEventListener is not a function" — no tests ran at all, which reads
+  // like a passing file in a summary line.
+  const local = { window: { StemLab: { isRegistered: () => false, registerTool: () => {} } }, document: { getElementById: () => true, addEventListener: () => {}, removeEventListener: () => {}, createElement: () => ({ style: {}, setAttribute: () => {}, appendChild: () => {} }) }, console };
   vm.runInNewContext(source.replace("window.StemLab.registerTool('kitchenLab', {", "window.recipeTest = RECIPES; window.StemLab.registerTool('kitchenLab', {"), local);
   const recipes = Object.values(local.window.recipeTest).filter(r => r.id === 'roastChicken' || r.steps.some(s => s.target?.foodInternalF?.min === 165));
   it('finds both poultry recipes and requires 165°F for automatic completion', () => {

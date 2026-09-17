@@ -4610,7 +4610,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               runs.length ? h('div', { style: { overflowX: 'auto', marginTop: 12 } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 520 }, 'data-kl-heat-runs': runs.length },
                   h('thead', null, h('tr', null, ['Pan', 'Food', 'Time', 'Surface', 'Interior', 'Sound', 'Oil'].map(function(hd) {
-                    return h('th', { key: hd, style: { textAlign: 'left', padding: '4px 8px', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid rgba(100,116,139,0.35)' } }, hd);
+                    return h('th', { key: hd, scope: 'col', style: { textAlign: 'left', padding: '4px 8px', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid rgba(100,116,139,0.35)' } }, hd);
                   }))),
                   h('tbody', null, runs.map(function(r, i) {
                     var rf = sandboxFood(r.foodId);
@@ -4745,7 +4745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, here === Infinity ? '' : '(burnt at ' + fmtMin(minutesToBrowning(surfF, scale[3])) + ')')),
               h('div', { style: { overflowX: 'auto' } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 360 } },
-                  h('thead', null, h('tr', null, ['Surface', 'Golden', 'Burnt'].map(function(hd) { return h('th', { key: hd, style: { textAlign: 'left', padding: '4px 8px', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid rgba(100,116,139,0.35)' } }, hd); }))),
+                  h('thead', null, h('tr', null, ['Surface', 'Golden', 'Burnt'].map(function(hd) { return h('th', { key: hd, scope: 'col', style: { textAlign: 'left', padding: '4px 8px', fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid rgba(100,116,139,0.35)' } }, hd); }))),
                   h('tbody', null, ladder.map(function(r) {
                     var current = Math.abs(r.T - surfF) < 20;
                     return h('tr', { key: r.T, style: { background: current ? 'rgba(251,146,60,0.12)' : 'transparent' } },

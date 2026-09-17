@@ -196,7 +196,7 @@
     if (!window.THREE || !window.THREE.OrbitControls) throw new Error('3D runtime unavailable');
     var T = window.THREE, host = $('scene'), renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
-    renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = .85; host.append(renderer.domElement);
+    renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = .85; renderer.domElement.setAttribute('aria-hidden','true'); host.append(renderer.domElement);
     var scene = new T.Scene(); scene.background = new T.Color('#e9eddf');
     var camera = new T.PerspectiveCamera(37, 1, .1, 100); var controls = new T.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = false; controls.enablePan = false; controls.minDistance = 3.2; controls.maxDistance = 16; controls.maxPolarAngle = Math.PI / 2.2;

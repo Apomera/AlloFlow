@@ -31,7 +31,13 @@ describe('Kitchen Lab accessibility', () => {
     expect(text).toContain("isPaused ? 'Cooking and competition timers are paused.'");
     expect(text).toContain("value: burnerLevel, disabled: isPaused");
     expect(text).toContain("key: ing.id, disabled: isPaused");
-    expect(text).toContain("disabled: controlsDisabled || phase !== 'pasta-done'");
+    // The pasta pot's controls freeze while paused. Assert the CONTRACT, not one
+    // expression: the pot panel was refactored so each button carries its own phase
+    // guard and `disabled: controlsDisabled`, instead of a single combined
+    // `controlsDisabled || phase !== 'pasta-done'`. Same behaviour, more of it.
+    expect(text).toContain("var controlsDisabled = d.recipePhase === 'paused'");
+    expect((text.match(/disabled: controlsDisabled/g) || []).length).toBeGreaterThanOrEqual(5);
+    expect(text).toMatch(/id: 'kl-pot-dial'[\s\S]{0,400}?disabled: controlsDisabled/);
   });
 
   it('uses a focus-managed alert dialog for destructive confirmations', () => {
@@ -59,7 +65,17 @@ describe('Kitchen Lab accessibility', () => {
   it('names knife diagrams and preserves table and writing-field relationships', () => {
     const text = source();
     expect(text.match(/role: 'img', 'aria-label': label/g)).toHaveLength(4);
-    expect(text.match(/h\('th', \{ scope: 'col'/g)).toHaveLength(3);
+    // EVERY table header is scoped, rather than "there are exactly three of them".
+    // The fixed count went stale as the tool grew (3 -> 9), and while updating it this
+    // way found two real gaps: both looped `<thead>` rows (the heat-run log and the
+    // browning ladder) emitted `h('th', { key: hd, ... })` with no scope at all, so a
+    // screen reader could not associate those columns with their cells. A count can
+    // only ever notice that a number changed; this notices an unscoped header.
+    const totalHeaders = (text.match(/h\('th'/g) || []).length;
+    const scopedCols = (text.match(/scope: 'col'/g) || []).length;
+    const scopedRows = (text.match(/scope: 'row'/g) || []).length;
+    expect(totalHeaders).toBeGreaterThanOrEqual(9);
+    expect(totalHeaders - scopedCols - scopedRows, 'every <th> carries a scope').toBe(0);
     expect(text).toContain("h('th', { scope: 'row'");
     expect(text).toContain(`'aria-label': __alloT('stem.kitchenlab.a11y_maillard_reaction_hypothesis', 'Maillard reaction hypothesis')`);
     expect(text).toContain(`'aria-label': __alloT('stem.kitchenlab.a11y_explain_the_chemistry_of_maillard_browning', 'Explain the chemistry of Maillard browning')`);
