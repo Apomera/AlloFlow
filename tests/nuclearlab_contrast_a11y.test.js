@@ -93,7 +93,12 @@ describe('the source uses it', () => {
     expect(RENDER.length).toBeGreaterThan(1000);
     // '#0b1020' and '#fff' are text ON an accent background, not on the card,
     // so they are measured against that accent in the rendered pass below.
-    const ALLOWED = new Set(['#0b1020', '#ffffff', '#fff']);
+    // '#ede9fe' is the same case inverted: the fullscreen chip paints its own
+    // opaque dark ground (rgba(15,23,42,0.88)), so the pale text sits on THAT,
+    // not on the card. Measured: 15.0:1 over the dark card and 10.6:1 where the
+    // 0.88 alpha composites over a white one. Routing it through ink() would be
+    // actively wrong — ink() adapts to the CARD, and the chip is not the card.
+    const ALLOWED = new Set(['#0b1020', '#ffffff', '#fff', '#ede9fe']);
     const bare = [...RENDER.matchAll(/color: '(#[0-9a-fA-F]{6})'/g)]
       .map((m) => m[1])
       .filter((c) => !ALLOWED.has(c.toLowerCase()));

@@ -3442,6 +3442,92 @@
         delete next[nkReflectionKey];
         upd({ nkReflections: next });
       }
+      // ── what the student actually worked out ──
+      // Twenty-one sections of predictions, estimates and verdicts, and until
+      // now none of it left the tool: a student closed the tab and it was gone,
+      // and a teacher had no way to see that any of it happened. This gathers
+      // only work the student genuinely did — every line is omitted when the
+      // underlying section was never touched, so an untouched tool produces an
+      // empty summary rather than a page of defaults presented as findings.
+      function nkSummaryLines() {
+        var out = [];
+        if (d.doseEstimated) {
+          out.push({
+            label: 'My estimated annual dose',
+            value: nkFmt(dsTotal, 2) + ' mSv/year',
+            detail: 'Largest single contributor: ' + dsParts.slice().sort(function (a, b) {
+              return b.v - a.v;
+            })[0].name + '. World average is about 2.4 mSv/year.'
+          });
+        }
+        if (cmpRevealed) {
+          out.push({
+            label: 'Deaths-per-TWh prediction',
+            value: cmpRight.length + ' of ' + CMP_PAIRS.length + ' correct',
+            detail: CMP_PAIRS.map(function (pair) {
+              var guess = cmpGuessFor(pair.id);
+              if (!guess) return null;
+              return pair.a + ' vs ' + pair.b + ': said ' + guess
+                + (guess === cmpCorrect(pair) ? ' (right)' : ' (actually ' + cmpCorrect(pair) + ')');
+            }).filter(Boolean).join('; ')
+          });
+        }
+        if (evidenceMastered.length) {
+          out.push({
+            label: 'Evidence claims judged so far',
+            value: evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' worked through',
+            detail: 'Each one reached the best-supported verdict after weighing what the evidence does and does not show. The challenge is untimed and can be revisited, so this is progress rather than a score.'
+          });
+        }
+        if (nkPathsCompleted.length) {
+          out.push({
+            label: 'Question routes completed',
+            value: String(nkPathsCompleted.length),
+            detail: nkPathsCompleted.map(function (id) {
+              var route = NK_PATHS.filter(function (r) { return r.id === id; })[0];
+              return route ? route.q : id;
+            }).join(' · ')
+          });
+        }
+        if (d.countPrecise) {
+          out.push({
+            label: 'Counting statistics',
+            value: 'Took a measurement better than ±5%',
+            detail: 'Counting longer narrows the uncertainty as the square root of the number of counts, not linearly.'
+          });
+        }
+        if (d.heldCritical) {
+          out.push({
+            label: 'Chain reaction',
+            value: 'Held a reactor critical (k = 1)',
+            detail: 'Critical means self-sustaining and steady — not an accident condition.'
+          });
+        }
+        return out;
+      }
+      var nkSummary = nkSummaryLines();
+      // The reflection lives under the evidence challenge and is the only free
+      // text in the tool, so it belongs in anything the student carries out.
+      var nkSummaryReflection = nkSavedReflection && typeof nkSavedReflection === 'object'
+        ? nkSavedReflection
+        : null;
+      function nkSummaryText() {
+        var lines = ['Nuclear & Radiation Lab — what I worked out', ''];
+        nkSummary.forEach(function (row) {
+          lines.push('- ' + row.label + ': ' + row.value);
+          if (row.detail) lines.push('  ' + row.detail);
+        });
+        if (nkSummaryReflection && nkSummaryReflection.idea) {
+          lines.push('', 'The idea I would explain to someone else:', nkSummaryReflection.idea);
+        }
+        if (nkSummaryReflection && nkSummaryReflection.question) {
+          lines.push('', 'What I still want to know:', nkSummaryReflection.question);
+        }
+        lines.push('', 'Figures reviewed ' + NK_REVIEWED
+          + '. Half-lives NNDC NuDat 3; dose context UNSCEAR, ICRP 103, NCRP 160.');
+        return lines.join('\n');
+      }
+
       function nkMatches(s) {
         if (nkGroup !== 'all' && s.grp !== nkGroup) return false;
         if (!nkQuery) return true;
@@ -6258,6 +6344,101 @@
         // ── bridges ──
         sec('next', '#94a3b8',
           heading(isDark ? '#cbd5e1' : '#475569', '🔗 Take this somewhere'),
+          // ── what you worked out ──
+          // Shown only when there is something to show. An empty summary would
+          // be a worse ending than no summary: it would tell a student who has
+          // read a great deal that they have done nothing.
+          nkSummary.length || (nkSummaryReflection && (nkSummaryReflection.idea || nkSummaryReflection.question))
+            ? h('div', {
+              className: 'mb-3 rounded-xl border p-3',
+              style: {
+                borderColor: 'rgba(52,211,153,0.5)',
+                background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(240,253,244,0.9)'
+              }
+            },
+              h('h5', { className: 'text-[0.8125rem] font-black mb-1', style: { color: ink('#059669') } },
+                '🧾 What you worked out'),
+              h('p', { className: 'text-[0.6875rem] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+                'Your own numbers and judgements from this lab, in one place. Copy it into a notebook, an assignment, or a message to your teacher.'),
+              h('dl', { className: 'space-y-1.5 mb-2' },
+                nkSummary.map(function (row) {
+                  return h('div', {
+                    key: row.label,
+                    className: 'rounded-lg border px-2.5 py-1.5',
+                    style: {
+                      borderColor: isDark ? 'rgba(148,163,184,0.26)' : 'rgba(100,116,139,0.22)',
+                      background: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(255,255,255,0.92)'
+                    }
+                  },
+                    h('dt', { className: 'text-[0.625rem] font-bold uppercase tracking-wide', style: { color: isDark ? '#94a3b8' : '#475569' } }, row.label),
+                    h('dd', { className: 'text-[0.6875rem] font-black', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, row.value),
+                    row.detail
+                      ? h('dd', { className: 'text-[0.6875rem] mt-0.5 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, row.detail)
+                      : null);
+                })
+              ),
+              nkSummaryReflection && nkSummaryReflection.idea
+                ? h('div', { className: 'rounded-lg border px-2.5 py-1.5 mb-1.5', style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(6,78,59,0.25)' : 'rgba(236,253,245,0.9)' } },
+                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wide', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'The idea I would explain'),
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, nkSummaryReflection.idea))
+                : null,
+              nkSummaryReflection && nkSummaryReflection.question
+                ? h('div', { className: 'rounded-lg border px-2.5 py-1.5 mb-1.5', style: { borderColor: 'rgba(52,211,153,0.4)', background: isDark ? 'rgba(6,78,59,0.25)' : 'rgba(236,253,245,0.9)' } },
+                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wide', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'What I still want to know'),
+                  h('p', { className: 'text-[0.6875rem] leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#1e293b' } }, nkSummaryReflection.question))
+                : null,
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('button', {
+                  type: 'button',
+                  onClick: function () {
+                    var text = nkSummaryText();
+                    // Route through the shell: in Gemini Canvas the Clipboard
+                    // API is blocked and only the shell's execCommand fallback
+                    // lands, so a direct writeText drops the summary silently.
+                    var write = (window.StemLab && window.StemLab.writeClipboard)
+                      || (navigator.clipboard && navigator.clipboard.writeText
+                        ? function (value) { return navigator.clipboard.writeText(value); }
+                        : null);
+                    function done(ok) {
+                      upd({ nkSummaryCopied: ok ? 'ok' : 'failed' });
+                      if (typeof announceToSR === 'function') {
+                        announceToSR(ok ? 'Summary copied to the clipboard.' : 'Copy failed. The summary is shown below so you can select it yourself.');
+                      }
+                    }
+                    if (!write) { done(false); return; }
+                    try {
+                      Promise.resolve(write(text)).then(function () { done(true); }, function () { done(false); });
+                    } catch (err) { done(false); }
+                    if (typeof beep === 'function') beep();
+                  },
+                  className: 'min-h-11 px-3 py-2 rounded-lg text-[0.6875rem] font-black',
+                  style: { background: '#34d399', color: '#0b1020', border: '1px solid #34d399' }
+                }, '📋 Copy my summary'),
+                d.nkSummaryCopied === 'ok'
+                  ? h('span', { role: 'status', className: 'text-[0.6875rem] font-bold', style: { color: ink('#059669') } }, 'Copied.')
+                  : null,
+                d.nkSummaryCopied === 'failed'
+                  ? h('span', { role: 'status', className: 'text-[0.6875rem] font-bold', style: { color: ink('#f59e0b') } }, 'Could not copy — select the text below instead.')
+                  : null
+              ),
+              // A failed copy must still leave the student a way to get the
+              // text out, so the fallback is selectable rather than a dead end.
+              d.nkSummaryCopied === 'failed'
+                ? h('textarea', {
+                  readOnly: true,
+                  'aria-label': 'Your summary text, ready to select and copy',
+                  value: nkSummaryText(),
+                  rows: 8,
+                  className: 'w-full mt-2 rounded-lg p-2 text-[0.6875rem] font-mono',
+                  style: {
+                    background: isDark ? 'rgba(2,6,23,0.7)' : 'rgba(255,255,255,0.96)',
+                    color: isDark ? '#e2e8f0' : '#1e293b',
+                    border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')
+                  }
+                })
+                : null
+            )
+            : null,
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
             [{ id: 'heatLab', icon: '🌡️', name: 'Heat & Thermodynamics Lab', why: 'A reactor is a heat engine. Carnot caps it at about 33%, which is why two-thirds of the energy goes up the cooling towers.' },
              { id: 'renewablesLab', icon: '⚡', name: 'Renewables Lab', why: 'Put the deaths and carbon figures next to how each source actually generates power.' },
