@@ -119,7 +119,7 @@
       ".gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{bottom:194px!important}@media(max-width:800px) and (min-height:620px) and (orientation:portrait){.gw-root .gw-action-feedback[data-feedback-kind=\"shape\"]{top:calc(50% - 112px);bottom:auto!important;left:12px!important;transform:none!important;max-width:calc(100% - 108px)!important}}",
       ".gw-placement-hint{position:absolute;bottom:186px;top:auto;left:50%;transform:translateX(-50%);z-index:25;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;gap:7px;width:max-content;max-width:min(440px,calc(100% - 36px));padding:7px 11px;border:1px solid #c4dfc770;border-radius:10px;background:#113b30f2;color:#e8f2e0;font-size:12px;font-weight:600;line-height:1.4;pointer-events:none;box-shadow:0 5px 18px #092b2533}.gw-placement-hint[data-allowed=\"false\"]{background:#502f29f2;border-color:#ecc3a3aa;color:#ffe3cc}.gw-placement-hint-mark{display:grid;flex:0 0 auto;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;font-size:12px;font-weight:800}.gw-root .gw-action-feedback{background:#112d2bf2!important;border-color:#c4dfc766!important;color:#f5f0e5!important}",
       ".gw-placement-hint .gw-placement-aim{pointer-events:auto;white-space:nowrap;margin-left:6px;padding:4px 9px;border-radius:8px;border:1px solid #c4dfc7aa;background:#1c5a48;color:#f1faf3;font:inherit;font-size:11px;font-weight:700;cursor:pointer;min-height:44px;min-width:44px}.gw-placement-hint .gw-placement-aim:hover{background:#25705a}",
-      ".gw-placement-hint[data-placement-state=\"aim\"]{background:#f3eedcfa;color:#29473a;border-color:#b8c9ae;box-shadow:0 5px 18px #092b2524}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-text{flex:1 1 150px;max-width:280px}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-hint-mark{border-color:#96ae93}.gw-placement-hint .gw-placement-shortcut{display:inline-flex;align-items:center;gap:5px;padding-left:9px;margin-left:2px;border-left:1px solid #c4dfc74d;font-weight:500;white-space:nowrap}.gw-placement-shortcut kbd{display:grid;place-items:center;min-width:21px;min-height:21px;border:1px solid #c4dfc785;border-radius:5px;background:#d4e8ca12;font:700 11px system-ui,sans-serif}.theme-contrast .gw-root .gw-placement-hint[data-placement-state=\"aim\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-placement-state=\"aim\"]{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gw-placement-hint .gw-placement-aim,[data-stem-theme=\"contrast\"] .gw-placement-hint .gw-placement-aim{background:#000;color:#0f0;border:2px solid #0f0}.theme-contrast .gw-placement-shortcut kbd,[data-stem-theme=\"contrast\"] .gw-placement-shortcut kbd{background:#000;color:#fff;border-color:#fff}",
+      ".gw-placement-hint[data-placement-state=\"aim\"]{background:#f3eedcfa;color:#29473a;border-color:#b8c9ae;box-shadow:0 5px 18px #092b2524}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-text{flex:1 1 150px;max-width:280px}.gw-placement-hint[data-placement-state=\"aim\"] .gw-placement-hint-mark{border-color:#96ae93}.gw-placement-hint .gw-placement-shortcut{display:inline-flex;align-items:center;gap:5px;padding-left:9px;margin-left:2px;border-left:1px solid #c4dfc74d;font-weight:500;white-space:nowrap}button.gw-placement-remove{pointer-events:auto;background:transparent;border:0;border-left:1px solid #c4dfc74d;color:inherit;font:inherit;font-weight:500;cursor:pointer;min-height:44px;min-width:44px;display:inline-flex;align-items:center;gap:5px;padding-left:9px;margin-left:2px;white-space:nowrap;border-radius:8px}button.gw-placement-remove:hover{color:#ffd9d0}button.gw-placement-remove:active{color:#ffb4a2}@media(pointer:coarse){button.gw-placement-remove{min-height:44px}}.gw-placement-shortcut{white-space:nowrap}.gw-placement-shortcut kbd{display:grid;place-items:center;min-width:21px;min-height:21px;border:1px solid #c4dfc785;border-radius:5px;background:#d4e8ca12;font:700 11px system-ui,sans-serif}.theme-contrast .gw-root .gw-placement-hint[data-placement-state=\"aim\"],[data-stem-theme=\"contrast\"] .gw-root .gw-placement-hint[data-placement-state=\"aim\"]{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gw-placement-hint .gw-placement-aim,[data-stem-theme=\"contrast\"] .gw-placement-hint .gw-placement-aim{background:#000;color:#0f0;border:2px solid #0f0}.theme-contrast .gw-placement-shortcut kbd,[data-stem-theme=\"contrast\"] .gw-placement-shortcut kbd{background:#000;color:#fff;border-color:#fff}",
       ".gw-feedback-stack{display:contents}@media(min-width:801px) and (min-height:521px){#geoworld-fs-workspace .gw-feedback-stack{position:absolute;bottom:186px;left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;width:max-content;max-width:min(680px,calc(100% - 36px));pointer-events:none}#geoworld-fs-workspace .gw-feedback-stack>.gw-placement-hint,#geoworld-fs-workspace .gw-feedback-stack>.gw-action-feedback{position:relative!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0;max-width:100%!important}}",
       "@media(min-width:801px) and (min-height:521px) and (max-height:620px){#geoworld-fs-workspace .gw-feedback-stack{top:112px;bottom:auto}}",
       ".gw-npc-speech{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:2px 0 10px;padding:6px 8px;border-radius:10px;border:1px solid rgba(148,163,184,0.25);background:rgba(15,23,42,0.45)}.gw-npc-speech button{min-height:32px;padding:4px 10px;border-radius:8px;border:1px solid rgba(148,163,184,0.4);background:rgba(30,41,59,0.85);color:#e2e8f0;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.gw-npc-speech button[disabled]{opacity:.45;cursor:default}.gw-npc-speech .gw-npc-speech-play{border-color:rgba(251,191,36,0.55);color:#fde68a}.gw-npc-speech .gw-npc-speech-mute[aria-pressed=\"true\"]{opacity:.7}.gw-npc-speech .gw-npc-speech-auto{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#cbd5e1}.gw-npc-speech .gw-npc-speech-status{flex-basis:100%;font-size:10px;color:#94a3b8}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"error\"]{color:#fca5a5}.gw-npc-speech .gw-npc-speech-status[data-speech-status=\"speaking\"]{color:#86efac}@media(pointer:coarse){.gw-npc-speech button{min-height:44px;min-width:44px}}",
@@ -7113,11 +7113,13 @@
             break;
           }
         }
-        if (nudge && wrongCount > growthNudgeDismissed) {
+        if (nudge && wrongCount > growthNudgeDismissed && !d.growthNudgeOptOut) {
           upd({ showGrowthNudge: true, growthNudgeMsg: nudge.icon + ' ' + nudge.msg, growthNudgeDismissed: wrongCount });
         }
       }
 
+      // A frustration nudge helps the first time; after that it interrupts.
+      var GROWTH_NUDGE_COOLDOWN_MS = 5 * 60 * 1000;
       // Check for rapid block break cycles (behavioral frustration signal)
       function checkBreakFrustration() {
         var eng = window[engineKey];
@@ -7127,10 +7129,16 @@
           return e.type === 'block_remove' && (now - e.timestamp) < 10000; // last 10 seconds
         });
         if (recentBreaks.length >= 8 && (now / 1000) > 30) {
-          // 8+ breaks in 10 seconds after 30s of play = likely frustration
+          // 8+ breaks in 10 seconds after 30s of play = likely frustration.
+          // This used to re-fire whenever the streak condition held, so simply
+          // clearing a build reopened the card again and again. Respect the
+          // opt-out and rate-limit to once every few minutes otherwise.
+          if (d.growthNudgeOptOut) return;
+          var lastNudge = Number(d.growthNudgeLastAt || 0);
+          if (lastNudge && (now - lastNudge) < GROWTH_NUDGE_COOLDOWN_MS) return;
           var msg = '\uD83D\uDE0C It looks like you\u2019re tearing things down. That\u2019s okay \u2014 sometimes we need to start fresh! Try pressing M to measure a structure before breaking it. You might discover something cool.';
           if (!showGrowthNudge) {
-            upd({ showGrowthNudge: true, growthNudgeMsg: msg });
+            upd({ showGrowthNudge: true, growthNudgeMsg: msg, growthNudgeLastAt: now });
           }
         }
       }
@@ -10518,7 +10526,12 @@
 
 
         canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
-          if (!engine.isLocked) return;
+          // Placing and breaking used to require pointer lock, so in free-cursor
+          // mode (Esc pressed, or a host that never grants lock) left/right click
+          // silently did nothing while B and X kept working — the mouse looked
+          // broken. Gate on the same isInputActive() the keyboard uses, which
+          // already covers lock, touch and a focused viewport.
+          if (!engine.isInputActive || !engine.isInputActive()) return;
           if(ev.button===1){
             if(document.pointerLockElement!==canvas)return;
             ev.preventDefault();engine.matchAimedBlock();return;
@@ -15037,6 +15050,15 @@
           : d.placementHint.allowed ? '\u2713':'!'),
           el('span',{className:'gw-placement-text'},d.placementHint.code === 'no_target' ? 'Look down at the nearby ground or a block face.' : d.placementHint.reason),
           d.placementHint.allowed && el('span',{className:'gw-placement-shortcut'},isMobile && touchMode ? 'Tap Place' : el(React.Fragment,null,el('kbd',null,'B'),' to place')),
+          // Placing has had a visible affordance for a while; removing was mouse-only
+          // folklore (left click, or X if you knew). Show it beside Place and make
+          // both clickable so a student is never stuck with a block they cannot undo.
+          !(isMobile && touchMode) && el('button',{type:'button',className:'gw-placement-shortcut gw-placement-remove gw-focusable',
+            'aria-keyshortcuts':'X',
+            'aria-label':__alloT('stem.geometryworld.a11y_remove_aimed_block','Remove the block you are aiming at. Shortcut X'),
+            title:__alloT('stem.geometryworld.remove_block_title','Remove the aimed block (X)'),
+            onClick:function(){var eng=window[engineKey];if(eng && eng.interactAtCrosshair)eng.interactAtCrosshair('break');focusWorldSurface();}},
+            el('kbd',null,'X'),' ',__alloT('stem.geometryworld.remove_block_short','to remove')),
           d.placementHint.aim && el('button',{type:'button',className:'gw-placement-aim gw-focusable','aria-label':__alloT('stem.geometryworld.aim_at_build_area','Aim at the build area'),onClick:function(){var eng=window[engineKey];if(eng && eng.aimAtBuildArea)eng.aimAtBuildArea();focusWorldSurface();}},__alloT('stem.geometryworld.aim_at_build_area_short','Aim at build area'))),
         // ── Action feedback toast (center-bottom, fades in/out) ──
         actionFeedback && el('div', { className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
@@ -15187,7 +15209,7 @@
           role: 'region', 'aria-labelledby': 'gw-tutorial-title', 'aria-describedby': 'gw-tutorial-instruction', 'aria-live': 'polite', 'aria-atomic': 'true',
           style: { position: 'absolute', bottom: '140px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none', textAlign: 'center', maxWidth: '340px' }
         },
-          el('div', { className: 'gw-tutorial-card', style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px) saturate(120%)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
+          el('div', { className: 'gw-tutorial-card', style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px) saturate(120%)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'none' } },
             el('div', { className: 'gw-tutorial-kicker' }, 'Quick tour'),
             el('h3', { id: 'gw-tutorial-title', className: 'gw-tutorial-title' },
               ['Explore the world', 'Meet a guide', 'Measure a structure', 'Build a block'][tutorialStep]
@@ -15211,7 +15233,7 @@
               el('button', { type: 'button', className: 'gw-tutorial-skip gw-focusable',
                 'aria-label': __alloT('stem.geometryworld.skip_tutorial_and_proceed_to_lesson', 'Skip tutorial and proceed to lesson'),
                 onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
-                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
+                style: { pointerEvents: 'auto', background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
               }, 'Skip tutorial'),
               el('button', { type: 'button', className: 'gw-tutorial-next gw-focusable',
                 'aria-label': tutorialStep === 3 ? 'Finish tutorial and start exploring' : __alloT('stem.geometryworld.next_tutorial_step', 'Next tutorial step'),
@@ -15787,6 +15809,11 @@
               onClick: function() { upd('showGrowthNudge', false); },
               style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
             }, 'I\u2019ve got this! \uD83D\uDCAA'),
+            el('button', {
+              onClick: function() { upd({ showGrowthNudge: false, growthNudgeOptOut: true }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.geometryworld.sr_growth_nudge_off', 'Growth mindset moments turned off for this world.')); },
+              title: __alloT('stem.geometryworld.growth_nudge_off_title', 'Stop showing Growth Mindset Moments in this world'),
+              style: { background: 'transparent', color: 'var(--allo-stem-text-soft, #cbd5e1)', border: '1px solid var(--allo-stem-border, #64748b)', borderRadius: '8px', padding: '8px 16px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+            }, __alloT('stem.geometryworld.growth_nudge_off', 'Don’t show these again')),
             callGemini && el('button', {
               onClick: function() {
                 upd({ showGrowthNudge: false, showNpcDialog: false });

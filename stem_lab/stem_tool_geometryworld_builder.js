@@ -2203,7 +2203,7 @@
       if (presentation) project.state.sandboxDockCollapsed=!!presentation.collapsed;
     }
     window.__alloGeometryWorldReturnProject = project;
-    window.__alloPrintLabPendingHandoff = {
+    var handoffMarker = {
       schema: 'alloflow-print-source/1',
       id: projectId, projectId: projectId, coordinateSystem: 'z-up',
       sourceTool: 'geometryWorld', format: 'STL',
@@ -2215,10 +2215,32 @@
       sourceModel: bundle.sourceModel,
       summary: { blockCount: bundle.blockCount, triangleCount: bundle.triangleCount, shapedCount: bundle.shapedCount, dimensions: bundle.dimensions }
     };
+    window.__alloPrintLabPendingHandoff = handoffMarker;
     if (eng.logEvent) eng.logEvent('print_lab_handoff', { blocks: bundle.blockCount, triangles: bundle.triangleCount, shapedBlocks: bundle.shapedCount });
     if (navigating) {
+      // ctx.setStemLabTool exists in every host, but the loader substitutes a
+      // silent no-op when the surrounding app never supplied a real setter, and
+      // some hosts ignore an unknown tool id. Either way the old code announced
+      // "Opening Print Lab" and the student sat on an unchanged screen with no
+      // model and no file. Confirm the switch actually happened and fall back to
+      // the STL download below when it did not.
       announce(ctx, 'Selected build prepared locally. Opening Print Lab.', 'success');
-      ctx.setStemLabTool('printLab');
+      var switched = false;
+      try { ctx.setStemLabTool('printLab'); switched = true; } catch (navError) { switched = false; }
+      if (switched && typeof window !== 'undefined') {
+        window.setTimeout(function () {
+          // The handoff is deleted by Print Lab once it mounts and consumes it.
+          // Still sitting there means no Print Lab ever picked it up.
+          if (window.__alloPrintLabPendingHandoff !== handoffMarker) return;
+          var stranded = printUnit(context.unitMm);
+          try {
+            downloadBlob(new Blob([scaleStlForDownload(bundle.buffer, stranded)], { type: 'model/stl' }), 'geometry-world-selected-build-mm.stl');
+            announce(ctx, 'Print Lab did not open here, so the STL was downloaded in millimeters at ' + stranded + ' mm per block. Import it at 100% scale.', 'info');
+          } catch (dlError) {
+            announce(ctx, 'Print Lab could not be opened from this screen. Use Download STL to save the build instead.', 'error');
+          }
+        }, 1200);
+      }
     } else {
       // The Print Lab handoff carries block units plus an explicit scale. A
       // standalone STL has no unit metadata, so apply that scale to a copy of

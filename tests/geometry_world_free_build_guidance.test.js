@@ -111,6 +111,34 @@ describe('Free Build toolbar and placement guidance', () => {
     const ui = mount({ placementHint: { allowed: false, code: 'occupied', reason: 'This cell already has a block' } });
     expect(ui.querySelector('.gw-placement-hint').dataset.placementState).toBe('blocked');
     expect(ui.querySelector('.gw-placement-text').textContent).toBe('This cell already has a block');
-    expect(ui.querySelector('.gw-placement-shortcut')).toBeNull();
+    // No PLACE affordance while the destination is blocked. Scoped to the non-remove
+    // shortcut: the remove button shares .gw-placement-shortcut and is meant to show
+    // here (aiming at an occupied cell is exactly when you want to remove a block).
+    const place = Array.from(ui.querySelectorAll('.gw-placement-shortcut'))
+      .filter((el) => !el.classList.contains('gw-placement-remove'));
+    expect(place).toEqual([]);
+  });
+  it('offers a clickable remove affordance whether or not placing is allowed', () => {
+    // Removing used to be undiscoverable (left click, or X if you already knew), so a
+    // student could be stuck with a block they could not undo. It is a real button with
+    // a 44px target and a keyboard hint, and it is not gated on placementHint.allowed.
+    for (const hint of [
+      { allowed: false, code: 'occupied', reason: 'This cell already has a block' },
+      { allowed: true, code: 'ready', reason: 'Ready to build' },
+    ]) {
+      const ui = mount({ placementHint: hint });
+      const remove = ui.querySelector('button.gw-placement-remove');
+      expect(remove, hint.code + ' shows the remove button').not.toBeNull();
+      expect(remove.getAttribute('aria-keyshortcuts')).toBe('X');
+      expect(remove.getAttribute('aria-label')).toContain('Remove');
+      expect(remove.querySelector('kbd').textContent).toBe('X');
+    }
+  });
+  it('hides the remove button while touch controls are active', () => {
+    // On a phone the on-screen controls own this; a second tap target in the hint row
+    // would crowd the "Tap Place" affordance.
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    const ui = mount({ touchMode: true, placementHint: { allowed: false, code: 'occupied', reason: 'This cell already has a block' } });
+    expect(ui.querySelector('button.gw-placement-remove')).toBeNull();
   });
 });

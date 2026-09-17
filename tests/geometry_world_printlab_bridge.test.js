@@ -897,13 +897,27 @@ describe('every Print Lab handoff survives the trip', () => {
     // payloads (Art Studio tags captured artwork the same way).
     const assign = source.indexOf('window.__alloPrintLabPendingHandoff =');
     expect(assign, file + ' writes the pending slot').toBeGreaterThan(-1);
-    const at = source.indexOf("sourceTool: '" + sourceTool + "'", assign);
-    expect(at, file + ' names its source tool in the handoff').toBeGreaterThan(assign);
+    // The payload may be written inline OR built into a variable immediately above the
+    // assignment (Geometry World's builder hoists it into `handoffMarker`). Both are the
+    // same synchronous handler, so search the handler's window, not just the text after
+    // the assignment — a position-only pin failed on a harmless hoist while the payload,
+    // and Print Lab's `sourceTool === 'geometryWorld'` check, were both intact.
+    // Art Studio and Architecture Studio write the object literal inline AFTER the
+    // assignment; Geometry World's builder hoists it into `handoffMarker` ~800 chars
+    // ABOVE. Cover both directions: it is one synchronous handler either way.
+    const handler = source.slice(Math.max(0, assign - 1600), assign + 2000);
+    expect(handler, file + ' names its source tool in the handoff')
+      .toContain("sourceTool: '" + sourceTool + "'");
+    expect(handler, file + ' declares the handoff schema')
+      .toContain("schema: 'alloflow-print-source/1'");
+    expect(handler, file + ' declares the handoff format').toContain("format: '" + format + "'");
     const navigate = source.indexOf("setStemLabTool('printLab')", assign);
     expect(navigate, file + ' navigates after setting the handoff').toBeGreaterThan(assign);
     // No await between the assignment and the navigation: nothing can unmount the sender in between.
+    // (The format assertion lives with the rest of the payload checks above — searching
+    // only between assign and navigate assumed an inline literal, which the hoisted
+    // `handoffMarker` in Geometry World's builder no longer is.)
     expect(source.slice(assign, navigate)).not.toMatch(/\bawait\b|setTimeout\(/);
-    expect(source.slice(assign, navigate)).toContain("format: '" + format + "'");
   });
 
   it('only RECIPE handoffs are persisted, which is why the STL senders needed the stable key', () => {
