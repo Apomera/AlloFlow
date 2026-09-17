@@ -25,6 +25,7 @@
   var CheckCircle2 = window.CheckCircle2 || _IconFallback;
   var Download = window.Download || _IconFallback;
   var ExternalLink = window.ExternalLink || _IconFallback;
+  var FileText = window.FileText || _IconFallback;
   var Globe = window.Globe || _IconFallback;
   var GraduationCap = window.GraduationCap || _IconFallback;
   var HelpCircle = window.HelpCircle || _IconFallback;
