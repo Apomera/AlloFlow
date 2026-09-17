@@ -437,7 +437,13 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
         seen.add(target);
         // Only image leaves may be restored. Never recreate a removed parent
         // such as a recording, original-image backup, or private evidence.
-        for (const key of ['image', 'imageUrl']) {
+        // sceneImage is the Adventure scene's art. It was missing from this list,
+        // which is the whole reason glossary images reached mailbox students and
+        // adventure art did not: every egress path here restores by KEY NAME,
+        // and adventure happens to use a different key. It goes through the same
+        // safePackImageSource budget as the others, so a large scene is dropped
+        // on the byte cap rather than blowing up the pack.
+        for (const key of ['image', 'imageUrl', 'sceneImage']) {
             if (Object.prototype.hasOwnProperty.call(source, key)) target[key] = safePackImageSource(source[key]);
         }
         if (Array.isArray(source.optionImageUrls) && Array.isArray(target.optionImageUrls)) {

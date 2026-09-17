@@ -10,6 +10,37 @@
 // errors masquerade as a generic "Sorry" toast and are murder to debug.
 
 
+// Protagonist age band (2026-09-17).
+//
+// Two copies of a grade->age map had drifted: this file's stopped at 8th Grade,
+// and the one in adventure_session_handlers_source.jsx keyed its adult entries
+// on 'Higher Ed' / 'Adult' — values the grade dropdown never emits (it emits
+// 'College' and 'Graduate Level'). So every learner above 8th grade fell
+// through to "young student" / "student", and an adult was described to the
+// image and story model as a young one.
+//
+// resolveProtagonistAge() is now the single source for both. 'auto' keeps the
+// audience-matched behaviour and now covers high school and adults; any other
+// value is an explicit choice and wins over the grade.
+const PROTAGONIST_AGE_BY_GRADE = {
+    'Kindergarten': '5 year old child', '1st Grade': '6 year old child', '2nd Grade': '7 year old child',
+    '3rd Grade': '8 year old child', '4th Grade': '9 year old child', '5th Grade': '10 year old child',
+    '6th Grade': '11 year old child', '7th Grade': '12 year old child', '8th Grade': '13 year old teen',
+    '9th Grade': '14 year old teen', '10th Grade': '15 year old teen', '11th Grade': '16 year old teen',
+    '12th Grade': '17 year old teen', 'College': 'adult in their twenties', 'Graduate Level': 'adult professional',
+    // Legacy keys kept so older saved projects resolve as they used to.
+    'Higher Ed': 'adult in their twenties', 'Adult': 'adult professional',
+};
+const PROTAGONIST_AGE_CHOICES = {
+    child: 'child', teen: 'teenager', 'young-adult': 'young adult',
+    adult: 'adult', 'older-adult': 'older adult',
+};
+const resolveProtagonistAge = (choice, gradeLevel) => {
+    const picked = String(choice || 'auto').trim();
+    if (picked && picked !== 'auto' && PROTAGONIST_AGE_CHOICES[picked]) return PROTAGONIST_AGE_CHOICES[picked];
+    return PROTAGONIST_AGE_BY_GRADE[gradeLevel] || 'adult';
+};
+
 const getAdventurePacing = (state = {}) => {
     const bounded = value => Math.max(3, Math.min(50, Math.round(Number(value) || 20)));
     // Old saves keep their previous duration until the learner explicitly edits it.
@@ -319,6 +350,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
             Source Material Context: "${sourceText.substring(0, 1500)}..."
             Debate Topic: "${sourceTopic || "The provided text"}"
             Target Audience: ${gradeLevel} students.
+            PROTAGONIST: The student's in-story character is ${resolveProtagonistAge(deps.adventureProtagonistAge, gradeLevel)}. Reading level still follows the target audience; the character's age does not.
             ${langInstruction}
             ${independentInstruction}
             Task:
@@ -346,6 +378,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
             You are a System Simulation Engine (Civilization/Macro-Scale).
             Source Material Context: "${sourceText.substring(0, 3000)}"
             Target Audience: ${gradeLevel} students.
+            PROTAGONIST: The student's in-story character is ${resolveProtagonistAge(deps.adventureProtagonistAge, gradeLevel)}. Reading level still follows the target audience; the character's age does not.
             ${langInstruction}
             ${independentInstruction}
             ${effectiveInstructions ? `Custom Instructions: ${effectiveInstructions}` : ''}
@@ -392,6 +425,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
             Source Material: "${sourceText.substring(0, 3000)}"
             --- SETTINGS ---
             Target Audience: ${gradeLevel} students.
+            PROTAGONIST: The student's in-story character is ${resolveProtagonistAge(deps.adventureProtagonistAge, gradeLevel)}. Reading level still follows the target audience; the character's age does not.
             ${langInstruction}
             ${toneInstruction}
             ${independentInstruction}
@@ -554,12 +588,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
                   sceneCharacters.push({ name, role: 'Character', appearance: name, portrait: null, isGenerating: false });
               });
               if (sceneCharacters.length === 0) {
-                  const gradeMap = {
-                      'Kindergarten': '5 year old child', '1st Grade': '6 year old child', '2nd Grade': '7 year old child',
-                      '3rd Grade': '8 year old child', '4th Grade': '9 year old child', '5th Grade': '10 year old child',
-                      '6th Grade': '11 year old child', '7th Grade': '12 year old child', '8th Grade': '13 year old teen',
-                  };
-                  const ageDesc = gradeMap[gradeLevel] || 'young student';
+                  const ageDesc = resolveProtagonistAge(deps.adventureProtagonistAge, gradeLevel);
                   sceneCharacters.push({ name: 'Your Character', role: 'Protagonist', appearance: `A friendly ${ageDesc}, the main character of this adventure`, portrait: null, isGenerating: false });
               }
               }
@@ -1836,4 +1865,6 @@ window.AlloModules.AdventureHandlers = {
   normalizeAdventureTurn,
   scheduleAdventureEstablishingShot,
   cancelAdventureEstablishingShot,
+  resolveProtagonistAge,
+  PROTAGONIST_AGE_BY_GRADE,
 };
