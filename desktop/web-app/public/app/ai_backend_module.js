@@ -269,6 +269,12 @@ function _searchTrace(event, detail) {
     } catch (_) { /* diagnostics must never break a search */ }
 }
 
+// Locator scheme for evidence that lives on this device (an uploaded PDF, a
+// pasted excerpt). It is deliberately NOT http(s)/file:/data:, so nothing can
+// dereference it; it exists so a passage the teacher supplied can be cited the
+// way a web result is, with its page and line preserved.
+const ALLO_SOURCE_SCHEME = 'allo-source:';
+
 const WebSearchProvider = {
 
     _trace: _searchTrace,
@@ -907,6 +913,14 @@ const WebSearchProvider = {
                 const parsed = new URL(String(r && (r.url || r.uri) || '').trim());
                 if (parsed.protocol === 'https:' || parsed.protocol === 'http:') safeUrl = parsed.toString();
             } catch (_) {}
+            // A user's own source (an uploaded PDF, a pasted excerpt) has no web
+            // URL. Before this branch it was dropped here with no error, so the
+            // model silently received nothing to ground on. Such a source may
+            // instead carry an ALLO_SOURCE_SCHEME locator minted by
+            // _localSourceLocator() — never a caller-supplied string, and never
+            // a file: or data: URL, so this widens what can be CITED without
+            // widening what can be FETCHED.
+            if (!safeUrl) safeUrl = this._localSourceLocator(r);
             if (!safeUrl) return null;
             return {
                 title: cleanEvidenceText(r && r.title, 300),
@@ -914,6 +928,33 @@ const WebSearchProvider = {
                 snippet: cleanEvidenceText(r && r.snippet, 1000),
             };
         }).filter(Boolean);
+    },
+
+    /**
+     * Mint a citable locator for a source held on this device.
+     *
+     * Returns null unless the caller explicitly marked the row local, so a
+     * remote search result that merely lost its URL still drops out. The shape
+     * is allo-source://<sourceId>#<locator>, which is opaque to fetch() — the
+     * scheme has no handler — but stable enough to cite and to match back to
+     * the passage it came from.
+     */
+    _localSourceLocator(row) {
+        if (!row || row.local !== true) return null;
+        const slug = (value) => String(value == null ? '' : value)
+            .replace(/[ -]+/g, '')
+            .replace(/[^A-Za-z0-9._~:@+-]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 120);
+        const raw = String(row.sourceId || row.id || '');
+        // Reject rather than sanitize anything path-like. Slugging a traversal
+        // attempt yields an inert but confusing citation ("..-..-etc-passwd");
+        // a source whose id is not a plain token is not one we minted.
+        if (/[\\/]|\.\./.test(raw)) return null;
+        const id = slug(raw);
+        if (!id) return null;
+        const at = slug(row.locatorLabel || row.locator);
+        return ALLO_SOURCE_SCHEME + '//' + id + (at ? '#' + at : '');
     },
 
     _buildContextPrompt(results) {

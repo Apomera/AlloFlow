@@ -3541,6 +3541,9 @@
     "custom_instructions": "Custom Instructions",
     "verify_facts": "Research with Web Search",
     "verify_facts_desc": "AI researches your topic and includes inline citations with linked references",
+    "use_my_sources": "Use my own sources",
+    "use_my_sources_desc": "Draws on documents you imported in Lumen. Retrieval happens on this device, and quotations are checked word-for-word against your files.",
+    "use_my_sources_none": "No imported documents yet — add them in Lumen to use this.",
     "generate": "Generate Text",
     "writing": "Writing Content...",
     "actions": {
@@ -4724,7 +4727,10 @@
     "explain_to_class": "Explain to class",
     "try_again": "Try again",
     "edit_response": "Edit response",
-    "submit_reflection": "Submit reflection"
+    "submit_reflection": "Submit reflection",
+    "hide_briefing": "Hide briefing",
+    "show_briefing": "Show briefing",
+    "historical_context": "Historical Context"
   },
   "audit": {
     "section_divider": "Section divider",
@@ -11459,6 +11465,14 @@
     "art_custom": "Custom...",
     "consistent_characters_label": "Consistent Characters",
     "consistent_characters_desc": "Keep the same character appearances across scenes",
+    "protagonist_age_label": "Protagonist age",
+    "protagonist_age_auto": "Auto (match the audience)",
+    "protagonist_age_child": "Child",
+    "protagonist_age_teen": "Teen",
+    "protagonist_age_young_adult": "Young adult",
+    "protagonist_age_adult": "Adult",
+    "protagonist_age_older_adult": "Older adult",
+    "protagonist_age_help": "Who the learner plays as. Auto follows the target level. Reading level is unchanged either way.",
     "custom_art_placeholder": "Describe your preferred art style...",
     "maximize": "Maximize",
     "low_quality": "Low Quality Visuals",

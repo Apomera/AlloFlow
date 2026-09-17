@@ -599,7 +599,15 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
       });
     }
     if (item.type === "adventure" && item.data) {
+      // The adventure writer stores the live scene under data.snapshot
+      // (`data: { snapshot: adventureState }`), so reading data.sceneImage here
+      // found undefined every time and no asset was ever created - which is why
+      // glossary images reached students and adventure art did not. Keep the
+      // legacy top-level read for older saved resources.
       processField(item.data, "sceneImage", seed);
+      if (item.data.snapshot && typeof item.data.snapshot === "object") {
+        processField(item.data.snapshot, "sceneImage", seed.concat(["snapshot"]));
+      }
       if (Array.isArray(item.data.inventory)) {
         item.data.inventory.forEach((inv, invIndex) => processField(inv, "image", seed.concat(["inventory", invIndex])));
       }
@@ -747,6 +755,7 @@ const hydrateSessionAssets = async (appId, resources) => {
     if (item.type === "glossary" && Array.isArray(item.data)) item.data.forEach((term) => restoreField(term, "image"));
     if (item.type === "adventure" && item.data) {
       restoreField(item.data, "sceneImage");
+      if (item.data.snapshot && typeof item.data.snapshot === "object") restoreField(item.data.snapshot, "sceneImage");
       if (Array.isArray(item.data.inventory)) item.data.inventory.forEach((inv) => restoreField(inv, "image"));
     }
     if (item.type === "persona" && Array.isArray(item.data)) item.data.forEach((persona) => restoreField(persona, "avatarUrl"));

@@ -173,6 +173,17 @@
                      debateMomentum: rest.snapshot.debateMomentum,
                      missionReportDismissed: rest.snapshot.missionReportDismissed,
                      inventory: cleanInventory,
+                     // The current scene and its art. Without these the student
+                     // receives an adventure with no picture and no scene text:
+                     // glossary keeps its shape and loses one `image` leaf, but
+                     // this allowlist used to drop sceneImage and currentScene
+                     // wholesale, so there was nothing left for the asset
+                     // uploader or the mailbox serializer to restore.
+                     // sceneImage is nulled here like every other binary and is
+                     // re-attached downstream (session_assets ref, or the mailbox
+                     // pack), exactly as glossary's term images are.
+                     currentScene: rest.snapshot.currentScene,
+                     sceneImage: null,
                  };
              }
              return { ...item, data: { ...rest, sceneImage: null, inventory: cleanInventory, snapshot: cleanSnapshot } };
