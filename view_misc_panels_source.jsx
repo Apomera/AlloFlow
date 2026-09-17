@@ -2176,8 +2176,32 @@ function SourceGenPanel(props) {
     setTargetStandards, showSourceGen, sourceCustomInstructions, sourceLength,
     sourceLevel, sourceTone, sourceTopic, sourceVocabulary,
     standardInputValue, standardMode, studentInterests, suggestedStandards, t,
-    targetStandards
+    targetStandards, useOwnSources, setUseOwnSources
   } = props;
+  // Own-source grounding is only useful once the teacher has imported documents,
+  // so the panel asks Lumen how many there are. A control that is always on but
+  // silently does nothing is worse than one that explains why it is unavailable.
+  // Reads local storage only — no network, nothing sent anywhere.
+  const [ownSourceCount, setOwnSourceCount] = React.useState(null);
+  React.useEffect(() => {
+    if (!showSourceGen) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const E = typeof window !== 'undefined' && window.LumenEvidence;
+        if (!E || typeof E.createProjectStore !== 'function') { if (!cancelled) setOwnSourceCount(0); return; }
+        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
+        const project = store && typeof store.load === 'function' ? await store.load() : null;
+        const n = project && Array.isArray(project.sources)
+          ? project.sources.filter((s) => s && s.active !== false).length
+          : 0;
+        if (!cancelled) setOwnSourceCount(n);
+      } catch (_) {
+        if (!cancelled) setOwnSourceCount(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [showSourceGen]);
   if (!(showSourceGen)) return null;
   // N7 (2026-08-16): the standards finder inside this panel read the UNIVERSAL
   // SETTINGS grade, even though this section carries its own target level right
@@ -2446,6 +2470,30 @@ function SourceGenPanel(props) {
                           </div>
                           {includeSourceCitations && (
                               <p className="text-[11px] text-purple-700 ml-6 leading-relaxed">{t('input.verify_facts_desc')}</p>
+                          )}
+                          {/* Own-source grounding sits inside the same card as web
+                              search, as a quieter second line: it is the same kind of
+                              choice (where do the facts come from?) and having it as a
+                              separate block would overstate it. Hidden entirely until
+                              the teacher has imported something, so the default panel
+                              is no busier than before. */}
+                          {ownSourceCount !== null && ownSourceCount > 0 && (
+                              <div className="flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70">
+                                  <input aria-label={t('input.use_my_sources')}
+                                      id="useOwnSources"
+                                      type="checkbox"
+                                      checked={!!useOwnSources}
+                                      onChange={(e) => setUseOwnSources && setUseOwnSources(e.target.checked)}
+                                      className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
+                                  />
+                                  <label htmlFor="useOwnSources" className="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5">
+                                      <FileText size={12} className="text-purple-600" aria-hidden="true"/> {t('input.use_my_sources')}
+                                      <span className="font-normal text-purple-700">({ownSourceCount})</span>
+                                  </label>
+                              </div>
+                          )}
+                          {ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && (
+                              <p className="text-[11px] text-purple-700 ml-12 leading-relaxed">{t('input.use_my_sources_desc')}</p>
                           )}
                       </div>
                       <button aria-label={t('common.generate_source_text')}

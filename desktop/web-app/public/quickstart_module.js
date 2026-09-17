@@ -431,6 +431,7 @@ const QuickStartWizard = React.memo(({
     searchOptions: [],
     tone: 'Informative',
     verification: false,
+    useOwnSources: false,
     sourceCustomInstructions: '',
     dokLevel: '',
     vocabulary: '',
@@ -450,6 +451,28 @@ const QuickStartWizard = React.memo(({
   const [region, setRegion] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const standardsListRef = useRef(null);
+  // How many documents the teacher has imported into Lumen. Read once when the
+  // wizard opens, from local storage only. The toggle below stays hidden at 0,
+  // so a teacher who has imported nothing never sees a control that would do
+  // nothing for them.
+  const [wizOwnSourceCount, setWizOwnSourceCount] = useState(0);
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const E = typeof window !== 'undefined' && window.LumenEvidence;
+        if (!E || typeof E.createProjectStore !== 'function') return;
+        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
+        const project = store && typeof store.load === 'function' ? await store.load() : null;
+        const n = project && Array.isArray(project.sources) ? project.sources.filter(s => s && s.active !== false).length : 0;
+        if (!cancelled) setWizOwnSourceCount(n);
+      } catch (_) {/* the toggle simply stays hidden */}
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
   const wizardStepHelp = {
     1: {
       title: 'Step 1: Grade Level',
@@ -1672,7 +1695,29 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement(ShieldCheck, {
     size: 16,
     className: "text-purple-500"
-  }), " ", t('wizard.verify_facts'))), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('wizard.verify_facts'))), wizOwnSourceCount > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100"
+  }, /*#__PURE__*/React.createElement("input", {
+    dir: "auto",
+    "aria-label": t('input.use_my_sources'),
+    type: "checkbox",
+    id: "wiz-own-sources",
+    checked: localData.useOwnSources,
+    onChange: e => setLocalData(prev => ({
+      ...prev,
+      useOwnSources: e.target.checked
+    })),
+    className: "w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300 cursor-pointer"
+  }), /*#__PURE__*/React.createElement("label", {
+    htmlFor: "wiz-own-sources",
+    className: "text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(FileText, {
+    size: 16,
+    className: "text-purple-500",
+    "aria-hidden": "true"
+  }), " ", t('input.use_my_sources'), /*#__PURE__*/React.createElement("span", {
+    className: "font-normal text-slate-500"
+  }, "(", wizOwnSourceCount, ")"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.next'),
     onClick: () => setStep(4),

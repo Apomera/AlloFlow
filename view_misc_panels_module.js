@@ -1770,8 +1770,33 @@ function SourceGenPanel(props) {
     studentInterests,
     suggestedStandards,
     t,
-    targetStandards
+    targetStandards,
+    useOwnSources,
+    setUseOwnSources
   } = props;
+  const [ownSourceCount, setOwnSourceCount] = React.useState(null);
+  React.useEffect(() => {
+    if (!showSourceGen) return void 0;
+    let cancelled = false;
+    (async () => {
+      try {
+        const E = typeof window !== "undefined" && window.LumenEvidence;
+        if (!E || typeof E.createProjectStore !== "function") {
+          if (!cancelled) setOwnSourceCount(0);
+          return;
+        }
+        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
+        const project = store && typeof store.load === "function" ? await store.load() : null;
+        const n = project && Array.isArray(project.sources) ? project.sources.filter((s) => s && s.active !== false).length : 0;
+        if (!cancelled) setOwnSourceCount(n);
+      } catch (_) {
+        if (!cancelled) setOwnSourceCount(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showSourceGen]);
   if (!showSourceGen) return null;
   const finderGrade = sourceLevel || gradeLevel;
   const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
@@ -1966,7 +1991,17 @@ function SourceGenPanel(props) {
       onChange: (e) => setIncludeSourceCitations(e.target.checked),
       className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc"))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "includeCitations", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Search, { size: 12, className: "text-purple-600" }), " ", t("input.verify_facts"))), includeSourceCitations && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-6 leading-relaxed" }, t("input.verify_facts_desc")), ownSourceCount !== null && ownSourceCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 ml-6 pt-1.5 border-t border-purple-200/70" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("input.use_my_sources"),
+      id: "useOwnSources",
+      type: "checkbox",
+      checked: !!useOwnSources,
+      onChange: (e) => setUseOwnSources && setUseOwnSources(e.target.checked),
+      className: "w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
+    }
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useOwnSources", className: "text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(FileText, { size: 12, className: "text-purple-600", "aria-hidden": "true" }), " ", t("input.use_my_sources"), /* @__PURE__ */ React.createElement("span", { className: "font-normal text-purple-700" }, "(", ownSourceCount, ")"))), ownSourceCount !== null && ownSourceCount > 0 && useOwnSources && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-700 ml-12 leading-relaxed" }, t("input.use_my_sources_desc"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.generate_source_text"),

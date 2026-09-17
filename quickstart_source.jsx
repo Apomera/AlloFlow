@@ -307,6 +307,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       searchOptions: [],
       tone: 'Informative',
       verification: false,
+      useOwnSources: false,
       sourceCustomInstructions: '',
       dokLevel: '',
       vocabulary: '',
@@ -326,6 +327,28 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
   const [region, setRegion] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const standardsListRef = useRef(null);
+  // How many documents the teacher has imported into Lumen. Read once when the
+  // wizard opens, from local storage only. The toggle below stays hidden at 0,
+  // so a teacher who has imported nothing never sees a control that would do
+  // nothing for them.
+  const [wizOwnSourceCount, setWizOwnSourceCount] = useState(0);
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const E = typeof window !== 'undefined' && window.LumenEvidence;
+        if (!E || typeof E.createProjectStore !== 'function') return;
+        const store = E.createProjectStore(E.readingScope ? E.readingScope({}) : {});
+        const project = store && typeof store.load === 'function' ? await store.load() : null;
+        const n = project && Array.isArray(project.sources)
+          ? project.sources.filter((s) => s && s.active !== false).length
+          : 0;
+        if (!cancelled) setWizOwnSourceCount(n);
+      } catch (_) { /* the toggle simply stays hidden */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isOpen]);
   const wizardStepHelp = {
     1: { title: 'Step 1: Grade Level', text: 'Select the grade level for your content. This determines vocabulary complexity, sentence structure, and concept depth. All generated materials will be calibrated to this level. You can always change it later in settings.' },
     2: { title: 'Step 2: Source Material', text: 'Choose how to provide your lesson content. You can paste or type text directly, fetch content from a URL, upload a file, or let the AI generate content from a topic. Each option creates a rich source document for all tools to work from.' },
@@ -1327,6 +1350,21 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           <ShieldCheck size={16} className="text-purple-500"/> {t('wizard.verify_facts')}
                                       </label>
                                   </div>
+                                  {wizOwnSourceCount > 0 && (
+                                  <div className="flex items-center gap-2 bg-purple-50 p-3 rounded-xl border border-purple-100">
+                                      <input dir="auto" aria-label={t('input.use_my_sources')}
+                                          type="checkbox"
+                                          id="wiz-own-sources"
+                                          checked={localData.useOwnSources}
+                                          onChange={(e) => setLocalData(prev => ({ ...prev, useOwnSources: e.target.checked }))}
+                                          className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300 cursor-pointer"
+                                      />
+                                      <label htmlFor="wiz-own-sources" className="text-sm font-bold text-slate-700 cursor-pointer flex items-center gap-2">
+                                          <FileText size={16} className="text-purple-500" aria-hidden="true"/> {t('input.use_my_sources')}
+                                          <span className="font-normal text-slate-500">({wizOwnSourceCount})</span>
+                                      </label>
+                                  </div>
+                                  )}
                                   <button type="button"
                                       aria-label={t('common.next')}
                                       onClick={() => setStep(4)}
