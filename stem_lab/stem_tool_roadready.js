@@ -2787,6 +2787,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   var RR_INTERSECTION_CROSSWALK_OFFSET = 2.8;
+  // Seconds an AI vehicle will sit stopped for a pedestrian who is waiting at the
+  // curb but not actually crossing. Bounds the courtesy yield so a curbside walker
+  // can never hold a lane indefinitely. Active crossings are never timed out.
+  var RR_CURB_YIELD_HOLD_MAX = 4;
   var RR_INTERSECTION_STOP_LINE_GAP = 1.3;
   function intersectionStopLineCoordinate(intersectionCenter, travelSign) {
     var direction = Number(travelSign) < 0 ? -1 : 1;
@@ -5207,7 +5211,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         sidewalkLeft: sidewalkLeft,
         sidewalkRight: sidewalkRight,
         kind: kind,
-        dartCooldown: 0 // kids may dart into street
+        dartCooldown: 0, // kids may dart into street
+        crossDwell: 0 // seconds to linger on the far curb after a crossing
       });
     }
     return peds;
@@ -5266,6 +5271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         sidewalkRightY: rightSidewalkPoint.y,
         kind: kind,
         dartCooldown: 0,
+        crossDwell: 0,
         _chunk: chunkIndex,
         _roadStation: pedCrosswalkY,
         _sidewalkLateral: side < 0 ? -sidewalkOffset : sidewalkOffset,
@@ -12630,6 +12636,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // enter it. The AI scans peds along its path and reacts if any are within the
             // crosswalk span (or waiting curbside in our direction of travel).
             var pedsForYield = pedsRef.current || [];
+            // A curbside walker who never steps off must not hold a lane forever.
+            // Once we have actually come to rest for one, the courtesy hold expires
+            // and we proceed; an ACTIVE crossing below is never timed out.
+            var curbHoldSeen = false;
             for (var pyi = 0; pyi < pedsForYield.length; pyi++) {
               var py = pedsForYield[pyi];
               if (!py.crossing && !py.waitingAtCrosswalk) continue;
@@ -12644,8 +12654,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               } else if (py.waitingAtCrosswalk) {
                 // Waiting at curb: slow down — in many states, drivers must yield to peds
                 // waiting at a marked crosswalk intending to cross.
-                if (pedRel.ahead < 6) slowFor = Math.max(slowFor, 1);
+                if (pedRel.ahead < 6) {
+                  curbHoldSeen = true;
+                  if ((t._curbYieldHold || 0) < RR_CURB_YIELD_HOLD_MAX) {
+                    slowFor = Math.max(slowFor, 1);
+                  }
+                }
               }
+            }
+            // Accrue the hold only while stopped for a curbside ped; reset otherwise
+            // so a normal yield-then-go never inherits a stale timer.
+            if (curbHoldSeen && Math.abs(t.speed || 0) < 1) {
+              t._curbYieldHold = (t._curbYieldHold || 0) + dt;
+            } else if (!curbHoldSeen) {
+              t._curbYieldHold = 0;
             }
             // If THIS vehicle is a school bus with active stop-arm, it must be stopped.
             if (t.type === 'schoolbus' && t._stopArmActive) slowFor = 2;
@@ -15370,7 +15392,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Also consider the player's own car — they may run the red.
                 scanVehicles(playerCar);
               }
-              var canCross = signalPermits && !trafficImminent;
+              // Post-crossing dwell: a walker who just reached the far curb has
+              // somewhere to be. Without this they flip crossDirection on arrival
+              // and immediately re-cross, and because the yielding car reads as
+              // "stopped, not imminent" the return trip is always permitted —
+              // a ping-pong that holds traffic at the crosswalk indefinitely.
+              if (p.crossDwell > 0 && !p.crossing) p.crossDwell -= dt;
+              var canCross = signalPermits && !trafficImminent &&
+                !(p.crossDwell > 0 && !p.crossing);
               // Kid dart: small chance to step into the street WITHOUT checking traffic.
               // Models the unpredictability lesson copy promises ("Expect children to dart").
               // Armed when dartCooldown <= 0 (kids spawn armed), then re-armed every 8–15s.
@@ -15443,6 +15472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     p.homeX = crossPoint.x;
                     p.homeY = crossPoint.y;
                     p.crossDirection *= -1;
+                    p.crossDwell = 6 + Math.random() * 10;
                     p.vx = 0;
                     p.vy = 0;
                   }
@@ -15453,6 +15483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     p.x = targetSidewalk;
                     p.homeX = targetSidewalk;
                     p.crossDirection *= -1;
+                    p.crossDwell = 6 + Math.random() * 10;
                     p.vx = 0;
                   }
                 }
