@@ -941,8 +941,16 @@ const renderOutlineContent = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   // Fallback if older host hasn't passed broadcastInteractiveOrganizer yet — no-op, local-only behavior preserved.
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {});
-  const _liveReadinessFor = (type) => typeof deps.getLiveOrganizerReadiness === 'function'
-    ? deps.getLiveOrganizerReadiness(type, generatedContent)
+  // Readiness MUST be judged against the same organizer the renderer drew.
+  // This used to re-read the raw generatedContent while the caller derived the
+  // activity type from normalizeVisualOrganizerData(...) - two different views
+  // of the resource. When normalisation supplied or repaired a structureType,
+  // the activity and the contract disagreed and the user was told "This
+  // activity does not match the open visual organizer" about a button the app
+  // had itself derived from that organizer. Passing the rendered resource in
+  // makes that contradiction unrepresentable rather than better-worded.
+  const _liveReadinessFor = (type, resourceOverride) => typeof deps.getLiveOrganizerReadiness === 'function'
+    ? deps.getLiveOrganizerReadiness(type, resourceOverride || generatedContent)
     : { ok: true };
   const _closeLiveOrganizerPreview = (type) => {
     if (!isTeacherMode || interactiveOrganizerSync?.type !== type
@@ -1005,16 +1013,21 @@ const renderOutlineContent = (deps) => {
         const type = structureType || 'Structured Outline';
         const activityTypeByStructure = {
             'Flow Chart': 'pipeline', 'Process Flow / Sequence': 'pipeline',
-            'T-Chart': 'tchart', Fishbone: 'fishbone', 'Cause and Effect': 'cesort',
+            'T-Chart': 'tchart', 'Fishbone': 'fishbone', 'Cause and Effect': 'cesort',
             'Problem Solution': 'problemsolution', 'Key Concept Map': 'conceptmap', 'Mind Map': 'conceptmap',
             'Frayer Model': 'frayer', 'See-Think-Wonder': 'seethinkwonder', 'Story Map': 'storymap',
             'Structured Outline': 'outline',
         };
         const organizerActivityType = activityTypeByStructure[type] || null;
-        const organizerLaunchReadiness = organizerActivityType ? _liveReadinessFor(organizerActivityType) : { ok: true };
+        // One resource, one truth: the activity type and its readiness contract
+        // are both derived from the organizer as NORMALISED above, so a repaired
+        // or defaulted structureType cannot make them disagree.
+        const organizerResource = { ...generatedContent, data: organizerData };
+        const _readinessFor = (activityType) => _liveReadinessFor(activityType, organizerResource);
+        const organizerLaunchReadiness = organizerActivityType ? _readinessFor(organizerActivityType) : { ok: true };
         const showGameButton = !!organizerActivityType;
         const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {
-            const readiness = _liveReadinessFor(activityType);
+            const readiness = _readinessFor(activityType);
             if (!readiness.ok) {
                 if (typeof deps.addToast === 'function') deps.addToast(readiness.message || 'Finish setting up this organizer before starting the activity.', 'info');
                 return false;
@@ -2544,7 +2557,7 @@ const renderOutlineContent = (deps) => {
                             onGameComplete={handleGameCompletion}
                             isTeacherMode={isTeacherMode}
                             armed={!!isInteractivePalaceRecall}
-                            liveRecallReadiness={_liveReadinessFor('palacerecall')}
+                            liveRecallReadiness={_readinessFor('palacerecall')}
                             onActivityReady={deps.handleInteractiveOrganizerReady}
                             onActivityFailed={deps.handleInteractiveOrganizerFailed}
                             onRecallArm={() => {
@@ -2580,8 +2593,8 @@ const renderOutlineContent = (deps) => {
                             isTeacherMode={isTeacherMode}
                             armed={!!isInteractiveStrandChallenge}
                             recallArmed={!!isInteractiveConceptRecall3d}
-                            challengeLiveReadiness={_liveReadinessFor('strandchallenge3d')}
-                            recallLiveReadiness={_liveReadinessFor('conceptrecall3d')}
+                            challengeLiveReadiness={_readinessFor('strandchallenge3d')}
+                            recallLiveReadiness={_readinessFor('conceptrecall3d')}
                             onActivityReady={deps.handleInteractiveOrganizerReady}
                             onActivityFailed={deps.handleInteractiveOrganizerFailed}
                             onChallengeArm={() => {

@@ -775,7 +775,7 @@ const renderOutlineContent = (deps) => {
   const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort, isFrayerSortPlaying, setIsFrayerSortPlaying, closeFrayerSort, isSeeThinkWonderSortPlaying, setIsSeeThinkWonderSortPlaying, closeSeeThinkWonderSort, isStoryMapSortPlaying, setIsStoryMapSortPlaying, closeStoryMapSort, isInteractiveTChart, setIsInteractiveTChart, isInteractiveCESort, setIsInteractiveCESort, isInteractivePipeline, setIsInteractivePipeline, isInteractiveConceptMapSort, setIsInteractiveConceptMapSort, isInteractiveOutlineSort, setIsInteractiveOutlineSort, isInteractiveFishboneSort, setIsInteractiveFishboneSort, isInteractiveProblemSolutionSort, setIsInteractiveProblemSolutionSort, isInteractiveFrayerSort, setIsInteractiveFrayerSort, isInteractiveSeeThinkWonderSort, setIsInteractiveSeeThinkWonderSort, isInteractiveStoryMapSort, setIsInteractiveStoryMapSort, isInteractiveStrandChallenge, setIsInteractiveStrandChallenge, isInteractiveConceptRecall3d, setIsInteractiveConceptRecall3d, isInteractivePalaceRecall, setIsInteractivePalaceRecall, broadcastInteractiveOrganizer, interactiveOrganizerSync } = deps;
   const _broadcastInteractiveOrganizer = broadcastInteractiveOrganizer || (() => {
   });
-  const _liveReadinessFor = (type2) => typeof deps.getLiveOrganizerReadiness === "function" ? deps.getLiveOrganizerReadiness(type2, generatedContent) : { ok: true };
+  const _liveReadinessFor = (type2, resourceOverride) => typeof deps.getLiveOrganizerReadiness === "function" ? deps.getLiveOrganizerReadiness(type2, resourceOverride || generatedContent) : { ok: true };
   const _closeLiveOrganizerPreview = (type2) => {
     if (!isTeacherMode || interactiveOrganizerSync?.type !== type2 || !["starting", "live"].includes(interactiveOrganizerSync.status)) return;
     if (typeof deps.addToast === "function") {
@@ -820,7 +820,7 @@ const renderOutlineContent = (deps) => {
     "Flow Chart": "pipeline",
     "Process Flow / Sequence": "pipeline",
     "T-Chart": "tchart",
-    Fishbone: "fishbone",
+    "Fishbone": "fishbone",
     "Cause and Effect": "cesort",
     "Problem Solution": "problemsolution",
     "Key Concept Map": "conceptmap",
@@ -831,10 +831,12 @@ const renderOutlineContent = (deps) => {
     "Structured Outline": "outline"
   };
   const organizerActivityType = activityTypeByStructure[type] || null;
-  const organizerLaunchReadiness = organizerActivityType ? _liveReadinessFor(organizerActivityType) : { ok: true };
+  const organizerResource = { ...generatedContent, data: organizerData };
+  const _readinessFor = (activityType) => _liveReadinessFor(activityType, organizerResource);
+  const organizerLaunchReadiness = organizerActivityType ? _readinessFor(organizerActivityType) : { ok: true };
   const showGameButton = !!organizerActivityType;
   const _startOrganizerGame = (activityType, startLocal, activityConfig = null) => {
-    const readiness = _liveReadinessFor(activityType);
+    const readiness = _readinessFor(activityType);
     if (!readiness.ok) {
       if (typeof deps.addToast === "function") deps.addToast(readiness.message || "Finish setting up this organizer before starting the activity.", "info");
       return false;
@@ -1679,7 +1681,7 @@ const renderOutlineContent = (deps) => {
         onGameComplete: handleGameCompletion,
         isTeacherMode,
         armed: !!isInteractivePalaceRecall,
-        liveRecallReadiness: _liveReadinessFor("palacerecall"),
+        liveRecallReadiness: _readinessFor("palacerecall"),
         onActivityReady: deps.handleInteractiveOrganizerReady,
         onActivityFailed: deps.handleInteractiveOrganizerFailed,
         onRecallArm: () => {
@@ -1707,8 +1709,8 @@ const renderOutlineContent = (deps) => {
         isTeacherMode,
         armed: !!isInteractiveStrandChallenge,
         recallArmed: !!isInteractiveConceptRecall3d,
-        challengeLiveReadiness: _liveReadinessFor("strandchallenge3d"),
-        recallLiveReadiness: _liveReadinessFor("conceptrecall3d"),
+        challengeLiveReadiness: _readinessFor("strandchallenge3d"),
+        recallLiveReadiness: _readinessFor("conceptrecall3d"),
         onActivityReady: deps.handleInteractiveOrganizerReady,
         onActivityFailed: deps.handleInteractiveOrganizerFailed,
         onChallengeArm: () => {
@@ -3088,7 +3090,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         setTypedAnswer("");
       },
       "aria-pressed": recallAnswerMode === "bank" ? "true" : "false",
-      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "bank" ? "bg-sky-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "bank" ? "bg-sky-700 text-white" : "text-slate-600 hover:bg-slate-200"}`
     },
     t("concept_space.recall_mode_bank") || "Choose"
   ), isTeacherMode && /* @__PURE__ */ React.createElement(
@@ -3097,7 +3099,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       onClick: () => setRecallAnswerMode("typed"),
       "aria-pressed": recallAnswerMode === "typed" ? "true" : "false",
       title: t("concept_space.recall_mode_typed_tooltip") || "Expert: type the name instead of choosing it",
-      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "typed" ? "bg-sky-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "typed" ? "bg-sky-700 text-white" : "text-slate-600 hover:bg-slate-200"}`
     },
     t("concept_space.recall_mode_typed") || "Type"
   )), recallScore && /* @__PURE__ */ React.createElement(
@@ -3419,7 +3421,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !challenge && !recall && persist && selectedNode && !failed && /* @__PURE__ */ React.createElement("div", { className: "absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800", role: "group", "aria-label": t("concept_space.art_panel_aria") || "Concept art" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-fuchsia-700 truncate pr-2" }, "\u{1F3A8} ", selectedNode.label), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setSelectedNode(null);
     selectedNodeRef.current = null;
-  }, "aria-label": t("common.close") || "Close", className: "text-slate-400 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
+  }, "aria-label": t("common.close") || "Close", className: "text-slate-600 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
     e.preventDefault();
     handleArtRefine();
   }, className: "flex gap-1" }, /* @__PURE__ */ React.createElement("input", { value: refinePrompt, onChange: (e) => setRefinePrompt(e.target.value), disabled: refineBusy, placeholder: t("concept_space.refine_placeholder") || "Tell the AI what to change\u2026", "aria-label": t("concept_space.refine_placeholder") || "Tell the AI what to change", className: "flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg border border-fuchsia-200 focus:ring-2 focus:ring-fuchsia-400" }), /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: !refinePrompt.trim() || refineBusy, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u2728"))), /* @__PURE__ */ React.createElement("button", { onClick: handleArtClear, className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-white text-rose-800 border border-rose-200 hover:bg-rose-50" }, "\u{1F5D1} ", t("concept_space.art_remove") || "Remove art")) : /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, directBusy ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-fuchsia-700 font-bold py-2 text-center", role: "status" }, directBusy === "evaluating" ? t("concept_space.art_checking") || "\u2026 Checking your idea" : t("concept_space.art_creating") || "\u2026 Creating") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { onClick: doSculptFromLabel, disabled: !_alloRuntimeAiAvailable(), className: "w-full px-2 py-1.5 rounded-lg text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 disabled:opacity-50" }, "\u{1F9CA} ", t("concept_space.art_sculpt_auto") || "Sculpt from this concept"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 text-center" }, t("concept_space.art_or_direct") || "or describe your own:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("sculpture"), className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border ${artType === "sculpture" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F9CA} ", t("memory_palace.direct_sculpture") || "Sculpture"), /* @__PURE__ */ React.createElement("button", { onClick: () => setArtType("image"), disabled: !canImagen, title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0, className: `flex-1 px-2 py-1 rounded-full text-[11px] font-bold border disabled:opacity-40 ${artType === "image" ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300"}` }, "\u{1F5BC} ", t("memory_palace.direct_image") || "Image")), directEval && directEval.verdict === "reject" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-amber-50 border border-amber-200 rounded-lg p-1.5 text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("memory_palace.direct_rejected") || "Let\u2019s adjust:"), " ", directEval.reason), directEval && directEval.verdict === "enhance" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] bg-fuchsia-50 border border-fuchsia-200 rounded-lg p-1.5" }, directEval.reason && /* @__PURE__ */ React.createElement("div", { className: "mb-1 text-fuchsia-900" }, directEval.reason), directEval.enhancedPrompt && /* @__PURE__ */ React.createElement("div", { className: "italic text-fuchsia-800 mb-1" }, "\u201C", directEval.enhancedPrompt, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directEval.enhancedPrompt || directPrompt), className: "flex-1 px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700" }, "\u2728 ", t("memory_palace.direct_use_enhanced") || "Use the improved version"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtGenerate(directPrompt), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-white text-fuchsia-700 border border-fuchsia-300 hover:bg-fuchsia-50" }, t("memory_palace.direct_use_mine") || "Use mine"))), (!directEval || directEval.verdict === "reject") && /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
@@ -5383,7 +5385,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     {
       onClick: () => setDecorMode((d) => !d),
       "aria-pressed": decorMode ? "true" : "false",
-      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"}`,
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${decorMode ? "bg-emerald-700 text-white border-emerald-600" : "bg-white text-emerald-700 border-emerald-300 hover:bg-emerald-50"}`,
       title: t("memory_palace.decorate_tooltip") || "Decorate loci yourself with built-in 3D objects and stamps \u2014 instant, no AI credits needed"
     },
     "\u{1F381} ",
@@ -5398,7 +5400,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         setDirectMode(false);
       },
       "aria-pressed": buildMode ? "true" : "false",
-      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? "bg-sky-600 text-white border-sky-600" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${buildMode ? "bg-sky-700 text-white border-sky-600" : "bg-white text-sky-700 border-sky-300 hover:bg-sky-50"}`,
       title: t("memory_palace.build_tooltip") || "Extend the palace yourself: point at a spot on any room floor and click to add a new locus there"
     },
     "\u{1F9F1} ",
