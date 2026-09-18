@@ -369,8 +369,22 @@ const handleInitializeMap = async (deps) => {
           }
           setConceptMapNodes(newNodes);
           setConceptMapEdges(newEdges);
-          const applied = await handleAutoLayout(newNodes, newEdges, deps);
-          if (applied !== false) setIsConceptMapReady(true);
+          // The diagram is ALREADY complete here: every node and edge above
+          // carries a deliberate fallback position. handleAutoLayout only
+          // re-positions what exists, so it is polish, not construction.
+          //
+          // It used to gate readiness ("if (applied !== false)"), which meant a
+          // keyless install never saw a diagram at all: with no API key
+          // callGemini returns "{}", that yields zero usable coordinates, the
+          // layout throws, returns false, and a perfectly good map stayed
+          // hidden. The same dead end hit any failed layout - a quota error,
+          // malformed JSON, a dropped connection.
+          //
+          // So mark it ready FIRST and let the layout improve it afterwards if
+          // it can. A plainer arrangement is still a usable diagram; nothing
+          // at all is not.
+          setIsConceptMapReady(true);
+          await handleAutoLayout(newNodes, newEdges, deps);
       } catch (e) { warnLog("Unhandled error in handleInitializeMap:", e); }
 };
 
@@ -427,6 +441,21 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
           setConceptMapNodes(layoutNodes);
           addToast(t('concept_map.auto_layout.toast_flow_applied'), "success");
           return;
+      }
+      // Skip the AI round trip entirely when there is no text AI to call.
+      // Without this a keyless install pays a pointless request that comes
+      // back "{}", then shows an error toast for a feature the user never
+      // invoked. The caller's fallback positions stand on their own.
+      let _aiText = true;
+      try {
+          const cap = (typeof window !== 'undefined' && typeof window.__alloResolveAiCapability === 'function')
+              ? window.__alloResolveAiCapability()
+              : null;
+          if (cap && cap.text === false) _aiText = false;
+      } catch (_) { /* capability unknown: attempt the call, as before */ }
+      if (!_aiText) {
+          try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] auto-layout skipped: no text AI"); } catch (_) {}
+          return false;
       }
       const request = beginMapLayoutRequest(deps, currentNodes, currentEdges);
       if (!request) return false;
