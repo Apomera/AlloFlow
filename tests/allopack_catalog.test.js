@@ -19,6 +19,14 @@ const { normalize } = new Function(anti.slice(_s, _e) + '\nreturn { normalize: _
 
 const TEACHER_ONLY = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES = ['), anti.indexOf('const TEACHER_ONLY_TYPES = [') + 600);
 const REGISTERED = new Set(['simplified', 'glossary', 'concept-sort', 'quiz', 'sentence-frames', 'faq', 'directions', 'timeline', 'outline', 'math', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge']);
+// The exact strings the organizer picker offers (view_sidebar_panels_source.jsx) and
+// that LIVE_ORGANIZER_STRUCTURE_TYPES in AlloFlowANTI.txt matches against. Keep in sync
+// with both; a value outside this list renders as an untyped organizer.
+const ORGANIZER_STRUCTURE_TYPES = [
+  'Venn Diagram', 'T-Chart', 'Fishbone', 'Structured Outline', 'Key Concept Map',
+  'Flow Chart', 'Cause and Effect', 'Problem Solution', 'Frayer Model', 'KWL Chart',
+  'Claim-Evidence-Reasoning', 'Story Map', 'See-Think-Wonder', '3D Concept Space', 'Memory Palace',
+];
 const MEMORY_AID_TYPES = new Set(['acronym-acrostic', 'rhyme-rhythm', 'chunking', 'story-chain', 'keyword-association', 'visual-association', 'analogy-pattern', 'sequence-cue']);
 const CHALLENGE_FAMILIES = new Set(['investigate', 'design', 'decide', 'propose', 'explore']);
 const LEGAL_GAMES = new Set(['crossword', 'wordScramble', 'memory', 'matching', 'bingo', 'timelineGame', 'conceptSortGame', 'syntaxScramble', 'vennDiagram', 'causeEffectSort']);
@@ -197,6 +205,13 @@ describe.each(files)('AlloPack: %s', (file) => {
         expect(typeof r.data.main).toBe('string');
         expect(r.data.branches.length).toBeGreaterThanOrEqual(2);
         for (const b of r.data.branches) { expect(typeof b.title).toBe('string'); expect(Array.isArray(b.items)).toBe(true); }
+        // structureType selects the STUDENT ACTIVITY. Every pack authored before
+        // 2026-09-17 omitted it because the format spec never asked for it, so the
+        // renderer defaulted them all to "Structured Outline" and offered "Sort Under
+        // Headings" for what were often concept maps. A `meta` string reading
+        // "concept map" does nothing - only this field is structural.
+        expect(ORGANIZER_STRUCTURE_TYPES, 'outline "' + r.title + '" is missing data.structureType (see docs/ALLOPACK_FORMAT_SPEC.md)')
+          .toContain(r.data.structureType);
       }
     }
   });

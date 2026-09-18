@@ -189,6 +189,7 @@
       "timestamp": "2026-09-05T21:40:09.000Z",
       "meta": "6 branches • concept map • organelles grouped by the job they do",
       "data": {
+        "structureType": "Key Concept Map",
         "main": "A cell is a factory with departments",
         "branches": [
           {

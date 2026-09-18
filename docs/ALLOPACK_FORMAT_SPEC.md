@@ -136,7 +136,23 @@ license-clean.
 `data`: `{ "progressionLabel": "AXIS: low -> high", "items": [{ "date", "event", "description"? }] }`. 4+ items; also used for process steps ("PROCESS: Step 1 -> Step 7").
 
 ### `outline`
-`data`: `{ "main", "branches": [{ "title", "items": [string] }] }`. 2+ branches.
+`data`: `{ "structureType", "main", "branches": [{ "title", "items": [string] }] }`. 2+ branches.
+
+`structureType` is REQUIRED and must be one of these exact strings:
+`Venn Diagram` | `T-Chart` | `Fishbone` | `Structured Outline` | `Key Concept Map` |
+`Flow Chart` | `Cause and Effect` | `Problem Solution` | `Frayer Model` | `KWL Chart` |
+`Claim-Evidence-Reasoning` | `Story Map` | `See-Think-Wonder` | `3D Concept Space` | `Memory Palace`
+
+It is not cosmetic: it selects the student activity. The renderer defaults a missing
+`structureType` to `Structured Outline`, so an omitted one silently offers "Sort Under
+Headings" for what may be a concept map — and before the readiness fix it then refused to
+launch at all ("This activity does not match the open visual organizer"). Every pack
+authored before 2026-09-17 omitted it, because this line did not ask for it.
+
+Pick the type that matches the SHAPE of the data, not the topic: branches radiating from
+one idea is `Key Concept Map`; ordered steps is `Flow Chart`; two contrasting columns is
+`T-Chart`; causes feeding an effect is `Cause and Effect`. `meta` is a human-readable
+subtitle and is NOT a substitute — "concept map" in `meta` does nothing.
 
 ### `math`
 `data`: `{ "problems": [{ "question", "answer", "steps": [{ "explanation" }] }] }`. 4+ problems; every step is a sentence a student could say.
