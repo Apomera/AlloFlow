@@ -8196,7 +8196,11 @@
     "card_visuals_label": "Card visuals",
     "card_visuals_auto": "Auto (only on short items)",
     "card_visuals_always": "Always generate images",
-    "card_visuals_never": "Never (text-only cards)"
+    "card_visuals_never": "Never (text-only cards)",
+    "deck_collapse": "Hide cards",
+    "deck_expand": "Show cards",
+    "deck_collapse_hint": "Hide the cards to see more of your sorted work",
+    "deck_expand_hint": "Show the unsorted cards again"
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",

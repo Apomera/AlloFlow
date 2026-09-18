@@ -2078,8 +2078,34 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [imageFailCount, setImageFailCount] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const deckScrollRef = useRef(null);
+  // The unsorted deck is position:fixed, so it sits OUTSIDE the document
+  // flow: the scrolling board above reserves no space for it and the last
+  // row of sorted cards ends up underneath the bar. Its height is not a
+  // constant we can hard-code either - it grows with the image-size slider
+  // (cards scale to 3x) and with wrapping header chips. So measure the real
+  // rendered height and pad the board by exactly that much.
+  const deckBarRef = useRef(null);
+  const [deckBarHeight, setDeckBarHeight] = useState(0);
+  const [isDeckCollapsed, setIsDeckCollapsed] = useState(false);
   const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
   const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
+  useEffect(() => {
+      const el = deckBarRef.current;
+      if (!el) return undefined;
+      const measure = () => setDeckBarHeight(el.offsetHeight || 0);
+      measure();
+      // ResizeObserver catches the cases a one-time measure misses: the image
+      // slider resizing every card, the header chips wrapping, collapse/expand.
+      let ro = null;
+      try {
+          if (typeof ResizeObserver === "function") { ro = new ResizeObserver(measure); ro.observe(el); }
+      } catch (_) { ro = null; }
+      window.addEventListener("resize", measure);
+      return () => {
+          try { if (ro) ro.disconnect(); } catch (_) {}
+          window.removeEventListener("resize", measure);
+      };
+  }, [isDeckCollapsed]);
   const menuRef = useRef(null);
   const conceptSortDialogRef = useRef(null);
   const conceptSortCloseRef = useRef(null);
@@ -2487,7 +2513,10 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
             <button ref={conceptSortCloseRef} type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white" aria-label={t('concept_sort.close_aria')}><X size={24} aria-hidden="true"/></button>
         </div>
       </div>
-      <div className="flex-grow overflow-y-auto p-6 relative">
+      <div
+          className="flex-grow overflow-y-auto p-6 relative"
+          style={{ paddingBottom: (deckBarHeight ? deckBarHeight + 24 : 200) + "px" }}
+      >
            <div ref={menuRef} className="flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]">
                {buckets.map((bucket) => {
                    const styles = resolveBucketStyles(bucket.color);
@@ -2537,6 +2566,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
              />
            )}
            <div
+                ref={deckBarRef}
                 data-help-key="concept_sort_deck"
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, 'deck')}
@@ -2546,6 +2576,23 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                    <div className="flex justify-between items-start mb-2">
                        <div className="flex items-center gap-3 flex-wrap">
                            <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards')} ({deckItems.length})</h4>
+                           {/* Collapse hides the CARD ROW only - the heading, its count and the
+                               drop target all stay, so a collapsed deck still accepts a card
+                               and still says how many are left to sort. */}
+                           <button type="button"
+                               onClick={() => setIsDeckCollapsed(v => !v)}
+                               aria-expanded={!isDeckCollapsed}
+                               aria-controls="concept-sort-deck-cards"
+                               className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500"
+                               title={isDeckCollapsed
+                                   ? (t('concept_sort.deck_expand_hint') || 'Show the unsorted cards again')
+                                   : (t('concept_sort.deck_collapse_hint') || 'Hide the cards to see more of your sorted work')}
+                           >
+                               <span aria-hidden="true">{isDeckCollapsed ? '▲' : '▼'}</span>
+                               {isDeckCollapsed
+                                   ? (t('concept_sort.deck_expand') || 'Show cards')
+                                   : (t('concept_sort.deck_collapse') || 'Hide cards')}
+                           </button>
                            {keyboardSelectedItemId && !hasUsedKeyboardCard && (
                                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
                                    Now pick a category to drop this card into.
@@ -2618,7 +2665,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            )}
                        </div>
                    </div>
-                   <div ref={deckScrollRef} className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
+                   <div id="concept-sort-deck-cards" ref={deckScrollRef} hidden={isDeckCollapsed}
+                       className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative">
                        {allowAddItems && onGenerateItem && (<div className="min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group">
                            {isAdding ? (
                                <div className="text-center text-indigo-500 text-xs font-bold animate-pulse motion-reduce:animate-none">{t('concept_sort.generating_item')}</div>
@@ -2656,7 +2704,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            </div>
                        )}
                    </div>
-                   {deckCanScrollLeft && (
+                   {!isDeckCollapsed && deckCanScrollLeft && (
                        <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;
@@ -2668,7 +2716,7 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                            ‹
                        </button>
                    )}
-                   {deckCanScrollRight && (
+                   {!isDeckCollapsed && deckCanScrollRight && (
                        <button type="button"
                            onClick={() => {
                                const el = deckScrollRef.current;

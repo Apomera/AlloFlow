@@ -670,7 +670,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
     },
     /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite" }, announcement),
     cards.length === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900" }, gameMessage(t, "games.memory.empty", "Add glossary terms with a definition or picture to play Memory.")),
-    /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "memory-game-title", className: `font-bold text-lg flex items-center gap-2 ${isFullscreen ? "text-white" : "text-indigo-900"}` }, /* @__PURE__ */ React.createElement(Brain, { size: 20, "aria-hidden": "true" }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-white/10 text-slate-100 border-white/20" : "bg-slate-100 text-slate-700 border-slate-200"}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: isFullscreen ? "text-slate-300" : "text-slate-600", "aria-hidden": "true" }), " ", t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: `relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? "transition-all" : ""} ${scoreDelta !== null ? scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? "scale-105" : ""}` : `ring-2 ring-red-400 ${!useReducedMotion() ? "scale-105" : ""}` : ""} ${isFullscreen ? "bg-indigo-500/20 text-indigo-100 border-indigo-400/40" : "bg-indigo-100 text-indigo-700 border-indigo-200"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500", "aria-hidden": "true" }), " ", t("memory.score"), ": ", score, scoreDelta !== null && /* @__PURE__ */ React.createElement("span", { className: `absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? "text-emerald-500" : "text-red-500"} ${!useReducedMotion() ? "animate-in fade-in slide-in-from-bottom-1 duration-300" : ""}` }, scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta)), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40" : "bg-emerald-100 text-emerald-700 border-emerald-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, className: "text-emerald-500", "aria-hidden": "true" }), " ", t("memory.pairs"), ": ", matchedPairs.size, "/", totalPairs))), /* @__PURE__ */ React.createElement("div", { className: `flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? "bg-white/10 border border-white/20 backdrop-blur-md" : "bg-white border border-slate-400"}` }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: `flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 ${isFullscreen ? "sticky top-0 z-30 bg-slate-900/70 backdrop-blur-md py-3 px-2 -mx-2 rounded-xl border border-white/10" : ""}` }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "memory-game-title", className: `font-bold text-lg flex items-center gap-2 ${isFullscreen ? "text-white" : "text-indigo-900"}` }, /* @__PURE__ */ React.createElement(Brain, { size: 20, "aria-hidden": "true" }), " ", t("memory.title")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 mt-1.5" }, /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-white/10 text-slate-100 border-white/20" : "bg-slate-100 text-slate-700 border-slate-200"}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: isFullscreen ? "text-slate-600" : "text-slate-600", "aria-hidden": "true" }), " ", t("memory.moves"), ": ", moves), /* @__PURE__ */ React.createElement("span", { className: `relative inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${!useReducedMotion() ? "transition-all" : ""} ${scoreDelta !== null ? scoreDelta > 0 ? `ring-2 ring-emerald-400 ${!useReducedMotion() ? "scale-105" : ""}` : `ring-2 ring-red-400 ${!useReducedMotion() ? "scale-105" : ""}` : ""} ${isFullscreen ? "bg-indigo-500/20 text-indigo-100 border-indigo-400/40" : "bg-indigo-100 text-indigo-700 border-indigo-200"}` }, /* @__PURE__ */ React.createElement(Trophy, { size: 10, className: "text-yellow-500", "aria-hidden": "true" }), " ", t("memory.score"), ": ", score, scoreDelta !== null && /* @__PURE__ */ React.createElement("span", { className: `absolute -top-5 right-0 text-[11px] font-black pointer-events-none ${scoreDelta > 0 ? "text-emerald-500" : "text-red-500"} ${!useReducedMotion() ? "animate-in fade-in slide-in-from-bottom-1 duration-300" : ""}` }, scoreDelta > 0 ? `+${scoreDelta}` : scoreDelta)), /* @__PURE__ */ React.createElement("span", { className: `inline-flex items-center gap-1 text-[11px] font-bold border px-2 py-0.5 rounded-full ${isFullscreen ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40" : "bg-emerald-100 text-emerald-700 border-emerald-200"}` }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, className: "text-emerald-500", "aria-hidden": "true" }), " ", t("memory.pairs"), ": ", matchedPairs.size, "/", totalPairs))), /* @__PURE__ */ React.createElement("div", { className: `flex flex-wrap items-center gap-1 p-1 rounded-full shadow-sm ${isFullscreen ? "bg-white/10 border border-white/20 backdrop-blur-md" : "bg-white border border-slate-400"}` }, /* @__PURE__ */ React.createElement(
       "select",
       {
         ref: modeSelectRef,
@@ -711,7 +711,7 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
       },
       isFullscreen ? /* @__PURE__ */ React.createElement(Minimize, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18, "aria-hidden": "true" })
     ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: `min-w-11 min-h-11 p-1.5 rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 ${isFullscreen ? "text-white hover:bg-white/10" : "text-slate-600 hover:text-slate-700 hover:bg-slate-100"}`, "aria-label": t("memory.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })))),
-    !isWon && totalPairs > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? "text-slate-300" : "text-slate-600"}` }, /* @__PURE__ */ React.createElement("span", null, t("memory.pairs")), /* @__PURE__ */ React.createElement("span", null, progressPct, "%")), /* @__PURE__ */ React.createElement("div", { className: `h-2 w-full rounded-full overflow-hidden ${isFullscreen ? "bg-white/10" : "bg-slate-200"}` }, /* @__PURE__ */ React.createElement(
+    !isWon && totalPairs > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center justify-between text-[11px] font-bold uppercase tracking-wider mb-1.5 ${isFullscreen ? "text-slate-600" : "text-slate-600"}` }, /* @__PURE__ */ React.createElement("span", null, t("memory.pairs")), /* @__PURE__ */ React.createElement("span", null, progressPct, "%")), /* @__PURE__ */ React.createElement("div", { className: `h-2 w-full rounded-full overflow-hidden ${isFullscreen ? "bg-white/10" : "bg-slate-200"}` }, /* @__PURE__ */ React.createElement(
       "div",
       {
         className: `h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-500 to-emerald-500 ${!useReducedMotion() ? "transition-all duration-500 ease-out" : ""}`,
@@ -735,11 +735,11 @@ const MemoryGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete })
         {
           key: i,
           size: 32,
-          className: i < stars ? "text-yellow-400 fill-yellow-400 drop-shadow-md" : isFullscreen ? "text-white/20" : "text-slate-600",
+          className: i < stars ? "text-yellow-400 fill-yellow-400 drop-shadow-md" : isFullscreen ? "text-white/20" : "text-slate-300",
           strokeWidth: 1.5,
           "aria-hidden": "true"
         }
-      ))), /* @__PURE__ */ React.createElement("div", { className: `grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6` }, /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.score")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, score)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.moves")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, moves)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, "Accuracy"), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, accuracy, "%"))), /* @__PURE__ */ React.createElement("p", { className: `text-sm mb-6 ${isFullscreen ? "text-slate-600" : "text-slate-600"}` }, t("memory.cleared_message", { moves })), /* @__PURE__ */ React.createElement(
+      ))), /* @__PURE__ */ React.createElement("div", { className: `grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-md mb-6` }, /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.score")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, score)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, t("memory.moves")), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, moves)), /* @__PURE__ */ React.createElement("div", { className: `rounded-xl border p-3 ${cardBg}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] font-bold uppercase tracking-wider mb-1 ${labelColor}` }, "Accuracy"), /* @__PURE__ */ React.createElement("div", { className: `text-xl font-black ${valueColor}` }, accuracy, "%"))), /* @__PURE__ */ React.createElement("p", { className: `text-sm mb-6 ${isFullscreen ? "text-slate-300" : "text-slate-600"}` }, t("memory.cleared_message", { moves })), /* @__PURE__ */ React.createElement(
         "button",
         {
           ref: memoryPlayAgainRef,
@@ -1753,8 +1753,34 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
   const [imageFailCount, setImageFailCount] = useState(0);
   const [announcement, setAnnouncement] = useState("");
   const deckScrollRef = useRef(null);
+  const deckBarRef = useRef(null);
+  const [deckBarHeight, setDeckBarHeight] = useState(0);
+  const [isDeckCollapsed, setIsDeckCollapsed] = useState(false);
   const [deckCanScrollRight, setDeckCanScrollRight] = useState(false);
   const [deckCanScrollLeft, setDeckCanScrollLeft] = useState(false);
+  useEffect(() => {
+    const el = deckBarRef.current;
+    if (!el) return void 0;
+    const measure = () => setDeckBarHeight(el.offsetHeight || 0);
+    measure();
+    let ro = null;
+    try {
+      if (typeof ResizeObserver === "function") {
+        ro = new ResizeObserver(measure);
+        ro.observe(el);
+      }
+    } catch (_) {
+      ro = null;
+    }
+    window.addEventListener("resize", measure);
+    return () => {
+      try {
+        if (ro) ro.disconnect();
+      } catch (_) {
+      }
+      window.removeEventListener("resize", measure);
+    };
+  }, [isDeckCollapsed]);
   const menuRef = useRef(null);
   const conceptSortDialogRef = useRef(null);
   const conceptSortCloseRef = useRef(null);
@@ -2111,144 +2137,178 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
     const id = setTimeout(() => setHintAutoHidden(true), 15e3);
     return () => clearTimeout(id);
   }, [hasUsedKeyboardCard, hintAutoHidden]);
-  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, score, " pts")), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto p-6 relative" }, /* @__PURE__ */ React.createElement("div", { ref: menuRef, className: "flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]" }, buckets.map((bucket) => {
-    const styles = resolveBucketStyles(bucket.color);
-    return /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: conceptSortDialogRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "concept-sort-game-title", className: `fixed inset-0 z-[100] bg-slate-50 flex flex-col${useReducedMotion() ? "" : " animate-in fade-in duration-300"}`, "data-help-key": "concept_sort_game" }, /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, announcement), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-600 text-white flex justify-between items-center shrink-0 shadow-md z-20" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "concept-sort-game-title", className: "font-bold text-lg flex items-center gap-2", "data-help-key": "concept_sort_header" }, /* @__PURE__ */ React.createElement(Filter, { size: 20, className: "text-yellow-300" }), " ", t("concept_sort.title")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, t("concept_sort.subtitle"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-800/50 px-4 py-1.5 rounded-full border border-indigo-500 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 14, className: "text-yellow-300" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, score, " pts")), /* @__PURE__ */ React.createElement(GameThemeToggle, null), /* @__PURE__ */ React.createElement("button", { ref: conceptSortCloseRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-indigo-500 rounded-full transition-colors focus:ring-2 focus:ring-white", "aria-label": t("concept_sort.close_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "flex-grow overflow-y-auto p-6 relative",
+      style: { paddingBottom: (deckBarHeight ? deckBarHeight + 24 : 200) + "px" }
+    },
+    /* @__PURE__ */ React.createElement("div", { ref: menuRef, className: "flex flex-wrap justify-center gap-6 mb-12 min-h-[300px]" }, buckets.map((bucket) => {
+      const styles = resolveBucketStyles(bucket.color);
+      return /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          key: bucket.id,
+          "data-help-key": "concept_sort_bucket",
+          onDragOver: handleDragOver,
+          onDrop: (e) => handleDrop(e, bucket.id),
+          className: `flex-1 min-w-[250px] max-w-sm bg-slate-100 rounded-xl border-2 border-dashed transition-all p-4 flex flex-col ${isChecked ? "border-slate-300" : draggedItem ? "border-indigo-400 ring-2 ring-indigo-100" : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50"}`
+        },
+        /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}` }, bucket.label),
+        /* @__PURE__ */ React.createElement("div", { className: "flex-grow space-y-2 min-h-[100px]" }, items.filter((i) => i.currentContainer === bucket.id).map((item) => /* @__PURE__ */ React.createElement(React.Fragment, { key: item.id }, renderCard(item))), items.filter((i) => i.currentContainer === bucket.id).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center text-slate-600 text-xs italic py-8 opacity-50" }, t("concept_sort.drop_placeholder"))),
+        keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-move-here": "true",
+            onClick: () => handleKeyboardMove(bucket.id),
+            className: "w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse motion-reduce:animate-none"
+          },
+          t("concept_sort.move_here")
+        )
+      );
+    })),
+    isWon && !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null),
+    isWon && /* @__PURE__ */ React.createElement(
+      GameReviewScreen,
+      {
+        score,
+        title: t("concept_sort.title"),
+        items: items.map((i) => ({
+          label: i.content,
+          detail: buckets.find((b) => b.id === i.categoryId)?.label || i.categoryId,
+          status: i.currentContainer === i.categoryId ? "correct" : "incorrect"
+        })),
+        onPlayAgain: reset,
+        onClose,
+        t
+      }
+    ),
+    /* @__PURE__ */ React.createElement(
       "div",
       {
-        key: bucket.id,
-        "data-help-key": "concept_sort_bucket",
+        ref: deckBarRef,
+        "data-help-key": "concept_sort_deck",
         onDragOver: handleDragOver,
-        onDrop: (e) => handleDrop(e, bucket.id),
-        className: `flex-1 min-w-[250px] max-w-sm bg-slate-100 rounded-xl border-2 border-dashed transition-all p-4 flex flex-col ${isChecked ? "border-slate-300" : draggedItem ? "border-indigo-400 ring-2 ring-indigo-100" : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50"}`
+        onDrop: (e) => handleDrop(e, "deck"),
+        className: `bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-colors duration-300 ${isChecked ? "" : "hover:bg-slate-50"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: `text-center p-3 rounded-lg font-bold mb-4 shadow-sm border ${styles.bg} ${styles.text} ${styles.border}` }, bucket.label),
-      /* @__PURE__ */ React.createElement("div", { className: "flex-grow space-y-2 min-h-[100px]" }, items.filter((i) => i.currentContainer === bucket.id).map((item) => /* @__PURE__ */ React.createElement(React.Fragment, { key: item.id }, renderCard(item))), items.filter((i) => i.currentContainer === bucket.id).length === 0 && /* @__PURE__ */ React.createElement("div", { className: "text-center text-slate-600 text-xs italic py-8 opacity-50" }, t("concept_sort.drop_placeholder"))),
-      keyboardSelectedItemId && /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
-          "data-move-here": "true",
-          onClick: () => handleKeyboardMove(bucket.id),
-          className: "w-full mt-2 py-2 bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 hover:border-indigo-300 animate-pulse motion-reduce:animate-none"
+          onClick: () => setIsDeckCollapsed((v) => !v),
+          "aria-expanded": !isDeckCollapsed,
+          "aria-controls": "concept-sort-deck-cards",
+          className: "inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-50 focus:ring-2 focus:ring-indigo-500",
+          title: isDeckCollapsed ? t("concept_sort.deck_expand_hint") || "Show the unsorted cards again" : t("concept_sort.deck_collapse_hint") || "Hide the cards to see more of your sorted work"
         },
-        t("concept_sort.move_here")
-      )
-    );
-  })), isWon && !useReducedMotion() && /* @__PURE__ */ React.createElement(ConfettiExplosion, null), isWon && /* @__PURE__ */ React.createElement(
-    GameReviewScreen,
-    {
-      score,
-      title: t("concept_sort.title"),
-      items: items.map((i) => ({
-        label: i.content,
-        detail: buckets.find((b) => b.id === i.categoryId)?.label || i.categoryId,
-        status: i.currentContainer === i.categoryId ? "correct" : "incorrect"
-      })),
-      onPlayAgain: reset,
-      onClose,
-      t
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      "data-help-key": "concept_sort_deck",
-      onDragOver: handleDragOver,
-      onDrop: (e) => handleDrop(e, "deck"),
-      className: `bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-colors duration-300 ${isChecked ? "" : "hover:bg-slate-50"}`
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, "Try ", attempts + 1, bestScore > 0 ? ` \xB7 Best: ${bestScore} pts` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, imageFailCount, " card visual", imageFailCount === 1 ? "" : "s", " couldn't load \u2014 text only.")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, typeof onImageScaleChange === "function" && items.some((i) => i.image) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" }, "Size"), /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "range",
-        min: "0.5",
-        max: "2.5",
-        step: "0.05",
-        value: _imgScale,
-        onChange: (e) => onImageScaleChange(parseFloat(e.target.value) || 1),
-        "aria-label": `Card image size, ${_imgScale.toFixed(2)} times`,
-        className: "w-20 sm:w-28 accent-indigo-600"
-      }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end" }, _imgScale.toFixed(2), "\xD7")), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "data-help-key": "concept_sort_reset",
-        onClick: reset,
-        className: "px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors",
-        "aria-label": t("concept_sort.reset_board")
-      },
-      t("concept_sort.reset_board")
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("common.check_answers"),
-        "data-help-key": "concept_sort_check_answers",
-        onClick: checkAnswers,
-        disabled: isChecked || items.some((i) => i.currentContainer === "deck"),
-        className: "px-6 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-      },
-      t("concept_sort.check_answers")
-    ), isChecked && incorrectPlacedCount > 0 && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "data-help-key": "concept_sort_retry_incorrect",
-        onClick: retryIncorrect,
-        className: "px-4 py-1.5 rounded-full text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-colors",
-        "aria-label": (t("concept_sort.retry_incorrect") || "Fix the {count} incorrect").replace("{count}", String(incorrectPlacedCount))
-      },
-      (t("concept_sort.retry_incorrect") || "Fix the {count} incorrect").replace("{count}", String(incorrectPlacedCount))
-    ))), /* @__PURE__ */ React.createElement("div", { ref: deckScrollRef, className: "flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative" }, allowAddItems && onGenerateItem && /* @__PURE__ */ React.createElement("div", { className: "min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group" }, isAdding ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-indigo-500 text-xs font-bold animate-pulse motion-reduce:animate-none" }, t("concept_sort.generating_item")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "data-help-key": "concept_sort_add_item",
-        type: "text",
-        value: newItemText,
-        onChange: (e) => setNewItemText(e.target.value),
-        onKeyDown: (e) => e.key === "Enter" && handleAddItem(),
-        placeholder: t("concept_sort.add_item_placeholder"),
-        className: "w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 mb-2",
-        "aria-label": t("concept_sort.add_item_placeholder")
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("common.add"),
-        onClick: handleAddItem,
-        disabled: !newItemText.trim(),
-        className: "bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-full p-1.5 shadow-sm disabled:opacity-50",
-        "data-help-key": "concept_sort_add_btn"
-      },
-      /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-    ))), deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]" }, renderCard(item))), deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))), deckCanScrollLeft && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const el = deckScrollRef.current;
-          if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isDeckCollapsed ? "\u25B2" : "\u25BC"),
+        isDeckCollapsed ? t("concept_sort.deck_expand") || "Show cards" : t("concept_sort.deck_collapse") || "Hide cards"
+      ), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, "Try ", attempts + 1, bestScore > 0 ? ` \xB7 Best: ${bestScore} pts` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, imageFailCount, " card visual", imageFailCount === 1 ? "" : "s", " couldn't load \u2014 text only.")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, typeof onImageScaleChange === "function" && items.some((i) => i.image) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" }, "Size"), /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "range",
+          min: "0.5",
+          max: "2.5",
+          step: "0.05",
+          value: _imgScale,
+          onChange: (e) => onImageScaleChange(parseFloat(e.target.value) || 1),
+          "aria-label": `Card image size, ${_imgScale.toFixed(2)} times`,
+          className: "w-20 sm:w-28 accent-indigo-600"
+        }
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-end" }, _imgScale.toFixed(2), "\xD7")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-help-key": "concept_sort_reset",
+          onClick: reset,
+          className: "px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors",
+          "aria-label": t("concept_sort.reset_board")
         },
-        className: "absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600",
-        "aria-label": t("games.scroll_deck_left_aria") || "Scroll deck left"
-      },
-      "\u2039"
-    ), deckCanScrollRight && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const el = deckScrollRef.current;
-          if (el) el.scrollBy({ left: 300, behavior: "smooth" });
+        t("concept_sort.reset_board")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("common.check_answers"),
+          "data-help-key": "concept_sort_check_answers",
+          onClick: checkAnswers,
+          disabled: isChecked || items.some((i) => i.currentContainer === "deck"),
+          className: "px-6 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         },
-        className: "absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600",
-        "aria-label": t("games.scroll_deck_right_aria") || "Scroll deck right to see more cards"
-      },
-      "\u203A"
-    ))
-  )));
+        t("concept_sort.check_answers")
+      ), isChecked && incorrectPlacedCount > 0 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-help-key": "concept_sort_retry_incorrect",
+          onClick: retryIncorrect,
+          className: "px-4 py-1.5 rounded-full text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 shadow-md transition-colors",
+          "aria-label": (t("concept_sort.retry_incorrect") || "Fix the {count} incorrect").replace("{count}", String(incorrectPlacedCount))
+        },
+        (t("concept_sort.retry_incorrect") || "Fix the {count} incorrect").replace("{count}", String(incorrectPlacedCount))
+      ))), /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          id: "concept-sort-deck-cards",
+          ref: deckScrollRef,
+          hidden: isDeckCollapsed,
+          className: "flex gap-3 overflow-x-auto pb-4 pt-2 px-1 custom-scrollbar min-h-[140px] relative"
+        },
+        allowAddItems && onGenerateItem && /* @__PURE__ */ React.createElement("div", { className: "min-w-[160px] w-[160px] h-[120px] bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 shrink-0 hover:border-indigo-300 transition-colors group" }, isAdding ? /* @__PURE__ */ React.createElement("div", { className: "text-center text-indigo-500 text-xs font-bold animate-pulse motion-reduce:animate-none" }, t("concept_sort.generating_item")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            "data-help-key": "concept_sort_add_item",
+            type: "text",
+            value: newItemText,
+            onChange: (e) => setNewItemText(e.target.value),
+            onKeyDown: (e) => e.key === "Enter" && handleAddItem(),
+            placeholder: t("concept_sort.add_item_placeholder"),
+            className: "w-full text-xs text-center p-1 bg-transparent border-b border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 mb-2",
+            "aria-label": t("concept_sort.add_item_placeholder")
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": t("common.add"),
+            onClick: handleAddItem,
+            disabled: !newItemText.trim(),
+            className: "bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 rounded-full p-1.5 shadow-sm disabled:opacity-50",
+            "data-help-key": "concept_sort_add_btn"
+          },
+          /* @__PURE__ */ React.createElement(Plus, { size: 16 })
+        ))),
+        deckItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "shrink-0 w-[160px]" }, renderCard(item))),
+        deckItems.length === 0 && !isWon && /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic font-bold text-sm mt-4 text-center w-full" }, t("concept_sort.word_bank_empty"))
+      ), !isDeckCollapsed && deckCanScrollLeft && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const el = deckScrollRef.current;
+            if (el) el.scrollBy({ left: -300, behavior: "smooth" });
+          },
+          className: "absolute left-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600",
+          "aria-label": t("games.scroll_deck_left_aria") || "Scroll deck left"
+        },
+        "\u2039"
+      ), !isDeckCollapsed && deckCanScrollRight && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const el = deckScrollRef.current;
+            if (el) el.scrollBy({ left: 300, behavior: "smooth" });
+          },
+          className: "absolute right-2 top-1/2 -translate-y-1/2 bg-white border border-slate-400 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50 text-slate-600",
+          "aria-label": t("games.scroll_deck_right_aria") || "Scroll deck right to see more cards"
+        },
+        "\u203A"
+      ))
+    )
+  ));
 });
 const BOTH_TRANSLATIONS = { English: "Both", Spanish: "Ambos", French: "Les deux", Arabic: "\u0643\u0644\u0627\u0647\u0645\u0627", Chinese: "\u4E24\u8005", Japanese: "\u4E21\u65B9", Korean: "\uB458 \uB2E4", Portuguese: "Ambos", German: "Beide", Italian: "Entrambi", Russian: "\u041E\u0431\u0430", Hindi: "\u0926\u094B\u0928\u094B\u0902", Turkish: "Her ikisi", Vietnamese: "C\u1EA3 hai", Thai: "\u0E17\u0E31\u0E49\u0E07\u0E2A\u0E2D\u0E07", Hebrew: "\u05E9\u05E0\u05D9\u05D4\u05DD", Swahili: "Zote mbili", Dutch: "Beide", Polish: "Oba", Ukrainian: "\u041E\u0431\u0438\u0434\u0432\u0430" };
 const makeSortScoreTracker = () => {
