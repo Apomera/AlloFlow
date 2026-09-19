@@ -185,8 +185,8 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('canvasEl._cellSimGetAnatomyLabels = function ()');
       expect(source).toContain('_labelHitRegions.push({ x: pillX, y: pillY, w: pillW, h: pillH, anatomy: box.anatomy, def: def, org: o,');
       expect(source).toContain('cctx.shadowColor = labelShadowColor;');
-      expect(source).toContain("cctx.fillStyle = box.emphasized ? '#ecfdf5' : labelFillColor;");
-      expect(source).toContain('cctx.fillStyle = labelTextColor;');
+      expect(source).toContain("cctx.fillStyle = box.selected ? '#215e4e' : box.hovered ? '#ecfdf5' : labelFillColor;");
+      expect(source).toContain("cctx.fillStyle = box.selected ? '#ffffff' : labelTextColor;");
       expect(source).not.toContain("cctx.fillStyle = 'var(--allo-stem-deeper, rgba(15,23,42,0.85))';");
 
       expect(source).toContain('var cellCanvasStatus =');

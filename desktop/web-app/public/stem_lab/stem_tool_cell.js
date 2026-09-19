@@ -18872,6 +18872,10 @@ var d = labToolData.cell || {};
           // Keep the ref callback identity stable so selecting an organism can
           // refresh the React info panel without tearing down the live canvas.
           var canvasRefStateRef = React.useRef({ lastCanvas: null });
+          React.useEffect(function() {
+            var cv = canvasRefStateRef.current.lastCanvas;
+            if (cv && cv._cellSimSetLabelFocus) cv._cellSimSetLabelFocus(!!d.focusSelectedLabel);
+          }, [d.focusSelectedLabel]);
           var cellExplanationState = React.useState(null);
           var cellExplanation = cellExplanationState[0], setCellExplanation = cellExplanationState[1];
           var canvasMissionProgressRef = React.useRef({ organismId: null, progress: 0, evidenceComplete: false, missionComplete: false });
@@ -18991,6 +18995,7 @@ var d = labToolData.cell || {};
 
             var selectedOrg = null;
             var observationLabelsVisible = d.observationLabels !== false;
+            var focusSelectedLabel = !!d.focusSelectedLabel;
             var observationFollowEnabled = !!d.followSpecimen;
             var observationCameraTime = null;
 
@@ -20645,36 +20650,43 @@ var d = labToolData.cell || {};
                 box.hovered = !!(hoveredAnatomyLabel && hoveredAnatomyLabel.org === o && hoveredAnatomyLabel.anatomy === box.anatomy);
                 box.emphasized = box.selected || box.hovered;
               });
+              // Filter after laying out every structure so the selected label never changes slots.
+              if (focusSelectedLabel && !playAsOrg && canvasEl.getAttribute('data-cell-view-mode') === 'observe' && labelBoxes.some(function(box) { return box.selected; })) {
+                labelBoxes = labelBoxes.filter(function(box) { return box.selected; });
+              }
               // Draw emphasized leaders last, underneath the pills, to make their paths easy to trace.
-              labelBoxes.slice().sort(function(a, b) { return Number(a.emphasized) - Number(b.emphasized); }).forEach(function(box) {
+              labelBoxes.slice().sort(function(a, b) { return (Number(a.hovered) + 2 * Number(a.selected)) - (Number(b.hovered) + 2 * Number(b.selected)); }).forEach(function(box) {
                 var ex = box.side === 'left' ? box.x + box.w : box.x;
                 var ey = box.y + box.h / 2;
                 cctx.beginPath(); cctx.moveTo(box.sx, box.sy);
                 cctx.lineTo(ex + (box.side === 'left' ? 10 : -10) * dpr, ey); cctx.lineTo(ex, ey);
-                cctx.strokeStyle = 'rgba(255,255,255,0.85)'; cctx.lineWidth = 3 * dpr; cctx.stroke();
-                cctx.strokeStyle = box.emphasized ? '#0f766e' : hexToRgba(def.color, 0.72); cctx.lineWidth = (box.emphasized ? 2.4 : 1.1) * dpr; cctx.stroke();
+                cctx.lineCap = 'round'; cctx.lineJoin = 'round';
+                cctx.strokeStyle = 'rgba(255,255,255,0.9)'; cctx.lineWidth = (box.emphasized ? 5 : 2.8) * dpr; cctx.stroke();
+                cctx.strokeStyle = box.selected ? '#164e40' : box.hovered ? '#0f766e' : '#647e74'; cctx.lineWidth = (box.selected ? 2.8 : box.hovered ? 2.2 : 1) * dpr; cctx.stroke();
                 if (box.emphasized) {
                   cctx.beginPath(); cctx.arc(box.sx, box.sy, 6 * dpr, 0, Math.PI * 2);
                   cctx.strokeStyle = '#ffffff'; cctx.lineWidth = 4 * dpr; cctx.stroke();
-                  cctx.strokeStyle = '#0f766e'; cctx.lineWidth = 2 * dpr; cctx.stroke();
+                  cctx.strokeStyle = box.selected ? '#164e40' : '#0f766e'; cctx.lineWidth = 2 * dpr; cctx.stroke();
                 }
                 cctx.beginPath(); cctx.arc(box.sx, box.sy, 2.5 * dpr, 0, Math.PI * 2);
-                cctx.fillStyle = def.color; cctx.fill();
+                cctx.fillStyle = box.emphasized ? '#164e40' : '#647e74'; cctx.fill();
                 cctx.strokeStyle = '#fff'; cctx.lineWidth = dpr; cctx.stroke();
               });
               labelBoxes.forEach(function(box) {
                 var pillX = box.x, pillY = box.y, pillW = box.w, pillH = box.h;
-                var r = Math.min(6 * dpr, pillH / 2);
+                var r = Math.min(9 * dpr, pillH / 2);
                 cctx.beginPath(); cctx.moveTo(pillX + r, pillY);
                 cctx.arcTo(pillX + pillW, pillY, pillX + pillW, pillY + pillH, r);
                 cctx.arcTo(pillX + pillW, pillY + pillH, pillX, pillY + pillH, r);
                 cctx.arcTo(pillX, pillY + pillH, pillX, pillY, r);
                 cctx.arcTo(pillX, pillY, pillX + pillW, pillY, r); cctx.closePath();
                 cctx.shadowColor = labelShadowColor; cctx.shadowBlur = 5 * dpr; cctx.shadowOffsetY = 2 * dpr;
-                cctx.fillStyle = box.emphasized ? '#ecfdf5' : labelFillColor; cctx.fill();
+                cctx.fillStyle = box.selected ? '#215e4e' : box.hovered ? '#ecfdf5' : labelFillColor; cctx.fill();
                 cctx.shadowBlur = 0; cctx.shadowOffsetY = 0;
-                cctx.strokeStyle = box.emphasized ? '#0f766e' : hexToRgba(def.color, 0.65); cctx.lineWidth = (box.emphasized ? 2.5 : 1) * dpr; cctx.stroke();
-                cctx.fillStyle = labelTextColor;
+                // A white keyline separates a selected pill from both dark and light anatomy.
+                if (box.selected) { cctx.strokeStyle = '#ffffff'; cctx.lineWidth = 5 * dpr; cctx.stroke(); }
+                cctx.strokeStyle = box.selected ? '#164e40' : box.hovered ? '#0f766e' : '#89a69a'; cctx.lineWidth = (box.emphasized ? 2.5 : 1) * dpr; cctx.stroke();
+                cctx.fillStyle = box.selected ? '#ffffff' : labelTextColor;
                 var lineHeight = Math.min(15 * dpr, Math.max(1, (pillH - 8 * dpr) / box.lines.length));
                 cctx.font = '600 ' + Math.min(fontSize, lineHeight / 1.25) + 'px Inter, system-ui, sans-serif';
                 box.lines.forEach(function(line, index) {
@@ -22832,6 +22844,11 @@ var d = labToolData.cell || {};
             canvasEl._cellSimGetObservationView = function() {
               return { following: observationFollowEnabled && !!selectedOrg && !playAsOrg && canvasEl.getAttribute('data-cell-view-mode') === 'observe', camera: { x: cam.x, y: cam.y, zoom: cam.zoom }, selected: selectedOrg ? { id: selectedOrg.def.id, x: selectedOrg.x, y: selectedOrg.y } : null };
             };
+            canvasEl._cellSimSetLabelFocus = function(enabled) {
+              focusSelectedLabel = !!enabled;
+              hoveredAnatomyLabel = null;
+              if (canvasEl._cellSimPaused) renderStaticFrame();
+            };
             canvasEl._cellSimSetObservationLabels = function (visible) {
               observationLabelsVisible = visible !== false;
               if (!observationLabelsVisible && !playAsOrg) { world._tooltip = null; world._highlightOrganelle = null; hoveredAnatomyLabel = null; _labelHitRegions = []; }
@@ -23146,6 +23163,7 @@ var d = labToolData.cell || {};
               canvasEl._cellSimGetMissionEvidenceState = null;
               canvasEl._cellSimSetFollowSpecimen = null;
               canvasEl._cellSimGetObservationView = null;
+              canvasEl._cellSimSetLabelFocus = null;
               canvasEl._cellSimRestockMissionTargets = null;
               canvasEl._cellSimTestSetMissionScenario = null;
               canvasEl._cellSimTestAdvanceMission = null;
@@ -23698,6 +23716,11 @@ var d = labToolData.cell || {};
           function cellControlIcon(kind) {
             var paths = {
               reset: 'M4 10a8 8 0 1 1 1 8 M4 4v6h6',
+              previous: 'M14 6l-6 6 6 6',
+              up: 'M12 19V5 M6 11l6-6 6 6',
+              next: 'M10 6l6 6-6 6',
+              close: 'M6 6l12 12 M18 6L6 18',
+              structure: 'M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0 M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M7 16l1 1 M16 6l1 1',
               pause: 'M8 5v14 M16 5v14',
               play: 'M8 5l11 7-11 7z',
               locate: 'M12 2v4 M12 18v4 M2 12h4 M18 12h4 M18 12a6 6 0 1 1-12 0 6 6 0 0 1 12 0'
@@ -23705,13 +23728,22 @@ var d = labToolData.cell || {};
             return React.createElement('svg', { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' },
               React.createElement('path', { d: paths[kind] || paths.locate }));
           }
-          var cellExplanationButtonStyle = { minHeight: 44, padding: '8px 16px', border: '1px solid #648f7f', borderRadius: 8, background: '#ffffff', color: '#164b3c', fontWeight: 700 };
           function stepCellExplanation(direction) {
             var cv = canvasRefStateRef.current.lastCanvas;
             if (cv && cv._cellSimStepStructure) {
               if (!d.playAsOrganism && d.observationLabels === false) upd('observationLabels', true);
               cv._cellSimStepStructure(direction);
             }
+          }
+          function chooseCellExplanation(name) {
+            var def = activePlayDef || selDef;
+            var cv = canvasRefStateRef.current.lastCanvas;
+            if (!def || !cv || !cv._cellSimShowOrganelleTooltip || !def.anatomy.some(function(a) { return a.name === name; })) return;
+            if (!d.playAsOrganism) {
+              upd('observationLabels', true);
+              if (cv._cellSimSetObservationLabels) cv._cellSimSetObservationLabels(true);
+            }
+            cv._cellSimShowOrganelleTooltip(def.id, name);
           }
           function closeCellExplanationPanel() {
             var cv = canvasRefStateRef.current.lastCanvas;
@@ -23830,6 +23862,39 @@ var d = labToolData.cell || {};
 [data-cell-header] h3{font-size:22px!important;letter-spacing:-.6px}
 [data-cell-header] button{min-height:40px}
 [data-cell-stage]{border:1px solid #a6c4bb!important;border-radius:18px!important;box-shadow:0 14px 36px #123e3920!important}
+[data-cell-explanation-panel]{container-type:inline-size;margin-top:14px;border:1px solid #aac8be;border-radius:18px;background:#fcfefd;color:#163e35;box-shadow:0 8px 24px #163e350a;overflow:hidden}
+[data-cell-explanation-header]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(110deg,#e7f4ed,#f5faf7);border-bottom:1px solid #d5e5de}
+[data-cell-explanation-emblem]{display:flex;align-items:center;justify-content:center;flex:none;width:42px;height:42px;border:1px solid #abcbbc;border-radius:13px;background:#fff;color:#216553}
+[data-cell-explanation-emblem] svg{width:28px;height:28px}
+[data-cell-explanation-meta]{min-width:0;flex:1}
+[data-cell-explanation-picker]{display:flex;flex:0 1 270px;flex-direction:column;gap:5px;min-width:0;width:100%;font-size:11px;font-weight:700;color:#42665a}
+[data-cell-explanation-picker] select{box-sizing:border-box;width:100%;min-width:0;min-height:44px;padding:9px 10px;border:1px solid #8bab9c;border-radius:9px;background:#fff;color:#164e40;font:inherit;font-size:13px;cursor:pointer}
+[data-cell-explanation-picker] select:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+@container(max-width:520px){[data-cell-explanation-picker]{flex-basis:100%}}
+[data-cell-explanation-kicker]{margin:0 0 3px;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#42665a}
+[data-cell-explanation-specimen]{margin:0;font-size:14px;font-weight:750;overflow-wrap:anywhere}
+[data-cell-explanation-body]{padding:20px;overflow-wrap:anywhere}
+[data-cell-explanation-position]{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 12px;color:#48685e;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+[data-cell-explanation-markers]{display:flex;gap:4px;flex-wrap:wrap}
+[data-cell-explanation-markers] span{width:7px;height:7px;border:1px solid #829e93;border-radius:50%;background:#fff}
+[data-cell-explanation-markers] span[data-current=true]{width:20px;border-radius:6px;background:#1d6553;border-color:#1d6553}
+[data-cell-explanation-title]{margin:0 0 10px;font-size:24px;font-weight:750;letter-spacing:-.55px;line-height:1.2;color:#133f35;text-wrap:balance}
+[data-cell-explanation-text]{max-width:76ch;margin:0;font-size:14px;line-height:1.75;color:#35554b}
+[data-cell-label-focus-control]{display:flex;align-items:center;gap:10px;min-height:44px;margin:0 20px 16px;padding:10px 12px;border:1px solid #adc8bb;border-radius:10px;background:#f0f7f3;color:#254f40;font-size:12px;font-weight:700;line-height:1.5;cursor:pointer}
+[data-cell-label-focus-control] input{flex:none;width:18px;height:18px;margin:0;accent-color:#215e4e;cursor:pointer}
+[data-cell-label-focus-control]:focus-within{outline:3px solid #0f766e;outline-offset:3px}
+@container(max-width:400px){[data-cell-label-focus-control]{margin:0 14px 14px}}
+[data-cell-explanation-actions]{display:flex;flex-wrap:wrap;gap:8px;padding:14px 20px;border-top:1px solid #dbe8e1;background:#f6faf8}
+[data-cell-explanation-actions] button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:9px 14px;border:1px solid #8bab9c;border-radius:10px;background:#fff;color:#215542;font-size:12px;font-weight:750;cursor:pointer}
+[data-cell-explanation-actions] button svg{flex:none;width:16px;height:16px}
+[data-cell-explanation-actions] button:hover{background:#e8f3ed;border-color:#477963}
+[data-cell-explanation-actions] button[data-cell-explanation-next]{background:#215e4e;border-color:#215e4e;color:#fff;box-shadow:0 2px 3px #163e3514}
+[data-cell-explanation-actions] button[data-cell-explanation-next]:hover{background:#174738}
+[data-cell-explanation-actions] button[data-cell-explanation-close]{margin-left:auto;border-color:transparent;background:transparent;color:#48685e}
+[data-cell-explanation-actions] button[data-cell-explanation-close]:hover{background:#e8f3ed;border-color:#8bab9c}
+[data-cell-explanation-actions] button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
+@container(max-width:400px){[data-cell-explanation-header]{padding:14px;gap:10px}[data-cell-explanation-body]{padding:16px 14px}[data-cell-explanation-title]{font-size:22px}[data-cell-explanation-actions]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 14px;gap:8px}[data-cell-explanation-actions] button{padding:9px 10px;flex:1}[data-cell-explanation-actions] button[data-cell-explanation-close]{flex-basis:100%;margin-left:0}}
+@media(forced-colors:active){[data-cell-explanation-markers] span[data-current=true]{background:Highlight;border-color:Highlight}[data-cell-explanation-actions] button[data-cell-explanation-close]{border-color:ButtonText}}
 [data-cell-observation-tools]{grid-column:1 / -1;border-top:1px solid #50706e;margin-top:5px;padding-top:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 [data-cell-observation-identity]{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px}
 [data-cell-observation-identity]>span:first-child{width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px #ffffff30}
@@ -23934,6 +23999,8 @@ var d = labToolData.cell || {};
 [data-cell-anatomy-item]{padding:14px!important;gap:10px!important;min-height:60px;border-radius:12px!important;font-size:12px!important;line-height:1.6;border:1px solid #dce7e2!important;background:#fff!important;align-items:stretch!important;box-shadow:0 2px 5px #173f3b04;transition:background .15s,border-color .15s,box-shadow .15s!important}
 [data-cell-anatomy-item]:hover{background:#f5faf7!important;border-color:#7da99a!important;box-shadow:0 3px 10px #173f3b0d}
 [data-cell-anatomy-item][data-cell-mission-focus=true]{border-color:#d8c9f1!important;background:#faf8ff!important}
+[data-cell-anatomy-item][aria-current=true]{border-color:#477963!important;background:#edf7f1!important;box-shadow:inset 3px 0 #215e4e}
+[data-cell-anatomy-item][aria-current=true] [data-cell-anatomy-icon]{background:#215e4e;color:#fff;border-color:#215e4e}
 [data-cell-anatomy-icon]{display:flex;align-items:center;justify-content:center;flex:0 0 30px;width:30px;height:30px;border:1px solid #dce7e2;border-radius:9px;background:#f0f6f3;font-size:15px}
 [data-cell-anatomy-content]{display:flex;flex-direction:column;min-width:0;flex:1}
 [data-cell-anatomy-title]{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:3px 0 7px}
@@ -25604,18 +25671,41 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
             ),
             (activePlayDef || selDef) && React.createElement('section', {
               'data-cell-explanation-panel': true, 'aria-label': 'Structure explorer',
-              style: { marginTop: 12, padding: 16, border: '1px solid #bbd7cd', borderRadius: 14, background: '#f4faf7', color: '#163e35' },
-              onKeyDown: function(e) { if (e.key === 'Escape' && cellExplanation) { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
+              onKeyDown: function(e) { if (e.key === 'Escape' && cellExplanation && e.target.tagName !== 'SELECT') { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
             },
-              React.createElement('div', { 'aria-live': 'polite', 'aria-atomic': true, style: { overflowWrap: 'anywhere' } },
-                React.createElement('p', { style: { margin: '0 0 6px', fontSize: 12, color: '#41665a' } }, cellExplanation ? cellExplanation.organismName + ' · Structure ' + (cellExplanation.index + 1) + ' of ' + cellExplanation.count : (activePlayDef || selDef).label + ' · Structure explorer'),
-                React.createElement('h3', { 'data-cell-explanation-title': true, style: { margin: '0 0 8px', fontSize: 18 } }, cellExplanation ? cellExplanation.name : 'Explore cell structures'),
-                React.createElement('p', { 'data-cell-explanation-text': true, style: { margin: 0, fontSize: 14, lineHeight: 1.65 } }, cellExplanation ? cellExplanation.description : 'Select a label in the dish, or use Previous and Next to explore each structure.')
+              React.createElement('div', { 'data-cell-explanation-header': true },
+                React.createElement('span', { 'data-cell-explanation-emblem': true, 'aria-hidden': true }, cellControlIcon('structure')),
+                React.createElement('div', { 'data-cell-explanation-meta': true },
+                  React.createElement('p', { 'data-cell-explanation-kicker': true }, 'Structure explorer'),
+                  React.createElement('p', { 'data-cell-explanation-specimen': true }, cellExplanation ? cellExplanation.organismName : (activePlayDef || selDef).label)
+                ),
+                React.createElement('label', { 'data-cell-explanation-picker': true },
+                  React.createElement('span', null, 'Jump to structure'),
+                  React.createElement('select', { 'aria-label': 'Jump to structure', value: cellExplanation && cellExplanation.organismId === (activePlayDef || selDef).id ? cellExplanation.name : '', onChange: function(e) { chooseCellExplanation(e.target.value); } },
+                    React.createElement('option', { value: '', disabled: true }, 'Choose a structure'),
+                    (activePlayDef || selDef).anatomy.map(function(a) { return React.createElement('option', { key: a.name, value: a.name }, a.name); })
+                  )
+                )
               ),
-              React.createElement('div', { role: 'group', 'aria-label': 'Browse cell structures', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
-                React.createElement('button', { type: 'button', 'aria-label': 'Previous structure', onClick: function() { stepCellExplanation(-1); }, style: cellExplanationButtonStyle }, 'Previous'),
-                React.createElement('button', { type: 'button', 'aria-label': 'Next structure', onClick: function() { stepCellExplanation(1); }, style: cellExplanationButtonStyle }, 'Next'),
-                cellExplanation && React.createElement('button', { type: 'button', 'aria-label': 'Close structure explanation', onClick: closeCellExplanationPanel, style: cellExplanationButtonStyle }, 'Close')
+              React.createElement('div', { 'data-cell-explanation-body': true, 'aria-live': 'polite', 'aria-atomic': true },
+                React.createElement('div', { 'data-cell-explanation-position': true },
+                  React.createElement('span', null, cellExplanation ? 'Structure ' + (cellExplanation.index + 1) + ' of ' + cellExplanation.count : (activePlayDef || selDef).anatomy.length + ' structures to explore'),
+                  React.createElement('span', { 'data-cell-explanation-markers': true, 'aria-hidden': true },
+                    (activePlayDef || selDef).anatomy.map(function(a, index) { return React.createElement('span', { key: index, 'data-current': !!cellExplanation && index === cellExplanation.index ? 'true' : 'false' }); })
+                  )
+                ),
+                React.createElement('h3', { 'data-cell-explanation-title': true }, cellExplanation ? cellExplanation.name : 'Explore cell structures'),
+                React.createElement('p', { 'data-cell-explanation-text': true }, cellExplanation ? cellExplanation.description : 'Select a label in the dish, choose a structure above, or browse with Previous and Next.')
+              ),
+              activeCellMode === 'observe' && cellExplanation && React.createElement('label', { 'data-cell-label-focus-control': true },
+                React.createElement('input', { type: 'checkbox', checked: !!d.focusSelectedLabel, onChange: function(e) { upd('focusSelectedLabel', e.target.checked); } }),
+                React.createElement('span', null, 'Show only selected label')
+              ),
+              React.createElement('div', { 'data-cell-explanation-actions': true, role: 'group', 'aria-label': 'Browse cell structures' },
+                React.createElement('button', { type: 'button', 'aria-label': 'Previous structure', onClick: function() { stepCellExplanation(-1); } }, cellControlIcon('previous'), 'Previous'),
+                React.createElement('button', { type: 'button', 'data-cell-explanation-next': true, 'aria-label': 'Next structure', onClick: function() { stepCellExplanation(1); } }, 'Next', cellControlIcon('next')),
+                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-return': true, 'aria-label': 'Back to microscope', onClick: function() { focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]'); } }, cellControlIcon('up'), 'Back to dish'),
+                cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-close': true, 'aria-label': 'Close structure explanation', onClick: closeCellExplanationPanel }, cellControlIcon('close'), 'Close')
               )
             ),
             d.mode === 'play' && activePlayDef && activePlayTutorial && React.createElement("section", { "data-cell-mission-checkpoint": true, className: "mt-3 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm", "aria-labelledby": "cell-mission-checkpoint-title" },
@@ -26175,6 +26265,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
                       key: i,
                       "data-cell-anatomy-item": a.name,
+                      "aria-current": cellExplanation && cellExplanation.organismId === selDef.id && cellExplanation.name === a.name ? "true" : undefined,
                       "data-cell-anatomy-jump": true,
                       "data-cell-mission-focus": missionFocus ? "true" : "false",
                       "aria-label": "Show " + a.name + " in the " + selDef.label + " live dish. " + (missionFocus ? "Mission focus structure. " : "") + "Moves focus to the simulation.",
@@ -26220,7 +26311,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                           missionFocus && React.createElement("span", { "data-cell-anatomy-mission": true }, "Mission focus")
                         ),
                         React.createElement("span", { "data-cell-anatomy-description": true }, a.fn),
-                        React.createElement("span", { "data-cell-anatomy-action": true, "aria-hidden": true }, "Show in live dish", cellControlIcon('locate'))
+                        React.createElement("span", { "data-cell-anatomy-action": true, "aria-hidden": true }, cellExplanation && cellExplanation.organismId === selDef.id && cellExplanation.name === a.name ? "Selected in live dish" : "Show in live dish", cellControlIcon('locate'))
                       )
 
                     );
