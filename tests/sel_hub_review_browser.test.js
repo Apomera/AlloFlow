@@ -604,6 +604,14 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.endingIdx)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+
+  it('conversation starting notes and response choice survive the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Starting/}).click();const activity=page.getByRole('region',{name:'Starting friendship practice',exact:true});
+    await activity.getByLabel('Choose a conversation context',{exact:true}).selectOption('invite');await activity.getByLabel('Explore a fictional response',{exact:true}).selectOption('decline');await activity.getByText('Adapt and rehearse (optional)',{exact:true}).click();await activity.getByLabel('How could I respond or step back? (optional)',{exact:true}).fill('Acknowledge their answer and give them space.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();
+    expect(await activity.getByLabel('Choose a conversation context',{exact:true}).inputValue()).toBe('invite');expect(await activity.getByLabel('Explore a fictional response',{exact:true}).inputValue()).toBe('decline');await activity.getByText('Adapt and rehearse (optional)',{exact:true}).click();expect(await activity.getByLabel('How could I respond or step back? (optional)',{exact:true}).inputValue()).toBe('Acknowledge their answer and give them space.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.starterIdx)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

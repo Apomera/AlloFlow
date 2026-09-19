@@ -56,33 +56,177 @@ window.SelHub = window.SelHub || {
     { id: 'cheerleader', icon: '\uD83C\uDF89', label: 'The Cheerleader', desc: 'You show love by celebrating others. You get excited about your friends\u2019 wins and hype them up.', strength: 'People feel confident around you.', watchFor: 'Your own wins matter just as much. Celebrate yourself too.' },
   ];
 
-  // Conversation starters by grade band
+  // Authored starters: invitations, not guarantees of friendship.
   var STARTERS = {
-    elementary: [
-      { situation: 'Someone is playing a game you like', say: 'That looks fun! Can I play too?', why: 'Compliment + question is the friendliest way to join in.' },
-      { situation: 'You\u2019re sitting next to someone new at lunch', say: 'Hi! I\u2019m ___. What\u2019s your favorite thing to do at recess?', why: 'Name + easy question gives them something to answer.' },
-      { situation: 'Someone has a cool shirt/backpack/toy', say: 'I like your ___! Where did you get it?', why: 'Noticing something they chose shows you\u2019re paying attention.' },
-      { situation: 'You want to join a group at recess', say: 'Can I play with you guys? I can be on any team.', why: 'Being flexible makes it easy for them to say yes.' },
-      { situation: 'Someone looks sad or lonely', say: 'Hey, are you okay? Do you want to hang out with me?', why: 'Checking in + offering your company is brave and kind.' },
-      { situation: 'A group project with someone you don\u2019t know', say: 'What part do you want to do? I\u2019m good at ___.', why: 'Asking their preference and sharing yours builds teamwork fast.' },
-    ],
-    middle: [
-      { situation: 'You share a class with someone you want to know better', say: 'Hey, did you understand the homework? I\u2019m confused about ___.', why: 'Asking for help is actually a friendship builder \u2014 it shows trust.' },
-      { situation: 'Someone mentions something you\u2019re also into', say: 'Wait, you like ___ too? What\u2019s your favorite ___?', why: 'Shared interests are the #1 friendship catalyst at this age.' },
-      { situation: 'You want to hang out outside school', say: 'A bunch of us are going to ___. Want to come?', why: 'Group invitations feel lower-pressure than one-on-one at first.' },
-      { situation: 'Someone did well on a presentation', say: 'That was really good. How did you know so much about that?', why: 'Genuine compliment + curiosity \u2014 people love talking about what they know.' },
-      { situation: 'You\u2019re new and don\u2019t know anyone', say: 'I just transferred here. Is there anything I should know about this school?', why: 'Asking for insider info makes them an expert and you a learner \u2014 instant connection.' },
-      { situation: 'A friend of a friend you want to know', say: 'I\u2019ve heard about you from ___. They said you\u2019re really into ___.', why: 'Mutual connection + something positive they said creates instant warmth.' },
-    ],
-    high: [
-      { situation: 'Someone in your study group you respect', say: 'You always seem to get this stuff. Would you want to study together sometime?', why: 'Acknowledging someone\u2019s competence while proposing shared time builds intellectual friendship.' },
-      { situation: 'You want deeper connection with an acquaintance', say: 'We\u2019ve been in classes together for a while but I feel like I don\u2019t really know you. What\u2019s your thing?', why: 'Vulnerability + genuine curiosity. Most people are waiting for someone to ask.' },
-      { situation: 'After a meaningful class discussion', say: 'What you said about ___ really made me think. Do you want to grab lunch and talk more?', why: 'Referencing something specific they said shows you were truly listening.' },
-      { situation: 'Someone going through something difficult', say: 'I don\u2019t want to pry, but I wanted you to know I noticed and I\u2019m here if you need anything.', why: 'Acknowledging without forcing. The door is open without pressure to walk through it.' },
-      { situation: 'Reconnecting with someone you drifted from', say: 'I miss how we used to talk. Life got busy but I don\u2019t want to lose this.', why: 'Honesty about the drift + desire to reconnect. Most people feel the same but won\u2019t say it first.' },
-      { situation: 'Building friendship across difference', say: 'We\u2019re pretty different in a lot of ways. I think that\u2019s actually cool. Tell me about ___.', why: 'Naming the difference openly removes the tension. Curiosity replaces distance.' },
-    ]
-  };
+  "elementary": [
+    {
+      "id": "game",
+      "title": "Joining a game",
+      "situation": "Someone is playing a game you like.",
+      "check": "Wait for a break. Check whether the game has room and whether you want to follow its rules.",
+      "say": "That looks fun. Is there room for me to play?",
+      "why": "A simple question lets the group say whether joining is possible. You do not need to promise to do anything they ask.",
+      "follow": "Ask how to play or what role is available. You can say if you need help or a different way to join."
+    },
+    {
+      "id": "lunch",
+      "title": "Sitting near someone new",
+      "situation": "You are sitting near someone new at lunch.",
+      "check": "They may want quiet time or need time to eat. A greeting can be enough.",
+      "say": "Hi, I am ___. Would you like to talk or have quiet time?",
+      "why": "Offering a choice leaves room for either answer. Quiet time is not a judgment about you.",
+      "follow": "Share one thing you enjoy and ask whether they want to share something too."
+    },
+    {
+      "id": "interest",
+      "title": "Noticing a shared interest",
+      "situation": "Someone has a picture of a game you enjoy on their bag.",
+      "check": "Comment only if you genuinely want to. Avoid touching their belongings or asking private questions.",
+      "say": "I like that game too. Do you want to talk about it?",
+      "why": "A shared topic can give you something to discuss; it does not mean you will like all the same things.",
+      "follow": "Mention one part you enjoy, then leave room for their idea."
+    },
+    {
+      "id": "group",
+      "title": "Approaching a group",
+      "situation": "You want to join a group activity at recess.",
+      "check": "Check what the group is doing and whether joining is safe and welcome. You can ask a grown-up for help.",
+      "say": "Is this a game I can join? What are the rules?",
+      "why": "Learning the rules can help you decide whether the activity works for you too.",
+      "follow": "Ask about a place in the activity. You can explain an access need or choose another activity."
+    },
+    {
+      "id": "company",
+      "title": "Offering company",
+      "situation": "Someone is sitting alone. You wonder if they want company.",
+      "check": "Being alone does not tell you how they feel. They may like being by themselves.",
+      "say": "Would you like company, or would you like to sit on your own?",
+      "why": "Asking leaves the choice with them instead of deciding that they are lonely.",
+      "follow": "Ask whether they want to talk, do something together or just sit quietly."
+    },
+    {
+      "id": "project",
+      "title": "Meeting a project partner",
+      "situation": "You have a class project with someone you do not know well.",
+      "check": "Start with the shared task. Ask for help from the teacher if directions or roles are unclear.",
+      "say": "Which part would you like to try? I would like to try ___.",
+      "why": "Talking about the task can help you cooperate without having to become close friends.",
+      "follow": "Listen to their idea and share what helps you work, such as drawing, taking turns or writing."
+    }
+  ],
+  "middle": [
+    {
+      "id": "class",
+      "title": "A shared class",
+      "situation": "You share a class with someone you would like to know.",
+      "check": "Choose a pause rather than interrupting work. Do not pretend to need help to get their attention.",
+      "say": "Do you have a minute to compare how we understood the assignment?",
+      "why": "A real shared task can offer a starting point, if both people have time.",
+      "follow": "Share one question or idea of your own, then make room for theirs."
+    },
+    {
+      "id": "interest",
+      "title": "A shared interest",
+      "situation": "Someone mentions an activity you also enjoy.",
+      "check": "Check whether they want to continue the topic. You can have different tastes within the same interest.",
+      "say": "I like that too. Would you want to talk about it?",
+      "why": "An interest gives you a possible topic, not a guarantee of friendship.",
+      "follow": "Share a favorite part and invite their view without testing how much they know."
+    },
+    {
+      "id": "invite",
+      "title": "Inviting someone along",
+      "situation": "You want to invite someone to a group activity outside school.",
+      "check": "Use a real plan and check permission, cost, transport and access. Do not promise an invitation on behalf of others without checking.",
+      "say": "Some of us are planning ___. Would you like the details? It is okay if not.",
+      "why": "Clear information can help someone decide whether they want and are able to join.",
+      "follow": "Offer the details and let them decide without asking them to explain private constraints."
+    },
+    {
+      "id": "presentation",
+      "title": "After a presentation",
+      "situation": "Someone shared an idea in a presentation that interested you.",
+      "check": "Wait until they are free. They may not want feedback or another conversation immediately.",
+      "say": "Your point about ___ interested me. Would you be up for talking about it sometime?",
+      "why": "A specific observation explains your interest without requiring praise or a personal story in return.",
+      "follow": "Ask one question about the idea and share what it made you think about."
+    },
+    {
+      "id": "newschool",
+      "title": "Finding your way",
+      "situation": "You are new to the school and would like to connect with others.",
+      "check": "You can ask a practical question without disclosing your personal history. Staff can help too.",
+      "say": "Hi, I am new here. Could you tell me where ___ is?",
+      "why": "A small practical question can open contact, but the other person is not responsible for becoming your guide or friend.",
+      "follow": "Thank them. If they keep talking, share something you choose about your interests."
+    },
+    {
+      "id": "mutual",
+      "title": "A mutual connection",
+      "situation": "You know someone through a mutual friend and would like to introduce yourself.",
+      "check": "Use only information that was okay to share. Knowing the same person does not mean you already know each other.",
+      "say": "Hi, we both know ___. I am ___. Would you like to join this activity?",
+      "why": "A simple introduction offers a connection while leaving room for their choice.",
+      "follow": "Talk about the shared activity rather than repeating private stories about the mutual friend."
+    }
+  ],
+  "high": [
+    {
+      "id": "study",
+      "title": "Inviting a study partner",
+      "situation": "You would like to study with someone from a shared class.",
+      "check": "Check timing, format and access. Avoid assuming they should tutor you or do the work.",
+      "say": "Would you be interested in studying together sometime? We could each bring a question.",
+      "why": "An invitation can make the purpose and contribution clearer without presuming agreement.",
+      "follow": "Discuss a format and time that work for both people, including the option to decline later."
+    },
+    {
+      "id": "acquaintance",
+      "title": "Getting to know an acquaintance",
+      "situation": "You would like to know a classmate beyond routine small talk.",
+      "check": "Start with a topic you are comfortable sharing. They do not owe deeper disclosure.",
+      "say": "We have talked a few times. Would you want to grab lunch or join an activity sometime?",
+      "why": "An optional shared activity can create time to talk without asking for immediate closeness.",
+      "follow": "Offer a concrete, accessible possibility and ask what works for them."
+    },
+    {
+      "id": "discussion",
+      "title": "Continuing an interesting discussion",
+      "situation": "Something a classmate said in a discussion made you think.",
+      "check": "Ask before extending the discussion, especially if the topic is personal or tiring.",
+      "say": "Your point about ___ gave me something to think about. Would you want to talk more, or leave it there?",
+      "why": "Permission to stop matters as much as an invitation to continue.",
+      "follow": "Share your own thought and ask a question without treating them as a representative of a whole group."
+    },
+    {
+      "id": "checkin",
+      "title": "Offering a check-in",
+      "situation": "Someone you know has seemed quieter lately. You are considering checking in.",
+      "check": "A change you notice does not tell you its cause. Do not press for personal details or promise unlimited availability.",
+      "say": "Would you like company or a check-in? You do not have to explain anything.",
+      "why": "A specific, optional offer leaves them control over what to share.",
+      "follow": "Ask what kind of company would help and be honest about what you can offer."
+    },
+    {
+      "id": "reconnect",
+      "title": "Reconnecting after a gap",
+      "situation": "You have drifted from someone and would like to ask about reconnecting.",
+      "check": "Only approach if contact is welcome and there has been no request for space or no contact.",
+      "say": "I have missed talking with you. Would you be interested in catching up sometime? It is okay if not.",
+      "why": "You can name your interest without assuming they feel the same or owe a return to the old friendship.",
+      "follow": "Ask what kind of contact would fit now rather than promising to recreate the past."
+    },
+    {
+      "id": "difference",
+      "title": "Connecting across different experiences",
+      "situation": "You would like to get to know someone whose experiences may differ from yours.",
+      "check": "Do not assume their identity, experiences or willingness to explain them. Start with an actual shared context.",
+      "say": "I enjoyed working on ___ with you. Would you like to do another activity together?",
+      "why": "An invitation around shared experience can leave room for differences without making someone teach you about their identity.",
+      "follow": "Let them choose what to share. Ask about preferences rather than making assumptions about a group."
+    }
+  ]
+};
 
   // Authored practice examples; not a relationship assessment.
   var REPAIR_PRACTICE = [
@@ -770,7 +914,7 @@ window.SelHub = window.SelHub || {
       var heroBand = (function() {
         var TAB_META = {
           compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83E\uDDED', title: 'My Style \u2014 how you show you care',                hint: 'Loyalist, encourager, advisor, peacekeeper, jokester, listener, adventurer. Most people lean on 1-2. Knowing yours is half the work \u2014 the other half is recognizing your friend\u2019s default is probably different.' },
-          start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 the open + the follow-up',             hint: 'Mere-exposure effect (Zajonc 1968): repeated low-stakes contact predicts liking better than charm. Pair-share, lunch tables, shared activities. \u201CI like your shoes\u201D is corny because it WORKS.' },
+          start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 an invitation and a choice', hint: 'Check timing and welcome contact. Try words that fit you, explore different responses and practise stepping back. Friendship is not guaranteed by a script or measured by getting a yes.' },
           keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 maintenance is everything',              hint: 'Dunbar 1992: humans top out at ~150 stable relationships, ~5 close ones. Sustaining ANY of those takes regular small bids \u2014 a text, a memory mentioned, a check-in. Drift is the default.' },
           digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCF1', title: 'Digital - context, consent and considered choices', hint: 'Compare what a message shows with what remains uncertain. Consider boundaries, audience and trusted support. A private channel does not guarantee privacy.' },
           repair:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDE79', title: 'Repair \u2014 the strongest friendships have ruptures', hint: 'Gottman: rupture is universal; thriving relationships repair quickly. Name what you did, hear what landed, plan repair, follow up. Apologies that include \u201CIF\u201D are not apologies.' },
@@ -916,29 +1060,76 @@ window.SelHub = window.SelHub || {
       // ── Starting Friendships ──
       var startContent = null;
       if (activeTab === 'start') {
-        var starters = STARTERS[band] || STARTERS.elementary;
-        var cur = starters[starterIdx % starters.length];
-        startContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDCAC'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Starting a Friendship'),
-            h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, band === 'elementary' ? 'The hardest part is the first words. Here\u2019s what to say.' : 'Specific words for specific situations. Practice makes natural.')
-          ),
-          // Scenario card
-          h('div', { style: { background: _frC('#fff'), borderRadius: '16px', padding: '20px', border: '1px solid ' + _frC('#e5e7eb'), boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: AMBER, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' } }, '\uD83C\uDFAD Situation'),
-            h('p', { style: { fontSize: '14px', color: _frC('#1f2937'), fontWeight: 600, margin: '0 0 14px' } }, cur.situation),
-            h('div', { style: { background: AMBER_LIGHT, borderRadius: '12px', padding: '14px', borderLeft: '4px solid ' + AMBER, marginBottom: '10px' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: AMBER, marginBottom: '4px' } }, '\uD83D\uDDE3\uFE0F You could say:'),
-              h('p', { style: { fontSize: '15px', fontWeight: 700, color: AMBER_DARK, margin: 0, fontStyle: 'italic' } }, '"' + cur.say + '"')
-            ),
-            h('div', { style: { fontSize: '12px', color: _frC('#94a3b8'), lineHeight: 1.5 } }, '\uD83D\uDCA1 Why it works: ' + cur.why)
-          ),
-          h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
-            h('button', { onClick: function() { upd('starterIdx', (starterIdx - 1 + starters.length) % starters.length); }, style: { padding: '8px 16px', background: _frC('#fff'), border: '2px solid ' + _frC('#e5e7eb'), borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: _frC('#374151') } }, '\u2190 Prev'),
-            h('span', { style: { display: 'flex', alignItems: 'center', fontSize: '12px', color: _frC('#94a3b8') } }, (starterIdx % starters.length + 1) + ' / ' + starters.length),
-            h('button', { onClick: function() { upd('starterIdx', (starterIdx + 1) % starters.length); if (soundEnabled) sfxClick(); }, 'aria-label': 'Next starter', style: { padding: '8px 16px', background: AMBER, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
-          )
+        var startBand = ['elementary', 'middle', 'high'].indexOf(band) >= 0 ? band : 'middle';
+        var startObject = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+        var starters = STARTERS[startBand];
+        var startSelections = startObject(d.starterSelections);
+        var startSelected = startSelections[startBand];
+        var startExample = starters.find(function(item) { return item.id === startSelected; }) || starters[starterIdx % starters.length];
+        var startOwn = startSelected === 'own';
+        var startContext = startOwn ? 'own' : startExample.id;
+        var startKey = startBand + ':' + startContext;
+        var startDrafts = startObject(d.starterDrafts);
+        var startDraft = startObject(startDrafts[startKey]);
+        var startNote = function(key) { return typeof startDraft[key] === 'string' ? startDraft[key] : ''; };
+        var saveStart = function(values) { var drafts = Object.assign({}, startDrafts); drafts[startKey] = Object.assign({}, startDraft, values); upd('starterDrafts', drafts); };
+        var startResponses = [
+          { id: 'welcome', label: 'They welcome the conversation', cue: startBand === 'elementary' ? 'They say, "Yes, I would like to," and ask you a question.' : 'They agree to talk or join in and ask a question back.', next: startOwn ? 'Share one thing you choose and leave room for their response. Check that continuing is still welcome.' : startExample.follow, limit: 'A yes applies to this exchange, not every future invitation. Both people can change their minds.' },
+          { id: 'decline', label: 'They decline or ask for space', cue: startBand === 'elementary' ? 'They say, "No, thank you," or "I want to be on my own."' : 'They decline the invitation or say they do not want contact.', next: startBand === 'elementary' ? 'You could say, "Okay," and give them space. Choose another activity or ask a grown-up for support if you need it.' : 'A brief acknowledgment is enough. Stop the invitation and respect the boundary; you do not need to ask why or bargain.', limit: 'Do not keep asking, recruit someone to persuade them or switch accounts. Their choice is not a score of your worth.' },
+          { id: 'unclear', label: 'The response is unclear', cue: startBand === 'elementary' ? 'They do not answer, or give a short answer. You do not know why.' : 'They are silent or give a brief reply without clearly inviting more conversation.', next: startBand === 'elementary' ? 'Give them time. You can leave it there. If they use a different way to communicate, make room for that without rushing them.' : 'Allow processing time and room for their communication method. You can pause or leave the exchange there rather than sending repeated questions.', limit: 'Silence, tone and eye contact do not reliably tell you someone\'s feelings or intentions. Uncertainty is not permission to continue contact.' }
+        ];
+        var startResponse = startResponses.find(function(item) { return item.id === startNote('response'); });
+        var startSurface = _frHC ? '#000000' : _frDark ? '#0f172a' : '#ffffff';
+        var startInk = _frHC ? '#ffffff' : _frDark ? _frC('#0f172a') : '#1f2937';
+        var startEdge = _frHC ? '#ffff00' : _frDark ? '#94a3b8' : '#64748b';
+        var startCard = { padding: '16px', margin: '14px 0', border: '1px solid ' + startEdge, borderRadius: '12px', background: startSurface, color: startInk, minWidth: 0 };
+        var startControl = { width: '100%', maxWidth: '100%', minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + startEdge, borderRadius: '8px', background: startSurface, color: startInk, font: 'inherit', fontSize: '16px' };
+        var startSummary = { minHeight: '44px', padding: '10px 0', boxSizing: 'border-box', fontWeight: 700, cursor: 'pointer' };
+        var startFields = [
+          { id: 'access', label: 'What would make this a workable moment?', hint: 'Think about timing, welcome contact, access and communication preferences. Speech, writing, gestures or a communication aid can all be options.' },
+          { id: 'opener', label: 'What opening words or action could I try?', hint: 'Adapt an example or choose your own. A greeting or shared activity can be enough; you do not have to perform a script or make eye contact.' },
+          { id: 'next', label: 'How could I respond or step back?', hint: 'Consider the practice response you explored. Leave room for the other person to decline, pause or communicate differently.' },
+          { id: 'review', label: 'What would I notice or adjust next time?', hint: 'Notice your own choices and what felt workable. Getting a yes is not the measure of successful practice.' }
+        ];
+        var startField = function(field) {
+          var id = 'fr-start-' + field.id;
+          return h('div', { key: field.id, style: { margin: '16px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+            h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
+            h('textarea', { id: id, rows: 3, value: startNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, startControl, { resize: 'vertical' }),
+              onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveStart(values); } }));
+        };
+        var startPreview = ['My conversation practice — not a prediction of friendship.', 'Context: ' + (startOwn ? 'My own example' : startExample.title), 'Fictional response explored: ' + (startResponse ? startResponse.label : 'Not chosen')]
+          .concat(startFields.map(function(field) { return field.label + '\n' + (startNote(field.id).trim() || '(No note yet)'); })).join('\n\n');
+        startContent = h('section', { role: 'region', 'aria-label': 'Starting friendship practice', style: { padding: '16px', maxWidth: '720px', margin: '0 auto', background: startSurface, color: startInk, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+          h('h3', { style: { margin: '0 0 8px', fontSize: '22px' } }, 'Start a conversation, leave room for choice'),
+          h('p', null, startBand === 'elementary' ? 'Try an opening and practise what could happen next. You can choose to wait, and the other person can say no.' : 'Practise an invitation, a response and a respectful exit. No opening line guarantees connection, and you do not have to start a conversation.'),
+          h('p', null, 'Use words and communication methods that fit you. You can read, think or practise with a trusted person; every note is optional.'),
+          h('label', { htmlFor: 'fr-start-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a conversation context'),
+          h('select', { id: 'fr-start-context', value: startContext, style: startControl, onChange: function(ev) { var selections = Object.assign({}, startSelections); selections[startBand] = ev.target.value; upd('starterSelections', selections); } },
+            starters.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+          h('div', { key: startKey, style: startCard },
+            h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, startOwn ? 'Consider the moment' : startExample.title),
+            h('p', null, startOwn ? 'Choose a context where contact is welcome. If someone has asked for space or no contact, respect that instead of rehearsing another approach to them.' : startExample.situation),
+            h('h5', { style: { fontSize: '16px', margin: '12px 0 4px' } }, 'Before approaching'),
+            h('p', null, startOwn ? 'Check timing, access and whether you want to join in. You may prefer writing, a shared activity or support from a trusted person.' : startExample.check),
+            !startOwn && h('p', { style: { fontWeight: 700 } }, startExample.say),
+            !startOwn && h('p', null, startExample.why)),
+          h('div', { key: startKey + '-responses', style: startCard },
+            h('label', { htmlFor: 'fr-start-response', style: { display: 'block', fontWeight: 700 } }, 'Explore a fictional response'),
+            h('p', { id: 'fr-start-response-hint' }, 'These are made-up responses to practise with, not a way to classify a real person. Try more than one; changing this choice keeps your notes.'),
+            h('select', { id: 'fr-start-response', value: startResponse ? startResponse.id : '', 'aria-describedby': 'fr-start-response-hint', style: startControl, onChange: function(ev) { saveStart({ response: ev.target.value }); } },
+              h('option', { value: '' }, 'Choose a response to explore'), startResponses.map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, startResponse ? startResponse.cue : 'You can leave this open or explore a possible response.'),
+            startResponse && h('div', null, h('h5', { style: { fontSize: '16px', margin: '12px 0 4px' } }, 'A possible next step'), h('p', null, startResponse.next), h('p', null, startResponse.limit))),
+          h('details', { key: startKey + '-notes', style: startCard },
+            h('summary', { style: startSummary }, 'Adapt and rehearse (optional)'),
+            h('p', null, 'Notes are kept with this activity and grade level. They are not monitored and do not send a message. A fictional example is enough.'), startFields.map(startField)),
+          h('details', { key: startKey + '-review', style: startCard },
+            h('summary', { style: startSummary }, 'Review my practice notes'),
+            h('label', { htmlFor: 'fr-start-preview', style: { display: 'block', fontWeight: 700 } }, 'Practice notes to review or copy'),
+            h('textarea', { id: 'fr-start-preview', readOnly: true, rows: 9, value: startPreview, style: Object.assign({}, startControl, { resize: 'vertical' }) })),
+          h('p', null, 'If someone repeatedly mocks, pressures or excludes you, ask a trusted adult for support. You do not have to find a better opening line to make that behavior stop.')
         );
       }
 
