@@ -50,6 +50,6 @@ Canonical, public, existing web-build and app-build renderers are byte-identical
 
 Local changes only; no push, deployment or packaged build. [Validation record](validation.json)
 
-## Local commit status
+## Local commit history
 
-Implementation and validation are complete and the scoped Dino Lab files are staged. The normal commit hook rejected the commit because the unrelated content_engine_source.jsx and desktop/web-app/src/content_engine_source.jsx copies differ (2856 versus 2838 lines). Those concurrent edits were preserved; no hooks were bypassed. The commit remains pending that source-pair correction.
+At the end of the first pass, implementation and validation were complete and the scoped Dino Lab files were staged. The normal commit hook initially rejected the commit because the unrelated content_engine_source.jsx and desktop/web-app/src/content_engine_source.jsx copies differ (2856 versus 2838 lines). Those concurrent edits were preserved; no hooks were bypassed. That blocker later cleared. The anatomy changes and the subsequent body-part locator were committed normally as `859240821`; see the [locator report](../dinolab-3d-part-locator/README.md) for the current implementation.
