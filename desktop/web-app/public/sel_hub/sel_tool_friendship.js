@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════
 // sel_tool_friendship.js — Friendship Workshop (v1.0)
-// Concrete, skills-based friendship development: self-assessment,
+// Concrete, skills-based friendship practice: flexible ways to care,
 // conversation starters, maintenance strategies, conflict navigation,
 // repair/forgiveness, and AI scenario practice.
 // Built for students who want friends but need explicit strategies —
@@ -46,15 +46,145 @@ window.SelHub = window.SelHub || {
   // ── Content ──
   // ══════════════════════════════════════════════════════════════
 
-  // Friendship styles (self-assessment)
+  // Old labels are retained only to explain a saved historical selection.
   var FRIEND_STYLES = [
-    { id: 'helper',    icon: '\uD83E\uDD1D', label: 'The Helper',     desc: 'You show love by doing things for people. You notice when someone needs help and jump in.', strength: 'People feel supported around you.', watchFor: 'Make sure you let people help YOU too.' },
-    { id: 'listener',  icon: '\uD83D\uDC42', label: 'The Listener',   desc: 'You show love by really hearing people. You remember what they said and ask follow-up questions.', strength: 'People feel understood around you.', watchFor: 'Don\u2019t forget to share your own stories too.' },
-    { id: 'adventurer', icon: '\uD83C\uDF1F', label: 'The Adventurer', desc: 'You show love by sharing experiences. You want to DO things together \u2014 play, explore, create.', strength: 'People have fun around you.', watchFor: 'Some friends need quiet time too. That\u2019s okay.' },
-    { id: 'loyalist',  icon: '\uD83D\uDEE1\uFE0F', label: 'The Loyalist',  desc: 'You show love by being reliable. You keep secrets, show up when you say you will, and stand by people.', strength: 'People trust you deeply.', watchFor: 'It\u2019s okay to have more than one close friend.' },
-    { id: 'includer',  icon: '\uD83C\uDF08', label: 'The Includer',   desc: 'You show love by making sure nobody is left out. You notice the kid sitting alone and invite them in.', strength: 'People feel welcome around you.', watchFor: 'You deserve to feel included too, not just the includer.' },
-    { id: 'cheerleader', icon: '\uD83C\uDF89', label: 'The Cheerleader', desc: 'You show love by celebrating others. You get excited about your friends\u2019 wins and hype them up.', strength: 'People feel confident around you.', watchFor: 'Your own wins matter just as much. Celebrate yourself too.' },
-  ];
+  {
+    "id": "helper",
+    "label": "The Helper"
+  },
+  {
+    "id": "listener",
+    "label": "The Listener"
+  },
+  {
+    "id": "adventurer",
+    "label": "The Adventurer"
+  },
+  {
+    "id": "loyalist",
+    "label": "The Loyalist"
+  },
+  {
+    "id": "includer",
+    "label": "The Includer"
+  },
+  {
+    "id": "cheerleader",
+    "label": "The Cheerleader"
+  }
+];
+
+  // Practices are flexible choices, not personality categories.
+  var CARE_PRACTICES = [
+  {
+    "id": "helper",
+    "title": "Offer help with permission",
+    "setup": {
+      "elementary": "A classmate is working on a tricky puzzle. You know a way to do it, but they have not asked for help.",
+      "middle": "A friend is having trouble with an assignment. You want to help without taking over or doing it for them.",
+      "high": "A friend mentions a difficult task. You have ideas, but you do not know whether they want suggestions, practical help or time to work independently."
+    },
+    "words": {
+      "elementary": "Would you like a hint, help with one part, or time to try?",
+      "middle": "Would a suggestion help, or would you rather work on it your way?",
+      "high": "Would you like ideas, a specific practical offer or space to work independently?"
+    },
+    "notice": "Notice a possible need, then check rather than assuming. Help is useful when the person wants it and still has room to make choices.",
+    "limit": "Do not take over, touch their work or make an offer you cannot sustain. A declined offer does not mean you failed to care.",
+    "changed": "They say they want to do it themselves.",
+    "review": "Respect that answer. You can step back without repeatedly offering, watching over them or doing the task secretly."
+  },
+  {
+    "id": "listener",
+    "title": "Listen in a way that fits",
+    "setup": {
+      "elementary": "A friend wants to tell you about their day. You can listen better while drawing or moving quietly.",
+      "middle": "A friend wants to talk about a disagreement. You have limited time and do not know whether they want advice.",
+      "high": "A friend starts sharing a complicated experience. You want to understand without assuming their feelings or giving advice they did not request."
+    },
+    "words": {
+      "elementary": "I can listen while I draw. Is that okay with you?",
+      "middle": "I have a few minutes. Would you like me to listen, help think of ideas, or something else?",
+      "high": "Would listening help, or are you looking for ideas? I may check that I understood rather than guess."
+    },
+    "notice": "Listening can include checking understanding, giving processing time or using writing. Eye contact and stillness are not the only ways to pay attention.",
+    "limit": "You can set a time or capacity limit. Understanding is not the same as agreeing, and listening does not require keeping someone unsafe.",
+    "changed": "They want more time than you have and ask you to be their only support.",
+    "review": "Be honest about what you can offer and suggest another trusted person. If someone may be hurt or unsafe, ask a trusted adult for help."
+  },
+  {
+    "id": "adventurer",
+    "title": "Share an experience that works",
+    "setup": {
+      "elementary": "You want to play an energetic game, but your friend prefers something quieter today.",
+      "middle": "You want to invite a friend to an activity, but it may involve cost, transport or rules you have not checked.",
+      "high": "You enjoy a shared interest, but your usual way of doing it does not fit both people's schedules or access needs."
+    },
+    "words": {
+      "elementary": "Would a quieter game work, or would you like to do different things nearby?",
+      "middle": "Would you like to find something that works for our time, budget and access?",
+      "high": "Could we adapt the activity or try another format? We can also choose separate plans."
+    },
+    "notice": "Sharing time does not require identical interests or energy. A smaller, quieter or parallel activity can be an option if both people want it.",
+    "limit": "An invitation is not a commitment. Do not require someone to explain private constraints or endure an inaccessible activity to belong.",
+    "changed": "None of the options works for both of you today.",
+    "review": "You can make separate plans without treating it as a loyalty test. Revisit another time only if that is welcome."
+  },
+  {
+    "id": "loyalist",
+    "title": "Be reliable and honest about limits",
+    "setup": {
+      "elementary": "You promised to bring something for a shared project, then realize you cannot bring it.",
+      "middle": "You agreed to help a friend, but a change at home means you cannot do what you promised.",
+      "high": "You made a commitment and now know your time or capacity has changed. You want to be dependable without making a new promise you cannot keep."
+    },
+    "words": {
+      "elementary": "I cannot bring it after all. I wanted to tell you. Can we ask for help with another plan?",
+      "middle": "I cannot do what I promised. I am sorry for the impact. Could we work out an alternative that is realistic?",
+      "high": "My capacity changed, and I cannot follow through as agreed. I want to acknowledge the impact and be clear about what I can actually offer."
+    },
+    "notice": "Reliability can include communicating a change and taking responsibility for its impact. It does not mean never needing help or always being available.",
+    "limit": "Do not promise secrecy about harm or agree to something unsafe to prove loyalty. Another person may still feel disappointed; an explanation does not erase the impact.",
+    "changed": "They ask for a bigger promise to make up for it.",
+    "review": "Name what is realistic rather than accepting a new obligation you cannot meet. You can discuss a smaller repair step without guaranteeing forgiveness."
+  },
+  {
+    "id": "includer",
+    "title": "Make room without putting someone on the spot",
+    "setup": {
+      "elementary": "Someone is on their own near a game. You do not know whether they want to join.",
+      "middle": "A group activity has a role that could be adapted so more people can take part. You want to invite someone without drawing unwanted attention.",
+      "high": "You notice a barrier to participation in a group. You want to make access possible without assuming someone wants your invitation or asking them to explain an identity or diagnosis."
+    },
+    "words": {
+      "elementary": "Would you like to join, watch, or do your own thing?",
+      "middle": "Would you like to take part in any way? We could change how the activity works.",
+      "high": "Would any change make participation work better for you? It is also okay to pass; you do not need to explain."
+    },
+    "notice": "Inclusion involves access and choice. An invitation can be discreet, and someone can belong without taking part in every activity.",
+    "limit": "Do not assume being alone means lonely. Do not publicize someone's needs or turn an invitation into pressure to join.",
+    "changed": "They decline, while another person still cannot access the activity.",
+    "review": "Respect the decline and address the access barrier without making the person who declined responsible for fixing it. Ask a trusted adult or organizer for support if needed."
+  },
+  {
+    "id": "cheerleader",
+    "title": "Recognize what matters to someone",
+    "setup": {
+      "elementary": "A friend is proud of something they made. You want to show interest, but they may not want a big public cheer.",
+      "middle": "A friend reaches a goal. You are pleased for them and also disappointed about your own result.",
+      "high": "Someone shares a success or milestone. You want to acknowledge it without comparing achievements or assuming they want publicity."
+    },
+    "words": {
+      "elementary": "You worked on that. Would you like to tell me about it?",
+      "middle": "That mattered to you. Would you like to celebrate or talk about it?",
+      "high": "I know this was important to you. How would you like it acknowledged, if at all?"
+    },
+    "notice": "Recognition can be quiet, specific or private. You can choose a considerate action while having mixed feelings of your own.",
+    "limit": "You do not have to manufacture excitement or make every moment positive. Ask before sharing someone's news or image with other people.",
+    "changed": "They say they do not want anyone else to know yet.",
+    "review": "Keep the news private unless there is a safety concern. You can acknowledge it directly without posting, retelling it or insisting on a celebration."
+  }
+];
 
   // Authored starters: invitations, not guarantees of friendship.
   var STARTERS = {
@@ -930,7 +1060,7 @@ window.SelHub = window.SelHub || {
       var AMBER = '#d97706'; var AMBER_LIGHT = _frC('#fffbeb'); var AMBER_DARK = _frC('#78350f');
 
       var TABS = [
-        { id: 'compass',  icon: '\uD83E\uDDED', label: 'My Style' },
+        { id: 'compass',  icon: '\uD83E\uDDED', label: 'Ways to Care' },
         { id: 'start',    icon: '\uD83D\uDCAC', label: 'Starting' },
         { id: 'keep',     icon: '\uD83D\uDC9B', label: 'Keeping' },
         { id: 'digital',  icon: '📱', label: 'Digital' },
@@ -974,7 +1104,7 @@ window.SelHub = window.SelHub || {
       // ── Topic-accent hero band per tab ──
       var heroBand = (function() {
         var TAB_META = {
-          compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83E\uDDED', title: 'My Style \u2014 how you show you care',                hint: 'Loyalist, encourager, advisor, peacekeeper, jokester, listener, adventurer. Most people lean on 1-2. Knowing yours is half the work \u2014 the other half is recognizing your friend\u2019s default is probably different.' },
+          compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)', icon: '\uD83E\uDDED', title: 'Ways to Care \u2014 flexible practices', hint: 'Explore helping, listening, shared experiences, reliability, inclusion and recognition. These are choices to adapt to context and consent, not fixed friendship types or a test of your worth.' },
           start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 an invitation and a choice', hint: 'Check timing and welcome contact. Try words that fit you, explore different responses and practise stepping back. Friendship is not guaranteed by a script or measured by getting a yes.' },
           keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 care with room for limits', hint: 'Explore different capacities, accessible shared time and realistic support. Small acts of care should be welcome and workable; friendship is not a contact quota or a promise to be always available.' },
           digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCF1', title: 'Digital - context, consent and considered choices', hint: 'Compare what a message shows with what remains uncertain. Consider boundaries, audience and trusted support. A private channel does not guarantee privacy.' },
@@ -1046,7 +1176,6 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      var stylePicked = myStyle ? (FRIEND_STYLES.find(function(s) { return s.id === myStyle; }) || {}).label || 'chosen' : 'not yet';
       var friendshipLaunchPanel = h('section', {
         role: 'region',
         'aria-label': 'Friendship launch panel',
@@ -1063,19 +1192,19 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 11, color: AMBER, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
             h('h3', { style: { margin: 0, color: AMBER_DARK, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Choose the friendship skill you need today.'),
             h('p', { style: { margin: '6px 0 0', color: _frC('#475569'), fontSize: 12, lineHeight: 1.55 } },
-              'Start with your style, then practice a specific move: open, maintain, repair, digital choices, or a hard conversation.'
+              'Explore ways to care, conversation openings, sustainable contact, boundaries and changing friendships.'
             )
           ),
           h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
-            friendStat('style picked', stylePicked, AMBER),
+            friendStat('ways to explore', CARE_PRACTICES.length, AMBER),
             friendStat('sections explored', exploredCount + '/' + TABS.length, '#10b981'),
             friendStat('saved notes', friendNotes.length, '#0ea5e9'),
             friendStat('digital practices', Object.keys(digitalDone).length, '#a855f7')
           )
         ),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
-          friendRouteCard('Start a friendship', 'Pick an opener and follow-up that feels natural.', 'start', '#10b981'),
-          friendRouteCard('Keep it warm', 'Try small maintenance moves before drift sets in.', 'keep', '#d97706'),
+          friendRouteCard('Start a friendship', 'Explore invitations, responses and respectful exits.', 'start', '#10b981'),
+          friendRouteCard('Care with limits', 'Explore contact, access and realistic support.', 'keep', '#d97706'),
           friendRouteCard('Handle digital moments', 'Practice screenshots, tone, privacy, and group chats.', 'digital', '#0ea5e9'),
           friendRouteCard('Repair a rupture', 'Use an apology or boundary when something went sideways.', 'repair', '#a855f7'),
           friendRouteCard('Rehearse a talk', 'Practice the conversation before doing it live.', 'rehearse', '#f59e0b')
@@ -1084,37 +1213,71 @@ window.SelHub = window.SelHub || {
 
       var compassContent = null;
       if (activeTab === 'compass') {
-        compassContent = h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto' } },
-          friendshipLaunchPanel,
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDDED'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'What Kind of Friend Am I?'),
-            h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, 'Everyone has a friendship style \u2014 the way they naturally show they care. Which one sounds most like you?')
-          ),
-          h('div', { role: 'radiogroup', 'aria-label': 'Friendship styles', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px' } },
-            FRIEND_STYLES.map(function(fs) {
-              var selected = myStyle === fs.id;
-              return h('button', {
-                key: fs.id, role: 'radio', 'aria-checked': selected ? 'true' : 'false',
-                'aria-label': fs.label + ': ' + fs.desc,
-                onClick: function() { upd('myStyle', fs.id); if (soundEnabled) sfxHeart(); if (awardXP) awardXP(10, 'Discovered your friendship style!'); if (announceToSR) announceToSR('Selected: ' + fs.label); },
-                style: { padding: '16px 12px', borderRadius: '14px', border: selected ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: selected ? AMBER_LIGHT : _frC('#fff'), cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s', boxShadow: selected ? '0 2px 12px rgba(217,119,6,0.15)' : 'none' }
-              },
-                h('div', { style: { fontSize: '28px', marginBottom: '6px' } }, fs.icon),
-                h('div', { style: { fontSize: '13px', fontWeight: 700, color: selected ? AMBER : _frC('#374151') } }, fs.label),
-                h('div', { style: { fontSize: '11px', color: _frC('#94a3b8'), marginTop: '4px', lineHeight: 1.4 } }, fs.desc)
-              );
-            })
-          ),
-          myStyle && (function() {
-            var style = FRIEND_STYLES.find(function(s) { return s.id === myStyle; });
-            if (!style) return null;
-            return h('div', { style: { marginTop: '16px', background: AMBER_LIGHT, borderRadius: '14px', padding: '16px', border: '2px solid #fde68a' } },
-              h('div', { style: { fontSize: '14px', fontWeight: 700, color: AMBER_DARK, marginBottom: '8px' } }, style.icon + ' You\u2019re ' + style.label + '!'),
-              h('div', { style: { fontSize: '13px', color: _frC('#374151'), marginBottom: '6px' } }, '\u2728 Superpower: ' + style.strength),
-              h('div', { style: { fontSize: '13px', color: _frC('#94a3b8') } }, '\uD83D\uDCA1 Growth edge: ' + style.watchFor)
-            );
-          })()
+        var careBand = ['elementary', 'middle', 'high'].indexOf(band) >= 0 ? band : 'middle';
+        var careObject = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+        var careSelections = careObject(d.careSelections);
+        var careSelected = careSelections[careBand];
+        var careExample = CARE_PRACTICES.find(function(item) { return item.id === careSelected; }) || CARE_PRACTICES[0];
+        var careOwn = careSelected === 'own';
+        var careContext = careOwn ? 'own' : careExample.id;
+        var careKey = careBand + ':' + careContext;
+        var careDrafts = careObject(d.careDrafts);
+        var careDraft = careObject(careDrafts[careKey]);
+        var careNote = function(key) { return typeof careDraft[key] === 'string' ? careDraft[key] : ''; };
+        var saveCare = function(values) { var drafts = Object.assign({}, careDrafts); drafts[careKey] = Object.assign({}, careDraft, values); upd('careDrafts', drafts); };
+        var careSurface = _frHC ? '#000000' : _frDark ? '#0f172a' : '#ffffff';
+        var careInk = _frHC ? '#ffffff' : _frDark ? _frC('#0f172a') : '#1f2937';
+        var careEdge = _frHC ? '#ffff00' : _frDark ? '#94a3b8' : '#64748b';
+        var careCard = { padding: '16px', margin: '14px 0', border: '1px solid ' + careEdge, borderRadius: '12px', background: careSurface, color: careInk, minWidth: 0 };
+        var careControl = { width: '100%', maxWidth: '100%', minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + careEdge, borderRadius: '8px', background: careSurface, color: careInk, font: 'inherit', fontSize: '16px' };
+        var careSummary = { minHeight: '44px', padding: '10px 0', boxSizing: 'border-box', fontWeight: 700, cursor: 'pointer' };
+        var careFields = [
+          { id: 'notice', label: 'What do I notice or need to ask?', hint: 'Separate what you observe from guesses about feelings or needs. You can use the fictional example.' },
+          { id: 'offer', label: 'What could I offer, adapt or decline?', hint: 'Consider what is welcome, accessible and realistic for both people. You can choose more than one way to care, or pause.' },
+          { id: 'check', label: 'What would show this is welcome or needs changing?', hint: 'Look for what the person communicates and whether boundaries are respected. They can decline or change their mind.' }
+        ];
+        var careField = function(field) {
+          var id = 'fr-care-' + field.id;
+          return h('div', { key: field.id, style: { margin: '16px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+            h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
+            h('textarea', { id: id, rows: 3, value: careNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, careControl, { resize: 'vertical' }),
+              onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveCare(values); } }));
+        };
+        var carePreview = ['Ways I could care — practice notes, not a personality assessment.', 'Context: ' + (careOwn ? 'My own example' : careExample.title)]
+          .concat(careFields.map(function(field) { return field.label + '\n' + (careNote(field.id).trim() || '(No note yet)'); })).join('\n\n');
+        var earlierStyle = typeof myStyle === 'string' ? FRIEND_STYLES.find(function(item) { return item.id === myStyle; }) : null;
+        compassContent = h('div', { style: { maxWidth: '720px', margin: '0 auto' } },
+          h('section', { role: 'region', 'aria-label': 'Ways to care practice', style: { padding: '16px', background: careSurface, color: careInk, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: '22px' } }, 'Different ways to show care'),
+            h('p', null, careBand === 'elementary' ? 'You can care in lots of ways. What helps depends on the person and the moment. You do not have to choose one kind of friend to be.' : 'Explore practices you can combine, adapt or decline. A useful approach in one situation may not fit another; these are not fixed friendship types.'),
+            h('p', null, 'Choose something to explore, not a label for yourself. Reading, thinking or practising with a trusted person is enough; every note is optional.'),
+            h('label', { htmlFor: 'fr-care-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a way to care to explore'),
+            h('select', { id: 'fr-care-context', value: careContext, style: careControl, onChange: function(ev) { var choices = Object.assign({}, careSelections); choices[careBand] = ev.target.value; upd('careSelections', choices); } },
+              CARE_PRACTICES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+            h('div', { key: careKey, style: careCard },
+              h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, careOwn ? 'Consider what this moment needs' : careExample.title),
+              h('p', null, careOwn ? 'Start with what you notice, what you do not know and what you want to offer. Someone else can want a different kind of support or none.' : careExample.setup[careBand]),
+              !careOwn && h('p', null, careExample.notice)),
+            !careOwn && h('details', { key: careKey + '-example', style: careCard },
+              h('summary', { style: careSummary }, 'Explore words and boundaries'), h('p', { style: { fontWeight: 700 } }, careExample.words[careBand]), h('p', null, careExample.limit)),
+            h('details', { key: careKey + '-notes', style: careCard },
+              h('summary', { style: careSummary }, 'Adapt a practice (optional)'),
+              h('p', null, 'Notes stay with this practice and grade level. They are not monitored, do not request help and do not become a friendship profile.'), careFields.map(careField)),
+            h('details', { key: careKey + '-revisit', style: careCard },
+              h('summary', { style: careSummary }, 'Adjust when the situation changes'),
+              h('p', null, careOwn ? 'What if an offer is declined, capacity changes or a different kind of support is needed?' : careExample.changed),
+              h('p', null, careOwn ? 'You can ask, adapt or step back. If someone may be hurt or unsafe, seek help from a trusted adult rather than handling it alone.' : careExample.review)),
+            h('details', { key: careKey + '-preview', style: careCard },
+              h('summary', { style: careSummary }, 'Review my practice notes'),
+              h('label', { htmlFor: 'fr-care-preview', style: { display: 'block', fontWeight: 700 } }, 'Practice notes to review or copy'),
+              h('textarea', { id: 'fr-care-preview', readOnly: true, rows: 9, value: carePreview, style: Object.assign({}, careControl, { resize: 'vertical' }) })),
+            myStyle != null && h('details', { style: careCard },
+              h('summary', { style: careSummary }, 'Earlier style selection'),
+              h('p', null, earlierStyle ? 'Earlier selection: ' + earlierStyle.label + '.' : 'An earlier value remains stored, but it has no matching style label.'),
+              h('p', null, 'This was a choice in an earlier activity, not an assessment of who you are. New coach prompts no longer add this label as your friendship type; earlier conversation history remains unchanged.'))),
+          h('details', { style: Object.assign({}, careCard, { margin: '16px' }) },
+            h('summary', { style: careSummary }, 'Explore other friendship activities'), friendshipLaunchPanel)
         );
       }
 
@@ -1489,8 +1652,7 @@ window.SelHub = window.SelHub || {
                   var userMsg = coachInput.trim();
                   var newHist = (coachHistory || []).concat([{ role: 'user', text: userMsg }]);
                   upd({ coachHistory: newHist, coachInput: '', coachLoading: true });
-                  var styleCtx = myStyle ? ' Their friendship style is "' + myStyle + '".' : '';
-                  var prompt = 'You are a warm friendship coach for a ' + band + ' school student.' + styleCtx + ' The student said: "' + userMsg + '"\n\nRespond with:\n1. Validate their feeling (1 sentence)\n2. A specific thing they could say or do (give actual words in quotes)\n3. Why it would work (1 sentence)\n\nBe warm, specific, age-appropriate. Max 3-4 sentences. Use "you" not "one."';
+                  var prompt = 'You are a warm friendship coach for a ' + band + ' school student. The student said: "' + userMsg + '"\n\nRespond with:\n1. Validate their feeling (1 sentence)\n2. A specific thing they could say or do (give actual words in quotes)\n3. Why it would work (1 sentence)\n\nBe warm, specific, age-appropriate. Max 3-4 sentences. Use "you" not "one."';
                   if (window.SelHub && window.SelHub.safeCoach) {
                     window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false, _lastTier: result.tier || 0 }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
                   } else {

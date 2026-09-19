@@ -123,7 +123,7 @@ describe('Digital friendship depth', () => {
 
   it('respects saved navigation, retains keyboard focus and safely handles malformed drafts',async () => {
     await mount('middle','light',1100,{activeTab:'compass'});
-    expect(await page.getByRole('tab',{name:/My Style/}).getAttribute('aria-selected')).toBe('true');
+    expect(await page.getByRole('tab',{name:/Ways to Care/}).getAttribute('aria-selected')).toBe('true');
     await page.getByRole('tab',{name:/Digital/}).click();
     await mount('middle','light',1100,{digitalIdx:-1,digitalSelections:{middle:'unknown'},digitalCases:{'middle:left_on_read':{first:7,choice:'invalid',revisedChoice:[]}}});
     expect(await map().getByLabel('Your first response or no-contact plan (optional)',{exact:true}).inputValue()).toBe('');

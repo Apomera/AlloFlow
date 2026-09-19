@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-19",
+  "tool": "Friendship Workshop / Ways to Care",
+  "validation": "passed",
+  "flexiblePractices": 6,
+  "gradeSpecificSetups": 18,
+  "optionalPlanningNotes": 3,
+  "ownExample": true,
+  "legacyData": "Earlier myStyle values, awards and conversation history retained. New practice does not assign a type or award points.",
+  "coachVerification": "Both submission controls through mocked safeCoach and fallback paths. New care notes and old style-type injection absent from new prompts. No live provider calls.",
+  "uniquePassingChecks": 76,
+  "focused": {
+    "browser": 28,
+    "controlContracts": 5
+  },
+  "regressions": {
+    "digital": 20,
+    "keeping": 16,
+    "initialPassed": 35,
+    "isolatedRetryPassed": 1
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 102
+  },
+  "targetedTheme": {
+    "passed": 4,
+    "filtered": 292
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "d3c05a4f23c5f688bc067683410eac02101bb282daa824e2bfa79275645b0d63",
+  "retryHistory": "One existing Digital Friendship high-contrast phone case timed out waiting for a button; the initial run also reported a worker-termination timeout. The same case passed on isolated retry with unchanged assertions and timeouts. All other selected cases passed initially.",
+  "counting": "Unique selected checks only; filtered cases, repeated cases and render enumeration excluded.",
+  "delivery": "Local enhancement only. No push, deployment or packaged build."
+}

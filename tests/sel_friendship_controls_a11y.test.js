@@ -24,11 +24,11 @@ describe('Friendship Builder control names', () => {
     expect(text).toContain("'aria-label': 'Your friendship role-play response'");
   });
 
-  it('wires tab controls, panel relationships, and radio-group semantics', () => {
+  it('wires tab controls, panel relationships, and practice-region semantics', () => {
     const text = source();
     expect(text).toContain("id: 'friendship-tab-' + t.id");
     expect(text).toContain("'aria-controls': 'friendship-panel-' + t.id");
-    expect(text).toContain("role: 'radiogroup', 'aria-label': 'Friendship styles'");
+    expect(text).toContain("'aria-label': 'Ways to care practice'");
     expect(text).toContain("'aria-label': 'Friendship repair choices'");
     expect(text).toContain("role: 'tabpanel', 'aria-labelledby': 'friendship-tab-' + activeTab");
   });

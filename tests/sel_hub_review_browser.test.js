@@ -621,6 +621,12 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await activity.getByLabel('Choose a friendship-care context',{exact:true}).inputValue()).toBe('activities');await activity.getByText('Consider my own plan (optional)',{exact:true}).click();expect(await activity.getByLabel('What limit or support would make this sustainable? (optional)',{exact:true}).inputValue()).toBe('Share the planning of an accessible activity.');await activity.getByText('Friendship journal (optional)',{exact:true}).click();expect(await activity.getByLabel('Friendship journal entry',{exact:true}).inputValue()).toBe('An unfinished thought');expect(await activity.getByText('A fictional reflection about access.',{exact:true}).isVisible()).toBe(true);expect(errors).toEqual([]);
   },120000);
 
+
+  it('ways to care practice survives the real hub return flow without assigning a friendship type',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();const activity=page.getByRole('region',{name:'Ways to care practice',exact:true});expect(await page.getByRole('tab',{name:/Ways to Care/}).getAttribute('aria-selected')).toBe('true');await activity.getByLabel('Choose a way to care to explore',{exact:true}).selectOption('listener');await activity.getByText('Adapt a practice (optional)',{exact:true}).click();await activity.getByLabel('What could I offer, adapt or decline? (optional)',{exact:true}).fill('Ask whether listening or ideas would help.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();expect(await activity.getByLabel('Choose a way to care to explore',{exact:true}).inputValue()).toBe('listener');await activity.getByText('Adapt a practice (optional)',{exact:true}).click();expect(await activity.getByLabel('What could I offer, adapt or decline? (optional)',{exact:true}).inputValue()).toBe('Ask whether listening or ideas would help.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.myStyle)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

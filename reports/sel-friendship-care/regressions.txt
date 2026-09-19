@@ -1,0 +1,33 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/sel_friendship_depth_browser.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/sel_friendship_depth_browser.test.js (20 tests | 1 failed) 135775ms
+     × supports phone comparison and reflection in contrast 28652ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/sel_friendship_depth_browser.test.js > Digital friendship depth > supports phone comparison and reflection in contrast
+TimeoutError: locator.click: Timeout 12000ms exceeded.
+Call log:
+  - waiting for getByRole('region', { name: 'Digital friendship choices', exact: true }).getByRole('button', { name: 'Explore new information', exact: true })
+
+ ❯ tests/sel_friendship_depth_browser.test.js:151:81
+    149|     await page.screenshot({path:path.join(reports,theme+'-comparison-p…
+    150|     await map().getByRole('button',{name:'Explore: Help through a trus…
+    151|     await map().getByRole('button',{name:'Explore new information',exa…
+       |                                                                                 ^
+    152|     await map().getByLabel('A route after the change (optional)',{exac…
+    153|     await map().getByLabel('What would you keep or change, and why? (o…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 35 passed (36)
+   Start at  19:20:51
+   Duration  193.89s (transform 194ms, setup 125ms, import 5.91s, tests 165.46s, environment 14.45s)
+
+[vitest-pool]: Timeout terminating forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sel_friendship_depth_browser.test.js.
