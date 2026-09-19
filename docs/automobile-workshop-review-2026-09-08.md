@@ -394,6 +394,19 @@ Validation: **264 workshop model/render tests passed** (14.46 seconds), includin
 - [High-contrast phone calculation](../reports/automobile-workshop/calculation-coach-contrast.png)
 - [Narrow dark-phone 3D-bay calculation](../reports/automobile-workshop/calculation-coach-dark.png)
 
+## Inspector camera lookup
+
+Inspect mode now offers View area in 3D for a current control preview. A pure destination helper maps station selections, tool-tray items, lift controls, brake/wheel controls and instrument actions to suitable camera areas. Battery contact controls use the existing close-up framing when the open-hood meter setup is visible. Whole-engine and hood previews retain the general engine view. Hidden equipment is described honestly: the button locates its area, and equipment appears when the task setup is ready.
+
+The action changes camera framing and focuses the keyboard-operable viewport. It does not select a station, equip a tool, apply a control, capture a reading, or clear the preview. Use selected control remains the explicit operating action. Expired previews lose both actions. Underbody camera access still requires the locked lift state; blocked views explain why and leave the camera unchanged. A latched emergency stop remains independent of a supported vehicle's camera view. The shared viewer and immediate physical-stop behavior are unchanged.
+
+Validation: **287 workshop model/render tests passed** in the final run (20.58 seconds), including twenty-three new cases for seven station areas, underbody lift states, independent stop status, current control catalogs across all four jobs, finite camera poses, instrument visibility, general-engine framing, stale tokens and themed/expired previews. An initial fixture incorrectly selected a lamp absent from the current tool tray; corrected it to the available socket and reran. **Three real-WebGL workflows passed** (2.1 minutes): the new camera-only journey and existing inspection-expiry and physical emergency-stop/drag regressions. After spacing the action buttons, the new journey passed again (1.3 minutes). It checks the actual battery contact and tool-kit positions inside the camera view, keyboard viewport focus, unchanged state/capture/preview during viewing, blocked underbody views without camera movement, explicit application, expired actions, a supported but stopped lift, 390/320 px reflow and 44 px controls. The 3D contact view and final desktop/light, high-contrast phone and narrow dark-phone inspector screenshots were visually reviewed. Syntax, byte parity across the source/public pair and both local desktop build mirrors, and scoped whitespace checks passed. Commit validation required synchronizing the two ignored build copies; both matched HEAD before the update. Shared viewer unchanged; no broad full-tool suite, deployment or installer build. Existing modified regression screenshots were preserved outside this commit.
+
+- [Battery-contact camera destination](../reports/automobile-workshop/inspector-location-3d.png)
+- [Desktop inspect-and-locate controls](../reports/automobile-workshop/inspector-location-desktop.png)
+- [High-contrast phone blocked underbody view](../reports/automobile-workshop/inspector-location-contrast.png)
+- [Narrow dark-phone supported underbody preview](../reports/automobile-workshop/inspector-location-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

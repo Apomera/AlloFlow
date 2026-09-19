@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1272,5 +1272,44 @@ describe('Shared calculation coach rendering',()=>{
   });
   it('hides an old check when the answer changes and does not expose another job’s hint',()=>{
     const key=model.calculation(model.normalize({job:'oil',step:9,answer:'500'})).key;const {host}=render('0.5',{shopCalculationCheck:key,shopCalculationHint:'brakes'});expect(host.querySelectorAll('[data-ar-calculation-result],[data-ar-calculation-hint]')).toHaveLength(0);expect(host.querySelector('#ar-shop-answer').hasAttribute('aria-invalid')).toBe(false);
+  });
+});
+
+
+describe('Inspector camera destinations',()=>{
+  it.each(['intake','lift','engine','brakes','oil','exhaust','tools'])('locates the %s area without changing workshop state',station=>{
+    const state=model.normalize({job:'brakes',lift:'locked'}),before=JSON.stringify(state),view=model.controlView(state,station);
+    expect(view.station).toBe(station);expect(view.blocked).toBe('');expect(Number.isFinite(view.distance)).toBe(true);expect(JSON.stringify(state)).toBe(before);
+  });
+  it.each(['ground','prepared','low','checked','raised'])('blocks underbody camera access from %s',lift=>{
+    for(const station of ['oil','exhaust'])expect(model.controlView({job:'oil',lift},station).blocked).toContain('mechanical locks');
+  });
+  it('keeps a latched stop independent of supported underbody viewing',()=>{expect(model.controlView({job:'oil',lift:'locked',liftStopped:true},'oil').blocked).toBe('');});
+  it.each([{job:'electrical',step:2,station:'engine',tool:'meter',hood:true},{job:'oil',step:9,station:'engine',tool:'funnel'},{job:'brakes',step:9,lift:'locked',wheelRemoved:true,serviced:true,wheelSeated:true},{job:'alignment',step:3}])('provides finite camera destinations for the current $job catalog',raw=>{
+    const state=model.normalize(raw),before=JSON.stringify(state);
+    for(const item of model.controls(state)){const view=model.controlView(state,item.id);expect(view,item.label).not.toBeNull();expect(view.distance).toBeGreaterThan(0);expect(Number.isFinite(view.yaw)&&Number.isFinite(view.pitch)).toBe(true);if(view.target)expect(Object.values(view.target).every(Number.isFinite)).toBe(true);}
+    expect(JSON.stringify(state)).toBe(before);
+  });
+  it('uses contact close-ups only when the meter is present and keeps whole-engine views separate',()=>{
+    const state=model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true});const token=model.token(state,'meter-posts');
+    expect(model.controlView(state,token).label).toBe('Battery contacts');expect(model.controlView(state,'engine').target).toBeNull();expect(model.controlView(state,model.token(state,'hood')).target).toBeNull();
+    expect(model.controlView({...state,hood:false},token).label).not.toBe('Battery contacts');expect(model.controlView({...state,tool:'lamp'},token).target).toBeNull();
+    expect(model.controlView(state,model.token(state,'equip-socket')).station).toBe('tools');expect(model.controlView(state,model.token(state,'lift-stop')).station).toBe('lift');
+  });
+  it('rejects unknown and old task tokens',()=>{
+    const state=model.normalize({job:'electrical',step:2});expect(model.controlView(state,'unknown')).toBeNull();expect(model.controlView(state,'shop-use-electrical-1-task')).toBeNull();expect(model.controlView(state,null)).toBeNull();
+  });
+});
+
+describe('Inspector camera action rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(raw,selected,theme={},change={}){const shop=model.normalize(raw);const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shopInteraction:'inspect',shop:{...shop,...change},shopInspectPick:model.preview(shop,selected)}},theme);return host;}
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('explains camera-only navigation in %j',theme=>{
+    const host=render({job:'electrical',step:2,station:'engine',tool:'meter',hood:true},'shop-use-electrical-2-meter-posts',theme);
+    expect(host.querySelector('[data-ar-control-view]')).not.toBeNull();expect(host.querySelector('[data-ar-control-view-status]').textContent).toContain('Battery contacts');expect(host.querySelector('[data-ar-control-view-status]').textContent).toContain('changes the view only');
+  });
+  it('explains blocked underbody views and removes expired preview actions',()=>{
+    const host=render({job:'oil',lift:'ground'},'oil');expect(host.querySelector('[data-ar-control-view]').disabled).toBe(true);expect(host.querySelector('[data-ar-control-view-status]').getAttribute('data-ar-control-view-status')).toBe('blocked');
+    expect(render({job:'electrical',step:2},'engine',{}, {answer:'1.4'}).querySelector('[data-ar-control-view]')).toBeNull();
   });
 });

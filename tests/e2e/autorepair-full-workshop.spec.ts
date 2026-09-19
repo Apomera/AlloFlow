@@ -1471,3 +1471,33 @@ test('calculation coach links scene and work order while preserving captured ins
   await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('[data-ar-calculation-result]')).toHaveCount(0);
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('inspector camera locates areas without operating controls or invalidating evidence',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this diagnostic draft.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),view=page.locator('[data-ar-control-view]'),inspector=page.locator('[data-ar-control-inspector]');
+  const state=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await state();
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');const preview=await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopInspectPick));
+  await expect(page.locator('[data-ar-control-view-status]')).toContainText('Battery contacts');await view.focus();await page.keyboard.press('Enter');
+  await expect(page.locator('.ar-bay-viewport')).toBeFocused();await shopPoint(page,'negative-post');
+  expect(await state()).toBe(before);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopInspectPick))).toBe(preview);
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');await expect(inspector).toHaveAttribute('data-ar-control-inspector','inspect');
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/inspector-location-3d.png'});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-desktop.png'});
+  await chooser.selectOption('shop-use-electrical-2-equip-socket');await view.click();await shopPoint(page,'workshop-tool-kit-socket');expect(await state()).toBe(before);
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('meter');
+  const pose=()=>page.evaluate(()=>{const c=(window as any).__shopCamera;return{position:c.position.toArray(),rotation:c.quaternion.toArray()};});const toolsPose=await pose();
+  await chooser.selectOption('oil');await expect(view).toBeDisabled();await expect(page.locator('[data-ar-control-view-status]')).toContainText('mechanical locks');expect(await pose()).toEqual(toolsPose);expect(await state()).toBe(before);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');await view.click();await page.locator('[data-ar-control-use]').click();await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');await expect(view).toHaveCount(0);
+  await chooser.selectOption('engine');await page.locator('#ar-shop-answer').fill('1.4');await expect(view).toHaveCount(0);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'oil',step:6,station:'oil',tool:'drain-pan',lift:'locked',liftStopped:true,notes:'Supported and stopped.'});});
+  await chooser.selectOption('oil');await expect(view).toBeEnabled();const supported=await state();await view.click();expect(await state()).toBe(supported);await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status','stopped');
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await inspector.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await inspector.screenshot({path:'reports/automobile-workshop/inspector-location-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await view.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

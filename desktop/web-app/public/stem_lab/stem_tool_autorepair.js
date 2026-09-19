@@ -9980,6 +9980,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (state.job === 'alignment') ['left', 'right'].forEach(function (side) { list.push({ id: 'shop-toe-' + side, label: 'Select ' + side + ' front tie rod', detail: 'Choose which front toe angle to adjust. Selecting a side does not change its angle.' }); });
     return list;
   }
+  function arShopControlView(raw, id) {
+    var state = arShopState(raw), catalog = arShopControlCatalog(state);
+    if (!catalog.some(function (item) { return item.id === id; })) return null;
+    var prefix = arShop3DToken(state, ''), actionId = id.indexOf(prefix) === 0 ? id.slice(prefix.length) : '';
+    var action = arShop3DActions(state).filter(function (item) { return item.id === actionId; })[0];
+    var station = SHOP_STATIONS.some(function (item) { return item.id === id; }) ? id : actionId.indexOf('equip-') === 0 ? 'tools' : /^shop-(lug|toe)-/.test(id) ? 'brakes' : action ? action.station : null;
+    if (!station) return null;
+    var label = SHOP_STATIONS.filter(function (item) { return item.id === station; })[0].label;
+    var view = { station: station, label: label, distance: 3.7, yaw: 0, pitch: 0, target: null, blocked: '' };
+    var height = arShopLiftStatus(state).height, kind = arShopInstrumentKind(state), task = arShopJob(state.job).tasks[state.step];
+    if (station === 'oil' || station === 'exhaust') {
+      if (state.lift !== 'locked') { view.blocked = 'Raise the vehicle and settle it on the mechanical locks before using the underbody camera.'; return view; }
+      view.yaw = station === 'oil' ? 0.20 : 1.40; view.pitch = -0.54; view.distance = station === 'oil' ? 3.0 : 4.4;
+      view.target = { x: station === 'oil' ? -1.0 : 0.45, y: 1.98, z: 0 };
+    } else if (station === 'tools' || station === 'lift') {
+      view.yaw = 0.65; view.distance = 2.6;
+      view.target = station === 'tools' ? { x: 1.7, y: 1.30, z: -2.97 } : { x: -0.13, y: 1.30, z: 1.51 };
+    } else if (station === 'brakes') {
+      view.yaw = 0.65; view.pitch = -0.28; view.distance = 2.8; view.target = { x: -1.3, y: height + 0.5, z: 0.65 };
+      if (state.job === 'alignment') { view.yaw = -0.50; view.pitch = 0.12; view.distance = 5.8; view.target = { x: -1.60, y: 0.65, z: 0 }; }
+      else if (/^shop-lug-/.test(id)) { view.pitch = 0.10; view.distance = 2.0; view.target = { x: -1.15, y: height + 0.42, z: 1.02 }; }
+    } else if (station === 'engine' && actionId && actionId !== 'hood' && task && state.station === 'engine' && state.tool === task.tool && (kind === 'jug' || (kind === 'meter' && state.hood))) {
+      view.yaw = 0.65; view.distance = 2.6; view.target = { x: -2.4, y: 1.25, z: 1.0 }; view.label = 'Instrument cart';
+      if (kind === 'meter' && ['meter-posts', 'meter-joint', 'meter-contact'].indexOf(actionId) !== -1) {
+        view.pitch = 0.76; view.distance = 1.8; view.target = { x: -0.87, y: 1.20, z: 0.53 }; view.label = 'Battery contacts';
+      }
+    }
+    return view;
+  }
   function arShopControlPreview(raw, id) {
     var state = arShopState(raw), item = arShopControlCatalog(state).filter(function (control) { return control.id === id; })[0];
     return item ? { id: item.id, key: JSON.stringify(state) } : null;
@@ -20504,6 +20533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function controlInspector() {
           var inspecting = d.shopInteraction === 'inspect', info = arShopCurrentPreview(shop, d.shopInspectPick);
+          var view = info ? arShopControlView(shop, info.id) : null;
           return h('section', { 'data-ar-control-inspector': inspecting ? 'inspect' : 'operate', 'aria-label': '3D click mode',
             style: { margin: '8px 0', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#102033', color: '#e2e8f0' } },
             h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': '3D click mode' }, ['operate', 'inspect'].map(function (mode) {
@@ -20519,12 +20549,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('div', { 'data-ar-control-preview': info ? info.id : '', role: 'status', 'aria-atomic': 'true', style: { fontSize: 13, lineHeight: 1.5, marginTop: 8 } },
                 info ? h('div', null, h('strong', null, info.label), h('p', { style: { margin: '6px 0' } }, info.detail)) :
                   d.shopInspectPick ? 'The workshop changed. Inspect a current control again.' : 'Select a control to read what it does.'),
+              view && h('p', { 'data-ar-control-view-status': view.blocked ? 'blocked' : 'available', style: { fontSize: 12, lineHeight: 1.5 } },
+                view.blocked || ('Camera destination: ' + view.label + '. This changes the view only; equipment appears when its task setup is ready.')),
+              info && h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Selected control actions' },
+              view && control('View area in 3D', function () {
+                var current = arShopCurrentPreview(shop, d.shopInspectPick), destination = current && arShopControlView(shop, current.id);
+                if (!destination || destination.blocked || !SHOP3D.focus || SHOP3D.status() === 'failed') return;
+                var viewport = document.querySelector('[data-ar-workshop] .ar-bay-viewport');
+                if (viewport) { viewport.focus({ preventScroll: true }); viewport.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+                SHOP3D.reset(); SHOP3D.nudge(destination.yaw, destination.pitch);
+                var options = { distance: destination.distance, immediate: true };
+                if (destination.target) options.target = destination.target;
+                SHOP3D.focus(destination.station, options);
+                arAnnounce('Viewing ' + destination.label + '. The selected control has not been used.');
+              }, { 'data-ar-control-view': true, disabled: !!view.blocked || SHOP3D.status() === 'failed' }),
               info && control('Use selected control', function () {
                 var current = arShopCurrentPreview(shop, d.shopInspectPick);
                 if (current) pick(current.id);
                 clearControlPreview();
               }, { 'data-ar-control-use': true }),
-              info && control('Dismiss preview', clearControlPreview, { 'data-ar-control-dismiss': true })));
+              info && control('Dismiss preview', clearControlPreview, { 'data-ar-control-dismiss': true }))));
         }
         function stationCamera(id) {
           if (!SHOP3D.focus) return;
