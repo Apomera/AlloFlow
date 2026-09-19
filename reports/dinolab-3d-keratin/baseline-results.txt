@@ -1,0 +1,15 @@
+
+Running 3 tests using 1 worker
+
+
+
+(node:19632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:19632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/3] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › triceratops curved keratin and study framing
+[2/3] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › therizinosaurus curved keratin and study framing
+[3/3] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › velociraptor curved keratin and study framing
+  3 passed (1.9m)

@@ -1,0 +1,399 @@
+{
+  "sheaths": [
+    {
+      "root": [
+        -1.6,
+        2.745,
+        -0.267444
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        -0.20451600139760973
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6,
+        2.745,
+        -0.361836
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        -0.361836
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6,
+        2.745,
+        -0.45622799999999997
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        -0.5191559986023903
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6,
+        2.745,
+        0.267444
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        0.20451600139760973
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6,
+        2.745,
+        0.361836
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        0.361836
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6,
+        2.745,
+        0.45622799999999997
+      ],
+      "tip": [
+        -2.549999988079071,
+        2.6325000029802323,
+        0.5191559986023903
+      ],
+      "kind": "claw",
+      "radius": 0.0315,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        0.5427540000000001
+      ],
+      "tip": [
+        0.9635839994847775,
+        0.035010000705719,
+        0.534384575619638
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        0.99,
+        0.06525,
+        0.692208
+      ],
+      "tip": [
+        0.9317599998414516,
+        0.035010000705719,
+        0.692208
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        0.841662
+      ],
+      "tip": [
+        0.9635839994847775,
+        0.035010000705719,
+        0.850031424380362
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.3488,
+        0.072,
+        0.755136
+      ],
+      "tip": [
+        1.3904000001132488,
+        0.04949999910593032,
+        0.7692948002443314
+      ],
+      "kind": "claw",
+      "radius": 0.010799999999999999,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        -0.841662
+      ],
+      "tip": [
+        0.9635839994847775,
+        0.035010000705719,
+        -0.833292575619638
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        0.99,
+        0.06525,
+        -0.692208
+      ],
+      "tip": [
+        0.9317599998414516,
+        0.035010000705719,
+        -0.692208
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        -0.5427540000000001
+      ],
+      "tip": [
+        0.9635839994847775,
+        0.035010000705719,
+        -0.5511234243803621
+      ],
+      "kind": "claw",
+      "radius": 0.0135,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.3488,
+        0.072,
+        -0.755136
+      ],
+      "tip": [
+        1.3904000001132488,
+        0.04949999910593032,
+        -0.7692948002443314
+      ],
+      "kind": "claw",
+      "radius": 0.010799999999999999,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.42064221600000007
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        -0.42064221600000007
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.32467701600000004
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        -0.32467701600000004
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.22871181600000004
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        -0.22871181600000004
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.22871181600000004
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        0.22871181600000004
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.32467701600000004
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        0.32467701600000004
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.42064221600000007
+      ],
+      "tip": [
+        -2.976326400756836,
+        1.3100020797729495,
+        0.42064221600000007
+      ],
+      "kind": "claw",
+      "radius": 0.01125,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    }
+  ],
+  "memory": {
+    "geometries": 201,
+    "textures": 7
+  },
+  "render": {
+    "frame": 22,
+    "calls": 199,
+    "triangles": 107916,
+    "points": 0,
+    "lines": 0
+  },
+  "fossil": {
+    "meshes": 796,
+    "sha256": "92ec287a36747e0a3430d1359d4553172d5da977dd10417fc9aa108fa456b0e4"
+  }
+}

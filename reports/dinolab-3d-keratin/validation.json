@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-19",
+  "rendererSHA256": "bfac550ff93e9d7db5e821f5bf9b02bb63400d3ec8997358f80053c3cb05ade8",
+  "baselineRevision": "946e0f8a8",
+  "focused": {
+    "passed": 144,
+    "failed": 1,
+    "total": 145,
+    "knownFailure": "Existing field3d snapshot lacks the fullscreen stage attribute; before/after rendered HTML is identical."
+  },
+  "browser": {
+    "passed": 7,
+    "failed": 0,
+    "baselineCaptures": 3
+  },
+  "reviewed": [
+    "triceratops-before.png",
+    "triceratops-after.png",
+    "therizinosaurus-before.png",
+    "therizinosaurus-after.png",
+    "styracosaurus-front.png",
+    "microraptor-after.png",
+    "triceratops-phone.png"
+  ],
+  "unchangedFossilGeometry": [
+    "triceratops",
+    "therizinosaurus",
+    "velociraptor"
+  ],
+  "syntax": true,
+  "mirrorParity": true,
+  "reportLinks": true,
+  "scopedWhitespace": true,
+  "deployed": false
+}

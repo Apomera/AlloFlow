@@ -1,0 +1,220 @@
+{
+  "first": {
+    "sheaths": [
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          -0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          -0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.69928,
+          1.8887136,
+          0
+        ],
+        "tip": [
+          -2.835280007390976,
+          1.98051359679327,
+          0
+        ],
+        "kind": "horn",
+        "radius": 0.02721249712907656,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      }
+    ],
+    "memory": {
+      "geometries": 141,
+      "textures": 7
+    },
+    "render": {
+      "frame": 20,
+      "calls": 170,
+      "triangles": 206196,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "translucent": {
+    "sheaths": [
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          -0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          -0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 0.772,
+        "transparent": true,
+        "depthWrite": false,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 0.772,
+        "transparent": true,
+        "depthWrite": false,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.69928,
+          1.8887136,
+          0
+        ],
+        "tip": [
+          -2.835280007390976,
+          1.98051359679327,
+          0
+        ],
+        "kind": "horn",
+        "radius": 0.02721249712907656,
+        "triangles": 288,
+        "opacity": 0.772,
+        "transparent": true,
+        "depthWrite": false,
+        "castShadow": true
+      }
+    ],
+    "memory": {
+      "geometries": 141,
+      "textures": 7
+    },
+    "render": {
+      "frame": 39,
+      "calls": 106,
+      "triangles": 128332,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "back": {
+    "sheaths": [
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          -0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          -0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.544,
+          1.903368,
+          0.14069040000000002
+        ],
+        "tip": [
+          -3.0320000054836274,
+          2.08636799833107,
+          0.2434046256498337
+        ],
+        "kind": "horn",
+        "radius": 0.048,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      },
+      {
+        "root": [
+          -2.69928,
+          1.8887136,
+          0
+        ],
+        "tip": [
+          -2.835280007390976,
+          1.98051359679327,
+          0
+        ],
+        "kind": "horn",
+        "radius": 0.02721249712907656,
+        "triangles": 288,
+        "opacity": 1,
+        "transparent": false,
+        "depthWrite": true,
+        "castShadow": true
+      }
+    ],
+    "memory": {
+      "geometries": 141,
+      "textures": 7
+    },
+    "render": {
+      "frame": 69,
+      "calls": 91,
+      "triangles": 114052,
+      "points": 0,
+      "lines": 0
+    }
+  },
+  "disposalCount": 3,
+  "geometryReusedForOpacity": true
+}

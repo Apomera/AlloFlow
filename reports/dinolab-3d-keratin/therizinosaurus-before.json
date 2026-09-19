@@ -1,0 +1,399 @@
+{
+  "sheaths": [
+    {
+      "root": [
+        -1.6000000000000005,
+        2.745,
+        -0.267444
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        -0.20451600000000003
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6000000000000003,
+        2.745,
+        -0.361836
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        -0.361836
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6000000000000005,
+        2.745,
+        -0.45622799999999997
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        -0.519156
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6000000000000005,
+        2.745,
+        0.267444
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        0.20451600000000003
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6000000000000003,
+        2.745,
+        0.361836
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        0.361836
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.6000000000000005,
+        2.745,
+        0.45622799999999997
+      ],
+      "tip": [
+        -2.55,
+        2.6325000000000003,
+        0.519156
+      ],
+      "kind": "cone",
+      "radius": 0.0315,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        0.5427540000000002
+      ],
+      "tip": [
+        0.963584,
+        0.03500999999999999,
+        0.5343845760000001
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        0.99,
+        0.06524999999999999,
+        0.692208
+      ],
+      "tip": [
+        0.9317599999999999,
+        0.035010000000000006,
+        0.692208
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        0.8416619999999999
+      ],
+      "tip": [
+        0.963584,
+        0.03500999999999999,
+        0.850031424
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.3488000000000002,
+        0.072,
+        0.755136
+      ],
+      "tip": [
+        1.3904,
+        0.0495,
+        0.7692948000000002
+      ],
+      "kind": "cone",
+      "radius": 0.010799999999999999,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        -0.8416620000000001
+      ],
+      "tip": [
+        0.963584,
+        0.03500999999999999,
+        -0.8332925760000001
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        0.99,
+        0.06524999999999999,
+        -0.692208
+      ],
+      "tip": [
+        0.9317599999999999,
+        0.035010000000000006,
+        -0.692208
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.016,
+        0.06525,
+        -0.542754
+      ],
+      "tip": [
+        0.963584,
+        0.03500999999999999,
+        -0.551123424
+      ],
+      "kind": "cone",
+      "radius": 0.0135,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        1.3488000000000002,
+        0.072,
+        -0.755136
+      ],
+      "tip": [
+        1.3904,
+        0.0495,
+        -0.7692948000000002
+      ],
+      "kind": "cone",
+      "radius": 0.010799999999999999,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.42064221600000007
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        -0.42064221600000007
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.32467701600000004
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        -0.32467701600000004
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        -0.22871181600000004
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        -0.22871181600000004
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.22871181600000004
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        0.22871181600000004
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.32467701600000004
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        0.32467701600000004
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.532,
+        1.4433000000000002,
+        0.42064221600000007
+      ],
+      "tip": [
+        -2.9763263999999996,
+        1.3100020800000003,
+        0.42064221600000007
+      ],
+      "kind": "cone",
+      "radius": 0.01125,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    }
+  ],
+  "memory": {
+    "geometries": 201,
+    "textures": 7
+  },
+  "render": {
+    "frame": 21,
+    "calls": 199,
+    "triangles": 102876,
+    "points": 0,
+    "lines": 0
+  },
+  "fossil": {
+    "meshes": 796,
+    "sha256": "92ec287a36747e0a3430d1359d4553172d5da977dd10417fc9aa108fa456b0e4"
+  }
+}

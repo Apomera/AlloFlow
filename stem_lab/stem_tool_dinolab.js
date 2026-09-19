@@ -6364,7 +6364,7 @@ window.StemLab = window.StemLab || {
         owner = owner.parent;
       }
       var feature = part.userData.dinoFeature || '';
-      var featureRegion = /^(frill|crest-feather|eye|keratin-beak)$/.test(feature) ? 'head' :
+      var featureRegion = /^(frill|crest-feather|eye|keratin-beak|keratin-horn)$/.test(feature) ? 'head' :
         (/^(sail|sail-support|dorsal-plate)$/.test(feature) ? 'torso' : (feature === 'tail-spike' ? 'tail' : ''));
       var assigned = featureRegion || ownerRegion;
       if (assigned && assigned !== region) return;
@@ -6394,6 +6394,49 @@ window.StemLab = window.StemLab || {
     var normal = new THREE.Vector3().crossVectors(across, along).normalize();
     return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, along, normal));
   }
+  // Sweep a tapered sheath between the existing landmarks. Horns stay round;
+  // claws have a deeper, narrower section and a more pronounced dorsal curve.
+  function dinoKeratinGeometry(THREE, direction, radius, kind) {
+    var length = direction.length();
+    if (!isFinite(length) || !isFinite(radius) || length <= 0 || radius <= 0) return null;
+    var horn = kind === 'horn', bow = horn ? 0.065 : 0.16, breadth = horn ? 1 : 0.58;
+    var along = direction.clone().normalize(), bend = new THREE.Vector3(0, 1, 0);
+    bend.addScaledVector(along, -bend.dot(along));
+    if (bend.lengthSq() < 0.000001) {
+      bend.set(1, 0, 0); bend.addScaledVector(along, -bend.dot(along));
+    }
+    bend.normalize();
+    var across = new THREE.Vector3().crossVectors(along, bend).normalize();
+    var positions = [], indices = [], rings = 12, sides = 12;
+    for (var ring = 0; ring < rings; ring++) {
+      var t = ring / rings, taper = radius * Math.pow(1 - t, 0.8);
+      var center = along.clone().multiplyScalar(length * t).addScaledVector(bend, length * bow * 4 * t * (1 - t));
+      var tangent = along.clone().addScaledVector(bend, bow * 4 * (1 - 2 * t)).normalize();
+      var normal = new THREE.Vector3().crossVectors(across, tangent).normalize();
+      for (var side = 0; side < sides; side++) {
+        var angle = side / sides * Math.PI * 2;
+        var point = center.clone().addScaledVector(across, Math.cos(angle) * taper * breadth).addScaledVector(normal, Math.sin(angle) * taper);
+        positions.push(point.x, point.y, point.z);
+        if (ring < rings - 1) {
+          var n = ring * sides + side, next = ring * sides + (side + 1) % sides;
+          indices.push(n, n + sides, next, next, n + sides, next + sides);
+        }
+      }
+    }
+    var tip = positions.length / 3; positions.push(direction.x, direction.y, direction.z);
+    var base = positions.length / 3; positions.push(0, 0, 0);
+    for (var cap = 0; cap < sides; cap++) {
+      var last = (rings - 1) * sides;
+      indices.push(last + cap, tip, last + (cap + 1) % sides);
+      indices.push(cap, (cap + 1) % sides, base);
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.parameters = { length: length, radius: radius, kind: horn ? 'horn' : 'claw' };
+    return geometry;
+  }
+
   // Seven swept fibers share one mesh and a root pivot; no extra texture or draw call.
   function dinoFilamentGeometry(THREE, length, radius, seed) {
     var positions = [], colors = [], indices = [], strands = 7, rings = 5, sides = 4;
@@ -8187,14 +8230,13 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
-            function addKeratinCone(base, tip, radius) {
+            function addKeratinCone(base, tip, radius, kind) {
               if (!props.showBody) return null;
-              var dir = new THREE.Vector3().subVectors(tip, base);
-              var dist = dir.length();
-              if (!dist) return null;
-              var mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, dist, 12), keratinMat);
-              mesh.position.copy(base).add(tip).multiplyScalar(0.5);
-              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              var geometry = dinoKeratinGeometry(THREE, new THREE.Vector3().subVectors(tip, base), radius, kind);
+              if (!geometry) return null;
+              var mesh = new THREE.Mesh(geometry, keratinMat);
+              mesh.position.copy(base);
+              mesh.userData.dinoFeature = kind === 'horn' ? 'keratin-horn' : 'keratin-claw';
               mesh.castShadow = true;
               mesh.renderOrder = 10;
               model.add(mesh);
@@ -8788,11 +8830,11 @@ window.StemLab = window.StemLab || {
                 }
                 if (cranialSurface.browHornScale > 0.08) [-1, 1].forEach(function (side) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * surfaceHeadDepth * 0.62));
-                  addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06 * detailScale, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024 * detailScale, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)));
+                  addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.12 * detailScale, len * 0.061 * cranialSurface.browHornScale), Math.max(0.06 * detailScale, ht * 0.061 * cranialSurface.browHornScale), side * bodyDepth * 0.11 * cranialSurface.browHornScale)), Math.max(0.024 * detailScale, ht * 0.016 * Math.sqrt(cranialSurface.browHornScale)), 'horn');
                 });
                 if (cranialSurface.noseHornScale > 0.08) {
                   var noseHornBase = new THREE.Vector3().copy(head).lerp(surfaceSnout, 0.58).add(vec(0, surfaceHeadHeight * 0.60, 0));
-                  addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)));
+                  addKeratinCone(noseHornBase, noseHornBase.clone().add(vec(-Math.max(0.06 * detailScale, len * 0.025 * cranialSurface.noseHornScale), Math.max(0.05 * detailScale, ht * 0.045 * cranialSurface.noseHornScale), 0)), Math.max(0.020 * detailScale, ht * 0.011 * Math.sqrt(cranialSurface.noseHornScale)), 'horn');
                 }
               } else if (/Stegosaur/i.test(cladeName)) {
                 addDorsalPlates(anatomyAccentMat, 1);

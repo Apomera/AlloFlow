@@ -1,0 +1,19 @@
+
+Running 7 tests using 1 worker
+
+
+
+(node:22972) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22972) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › triceratops curved keratin and study framing
+[2/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › styracosaurus curved keratin and study framing
+[3/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › therizinosaurus curved keratin and study framing
+[4/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › velociraptor curved keratin and study framing
+[5/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › microraptor curved keratin and study framing
+[6/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:50:121 › brachiosaurus curved keratin and study framing
+[7/7] [chromium] › tests\e2e\dinolab-3d-keratin.spec.ts:65:5 › phone studies retain horns through opacity, fossil and life changes
+  7 passed (5.0m)

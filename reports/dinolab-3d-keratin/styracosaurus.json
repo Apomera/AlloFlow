@@ -1,0 +1,76 @@
+{
+  "sheaths": [
+    {
+      "root": [
+        -1.7489999999999999,
+        1.1420208,
+        -0.08441424000000002
+      ],
+      "tip": [
+        -1.9234599938392638,
+        1.1991168007607937,
+        -0.11646107959484102
+      ],
+      "kind": "horn",
+      "radius": 0.0216,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.7489999999999999,
+        1.1420208,
+        0.08441424000000002
+      ],
+      "tip": [
+        -1.9234599938392638,
+        1.1991168007607937,
+        0.11646107959484102
+      ],
+      "kind": "horn",
+      "radius": 0.0216,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -1.855755,
+        1.1332281599999998,
+        0
+      ],
+      "tip": [
+        -1.9492550032186509,
+        1.188308160311136,
+        0
+      ],
+      "kind": "horn",
+      "radius": 0.018000000000000002,
+      "triangles": 288,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    }
+  ],
+  "memory": {
+    "geometries": 141,
+    "textures": 7
+  },
+  "render": {
+    "frame": 21,
+    "calls": 170,
+    "triangles": 206196,
+    "points": 0,
+    "lines": 0
+  },
+  "fossil": {
+    "meshes": 770,
+    "sha256": "cc2464461f3ae2eda18d52b7a37362bf4a6c76643bb9f214293180789b50feb7"
+  }
+}

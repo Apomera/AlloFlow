@@ -1,0 +1,76 @@
+{
+  "sheaths": [
+    {
+      "root": [
+        -2.5440000000000005,
+        1.903368,
+        -0.14069040000000002
+      ],
+      "tip": [
+        -3.032,
+        2.086368,
+        -0.24340462909440005
+      ],
+      "kind": "cone",
+      "radius": 0.048,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.5440000000000005,
+        1.903368,
+        0.14069040000000002
+      ],
+      "tip": [
+        -3.032,
+        2.086368,
+        0.24340462909440005
+      ],
+      "kind": "cone",
+      "radius": 0.048,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    },
+    {
+      "root": [
+        -2.69928,
+        1.8887136,
+        0
+      ],
+      "tip": [
+        -2.83528,
+        1.9805136,
+        0
+      ],
+      "kind": "cone",
+      "radius": 0.02721249712907656,
+      "triangles": 36,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "castShadow": true
+    }
+  ],
+  "memory": {
+    "geometries": 141,
+    "textures": 7
+  },
+  "render": {
+    "frame": 21,
+    "calls": 170,
+    "triangles": 205440,
+    "points": 0,
+    "lines": 0
+  },
+  "fossil": {
+    "meshes": 770,
+    "sha256": "0703514ae7323e486ba2c734e5df817ab2e619dcc071e506966a5fb994a4e25f"
+  }
+}

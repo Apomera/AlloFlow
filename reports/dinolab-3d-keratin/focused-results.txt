@@ -1,0 +1,43 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+······················x··························································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dino_lab_golden.test.js > Dino Lab — render per tab (golden master) > renders the field3d tab (snapshot)
+Error: Snapshot `Dino Lab — render per tab (golden master) > renders the field3d tab (snapshot) 1` mismatched
+
+- Expected
++ Received
+
+@@ -32,11 +32,11 @@
+  <div>
+  <div style="margin-bottom:12px">
+  <div style="font-size:18px;font-weight:800">3D Field Station</div>
+  <div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.</div>
+  </div>
+- <div class="dinolab-field-stage" aria-label="3D Field Station" style="position:relative">
++ <div class="dinolab-field-stage" data-allo-fs-stage="dinolab-field" aria-label="3D Field Station" style="position:relative">
+  <div>
+  <div class="dinolab-field-toolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+  <select aria-label="Choose species for 3D field station" style="flex:1 1 240px;min-width:220px;padding:9px 10px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:13px">
+  <option value="abelisaurus">Abelisaurus</option>
+  <option value="acrocanthosaurus">Acrocanthosaurus</option>
+
+ ❯ tests/dino_lab_golden.test.js:123:30
+    121|   TABS.forEach(tab => {
+    122|     it(`renders the ${tab} tab (snapshot)`, () => {
+    123|       expect(renderTab(tab)).toMatchSnapshot();
+       |                              ^
+    124|     });
+    125|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+  Snapshots  1 failed
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 144 passed (145)
+   Start at  15:37:07
+   Duration  199.65s (transform 1.89s, setup 930ms, import 5.82s, tests 124.89s, environment 57.75s)
