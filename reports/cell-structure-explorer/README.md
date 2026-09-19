@@ -79,3 +79,11 @@ Hovering or selecting a structure now softens competing connector paths and thei
 Existing focus checks cover desktop/phone hover, selection, dismissal, specimen changes and play interactions. The moving-specimen checks verify stable label rows across 120 frames at both sizes. Updated visual evidence is in reports/cell-label-focus.
 
 All five existing focus and moving-label browser scenarios passed. Reviewed phone selection and desktop hover screenshots. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.
+
+## Steady structure navigation — 2026-09-19
+
+The explorer reading area now reserves the space needed for the selected specimen's longest rendered explanation. CSS grid sizing uses the actual heading, body text, font size and available width, so Previous/Next stay in place while browsing instead of following each description's length. Text remains fully wrapped with no fixed-height clipping or inner scrolling. Hidden sizing copies are excluded from assistive technology; only the active explanation is exposed.
+
+The existing explorer browser checks now traverse all structures at 280/320/1200px, verify stable action-row position and retained keyboard focus, check a single accessible heading and unclipped descriptions, and repeat navigation at enlarged text sizes. Existing layout checks cover resizing between wide split view, narrow app containers and phones, plus full-width play mode.
+
+All six explorer/layout browser scenarios passed, including larger-text navigation and play behavior. Phone and desktop sidebar screenshots reviewed. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.

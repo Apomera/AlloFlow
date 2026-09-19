@@ -36,7 +36,23 @@ for(const width of [280,320,1200])test('external structure explorer at '+width,a
  await expect(panel.locator('[data-cell-explanation-title]')).toHaveText('Endoplasmic Reticulum');
  expect(await canvas.evaluate((c:any)=>c._cellSimGetObservationView())).toEqual(initial);
  const count=await canvas.evaluate((c:any)=>c._cellSimGetAnatomyLabels().length);
- for(let i=0;i<count;i++)await next.click();
+ // Different explanation lengths must not move the navigation targets.
+ const footerTop=()=>panel.locator('[data-cell-explanation-actions]').evaluate(e=>e.getBoundingClientRect().top-e.parentElement!.getBoundingClientRect().top);
+ const initialFooter=await footerTop();
+ for(let i=0;i<count;i++){
+  await next.click();
+  expect(Math.abs(await footerTop()-initialFooter)).toBeLessThan(1);
+  await expect(next).toBeFocused();
+  await expect(panel.getByRole('heading')).toHaveCount(1);
+  const copy=panel.locator('[data-cell-explanation-copy]:not([data-cell-explanation-sizer])');
+  const textBounds=(await copy.locator('p').boundingBox())!,readingBounds=(await panel.locator('[data-cell-explanation-reading]').boundingBox())!;
+  expect(textBounds.y+textBounds.height).toBeLessThanOrEqual(readingBounds.y+readingBounds.height+1);
+ }
+ // Intrinsic sizing must also follow larger reading text without clipping.
+ const readingStyle=await page.addStyleTag({content:'[data-cell-explanation-copy] p{font-size:20px!important}[data-cell-explanation-copy] h3{font-size:30px!important}'});
+ const enlargedFooter=await footerTop();
+ for(let i=0;i<count;i++){await next.click();expect(Math.abs(await footerTop()-enlargedFooter)).toBeLessThan(1);}
+ await readingStyle.evaluate(e=>e.remove());
  await expect(panel.locator('[data-cell-explanation-title]')).toHaveText('Endoplasmic Reticulum');
  const buttons=await panel.getByRole('button').evaluateAll(nodes=>nodes.map(n=>({w:n.getBoundingClientRect().width,h:n.getBoundingClientRect().height})));
  expect(buttons.every(b=>b.w>=44&&b.h>=44)).toBe(true);

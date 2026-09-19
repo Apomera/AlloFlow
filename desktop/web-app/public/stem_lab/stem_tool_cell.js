@@ -23890,8 +23890,11 @@ var d = labToolData.cell || {};
 [data-cell-explanation-markers]{display:flex;gap:4px;flex-wrap:wrap}
 [data-cell-explanation-markers] span{width:7px;height:7px;border:1px solid #829e93;border-radius:50%;background:#fff}
 [data-cell-explanation-markers] span[data-current=true]{width:20px;border-radius:6px;background:#1d6553;border-color:#1d6553}
-[data-cell-explanation-title]{margin:0 0 10px;font-size:24px;font-weight:750;letter-spacing:-.55px;line-height:1.2;color:#133f35;text-wrap:balance}
-[data-cell-explanation-text]{max-width:76ch;margin:0;font-size:14px;line-height:1.75;color:#35554b}
+[data-cell-explanation-reading]{display:grid;min-width:0}
+[data-cell-explanation-copy]{grid-area:1 / 1;min-width:0}
+[data-cell-explanation-sizer]{visibility:hidden;pointer-events:none;user-select:none}
+[data-cell-explanation-copy] h3{margin:0 0 10px;font-size:24px;font-weight:750;letter-spacing:-.55px;line-height:1.2;color:#133f35;text-wrap:balance}
+[data-cell-explanation-copy] p{max-width:76ch;margin:0;font-size:14px;line-height:1.75;color:#35554b}
 [data-cell-label-focus-control]{display:flex;align-items:center;gap:10px;min-height:44px;margin:0 20px 16px;padding:10px 12px;border:1px solid #adc8bb;border-radius:10px;background:#f0f7f3;color:#254f40;font-size:12px;font-weight:700;line-height:1.5;cursor:pointer}
 [data-cell-label-focus-control] input{flex:none;width:18px;height:18px;margin:0;accent-color:#215e4e;cursor:pointer}
 [data-cell-label-focus-control]:focus-within{outline:3px solid #0f766e;outline-offset:3px}
@@ -23905,7 +23908,7 @@ var d = labToolData.cell || {};
 [data-cell-explanation-actions] button[data-cell-explanation-close]{margin-left:auto;border-color:transparent;background:transparent;color:#48685e}
 [data-cell-explanation-actions] button[data-cell-explanation-close]:hover{background:#e8f3ed;border-color:#8bab9c}
 [data-cell-explanation-actions] button:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
-@container(max-width:400px){[data-cell-explanation-header]{padding:14px;gap:10px}[data-cell-explanation-body]{padding:16px 14px}[data-cell-explanation-title]{font-size:22px}[data-cell-explanation-actions]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 14px;gap:8px}[data-cell-explanation-actions] button{padding:9px 10px;flex:1}[data-cell-explanation-actions] button[data-cell-explanation-close]{flex-basis:100%;margin-left:0}}
+@container(max-width:400px){[data-cell-explanation-header]{padding:14px;gap:10px}[data-cell-explanation-body]{padding:16px 14px}[data-cell-explanation-copy] h3{font-size:22px}[data-cell-explanation-actions]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px 14px;gap:8px}[data-cell-explanation-actions] button{padding:9px 10px;flex:1}[data-cell-explanation-actions] button[data-cell-explanation-close]{flex-basis:100%;margin-left:0}}
 @media(forced-colors:active){[data-cell-explanation-markers] span[data-current=true]{background:Highlight;border-color:Highlight}[data-cell-explanation-actions] button[data-cell-explanation-close]{border-color:ButtonText}}
 [data-cell-observation-tools]{grid-column:1 / -1;border-top:1px solid #50706e;margin-top:5px;padding-top:9px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 [data-cell-observation-identity]{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px}
@@ -25714,8 +25717,18 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     (activePlayDef || selDef).anatomy.map(function(a, index) { return React.createElement('span', { key: index, 'data-current': !!cellExplanation && index === cellExplanation.index ? 'true' : 'false' }); })
                   )
                 ),
-                React.createElement('h3', { 'data-cell-explanation-title': true }, cellExplanation ? cellExplanation.name : 'Explore cell structures'),
-                React.createElement('p', { 'data-cell-explanation-text': true }, cellExplanation ? cellExplanation.description : 'Select a label in the dish, choose a structure above, or browse with Previous and Next.')
+                React.createElement('div', { 'data-cell-explanation-reading': true },
+                  // Hidden sizing copies reserve enough room at the actual font and container width.
+                  // Only the current explanation is exposed to assistive technology.
+                  (activePlayDef || selDef).anatomy.map(function(a) {
+                    return React.createElement('div', { key: a.name, 'data-cell-explanation-copy': true, 'data-cell-explanation-sizer': true, 'aria-hidden': true },
+                      React.createElement('h3', null, a.name), React.createElement('p', null, a.fn));
+                  }),
+                  React.createElement('div', { 'data-cell-explanation-copy': true },
+                    React.createElement('h3', { 'data-cell-explanation-title': true }, cellExplanation ? cellExplanation.name : 'Explore cell structures'),
+                    React.createElement('p', { 'data-cell-explanation-text': true }, cellExplanation ? cellExplanation.description : 'Select a label in the dish, choose a structure above, or browse with Previous and Next.')
+                  )
+                )
               ),
               activeCellMode === 'observe' && cellExplanation && React.createElement('label', { 'data-cell-label-focus-control': true },
                 React.createElement('input', { type: 'checkbox', checked: !!d.focusSelectedLabel, onChange: function(e) { upd('focusSelectedLabel', e.target.checked); } }),
