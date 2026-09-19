@@ -11,12 +11,12 @@ describe('Teamwork clipboard fallback accessibility', () => {
     expect(readFileSync(publicPath, 'utf8')).toBe(source());
   });
 
-  it('labels the temporary textarea and keeps it out of sequential focus', () => {
+  it('provides visible selectable review text when clipboard access is unavailable', () => {
     const text = source();
-    expect(text).toContain("textarea.setAttribute('aria-label', 'Team retrospective text for copying');");
-    expect(text).toContain("textarea.setAttribute('readonly', '');");
-    expect(text).toContain('textarea.tabIndex = -1;');
-    expect(text).toContain("textarea.style.left = '-9999px';");
+    expect(text).toContain("'Review text to copy'");
+    expect(text).toContain("readOnly: true");
+    expect(text).toContain('Copy unavailable. Select the review text and copy it manually.');
+    // Real browser cases exercise helper success/false/rejection/throw and native fallback.
   });
 
   it('provides named roving tabs linked to the active panel', () => {
@@ -38,7 +38,7 @@ describe('Teamwork clipboard fallback accessibility', () => {
     // Scenario practice is now unscored; its keyboard and state semantics have browser coverage.
     // Communication planning replaces the profile quiz; browser tests cover its editable controls.
     expect(text).toContain("announceToSR('Team contract saved')");
-    expect(text).toContain("announceToSR('Team retrospective saved')");
+    expect(text).toContain("announceToSR(message)");
   });
 
   it('keeps auxiliary controls descriptive and outside the tablist', () => {
@@ -48,8 +48,8 @@ describe('Teamwork clipboard fallback accessibility', () => {
     expect(text).toContain("'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled");
     expect(text).toContain("'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel");
     // Named by its visible text (WCAG 2.5.3, Label in Name); no overriding label.
-    expect(text).toContain("'\\uD83D\\uDCE4 Export as Text'");
+    expect(text).toContain("'Copy review text'");
     expect(text).not.toContain("'aria-label': 'Export retrospective as text'");
-    expect(text).toContain("'aria-label': 'Clear retrospective cards'");
+    expect(text).not.toContain("'aria-label': 'Clear retrospective cards'");
   });
 });

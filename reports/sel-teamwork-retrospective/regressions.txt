@@ -1,0 +1,79 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/sel_theme_reactivity.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/sel_theme_reactivity.test.js
+[SelHub] Safety layer v1.2 loaded (crisis modal + scanForCrisis)
+[SelHub] sel_tool_civicaction.js loaded
+[SelHub] sel_tool_community.js loaded
+[SelHub] sel_tool_conflicttheater.js loaded — Conflict Theater v0.1
+[SelHub] sel_tool_cultureexplorer.js loaded
+[SelHub] sel_tool_ethicalreasoning.js loaded
+[SelHub] sel_tool_goals.js loaded — Goal Setter
+[SelHub] sel_tool_journal.js loaded
+[SEL] Peer Support Coach tool registered
+[SelHub] sel_tool_restorativecircle.js loaded
+[SelHub] sel_tool_safety.js loaded
+[SelHub Plugin] Loaded: sel_hub/sel_tool_selfadvocacy.js
+[SEL] Social Skills Lab tool registered
+[SelHub] sel_tool_strengths.js v2.5 loaded — Strengths Finder (Stories, Compare, Challenge, Gratitude, Interview, Planner, Peers, Affirmations)
+[SelHub] sel_tool_teamwork.js loaded
+[SEL] Voice Detective tool registered
+
+ ❯ tests/sel_theme_reactivity.test.js (296 tests | 2 failed | 2 skipped) 2182ms
+     × digitalwellbeing: every tinted surface in the render body routes through _dwC() 29ms
+     × upstander: every tinted surface in the render body routes through _upC() 25ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed | 15 passed (16)
+      Tests  2 failed | 656 passed | 2 skipped (660)
+   Start at  15:35:20
+   Duration  408.28s (transform 1.15s, setup 2.68s, import 29.22s, tests 261.63s, environment 98.51s)
+
+ FAIL  tests/sel_theme_reactivity.test.js > SEL Hub · migrated tools have no unwrapped tinted-surface literals (ternary-completeness) > digitalwellbeing: every tinted surface in the render body routes through _dwC()
+AssertionError: digitalwellbeing: unwrapped tinted surfaces (must be _dwC('#hex')): #f8fafc ×2, #f1f5f9 ×4: expected [ '#f8fafc ×2', '#f1f5f9 ×4' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "#f8fafc ×2",
++   "#f1f5f9 ×4",
++ ]
+
+ ❯ tests/sel_theme_reactivity.test.js:222:110
+    220|         if (m) leaks.push(`${hex} ×${m.length}`);
+    221|       }
+    222|       expect(leaks, `${c.id}: unwrapped tinted surfaces (must be ${c.h…
+       |                                                                                                              ^
+    223|     });
+    224|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/sel_theme_reactivity.test.js > SEL Hub · migrated tools have no unwrapped tinted-surface literals (ternary-completeness) > upstander: every tinted surface in the render body routes through _upC()
+AssertionError: upstander: unwrapped tinted surfaces (must be _upC('#hex')): #f8fafc ×2, #f1f5f9 ×4: expected [ '#f8fafc ×2', '#f1f5f9 ×4' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "#f8fafc ×2",
++   "#f1f5f9 ×4",
++ ]
+
+ ❯ tests/sel_theme_reactivity.test.js:222:110
+    220|         if (m) leaks.push(`${hex} ×${m.length}`);
+    221|       }
+    222|       expect(leaks, `${c.id}: unwrapped tinted surfaces (must be ${c.h…
+       |                                                                                                              ^
+    223|     });
+    224|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯

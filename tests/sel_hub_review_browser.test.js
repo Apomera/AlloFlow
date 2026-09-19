@@ -542,6 +542,20 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.vtAnswers)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('team retrospective notes survive context changes and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="teamwork"]').click();await page.getByRole('tab',{name:/Retro/}).click();
+    const practice=page.getByRole('region',{name:'Team retrospective practice',exact:true});
+    await practice.getByText('1. Look back: evidence and perspectives',{exact:true}).click();await practice.getByLabel('What happened, and what helped (optional)',{exact:true}).fill('Two ideas were considered.');
+    await practice.getByLabel('Choose a retrospective context',{exact:true}).selectOption('own');await practice.getByText('2. Plan one supported change',{exact:true}).click();
+    await practice.getByLabel('One change to try (optional)',{exact:true}).fill('Agree on an editing checkpoint.');await practice.getByLabel('When and how to review (optional)',{exact:true}).fill('Compare editing time next class.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="teamwork"]').click();expect(await practice.getByLabel('Choose a retrospective context',{exact:true}).inputValue()).toBe('own');
+    await practice.getByText('2. Plan one supported change',{exact:true}).click();expect(await practice.getByLabel('One change to try (optional)',{exact:true}).inputValue()).toContain('checkpoint');expect(await practice.getByLabel('When and how to review (optional)',{exact:true}).inputValue()).toContain('editing time');
+    await practice.getByText('3. Return after trying it',{exact:true}).click();expect(await practice.getByLabel('What happened next, and what to revise (optional)',{exact:true}).inputValue()).toBe('');
+    await practice.getByLabel('Choose a retrospective context',{exact:true}).selectOption('turns');await practice.getByText('1. Look back: evidence and perspectives',{exact:true}).click();expect(await practice.getByLabel('What happened, and what helped (optional)',{exact:true}).inputValue()).toContain('Two ideas');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.retroSaved)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

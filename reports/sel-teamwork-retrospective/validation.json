@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-19",
+  "tool": "Teamwork Builder / Retrospective",
+  "fictionalContexts": 3,
+  "gradeSpecificSetups": 9,
+  "ownExperienceContext": true,
+  "optionalNoteFields": 6,
+  "focused": {
+    "passed": 26,
+    "files": 2,
+    "retrospectiveBrowserCases": 21,
+    "sharedClipboardCases": 5
+  },
+  "regressions": {
+    "passed": 656,
+    "failed": 2,
+    "skipped": 2,
+    "files": 16,
+    "failures": [
+      {
+        "test": "digitalwellbeing: every tinted surface in the render body routes through _dwC()",
+        "detail": "Static assertion also counts color literals in wrapper code after the render body: #f8fafc x2, #f1f5f9 x4."
+      },
+      {
+        "test": "upstander: every tinted surface in the render body routes through _upC()",
+        "detail": "Static assertion also counts color literals in wrapper code after the render body: #f8fafc x2, #f1f5f9 x4."
+      }
+    ],
+    "baselineEvidence": "baseline-theme-files.json verifies both tools and the test file match committed HEAD."
+  },
+  "actualHub": {
+    "passed": 4,
+    "filtered": 94,
+    "files": 1
+  },
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumSelectDisclosureButtonHeight": 44
+  },
+  "sourcePublicSha256": "533ab3ee6e8df13d317e5af32c54c9be51b59310da7edf1a64b382ab0f95c53e",
+  "legacyCompatibility": "Earlier card arrays, unfinished inputs, saved flags, reflections, logs and awards preserved. New notes are independent by grade/context.",
+  "clipboard": "Helper success, false, rejection and synchronous throw; native success and unavailable clipboard all passed. Visible read-only manual copy text remains available; no new completion flags or awards.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Two pre-existing static theme assertions fail in unchanged Digital Wellbeing and Upstander files; full regression run is not green.",
+    "Scoped axe evidence covers the revised activity, not a full hub accessibility certification.",
+    "Authored examples are not a validated assessment; shared worked examples may benefit from adult discussion for younger learners.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "ready",
+    "reason": "Validation complete; preparing normal scoped commit with documented baseline failures."
+  },
+  "totalUniquePassed": 681,
+  "counting": "26 focused + 656 regressions + 4 hub - 5 repeated clipboard contract checks = 681 unique passes. Two failures, two pre-existing skips and 94 filtered hub cases are not passes."
+}

@@ -584,10 +584,10 @@ window.SelHub = window.SelHub || {
     { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
     { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
     { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Convert 3 conflicts into collaboration' },
-    { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Complete a team retrospective' },
+    { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Earlier activity: completed a team retrospective' },
     { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
     { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
-    { id: 'retro_exporter',    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Export a retrospective as text' }
+    { id: 'retro_exporter',    icon: '\uD83D\uDCE4', name: 'Retro Exporter',      desc: 'Earlier activity: exported a retrospective as text' }
   ];
 
   // ══════════════════════════════════════════════════════════════
@@ -775,6 +775,48 @@ window.SelHub = window.SelHub || {
   // ── Virtual Team Simulator Data ──
   // ══════════════════════════════════════════════════════════════
   // Authored remote collaboration practice. Original quiz records follow for compatibility.
+  var RETRO_PRACTICE = [
+  {
+    "id": "turns",
+    "title": "More voices, but whose ideas counted?",
+    "setups": {
+      "elementary": "A group made a poster. Everyone got a turn to talk, but the poster used only the first idea. One child says, \"I had a turn, but we did not try my idea.\"",
+      "middle": "A group used timed turns to plan a presentation. Everyone spoke, but the final plan kept only the first proposal. A teammate says the turns felt fair; another says their contribution made no difference.",
+      "high": "A project team introduced equal speaking turns. Attendance and speaking counts improved, but the final decisions still came from the same two members. Some members value the new structure; others question whose ideas shape the work."
+    },
+    "notice": "Speaking counts show opportunities to speak, not whether ideas were considered. Both accounts may describe part of the experience. Ask about the decision process without guessing motives.",
+    "plan": "Keep an accessible way to offer ideas. Before deciding, compare the proposals against shared project goals and record why an idea is used, combined or set aside. Ask a facilitator to help invite written or spoken feedback; no one has to disclose a personal reason for their format.",
+    "later": "At the next meeting, three proposals were compared and combined. One teammate still says the reasons for the decision were hard to follow.",
+    "adjust": "The process changed, but it did not work equally well for everyone. Keep the comparison and add a short, accessible explanation of the decision. Ask whether that explanation addresses the concern; more contributions alone do not settle the question."
+  },
+  {
+    "id": "deadline",
+    "title": "Finished on time, at whose cost?",
+    "setups": {
+      "elementary": "The group finished a model before class ended. One child did most of the building while the others waited for materials. The group says finishing early means the plan worked.",
+      "middle": "The group handed in a report on time. One teammate stayed late to redo sections because the instructions and shared files were unclear. Others thought everything was going well until the final day.",
+      "high": "A team met its deadline after one member quietly took over unfinished work. Access to files and expectations for a finished section were uneven. The result looks successful, but the workload and learning opportunities were not shared."
+    },
+    "notice": "Meeting a deadline is one outcome. It does not show who could participate, whose time was used or what support was missing. Describe the work and conditions rather than labeling someone lazy or heroic.",
+    "plan": "Try a small shared checkpoint before the deadline. Make the materials and success criteria usable, ask each person what is feasible and agree who will arrange support if work is blocked. Redistributing tasks needs discussion; the most available teammate is not automatically responsible.",
+    "later": "The checkpoint revealed a missing file early. After access was fixed, two members completed their parts, but the final editor still had more work than expected.",
+    "adjust": "Earlier access helped with one barrier. Editing time still needs a realistic allocation and support. Discuss a smaller scope or shared editing with the teacher rather than assuming one person should work longer. Review both the result and the workload next time."
+  },
+  {
+    "id": "quiet",
+    "title": "A quiet review is not automatic agreement",
+    "setups": {
+      "elementary": "After a game, an adult asks what the group could change. Nobody answers. Later, one child draws a picture showing that they could not reach the materials.",
+      "middle": "At the end of a group task, nobody names a problem aloud. Later, an anonymous note says the shared materials were hard to use. The group is unsure whether the silence meant agreement.",
+      "high": "A team reviews an activity in front of its group leader. No one raises a concern. Later, written feedback describes an access barrier and worry about being seen as difficult."
+    },
+    "notice": "Silence can have several explanations; it is not evidence of agreement or safety. A missing viewpoint remains unknown. A private route should not promise anonymity or secrecy that the setting cannot provide.",
+    "plan": "Offer time and more than one way to reflect, including a private conversation with a trusted adult. Explain who can read any written feedback and how it will be used. Check the reported access barrier without asking a student to identify themselves publicly or prove discomfort.",
+    "later": "An adult checks the materials and arranges another usable format. More feedback arrives, but one student still does not want to discuss their experience with the group.",
+    "adjust": "Act on the access issue and respect the boundary. Check whether the new format works through an agreed route. Increased feedback does not prove everyone feels safe, and a group retrospective should not be used to make someone discuss repeated harm with the person involved."
+  }
+];
+
   var VIRTUAL_TEAM_PRACTICE = [
   {
     "id": "vt1",
@@ -1059,12 +1101,6 @@ window.SelHub = window.SelHub || {
         var conflictHistory   = d.conflictHistory || [];
 
         // Retrospective state
-        var retroGreen        = d.retroGreen || [];
-        var retroYellow       = d.retroYellow || [];
-        var retroBlue         = d.retroBlue || [];
-        var retroGreenInput   = d.retroGreenInput || '';
-        var retroYellowInput  = d.retroYellowInput || '';
-        var retroBlueInput    = d.retroBlueInput || '';
         var retroSaved        = d.retroSaved || false;
 
         // Practice log & badges
@@ -1297,7 +1333,7 @@ window.SelHub = window.SelHub || {
             commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Communication Plan — choose what fits this situation', hint: 'Clarify the purpose, make the message usable, allow different ways to respond and check understanding. Adapt the plan when the conditions change.' },
             virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83D\uDCBB', title: 'Virtual Team — agree on workable participation', hint: 'Plan for access, privacy and different schedules. Compare communication options and check that contributions reach the work; camera use and reply speed do not prove commitment.' },
             conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
-            retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retro \u2014 keep / start / stop / drop',                  hint: 'Agile retrospective format. Without retros, teams repeat their failure modes; with retros, they upgrade them. Schedule before you need one \u2014 cadence beats crisis. Keep it short, action-oriented, blame-free.' },
+            retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retrospective — learn from the group process', hint: 'Look at what happened, hear different experiences, plan one supported change and check what happens next. Finishing a task or writing a plan does not show that the process worked for everyone.' },
             quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
             contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCDC', title: 'Contract \u2014 the team agreement',                       hint: 'Working agreements set norms BEFORE the friction (response times, decision rules, conflict handling). Edmondson 2018 psychological safety research: explicit norms predict speak-up rates more than personality.' },
             progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 vulnerability about growth predicts trust (Brown 2018).' }
@@ -2416,176 +2452,82 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var retroContent = null;
         if (activeTab === 'retro') {
-          var retroCategories = [
-            { key: 'green', label: 'What Went Well', color: _teaFg('#22c55e'), icon: '\u2705', items: retroGreen, inputVal: retroGreenInput, inputKey: 'retroGreenInput', listKey: 'retroGreen' },
-            { key: 'yellow', label: 'What Could Improve', color: _teaFg('#f59e0b'), icon: '\u26A0\uFE0F', items: retroYellow, inputVal: retroYellowInput, inputKey: 'retroYellowInput', listKey: 'retroYellow' },
-            { key: 'blue', label: 'Action Items for Next Time', color: _teaFg('#3b82f6'), icon: '\uD83D\uDCCB', items: retroBlue, inputVal: retroBlueInput, inputKey: 'retroBlueInput', listKey: 'retroBlue' }
+          function retroRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var retroSelections = retroRecord(d.retroSelections);
+          var retroChoice = Object.prototype.hasOwnProperty.call(retroSelections, band) ? retroSelections[band] : 'turns';
+          var retroCase = RETRO_PRACTICE.find(function(item) { return item.id === retroChoice; });
+          if (!retroCase && retroChoice !== 'own') { retroCase = RETRO_PRACTICE[0]; retroChoice = retroCase.id; }
+          var retroKey = band + ':' + retroChoice;
+          var retroDrafts = retroRecord(d.retroDrafts);
+          var retroDraft = retroRecord(Object.prototype.hasOwnProperty.call(retroDrafts, retroKey) ? retroDrafts[retroKey] : null);
+          var retroFields = [
+            { key: 'evidence', label: 'What happened, and what helped', help: band === 'elementary' ? 'What did you see or hear? What helped the group? You can draw or talk first.' : 'Describe a specific event and useful conditions. Separate observations from explanations; include what is still unknown.' },
+            { key: 'perspectives', label: 'Different perspectives and missing voices', help: band === 'elementary' ? 'Could someone have had a different experience? What could you ask, without making them answer?' : 'Whose experience is represented or missing? Keep different accounts separate. Do not write a guessed feeling as a fact or treat silence as agreement.' },
+            { key: 'change', label: 'One change to try', help: band === 'elementary' ? 'What small change might help? What should you keep? Ask the group before calling it an agreement.' : 'Connect one feasible change to the evidence. Say what to keep, what to change and whose input is needed before trying it.' },
+            { key: 'support', label: 'Support and shared responsibility', help: band === 'elementary' ? 'Who could help? What do they need? A teacher can help share the work fairly.' : 'Propose who will do what and what time, materials or adult support they need. Check capacity and agreement; do not assign extra repair work to the person affected.' },
+            { key: 'check', label: 'When and how to review', help: band === 'elementary' ? 'When will you look again? What could show the change helped? Who can help you ask?' : 'Name a check-in point, a useful sign of improvement and a way to hear different experiences. Include workload, access or influence alongside the task result.' },
+            { key: 'revision', label: 'What happened next, and what to revise', help: band === 'elementary' ? 'Leave this blank until you try the plan, or imagine a result for the made-up example. What helped? What still needs help?' : 'After trying the change, compare what happened with your review plan. Note benefits, limits and unexpected effects. Decide what to keep, adjust or stop; mark imagined outcomes as hypothetical.' }
           ];
-
-          retroContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDD04 Team Retrospective'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              band === 'elementary' ? 'After working with your team, think about what happened! Add cards to each section.' :
-              band === 'middle' ? 'Run a team retro: reflect on what worked, what didn\u2019t, and what to do differently next time.' :
-              'Conduct a structured retrospective to extract actionable insights from your team\u2019s collaboration experience.'
-            ),
-
-            // Three category sections
-            retroCategories.map(function(cat) {
-              return h('div', { key: cat.key, style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + cat.color + '44', marginBottom: 14 } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
-                  h('span', { style: { fontSize: 18 } }, cat.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 700, color: cat.color } }, cat.label),
-                  h('span', { style: { marginLeft: 'auto', fontSize: 11, color: _teaFg('#94a3b8'), padding: '2px 8px', borderRadius: 12, background: _teaBg('#0f172a') } }, cat.items.length + ' cards')
-                ),
-
-                // Existing cards
-                cat.items.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
-                  cat.items.map(function(item, idx) {
-                    return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: _teaBg('#0f172a'), border: '1px solid ' + cat.color + '22' } },
-                      h('div', { style: { width: 4, height: 20, borderRadius: 2, background: cat.color, flexShrink: 0 } }),
-                      h('span', { style: { fontSize: 12, color: _teaFg('#e2e8f0'), flex: 1, lineHeight: 1.5 } }, item),
-                      h('button', { 'aria-label': 'Remove',
-                        onClick: function() {
-                          var newItems = cat.items.slice();
-                          newItems.splice(idx, 1);
-                          upd(cat.listKey, newItems);
-                          upd('retroSaved', false);
-                          if (soundEnabled) sfxClick();
-                        },
-                        style: { background: 'none', border: 'none', color: _teaFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: '0 4px' },
-                        title: 'Remove'
-                      }, '\u00D7')
-                    );
-                  })
-                ),
-
-                // Add new card
-                h('div', { style: { display: 'flex', gap: 8 } },
-                  h('input', {
-                    type: 'text',
-                    'aria-label': cat.label + ' retrospective item',
-                    value: cat.inputVal,
-                    onChange: function(e) { upd(cat.inputKey, e.target.value); },
-                    onKeyDown: function(e) {
-                      if (e.key === 'Enter' && cat.inputVal.trim()) {
-                        var newItems = cat.items.concat([cat.inputVal.trim()]);
-                        upd(cat.listKey, newItems);
-                        upd(cat.inputKey, '');
-                        upd('retroSaved', false);
-                        if (soundEnabled) sfxClick();
-                      }
-                    },
-                    placeholder: cat.key === 'green' ? 'Something that went well...' : cat.key === 'yellow' ? 'Something to improve...' : 'An action item for next time...',
-                    style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
-                  }),
-                  h('button', { 'aria-label': '+ Add',
-                    onClick: function() {
-                      if (!cat.inputVal.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-                      var newItems = cat.items.concat([cat.inputVal.trim()]);
-                      upd(cat.listKey, newItems);
-                      upd(cat.inputKey, '');
-                      upd('retroSaved', false);
-                      if (soundEnabled) sfxClick();
-                    },
-                    style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: cat.color, color: _teaFg('#fff'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-                  }, '+ Add')
-                )
-              );
-            }),
-
-            // Save / Export buttons
-            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', {
-                onClick: function() {
-                  var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
-                  if (totalCards < 3) { addToast('Add at least 3 cards total to save!', 'info'); return; }
-                  upd('retroSaved', true);
-                  logPractice('retro', 'retrospective');
-                  tryAwardBadge('retro_runner');
-                  awardXP(20);
-                  if (soundEnabled) sfxCorrect();
-                  addToast('Retrospective saved! +20 XP', 'success');
-                  celebrate && celebrate();
-                  if (announceToSR) announceToSR('Team retrospective saved');
-                },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? _teaBg('#334155') : ACCENT, color: retroSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
-              }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
-              h('button', { onClick: function() {
-                  var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
-                  if (totalCards === 0) { addToast('Add some cards before exporting!', 'info'); return; }
-                  var text = '=== TEAM RETROSPECTIVE ===\n';
-                  text += 'Date: ' + new Date().toLocaleDateString() + '\n\n';
-                  text += '--- WHAT WENT WELL ---\n';
-                  retroGreen.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
-                  if (retroGreen.length === 0) text += '(none)\n';
-                  text += '\n--- WHAT COULD IMPROVE ---\n';
-                  retroYellow.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
-                  if (retroYellow.length === 0) text += '(none)\n';
-                  text += '\n--- ACTION ITEMS FOR NEXT TIME ---\n';
-                  retroBlue.forEach(function(item, i) { text += (i + 1) + '. ' + item + '\n'; });
-                  if (retroBlue.length === 0) text += '(none)\n';
-                  text += '\n=== END RETROSPECTIVE ===\n';
-
-                  // Copy to clipboard
-                  if (window.SelHub && window.SelHub.copyText) {
-                    window.SelHub.copyText(text).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; }
-                      addToast('Retrospective copied to clipboard!', 'success');
-                      tryAwardBadge('retro_exporter');
-                    }).catch(function() {
-                      addToast('Could not copy. Try again.', 'error');
-                    });
-                  } else {
-                    // Fallback
-                    var textarea = document.createElement('textarea');
-                    textarea.value = text;
-                    textarea.setAttribute('aria-label', 'Team retrospective text for copying');
-                    textarea.setAttribute('readonly', '');
-                    textarea.tabIndex = -1;
-                    textarea.style.position = 'fixed';
-                    textarea.style.left = '-9999px';
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    try { document.execCommand('copy'); addToast('Retrospective copied to clipboard!', 'success'); tryAwardBadge('retro_exporter'); } catch(e) { addToast('Could not copy.', 'error'); }
-                    document.body.removeChild(textarea);
+          function retroValue(key) { return Object.prototype.hasOwnProperty.call(retroDraft, key) && typeof retroDraft[key] === 'string' ? retroDraft[key] : ''; }
+          function updateRetroDraft(key, value) {
+            var next = Object.assign({}, retroDrafts); next[retroKey] = Object.assign({}, retroDraft); next[retroKey][key] = value; upd('retroDrafts', next);
+          }
+          var retroSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var retroInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var retroEdge = _teaHC ? '#ffff00' : '#64748b';
+          var retroControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + retroEdge, borderRadius: 8, background: retroSurface, color: retroInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var retroSummary = { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 };
+          var retroDetails = { borderTop: '1px solid ' + retroEdge };
+          function retroNote(field) {
+            var id = 'teamwork-retro-' + field.key;
+            return h('div', { key: field.key, style: { margin: '14px 0' } },
+              h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+              h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, field.help),
+              h('textarea', { id: id, rows: 3, value: retroValue(field.key), 'aria-describedby': id + '-help', onChange: function(e) { updateRetroDraft(field.key, e.target.value); }, style: Object.assign({}, retroControl, { lineHeight: 1.6, resize: 'vertical' }) }));
+          }
+          var retroTitle = retroCase ? retroCase.title : 'My own group experience';
+          var retroReviewText = 'TEAM RETROSPECTIVE — PERSONAL WORKING NOTES\n' + retroTitle + '\n' + (retroCase ? 'Fictional practice example' : 'Own example; review private details before sharing') + '\nNot a record of team consent. Blank sections are still open.\n\n' + retroFields.map(function(field) { return field.label + ':\n' + (retroValue(field.key) || '(not recorded)'); }).join('\n\n');
+          var earlierRetro = [{ label: 'What went well', value: d.retroGreen }, { label: 'What could improve', value: d.retroYellow }, { label: 'Action items for next time', value: d.retroBlue }].map(function(group) { return { label: group.label, items: Array.isArray(group.value) ? group.value.filter(function(item) { return typeof item === 'string'; }) : [] }; });
+          var earlierRetroInputs = [d.retroGreenInput, d.retroYellowInput, d.retroBlueInput].filter(function(item) { return typeof item === 'string' && item; });
+          retroContent = h('section', { role: 'region', 'aria-label': 'Team retrospective practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: retroSurface, color: retroInk, border: '1px solid ' + retroEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Look back, try a change, check again'),
+            h('p', null, band === 'elementary' ? 'Think about how the group worked. Use a made-up example or your own. You can talk, draw or write with help. You do not have to fill every box.' : 'A retrospective connects evidence about the group process to a supported change and a later check. Use an example or your own experience; all notes are optional.'),
+            h('p', null, 'These are your working notes, not a statement that everyone agrees. Leave out identifying details. You can pass on sharing or ask a trusted adult for help with repeated exclusion, pressure or harm.'),
+            h('label', { htmlFor: 'teamwork-retro-choice', style: { display: 'block', fontWeight: 700 } }, 'Choose a retrospective context'),
+            h('select', { id: 'teamwork-retro-choice', value: retroChoice, style: retroControl, onChange: function(e) { var next = Object.assign({}, retroSelections); next[band] = e.target.value; upd('retroSelections', next); } }, RETRO_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own group experience')),
+            h('div', { key: retroKey },
+              h('h3', { style: { fontSize: 18 } }, retroTitle),
+              h('p', null, retroCase ? retroCase.setups[band] || retroCase.setups.elementary : 'Choose one specific group experience. Include enough context to understand the work, without naming people. You may leave unknowns open.'),
+              retroCase && h('details', { style: retroDetails }, h('summary', { style: retroSummary }, 'Examine the example'), h('p', null, retroCase.notice)),
+              h('details', { style: retroDetails }, h('summary', { style: retroSummary }, '1. Look back: evidence and perspectives'), retroFields.slice(0, 2).map(retroNote)),
+              h('details', { style: retroDetails }, h('summary', { style: retroSummary }, '2. Plan one supported change'), retroFields.slice(2, 5).map(retroNote)),
+              retroCase && h('details', { style: retroDetails }, h('summary', { style: retroSummary }, 'Compare a possible plan'), h('p', null, retroCase.plan), h('p', null, 'This is a proposal to discuss and adapt, not a guaranteed solution.')),
+              h('details', { style: retroDetails }, h('summary', { style: retroSummary }, '3. Return after trying it'),
+                h('p', null, 'It is fine to leave this part open until there is something to review. A plan is not evidence that a change has worked.'),
+                retroCase && h('details', { style: retroDetails }, h('summary', { style: retroSummary }, 'Explore a fictional follow-up'), h('p', null, retroCase.later), h('p', null, h('strong', null, 'One possible revision: '), retroCase.adjust)),
+                retroNote(retroFields[5])),
+              h('details', { style: retroDetails }, h('summary', { style: retroSummary }, 'Review or copy my notes'),
+                h('p', null, 'Only your current context notes are included. Review them before sharing. Copying does not submit them to anyone. You can also select this text and copy it yourself.'),
+                h('label', { htmlFor: 'teamwork-retro-copy', style: { display: 'block', fontWeight: 700 } }, 'Review text to copy'),
+                h('textarea', { id: 'teamwork-retro-copy', readOnly: true, rows: 10, value: retroReviewText, style: Object.assign({}, retroControl, { lineHeight: 1.6, resize: 'vertical' }) }),
+                h('button', { type: 'button', style: Object.assign({}, retroControl, { margin: '10px 0', cursor: 'pointer', fontWeight: 700 }), onClick: function() {
+                  function copyResult(ok) {
+                    var message = ok ? 'Retrospective notes copied.' : 'Copy unavailable. Select the review text and copy it manually.';
+                    if (typeof addToast === 'function') addToast(message, ok ? 'success' : 'info');
+                    if (announceToSR) announceToSR(message);
                   }
-                  if (soundEnabled) sfxTeam();
-                },
-                style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: _teaBg('#3b82f6'), color: _teaFg('#fff'), fontWeight: 600, fontSize: 13, cursor: 'pointer' }
-              }, '\uD83D\uDCE4 Export as Text'),
-              h('button', { 'aria-label': 'Clear retrospective cards',
-                onClick: function() {
-                  upd({ retroGreen: [], retroYellow: [], retroBlue: [], retroGreenInput: '', retroYellowInput: '', retroBlueInput: '', retroSaved: false });
-                  if (soundEnabled) sfxClick();
-                },
-                style: { padding: '10px 14px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
-              }, 'Clear All')
+                  try {
+                    var copying = window.SelHub && typeof window.SelHub.copyText === 'function' ? window.SelHub.copyText(retroReviewText) : navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(retroReviewText).then(function() { return true; }) : false;
+                    Promise.resolve(copying).then(function(ok) { copyResult(ok === true); }).catch(function() { copyResult(false); });
+                  } catch (e) { copyResult(false); }
+                } }, 'Copy review text')),
+              h('p', null, 'Notes stay with this context and grade band in the current project. Use the hub save or export controls to keep them beyond this session. There is no completion score or required number of notes.')
             ),
-
-            // Retro preview (when saved)
-            retroSaved && h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#0f172a'), border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
-              h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-                h('div', { style: { fontSize: 18, fontWeight: 700, color: _teaFg('#f1f5f9') } }, '\uD83D\uDD04 Retrospective Summary'),
-                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 4 } }, new Date().toLocaleDateString())
-              ),
-              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 } },
-                [
-                  { color: _teaFg('#22c55e'), icon: '\u2705', label: 'Well', items: retroGreen },
-                  { color: _teaFg('#f59e0b'), icon: '\u26A0\uFE0F', label: 'Improve', items: retroYellow },
-                  { color: _teaFg('#3b82f6'), icon: '\uD83D\uDCCB', label: 'Actions', items: retroBlue }
-                ].map(function(col) {
-                  return h('div', { key: col.label, style: { padding: 10, borderRadius: 10, background: _teaBg('#1e293b'), borderTop: '3px solid ' + col.color } },
-                    h('div', { style: { fontSize: 11, fontWeight: 700, color: col.color, marginBottom: 6, textAlign: 'center' } }, col.icon + ' ' + col.label),
-                    col.items.map(function(item, i) {
-                      return h('div', { key: i, style: { fontSize: 10, color: _teaFg('#cbd5e1'), padding: '3px 0', lineHeight: 1.4, borderBottom: '1px solid #334155' } }, '\u2022 ' + item);
-                    }),
-                    col.items.length === 0 && h('div', { style: { fontSize: 10, color: _teaFg('#475569'), fontStyle: 'italic', textAlign: 'center' } }, '(none)')
-                  );
-                })
-              )
-            ),
-
-            renderQuickReflection('retro')
+            (earlierRetro.some(function(group) { return group.items.length; }) || earlierRetroInputs.length > 0) && h('details', { style: retroDetails },
+              h('summary', { style: retroSummary }, 'Earlier retrospective cards'),
+              h('p', null, 'Your earlier cards and unfinished card text are preserved here. They have not been assigned to a new context or copied into these notes. Earlier saved status and awards remain historical records.'),
+              earlierRetro.map(function(group) { return group.items.length > 0 && h('div', { key: group.label }, h('h3', { style: { fontSize: 16 } }, group.label), group.items.map(function(item, index) { return h('p', { key: index, style: { whiteSpace: 'pre-wrap' } }, item); })); }),
+              earlierRetroInputs.length > 0 && h('div', null, h('h3', { style: { fontSize: 16 } }, 'Unfinished card text'), earlierRetroInputs.map(function(item, index) { return h('p', { key: index }, item); })))
           );
         }
 
@@ -2617,7 +2559,7 @@ window.SelHub = window.SelHub || {
             { icon: '\uD83D\uDDE3\uFE0F', label: 'Earlier communication quiz', value: commStyleDone ? 'Completed' : 'No earlier completion', color: _teaFg('#ef4444') },
             { icon: '\uD83D\uDCBB', label: 'Earlier virtual-team answers', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
             { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },
-            { icon: '\uD83D\uDD04', label: 'Retrospective', value: retroSaved ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
+            { icon: '\uD83D\uDD04', label: 'Earlier retrospective', value: retroSaved ? 'Saved earlier' : 'No earlier save', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: _teaFg('#a78bfa') },
             { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: _teaFg('#ec4899') },

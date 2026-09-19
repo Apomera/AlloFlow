@@ -1,0 +1,17 @@
+[
+  {
+    "path": "sel_hub/sel_tool_digitalwellbeing.js",
+    "matchesHead": true,
+    "sha256": "a89d8d6f01826690f62b5b019e3e7456ee69aa39a0a09b9a4b6bde327d6ed79a"
+  },
+  {
+    "path": "sel_hub/sel_tool_upstander.js",
+    "matchesHead": true,
+    "sha256": "a2fb384435f2e928db3f8d2a0041300b947ab5255cf524dd1a6da46886d41b43"
+  },
+  {
+    "path": "tests/sel_theme_reactivity.test.js",
+    "matchesHead": true,
+    "sha256": "0e85c951ba443f056d7d3f3dd90845f5721fd644a7876e651bf670b8b774a94c"
+  }
+]
