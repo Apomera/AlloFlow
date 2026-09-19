@@ -59,8 +59,9 @@
     "Ignored generated desktop/app-build output not rebuilt."
   ],
   "commit": {
-    "status": "blocked",
-    "reason": "Normal scoped commit rejected by the source-pair hook: content_engine_source.jsx (2856 lines) differs from desktop/web-app/src/content_engine_source.jsx (2838 lines). These unrelated files were not touched and no hook bypass was used. Owned changes remain staged."
+    "status": "committed",
+    "id": "b0471f460",
+    "hooks": "Normal hooks enabled; previous unrelated source-pair drift cleared."
   },
   "captureRecheck": {
     "passed": 1,
@@ -70,5 +71,9 @@
     "testChange": "Wait two animation frames after scrolling before captures."
   },
   "totalUniquePassed": 185,
-  "counting": "16 focused agreement browser cases + 162 regressions (includes 5 shared clipboard contracts) + 4 targeted Teamwork theme cases + 3 hub workflows. Five focused/shared repeats and one repeated high-contrast capture case excluded."
+  "counting": "16 focused agreement browser cases + 162 regressions (includes 5 shared clipboard contracts) + 4 targeted Teamwork theme cases + 3 hub workflows. Five focused/shared repeats and one repeated high-contrast capture case excluded.",
+  "previousCommitAttempt": {
+    "status": "blocked",
+    "reason": "Normal scoped commit rejected by the source-pair hook: content_engine_source.jsx (2856 lines) differs from desktop/web-app/src/content_engine_source.jsx (2838 lines). These unrelated files were not touched and no hook bypass was used. Owned changes remain staged."
+  }
 }

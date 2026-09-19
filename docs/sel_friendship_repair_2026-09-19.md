@@ -23,3 +23,5 @@ Five optional notes cover observations/uncertainty, responsibility, boundaries/s
 The interface uses labeled native selects and textareas, keyboard-operable disclosures, a polite route explanation, 44px controls, 16px input text and explicit light/dark/high-contrast surfaces. Canonical and public modules remain byte-identical. Focused tests exercise context/grade separation, remounting, legacy preservation, keyboard interaction, support restrictions and three 320px themes. A real-hub regression covers leaving and reopening the activity.
 
 Validation and commit status are recorded in `reports/sel-friendship-repair/validation.json` after checks finish. No push, deployment or packaged build is included.
+
+Commit follow-up (2026-09-19): the unrelated source-pair mismatch cleared. Normal scoped commit `b0471f460` succeeded with hooks enabled and includes passes 31, 32 and 33. These SEL changes are committed locally, superseding earlier blocked/staged status notes. No unrelated source files were changed by this SEL pass; no push or deployment.

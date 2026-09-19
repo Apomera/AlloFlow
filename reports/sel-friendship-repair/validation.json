@@ -1,5 +1,5 @@
 {
-  "status": "validated; staged commit pending",
+  "status": "validated and committed locally",
   "uniquePassingChecks": 54,
   "focused": 20,
   "existingFriendshipAndKeyboard": 28,
@@ -12,5 +12,10 @@
   "retries": "Initial regressions: 26 passed, two timeouts. Digital case passed on targeted retry; Coping nested-tab case timed out again, then passed alone in 1.40 seconds. Coping, host and keyboard test match HEAD. Initial theme source contract flagged the new text literal; routed it through existing mapper with identical color, then all four theme checks and three phone cases passed. No assertion or timeout was weakened.",
   "counting": "Repeated palette/theme/retry passes counted once. Filtered cases excluded.",
   "deployment": "No push, deployment or packaged build.",
-  "knownRepositoryBlocker": "Unrelated content_engine_source.jsx/public source mismatch: root 2856 lines versus desktop source 2838."
+  "commit": {
+    "status": "committed",
+    "id": "b0471f460",
+    "hooks": "Normal hooks enabled; previous unrelated source-pair drift cleared."
+  },
+  "previousRepositoryBlocker": "Unrelated content_engine_source.jsx/public source mismatch: root 2856 lines versus desktop source 2838."
 }

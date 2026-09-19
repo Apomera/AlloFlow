@@ -57,9 +57,14 @@
     "Ignored generated desktop/app-build output not rebuilt."
   ],
   "commit": {
-    "status": "blocked",
-    "reason": "The first staging attempt encountered another active Git index lock. After it cleared naturally, staging and whitespace checks passed, but the normal commit hook rejected unrelated content_engine_source.jsx vs desktop/web-app/src/content_engine_source.jsx drift (2856 vs 2838 lines). No lock removal, hook bypass or edit to those files. This pass and the prior agreement pass remain staged."
+    "status": "committed",
+    "id": "b0471f460",
+    "hooks": "Normal hooks enabled; previous unrelated source-pair drift cleared."
   },
   "totalUniquePassed": 73,
-  "counting": "16 focused conflict browser cases + 50 regressions (includes 5 shared clipboard contracts) + 3 actual-hub flows + 4 targeted theme checks. Five repeated focused clipboard checks are counted once."
+  "counting": "16 focused conflict browser cases + 50 regressions (includes 5 shared clipboard contracts) + 3 actual-hub flows + 4 targeted theme checks. Five repeated focused clipboard checks are counted once.",
+  "previousCommitAttempt": {
+    "status": "blocked",
+    "reason": "The first staging attempt encountered another active Git index lock. After it cleared naturally, staging and whitespace checks passed, but the normal commit hook rejected unrelated content_engine_source.jsx vs desktop/web-app/src/content_engine_source.jsx drift (2856 vs 2838 lines). No lock removal, hook bypass or edit to those files. This pass and the prior agreement pass remain staged."
+  }
 }
