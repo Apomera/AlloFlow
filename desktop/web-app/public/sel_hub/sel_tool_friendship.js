@@ -228,6 +228,67 @@ window.SelHub = window.SelHub || {
   ]
 };
 
+  // Sustainable friendship care: examples, not relationship scores.
+  var KEEPING_PRACTICE = [
+  {
+    "id": "contact",
+    "title": "Different amounts of contact",
+    "setup": {
+      "elementary": "You like playing together every day. Your friend sometimes chooses quiet time or another game. You wonder how to stay friends.",
+      "middle": "You enjoy frequent messages. Your friend replies less often and has family responsibilities and limited phone time.",
+      "high": "You and a friend have different schedules, energy and access to devices. The amount of contact that works for one of you feels difficult for the other."
+    },
+    "notice": "Different availability does not by itself tell you how much someone cares. Caring can take different forms; equal numbers of messages are not the goal.",
+    "model": {
+      "elementary": "Would you like to choose a game together sometimes? It is okay to want quiet time too.",
+      "middle": "What kind of check-in works for you? I would like to stay connected without expecting quick replies.",
+      "high": "Could we find a way to stay in touch that fits both our capacity and access? We can revisit it if it becomes too much."
+    },
+    "why": "A flexible, mutually welcome plan can make expectations clearer. You can name your own needs without requiring the same communication style.",
+    "limit": "Do not use reply speed or a contact quota to test loyalty. If the arrangement keeps leaving one person overwhelmed or unsupported, it can change or stop.",
+    "changed": "You try a regular check-in, but the time repeatedly does not work for one person.",
+    "review": "Ask whether a different format or less frequent contact would work, if discussion is welcome. You can also step back. Repeated reminders are not the same as mutual agreement."
+  },
+  {
+    "id": "activities",
+    "title": "Making shared time work",
+    "setup": {
+      "elementary": "Your friend wants to play a noisy game. You like being with them, but that game is too loud for you.",
+      "middle": "Your group keeps choosing an activity that costs more than you can spend. You want time together without having to explain private family details.",
+      "high": "Friends repeatedly plan an activity that does not fit your transport, sensory or access needs. You want your preferences included without becoming responsible for every plan."
+    },
+    "notice": "Taking turns is not enough if some options remain inaccessible. Friendship does not require you to ignore an access need or reveal private information.",
+    "model": {
+      "elementary": "I want to play with you. This game is too loud for me. Could we try a quieter game?",
+      "middle": "That plan does not work for me. Could we choose something free, or another way to spend time together?",
+      "high": "I would like to join, but this format does not work for me. Could we share the planning and find an accessible option?"
+    },
+    "why": "A specific preference or alternative gives the group something practical to consider. Responsibility for making shared time work can be shared.",
+    "limit": "You do not have to provide a diagnosis, pay more or repeatedly design every alternative. Others may decline an activity, and you may decline an inaccessible plan.",
+    "changed": "The group says you can join only if you put up with the same barrier again.",
+    "review": "That does not make the barrier disappear. You can decline, suggest a different plan if you want, or seek support with repeated exclusion. You do not need to prove friendship by enduring discomfort."
+  },
+  {
+    "id": "support",
+    "title": "Caring without carrying everything",
+    "setup": {
+      "elementary": "A friend wants you to listen to a worry every playtime. You care, and you also need time to play and rest.",
+      "middle": "A friend often asks for support late at night. You want to help, but you need sleep and cannot always reply.",
+      "high": "A friend increasingly relies on you as their only support. You care about them, but the expectation of constant availability is becoming too much."
+    },
+    "notice": "You can care and have limits. Being a friend does not make you responsible for solving every problem or being available all the time.",
+    "model": {
+      "elementary": "I can listen for a little while. Then I need to play. Could we ask a grown-up to help too?",
+      "middle": "I care about you, and I cannot keep messaging tonight. Is there a trusted person you can talk with as well?",
+      "high": "I want you to have support, and I cannot be your only support or always be available. Could we think about other trusted people you can reach?"
+    },
+    "why": "A clear, realistic offer can show care without promising more than you can give. Asking for other support can be part of friendship.",
+    "limit": "Respect ordinary privacy, but do not promise to keep concerns about someone being hurt or unsafe secret. You can seek adult help even if the friend is upset about it.",
+    "changed": "Your friend says someone is hurting them and asks you not to tell anyone.",
+    "review": "Tell a trusted adult who can help with safety; do not try to handle it alone. If the first adult does not help, try another. If someone is in immediate danger, seek nearby help now. You do not have to investigate or confront anyone."
+  }
+];
+
   // Authored practice examples; not a relationship assessment.
   var REPAIR_PRACTICE = [
   {
@@ -915,7 +976,7 @@ window.SelHub = window.SelHub || {
         var TAB_META = {
           compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83E\uDDED', title: 'My Style \u2014 how you show you care',                hint: 'Loyalist, encourager, advisor, peacekeeper, jokester, listener, adventurer. Most people lean on 1-2. Knowing yours is half the work \u2014 the other half is recognizing your friend\u2019s default is probably different.' },
           start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 an invitation and a choice', hint: 'Check timing and welcome contact. Try words that fit you, explore different responses and practise stepping back. Friendship is not guaranteed by a script or measured by getting a yes.' },
-          keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 maintenance is everything',              hint: 'Dunbar 1992: humans top out at ~150 stable relationships, ~5 close ones. Sustaining ANY of those takes regular small bids \u2014 a text, a memory mentioned, a check-in. Drift is the default.' },
+          keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 care with room for limits', hint: 'Explore different capacities, accessible shared time and realistic support. Small acts of care should be welcome and workable; friendship is not a contact quota or a promise to be always available.' },
           digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCF1', title: 'Digital - context, consent and considered choices', hint: 'Compare what a message shows with what remains uncertain. Consider boundaries, audience and trusted support. A private channel does not guarantee privacy.' },
           repair:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDE79', title: 'Repair \u2014 the strongest friendships have ruptures', hint: 'Gottman: rupture is universal; thriving relationships repair quickly. Name what you did, hear what landed, plan repair, follow up. Apologies that include \u201CIF\u201D are not apologies.' },
           endings: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83C\uDF43', title: 'Endings \u2014 make room for change', hint: 'Explore changing routines, uncertain contact and requests for space. You can have mixed feelings and choose support without a final goodbye or a decision to reconnect.' },
@@ -1008,7 +1069,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { flex: '1 1 260px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 8 } },
             friendStat('style picked', stylePicked, AMBER),
             friendStat('sections explored', exploredCount + '/' + TABS.length, '#10b981'),
-            friendStat('private notes', friendNotes.length, '#0ea5e9'),
+            friendStat('saved notes', friendNotes.length, '#0ea5e9'),
             friendStat('digital practices', Object.keys(digitalDone).length, '#a855f7')
           )
         ),
@@ -1133,62 +1194,98 @@ window.SelHub = window.SelHub || {
         );
       }
 
-      // ── Keeping Friends (journal + tips) ──
+      // ── Keeping Friends: sustainable care and an optional journal ──
       var keepContent = null;
       if (activeTab === 'keep') {
-        var KEEP_TIPS = band === 'elementary'
-          ? ['Check in: "How was your weekend?"', 'Remember what matters to them', 'Take turns choosing what to do', 'Be happy when good things happen to them', 'Keep their secrets safe']
-          : ['Initiate \u2014 don\u2019t always wait for them to text first', 'Show up for the boring stuff, not just the fun stuff', 'Apologize without "but"', 'Celebrate their wins without comparing', 'Respect their other friendships'];
-
-        keepContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83D\uDC9B'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Keeping Friends'),
-            h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, 'Friendships need care. Small, consistent actions matter more than grand gestures.')
-          ),
-          // Tips
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' } },
-            KEEP_TIPS.map(function(tip, i) {
-              return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: _frC('#fff'), border: '1px solid #fde68a', borderRadius: '10px' } },
-                h('div', { style: { width: '24px', height: '24px', borderRadius: '50%', background: AMBER_LIGHT, border: '2px solid #fde68a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: AMBER, flexShrink: 0 } }, i + 1),
-                h('span', { style: { fontSize: '13px', color: _frC('#374151') } }, tip)
-              );
-            })
-          ),
-          // Friendship journal
-          h('div', { style: { background: AMBER_LIGHT, borderRadius: '14px', padding: '16px', border: '1px solid #fde68a' } },
-            h('div', { style: { fontSize: '13px', fontWeight: 700, color: AMBER_DARK, marginBottom: '8px' } }, '\uD83D\uDCDD Friendship Journal'),
-            h('p', { style: { fontSize: '11px', color: _frC('#94a3b8'), margin: '0 0 8px' } }, 'Write about a friendship moment \u2014 something kind someone did, a fun memory, or something you\u2019re grateful for.'),
-            h('div', { style: { display: 'flex', gap: '6px', marginBottom: '8px' } },
-              h('input', { 'aria-label': 'Friendship journal entry',
-                type: 'text', value: newNote,
-                onChange: function(ev) { upd('newNote', ev.target.value); },
-                onKeyDown: function(ev) {
-                  if (ev.key === 'Enter' && newNote.trim()) {
-                    upd({ friendNotes: [{ id: Date.now().toString(), text: newNote.trim(), date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '' });
-                    if (soundEnabled) sfxHeart();
-                    if (awardXP) awardXP(5, 'Wrote in your Friendship Journal!');
-                  }
-                },
-                placeholder: band === 'elementary' ? 'Today my friend...' : 'A friendship moment I want to remember...',
-                style: { flex: 1, border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
-              }),
-              h('button', {
-                'aria-label': 'Add friendship journal entry',
-                onClick: function() { if (!newNote.trim()) return; upd({ friendNotes: [{ id: Date.now().toString(), text: newNote.trim(), date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '' }); if (soundEnabled) sfxHeart(); },
-                disabled: !newNote.trim(),
-                style: { padding: '8px 14px', background: newNote.trim() ? AMBER : '#d1d5db', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: newNote.trim() ? 'pointer' : 'not-allowed', fontSize: '12px' }
-              }, '\uD83D\uDC9B')
-            ),
-            friendNotes.length > 0 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '150px', overflowY: 'auto' } },
-              friendNotes.slice(0, 10).map(function(note) {
-                return h('div', { key: note.id, style: { fontSize: '12px', color: _frC('#374151'), padding: '4px 0', borderBottom: '1px solid #fef3c7' } },
-                  h('span', { style: { color: _frC('#94a3b8'), fontSize: '10px' } }, note.date + ' \u2014 '),
-                  note.text
-                );
-              })
-            )
-          )
+        var keepBand = ['elementary', 'middle', 'high'].indexOf(band) >= 0 ? band : 'middle';
+        var keepObject = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+        var keepSelections = keepObject(d.keepingSelections);
+        var keepSelected = keepSelections[keepBand];
+        var keepExample = KEEPING_PRACTICE.find(function(item) { return item.id === keepSelected; }) || KEEPING_PRACTICE[0];
+        var keepOwn = keepSelected === 'own';
+        var keepContext = keepOwn ? 'own' : keepExample.id;
+        var keepKey = keepBand + ':' + keepContext;
+        var keepDrafts = keepObject(d.keepingDrafts);
+        var keepDraft = keepObject(keepDrafts[keepKey]);
+        var keepNote = function(key) { return typeof keepDraft[key] === 'string' ? keepDraft[key] : ''; };
+        var saveKeep = function(values) { var drafts = Object.assign({}, keepDrafts); drafts[keepKey] = Object.assign({}, keepDraft, values); upd('keepingDrafts', drafts); };
+        var keepSurface = _frHC ? '#000000' : _frDark ? '#0f172a' : '#ffffff';
+        var keepInk = _frHC ? '#ffffff' : _frDark ? _frC('#0f172a') : '#1f2937';
+        var keepEdge = _frHC ? '#ffff00' : _frDark ? '#94a3b8' : '#64748b';
+        var keepCard = { padding: '16px', margin: '14px 0', border: '1px solid ' + keepEdge, borderRadius: '12px', background: keepSurface, color: keepInk, minWidth: 0 };
+        var keepControl = { width: '100%', maxWidth: '100%', minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + keepEdge, borderRadius: '8px', background: keepSurface, color: keepInk, font: 'inherit', fontSize: '16px' };
+        var keepSummary = { minHeight: '44px', padding: '10px 0', boxSizing: 'border-box', fontWeight: 700, cursor: 'pointer' };
+        var keepFields = [
+          { id: 'needs', label: 'What matters, and what is workable for each person?', hint: 'Consider preferences, time, energy and access. You do not need to know or record private reasons.' },
+          { id: 'care', label: 'What small act of care could fit?', hint: 'It could be shared time, a welcome check-in, a practical offer or respecting space. No one has to match the same number of actions.' },
+          { id: 'boundary', label: 'What limit or support would make this sustainable?', hint: 'Think about what you can offer, what you cannot, and who else could help. A limit does not cancel care.' },
+          { id: 'review', label: 'What would tell me to keep or change the plan?', hint: 'Look for respected boundaries and workable arrangements over time. A friendship is not a streak or a score.' }
+        ];
+        var keepField = function(field) {
+          var id = 'fr-keep-' + field.id;
+          return h('div', { key: field.id, style: { margin: '16px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+            h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
+            h('textarea', { id: id, rows: 3, value: keepNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, keepControl, { resize: 'vertical' }),
+              onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveKeep(values); } }));
+        };
+        var keepPreview = ['A possible friendship-care plan — not an agreement made by the other person.', 'Context: ' + (keepOwn ? 'My own example' : keepExample.title)]
+          .concat(keepFields.map(function(field) { return field.label + '\n' + (keepNote(field.id).trim() || '(No note yet)'); })).join('\n\n');
+        // Retain the original array verbatim; malformed old records are not rendered as text.
+        var keepJournalNotes = friendNotes.filter(function(note) { return note && typeof note === 'object' && typeof note.text === 'string'; });
+        var keepAddJournal = function() {
+          var text = newNote.trim();
+          if (!text) return;
+          upd({ friendNotes: [{ id: Date.now().toString(), text: text, date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '', keepingJournalNotice: 'Note added to your journal.' });
+          if (soundEnabled) sfxHeart();
+        };
+        var keepJournalEntry = function(note, index) {
+          return h('li', { key: index, style: { margin: '12px 0', padding: '12px 0', borderBottom: '1px solid ' + keepEdge, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
+            h('div', { style: { fontWeight: 700 } }, typeof note.date === 'string' && note.date ? note.date : 'Saved note'), h('p', { style: { margin: '6px 0' } }, note.text));
+        };
+        keepContent = h('section', { role: 'region', 'aria-label': 'Keeping friendship practice', style: { padding: '16px', maxWidth: '720px', margin: '0 auto', background: keepSurface, color: keepInk, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+          h('h3', { style: { margin: '0 0 8px', fontSize: '22px' } }, 'Care that works for both people'),
+          h('p', null, keepBand === 'elementary' ? 'Friends can care in different ways. You can enjoy time together and still need quiet, help or a different plan.' : 'Explore care, shared effort and boundaries without measuring friendship by messages, constant availability or keeping everyone happy.'),
+          h('p', null, 'Use a fictional example or your own. Thinking through the choices is enough; every note is optional.'),
+          h('label', { htmlFor: 'fr-keep-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a friendship-care context'),
+          h('select', { id: 'fr-keep-context', value: keepContext, style: keepControl, onChange: function(ev) { var choices = Object.assign({}, keepSelections); choices[keepBand] = ev.target.value; upd('keepingSelections', choices); } },
+            KEEPING_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+          h('div', { key: keepKey, style: keepCard },
+            h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, keepOwn ? 'Consider what care could look like' : keepExample.title),
+            h('p', null, keepOwn ? 'Notice what each person wants and what they can realistically offer. You can leave unknowns open and choose what you want to record.' : keepExample.setup[keepBand]),
+            !keepOwn && h('p', null, keepExample.notice)),
+          !keepOwn && h('details', { key: keepKey + '-example', style: keepCard },
+            h('summary', { style: keepSummary }, 'Explore a possible plan and its limits'),
+            h('p', { style: { fontWeight: 700 } }, keepExample.model[keepBand]), h('p', null, keepExample.why), h('p', null, keepExample.limit)),
+          h('details', { key: keepKey + '-notes', style: keepCard },
+            h('summary', { style: keepSummary }, 'Consider my own plan (optional)'),
+            h('p', null, 'Planning notes stay with this context and grade level. They do not send a message, request help or show that another person agreed.'), keepFields.map(keepField)),
+          h('details', { key: keepKey + '-review', style: keepCard },
+            h('summary', { style: keepSummary }, 'Revisit if the plan stops working'),
+            h('p', null, keepOwn ? 'What if someone needs more space, an activity stays inaccessible or the help needed is more than you can offer?' : keepExample.changed),
+            h('p', null, keepOwn ? 'You can revise the plan, decline an activity or ask for support. If someone may be hurt or unsafe, tell a trusted adult rather than trying to manage it alone.' : keepExample.review)),
+          h('details', { key: keepKey + '-preview', style: keepCard },
+            h('summary', { style: keepSummary }, 'Review my plan text'),
+            h('label', { htmlFor: 'fr-keep-preview', style: { display: 'block', fontWeight: 700 } }, 'Plan text to review or copy'),
+            h('textarea', { id: 'fr-keep-preview', readOnly: true, rows: 9, value: keepPreview, style: Object.assign({}, keepControl, { resize: 'vertical' }) })),
+          h('details', { key: 'friendship-journal', style: keepCard },
+            h('summary', { style: keepSummary }, 'Friendship journal (optional)'),
+            h('p', null, 'Your journal is shared across this tool\'s examples and grade levels. You can record a welcome moment, a difficulty, a boundary or a fictional reflection. It does not need to be positive or grateful. Notes are not monitored and do not request help.'),
+            h('label', { htmlFor: 'fr-keep-journal', style: { display: 'block', fontWeight: 700 } }, 'Friendship journal entry'),
+            h('input', { 'aria-label': 'Friendship journal entry', id: 'fr-keep-journal', type: 'text', value: newNote,
+              onChange: function(ev) { upd({ newNote: ev.target.value, keepingJournalNotice: '' }); },
+              onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); keepAddJournal(); } },
+              placeholder: keepBand === 'elementary' ? 'Something I want to remember or think about...' : 'A real or fictional friendship reflection...', style: keepControl }),
+            h('button', { type: 'button', 'aria-label': 'Add friendship journal entry', onClick: keepAddJournal, disabled: !newNote.trim(),
+              style: Object.assign({}, keepControl, { width: 'auto', marginTop: '10px', fontWeight: 700, cursor: newNote.trim() ? 'pointer' : 'not-allowed', opacity: newNote.trim() ? 1 : 0.7 }) }, 'Save journal note'),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, typeof d.keepingJournalNotice === 'string' ? d.keepingJournalNotice : ''),
+            keepJournalNotes.length > 0 ? h('div', null,
+              h('h4', { style: { fontSize: '18px' } }, 'Saved journal notes'),
+              h('ol', { style: { paddingLeft: '22px' } }, keepJournalNotes.slice(0, 10).map(keepJournalEntry)),
+              keepJournalNotes.length > 10 && h('details', null,
+                h('summary', { style: keepSummary }, 'Earlier journal notes (' + (keepJournalNotes.length - 10) + ')'),
+                h('ol', { start: 11, style: { paddingLeft: '22px' } }, keepJournalNotes.slice(10).map(keepJournalEntry))))
+              : h('p', null, 'No readable journal notes yet. You can leave this empty.'))
         );
       }
 

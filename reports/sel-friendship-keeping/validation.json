@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-19",
+  "tool": "Friendship Workshop / Keeping",
+  "validation": "passed",
+  "fictionalContexts": 3,
+  "gradeSpecificSetups": 9,
+  "optionalPlanningNotes": 4,
+  "ownExample": true,
+  "legacyJournalPreserved": true,
+  "journalSaves": "Button and Enter share one implementation, without XP. Blank/IME submissions guarded. Older readable notes available.",
+  "uniquePassingChecks": 67,
+  "focused": {
+    "browser": 16,
+    "controlContractsOnRetry": 5,
+    "initialWorkerStartupErrors": 1
+  },
+  "regressions": {
+    "starting": 24,
+    "endings": 15
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 101
+  },
+  "targetedTheme": {
+    "passed": 4,
+    "filtered": 292
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "3592e3b7c5c4c239bfffe7f1abe29a5fbbe988db300cc63f703cc02049279edf",
+  "retryHistory": "All 16 focused browser cases passed initially. The separate control-test forks worker failed to start; all five controls passed unchanged in a fresh isolated run. No assertions or timeouts were weakened. All remaining selected checks passed on their first run.",
+  "counting": "Filtered cases and render enumeration excluded from the 67-test count.",
+  "delivery": "Local enhancement only. No push, deployment or packaged build."
+}

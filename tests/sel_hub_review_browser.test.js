@@ -612,6 +612,15 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await activity.getByLabel('Choose a conversation context',{exact:true}).inputValue()).toBe('invite');expect(await activity.getByLabel('Explore a fictional response',{exact:true}).inputValue()).toBe('decline');await activity.getByText('Adapt and rehearse (optional)',{exact:true}).click();expect(await activity.getByLabel('How could I respond or step back? (optional)',{exact:true}).inputValue()).toBe('Acknowledge their answer and give them space.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.starterIdx)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+
+  it('keeping friendship plan and journal survive the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Keeping/}).click();const activity=page.getByRole('region',{name:'Keeping friendship practice',exact:true});
+    await activity.getByLabel('Choose a friendship-care context',{exact:true}).selectOption('activities');await activity.getByText('Consider my own plan (optional)',{exact:true}).click();await activity.getByLabel('What limit or support would make this sustainable? (optional)',{exact:true}).fill('Share the planning of an accessible activity.');
+    await activity.getByText('Friendship journal (optional)',{exact:true}).click();await activity.getByLabel('Friendship journal entry',{exact:true}).fill('A fictional reflection about access.');await activity.getByRole('button',{name:'Add friendship journal entry',exact:true}).click();await activity.getByLabel('Friendship journal entry',{exact:true}).fill('An unfinished thought');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();
+    expect(await activity.getByLabel('Choose a friendship-care context',{exact:true}).inputValue()).toBe('activities');await activity.getByText('Consider my own plan (optional)',{exact:true}).click();expect(await activity.getByLabel('What limit or support would make this sustainable? (optional)',{exact:true}).inputValue()).toBe('Share the planning of an accessible activity.');await activity.getByText('Friendship journal (optional)',{exact:true}).click();expect(await activity.getByLabel('Friendship journal entry',{exact:true}).inputValue()).toBe('An unfinished thought');expect(await activity.getByText('A fictional reflection about access.',{exact:true}).isVisible()).toBe(true);expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {
