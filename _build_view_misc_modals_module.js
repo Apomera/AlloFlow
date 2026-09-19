@@ -18,7 +18,7 @@ const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_misc_modal
 const TMP = path.join(ROOT, '_tmp_view_misc_modals_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewMiscModals] Source not found'); process.exit(1); }
-fs.writeFileSync(TMP, '/* global React */\n' + fs.readFileSync(SOURCE, 'utf-8'), 'utf-8');
+fs.writeFileSync(TMP, '/* global React */\n' + fs.readFileSync(path.join(ROOT, 'allobot_privacy.js'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'allobot_context_controls.jsx'), 'utf8') + '\n' + fs.readFileSync(path.join(ROOT, 'allobot_search_settings.jsx'), 'utf8') + '\n' + fs.readFileSync(SOURCE, 'utf-8'), 'utf-8');
 
 console.log('[ViewMiscModals] Compiling with esbuild...');
 try {
@@ -83,6 +83,9 @@ window.AlloModules = window.AlloModules || {};
 // GroupSessionModal + PdfDiffViewer live in view_misc_panels_module.js; this module only owns
 // UDLGuideModal + AIBackendModal. Registering the other two from here resolves them to null
 // (they aren't defined in this scope) and is harmless only because view_misc_panels loads later.
+window.AlloModules.AllobotContextControls = AllobotContextControls;
+window.AlloModules.AllobotSearchSettings = AllobotSearchSettings;
+window.AlloModules.AllobotEvidenceCard = AllobotEvidenceCard;
 window.AlloModules.UDLGuideModal = (typeof UDLGuideModal !== 'undefined') ? UDLGuideModal : null;
 window.AlloModules.AIBackendModal = (typeof AIBackendModal !== 'undefined') ? AIBackendModal : null;
 window.AlloModules.ModelDiagnosticsSection = (typeof ModelDiagnosticsSection !== 'undefined') ? ModelDiagnosticsSection : null;

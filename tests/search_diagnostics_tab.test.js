@@ -92,7 +92,7 @@ describe('selfTest', () => {
     forceCanvas(true);
     resetProvider();
 
-    const res = await WebSearchProvider.selfTest('grade 3 main idea standard');
+    const res = await WebSearchProvider.selfTest('photosynthesis');
 
     expect(res.ok).toBe(false);
     expect(res.reason).toBe('no-transport');
@@ -118,7 +118,7 @@ describe('selfTest', () => {
       }),
     })));
 
-    const res = await WebSearchProvider.selfTest('grade 3 main idea standard');
+    const res = await WebSearchProvider.selfTest('photosynthesis');
 
     expect(res.ok).toBe(true);
     expect(res.source).toBe('Serper (direct)');
@@ -132,7 +132,7 @@ describe('selfTest', () => {
     const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ organic: [] }) }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await WebSearchProvider.selfTest('anything');
+    await WebSearchProvider.selfTest('photosynthesis');
 
     const [url, options] = fetchMock.mock.calls[0];
     expect(String(url)).toBe('https://google.serper.dev/search');
@@ -159,7 +159,7 @@ describe('search trace', () => {
     forceCanvas(true);
     resetProvider();
 
-    await WebSearchProvider.search('a query long enough to pass the guard', 3);
+    await WebSearchProvider.search('photosynthesis', 3);
 
     const events = (window.__alloSearchTrace || []).map(e => e.event);
     expect(events).toContain('search-start');
@@ -173,7 +173,7 @@ describe('search trace', () => {
     resetProvider();
 
     for (let i = 0; i < 40; i++) {
-      await WebSearchProvider.search(`query number ${i} with enough length`, 1);
+      await WebSearchProvider.search(`photosynthesis`, 1);
     }
 
     expect(window.__alloSearchTrace.length).toBeLessThanOrEqual(60);

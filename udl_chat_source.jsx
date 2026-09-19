@@ -454,15 +454,8 @@ const _generateStandardChatResponse = async (userText, deps = {}) => {
     callGemini, setUdlMessages, warnLog, t,
   } = deps;
   try {
-    const historyText = (udlMessages || []).filter(m => m && !m.localOnly && !_isStoreRecognitionRequest(m.text)).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
-    const resourceContext = history.length > 0
-      ? history.map(h => `- ${h.type}: ${h.title}`).join('\n')
-      : 'No resources generated yet.';
-    const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-    const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
-      ? latestAnalysis.data.originalText
-      : inputText;
-    const truncatedInput = sourceText.length > 1500 ? sourceText.substring(0, 1500) + '...' : sourceText;
+    const contextChoice = window.AlloFlowChatPrivacy.consume();
+    const selectedContext = window.AlloFlowChatPrivacy.context(contextChoice, (udlMessages || []).filter(m => m && !_isStoreRecognitionRequest(m.text)), userText);
     const parentSystemPrompt = 'You are a helpful Family Tutor and Child Development Guide. Explain concepts simply. Focus on fun, bonding activities, and reinforcement rather than strict assessment. If the parent mentions an IEP, explain the goals in plain English.';
     // Independent mode previously fell through to the TEACHER prompt, so the
     // guide asked self-study learners what barrier "their students" faced.
@@ -470,25 +463,22 @@ const _generateStandardChatResponse = async (userText, deps = {}) => {
     const independentSystemPrompt = 'You are a supportive Study Coach for a self-directed learner working through this material on their own. Speak to them directly. Help them plan their study, check their own understanding (self-testing beats re-reading), break big goals into steps, and reflect on what is and is not working. Encourage without inflating; when they are stuck, shrink the next step.';
     const teacherSystemPrompt = 'You are a Universal Design for Learning (UDL) specialist and supportive pedagogical coach. Your goal is to partner with educators to design accessible, engaging, and rigorous learning experiences.';
     const systemPrompt = isParentMode ? parentSystemPrompt : (isIndependentMode ? independentSystemPrompt : teacherSystemPrompt);
+    const evidence = await AllobotEvidence.retrieve(userText, { callGemini });
     const fullPrompt = `${systemPrompt}
           Respond to the user in ${currentUiLanguage}.
-          Current Lesson Context:
-          - Grade Level: ${gradeLevel}
-           ${getGroupDifferentiationContext()}
-          - Source Material (Excerpt): "${truncatedInput || 'No source text provided yet.'}"
-          - Generated Resources History:
-          ${resourceContext}
+          Included context: ${selectedContext || 'None. Only the current question was included.'}
                      CONVERSATION GUIDANCE:
            - Answer a specific question directly using the lesson context. A question about a plan is not permission to change it.
            - If essential context is missing, ask one focused question; otherwise offer useful guidance now.
            - Do not require a separate confirmation merely to explain or suggest something.
            - Only actual app actions or generation go through the app's review controls. Never claim you executed an action from this conversation response.
            - Use concise prose for explanations. When giving actionable strategies, use **Strategy: [Name]** with **Action:** and **Rationale:** bullets so the teacher can save them.
-Conversation History:
-          ${historyText}
+Current question:
           User: ${userText}
+          ${AllobotEvidence.prompt(evidence)}
           Expert:`;
-    const responseText = await callGemini(fullPrompt);
+    const reply = await callGemini(fullPrompt);
+    const responseText = AllobotEvidence.cite(typeof reply === 'string' ? reply : reply?.text, evidence);
     if (typeof responseText !== 'string' || !responseText.trim()) throw new Error('Empty conversation response');
     const hasStrategyHeader = /[*]{2}Strategy:.*[*]{2}/i.test(responseText);
     const hasActionableBullets = /-\s+[*]{2}.*[*]{2}:/i.test(responseText);
@@ -496,13 +486,14 @@ Conversation History:
     setUdlMessages(prev => [...prev, {
       role: 'model',
       text: responseText,
+      ...(evidence ? { evidence } : {}),
       isActionable,
     }]);
     return { ok: true };
   } catch (error) {
-    if (typeof warnLog === 'function') warnLog('Unhandled error in generateStandardChatResponse:', error);
+    if (typeof warnLog === 'function') warnLog('Allobot reply failed', { code: error?.code === 'managed-ai-blocked' ? 'managed-ai-blocked' : 'request-failed' });
     setUdlMessages(prev => [...prev, { role: 'model', type: 'chat-error', retryText: userText,
-      text: _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
+      text: error?.code === 'managed-ai-blocked' ? 'This AI connection is not allowed by the managed deployment. Contact your administrator or select an approved connection.' : _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
     return { ok: false };
   }
 };
@@ -2298,6 +2289,7 @@ window.AlloModules.UdlChat = {
   normalizeSourceGenerationConfig,
   applySourceGenerationConfig,
   formatSourceGenerationSummary,
+  evidence: AllobotEvidence,
   generateStandardChatResponse: _generateStandardChatResponse,
   modifyBlueprintWithAI: _modifyBlueprintWithAI,
 };

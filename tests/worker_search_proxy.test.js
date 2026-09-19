@@ -150,7 +150,7 @@ describe('worker GET /search', () => {
     const statuses = [];
     // 40 distinct queries in one minute from one school. Cache cannot absorb them.
     for (let i = 0; i < 40; i++) {
-      const res = await worker.fetch(get(`https://w.dev/search?q=distinct+query+${i}`, headers), env);
+      const res = await worker.fetch(get(`https://w.dev/search?q=site:thecorestandards.org+RI.3.${i + 1}+official+standard`, headers), env);
       statuses.push(res.status);
     }
 
@@ -165,7 +165,7 @@ describe('worker GET /search', () => {
 
     const statuses = [];
     for (let i = 0; i < 9; i++) {
-      const res = await worker.fetch(get(`https://w.dev/search?q=runaway+${i}`, headers), env);
+      const res = await worker.fetch(get(`https://w.dev/search?q=site:thecorestandards.org+RI.3.${i + 1}+official+standard`, headers), env);
       statuses.push(res.status);
     }
 
@@ -182,7 +182,7 @@ describe('worker GET /search', () => {
     const bodies = [];
     for (let i = 0; i < 5; i++) {
       // Different IPs — the daily budget is global, not per-client.
-      const res = await worker.fetch(get(`https://w.dev/search?q=day+budget+${i}`, { 'CF-Connecting-IP': `198.51.100.${i}` }), env);
+      const res = await worker.fetch(get(`https://w.dev/search?q=site:thecorestandards.org+RI.3.${i + 1}+official+standard`, { 'CF-Connecting-IP': `198.51.100.${i}` }), env);
       bodies.push({ status: res.status, body: await res.json() });
     }
 
@@ -202,16 +202,16 @@ describe('worker GET /search', () => {
     }), { status: 200 })));
     const env = { SERPER_API_KEY: 'k', SEARCH_RATE: kvStub(), SEARCH_DAILY_BUDGET: '1' };
 
-    const first = await worker.fetch(get('https://w.dev/search?q=repeated+query'), env);
+    const first = await worker.fetch(get('https://w.dev/search?q=photosynthesis'), env);
     expect(first.status).toBe(200);
 
     // Budget is now spent, but this exact query is cached.
-    const cached = await worker.fetch(get('https://w.dev/search?q=repeated+query'), env);
+    const cached = await worker.fetch(get('https://w.dev/search?q=photosynthesis'), env);
     expect(cached.status).toBe(200);
     expect((await cached.json()).cached).toBe(true);
 
     // A different query is correctly refused.
-    const fresh = await worker.fetch(get('https://w.dev/search?q=some+other+query'), env);
+    const fresh = await worker.fetch(get('https://w.dev/search?q=water+cycle'), env);
     expect(fresh.status).toBe(429);
   });
 
@@ -220,7 +220,7 @@ describe('worker GET /search', () => {
     vi.stubGlobal('caches', cacheStub());
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ organic: [] }), { status: 200 })));
 
-    const res = await worker.fetch(get('https://w.dev/search?q=no+kv+bound'), { SERPER_API_KEY: 'k' });
+    const res = await worker.fetch(get('https://w.dev/search?q=photosynthesis'), { SERPER_API_KEY: 'k' });
 
     expect(res.status).toBe(200);
   });

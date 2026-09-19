@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+require('node:child_process').execFileSync(process.execPath, [require('node:path').join(__dirname, 'sync_managed_ai_policy.cjs'), '--check'], { stdio: 'pipe' });
+// Deployment must not ship mismatched browser/server privacy rules.
+require('node:child_process').execFileSync(process.execPath, [require('node:path').join(__dirname, 'sync_public_search_policy.cjs'), '--check'], { stdio: 'pipe' });
 /*
  * check_search_queries.cjs (2026-07-27) — every search-grounded callGemini call
  * site must supply its own web query.
@@ -46,7 +49,7 @@ const VERBOSE = process.argv.includes('--verbose');
 const SCAN_GLOBS = [
   (f) => /_source\.jsx$/.test(f),
   (f) => /_module\.js$/.test(f),
-  (f) => f === 'AlloFlowANTI.txt',
+  (f) => f === 'AlloFlowANTI.txt' || f === 'allobot_evidence.js',
 ];
 
 // Call sites that intentionally let WebSearchProvider extract the query.

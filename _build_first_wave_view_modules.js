@@ -52,9 +52,10 @@ const CONFIGS = {
 function buildFirstWaveModule(key, sourceOverride) {
   const config = CONFIGS[key];
   if (!config) throw new Error('Unknown first-wave module: ' + key);
-  const source = sourceOverride == null
+  const sourceBody = sourceOverride == null
     ? fs.readFileSync(path.join(ROOT, config.source), 'utf8')
     : String(sourceOverride);
+  const source = (key === 'ColdPathSurfaces' ? fs.readFileSync(path.join(ROOT, 'allobot_search_settings.jsx'), 'utf8') + '\n' : '') + sourceBody;
   const compiled = babel.transformSync(source, {
     plugins: ['@babel/plugin-transform-react-jsx'],
     configFile: false,

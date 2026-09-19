@@ -10,6 +10,7 @@
 
 "use strict";
 
+const publicSearchQuery = require("./public_search_policy");
 const crypto = require("crypto");
 const admin = require("firebase-admin");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -167,11 +168,11 @@ exports.searchProxy = onRequest(
       return;
     }
 
-    const query = safeText(req.body && req.body.query, MAX_QUERY_LENGTH);
+    const query = publicSearchQuery(req.body && req.body.query);
     const requested = Number.parseInt(req.body && req.body.num, 10);
     const num = Number.isFinite(requested) ? Math.max(1, Math.min(requested, MAX_RESULTS)) : 5;
     if (query.length < 2) {
-      sendError(res, 400, "invalid-query");
+      sendError(res, 400, "public-query-required");
       return;
     }
 

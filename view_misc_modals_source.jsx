@@ -18,6 +18,48 @@ const CANVAS_SHARE_URL_FALLBACK = 'https://share.gemini.google/4wPpHHtUoPdi';
 const CANVAS_RELEASE_JSON_URL = 'https://alloflow-cdn.pages.dev/release.json';
 const CANVAS_SHARE_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 
+function AllobotEvidenceCard({ evidence, tx, renderFormattedText }) {
+  if (!evidence) return null;
+  const safe = value => { try { const u = new URL(value); return u.protocol === 'https:' && !u.username && !u.password ? u.href : ''; } catch (_) { return ''; } };
+  const sources = (evidence.sources || []).filter(source => safe(source.url));
+  const found = evidence.status === 'sources-found' && sources.length > 0;
+  const status = found ? tx('chat_guide.evidence_found', 'Public sources found; review the evidence')
+    : evidence.status === 'disabled' ? tx('chat_guide.evidence_disabled', 'Web lookup is off in AI backend settings.')
+    : evidence.status === 'managed-disabled' ? tx('chat_guide.evidence_managed_off', 'Not searched: external research is disabled by this managed deployment.')
+    : evidence.status === 'public-topic-required' ? tx('chat_guide.evidence_public_topic', 'Not searched: external search accepts approved public topics and standard codes only. Try UDL, a standard code, photosynthesis or retrieval practice.')
+    : evidence.status === 'private-query' ? tx('chat_guide.evidence_private', 'Not searched: this question may contain personal information. Use a public topic or claim without personal details.')
+    : evidence.status === 'needs-public-query' ? tx('chat_guide.evidence_query_needed', 'Not searched: provide an official standard code or a standalone public claim.')
+    : tx('chat_guide.evidence_unavailable', 'Web evidence unavailable. This answer is not web-verified.');
+  return <section className="mt-3 border-t border-current/20 pt-2 min-w-0" aria-label={tx('chat_guide.evidence_label', 'Sources and evidence')}>
+    <p className="text-xs font-semibold">{status}</p>
+    {found && <>
+      <p className="text-xs mt-1">{evidence.basis === 'search-excerpts'
+        ? tx('chat_guide.evidence_excerpt_notice', 'Search excerpts only. Full pages have not been read by this lookup.')
+        : tx('chat_guide.evidence_grounding_notice', 'Google-grounded research. Allobot’s application to your lesson is an AI interpretation.')}</p>
+      <ol className="mt-2 space-y-2 list-none p-0">
+        {sources.map(source => <li key={source.id} className="min-w-0 text-xs">
+          <a href={safe(source.url)} target="_blank" rel="noopener noreferrer" className="underline font-medium inline-block min-h-6 break-words" style={{ overflowWrap: 'anywhere' }}>
+            [{source.id}] {source.title} ↗
+          </a>
+          <p className="break-words" style={{ overflowWrap: 'anywhere' }}>{source.publisher}</p>
+          {source.excerpt && <details className="mt-1"><summary className="cursor-pointer min-h-6">{tx('chat_guide.evidence_excerpt', 'Search excerpt')}</summary><p className="mt-1 whitespace-pre-wrap break-words">{source.excerpt}</p></details>}
+        </li>)}
+      </ol>
+      <details className="mt-2 text-xs">
+        <summary className="cursor-pointer min-h-6">{tx('chat_guide.evidence_lookup_details', 'Lookup details')}</summary>
+        <p className="break-words">{evidence.provider} · {evidence.checkedAt && new Date(evidence.checkedAt).toLocaleDateString()}</p>
+        <p className="break-words">{evidence.query}</p>
+        {evidence.summary && <div className="mt-2"><p className="font-medium">{tx('chat_guide.evidence_summary', 'AI research summary (not an original source passage)')}</p>{renderFormattedText(evidence.summary)}</div>}
+      </details>
+      {evidence.searchEntryPoint && <iframe title={tx('chat_guide.evidence_google_suggestions', 'Google Search suggestions')}
+        className="w-full border-0 mt-2" style={{ height: 180 }} referrerPolicy="no-referrer"
+        sandbox="allow-popups allow-popups-to-escape-sandbox"
+        srcDoc={'<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; img-src https: data:; base-uri \'none\'; form-action \'none\'">' + evidence.searchEntryPoint} />}
+    </>}
+  </section>;
+}
+
+
 // Schema fields are local drafts. Applying a form never executes a command.
 function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {} }) {
   const [values, setValues] = React.useState(() => ({ ...params }));
@@ -409,6 +451,7 @@ function UDLGuideModal(props) {
                 <button data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
+        <AllobotContextControls messages={udlMessages} busy={isChatProcessing} setInput={setUdlInput} clearChat={() => { setUdlMessages([]); setUdlInput(''); }} t={t} />
         {/* 4.1.3 Status Messages. The reply arrives with no focus change, so a
             screen-reader user got nothing. The transcript is the log; `polite`
             + `additions` announces only the new turn rather than re-reading the
@@ -421,6 +464,7 @@ function UDLGuideModal(props) {
               {(!msg.type || (msg.type === 'choices' && msg.operationKind)) && (
                 <div className={`max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === 'user' ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}`}>
                    {renderFormattedText(msg.text)}
+                   {msg.role === 'model' && <AllobotEvidenceCard evidence={msg.evidence} tx={tx} renderFormattedText={renderFormattedText} />}
                 </div>
               )}
               {msg.type === 'blueprint' && (
@@ -2574,6 +2618,7 @@ function AIBackendModalBody(props) {
                 </div>
 
                 {/* ─── Section 5: AI Model Diagnostics (shared with Canvas modal) ─── */}
+                {!isStudentAiSetup && <AllobotSearchSettings t={t} />}
                 {!isStudentAiSetup && <ModelDiagnosticsSection t={t} _isCanvasEnv={_isCanvasEnv} GEMINI_MODELS={GEMINI_MODELS} />}
                 {!isStudentAiSetup && <PlatformDiagnosticsSection t={t} />}
 

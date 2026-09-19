@@ -103,7 +103,7 @@ describe('Canvas -> Worker -> Serper', () => {
     const out = await WebSearchProvider.search(
       'Find the CCSS standard for grade 3 main idea.',
       3,
-      'CCSS grade 3 main idea',
+      'site:thecorestandards.org RI.3.2 official standard',
     );
 
     // The client got real, attributable results — the thing that has been
@@ -126,12 +126,11 @@ describe('Canvas -> Worker -> Serper', () => {
       { link: 'https://example.org/a', title: 'A', snippet: 'a' },
     ]);
 
-    await WebSearchProvider.search('anything at all here', 3, 'orbital period & seasons');
+    await WebSearchProvider.search('anything at all here', 3, 'water cycle');
 
-    // The '&' in the query must survive encoding, or the Worker sees a
-    // truncated query and returns results for the wrong thing.
+    // The canonical public query must survive URL encoding.
     const workerCall = fetch.mock.calls.find(([u]) => String(u).startsWith(WORKER_URL));
-    expect(String(workerCall[0])).toContain('orbital%20period%20%26%20seasons');
+    expect(String(workerCall[0])).toContain('water%20cycle');
     expect(String(workerCall[0])).toMatch(/num=3(&|$)/);
     expect(String(workerCall[1] && workerCall[1].method || 'GET').toUpperCase()).toBe('GET');
   });
@@ -143,7 +142,7 @@ describe('Canvas -> Worker -> Serper', () => {
     window.ALLOFLOW_CANVAS_SEARCH_PROXY = WORKER_URL;
     wireClientToWorker({ SERPER_API_KEY: 'k' }, []);
 
-    await WebSearchProvider.search('a query for the preflight check', 3);
+    await WebSearchProvider.search('photosynthesis', 3);
 
     const [, options] = fetch.mock.calls.find(([u]) => String(u).startsWith(WORKER_URL));
     expect(String(options.method || 'GET').toUpperCase()).toBe('GET');
@@ -151,7 +150,7 @@ describe('Canvas -> Worker -> Serper', () => {
     expect(options.body).toBeUndefined();
   });
 
-  it('falls back to a teacher key when the shared budget is exhausted', async () => {
+  it('prioritizes a teacher key when the shared budget is exhausted', async () => {
     // The Worker refuses with 429 once the daily budget is spent. A teacher who
     // supplied their own key should keep working rather than inherit the
     // shared limit.
@@ -169,7 +168,7 @@ describe('Canvas -> Worker -> Serper', () => {
       [{ link: 'https://example.org/b', title: 'B', snippet: 'b' }],
     );
 
-    const out = await WebSearchProvider.search('a query after the budget is gone', 3);
+    const out = await WebSearchProvider.search('photosynthesis', 3);
 
     expect(out.results).toHaveLength(1);
     expect(out.source).toBe('Serper (direct)');
@@ -178,7 +177,7 @@ describe('Canvas -> Worker -> Serper', () => {
     expect(serperCalls[0].options.headers['X-API-KEY']).toBe('teacher-own-key');
 
     const events = window.__alloSearchTrace.map(e => e.event);
-    expect(events).toContain('serper-proxy-fail');
+    expect(events).not.toContain('serper-proxy-fail');
     expect(events).toContain('serper-direct-ok');
   });
 

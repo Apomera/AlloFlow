@@ -275,7 +275,39 @@ function _searchTrace(event, detail) {
 // way a web result is, with its page and line preserved.
 const ALLO_SOURCE_SCHEME = 'allo-source:';
 
+// BEGIN PUBLIC SEARCH POLICY
+/* External search accepts only canonical public reference queries.
+ * This is an allowlist, not a PII detector or a claim of FERPA compliance.
+ * Never add arbitrary user text, model output, school names or identifiers here.
+ */
+function publicSearchQuery(value) {
+  if (typeof value !== 'string' || value.length > 200) return '';
+  const q = value.trim().replace(/\s+/g, ' ');
+  const udl = q.match(/^site:udlguidelines\.cast\.org UDL Guidelines (3\.0|2\.2)((?: (?:engagement|representation|action and expression|feedback|choice|identity|belonging|collaboration|reflection|language|perception|goals)){0,3})$/i);
+  if (udl) return 'site:udlguidelines.cast.org UDL Guidelines ' + udl[1] + udl[2].toLowerCase();
+  const standard = q.match(/^site:(thecorestandards\.org|nextgenscience\.org) (.+) official standard$/i);
+  if (standard) {
+    const codes = standard[2].toUpperCase().split(' ');
+    const ela = /^(?:CCSS\.ELA-LITERACY\.)?(?:RL|RI|RF|W|SL|L)\.(?:K|[1-9]|1[0-2]|9-10|11-12)\.[1-9][0-9]?(?:\.[A-F])?$/;
+    const math = /^(?:CCSS\.MATH\.CONTENT\.)?(?:K|[1-9]|1[0-2])\.(?:CC|OA|NBT|NF|MD|G|RP|NS|EE|SP|F)\.[A-F]\.[1-9][0-9]?(?:\.[A-F])?$/;
+    const ngss = /^(?:K|[1-8]|MS|HS)-(?:PS|LS|ESS|ETS)[1-4]-[1-9][0-9]?$/;
+    const isNgss = standard[1].toLowerCase() === 'nextgenscience.org';
+    if (codes.length <= 3 && codes.every(code => isNgss ? ngss.test(code) : ela.test(code) || math.test(code)))
+      return 'site:' + standard[1].toLowerCase() + ' ' + codes.join(' ') + ' official standard';
+  }
+  // Exact matches only: never extract vocabulary from a private narrative.
+
+  return publicSearchQuery.topics.includes(q.toLowerCase()) ? q.toLowerCase() : '';
+}
+publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather fronts', 'main idea', 'photosynthesis', 'water cycle', 'plate tectonics', 'fractions',
+    'formative assessment', 'retrieval practice', 'spaced practice', 'explicit instruction',
+    'universal design for learning', 'differentiated instruction', 'reading comprehension',
+    'phonemic awareness', 'phonics', 'executive function', 'cooperative learning',
+    'common core reading standards grade 3',
+    'udl', 'cell structure', 'ecosystems', 'food webs', 'natural selection', 'biodiversity', 'climate change', 'moon phases', 'energy transfer', 'forces and motion', 'magnetism', 'sound waves', 'states of matter', 'chemical reactions', 'area and perimeter', 'place value', 'ratios', 'proportional relationships', 'linear equations', 'probability', 'data analysis', 'argument and evidence', 'context clues', 'figurative language', 'central idea', 'perspective taking', 'student choice', 'accessible assessment', 'multiple means of representation', 'feedback', 'metacognition']);
+// END PUBLIC SEARCH POLICY
 const WebSearchProvider = {
+    publicSearchQuery,
 
     _trace: _searchTrace,
 
@@ -353,7 +385,7 @@ const WebSearchProvider = {
     // The key is the USER'S OWN and lives in their localStorage; it is readable
     // by anything running on the page, so this is appropriate for a personal
     // free-tier key and NOT for a shared district key. The hosted-proxy paths
-    // above keep the key server-side and stay preferred whenever available.
+    // above keep the key server-side; an explicitly saved personal key takes precedence.
     _serperDirectKey() {
         try {
             if (typeof window === 'undefined') return '';
@@ -364,6 +396,9 @@ const WebSearchProvider = {
     },
 
     async _fetchSerperDirect(query, maxResults) {
+        if (!managedExternalSearchAllowed()) throw managedAIError();
+        query = publicSearchQuery(query);
+        if (!query) throw new Error('External search requires an approved public topic.');
         const key = this._serperDirectKey();
         if (!key) throw new Error('No Serper key configured.');
         const safeQuery = String(query || '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
@@ -373,6 +408,8 @@ const WebSearchProvider = {
         const response = await fetch('https://google.serper.dev/search', {
             method: 'POST',
             mode: 'cors',
+            referrerPolicy: 'no-referrer',
+            credentials: 'omit',
             headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' },
             body: JSON.stringify({ q: safeQuery, num }),
             signal: AbortSignal.timeout ? AbortSignal.timeout(timeoutMs) : undefined,
@@ -433,6 +470,7 @@ const WebSearchProvider = {
      * Search the web and return results with Gemini-compatible grounding metadata.
      */
     async search(query, maxResults = 10, searchQueryOverride = null) {
+        if (!managedExternalSearchAllowed()) return { results: [], contextPrompt: 'External search is disabled by the managed deployment.', groundingMetadata: null, privacyBlocked: true, policyBlocked: true };
         if (!query || query.trim().length < 3) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
@@ -444,8 +482,12 @@ const WebSearchProvider = {
         }
 
         try {
-            const searchQuery = searchQueryOverride || this._extractSearchQuery(query);
-            console.log(`[WebSearch] Searching for: "${searchQuery}"`);
+            const searchQuery = publicSearchQuery(searchQueryOverride || query);
+            if (!searchQuery) {
+                _searchTrace('search-blocked', 'Public query allowlist rejected request');
+                return { results: [], contextPrompt: 'External search was not performed: this query is outside the approved public topic list. Do not claim web verification.', groundingMetadata: null, privacyBlocked: true };
+            }
+            console.log('[WebSearch] Searching approved public topic');
 
             // Priority chain: Serper.dev proxy → SearXNG → DuckDuckGo
             let results = [];
@@ -470,18 +512,18 @@ const WebSearchProvider = {
                 isCanvas: this._isCanvas,
             });
 
-            _searchTrace('search-start', `q="${searchQuery}" canvas=${this._isCanvas} proxy=${this._serperProxyMode || 'none'} directKey=${!!this._serperDirectKey()}`);
+            _searchTrace('search-start', `canvas=${this._isCanvas} proxy=${this._serperProxyMode || 'none'} directKey=${!!this._serperDirectKey()}`);
 
             // 1️⃣ Serper.dev proxy (best results — real Google SERP via a
-            //    server that holds the API key). Preferred whenever present.
-            if (this._serperProxyUrl && this._serperAvailable) {
+            //    server that holds the API key). A personal key overrides this path.
+            if (!this._serperDirectKey() && this._serperProxyUrl && this._serperAvailable) {
                 try {
                     results = await this._fetchSerper(searchQuery, maxResults);
                     source = 'Serper';
                     _searchTrace('serper-proxy-ok', `${results.length} result(s)`);
                 } catch (err) {
-                    console.log('[WebSearch] Serper proxy failed:', err.message);
-                    _searchTrace('serper-proxy-fail', err && err.message);
+                    console.log('[WebSearch] Serper proxy failed:', 'provider-request-failed');
+                    _searchTrace('serper-proxy-fail', 'provider-request-failed');
                 }
             } else {
                 _searchTrace('serper-proxy-skip', this._serperProxyUrl ? 'in cooldown after repeated failures' : 'no proxy configured');
@@ -495,8 +537,8 @@ const WebSearchProvider = {
                     source = 'Serper (direct)';
                     _searchTrace('serper-direct-ok', `${results.length} result(s)`);
                 } catch (err) {
-                    console.log('[WebSearch] Direct Serper failed:', err.message);
-                    _searchTrace('serper-direct-fail', err && err.message);
+                    console.log('[WebSearch] Direct Serper failed:', 'provider-request-failed');
+                    _searchTrace('serper-direct-fail', 'provider-request-failed');
                 }
             }
 
@@ -510,7 +552,7 @@ const WebSearchProvider = {
                         results = await this._fetchSearXNG(searchQuery, maxResults);
                         source = 'SearXNG';
                     } catch (err) {
-                        console.warn('[WebSearch] SearXNG failed, trying DuckDuckGo fallback:', err.message);
+                        console.warn('[WebSearch] SearXNG failed, trying DuckDuckGo fallback:', 'provider-request-failed');
                     }
                 }
 
@@ -520,7 +562,7 @@ const WebSearchProvider = {
                         results = await this._fetchDuckDuckGo(searchQuery, maxResults);
                         source = 'DuckDuckGo';
                     } catch (err) {
-                        console.warn('[WebSearch] DuckDuckGo also failed:', err.message);
+                        console.warn('[WebSearch] DuckDuckGo also failed:', 'provider-request-failed');
                     }
                 }
             }
@@ -546,8 +588,8 @@ const WebSearchProvider = {
             return { results, contextPrompt, groundingMetadata, source };
 
         } catch (err) {
-            console.warn('[WebSearch] Search failed:', err.message);
-            _searchTrace('search-error', err && err.message);
+            console.warn('[WebSearch] Search failed:', 'provider-request-failed');
+            _searchTrace('search-error', 'provider-request-failed');
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
     },
@@ -670,6 +712,9 @@ const WebSearchProvider = {
      * Returns full SERP results — titles, URLs, snippets, engines used.
      */
     async _fetchSearXNG(query, maxResults) {
+        if (!managedExternalSearchAllowed()) throw managedAIError();
+        query = publicSearchQuery(query);
+        if (!query) throw new Error('External search requires an approved public topic.');
         const url = `${this.searxngUrl}/search?q=${encodeURIComponent(query)}&format=json&categories=general&language=en`;
 
         const response = await fetch(url, {
@@ -708,6 +753,9 @@ const WebSearchProvider = {
      * Free, no API key required. Returns topic summaries.
      */
     async _fetchDuckDuckGo(query, maxResults) {
+        if (!managedExternalSearchAllowed()) throw managedAIError();
+        query = publicSearchQuery(query);
+        if (!query) throw new Error('External search requires an approved public topic.');
         const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
 
         const response = await fetch(url, {
@@ -791,6 +839,9 @@ const WebSearchProvider = {
      * Returns real Google SERP results.
      */
     async _fetchSerper(query, maxResults) {
+        if (!managedExternalSearchAllowed()) throw managedAIError();
+        query = publicSearchQuery(query);
+        if (!query) throw new Error('External search requires an approved public topic.');
         const url = this._serperProxyUrl;
         const isCanvasCompatibility = this._isCanvas
             && this._serperProxyMode === 'canvas-compat-get';
@@ -820,6 +871,8 @@ const WebSearchProvider = {
             response = await fetch(requestUrl, {
                 method: isCanvasCompatibility ? 'GET' : 'POST',
                 mode: 'cors',
+                referrerPolicy: 'no-referrer',
+                credentials: 'omit',
                 headers: isCanvasCompatibility
                     ? { Accept: 'application/json' }
                     : { 'Content-Type': 'application/json', ...securityHeaders },
@@ -830,7 +883,7 @@ const WebSearchProvider = {
             });
         } catch (fetchErr) {
             // Network/CORS/timeout error
-            console.log(`[WebSearch] ❌ Serper NETWORK ERROR:`, fetchErr.message);
+            console.log(`[WebSearch] ❌ Serper NETWORK ERROR:`, 'provider-request-failed');
             if (typeof window !== 'undefined') {
                 console.log(`[WebSearch] Serper proxy URL: ${url}`);
                 console.log(`[WebSearch] Page origin: ${window.location.origin}`);
@@ -851,7 +904,7 @@ const WebSearchProvider = {
             const status = response.status;
             let errBody = '';
             try { errBody = await response.text(); } catch {}
-            console.log(`[WebSearch] ❌ Serper proxy HTTP ${status}:`, errBody.slice(0, 500));
+            console.log(`[WebSearch] Serper proxy HTTP ${status}`);
 
             this._serperConsecutiveFailures++;
             if (this._serperConsecutiveFailures >= 3) {
@@ -1008,7 +1061,7 @@ const WebSearchProvider = {
         const searxng = await this._isSearXNGAvailable();
         let ddg = false;
         try {
-            const { results } = await this._fetchDuckDuckGo('test', 1);
+            const { results } = await this._fetchDuckDuckGo('photosynthesis', 1);
             ddg = results.length > 0;
         } catch { /* ignore */ }
 
@@ -1030,7 +1083,7 @@ const WebSearchProvider = {
     async selfTest(query = 'common core reading standards grade 3') {
         const started = Date.now();
         const transports = this.describeTransports();
-        _searchTrace('selftest-start', `q="${query}"`);
+        _searchTrace('selftest-start', 'Public-search diagnostic');
         if (!transports.anyTransport) {
             _searchTrace('selftest-result', 'no transport configured');
             return {
@@ -1049,17 +1102,17 @@ const WebSearchProvider = {
             _searchTrace('selftest-result', `${count} result(s) via ${out && out.source || 'none'}`);
             return {
                 ok: count > 0,
-                reason: count > 0 ? 'ok' : 'no-results',
+                reason: out?.privacyBlocked ? 'privacy-blocked' : count > 0 ? 'ok' : 'no-results',
                 message: count > 0
                     ? `${count} result(s) via ${out.source}.`
-                    : 'The search ran but returned no results.',
+                    : out?.privacyBlocked ? 'Search was blocked: use an approved public topic.' : 'The search ran but returned no results.',
                 source: out && out.source || null,
                 sample: count > 0 ? out.results.slice(0, 3).map(r => ({ title: r.title, url: r.url })) : [],
                 transports,
                 elapsedMs: Date.now() - started,
             };
         } catch (err) {
-            _searchTrace('selftest-error', err && err.message);
+            _searchTrace('selftest-error', 'provider-request-failed');
             return {
                 ok: false,
                 reason: 'error',
@@ -1375,6 +1428,51 @@ if (typeof window !== 'undefined') {
     };
 }
 
+// BEGIN MANAGED AI POLICY
+/* Deployment-owned request policy. Never read approval from localStorage.
+ * Browser checks prevent accidental routing; the district must also enforce
+ * identity, authorization and provider controls on its own server/network.
+ */
+function managedAIProfile() {
+  return typeof window === 'undefined' ? null : window.ALLOFLOW_MANAGED_AI_POLICY;
+}
+function managedAIError() {
+  const error = new Error('This connection or operation is not approved by the managed AI deployment.');
+  error.code = 'managed-ai-blocked';
+  return error;
+}
+function managedExternalSearchAllowed() {
+  const policy = managedAIProfile();
+  return policy == null || (policy.version === 1 && policy.allowExternalSearch === true);
+}
+async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
+  const policy = managedAIProfile();
+  if (policy == null) return;
+  // Version 1 deliberately covers text inference. Media routes can use separate
+  // providers/fallbacks; keep them blocked until their destinations are approved.
+  if (policy.version !== 1 || operation !== 'text' || !Array.isArray(policy.connections) || (search && !managedExternalSearchAllowed())) throw managedAIError();
+  const normalize = value => {
+    try {
+      const u = new URL(value);
+      if (u.username || u.password || u.search || u.hash) return '';
+      if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
+      return u.href.replace(/\/+$/, '');
+    } catch (_) { return ''; }
+  };
+  const endpoint = normalize(baseUrl);
+  const entries = policy.connections.filter(row => row && row.backend === backend && endpoint && normalize(row.baseUrl) === endpoint);
+  for (const entry of entries) {
+    if (canvasHost && entry.canvasHost === true) return;
+    if (!apiKey && entry.keyless === true) return;
+    if (apiKey && Array.isArray(entry.apiKeySha256) && globalThis.crypto?.subtle) {
+      const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
+      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      if (entry.apiKeySha256.some(value => typeof value === 'string' && value.toLowerCase() === fingerprint)) return;
+    }
+  }
+  throw managedAIError();
+}
+// END MANAGED AI POLICY
 class AIProvider {
 
     /**
@@ -1427,6 +1525,8 @@ class AIProvider {
             if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
             return resp;
         });
+        const requestTransport = this._fetchWithRetry;
+        this._fetchWithRetry = (url, options, ...rest) => requestTransport(url, managedAIProfile() != null ? { ...options, redirect: 'error' } : options, ...rest);
         this._optimizeImage = config.optimizeImage || ((url) => url);
         this._debugLog = config.debugLog || ((...args) => { });
         this._warnLog = config.warnLog || console.warn.bind(console);
@@ -1541,7 +1641,7 @@ class AIProvider {
                 },
             });
         } catch (err) {
-            this._debugLog('[AIProvider] local engine capability probe skipped:', err && err.message ? err.message : err);
+            this._debugLog('[AIProvider] local engine capability probe skipped:', 'provider-request-failed');
         }
         return this.localModelProfile;
     }
@@ -1559,6 +1659,7 @@ class AIProvider {
      * @returns {Promise<string|Object>} Generated text (or {text, groundingMetadata} if search=true)
      */
     async generateText(prompt, { json = false, search = false, temperature = null, maxTokens = 8192, onProgress = null, signal = null, schema = null } = {}) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'text', search });
         if (signal && signal.aborted) {
             const error = new Error('Text generation cancelled.');
             error.name = 'AbortError';
@@ -1600,7 +1701,7 @@ class AIProvider {
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = '';
             return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
         };
 
@@ -1625,7 +1726,7 @@ class AIProvider {
 
         const fetchOpts = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
             body: JSON.stringify(payload),
             signal,
         };
@@ -1646,7 +1747,7 @@ class AIProvider {
                 try {
                     response = await this._fetchWithRetry(buildUrl(this.models.fallback), fetchOpts);
                 } catch (fbErr) {
-                    console.error('[AIProvider] Fallback also failed:', fbErr.message);
+                    console.error('[AIProvider] Fallback also failed:', 'provider-request-failed');
                     throw fbErr;
                 }
             } else {
@@ -1657,7 +1758,7 @@ class AIProvider {
         const data = await response.json();
 
         if (data.promptFeedback?.blockReason) {
-            this._warnLog('[AIProvider] Prompt Blocked:', data.promptFeedback);
+            this._warnLog('[AIProvider] Prompt blocked by provider');
             throw new Error(`Content Blocked: ${data.promptFeedback.blockReason}`);
         }
 
@@ -1735,7 +1836,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             } catch (streamErr) {
                 if (streamErr && streamErr.name === 'AbortError') throw streamErr;
-                this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', streamErr && streamErr.message ? streamErr.message : streamErr);
+                this._warnLog('[AIProvider] local stream progress failed — falling back to non-stream:', 'provider-request-failed');
                 try { _sink({ ..._localProgressBase, phase: 'fallback', receivedChars: 0, chunks: 0, done: false }); } catch (_) {}
                 // fall through to the unchanged non-stream path
             }
@@ -1914,7 +2015,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             this._warnLog('[AIProvider] local JSON repair did not produce parseable JSON — returning the original.');
         } catch (repairErr) {
             if (repairErr && repairErr.name === 'AbortError') throw repairErr;
-            this._warnLog('[AIProvider] local JSON repair failed:', repairErr && repairErr.message ? repairErr.message : repairErr);
+            this._warnLog('[AIProvider] local JSON repair failed:', 'provider-request-failed');
         }
         return text;
     }
@@ -2091,7 +2192,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 }
             }
         } catch (err) {
-            this._debugLog('[AIProvider] Web search augment failed:', err.message);
+            this._debugLog('[AIProvider] Web search augment failed:', 'provider-request-failed');
         }
         return { prompt, groundingMetadata: null };
     }
@@ -2173,7 +2274,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
         } catch (err) {
             if ((err && err.name === 'AbortError') || (signal && signal.aborted)) throw err;
-            this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: ${err?.message || err}`);
+            this._warnLog(`[AIProvider] Local SD-Turbo image generation failed: provider-request-failed`);
         }
         return null;
     }
@@ -2191,7 +2292,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             () => { win.__sdTurboDownloading = false; },
             (err) => {
                 win.__sdTurboDownloading = false;
-                this._warnLog(`[AIProvider] SD-Turbo preload failed: ${err?.message || err}`);
+                this._warnLog(`[AIProvider] SD-Turbo preload failed: provider-request-failed`);
             }
         );
         return true;
@@ -2215,7 +2316,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async generateImage(prompt, { width = 300, quality = 0.7, signal = null } = {}) {
-        this._debugLog(`[AIProvider] generateImage: ${prompt?.substring(0, 50)}`);
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        this._debugLog('[AIProvider] generateImage requested');
         if (signal && signal.aborted) { const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError; }
 
         // Check imageProvider override from AI Backend Settings
@@ -2383,7 +2485,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
         } catch (fluxErr) {
             if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
-            this._debugLog(`[AIProvider] Flux server not available (${fluxErr.message}), trying fallback...`);
+            this._debugLog(`[AIProvider] Flux server not available (provider-request-failed), trying fallback...`);
         }
 
         // ── Fallback: Ollama's /api/generate or OpenAI-compatible endpoint ──
@@ -2436,7 +2538,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Edited image as data:image URL
      */
     async editImage(prompt, base64Image, { width = 800, quality = 0.9, referenceBase64 = null, signal = null } = {}) {
-        this._debugLog(`[AIProvider] editImage: ${prompt?.substring(0, 50)}`);
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        this._debugLog('[AIProvider] editImage requested');
 
         switch (this.backend) {
             case 'gemini':
@@ -2454,7 +2557,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64, signal = null) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = '';
         const throwIfAborted = () => {
             if (!signal || !signal.aborted) return;
             const abortError = new Error('Image editing cancelled.'); abortError.name = 'AbortError'; throw abortError;
@@ -2480,7 +2583,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
                 body: JSON.stringify(payload),
                 ...(signal ? { signal } : {})
             });
@@ -2531,7 +2634,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
         } catch (fluxErr) {
             if ((fluxErr && fluxErr.name === 'AbortError') || (signal && signal.aborted)) throw fluxErr;
-            this._debugLog(`[AIProvider] Flux edit server not available (${fluxErr.message}), trying fallback...`);
+            this._debugLog(`[AIProvider] Flux edit server not available (provider-request-failed), trying fallback...`);
         }
 
         // ── Fallback: OpenAI-compatible image edit endpoint ──
@@ -2579,12 +2682,13 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Analysis text
      */
     async analyzeImage(prompt, base64Data, { mimeType = 'image/png', signal = null } = {}) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (signal && signal.aborted) {
             const error = new Error('Image analysis cancelled.');
             error.name = 'AbortError';
             throw error;
         }
-        this._debugLog(`[AIProvider] analyzeImage: ${prompt?.substring(0, 50)}`);
+        this._debugLog('[AIProvider] analyzeImage requested');
 
         switch (this.backend) {
             case 'gemini':
@@ -2602,7 +2706,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiAnalyzeImage(prompt, base64Data, mimeType, signal) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = '';
         const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
 
         const payload = {
@@ -2616,7 +2720,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
             body: JSON.stringify(payload),
             signal: signal || undefined,
         });
@@ -2686,6 +2790,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Analysis text
      */
     async analyzeImages(prompt, images, { signal = null, maxTokens = null } = {}) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (signal && signal.aborted) {
             const error = new Error('Image analysis cancelled.');
             error.name = 'AbortError';
@@ -2695,7 +2800,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             data: String((image && (image.data || image.base64)) || ''),
             mimeType: String((image && (image.mimeType || image.mime_type)) || 'image/png'),
         })).filter((image) => image.data);
-        this._debugLog(`[AIProvider] analyzeImages (${list.length}): ${prompt?.substring(0, 50)}`);
+        this._debugLog(`[AIProvider] analyzeImages count=${list.length}`);
 
         switch (this.backend) {
             case 'gemini':
@@ -2815,7 +2920,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string>} Model response text
      */
     async analyzeAudio(prompt, base64Data, { mimeType = 'audio/webm' } = {}) {
-        this._debugLog(`[AIProvider] analyzeAudio: ${prompt?.substring(0, 60)}`);
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
+        this._debugLog('[AIProvider] analyzeAudio requested');
         switch (this.backend) {
             case 'gemini':
                 return this._geminiAnalyzeAudio(prompt, base64Data, mimeType);
@@ -2839,7 +2945,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiAnalyzeAudio(prompt, base64Data, mimeType) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = '';
         // Use the vision/multimodal model — Gemini's flash/pro vision
         // models accept audio in the same payload shape.
         const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
@@ -2864,7 +2970,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
             body: JSON.stringify(payload),
         });
         const data = await response.json();
@@ -2892,6 +2998,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * @returns {Promise<string|null>} Audio URL or null
      */
     async textToSpeech(text, { voice = 'Puck', speed = 1, language = null, locale = null, dialect = null, signal = null, force = false } = {}) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         const speechProfile = this._normalizeTtsSpeechProfile(language, locale, dialect);
         const forceRefresh = force === true;
         if (!text) return null;
@@ -2903,7 +3010,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
         }
 
-        this._debugLog(`[AIProvider] textToSpeech: "${text?.substring(0, 30)}..." voice=${voice}`);
+        this._debugLog('[AIProvider] textToSpeech requested');
 
         // Check ttsProvider override from AI Backend Settings
         if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed, speechProfile.locale || speechProfile.baseLanguage);
@@ -3088,7 +3195,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // Cache check
         const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile, 'gemini');
         if (!forceRefresh && this._ttsCache.has(cacheKey)) {
-            this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
+            this._debugLog('TTS cache hit');
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
             return cachedUrl;
@@ -3105,7 +3212,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const synthesisApiKey = this.apiKey;
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-        const keyParam = synthesisApiKey ? `?key=${synthesisApiKey}` : '';
+        const keyParam = '';
             const url = `${synthesisBaseUrl}/models/${synthesisModel}:generateContent${keyParam}`;
 
             const payload = {
@@ -3126,7 +3233,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 try {
                     const response = await request.wait(fetch(url, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', ...(synthesisApiKey ? { 'x-goog-api-key': synthesisApiKey } : {}) },
                         body: JSON.stringify(payload),
                         signal: request.signal,
                     }));
@@ -3166,7 +3273,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     if (attempt < 2) {
                         await this._waitForTtsRetry(1000 * (attempt + 1), signal);
                     } else {
-                        this._warnLog('[AIProvider TTS] All retries exhausted:', e.message);
+                        this._warnLog('[AIProvider TTS] All retries exhausted:', 'provider-request-failed');
                         throw e;
                     }
                 }
@@ -3202,7 +3309,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         // Cache check
         const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile, 'local-endpoints');
         if (!forceRefresh && this._ttsCache.has(cacheKey)) {
-            this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
+            this._debugLog('TTS cache hit');
             const cachedUrl = this._ttsCache.get(cacheKey);
             this._ttsCache.delete(cacheKey); this._ttsCache.set(cacheKey, cachedUrl);
             return cachedUrl;
@@ -3248,7 +3355,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 this._throwIfTtsAborted(signal);
                 this._ttsEndpointCooldown.set(url, Date.now() + 30000);
                 if (request.timedOut()) err = new Error('Local TTS endpoint timed out');
-                this._debugLog(`[AIProvider TTS] ${url} failed: ${err.message}, trying next...`);
+                this._debugLog(`[AIProvider TTS] ${url} failed: provider-request-failed, trying next...`);
             }
         }
 
@@ -3264,6 +3371,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Replaces: GEMINI_MODELS.safety based checks
      */
     async checkSafety(content) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey, operation: 'media' });
         if (!content || content.length < 5) return null;
 
         try {
@@ -3273,7 +3381,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             );
             return JSON.parse(result);
         } catch (e) {
-            this._warnLog('[AIProvider] Safety check failed:', e.message);
+            this._warnLog('[AIProvider] Safety check failed:', 'provider-request-failed');
             return { safe: true, reason: 'Safety check unavailable' };
         }
     }
@@ -3285,6 +3393,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
      * Used by Settings UI for smart model detection.
      */
     async listAvailableModels({ signal = null } = {}) {
+        await assertManagedAIConnection({ backend: this.backend, baseUrl: this.baseUrl, apiKey: this.apiKey, canvasHost: this.isCanvasEnv && !this.apiKey });
         try {
             let url;
             const headers = { 'Content-Type': 'application/json' };
@@ -3294,7 +3403,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     url = `${this.baseUrl}/api/tags`;
                     break;
                 case 'gemini':
-                    url = `${this.baseUrl}/models?key=${this.apiKey}`;
+                    url = `${this.baseUrl}/models`;
+                    if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
                     break;
                 case 'claude':
                     // Anthropic has no keyless public /v1/models the browser can hit pre-auth,
@@ -3311,7 +3421,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     break;
             }
 
-            const response = await fetch(url, { headers, signal });
+            const response = await fetch(url, { headers, signal, ...(managedAIProfile() != null ? { redirect: 'error' } : {}) });
             if (!response || !response.ok) {
                 const status = response && response.status ? response.status : 'network';
                 const statusText = response && response.statusText ? ': ' + response.statusText : '';
@@ -3329,7 +3439,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 return (data.data || []).map(m => ({ id: m.id, type: 'text' }));
             }
         } catch (e) {
-            this._warnLog('[AIProvider] Model discovery failed:', e.message);
+            this._warnLog('[AIProvider] Model discovery failed:', 'provider-request-failed');
             return [];
         }
     }

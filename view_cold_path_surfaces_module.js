@@ -5,6 +5,103 @@ var React = window.React;
 if (!React) { console.error('[ColdPathSurfaces] React not found on window'); return; }
 window.AlloModules = window.AlloModules || {};
 if (window.AlloModules.ColdPathSurfaces) return;
+// Shared between Canvas and standalone AI backend settings.
+function AllobotSearchSettings({
+  t
+}) {
+  const tx = (key, fallback) => {
+    const value = typeof t === 'function' ? t(key) : '';
+    return value && value !== key ? value : fallback;
+  };
+  const read = () => {
+    try {
+      return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+    } catch (_) {
+      return {};
+    }
+  };
+  const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
+  const managedSearchOff = managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true);
+  const [key, setKey] = React.useState(() => String(read().serperApiKey || ''));
+  const [enabled, setEnabled] = React.useState(() => read().allobotWebSearch === true || read().allobotWebSearch !== false && (!read().backend || read().backend === 'gemini'));
+  const [saved, setSaved] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+  const save = patch => {
+    try {
+      localStorage.setItem('alloflow_ai_config', JSON.stringify({
+        ...read(),
+        ...patch
+      }));
+      setSaved(true);
+      setFailed(false);
+    } catch (_) {
+      setFailed(true);
+      setSaved(false);
+    }
+  };
+  return /*#__PURE__*/React.createElement("section", {
+    "aria-label": tx('chat_guide.search_settings', 'Allobot web sources'),
+    className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800"
+  }, managed != null && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-xs"
+  }, tx('chat_guide.managed_policy', 'Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.')), /*#__PURE__*/React.createElement("h3", {
+    className: "font-bold text-sm"
+  }, tx('chat_guide.search_settings', 'Allobot web sources')), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-start gap-2 text-sm"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    className: "mt-1",
+    checked: !managedSearchOff && enabled,
+    disabled: managedSearchOff,
+    onChange: event => {
+      setEnabled(event.target.checked);
+      save({
+        allobotWebSearch: event.target.checked
+      });
+    }
+  }), tx('chat_guide.search_enabled', 'Look up public sources for UDL, standards and research questions')), /*#__PURE__*/React.createElement("label", {
+    className: "block text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block font-medium mb-1"
+  }, tx('chat_guide.personal_serper', 'Your Serper API key (optional)')), /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    autoComplete: "off",
+    spellCheck: false,
+    value: key,
+    placeholder: "serper.dev",
+    onChange: event => {
+      setKey(event.target.value);
+      setSaved(false);
+    },
+    className: "w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm",
+    onClick: () => save({
+      serperApiKey: key.trim()
+    })
+  }, tx('chat_guide.save_search_key', 'Save search key')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm",
+    onClick: () => {
+      setKey('');
+      save({
+        serperApiKey: ''
+      });
+    }
+  }, tx('chat_guide.remove_search_key', 'Remove personal key'))), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-xs"
+  }, failed ? tx('chat_guide.search_save_failed', 'Could not save these settings in this browser.') : saved ? tx('chat_guide.search_saved', 'Search settings saved.') : ''), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs leading-relaxed"
+  }, tx('chat_guide.search_key_help', 'Leave blank to use the configured search service or Gemini Google grounding when available. A saved personal key takes priority for Allobot lookups and Serper searches. It is stored in this browser and can be read by code running in the app; use a personal key, not a shared district secret.')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs leading-relaxed"
+  }, tx('chat_guide.search_privacy_help', 'Serper is outside your district Google environment. External search accepts approved public topics and standard codes only; other queries are blocked. A personal key does not change this restriction. Ordinary Allobot replies send your current question; you can include recent messages or a reviewed excerpt for one reply. Other generation workflows use their task inputs. Use a district-approved connection for student information. A Gemini API key alone does not establish district coverage. Local AI requires this lookup option to be enabled.')));
+}
+
 // Auto-extracted cold-path view source. Edit this file, then rebuild its CDN module.
 
 // Extracted from AlloFlowANTI.txt (ai-backend-settings).
@@ -53,42 +150,9 @@ function AiBackendSettingsView(props) {
     className: "font-black text-lg"
   }, t('canvas_settings.title') || 'AI Settings & Diagnostics')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5"
-  }, t('canvas_settings.serper_label') || 'Web Search API Key (Serper.dev)', " ", /*#__PURE__*/React.createElement("span", {
-    className: "normal-case font-normal text-slate-600"
-  }, t('common.optional_parenthetical') || '(optional)')), /*#__PURE__*/React.createElement("input", {
-    id: "ai-canvas-serper-key",
-    "aria-label": t('canvas_settings.serper_label') || 'Web Search API Key (Serper.dev)',
-    type: "password",
-    autoComplete: "off",
-    placeholder: t('canvas_settings.serper_placeholder') || 'Your serper.dev API key...',
-    defaultValue: (() => {
-      try {
-        return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').serperApiKey || '';
-      } catch {
-        return '';
-      }
-    })(),
-    onChange: e => {
-      const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-      localStorage.setItem('alloflow_ai_config', JSON.stringify({
-        ...current,
-        serperApiKey: e.target.value.trim()
-      }));
-    },
-    className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-  }), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-600 mt-1"
-  }, t('canvas_settings.serper_hint') || 'Gemini Canvas cannot use Google grounding, so standards lookup and Research with Web Search need a key here (serper.dev, 2,500 free searches). Stored in this browser only. Without it those features fall back to AI knowledge, clearly labelled as not web-verified.'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => {
-      try {
-        if (window.__alloOpenDiagnosticsLog) window.__alloOpenDiagnosticsLog('search');
-      } catch (e) {}
-    },
-    className: "mt-1.5 text-[11px] font-bold text-violet-700 hover:text-violet-900 underline"
-  }, "\uD83D\uDD0E ", t('canvas_settings.search_diagnostics_btn') || 'Test web search & view diagnostics')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }, /*#__PURE__*/React.createElement(AllobotSearchSettings, {
+    t: t
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5"
   }, t('canvas_settings.wolfram_label') || 'Wolfram Alpha App ID', " ", /*#__PURE__*/React.createElement("span", {
     className: "normal-case font-normal text-slate-600"

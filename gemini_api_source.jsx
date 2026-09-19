@@ -1,3 +1,48 @@
+// BEGIN MANAGED AI POLICY
+/* Deployment-owned request policy. Never read approval from localStorage.
+ * Browser checks prevent accidental routing; the district must also enforce
+ * identity, authorization and provider controls on its own server/network.
+ */
+function managedAIProfile() {
+  return typeof window === 'undefined' ? null : window.ALLOFLOW_MANAGED_AI_POLICY;
+}
+function managedAIError() {
+  const error = new Error('This connection or operation is not approved by the managed AI deployment.');
+  error.code = 'managed-ai-blocked';
+  return error;
+}
+function managedExternalSearchAllowed() {
+  const policy = managedAIProfile();
+  return policy == null || (policy.version === 1 && policy.allowExternalSearch === true);
+}
+async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
+  const policy = managedAIProfile();
+  if (policy == null) return;
+  // Version 1 deliberately covers text inference. Media routes can use separate
+  // providers/fallbacks; keep them blocked until their destinations are approved.
+  if (policy.version !== 1 || operation !== 'text' || !Array.isArray(policy.connections) || (search && !managedExternalSearchAllowed())) throw managedAIError();
+  const normalize = value => {
+    try {
+      const u = new URL(value);
+      if (u.username || u.password || u.search || u.hash) return '';
+      if (u.protocol !== 'https:' && !(u.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(u.hostname))) return '';
+      return u.href.replace(/\/+$/, '');
+    } catch (_) { return ''; }
+  };
+  const endpoint = normalize(baseUrl);
+  const entries = policy.connections.filter(row => row && row.backend === backend && endpoint && normalize(row.baseUrl) === endpoint);
+  for (const entry of entries) {
+    if (canvasHost && entry.canvasHost === true) return;
+    if (!apiKey && entry.keyless === true) return;
+    if (apiKey && Array.isArray(entry.apiKeySha256) && globalThis.crypto?.subtle) {
+      const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
+      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      if (entry.apiKeySha256.some(value => typeof value === 'string' && value.toLowerCase() === fingerprint)) return;
+    }
+  }
+  throw managedAIError();
+}
+// END MANAGED AI POLICY
 // gemini_api_source.jsx — Gemini HTTP wrappers for AlloFlow
 // Extracted from AlloFlowANTI.txt on 2026-04-24.
 // Pure HTTP orchestration — no React state, no module-level mutable state.
@@ -410,6 +455,7 @@ const createGeminiAPI = (deps) => {
     // deploy, that's whatever the user's billed key can see. The Model
     // Diagnostics UI calls this once to populate the per-slot dropdowns.
     const listAvailableModels = async () => {
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey) });
       if (!_resolveApiKey() && !_isCanvasEnv) {
         return { error: 'No API key configured', models: [], reachable: false };
       }
@@ -543,6 +589,7 @@ const createGeminiAPI = (deps) => {
     // One attempt. The retrying wrapper `callGemini` is defined immediately below —
     // call THAT everywhere, not this.
     const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false, telemetry = null) => {
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'text', search: useSearch });
       if (!_resolveApiKey() && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
@@ -605,7 +652,8 @@ const createGeminiAPI = (deps) => {
         // a run, so Stop actually cancels the in-flight fetch instead of just
         // breaking the loop after the request finishes).
         const _signal = signal || (getAbortSignal ? getAbortSignal() : null) || null;
-        const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
+        const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true),
+            ...(managedAIProfile() != null ? { redirect: 'error' } : {}), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
         const _innerTelemetry = telemetry && typeof telemetry === 'object' ? telemetry : null;
         let response;
         let _modelUsed = GEMINI_MODELS.default;
@@ -885,6 +933,7 @@ const createGeminiAPI = (deps) => {
     };
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'media' });
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.image}:generateContent`;
       const _explicitSignal = options && options.signal
         ? options.signal
@@ -919,6 +968,7 @@ const createGeminiAPI = (deps) => {
         const response = await fetch(url, {
           method: 'POST',
           headers: _geminiHeaders(true),
+            ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
           body: JSON.stringify(payload),
           ...(_signal ? { signal: _signal } : {})
         });
@@ -949,6 +999,7 @@ const createGeminiAPI = (deps) => {
       }).filter(part => part.inlineData.data);
     };
     const callGeminiVision = async (prompt, base64Data, mimeType, options = null) => {
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey), operation: 'media' });
       const _explicitSignal = options && options.signal
         ? options.signal
         : (options && typeof options.aborted === 'boolean' ? options : null);
@@ -981,7 +1032,8 @@ const createGeminiAPI = (deps) => {
         }],
         generationConfig: { maxOutputTokens: 65536 }
       };
-      const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
+      const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true),
+            ...(managedAIProfile() != null ? { redirect: 'error' } : {}), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
       const _innerTelemetry = options && options.diagnosticTelemetry && typeof options.diagnosticTelemetry === 'object'
         ? options.diagnosticTelemetry : null;
       let response;
@@ -1077,6 +1129,7 @@ const createGeminiAPI = (deps) => {
     // fabrication shipped to deploy for weeks because nothing checked at
     // boot). Returns a classification, not a throw.
     const probeModelHealth = async (modelName) => {
+      await assertManagedAIConnection({ backend: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta', apiKey: _resolveApiKey(), canvasHost: Boolean(_isCanvasEnv && _bootApiKey) });
       const model = modelName || GEMINI_MODELS.default;
       if (!_resolveApiKey() && !_isCanvasEnv) return { kind: 'skipped', reason: 'no-api-key', model };
       try {
@@ -1088,6 +1141,7 @@ const createGeminiAPI = (deps) => {
         const r = await fetch(url, {
           method: 'POST',
           headers: _geminiHeaders(true),
+            ...(managedAIProfile() != null ? { redirect: 'error' } : {}),
           body: JSON.stringify(probePayload)
         });
         if (r.ok) return { kind: 'ok', model };

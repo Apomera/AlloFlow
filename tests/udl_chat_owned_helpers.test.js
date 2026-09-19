@@ -56,7 +56,7 @@ describe('UDL Chat-owned helpers', () => {
     expect(warnLog).toHaveBeenCalledWith('Blueprint modification failed', expect.any(Error));
   });
 
-  it('builds a contextual coaching prompt and appends actionable advice', async () => {
+  it('sends the current question without ambient context and appends actionable advice', async () => {
     let messages = [{ role: 'user', text: 'How can I teach this?' }];
     const callGemini = vi.fn(async () => '**Strategy: Retrieval**\n- **Action:** Ask students to explain the cycle.');
 
@@ -79,8 +79,8 @@ describe('UDL Chat-owned helpers', () => {
     });
 
     const prompt = callGemini.mock.calls[0][0];
-    expect(prompt).toContain('Water evaporates, condenses, and returns as precipitation.');
-    expect(prompt).toContain('Group context: mixed readiness');
+    expect(prompt).not.toContain('Water evaporates, condenses, and returns as precipitation.');
+    expect(prompt).not.toContain('Group context: mixed readiness');
     expect(prompt).toContain('User: Please suggest a strategy');
     expect(messages.at(-1)).toMatchObject({ role: 'model', isActionable: true });
   });
@@ -103,6 +103,6 @@ describe('UDL Chat-owned helpers', () => {
       warnLog,
     })).resolves.toEqual({ ok: false });
     expect(messages).toEqual([expect.objectContaining({ role: 'model', type: 'chat-error', retryText: 'Help' })]);
-    expect(warnLog).toHaveBeenCalledWith('Unhandled error in generateStandardChatResponse:', expect.any(Error));
+    expect(warnLog).toHaveBeenCalledWith('Allobot reply failed', { code: 'request-failed' });
   });
 });
