@@ -556,6 +556,42 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.retroSaved)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('working agreement notes and review choices survive the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="teamwork"]').click();await page.getByRole('tab',{name:/Contract/}).click();const practice=page.getByRole('region',{name:'Working team agreement',exact:true});
+    await practice.getByText('2. Practices, access and responsibilities',{exact:true}).click();await practice.getByLabel('What we propose doing (optional)',{exact:true}).fill('Ask before changing shared work.');
+    await practice.getByText('Check my draft before discussing it',{exact:true}).click();await practice.getByLabel('Clear enough to try',{exact:true}).selectOption('discuss');await practice.getByLabel('Workable ways to join',{exact:true}).selectOption('revise');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="teamwork"]').click();
+    await practice.getByText('2. Practices, access and responsibilities',{exact:true}).click();expect(await practice.getByLabel('What we propose doing (optional)',{exact:true}).inputValue()).toContain('shared work');await practice.getByText('Check my draft before discussing it',{exact:true}).click();expect(await practice.getByLabel('Clear enough to try',{exact:true}).inputValue()).toBe('discuss');expect(await practice.getByLabel('Workable ways to join',{exact:true}).inputValue()).toBe('revise');
+    await practice.getByLabel('Ways to participate and get support (optional)',{exact:true}).fill('Offer written and spoken feedback.');expect(await practice.getByLabel('Clear enough to try',{exact:true}).inputValue()).toBe('');expect(await practice.getByLabel('Workable ways to join',{exact:true}).inputValue()).toBe('');
+    await practice.getByText('Review my proposal',{exact:true}).click();expect(await practice.getByLabel('Proposal text to review or copy',{exact:true}).inputValue()).toContain('Offer written');expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.contractSaved)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
+  it('conflict planning routes and notes survive contexts and the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="teamwork"]').click();await page.getByRole('tab',{name:/Conflict Plan/}).click();const practice=page.getByRole('region',{name:'Conflict planning practice',exact:true});
+    await practice.getByText('Build a plan (optional)',{exact:true}).click();await practice.getByLabel('What I noticed and what I do not know (optional)',{exact:true}).fill('Different proposals need a shared goal.');await practice.getByLabel('A support route to consider',{exact:true}).selectOption('talk');
+    await practice.getByLabel('Choose a conflict practice context',{exact:true}).selectOption('pressure');await practice.getByLabel('A support route to consider',{exact:true}).selectOption('support');await practice.getByText('Build a plan (optional)',{exact:true}).click();await practice.getByLabel('One next step and who can help (optional)',{exact:true}).fill('Ask a trusted adult for a supported plan.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="teamwork"]').click();expect(await practice.getByLabel('Choose a conflict practice context',{exact:true}).inputValue()).toBe('pressure');expect(await practice.getByLabel('A support route to consider',{exact:true}).inputValue()).toBe('support');await practice.getByText('Build a plan (optional)',{exact:true}).click();expect(await practice.getByLabel('One next step and who can help (optional)',{exact:true}).inputValue()).toContain('trusted adult');
+    await practice.getByLabel('Choose a conflict practice context',{exact:true}).selectOption('ideas');await practice.getByText('Build a plan (optional)',{exact:true}).click();expect(await practice.getByLabel('What I noticed and what I do not know (optional)',{exact:true}).inputValue()).toContain('shared goal');expect(await practice.getByLabel('A support route to consider',{exact:true}).inputValue()).toBe('talk');expect(await page.evaluate(()=>window.__alloflowSelToolData.teamwork.conflictCount)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
+
+  it('friendship repair notes and boundaries survive the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Repair/}).click();
+    const activity=page.getByRole('region',{name:'Friendship repair choices',exact:true});
+    await activity.getByLabel('Choose a repair practice context',{exact:true}).selectOption('privacy');
+    await activity.getByLabel('A next step to consider',{exact:true}).selectOption('space');
+    await activity.getByText('Build my possible plan (optional)',{exact:true}).click();
+    await activity.getByLabel('What could I say or do next? (optional)',{exact:true}).fill('Respect their request for space.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="friendship"]').click();
+    expect(await activity.getByLabel('Choose a repair practice context',{exact:true}).inputValue()).toBe('privacy');
+    expect(await activity.getByLabel('A next step to consider',{exact:true}).inputValue()).toBe('space');
+    await activity.getByText('Build my possible plan (optional)',{exact:true}).click();
+    expect(await activity.getByLabel('What could I say or do next? (optional)',{exact:true}).inputValue()).toBe('Respect their request for space.');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.repairIdx)).toBeUndefined();
+    expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

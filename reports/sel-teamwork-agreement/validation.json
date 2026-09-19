@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-19",
+  "tool": "Teamwork Builder / Working Team Agreement",
+  "examples": 3,
+  "gradeSpecificSetups": 9,
+  "optionalNoteFields": 7,
+  "optionalReviewChecks": 4,
+  "focused": {
+    "passed": 21,
+    "files": 2,
+    "agreementBrowserCases": 16,
+    "sharedClipboardCases": 5
+  },
+  "regressions": {
+    "initialPassed": 101,
+    "initialFilesPassed": 5,
+    "workerStartupErrors": 4,
+    "retryPassed": 61,
+    "retryFiles": 4,
+    "totalUniquePassed": 162,
+    "explanation": "Four threads workers failed to start. The four affected files passed unchanged using fresh forks workers; the 101 completed checks were not repeated."
+  },
+  "theme": {
+    "passed": 4,
+    "filtered": 292,
+    "scope": "Teamwork only"
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 96,
+    "files": 1
+  },
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumSelectAndDisclosureHeight": 44,
+    "captureRecheck": "Refreshed high-contrast examples and draft reviewed; the review capture is byte-identical to the already reviewed capture. Final captures show complete painted controls."
+  },
+  "sourcePublicSha256": "4551e714b7be42080523eb7199416b060c8a99d7b4ad1150e787934adf9fbefc",
+  "legacyCompatibility": "Original contract entries, saved flag, awards and practice logs preserved; historical entries are not auto-migrated into new notes.",
+  "persistence": "Seven notes and four review choices persist per grade, independent of example selection. Editing notes resets known review choices and preserves unknown properties.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "Scoped accessibility evidence is not a full hub certification.",
+    "Examples are authored teaching material, not a validated assessment.",
+    "The two existing Digital Wellbeing/Upstander static theme failures documented in the preceding pass are outside this targeted Teamwork theme run and remain unresolved.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "blocked",
+    "reason": "Normal scoped commit rejected by the source-pair hook: content_engine_source.jsx (2856 lines) differs from desktop/web-app/src/content_engine_source.jsx (2838 lines). These unrelated files were not touched and no hook bypass was used. Owned changes remain staged."
+  },
+  "captureRecheck": {
+    "passed": 1,
+    "filtered": 15,
+    "repeatedFocusedCase": true,
+    "sourceChanged": false,
+    "testChange": "Wait two animation frames after scrolling before captures."
+  },
+  "totalUniquePassed": 185,
+  "counting": "16 focused agreement browser cases + 162 regressions (includes 5 shared clipboard contracts) + 4 targeted Teamwork theme cases + 3 hub workflows. Five focused/shared repeats and one repeated high-contrast capture case excluded."
+}

@@ -84,30 +84,64 @@ window.SelHub = window.SelHub || {
     ]
   };
 
-  // Friendship repair strategies
-  var REPAIR_STEPS = {
-    elementary: [
-      { step: 'Wait', icon: '\u23F8\uFE0F', desc: 'If you\u2019re still really upset, wait until you\u2019re calm. You can\u2019t fix things when your brain is in the red zone.', tip: 'Try taking 5 deep breaths first.' },
-      { step: 'Think About Their Side', icon: '\uD83E\uDD14', desc: 'Try to imagine how your friend feels. Even if you\u2019re hurt, they might be hurt too.', tip: 'Ask yourself: "What might they have been feeling when they did that?"' },
-      { step: 'Use an I-Message', icon: '\uD83D\uDDE3\uFE0F', desc: 'Say "I felt ___ when you ___ because ___." This tells them how YOU feel without blaming.', tip: 'Example: "I felt left out when you played with Jordan because I thought we were going to play together."' },
-      { step: 'Listen to Them', icon: '\uD83D\uDC42', desc: 'Let them tell their side. Don\u2019t interrupt. You might learn something you didn\u2019t know.', tip: 'Nod and say "I hear you" even if you disagree.' },
-      { step: 'Find a Fix Together', icon: '\uD83E\uDD1D', desc: 'Ask: "What can we do so this doesn\u2019t happen again?" Make a plan together.', tip: 'Both people should agree on the plan. A one-sided fix doesn\u2019t last.' },
-    ],
-    middle: [
-      { step: 'Cool Down First', icon: '\u23F8\uFE0F', desc: 'Trying to repair a friendship while emotionally activated almost always makes things worse. Give yourself time \u2014 hours or even a day.', tip: 'Write down what you want to say before you say it. Editing is easier on paper.' },
-      { step: 'Perspective-Take', icon: '\uD83E\uDD14', desc: 'Before approaching them, genuinely try to see the situation from their perspective. Not to excuse behavior, but to understand motivation.', tip: 'Complete this sentence: "They probably did that because they were feeling ___."' },
-      { step: 'Own Your Part', icon: '\uD83D\uDCAC', desc: 'Almost every conflict has two sides. Even if they did something worse, acknowledge what you contributed. This disarms defensiveness.', tip: '"I know I also ___, and I\u2019m sorry for that part."' },
-      { step: 'Express Without Attacking', icon: '\uD83D\uDDE3\uFE0F', desc: 'Use "I" statements: "I felt hurt when ___." Avoid "You always ___" or "You never ___" \u2014 those trigger defense, not understanding.', tip: 'Focus on the specific event, not character judgments.' },
-      { step: 'Negotiate & Rebuild', icon: '\uD83E\uDD1D', desc: 'Ask what they need from you going forward, and share what you need from them. Friendship repair is mutual.', tip: 'Trust rebuilds through consistent small actions, not one big conversation.' },
-    ],
-    high: [
-      { step: 'Regulate Before Engaging', icon: '\u23F8\uFE0F', desc: 'Neuroscience: when your amygdala is activated, your prefrontal cortex (rational thinking) goes offline. You literally cannot have a productive conversation in that state.', tip: 'Wait until you can describe the situation factually without your voice shaking.' },
-      { step: 'Examine Your Narrative', icon: '\uD83E\uDD14', desc: 'We all construct stories about what happened and why. Check yours for attribution errors: are you assuming the worst about their intent? Do you have all the information?', tip: 'Fundamental Attribution Error: we explain others\u2019 behavior by their character but our own by our circumstances.' },
-      { step: 'Lead with Vulnerability', icon: '\uD83D\uDCAC', desc: 'Bren\u00E9 Brown\u2019s research: vulnerability is the birthplace of connection. Starting with "I was hurt" rather than "You hurt me" changes the entire dynamic of the conversation.', tip: 'Vulnerability ≠ weakness. It takes more courage to say "I\u2019m hurt" than "You\u2019re wrong."' },
-      { step: 'Hold Space for Complexity', icon: '\uD83C\uDF10', desc: 'Two things can be true: you were hurt AND they didn\u2019t intend to hurt you. They were wrong AND they\u2019re still a good person. Repair requires holding complexity.', tip: 'The goal isn\u2019t agreement on what happened. It\u2019s understanding of how each person experienced it.' },
-      { step: 'Decide What This Friendship Is Worth', icon: '\u2696\uFE0F', desc: 'Not every friendship should be repaired. Some people are harmful and you deserve to walk away. But many conflicts between good people are just pain meeting pain. Those are worth the work.', tip: 'Ask: "Does this person make my life better more often than they make it worse?" If yes, repair. If not, release with grace.' },
-    ]
-  };
+  // Authored practice examples; not a relationship assessment.
+  var REPAIR_PRACTICE = [
+  {
+    "id": "plans",
+    "title": "A missed plan",
+    "setup": {
+      "elementary": "You planned to play with a friend after lunch. They joined another game. You do not know whether they remembered your plan.",
+      "middle": "A friend did not arrive for your study plan. Later you saw them with someone else. You do not know what changed or whether they could contact you.",
+      "high": "A friend cancelled a shared plan, then appeared in a photo from another gathering. The photo does not tell you when it was taken or why the plan changed."
+    },
+    "notice": "Separate the missed agreement from a guess about why it happened. Feeling hurt does not prove intent, and uncertainty does not erase the impact.",
+    "model": {
+      "elementary": "I waited for our game. Did you remember our plan? Next time, can we tell each other if the plan changes?",
+      "middle": "I waited for our study time and felt let down. What happened? If we make another plan, I need us to confirm it first.",
+      "high": "I was disappointed when our plan changed. I do not know the full context. If we plan again, could we agree how to communicate changes?"
+    },
+    "limit": "An invitation to explain is optional. It does not require sharing private information, accepting an explanation or promising another plan.",
+    "changed": "They explain that a family obligation changed their day, but they also say they cannot reliably confirm plans.",
+    "revisit": "You can understand the explanation and still choose more flexible plans, a check-in time or some distance. An explanation and a workable agreement are different things."
+  },
+  {
+    "id": "privacy",
+    "title": "Taking responsibility for sharing",
+    "setup": {
+      "elementary": "You told another child something a friend asked you to keep private. It was not about someone being unsafe. Your friend asks for space.",
+      "middle": "You repeated a private story without permission. It was not a safety concern. Your friend says they feel exposed and does not want to talk yet.",
+      "high": "You forwarded a private message without permission. It was not a safety concern. The person affected asks you to stop contacting them while they decide what they need."
+    },
+    "notice": "Name the action and its impact without adding an excuse or demanding equal blame. Asking a trusted adult about a safety concern is different from spreading private information.",
+    "model": {
+      "elementary": "I shared your private story. That was my choice. I will not share it again. I can give you space.",
+      "middle": "I repeated your story without permission. I am sorry. I will stop sharing it and ask the person I told not to pass it on. You do not need to reply.",
+      "high": "I forwarded your message without permission and breached your privacy. I will stop distributing it and seek help limiting further sharing. I will respect your request for no contact."
+    },
+    "limit": "These are practice words, not a message to send after someone has asked for no contact. Changed behavior can begin without another message. You cannot guarantee that every copy or memory disappears.",
+    "changed": "You have stopped sharing and taken a practical repair step. Your friend still does not want to reconnect.",
+    "revisit": "Respect that boundary. An apology, forgiveness, trust and renewed friendship are separate choices. Repairing what you can does not buy a reply or a relationship."
+  },
+  {
+    "id": "pressure",
+    "title": "When a boundary keeps being ignored",
+    "supportFirst": true,
+    "setup": {
+      "elementary": "A child keeps saying you cannot play unless you give them your snack. You have said no, and you are worried it will happen again.",
+      "middle": "Someone repeatedly threatens to exclude you unless you share homework answers. You have asked them to stop and worry about being singled out.",
+      "high": "A peer repeatedly threatens to spread private information unless you do what they want. You are concerned about what might happen if you refuse."
+    },
+    "notice": "Repeated pressure and fear of consequences call for support. You do not need to work out a label, confront the person or take responsibility for their threats before asking for help.",
+    "model": {
+      "elementary": "I need help. They keep asking for my snack and say I cannot play if I say no. Can you stay with me and help?",
+      "middle": "I need support with repeated pressure about homework. I am worried about being excluded if I refuse. Can we make a plan without a joint meeting?",
+      "high": "I need help with threats involving private information. I am concerned about retaliation. Can we discuss protection and follow-up before anyone contacts the other person?"
+    },
+    "limit": "This is a request to a trusted adult, not a repair script for the person applying pressure. A joint meeting, apology or forgiveness is not a required first step.",
+    "changed": "The first adult calls it a small disagreement, but the pressure continues.",
+    "revisit": "Try another trusted adult or school support person and explain that it is continuing. Ask when they will check back with you. If there is immediate danger, seek nearby help now."
+  }
+];
 
   // When friendships end — normalizing healthy endings
   var ENDING_TRUTHS = {
@@ -880,45 +914,88 @@ window.SelHub = window.SelHub || {
       // ── Friendship Repair ──
       var repairContent = null;
       if (activeTab === 'repair') {
-        var steps = REPAIR_STEPS[band] || REPAIR_STEPS.elementary;
-        var curStep = steps[repairIdx % steps.length];
-        repairContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
-          h('div', { className: 'sel-hero', style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { className: 'sel-hero-icon', style: { fontSize: '52px', marginBottom: '8px', filter: 'drop-shadow(0 4px 8px rgba(217,119,6,0.3))' } }, '\uD83E\uDE79'),
-            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: AMBER_DARK, margin: '0 0 4px' } }, 'Friendship Repair'),
-            h('p', { style: { fontSize: '13px', color: _frC('#94a3b8'), margin: 0 } }, band === 'elementary' ? 'When friends hurt each other, here\u2019s how to fix it.' : 'Conflict doesn\u2019t have to mean the end. These steps help you navigate back to each other.')
+        var repairBand = ['elementary', 'middle', 'high'].indexOf(band) >= 0 ? band : 'middle';
+        var repairObject = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+        var repairSelections = repairObject(d.repairSelections);
+        var repairSelected = repairSelections[repairBand];
+        var repairExample = REPAIR_PRACTICE.find(function(item) { return item.id === repairSelected; }) || REPAIR_PRACTICE[0];
+        var repairContext = repairSelected === 'own' ? 'own' : repairExample.id;
+        var repairOwn = repairContext === 'own';
+        var repairKey = repairBand + ':' + repairContext;
+        var repairDrafts = repairObject(d.repairDrafts);
+        var repairDraft = repairObject(repairDrafts[repairKey]);
+        var repairNote = function(key) { return typeof repairDraft[key] === 'string' ? repairDraft[key] : ''; };
+        var saveRepair = function(values) {
+          var drafts = Object.assign({}, repairDrafts);
+          drafts[repairKey] = Object.assign({}, repairDraft, values);
+          upd('repairDrafts', drafts);
+        };
+        var repairSupport = !repairOwn && !!repairExample.supportFirst;
+        var repairRoutes = [
+          { id: 'talk', label: 'Invite a conversation', hint: 'Check whether both people want to talk and can stop freely. Writing, a trusted helper or a later time may work better. No one owes personal disclosure.' },
+          { id: 'space', label: 'Take or respect space', hint: 'You can pause, decline contact or respect someone else\'s request for space. A check-in is optional and needs consent; do not keep messaging for a reply.' },
+          { id: 'support', label: 'Ask a trusted adult for support', hint: 'Tell a trusted adult what happened and what worries you. Ask for a practical plan and a follow-up. You do not have to arrange a joint conversation.' },
+          { id: 'unsure', label: 'Still deciding', hint: 'You can leave this undecided and seek support. No explanation, apology or decision to stay friends is required here.' }
+        ].filter(function(route) { return !repairSupport || route.id !== 'talk'; });
+        var repairRoute = repairRoutes.find(function(route) { return route.id === repairNote('route'); });
+        var repairSurface = _frHC ? '#000000' : _frDark ? '#0f172a' : '#ffffff';
+        var repairInk = _frHC ? '#ffffff' : _frDark ? _frC('#0f172a') : '#1f2937';
+        var repairEdge = _frHC ? '#ffff00' : _frDark ? '#94a3b8' : '#64748b';
+        var repairCard = { border: '1px solid ' + repairEdge, borderRadius: '12px', padding: '16px', margin: '14px 0', background: repairSurface, color: repairInk, minWidth: 0 };
+        var repairControl = { width: '100%', maxWidth: '100%', minHeight: '44px', boxSizing: 'border-box', padding: '10px', borderRadius: '8px', border: '1px solid ' + repairEdge, background: repairSurface, color: repairInk, font: 'inherit', fontSize: '16px' };
+        var repairSummary = { minHeight: '44px', padding: '10px 0', boxSizing: 'border-box', fontWeight: 700, cursor: 'pointer' };
+        var repairFields = [
+          { id: 'observations', label: 'What happened, and what is uncertain?', hint: repairBand === 'elementary' ? 'What did you see or hear? What do you not know yet?' : 'Separate observations, impact and guesses about intention. You may use the fictional example.' },
+          { id: 'responsibility', label: 'What is mine to take responsibility for?', hint: 'Name a specific action only if it is yours. You do not need to invent fault or accept blame for someone else\'s behavior.' },
+          { id: 'boundary', label: 'What boundary or support is needed?', hint: 'Consider space, consent to talk, a communication aid or a trusted adult. A no-contact request matters.' },
+          { id: 'action', label: 'What could I say or do next?', hint: 'Try a practical action, an invitation that can be declined or a request for help. These notes do not send a message.' },
+          { id: 'review', label: 'What would make me keep or change the plan?', hint: 'Look for behavior over time, respected boundaries and whether support is working. A reply or an apology alone does not prove repair.' }
+        ];
+        var repairField = function(field) {
+          var id = 'fr-repair-' + field.id;
+          return h('div', { key: field.id, style: { margin: '16px 0' } },
+            h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
+            h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
+            h('textarea', { id: id, rows: 3, value: repairNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, repairControl, { resize: 'vertical' }),
+              onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveRepair(values); } })
+          );
+        };
+        var repairPreview = ['My possible repair plan — a draft, not proof of reconciliation.', 'Context: ' + (repairOwn ? 'My own example' : repairExample.title), 'Route: ' + (repairRoute ? repairRoute.label : 'Not chosen')]
+          .concat(repairFields.map(function(field) { return field.label + '\n' + (repairNote(field.id).trim() || '(No note yet)'); })).join('\n\n');
+        repairContent = h('section', { role: 'region', 'aria-label': 'Friendship repair choices', style: { padding: '16px', maxWidth: '720px', margin: '0 auto', background: repairSurface, color: repairInk, lineHeight: 1.6, overflowWrap: 'anywhere' } },
+          h('h3', { style: { margin: '0 0 8px', fontSize: '22px' } }, 'Repair, boundaries and next steps'),
+          h('p', null, repairBand === 'elementary' ? 'You can care about a friend and still need space or help. Practise with a made-up example, or use your own.' : 'Explore what repair could involve without assuming shared blame, forgiveness or renewed friendship.'),
+          h('p', null, 'You can be upset and still deserve to be heard. Choose a pace and way to communicate that work for you. Every note is optional; you can use an example without sharing personal details.'),
+          h('label', { htmlFor: 'fr-repair-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a repair practice context'),
+          h('select', { id: 'fr-repair-context', value: repairContext, style: repairControl, onChange: function(ev) { var choices = Object.assign({}, repairSelections); choices[repairBand] = ev.target.value; upd('repairSelections', choices); } },
+            REPAIR_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }),
+            h('option', { value: 'own' }, 'My own example')),
+          h('div', { key: repairKey, style: repairCard },
+            h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, repairOwn ? 'Start with what you want to consider' : repairExample.title),
+            h('p', null, repairOwn ? 'You decide how much to include. If there are threats, repeated pressure or fear of retaliation, start with a trusted adult rather than a direct repair conversation.' : repairExample.setup[repairBand]),
+            !repairOwn && h('p', null, repairExample.notice),
+            repairSupport && h('p', { style: { fontWeight: 700 } }, 'This example starts with support, not a direct repair conversation.'),
+            h('label', { htmlFor: 'fr-repair-route', style: { display: 'block', fontWeight: 700 } }, 'A next step to consider'),
+            h('select', { id: 'fr-repair-route', value: repairRoute ? repairRoute.id : '', style: repairControl, onChange: function(ev) { saveRepair({ route: ev.target.value }); } },
+              h('option', { value: '' }, 'Not chosen'), repairRoutes.map(function(route) { return h('option', { key: route.id, value: route.id }, route.label); })),
+            h('p', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, repairRoute ? repairRoute.hint : 'Choose a route to explore, or leave it open. Changing a route keeps your notes.')
           ),
-          // Step progress
-          h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '16px' } },
-            steps.map(function(s, i) {
-              var isCurrent = i === repairIdx % steps.length;
-              return h('button', {
-                key: i,
-                'aria-label': 'Step ' + (i + 1) + ': ' + s.step + (isCurrent ? ' (current)' : ''),
-                'aria-current': isCurrent ? 'step' : undefined,
-                onClick: function() { upd('repairIdx', i); if (soundEnabled) sfxClick(); },
-                style: { width: '36px', height: '36px', borderRadius: '50%', border: isCurrent ? '3px solid ' + AMBER : '2px solid ' + _frC('#e5e7eb'), background: isCurrent ? AMBER : _frC('#fff'), color: isCurrent ? '#fff' : _frC('#374151'), fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }
-              }, i + 1);
-            })
-          ),
-          // Step card
-          h('div', { style: { background: _frC('#fff'), borderRadius: '16px', padding: '24px', border: '1px solid ' + _frC('#e5e7eb'), boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '12px' } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' } },
-              h('span', { style: { fontSize: '28px' } }, curStep.icon),
-              h('div', null,
-                h('div', { style: { fontSize: '10px', color: _frC('#94a3b8') } }, 'Step ' + ((repairIdx % steps.length) + 1) + ' of ' + steps.length),
-                h('h4', { style: { fontSize: '16px', fontWeight: 800, color: _frC('#1f2937'), margin: 0 } }, curStep.step)
-              )
-            ),
-            h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: _frC('#374151'), margin: '0 0 12px' } }, curStep.desc),
-            h('div', { style: { background: _frC('#fef3c7'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #f59e0b' } },
-              h('p', { style: { fontSize: '12px', fontWeight: 600, color: _frC('#92400e'), margin: 0 } }, '\uD83D\uDCA1 ' + curStep.tip)
-            )
-          ),
-          h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px' } },
-            h('button', { onClick: function() { upd('repairIdx', (repairIdx - 1 + steps.length) % steps.length); }, style: { padding: '8px 16px', background: _frC('#fff'), border: '2px solid ' + _frC('#e5e7eb'), borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: _frC('#374151') } }, '\u2190 Prev'),
-            h('button', { onClick: function() { upd('repairIdx', (repairIdx + 1) % steps.length); if (soundEnabled) sfxClick(); }, 'aria-label': 'Next step', style: { padding: '8px 16px', background: AMBER, border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: '#fff' } }, 'Next \u2192')
-          )
+          !repairOwn && h('details', { key: repairKey + '-model', style: repairCard },
+            h('summary', { style: repairSummary }, 'Explore example words and their limits'),
+            h('p', null, repairExample.model[repairBand]), h('p', null, repairExample.limit),
+            h('p', null, 'Adapt or skip these words. No particular tone, eye contact or personal disclosure is required.')),
+          h('details', { key: repairKey + '-notes', style: repairCard },
+            h('summary', { style: repairSummary }, 'Build my possible plan (optional)'),
+            h('p', null, 'Notes are kept with this activity and grade level. They are not monitored and do not request help; contact a trusted adult directly if you need support.'),
+            repairFields.map(repairField)),
+          h('details', { key: repairKey + '-revisit', style: repairCard },
+            h('summary', { style: repairSummary }, 'Revisit when something changes'),
+            h('p', null, repairOwn ? 'If a boundary is ignored, circumstances change or someone declines contact, what would you adjust?' : repairExample.changed),
+            h('p', null, repairOwn ? 'You can change the plan, seek support or step back. Repair, forgiveness, trust and reconnecting do not have to happen together.' : repairExample.revisit)),
+          h('details', { key: repairKey + '-preview', style: repairCard },
+            h('summary', { style: repairSummary }, 'Review my plan text'),
+            h('label', { htmlFor: 'fr-repair-preview', style: { display: 'block', fontWeight: 700 } }, 'Plan text to review or copy'),
+            h('textarea', { id: 'fr-repair-preview', readOnly: true, rows: 10, value: repairPreview, style: Object.assign({}, repairControl, { resize: 'vertical' }) }))
         );
       }
 

@@ -1,0 +1,58 @@
+RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+ Test Files  5 passed (5)
+      Tests  101 passed (101)
+     Errors  4 errors
+   Start at  15:56:36
+   Duration  635.01s (transform 1.18s, setup 1.62s, import 12.94s, tests 326.12s, environment 32.73s)
+
+
+Vitest caught 4 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sel_badge_popup_dialog.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sel_toolbar_toggle_names.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sel_badge_announce.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/sel_teamwork_clipboard_a11y.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯

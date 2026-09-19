@@ -577,13 +577,13 @@ window.SelHub = window.SelHub || {
     { id: 'perfect_scenarios', icon: '\u2B50',        name: 'Perfect Insight',      desc: 'Earlier quiz: received full scenario ratings' },
     { id: 'streak_3',          icon: '\uD83D\uDD25', name: 'Teamwork Streak',      desc: 'Practice 3 days in a row' },
     { id: 'skills_assessor',   icon: '\uD83D\uDCCA', name: 'Skills Assessor',      desc: 'Complete the Team Skills Quiz' },
-    { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Build a team contract' },
+    { id: 'contract_creator',  icon: '\uD83D\uDCDC', name: 'Contract Creator',     desc: 'Earlier activity: built a team contract' },
     { id: 'challenge_champ',   icon: '\uD83E\uDD47', name: 'Challenge Champion',   desc: 'Complete 5 collaborative challenges' },
     { id: 'all_challenges',    icon: '\uD83C\uDF1F', name: 'All Challenges Done',  desc: 'Complete every challenge in your grade band' },
     { id: 'teamwork_guru',     icon: '\uD83E\uDDD8', name: 'Teamwork Guru',        desc: 'Earn 12 or more badges' },
     { id: 'comm_style',        icon: '\uD83D\uDDE3\uFE0F', name: 'Communication Style', desc: 'Earlier activity: completed the communication questionnaire' },
     { id: 'virtual_team_pro',  icon: '\uD83D\uDCBB', name: 'Virtual Team Pro',    desc: 'Earlier activity: completed the virtual-team quiz' },
-    { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Convert 3 conflicts into collaboration' },
+    { id: 'conflict_converter', icon: '\u267B\uFE0F', name: 'Conflict Converter',  desc: 'Earlier activity: requested three conflict-coach responses' },
     { id: 'retro_runner',      icon: '\uD83D\uDD04', name: 'Retrospective Runner', desc: 'Earlier activity: completed a team retrospective' },
     { id: 'master_collaborator', icon: '\uD83C\uDF1F', name: 'Master Collaborator', desc: 'Earn 18 or more badges' },
     { id: 'virtual_scenario_1', icon: '\uD83D\uDCF1', name: 'Remote Ready',        desc: 'Earlier activity: answered a virtual-team scenario' },
@@ -775,6 +775,102 @@ window.SelHub = window.SelHub || {
   // ── Virtual Team Simulator Data ──
   // ══════════════════════════════════════════════════════════════
   // Authored remote collaboration practice. Original quiz records follow for compatibility.
+  var CONFLICT_PRACTICE = [
+  {
+    "id": "ideas",
+    "title": "Different ideas for the same task",
+    "supportFirst": false,
+    "setups": {
+      "elementary": "Two children want different designs for a class model. Both want to share their ideas, but they keep interrupting.",
+      "middle": "A team is split between a video and a live presentation. Members have different reasons, but they have not checked the task requirements together.",
+      "high": "A project group disagrees about its final format. Some want a polished video; others want a format that can be completed and accessed with the available time and equipment."
+    },
+    "notice": "A different preference is not proof of bad intent. Ask about the goal and constraints rather than guessing motives. A conversation is an option only when people can take part voluntarily and question the plan.",
+    "talk": "If everyone is willing, compare the formats against the task goal, time and access needs. Try: \"Can we each explain one reason, then check which options meet the task?\" Combining ideas is an option, not an obligation.",
+    "pause": "Pause the discussion and agree, where workable, when and how to return with the requirements in view. Ask a facilitator for help if interruptions continue. A pause needs a next step; it is not a way to dismiss a concern.",
+    "support": "Ask the teacher to clarify the task constraints and help everyone contribute. Support can be requested before anyone has tried to settle the disagreement alone.",
+    "change": "The group learns that only one shared device is available and it cannot be taken home.",
+    "adjust": "Reconsider the options using the actual access constraint. Ask about in-class equipment or a different format. Do not treat the person naming the barrier as uncooperative."
+  },
+  {
+    "id": "workload",
+    "title": "Work is missing and the reasons are unclear",
+    "supportFirst": false,
+    "setups": {
+      "elementary": "A part of the group poster is unfinished. One child says, \"You did not help.\" The group has not checked whether everyone had the needed materials.",
+      "middle": "A teammate has not added their section to a shared report. Others want to reassign everything, but nobody has checked the instructions, file access or time available.",
+      "high": "A deadline is approaching and two sections are missing. Some members assume a lack of effort, while others say the handoff and success criteria were unclear."
+    },
+    "notice": "Separate a missing contribution from an explanation for it. Workload, instructions, access and choices may all matter. Ask what is needed without demanding a personal disclosure, and name the impact of the missing work.",
+    "talk": "If it is safe and voluntary, ask a specific question: \"The section is still missing. What is blocking it, and what is a feasible next step?\" Discuss time and support before agreeing on a new task or deadline.",
+    "pause": "If people are too frustrated to listen, pause the discussion and ask for a supported check-in. Make sure urgent work is noticed without automatically handing it to the most available teammate.",
+    "support": "Ask the responsible adult to help clarify expectations, resources and workload. They can help address repeated problems or decisions about credit; peers should not invent grade penalties.",
+    "change": "The missing files become accessible, but there is not enough time for the original scope.",
+    "adjust": "Agree on a realistic scope or revised timeline with the responsible adult. Restoring access addresses one barrier; it does not create extra time or make one teammate responsible for every unfinished part."
+  },
+  {
+    "id": "pressure",
+    "title": "Repeated pressure and exclusion",
+    "supportFirst": true,
+    "setups": {
+      "elementary": "A child is repeatedly told they cannot join unless they do another child's work. They are worried about saying no.",
+      "middle": "A student is repeatedly excluded from group decisions and told they must do extra work to be included. They worry that objecting will make things worse.",
+      "high": "A teammate uses control over the group chat and a threat of rumors to demand extra work. The targeted student does not feel able to refuse safely."
+    },
+    "notice": "Repeated pressure, threats and unequal power require support. This example is not a mutual disagreement to solve by compromise. The person affected does not have to confront the other person or prove a label before asking for help.",
+    "talk": "",
+    "pause": "Step away from the interaction if that is possible and seek adult support. A pause alone does not address repeated pressure; ask for a plan that protects participation and avoids leaving the person affected to manage it alone.",
+    "support": "Tell a trusted adult what was said or done and what help is needed now. Try: \"I am being pressured to do extra work to be included, and I am worried about what happens if I say no. Can you help me plan the next step?\" Ask who will know and what happens next; do not rely on a promise of secrecy.",
+    "change": "The first adult minimizes the concern and says the students should work it out together.",
+    "adjust": "Try another trusted adult or the school's established support route, with help from a caregiver if useful. Describe the repeated behavior and the concern about retaliation. A joint meeting, apology or forgiveness is not a required first step."
+  }
+];
+
+  var AGREEMENT_EXAMPLES = [
+  {
+    "id": "respect",
+    "title": "Make respect observable",
+    "setups": {
+      "elementary": "A group says, \"Be respectful.\" One child thinks this means being quiet. Another wants to disagree with an idea.",
+      "middle": "A project group writes, \"Respect every idea.\" Members disagree about whether asking questions counts as criticism.",
+      "high": "A team proposes, \"Stay positive and respect every idea.\" A member worries that this could prevent honest disagreement about the plan."
+    },
+    "initial": "Be respectful and stay positive.",
+    "problem": "A shared word can mean different things. Requiring positivity can silence concerns; agreement should not depend on a particular facial expression, tone or amount of speech.",
+    "proposal": "Discuss the idea without insulting a person. Ask what the idea is trying to achieve, then give a specific reason for keeping or changing it. Offer written, spoken or supported ways to contribute. A concern can be raised without first giving praise.",
+    "test": "Someone offers a written concern after the discussion has moved on.",
+    "revision": "Agree on a workable window for written input and how to reopen a decision when new information matters. A turn to speak is useful only if the group considers the contribution."
+  },
+  {
+    "id": "timing",
+    "title": "Make timing workable",
+    "setups": {
+      "elementary": "A group wants everyone to finish a drawing at home. One child can only use the materials at school.",
+      "middle": "A team proposes replying to every group message the same evening. Members have different schedules and access to devices.",
+      "high": "A team proposes daily evening updates with penalties for late replies. Some members rely on school devices or cannot reliably join after-school discussions."
+    },
+    "initial": "Everyone must reply the same evening.",
+    "problem": "A uniform deadline can hide different access and responsibilities. Ask what timing is workable without requiring personal explanations. Faster replies are not proof of greater commitment.",
+    "proposal": "Use the agreed class workspace and check it during the next available class period. Identify what needs a reply and what can wait. Provide an accessible alternative through the teacher if the channel is unavailable. Confirm the timing with the group before treating it as an agreement.",
+    "test": "The platform stops working just before the agreed check-in.",
+    "revision": "Use the planned alternative and reset the timeline with support. Check access before attributing a missing reply to effort. Keep a clear next step and ownership; an access barrier should not trigger a peer penalty."
+  },
+  {
+    "id": "repair",
+    "title": "Plan support when work gets stuck",
+    "setups": {
+      "elementary": "A group says anyone who forgets materials cannot help with the next activity. A child forgot the shared supplies.",
+      "middle": "A group wants to remove a teammate after a missed task. The instructions were unclear, and the teammate did not know how to ask for help.",
+      "high": "A team proposes escalating penalties for missed contributions, including deciding who deserves credit. Some expectations and support routes have not been discussed."
+    },
+    "initial": "Miss a task and lose your place in the group.",
+    "problem": "Accountability needs clear expectations, impact and a supported next step. Peers should not invent grade penalties or force someone into a public explanation. Support can coexist with boundaries.",
+    "proposal": "Check what was expected, what happened and what support is needed. Agree on a feasible next step with the people involved and a review time. Ask the responsible adult to address repeated problems, allocation of work or credit; do not make one teammate carry all the repair.",
+    "test": "A teammate reports repeated intimidation and does not feel safe discussing it with the group.",
+    "revision": "Use a trusted adult or another established support route now. A private peer talk or group meeting is not a required first step. Protect participation and boundaries while the adult addresses the concern; do not promise secrecy or guaranteed cooperation."
+  }
+];
+
   var RETRO_PRACTICE = [
   {
     "id": "turns",
@@ -1070,10 +1166,6 @@ window.SelHub = window.SelHub || {
         var quizSubmitted  = d.quizSubmitted || false;
 
         // Team Contract state
-        var contractAgreements = d.contractAgreements || ['', '', '', '', ''];
-        var contractRoles     = d.contractRoles || ['', '', '', ''];
-        var contractComms     = d.contractComms || '';
-        var contractConsequence = d.contractConsequence || '';
         var contractSaved    = d.contractSaved || false;
 
         // Quick Reflection state (post-activity)
@@ -1094,11 +1186,7 @@ window.SelHub = window.SelHub || {
         var vtRevealed        = d.vtRevealed || {};
 
         // Conflict-to-Collaboration state
-        var conflictInput     = d.conflictInput || '';
-        var conflictResult    = d.conflictResult || null;
-        var conflictLoading   = d.conflictLoading || false;
         var conflictCount     = d.conflictCount || 0;
-        var conflictHistory   = d.conflictHistory || [];
 
         // Retrospective state
         var retroSaved        = d.retroSaved || false;
@@ -1252,7 +1340,7 @@ window.SelHub = window.SelHub || {
           { id: 'scenarios',   label: '\uD83C\uDFAD Scenarios' },
           { id: 'commstyle',   label: '\uD83D\uDDE3\uFE0F Communication Plan' },
           { id: 'virtualteam', label: '\uD83D\uDCBB Virtual Team' },
-          { id: 'conflicttool', label: '\u267B\uFE0F Conflict\u2192Collab' },
+          { id: 'conflicttool', label: '\u267B\uFE0F Conflict Plan' },
           { id: 'retro',       label: '\uD83D\uDD04 Retro' },
           { id: 'quiz',        label: '\uD83D\uDCCA Quiz' },
           { id: 'contract',    label: '\uD83D\uDCDC Contract' },
@@ -1332,10 +1420,10 @@ window.SelHub = window.SelHub || {
             scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — rehearse a supported response', hint: 'Notice what happened, compare possible routes and plan a workable next step. Consider access, boundaries and shared responsibility; asking for help is part of teamwork.' },
             commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Communication Plan — choose what fits this situation', hint: 'Clarify the purpose, make the message usable, allow different ways to respond and check understanding. Adapt the plan when the conditions change.' },
             virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)', icon: '\uD83D\uDCBB', title: 'Virtual Team — agree on workable participation', hint: 'Plan for access, privacy and different schedules. Compare communication options and check that contributions reach the work; camera use and reply speed do not prove commitment.' },
-            conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
+            conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)', icon: '\u267B', title: 'Conflict planning — choose the support needed', hint: 'Check what happened, what remains uncertain and whether a voluntary conversation is appropriate. Repeated pressure and harm call for support, not an obligation to compromise.' },
             retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retrospective — learn from the group process', hint: 'Look at what happened, hear different experiences, plan one supported change and check what happens next. Finishing a task or writing a plan does not show that the process worked for everyone.' },
             quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
-            contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCDC', title: 'Contract \u2014 the team agreement',                       hint: 'Working agreements set norms BEFORE the friction (response times, decision rules, conflict handling). Edmondson 2018 psychological safety research: explicit norms predict speak-up rates more than personality.' },
+            contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)', icon: '\uD83D\uDCDC', title: 'Agreement — a proposal the team can shape', hint: 'Clarify what people will do, what makes participation workable and how to ask for support or revision. A written draft or signature does not establish shared understanding or consent.' },
             progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 vulnerability about growth predicts trust (Brown 2018).' }
           };
           var meta = TAB_META[activeTab] || TAB_META.roles;
@@ -1996,162 +2084,84 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var contractContent = null;
         if (activeTab === 'contract') {
-          contractContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\uD83D\uDCDC Team Contract Builder'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              band === 'elementary' ? 'Make promises with your team about how you\'ll work together!' :
-              band === 'middle' ? 'Create a team agreement that sets expectations for how you\'ll collaborate.' :
-              'Draft a formal team operating agreement that establishes norms, roles, and accountability structures.'
+          function agreementRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var agreementDrafts = agreementRecord(d.agreementDrafts);
+          var agreementDraft = agreementRecord(Object.prototype.hasOwnProperty.call(agreementDrafts, band) ? agreementDrafts[band] : null);
+          var agreementExamples = agreementRecord(d.agreementExamples);
+          var agreementExample = AGREEMENT_EXAMPLES.find(function(item) { return item.id === agreementExamples[band]; }) || AGREEMENT_EXAMPLES[0];
+          var agreementFields = [
+            { key: 'purpose', label: 'What this agreement is for', help: band === 'elementary' ? 'What will the group do together? What do you want the plan to help with?' : 'Name the shared task and the collaboration problem this proposal should address. Keep it specific enough to revisit.' },
+            { key: 'voices', label: 'Whose input is still needed', help: band === 'elementary' ? 'Who needs a chance to help make the plan? How can someone ask to change it?' : 'How can everyone consider, question or suggest changes to the proposal? Include absent members and private or supported feedback routes. Silence and signatures alone do not show understanding or agreement.' },
+            { key: 'practice', label: 'What we propose doing', help: band === 'elementary' ? 'What could people actually do? For example: ask before changing a shared picture.' : 'Describe observable actions and when they apply. Replace vague demands such as "be positive" with a process that allows disagreement and questions.' },
+            { key: 'access', label: 'Ways to participate and get support', help: band === 'elementary' ? 'Could someone talk, draw, write or ask for help? What if the materials or plan do not work for them?' : 'Plan usable formats, materials, response windows and alternatives. Ask what support is needed without requiring diagnoses or personal explanations.' },
+            { key: 'roles', label: 'Responsibilities to discuss', help: band === 'elementary' ? 'What jobs need doing? Ask what people can try and what help they need. Use role names instead of people\'s names.' : 'Use role labels to propose who does what, with time and support. Check capacity and willingness; include learning opportunities and a way to revisit workload.' },
+            { key: 'repair', label: 'If the agreement is not working', help: band === 'elementary' ? 'How could you check what happened and get help? You can ask a trusted adult right away if you feel unsafe.' : 'Check the expectation, impact and barriers, then propose support and a feasible next step. A student need not confront someone causing harm before seeking adult help. Do not invent peer grade penalties or promise secrecy.' },
+            { key: 'review', label: 'When and how we will revisit it', help: band === 'elementary' ? 'When will you ask if the plan helps? Who can help you change it?' : 'Set a review point and name what to look for: access, manageable workload, contribution or decision influence. Explain how changes will be discussed with the group.' }
+          ];
+          var agreementChecks = [
+            { key: 'clear', title: 'Clear enough to try', help: 'Can someone tell what to do, when it applies and what is still undecided?' },
+            { key: 'workable', title: 'Workable ways to join', help: 'Are time, formats, materials and support realistic? Is there a usable alternative?' },
+            { key: 'voice', title: 'Room to question and revise', help: 'Can people disagree, ask for help or suggest a change without pressure or forced disclosure?' },
+            { key: 'followup', title: 'Support and a review point', help: 'Is there a supported next step when the plan fails, with clear responsibility and time to look again?' }
+          ];
+          var agreementReviews = agreementRecord(agreementDraft.reviews);
+          function agreementValue(key) { return Object.prototype.hasOwnProperty.call(agreementDraft, key) && typeof agreementDraft[key] === 'string' ? agreementDraft[key] : ''; }
+          function agreementReview(key) { var value = agreementReviews[key]; return value === 'revise' || value === 'discuss' ? value : ''; }
+          function changeAgreement(key, value) {
+            var next = Object.assign({}, agreementDrafts), draft = Object.assign({}, agreementDraft);
+            if (key === 'reviews') { draft.reviews = value; }
+            else {
+              draft[key] = value;
+              var hadReview = agreementChecks.some(function(check) { return agreementReview(check.key); });
+              var reviews = Object.assign({}, agreementReviews); agreementChecks.forEach(function(check) { delete reviews[check.key]; }); draft.reviews = reviews;
+              if (hadReview && announceToSR) announceToSR('Draft changed. Review choices reset so you can check the new wording.');
+            }
+            next[band] = draft; upd('agreementDrafts', next);
+          }
+          var agreementSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var agreementInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var agreementEdge = _teaHC ? '#ffff00' : '#64748b';
+          var agreementControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + agreementEdge, borderRadius: 8, background: agreementSurface, color: agreementInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var agreementSummary = { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 };
+          var agreementDetails = { borderTop: '1px solid ' + agreementEdge };
+          function agreementNote(field) {
+            var id = 'teamwork-agreement-' + field.key;
+            return h('div', { key: field.key, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, field.help), h('textarea', { id: id, rows: 3, value: agreementValue(field.key), 'aria-describedby': id + '-help', onChange: function(e) { changeAgreement(field.key, e.target.value); }, style: Object.assign({}, agreementControl, { lineHeight: 1.6, resize: 'vertical' }) }));
+          }
+          var agreementReviewLabels = { '': 'Still to check', revise: 'Needs revision', discuss: 'Ready to discuss' };
+          var agreementText = 'WORKING TEAM AGREEMENT — DRAFT FOR DISCUSSION\nThis is a personal proposal, not a record of team consent.\n\n' + agreementFields.map(function(field) { return field.label + ':\n' + (agreementValue(field.key) || '(still open)'); }).join('\n\n') + '\n\nMY REVIEW CHOICES (not team approval)\n' + agreementChecks.map(function(check) { return check.title + ': ' + agreementReviewLabels[agreementReview(check.key)]; }).join('\n');
+          var earlierAgreement = [
+            { label: 'Earlier agreements', items: Array.isArray(d.contractAgreements) ? d.contractAgreements.filter(function(item) { return typeof item === 'string' && item.trim(); }) : [] },
+            { label: 'Earlier roles', items: Array.isArray(d.contractRoles) ? d.contractRoles.filter(function(item) { return typeof item === 'string' && item.trim(); }) : [] },
+            { label: 'Earlier communication plan', items: typeof d.contractComms === 'string' && d.contractComms ? [d.contractComms] : [] },
+            { label: 'Earlier accountability text', items: typeof d.contractConsequence === 'string' && d.contractConsequence ? [d.contractConsequence] : [] }
+          ];
+          contractContent = h('section', { role: 'region', 'aria-label': 'Working team agreement', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: agreementSurface, color: agreementInk, border: '1px solid ' + agreementEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Draft a workable team agreement'),
+            h('p', null, band === 'elementary' ? 'Make a plan people can help shape. You can talk, draw or write with an adult. Start with one useful idea; every box is optional.' : 'Turn broad expectations into a proposal people can understand, use and revise. Start with the parts that matter for your group; every field is optional.'),
+            h('p', null, 'Writing or reviewing a draft does not mean the team has agreed. Use a fictional group or role labels and leave out identifying details.'),
+            h('div', { key: band },
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Compare and test example agreements'),
+                h('p', null, 'Examples are for comparison. Changing the example does not replace your draft.'),
+                h('label', { htmlFor: 'teamwork-agreement-example', style: { display: 'block', fontWeight: 700 } }, 'Choose an agreement example'),
+                h('select', { id: 'teamwork-agreement-example', value: agreementExample.id, style: agreementControl, onChange: function(e) { var next = Object.assign({}, agreementExamples); next[band] = e.target.value; upd('agreementExamples', next); } }, AGREEMENT_EXAMPLES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+                h('div', { key: agreementExample.id }, h('h3', { style: { fontSize: 18 } }, agreementExample.title), h('p', null, agreementExample.setups[band] || agreementExample.setups.elementary),
+                  h('p', null, h('strong', null, 'Starting wording: '), agreementExample.initial), h('p', null, agreementExample.problem),
+                  h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Compare a more workable proposal'), h('p', null, agreementExample.proposal)),
+                  h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Test it when circumstances change'), h('p', null, agreementExample.test), h('p', null, h('strong', null, 'A possible adjustment: '), agreementExample.revision)))),
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, '1. Purpose and participation'), agreementFields.slice(0, 2).map(agreementNote)),
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, '2. Practices, access and responsibilities'), agreementFields.slice(2, 5).map(agreementNote)),
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, '3. Support and revision'), agreementFields.slice(5).map(agreementNote)),
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Check my draft before discussing it'),
+                h('p', null, 'These are your own review choices, not a score or team approval. Changing any note resets these choices so you can check the new wording. No choice is required to keep your draft.'),
+                agreementChecks.map(function(check) { var id = 'teamwork-agreement-check-' + check.key; return h('div', { key: check.key, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, check.title), h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, check.help), h('select', { id: id, value: agreementReview(check.key), 'aria-describedby': id + '-help', style: agreementControl, onChange: function(e) { var next = Object.assign({}, agreementReviews); next[check.key] = e.target.value; changeAgreement('reviews', next); } }, h('option', { value: '' }, 'Still to check'), h('option', { value: 'revise' }, 'Needs revision'), h('option', { value: 'discuss' }, 'Ready to discuss'))); })),
+              h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Review my proposal'),
+                h('p', null, 'This preview contains your notes and review choices, not the example wording. You can select and copy it. Review private details before sharing; nothing is sent to teammates.'),
+                h('label', { htmlFor: 'teamwork-agreement-preview', style: { display: 'block', fontWeight: 700 } }, 'Proposal text to review or copy'),
+                h('textarea', { id: 'teamwork-agreement-preview', rows: 12, readOnly: true, value: agreementText, style: Object.assign({}, agreementControl, { lineHeight: 1.6, resize: 'vertical' }) })),
+              h('p', null, 'Your draft stays with this grade band in the current project. Use the hub save or export controls to keep it beyond this session. You can return and change it without a completion score.')
             ),
-
-            // ── Section 1: Team Agreements ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 12 } },
-                '\uD83E\uDD1D ' + (band === 'elementary' ? 'We Promise To...' : 'We Agree To...')
-              ),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                contractAgreements.map(function(agreement, idx) {
-                  return h('div', { key: idx, style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                    h('span', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, minWidth: 20 } }, String(idx + 1) + '.'),
-                    h('input', {
-                      type: 'text',
-                      'aria-label': 'Team agreement ' + (idx + 1),
-                      value: agreement,
-                      onChange: function(e) {
-                        var newAgreements = contractAgreements.slice();
-                        newAgreements[idx] = e.target.value;
-                        upd('contractAgreements', newAgreements);
-                        upd('contractSaved', false);
-                      },
-                      placeholder: idx === 0 ? (band === 'elementary' ? 'Listen when someone is talking' : 'Respect all ideas during brainstorming') :
-                                   idx === 1 ? (band === 'elementary' ? 'Take turns sharing ideas' : 'Meet all deadlines or communicate early') :
-                                   idx === 2 ? (band === 'elementary' ? 'Help when someone is stuck' : 'Give constructive feedback, not criticism') :
-                                   idx === 3 ? (band === 'elementary' ? 'Say kind things about each other\'s work' : 'Share workload equitably') :
-                                   (band === 'elementary' ? 'Try our best even when it\'s hard' : 'Address conflicts directly and respectfully'),
-                      style: { flex: 1, padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
-                    })
-                  );
-                })
-              )
-            ),
-
-            // ── Section 2: Role Assignments ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 12 } }, '\uD83D\uDC65 Role Assignments'),
-              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } }, 'Assign team members to roles (e.g., "Alex \u2014 Note-Taker", "Sam \u2014 Facilitator"):'),
-              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                contractRoles.map(function(role, idx) {
-                  return h('input', {
-                    key: idx,
-                    type: 'text',
-                    'aria-label': 'Team role assignment ' + (idx + 1),
-                    value: role,
-                    onChange: function(e) {
-                      var newRoles = contractRoles.slice();
-                      newRoles[idx] = e.target.value;
-                      upd('contractRoles', newRoles);
-                      upd('contractSaved', false);
-                    },
-                    placeholder: 'Team member ' + (idx + 1) + ' \u2014 Role',
-                    style: { padding: 8, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12 }
-                  });
-                })
-              )
-            ),
-
-            // ── Section 3: Communication Expectations ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCAC Communication Plan'),
-              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } },
-                band === 'elementary' ? 'How will your team talk to each other during the project?' :
-                'How and when will the team communicate? (e.g., daily check-ins, group chat norms, response time expectations)'
-              ),
-              h('textarea', {
-                value: contractComms,
-                'aria-label': 'Communication norms',
-                onChange: function(e) { upd('contractComms', e.target.value); upd('contractSaved', false); },
-                placeholder: band === 'elementary' ? 'We will raise our hands, take turns, and ask before changing someone\'s work.' :
-                  band === 'middle' ? 'We\'ll use a group chat for updates. We\'ll respond within 24 hours. We\'ll meet twice a week in person.' :
-                  'Communication channels, response-time expectations, meeting cadence, status update format...',
-                rows: 3,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
-              })
-            ),
-
-            // ── Section 4: Consequences ──
-            h('div', { style: { padding: 16, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #334155', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#f1f5f9'), marginBottom: 8 } },
-                '\u26A0\uFE0F ' + (band === 'elementary' ? 'What Happens If We Forget?' : 'Accountability Plan')
-              ),
-              h('p', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginBottom: 10 } },
-                band === 'elementary' ? 'What will your team do if someone doesn\'t follow the promises?' :
-                'What are the agreed-upon consequences if a team member doesn\'t meet expectations?'
-              ),
-              h('textarea', {
-                value: contractConsequence,
-                'aria-label': 'Consequence agreement',
-                onChange: function(e) { upd('contractConsequence', e.target.value); upd('contractSaved', false); },
-                placeholder: band === 'elementary' ? 'We\'ll have a kind talk. If it keeps happening, we\'ll ask the teacher for help.' :
-                  band === 'middle' ? 'First: private conversation. Second: group discussion. Third: involve the teacher.' :
-                  'Progressive accountability: private check-in, team meeting, escalation path, grade impact discussion.',
-                rows: 2,
-                style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 12, resize: 'vertical', boxSizing: 'border-box' }
-              })
-            ),
-
-            // Save / Preview
-            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 16 } },
-              h('button', { 'aria-label': 'Start New Contract',
-                onClick: function() {
-                  var filledAgreements = contractAgreements.filter(function(a) { return a.trim(); });
-                  if (filledAgreements.length < 2) { addToast('Fill in at least 2 agreements!', 'info'); return; }
-                  upd('contractSaved', true);
-                  logPractice('contract', 'team_contract');
-                  tryAwardBadge('contract_creator');
-                  awardXP(20);
-                  if (soundEnabled) sfxCorrect();
-                  addToast('Team contract saved! +20 XP', 'success');
-                  celebrate && celebrate();
-                  if (announceToSR) announceToSR('Team contract saved');
-                },
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: contractSaved ? _teaBg('#334155') : ACCENT, color: contractSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
-              }, contractSaved ? '\u2713 Contract Saved' : '\uD83D\uDCBE Save Contract'),
-              contractSaved && h('button', { 'aria-label': 'Start New Contract',
-                onClick: function() { upd({ contractAgreements: ['', '', '', '', ''], contractRoles: ['', '', '', ''], contractComms: '', contractConsequence: '', contractSaved: false }); if (soundEnabled) sfxClick(); },
-                style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _teaFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
-              }, 'Start New Contract')
-            ),
-
-            // Contract Preview
-            contractSaved && h('div', { style: { padding: 20, borderRadius: 14, background: _teaBg('#0f172a'), border: '2px solid ' + ACCENT + '44', marginBottom: 16 } },
-              h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-                h('div', { style: { fontSize: 20, fontWeight: 700, color: _teaFg('#f1f5f9') } }, '\uD83D\uDCDC Team Contract'),
-                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 4 } }, 'Created ' + new Date().toLocaleDateString())
-              ),
-              h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: ACCENT, marginBottom: 6 } }, 'AGREEMENTS:'),
-                contractAgreements.filter(function(a) { return a.trim(); }).map(function(a, i) {
-                  return h('div', { key: i, style: { fontSize: 12, color: _teaFg('#cbd5e1'), padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid ' + ACCENT + '44' } }, (i + 1) + '. ' + a);
-                })
-              ),
-              contractRoles.filter(function(r) { return r.trim(); }).length > 0 && h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#8b5cf6'), marginBottom: 6 } }, 'ROLES:'),
-                contractRoles.filter(function(r) { return r.trim(); }).map(function(r, i) {
-                  return h('div', { key: i, style: { fontSize: 12, color: _teaFg('#cbd5e1'), padding: '4px 0', paddingLeft: 12, borderLeft: '2px solid #8b5cf644' } }, r);
-                })
-              ),
-              contractComms.trim() && h('div', { style: { marginBottom: 14 } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#f59e0b'), marginBottom: 6 } }, 'COMMUNICATION:'),
-                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #f59e0b44' } }, contractComms)
-              ),
-              contractConsequence.trim() && h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: _teaFg('#ef4444'), marginBottom: 6 } }, 'ACCOUNTABILITY:'),
-                h('div', { style: { fontSize: 12, color: _teaFg('#cbd5e1'), lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid #ef444444' } }, contractConsequence)
-              ),
-              h('div', { style: { marginTop: 16, paddingTop: 12, borderTop: '1px dashed #334155', textAlign: 'center' } },
-                h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), fontStyle: 'italic' } }, 'Signatures: _______________  _______________  _______________  _______________')
-              )
-            )
+            earlierAgreement.some(function(group) { return group.items.length; }) && h('details', { style: agreementDetails }, h('summary', { style: agreementSummary }, 'Earlier contract records'), h('p', null, 'These earlier entries are preserved as historical records. They are not proof of consent or recommended consequences, and have not been copied into your new proposal.'), earlierAgreement.map(function(group) { return group.items.length > 0 && h('div', { key: group.label }, h('h3', { style: { fontSize: 16 } }, group.label), group.items.map(function(item, index) { return h('p', { key: index, style: { whiteSpace: 'pre-wrap' } }, item); })); }))
           );
         }
 
@@ -2340,110 +2350,67 @@ window.SelHub = window.SelHub || {
         // ══════════════════════════════════════════════════════════
         var conflictToolContent = null;
         if (activeTab === 'conflicttool') {
-          conflictToolContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
-            h('h3', { style: { textAlign: 'center', marginBottom: 4, color: _teaFg('#f1f5f9'), fontSize: 18 } }, '\u267B\uFE0F Conflict \u2192 Collaboration Converter'),
-            h('p', { style: { textAlign: 'center', color: _teaFg('#94a3b8'), fontSize: 12, marginBottom: 16 } },
-              band === 'elementary' ? 'When your team has a problem, describe it here and we\u2019ll help you turn it into teamwork!' :
-              band === 'middle' ? 'Describe a team conflict and AI will reframe it as a collaboration opportunity with concrete steps.' :
-              'Transform team friction into productive collaboration. Describe any conflict and receive actionable reframing strategies.'
+          function conflictRecord(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+          var conflictSelections = conflictRecord(d.conflictSelections);
+          var conflictSelected = Object.prototype.hasOwnProperty.call(conflictSelections, band) ? conflictSelections[band] : 'ideas';
+          var conflictCase = CONFLICT_PRACTICE.find(function(item) { return item.id === conflictSelected; });
+          if (!conflictCase && conflictSelected !== 'own') { conflictCase = CONFLICT_PRACTICE[0]; conflictSelected = conflictCase.id; }
+          var conflictKey = band + ':' + conflictSelected;
+          var conflictDrafts = conflictRecord(d.conflictDrafts);
+          var conflictDraft = conflictRecord(Object.prototype.hasOwnProperty.call(conflictDrafts, conflictKey) ? conflictDrafts[conflictKey] : null);
+          var supportFirst = !!(conflictCase && conflictCase.supportFirst);
+          var conflictRoutes = [
+            { id: 'talk', title: 'A voluntary conversation', text: 'Only when people can participate safely and freely: describe what you noticed, ask about the other account and compare workable next steps. Do not require agreement, forgiveness or personal disclosure. Stop and seek support if pressure or threats appear.' },
+            { id: 'pause', title: 'Pause and arrange a next step', text: 'A pause can create space to think. Identify when and how to return or who can help. If there is pressure, harm or uncertainty about safety, include trusted-adult support rather than delaying help.' },
+            { id: 'support', title: 'Get support from a trusted adult', text: 'Describe observable behavior and its impact, then ask for specific help. You do not have to confront the other person first. Ask who can help, who will know and when someone will follow up. If the first response does not help, try another trusted adult or the established support route.' },
+            { id: 'unsure', title: 'I am unsure what support is needed', text: 'You do not need to decide whether the situation has a particular label. Ask a trusted adult to help work out what is happening and what support would be useful. Avoid guessing another person\'s motives or promising to manage the situation alone.' }
+          ].filter(function(route) { return !supportFirst || route.id !== 'talk'; });
+          var conflictRoute = conflictRoutes.find(function(route) { return route.id === conflictDraft.route; });
+          var conflictFields = [
+            { key: 'observations', label: 'What I noticed and what I do not know', help: band === 'elementary' ? 'What did you see or hear? What would you need help finding out? You can talk or draw first.' : 'Separate specific observations from assumptions. Use role labels, leave out identifying details and keep unknowns open.' },
+            { key: 'needs', label: 'Needs, boundaries and support', help: band === 'elementary' ? 'What would help? What should stop? Who could help you?' : 'Name what matters and what support or boundary is needed. Do not require someone to reveal private reasons or accept harm as a compromise.' },
+            { key: 'words', label: 'Words I could use or ask for help saying', help: supportFirst || !conflictRoute || conflictRoute.id !== 'talk' ? 'You can write a request for adult help or a supported pause. A direct conversation is not required. You may leave this blank.' : 'Try an observation, a specific question and a possible request. The other person may disagree; wording alone does not ensure cooperation.' },
+            { key: 'next', label: 'One next step and who can help', help: band === 'elementary' ? 'What could you try with help? Who can help make it happen?' : 'Choose a feasible next step, a support person or role and what you need from them. Do not assign all the repair work to the person affected.' },
+            { key: 'review', label: 'What I will check, and when', help: band === 'elementary' ? 'When will you check whether the plan helped? What if you still need help?' : 'Name a follow-up point and what would show improvement. Consider safety, access, workload and whether concerns are heard. Plan another support route if nothing changes.' }
+          ];
+          function conflictValue(key) { return Object.prototype.hasOwnProperty.call(conflictDraft, key) && typeof conflictDraft[key] === 'string' ? conflictDraft[key] : ''; }
+          function changeConflictDraft(key, value) { var next = Object.assign({}, conflictDrafts); next[conflictKey] = Object.assign({}, conflictDraft); next[conflictKey][key] = value; upd('conflictDrafts', next); }
+          var conflictSurface = _teaHC ? '#000000' : _teaL ? '#ffffff' : '#0f172a';
+          var conflictInk = _teaHC ? '#ffff00' : _teaL ? '#0f172a' : '#e2e8f0';
+          var conflictEdge = _teaHC ? '#ffff00' : '#64748b';
+          var conflictControl = { width: '100%', minHeight: 44, padding: 10, border: '1px solid ' + conflictEdge, borderRadius: 8, background: conflictSurface, color: conflictInk, font: 'inherit', fontSize: 16, boxSizing: 'border-box' };
+          var conflictDetails = { borderTop: '1px solid ' + conflictEdge };
+          var conflictSummary = { minHeight: 44, padding: '12px 0', cursor: 'pointer', fontWeight: 700 };
+          var conflictPreview = 'CONFLICT PLAN — POSSIBLE NEXT STEPS\n' + (conflictCase ? 'Fictional example: ' + conflictCase.title : 'My own example') + '\nSupport route: ' + (conflictRoute ? conflictRoute.title : 'Still deciding') + '\nThis plan is not evidence that the situation is resolved.\n\n' + conflictFields.map(function(field) { return field.label + ':\n' + (conflictValue(field.key) || '(not recorded)'); }).join('\n\n');
+          var oldConflictHistory = Array.isArray(d.conflictHistory) ? d.conflictHistory.filter(function(entry) { return entry && typeof entry === 'object' && (typeof entry.input === 'string' || typeof entry.result === 'string'); }) : [];
+          var oldConflictInput = typeof d.conflictInput === 'string' ? d.conflictInput : '';
+          var oldConflictResult = typeof d.conflictResult === 'string' ? d.conflictResult : '';
+          conflictToolContent = h('section', { role: 'region', 'aria-label': 'Conflict planning practice', style: { padding: 16, maxWidth: 760, margin: '0 auto', background: conflictSurface, color: conflictInk, border: '1px solid ' + conflictEdge, borderRadius: 12, fontSize: 14, lineHeight: 1.65, overflowWrap: 'anywhere', minWidth: 0 } },
+            h('h2', { style: { fontSize: 22, lineHeight: 1.3, marginTop: 0 } }, 'Choose a supported next step'),
+            h('p', null, band === 'elementary' ? 'Use a made-up example or your own. You can talk, draw or write with help. A plan is something to try, not proof that a problem is fixed.' : 'Distinguish a disagreement from pressure or repeated harm, consider the support needed and plan a possible next step. You can practice with an example without writing personal details.'),
+            h('p', null, 'You can seek adult help without first confronting someone. For threats, coercion or repeated harm, prioritize support and boundaries rather than compromise. These notes are not monitored and do not request help from anyone.'),
+            h('label', { htmlFor: 'teamwork-conflict-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a conflict practice context'),
+            h('select', { id: 'teamwork-conflict-context', value: conflictSelected, style: conflictControl, onChange: function(e) { var next = Object.assign({}, conflictSelections); next[band] = e.target.value; upd('conflictSelections', next); } }, CONFLICT_PRACTICE.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+            h('div', { key: conflictKey },
+              h('h3', { style: { fontSize: 18 } }, conflictCase ? conflictCase.title : 'My own example'),
+              h('p', null, conflictCase ? conflictCase.setups[band] || conflictCase.setups.elementary : 'Use only the details needed to think about a next step. This tool cannot determine safety or another person\'s intentions. If you are unsure, ask a trusted adult for help.'),
+              conflictCase && h('p', null, conflictCase.notice),
+              supportFirst && h('p', { style: { fontWeight: 700 } }, 'This example calls for adult support. Direct-conversation rehearsal is not offered for repeated pressure and exclusion.'),
+              h('label', { htmlFor: 'teamwork-conflict-route', style: { display: 'block', fontWeight: 700 } }, 'A support route to consider'),
+              h('select', { id: 'teamwork-conflict-route', value: conflictRoute ? conflictRoute.id : '', style: conflictControl, onChange: function(e) { changeConflictDraft('route', e.target.value); } }, h('option', { value: '' }, 'Still deciding'), conflictRoutes.map(function(route) { return h('option', { key: route.id, value: route.id }, route.title); })),
+              h('div', { role: 'status', 'aria-live': 'polite', style: { margin: '12px 0' } }, conflictRoute ? conflictRoute.text : 'You can read and plan without choosing. If you are unsure, involve a trusted adult; you do not have to work it out alone.'),
+              conflictRoute && conflictCase && h('details', { key: conflictRoute.id, style: conflictDetails }, h('summary', { style: conflictSummary }, 'Consider this route in the example'), h('p', null, conflictCase[conflictRoute.id] || conflictCase.support), h('p', null, 'This is one possible next step, not a promise of agreement or resolution.')),
+              h('details', { style: conflictDetails }, h('summary', { style: conflictSummary }, 'Build a plan (optional)'),
+                h('p', null, 'All fields are optional. Changing the support route keeps your notes; review whether they still fit.'),
+                conflictFields.map(function(field) { var id = 'teamwork-conflict-' + field.key; return h('div', { key: field.key, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('p', { id: id + '-help', style: { margin: '4px 0 8px' } }, field.help), h('textarea', { id: id, rows: 3, value: conflictValue(field.key), 'aria-describedby': id + '-help', onChange: function(e) { changeConflictDraft(field.key, e.target.value); }, style: Object.assign({}, conflictControl, { lineHeight: 1.6, resize: 'vertical' }) })); })),
+              conflictCase && h('details', { style: conflictDetails }, h('summary', { style: conflictSummary }, 'Reconsider when something changes'), h('p', null, conflictCase.change), h('p', null, h('strong', null, 'A possible adjustment: '), conflictCase.adjust)),
+              h('details', { style: conflictDetails }, h('summary', { style: conflictSummary }, 'Review my possible next steps'), h('p', null, 'Only your current context notes and route appear here. You can select and copy the text after reviewing private details. No message is sent, and no AI response is requested.'), h('label', { htmlFor: 'teamwork-conflict-preview', style: { display: 'block', fontWeight: 700 } }, 'Plan text to review or copy'), h('textarea', { id: 'teamwork-conflict-preview', readOnly: true, rows: 12, value: conflictPreview, style: Object.assign({}, conflictControl, { lineHeight: 1.6, resize: 'vertical' }) })),
+              h('p', null, 'Notes and route choices stay with this context and grade band in the current project. Use the hub save or export controls to keep them beyond this session. There is no score for choosing a route or writing a plan.')
             ),
-
-            // Input section
-            h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '1px solid #f59e0b44', marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 10 } }, '\uD83D\uDD25 Describe the Team Conflict'),
-              h('textarea', {
-                value: conflictInput,
-                'aria-label': 'Describe your team conflict',
-                onChange: function(e) { upd('conflictInput', e.target.value); },
-                placeholder: band === 'elementary' ? 'Example: Two people in my group both want to be the leader and they keep arguing...' :
-                  band === 'middle' ? 'Example: Our team is split on the project direction. Half want to do a presentation, half want a video. Nobody will compromise...' :
-                  'Describe the conflict in detail: who is involved, what happened, how people feel, and what you\'ve tried so far...',
-                rows: 4,
-                style: { width: '100%', padding: 12, borderRadius: 8, border: '1px solid #334155', background: _teaBg('#0f172a'), color: _teaFg('#e2e8f0'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', marginBottom: 12 }
-              }),
-              h('button', { 
-                onClick: function() {
-                  if (!conflictInput.trim()) { addToast('Describe the conflict first!', 'info'); return; }
-                  if (conflictInput.trim().length < 15) { addToast('Please describe the conflict in more detail.', 'info'); return; }
-                  if (!callGemini) { addToast('AI not available.', 'error'); return; }
-                  // Safety pre-check on conflict-description free-text.
-                  var cnSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
-                    ? window.SelHub.safeRehearseCheck(conflictInput, { toolId: 'teamwork_conflict', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
-                    : { action: 'continue' };
-                  if (cnSafety.action === 'block') {
-                    upd('conflictResult', window.SelHub.rehearseBreakCharacterText(cnSafety.severity));
-                    upd('conflictLoading', false);
-                    upd('_lastTier', 3);
-                    return;
-                  }
-                  upd('conflictLoading', true);
-                  upd('conflictResult', null);
-                  var prompt = 'You are a teamwork mediator and collaboration coach for ' + band + ' school students.\n\n' +
-                    'TEAM CONFLICT: "' + conflictInput + '"\n\n' +
-                    'Respond with EXACTLY this format:\n\n' +
-                    'REFRAME: [Restate the conflict as a collaboration opportunity in 1-2 sentences. Start with "This is actually an opportunity to..."]\n\n' +
-                    'STEP 1: [First concrete action step to move from conflict to collaboration]\n\n' +
-                    'STEP 2: [Second concrete action step]\n\n' +
-                    'STEP 3: [Third concrete action step]\n\n' +
-                    'KEY INSIGHT: [One sentence about what this conflict teaches about teamwork]\n\n' +
-                    'Use ' + (band === 'elementary' ? 'simple, kind language for ages 5-10.' : band === 'middle' ? 'clear, practical language for ages 11-14.' : 'professional coaching language for ages 15-18.') +
-                    '\nKeep each section brief (1-2 sentences each). Total under 200 words.';
-                  callGemini(prompt).then(function(result) {
-                    var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
-                    upd('conflictResult', resp);
-                    upd('conflictLoading', false);
-                    var newCount = conflictCount + 1;
-                    upd('conflictCount', newCount);
-                    var newHistory = conflictHistory.concat([{ input: conflictInput, result: resp, timestamp: Date.now() }]);
-                    upd('conflictHistory', newHistory);
-                    logPractice('conflict_convert', 'conflict_' + newCount);
-                    awardXP(20);
-                    if (soundEnabled) sfxCorrect();
-                    addToast('Conflict converted! +20 XP', 'success');
-                    if (announceToSR) announceToSR('Conflict converted to collaboration');
-                    if (newCount >= 3) tryAwardBadge('conflict_converter');
-                  }).catch(function(err) {
-                    upd('conflictLoading', false);
-                    addToast('Error: ' + err.message, 'error');
-                  });
-                },
-                disabled: conflictLoading,
-                style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: conflictLoading ? _teaBg('#334155') : _teaFg('#f59e0b'), color: conflictLoading ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: conflictLoading ? 'default' : 'pointer' }
-              }, conflictLoading ? '\u2728 Converting...' : '\u267B\uFE0F Convert to Collaboration')
-            ),
-
-            // Result
-            conflictResult && h('div', { style: { padding: 18, borderRadius: 14, background: _teaBg('#1e293b'), border: '2px solid #22c55e44', marginBottom: 16 } },
-              h('div', { style: { fontSize: 14, fontWeight: 700, color: _teaFg('#22c55e'), marginBottom: 12, textAlign: 'center' } }, '\u2705 Collaboration Opportunity'),
-              h('div', { style: { fontSize: 13, color: _teaFg('#e2e8f0'), lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, conflictResult),
-              h('button', { 'aria-label': 'Convert Another Conflict',
-                onClick: function() { upd({ conflictInput: '', conflictResult: null }); if (soundEnabled) sfxClick(); },
-                style: { display: 'block', margin: '14px auto 0', padding: '8px 18px', borderRadius: 8, border: 'none', background: _teaBg('#b45309'), color: _teaFg('#0f172a'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
-              }, '\u267B\uFE0F Convert Another Conflict')
-            ),
-
-            // Conversion counter
-            h('div', { style: { padding: 14, borderRadius: 12, background: _teaBg('#0f172a'), border: '1px solid #334155', marginBottom: 16, textAlign: 'center' } },
-              h('div', { style: { fontSize: 24, fontWeight: 700, color: _teaFg('#f59e0b') } }, String(conflictCount)),
-              h('div', { style: { fontSize: 11, color: _teaFg('#94a3b8'), marginTop: 2 } }, 'Conflicts Converted to Collaborations'),
-              conflictCount < 3 && h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginTop: 4 } }, 'Convert ' + (3 - conflictCount) + ' more to earn the Conflict Converter badge!')
-            ),
-
-            // History
-            conflictHistory.length > 0 && h('div', { style: { marginBottom: 16 } },
-              h('div', { style: { fontSize: 13, fontWeight: 600, color: _teaFg('#f1f5f9'), marginBottom: 8 } }, '\uD83D\uDCDD Conversion History'),
-              h('div', { role: 'log', 'aria-label': 'Conflict conversion history', 'aria-live': 'polite', 'aria-relevant': 'additions', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                conflictHistory.slice(-5).reverse().map(function(entry, i) {
-                  return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: _teaBg('#1e293b'), border: '1px solid #334155' } },
-                    h('div', { style: { fontSize: 10, color: _teaFg('#94a3b8'), marginBottom: 4 } }, new Date(entry.timestamp).toLocaleString()),
-                    h('div', { style: { fontSize: 11, color: _teaFg('#ef4444'), marginBottom: 4, fontStyle: 'italic' } }, '\uD83D\uDD25 "' + (entry.input.length > 80 ? entry.input.substring(0, 80) + '...' : entry.input) + '"'),
-                    h('div', { style: { fontSize: 11, color: _teaFg('#22c55e') } }, '\u2705 Converted successfully')
-                  );
-                })
-              )
-            ),
-
-            renderQuickReflection('conflicttool')
+            (oldConflictInput || oldConflictResult || oldConflictHistory.length > 0) && h('details', { style: conflictDetails }, h('summary', { style: conflictSummary }, 'Earlier conflict-coach records'), h('p', null, 'These are records from the earlier AI activity, not verified advice or evidence that a conflict was resolved. They have not been copied into your new plan.'),
+              oldConflictInput && h('div', null, h('h3', { style: { fontSize: 16 } }, 'Earlier input'), h('p', { style: { whiteSpace: 'pre-wrap' } }, oldConflictInput)),
+              oldConflictResult && h('div', null, h('h3', { style: { fontSize: 16 } }, 'Earlier generated response'), h('p', { style: { whiteSpace: 'pre-wrap' } }, oldConflictResult)),
+              oldConflictHistory.map(function(entry, index) { return h('details', { key: index, style: conflictDetails }, h('summary', { style: conflictSummary }, 'Earlier record ' + (index + 1)), typeof entry.input === 'string' && h('p', { style: { whiteSpace: 'pre-wrap' } }, entry.input), typeof entry.result === 'string' && h('p', { style: { whiteSpace: 'pre-wrap' } }, entry.result)); }))
           );
         }
 
@@ -2558,10 +2525,10 @@ window.SelHub = window.SelHub || {
             { icon: '\u2B50', label: 'Earlier scenario stars', value: totalStars + '/' + (SCENARIOS.length * 3), color: _teaFg('#facc15') },
             { icon: '\uD83D\uDDE3\uFE0F', label: 'Earlier communication quiz', value: commStyleDone ? 'Completed' : 'No earlier completion', color: _teaFg('#ef4444') },
             { icon: '\uD83D\uDCBB', label: 'Earlier virtual-team answers', value: vtAnsweredTotal + '/' + VIRTUAL_TEAM_SCENARIOS.length, color: _teaFg('#3b82f6') },
-            { icon: '\u267B\uFE0F', label: 'Conflicts Conv.', value: String(conflictCount), color: _teaFg('#f59e0b') },
+            { icon: '\u267B\uFE0F', label: 'Earlier conflict-coach requests', value: String(conflictCount), color: _teaFg('#f59e0b') },
             { icon: '\uD83D\uDD04', label: 'Earlier retrospective', value: retroSaved ? 'Saved earlier' : 'No earlier save', color: _teaFg('#06b6d4') },
             { icon: '\uD83D\uDCCA', label: 'Quiz', value: quizSubmitted ? 'Done' : 'Not yet', color: _teaFg('#06b6d4') },
-            { icon: '\uD83D\uDCDC', label: 'Contract', value: contractSaved ? 'Saved' : 'Not yet', color: _teaFg('#a78bfa') },
+            { icon: '\uD83D\uDCDC', label: 'Earlier contract', value: contractSaved ? 'Saved earlier' : 'No earlier save', color: _teaFg('#a78bfa') },
             { icon: '\uD83C\uDFC5', label: 'Badges', value: Object.keys(earnedBadges).length + '/' + BADGES.length, color: _teaFg('#ec4899') },
             { icon: '\uD83D\uDCDD', label: 'Reflections', value: String(reflectionLog.length), color: _teaFg('#22d3ee') },
             { icon: '\uD83D\uDD25', label: 'Activities', value: String(practiceLog.length), color: _teaFg('#ef4444') }

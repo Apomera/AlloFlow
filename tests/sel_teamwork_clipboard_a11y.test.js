@@ -32,12 +32,12 @@ describe('Teamwork clipboard fallback accessibility', () => {
   it('announces activity progress and exposes coach history semantics', () => {
     const text = source();
     expect(text).toContain("role: 'status'");
-    expect(text).toContain("role: 'log', 'aria-label': 'Conflict conversion history'");
+    expect(text).toContain("'Earlier conflict-coach records'");
     expect(text).toContain("'aria-label': 'Team role coach response'");
     expect(text).toContain("'aria-label': 'Teamwork challenge coach response'");
     // Scenario practice is now unscored; its keyboard and state semantics have browser coverage.
     // Communication planning replaces the profile quiz; browser tests cover its editable controls.
-    expect(text).toContain("announceToSR('Team contract saved')");
+    expect(text).toContain("Draft changed. Review choices reset so you can check the new wording.");
     expect(text).toContain("announceToSR(message)");
   });
 

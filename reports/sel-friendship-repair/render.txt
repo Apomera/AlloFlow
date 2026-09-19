@@ -1,0 +1,17 @@
+[SelHub] Safety layer v1.2 loaded (crisis modal + scanForCrisis)
+[SelHub] sel_tool_civicaction.js loaded
+[SelHub] sel_tool_community.js loaded
+[SelHub] sel_tool_conflicttheater.js loaded — Conflict Theater v0.1
+[SelHub] sel_tool_cultureexplorer.js loaded
+[SelHub] sel_tool_ethicalreasoning.js loaded
+[SelHub] sel_tool_goals.js loaded — Goal Setter
+[SelHub] sel_tool_journal.js loaded
+[SEL] Peer Support Coach tool registered
+[SelHub] sel_tool_restorativecircle.js loaded
+[SelHub] sel_tool_safety.js loaded
+[SelHub Plugin] Loaded: sel_hub/sel_tool_selfadvocacy.js
+[SEL] Social Skills Lab tool registered
+[SelHub] sel_tool_strengths.js v2.5 loaded — Strengths Finder (Stories, Compare, Challenge, Gratitude, Interview, Planner, Peers, Affirmations)
+[SelHub] sel_tool_teamwork.js loaded
+[SEL] Voice Detective tool registered
+✓ check_sel_render: no app-crash render failures across 72 SEL tools.

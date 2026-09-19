@@ -29,7 +29,7 @@ describe('Friendship Builder control names', () => {
     expect(text).toContain("id: 'friendship-tab-' + t.id");
     expect(text).toContain("'aria-controls': 'friendship-panel-' + t.id");
     expect(text).toContain("role: 'radiogroup', 'aria-label': 'Friendship styles'");
-    expect(text).toContain("'aria-current': isCurrent ? 'step' : undefined");
+    expect(text).toContain("'aria-label': 'Friendship repair choices'");
     expect(text).toContain("role: 'tabpanel', 'aria-labelledby': 'friendship-tab-' + activeTab");
   });
 

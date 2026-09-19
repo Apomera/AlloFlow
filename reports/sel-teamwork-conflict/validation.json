@@ -1,0 +1,65 @@
+{
+  "date": "2026-09-19",
+  "tool": "Teamwork Builder / Conflict Plan",
+  "fictionalContexts": 3,
+  "gradeSpecificSetups": 9,
+  "ownExampleContext": true,
+  "supportRoutes": 4,
+  "optionalNoteFields": 5,
+  "focused": {
+    "passed": 21,
+    "files": 2,
+    "conflictBrowserCases": 16,
+    "sharedClipboardCases": 5
+  },
+  "regressions": {
+    "passed": 50,
+    "files": 4
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 97,
+    "files": 1
+  },
+  "theme": {
+    "passed": 4,
+    "filtered": 292,
+    "files": 1,
+    "scope": "Teamwork only"
+  },
+  "accessibility": {
+    "width": 320,
+    "themes": [
+      "light",
+      "dark",
+      "contrast"
+    ],
+    "scopedAxeViolations": 0,
+    "screenshotsReviewed": 9,
+    "minimumSelectAndDisclosureHeight": 44
+  },
+  "sourcePublicSha256": "658d9c3351888d2a6723ab34bd71761e805051703c5e7ba926ce94ae4c78e85b",
+  "compatibility": "Earlier input, generated result, loading flag, count, history, reflections, logs and awards preserved. No provider request, new points, log or conversion count from the new practice.",
+  "persistence": "Five notes and route are independent by grade/context, survive tab navigation and serialized restoration; unsupported direct-talk choice in the pressure context displays undecided without deleting notes.",
+  "syntax": "passed",
+  "whitespace": "passed",
+  "renderSmoke": {
+    "tools": 72,
+    "passed": true
+  },
+  "deployment": "none",
+  "limitations": [
+    "This is authored practice, not a safety assessment or validated intervention.",
+    "Own-example text is not analyzed; notes are not monitored and do not request adult help.",
+    "Scoped accessibility scans cover the revised region, not the full hub.",
+    "Shared route explanations may benefit from adult discussion with younger learners.",
+    "The two previously documented unrelated Digital Wellbeing/Upstander theme assertions remain outside this targeted Teamwork run.",
+    "Ignored generated desktop/app-build output not rebuilt."
+  ],
+  "commit": {
+    "status": "blocked",
+    "reason": "The first staging attempt encountered another active Git index lock. After it cleared naturally, staging and whitespace checks passed, but the normal commit hook rejected unrelated content_engine_source.jsx vs desktop/web-app/src/content_engine_source.jsx drift (2856 vs 2838 lines). No lock removal, hook bypass or edit to those files. This pass and the prior agreement pass remain staged."
+  },
+  "totalUniquePassed": 73,
+  "counting": "16 focused conflict browser cases + 50 regressions (includes 5 shared clipboard contracts) + 3 actual-hub flows + 4 targeted theme checks. Five repeated focused clipboard checks are counted once."
+}
