@@ -1158,6 +1158,9 @@ const createGeminiAPI = (deps) => {
       }
     };
 
+    // Runtime routing metadata for the destination indicator and research path.
+    callGemini._alloflowBackend = 'gemini';
+    _callGeminiAttempt._alloflowBackend = 'gemini';
     return { callGemini, callGeminiSingleAttempt: _callGeminiAttempt, callGeminiImageEdit, callGeminiVision, probeModelHealth, listAvailableModels, _classifyGeminiError };
 };
 

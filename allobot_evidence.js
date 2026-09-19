@@ -57,7 +57,7 @@ const AllobotEvidence = (() => {
     const request = plan(userText);
     if (!request) return null;
     const base = { ...request, sources: [], checkedAt: new Date().toISOString() };
-    const backend = String(window.__alloActiveAIBackend || config().backend || 'gemini');
+    const backend = window.AlloFlowChatPrivacy.destination(deps.callGemini).backend;
     if (config().allobotWebSearch === false || (backend !== 'gemini' && config().allobotWebSearch !== true)) return { ...base, status: 'disabled' };
     const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
     if (managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true)) return { ...base, query: undefined, status: 'managed-disabled' };
