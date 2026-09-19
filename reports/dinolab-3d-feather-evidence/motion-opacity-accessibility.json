@@ -1,0 +1,207 @@
+{
+  "motion": {
+    "gap": 0,
+    "travel": 0.00005220188838238443,
+    "scaleBefore": [
+      1,
+      1.0104943789527847,
+      1.0058302105293249
+    ],
+    "scaleAfter": [
+      1,
+      1.0173309457388018,
+      1.0096283031882232
+    ]
+  },
+  "violations": [],
+  "before": {
+    "coats": [
+      {
+        "region": "torso",
+        "roots": 968,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 11616,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "head",
+        "roots": 141,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 1692,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "neck",
+        "roots": 370,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 4440,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "tail",
+        "roots": 370,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 4440,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "hindleg-1",
+        "roots": 211,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 2532,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "hindleg--1",
+        "roots": 211,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 2532,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      }
+    ],
+    "invalid": 0,
+    "outside": 0,
+    "errors": [],
+    "lost": false,
+    "geometries": 353,
+    "textures": 8,
+    "shaderFailures": 0
+  },
+  "after": {
+    "coats": [
+      {
+        "region": "torso",
+        "roots": 968,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 11616,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "head",
+        "roots": 141,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 1692,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "neck",
+        "roots": 370,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 4440,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "tail",
+        "roots": 370,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 4440,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "hindleg-1",
+        "roots": 211,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 2532,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      },
+      {
+        "region": "hindleg--1",
+        "roots": 211,
+        "pennaceous": true,
+        "dorsalOnly": false,
+        "vertices": 2532,
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "opacity": 1,
+        "transparent": false
+      }
+    ],
+    "invalid": 0,
+    "outside": 0,
+    "errors": [],
+    "lost": false,
+    "geometries": 353,
+    "textures": 8,
+    "shaderFailures": 0
+  }
+}

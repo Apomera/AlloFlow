@@ -1,0 +1,47 @@
+
+Running 3 tests using 1 worker
+
+
+
+(node:16060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:16060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:39:5 › breathing labels remain steady and keyboard orbit keeps routes clear
+[2/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+  1) [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+
+    TypeError: Cannot read properties of undefined (reading 'width')
+
+      49 |  await page.evaluate(()=>{document.querySelector('[data-dino-part-label="ankle"]')!.textContent='Ankle / articulation de la cheville';});await tick(page);
+      50 |  let p=await inspect(page);check(p);let a=p.labels.find(l=>l.selected)!;expect(a.height).toBeGreaterThan(28);expect(a.text).toContain('articulation');
+    > 51 |  await page.setViewportSize({width:320,height:844});await tick(page);p=await inspect(page);check(p);expect(p.labels.find(l=>l.selected)!.width).toBeLessThanOrEqual(144);await page.locator('.dinolab-3d-shell').screenshot({path:report+'/phone-long-label.png'});
+         |                                                                                                                                        ^
+      52 |  await page.evaluate(()=>{const n=document.querySelector('[data-dino-part-label="ankle"]')!;n.textContent='مفصل الكاحل بين الساق والقدم';n.setAttribute('dir','rtl');});await tick(page);p=await inspect(page);check(p);a=p.labels.find(l=>l.selected)!;expect(a.height).toBeGreaterThan(28);await page.locator('.dinolab-3d-shell').screenshot({path:report+'/phone-rtl-label.png'});
+      53 |  await page.addScriptTag({path:'node_modules/axe-core/axe.min.js'});const violations=await page.evaluate(async()=>{const r=await (window as any).axe.run(document.querySelector('.dinolab-body-label-controls'));return r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>n.target)}));});expect(violations).toEqual([]);expect(p.memory).toEqual(before.memory);expect(p.saved).toBe(before.saved);fs.writeFileSync(report+'/phone-checks.json',JSON.stringify({violations,longLabelWrapped:true,rtlWrapped:true,memory:p.memory,savedUnchanged:true},null,2));
+      54 | });
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-label-flow.spec.ts:51:136
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\error-context.md
+
+
+
+(node:10304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+(node:10304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[3/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:55:5 › whole-animal callouts stay clear through camera and study changes
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+  2 passed (5.0m)

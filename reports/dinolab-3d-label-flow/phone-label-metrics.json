@@ -1,0 +1,38 @@
+{
+  "shortRtl": {
+    "id": "ankle",
+    "selected": true,
+    "text": "مفصل الكاحل بين الساق والقدم",
+    "x": 151,
+    "y": 217,
+    "width": 139,
+    "height": 28,
+    "anchorX": 218.97110191411798,
+    "anchorY": 266.373968887361,
+    "lineX": 218.97110191411798,
+    "lineY": 245,
+    "clientWidth": 137,
+    "scrollWidth": 137,
+    "clientHeight": 26,
+    "scrollHeight": 26,
+    "clipped": false
+  },
+  "longRtl": {
+    "id": "ankle",
+    "selected": true,
+    "text": "مفصل الكاحل بين أسفل الساق وعظام مشط القدم",
+    "x": 53,
+    "y": 243.39999389648438,
+    "width": 144,
+    "height": 46,
+    "anchorX": 218.97110191411798,
+    "anchorY": 266.373968887361,
+    "lineX": 196.97110191411798,
+    "lineY": 266.373968887361,
+    "clientWidth": 142,
+    "scrollWidth": 142,
+    "clientHeight": 44,
+    "scrollHeight": 44,
+    "clipped": false
+  }
+}

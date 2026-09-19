@@ -5817,7 +5817,7 @@ window.StemLab = window.StemLab || {
       profile.cranialMechanics = 'The quadrate-articular joint forms the primary jaw hinge. Jugal, postorbital, quadratojugal, and palatal braces distribute bite loads around the orbit and temporal openings.';
       profile.cranialEvidence = 'Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.';
     }
-    var directFeatherEvidence = /^(archaeopteryx|microraptor|anchiornis|caudipteryx|sinornithosaurus|changyuraptor|jianianhualong|yutyrannus|dilong|sinosauropteryx|beipiaosaurus|ornithomimus|shuvuuia)$/i.test(speciesId) || /preserved (?:with )?(?:filament|feather)|feather impressions|quill knobs confirm/i.test(String((dn && dn.howKnow) || '') + ' ' + String((dn && dn.facts) || ''));
+    var directFeatherEvidence = /^(velociraptor|archaeopteryx|microraptor|anchiornis|caudipteryx|sinornithosaurus|changyuraptor|jianianhualong|yutyrannus|dilong|sinosauropteryx|beipiaosaurus|ornithomimus|shuvuuia)$/i.test(speciesId) || /preserved (?:with )?(?:filament|feather)|feather impressions|quill knobs confirm/i.test(String((dn && dn.howKnow) || '') + ' ' + String((dn && dn.facts) || ''));
     var isPennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Paraves|Scansoriopteryg/i.test(clade);
     if (isPennaraptoran) {
       profile.integumentMode = 'pennaceous';
@@ -6018,6 +6018,26 @@ window.StemLab = window.StemLab || {
   // The tool renderer runs again for every lab-state update. Keep the WebGL
   // component type stable so unrelated controls do not unmount the canvas and
   // create a fresh renderer/animation loop on every click.
+  function coveringEvidenceFor(dn, profile) {
+    var id = String(dn.id || ''), preserved = profile.integumentEvidence;
+    var evidence = {
+      supported: preserved + '.',
+      uncertain: 'Exact coverage, feather length, soft-tissue volume and most colors are reconstructed. A close relative is useful evidence, but is not a fossil of this species.',
+      source: null
+    };
+    var records = {
+      velociraptor: ['Quill knobs on a forearm bone support attached wing feathers. Feather presence is not just an artistic alternative.', 'The body coat and tail arrangement are inferred from relatives; the fossil does not give a complete plumage map.', 'Turner et al., 2007: forearm feather evidence', 'https://doi.org/10.1126/science.1145076'],
+      microraptor: ['Preserved long feathers on the arms and legs support four feathered limbs, alongside body plumage.', 'Coat density and feather posture are simplified here. Feathered limbs alone do not settle how the animal flew or glided.', 'Xu et al., 2003: four-winged Microraptor', 'https://doi.org/10.1038/nature01342'],
+      anchiornis: ['Fossils preserve plumage on the body, arms and legs; a birdlike covering belongs in the evidence-led model.', 'The exact three-dimensional coat shape and resting feather arrangement are reconstructed.', 'Hu et al., 2009: feathered Anchiornis', 'https://doi.org/10.1038/nature08322'],
+      yutyrannus: ['Long filamentous feathers are preserved in three specimens, including large individuals.', 'A shaggy coat is supported; its full extent and exact color are not preserved as a complete living surface.', 'Xu et al., 2012: feathered Yutyrannus', 'https://doi.org/10.1038/nature10906'],
+      tyrannosaurus: ['Skin impressions preserve scales at sampled neck, pelvic and tail regions. The default is scale-dominated.', 'Unsampled regions remain uncertain. A speculative dorsal filament patch is not evidence for a fully feathered adult.', 'Bell et al., 2017: tyrannosaur skin', 'https://doi.org/10.1098/rsbl.2017.0092'],
+      sinosauropteryx: ['Fossils preserve a filamentous covering. Pigment evidence supports a ginger-and-white banded tail.', 'Fine coat density, feather posture and the complete color pattern remain reconstructed.', 'Zhang et al., 2010: fossil feathers and color', 'https://doi.org/10.1038/nature08740']
+    };
+    var record = records[id];
+    if (record) { evidence.supported = record[0]; evidence.uncertain = record[1]; evidence.source = { label: record[2], url: record[3] }; }
+    return evidence;
+  }
+
   function reconstructionHypothesesFor(dn, skeletalProfile, requestedMode) {
     var speciesId = String((dn && dn.id) || '');
     var group = String((dn && dn.group) || '');
@@ -6050,6 +6070,7 @@ window.StemLab = window.StemLab || {
       tailSoftTissueScale: 1,
       paletteMode: 'natural'
     };
+    var forearmEvidenceOnly = speciesId === 'velociraptor';
     var conservativeMode = {
       id: 'conservative',
       label: 'Conservative minimum',
@@ -6057,12 +6078,12 @@ window.StemLab = window.StemLab || {
       status: directFeatherEvidence || directScaleEvidence ? 'Minimum supported' : 'Low inference',
       available: true,
       description: 'Minimizes unpreserved surface structures while retaining directly supported scales, filaments, feathers, or bristles.',
-      warning: directFeatherEvidence ? 'Direct feather or filament evidence is retained; this is not a featherless option for this animal.' : 'A smooth region means unknown covering, not proof of naked skin.',
+      warning: forearmEvidenceOnly ? 'Forearm feathers are retained. The unpreserved body coat and tail arrangement are omitted in this minimum view; smooth areas mean unknown covering.' : directFeatherEvidence ? 'Direct feather or filament evidence is retained; this is not a featherless option for this animal.' : 'A smooth region means unknown covering, not proof of naked skin.',
       featureScales: directScaleEvidence && !!skeletalProfile.featureScales,
-      filamentCoverage: directFeatherEvidence ? Math.max(0.34, (Number(skeletalProfile.filamentCoverage) || 0) * 0.68) : 0,
+      filamentCoverage: directFeatherEvidence && !forearmEvidenceOnly && skeletalProfile.filamentCoverage > 0 ? Math.max(0.34, skeletalProfile.filamentCoverage * 0.68) : 0,
       wingFeathers: directFeatherEvidence && !!skeletalProfile.wingFeathers,
       tailFan: directFeatherEvidence && !!skeletalProfile.tailFan,
-      tailFrond: directFeatherEvidence && !!skeletalProfile.tailFrond,
+      tailFrond: directFeatherEvidence && !forearmEvidenceOnly && !!skeletalProfile.tailFrond,
       hindWingFeathers: directFeatherEvidence && !!skeletalProfile.hindWingFeathers,
       dorsalBristles: directFeatherEvidence && !!skeletalProfile.dorsalBristles,
       integumentMode: directFeatherEvidence ? 'minimum preserved covering' : (directScaleEvidence ? 'minimum preserved scales' : 'unspecified surface'),
@@ -6097,16 +6118,17 @@ window.StemLab = window.StemLab || {
       tailSoftTissueScale: 0.90,
       paletteMode: 'classic'
     };
+    var regionalMosaic = directScaleEvidence && !skeletalProfile.filamentCoverage;
     var avianMode = {
       id: 'avian',
       label: 'Avian-informed hypothesis',
       shortLabel: 'Avian-informed',
-      status: avianEligible ? (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis') : 'Not supported for this clade',
+      status: avianEligible ? (regionalMosaic ? 'Speculative regional covering' : (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis')) : 'Not supported for this clade',
       available: avianEligible,
       description: avianEligible ? 'Explores a fuller soft-tissue envelope and regionally increased filament coverage without inventing flight feathers outside supported lineages.' : 'Current evidence does not justify an avian-style reskin for this clade.',
-      warning: directScaleEvidence && !directFeatherEvidence ? 'Preserved scales remain relevant; this mode represents a possible regional mosaic, not a fully feathered claim.' : 'Increased coverage is comparative inference wherever direct skin is absent.',
+      warning: regionalMosaic ? 'Preserved scales remain relevant; this mode represents a possible regional mosaic, not a fully feathered claim.' : 'Increased coverage is comparative inference wherever direct skin is absent.',
       featureScales: directScaleEvidence && !!skeletalProfile.featureScales,
-      filamentCoverage: avianEligible ? Math.max(Number(skeletalProfile.filamentCoverage) || 0, group === 'theropod' ? 0.70 : 0.46) : 0,
+      filamentCoverage: avianEligible ? (regionalMosaic ? (speciesId === 'psittacosaurus' ? 0 : 0.18) : Math.max(Number(skeletalProfile.filamentCoverage) || 0, group === 'theropod' ? 0.70 : 0.46)) : 0,
       wingFeathers: !!skeletalProfile.wingFeathers || pennaraptoran,
       tailFan: !!skeletalProfile.tailFan,
       tailFrond: !!skeletalProfile.tailFrond || pennaraptoran,
@@ -6370,23 +6392,64 @@ window.StemLab = window.StemLab || {
 
   // Place readable callouts in screen space; omit crowded labels rather than
   // stacking them. The accompanying text key always contains every body part.
-  function dinoBodyLabelLayout(points, width, height, top, bottom, selectedId) {
-    var placed = [], w = 96, h = 28, pad = 8, limit = width < 560 ? 4 : 8;
-    var offsets = [[-w / 2, -h - 26], [22, -h / 2], [-w - 22, -h / 2], [-w / 2, 26],
-      [22, -h - 42], [-w - 22, -h - 42], [22, 42], [-w - 22, 42]];
+  function dinoBodyLabelLayout(points, width, height, top, bottom, selectedId, previous) {
+    var placed = [], pad = 8, limit = width < 560 ? 4 : 8;
+    previous = previous || [];
     function overlaps(a, b) { return a.x < b.x + b.width + pad && a.x + a.width + pad > b.x && a.y < b.y + b.height + pad && a.y + a.height + pad > b.y; }
-    var ordered = points.slice().sort(function (a, b) { return (b.id === selectedId ? 1 : 0) - (a.id === selectedId ? 1 : 0); });
+    function lineThroughRect(line, rect) {
+      var low = 0, high = 1;
+      var ranges = [[line.anchorX, line.lineX - line.anchorX, rect.x - 3, rect.x + rect.width + 3], [line.anchorY, line.lineY - line.anchorY, rect.y - 3, rect.y + rect.height + 3]];
+      for (var i = 0; i < ranges.length; i++) {
+        var range = ranges[i];
+        if (Math.abs(range[1]) < 0.0001) { if (range[0] < range[2] || range[0] > range[3]) return false; }
+        else {
+          var a = (range[2] - range[0]) / range[1], b = (range[3] - range[0]) / range[1];
+          low = Math.max(low, Math.min(a, b)); high = Math.min(high, Math.max(a, b));
+          if (low > high) return false;
+        }
+      }
+      return high > 0.001 && low < 0.999;
+    }
+    function linesCross(a, b) {
+      var ax = a.lineX - a.anchorX, ay = a.lineY - a.anchorY;
+      var bx = b.lineX - b.anchorX, by = b.lineY - b.anchorY;
+      var dx = b.anchorX - a.anchorX, dy = b.anchorY - a.anchorY;
+      var cross = ax * by - ay * bx;
+      if (Math.abs(cross) < 0.0001) {
+        if (Math.abs(dx * ay - dy * ax) > 0.001) return false;
+        var lengthSq = ax * ax + ay * ay;
+        if (lengthSq < 0.001) return false;
+        var t0 = (dx * ax + dy * ay) / lengthSq, t1 = t0 + (bx * ax + by * ay) / lengthSq;
+        return Math.min(1, Math.max(t0, t1)) - Math.max(0, Math.min(t0, t1)) > 0.02;
+      }
+      var t = (dx * by - dy * bx) / cross, u = (dx * ay - dy * ax) / cross;
+      return t > 0.001 && t < 0.999 && u > 0.001 && u < 0.999;
+    }
+    function previousIndex(id) { return previous.findIndex(function (item) { return item.id === id; }); }
+    var ordered = points.slice().sort(function (a, b) {
+      var chosen = (b.id === selectedId ? 1 : 0) - (a.id === selectedId ? 1 : 0);
+      if (chosen) return chosen;
+      var ai = previousIndex(a.id), bi = previousIndex(b.id);
+      return (ai < 0 ? 100 : ai) - (bi < 0 ? 100 : bi);
+    });
     ordered.forEach(function (point) {
       var selected = point.id === selectedId;
       if (placed.length >= limit || !isFinite(point.x) || !isFinite(point.y) || point.x < pad || point.x > width - pad || point.y < (selected ? pad : top) || point.y > height - (selected ? pad : bottom)) return;
-      var candidates = offsets.slice();
-      // A selected landmark takes priority even when its nearby callout slots
-      // are crowded. Search the clear margins while keeping its true anchor.
+      var w = isFinite(point.width) && point.width > 0 ? point.width : 96;
+      var h = isFinite(point.height) && point.height > 0 ? point.height : 28;
+      var candidates = [[-w / 2, -h - 26], [22, -h / 2], [-w - 22, -h / 2], [-w / 2, 26],
+        [22, -h - 42], [-w - 22, -h - 42], [22, 42], [-w - 22, 42]];
       if (selected) {
         for (var row = top; row + h <= height - bottom; row += h + pad) {
           [pad, width - pad - w].forEach(function (x) { candidates.push([x - point.x, row - point.y]); });
         }
         candidates.sort(function (a, b) { return a[0] * a[0] + a[1] * a[1] - b[0] * b[0] - b[1] * b[1]; });
+      }
+      var prior = previous[previousIndex(point.id)];
+      if (prior && isFinite(prior.anchorX) && isFinite(prior.anchorY)) {
+        // Retain the prior anchor-relative position while it remains readable.
+        // Recenter if the measured text changes size instead of clipping it.
+        candidates.unshift([prior.x + prior.width / 2 - prior.anchorX - w / 2, prior.y + prior.height / 2 - prior.anchorY - h / 2]);
       }
       for (var i = 0; i < candidates.length; i++) {
         var rect = { id: point.id, selected: selected, x: point.x + candidates[i][0], y: point.y + candidates[i][1], width: w, height: h, anchorX: point.x, anchorY: point.y };
@@ -6394,6 +6457,7 @@ window.StemLab = window.StemLab || {
         if (points.some(function (other) { return other.x > rect.x - 4 && other.x < rect.x + w + 4 && other.y > rect.y - 4 && other.y < rect.y + h + 4; })) continue;
         rect.lineX = Math.max(rect.x, Math.min(rect.x + w, point.x));
         rect.lineY = Math.max(rect.y, Math.min(rect.y + h, point.y));
+        if (placed.some(function (other) { return lineThroughRect(rect, other) || lineThroughRect(other, rect) || linesCross(rect, other); })) continue;
         placed.push(rect); break;
       }
     });
@@ -6534,6 +6598,74 @@ window.StemLab = window.StemLab || {
     return geometry;
   }
 
+  // Area-weighted roots lie on the actual surface triangles. Each tract is one
+  // mesh attached to its skin parent, so breathing cannot detach the plumage.
+  function dinoCoatGeometry(THREE, surface, options) {
+    var source = surface.attributes.position, normals = surface.attributes.normal;
+    var index = surface.index, uv = surface.attributes.uv;
+    var random = mulberry32(options.seed >>> 0), triangles = [], totalArea = 0;
+    var a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    var ab = new THREE.Vector3(), ac = new THREE.Vector3();
+    for (var i = 0; i < (index ? index.count : source.count); i += 3) {
+      var ia = index ? index.getX(i) : i, ib = index ? index.getX(i + 1) : i + 1, ic = index ? index.getX(i + 2) : i + 2;
+      a.fromBufferAttribute(source, ia); b.fromBufferAttribute(source, ib); c.fromBufferAttribute(source, ic);
+      var normal = new THREE.Vector3().fromBufferAttribute(normals, ia).add(new THREE.Vector3().fromBufferAttribute(normals, ib)).add(new THREE.Vector3().fromBufferAttribute(normals, ic)).normalize();
+      if (options.dorsalOnly && normal.y < 0.52) continue;
+      if (options.maxU != null && uv && Math.max(uv.getX(ia), uv.getX(ib), uv.getX(ic)) > options.maxU) continue;
+      if (options.minX != null && Math.min(a.x, b.x, c.x) < options.minX) continue;
+      var area = ab.subVectors(b, a).cross(ac.subVectors(c, a)).length() * 0.5;
+      if (area < 1e-12) continue;
+      totalArea += area; triangles.push({ ids: [ia, ib, ic], end: totalArea });
+    }
+    if (!triangles.length || !(options.length > 0) || !(options.count > 0)) return null;
+    var positions = [], normalData = [], rootPositions = [], rootNormals = [], colors = [], uvs = [], indices = [];
+    var count = Math.min(1600, Math.round(options.count));
+    for (var rootIndex = 0; rootIndex < count; rootIndex++) {
+      var areaPick = (rootIndex + random()) / count * totalArea, low = 0, high = triangles.length - 1;
+      while (low < high) { var middle = (low + high) >> 1; if (triangles[middle].end < areaPick) low = middle + 1; else high = middle; }
+      var ids = triangles[low].ids, u = Math.sqrt(random()), v = random(), weights = [1 - u, u * (1 - v), u * v];
+      var root = new THREE.Vector3(), n = new THREE.Vector3(), rootU = 0;
+      for (var k = 0; k < 3; k++) {
+        root.addScaledVector(a.fromBufferAttribute(source, ids[k]), weights[k]);
+        n.addScaledVector(a.fromBufferAttribute(normals, ids[k]), weights[k]);
+        if (uv) rootU += uv.getX(ids[k]) * weights[k];
+      }
+      n.normalize();
+      var along = new THREE.Vector3(1, -0.12, 0).addScaledVector(n, -new THREE.Vector3(1, -0.12, 0).dot(n));
+      if (along.lengthSq() < 0.001) along.set(0, 0, 1).addScaledVector(n, -n.z);
+      along.normalize();
+      var across = new THREE.Vector3().crossVectors(along, n).normalize();
+      var length = options.length * (0.72 + random() * 0.52), pennaceous = !!options.pennaceous;
+      var shade = 0.90 + random() * 0.12, blades = pennaceous ? 1 : 3;
+      for (var blade = 0; blade < blades; blade++) {
+        var start = positions.length / 3, fan = pennaceous ? 0 : (blade - 1) * 0.22;
+        var breadth = length * (pennaceous ? 0.29 : 0.055);
+        for (var row = 0; row <= 5; row++) {
+          var t = row / 5, width = breadth * Math.pow(Math.sin(Math.PI * t), pennaceous ? 0.65 : 0.9);
+          var lift = length * (0.015 + (pennaceous ? 0.24 : 0.64) * t - 0.08 * t * t);
+          var point = root.clone().addScaledVector(along, length * t).addScaledVector(n, lift).addScaledVector(across, fan * length * t * t);
+          for (var side = -1; side <= 1; side += 2) {
+            var p = point.clone().addScaledVector(across, width * side);
+            positions.push(p.x, p.y, p.z); normalData.push(n.x, n.y, n.z);
+            rootPositions.push(root.x, root.y, root.z); rootNormals.push(n.x, n.y, n.z);
+            var tone = shade * (0.92 + 0.08 * t); colors.push(tone, tone, tone); uvs.push(rootU, (side + 1) / 2);
+          }
+          if (row < 5) { var base = start + row * 2; indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2); }
+        }
+      }
+    }
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normalData, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setAttribute('dinoCoatRoot', new THREE.Float32BufferAttribute(rootPositions, 3));
+    geometry.setAttribute('dinoCoatNormal', new THREE.Float32BufferAttribute(rootNormals, 3));
+    geometry.setIndex(indices); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.parameters = { roots: count, pennaceous: !!options.pennaceous, length: options.length, dorsalOnly: !!options.dorsalOnly };
+    return geometry;
+  }
+
   // Curved, asymmetric feather vane with a root pivot and tapered tip.
   function dinoFeatherGeometry(THREE, length, width) {
     var positions = [], uvs = [], indices = [], rows = 20, columns = 4;
@@ -6593,7 +6725,7 @@ window.StemLab = window.StemLab || {
 
   // Bake coordinates in specimen space so separate meshes share a texture scale and rotation cannot move the pattern.
   function dinoSkinCoordinates(THREE, geometry, matrix, tailRegion) {
-    var positions = geometry.attributes.position, normals = geometry.attributes.normal;
+    var positions = geometry.attributes.dinoCoatRoot || geometry.attributes.position, normals = geometry.attributes.dinoCoatNormal || geometry.attributes.normal;
     var skinPositions = [], skinNormals = [], regionCoordinates = [], p = new THREE.Vector3(), n = new THREE.Vector3();
     var normalMatrix = new THREE.Matrix3().getNormalMatrix(matrix);
     for (var i = 0; i < positions.count; i++) {
@@ -7943,6 +8075,14 @@ window.StemLab = window.StemLab || {
               coatMat.color.set(bodyColor).convertSRGBToLinear();
               coatMat.vertexColors = true;
             }
+            var contourCoatMat = null;
+            if (coatMat) {
+              contourCoatMat = bodyMat.clone();
+              contourCoatMat.vertexColors = true;
+              contourCoatMat.bumpMap = null; contourCoatMat.roughnessMap = null;
+              contourCoatMat.roughness = 0.96;
+              dinoSkinMapping(THREE, contourCoatMat, Math.max(len * 0.20, ht * 0.60), 0.07, integument);
+            }
             // A shared, restrained barb pattern follows each vane's own UVs.
             if (props.showBody && (surfaceHypothesis.wingFeathers || surfaceHypothesis.hindWingFeathers || surfaceHypothesis.tailFan || surfaceHypothesis.tailFrond)) {
               var featherCanvas = document.createElement('canvas');
@@ -7970,6 +8110,7 @@ window.StemLab = window.StemLab || {
               }
             }
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, coat: coatMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
+            activeMaterialSet.contourCoat = contourCoatMat;
             activeMaterialSet.callout = anatomyCalloutMat;
             var crestMat = null;
             if (props.showBody && integument.pattern === 'white-banded' && surfaceHypothesis.filamentCoverage > 0) {
@@ -8747,15 +8888,23 @@ window.StemLab = window.StemLab || {
                 }
               }
               if (surfaceHypothesis.filamentCoverage > 0) {
+                var dorsalCoatOnly = surfaceHypothesis.featureScales;
+                addContourPlumage(bodyShell, 1100, surfaceBodyHeight * 0.50, dorsalCoatOnly);
+                if (!dorsalCoatOnly) {
+                  addContourPlumage(neckMeshes[0], 420, neckBaseRadius * 0.62, false);
+                  addContourPlumage(tailMeshes[0], 420, tailBaseRadius * 0.55, false);
+                  // Keep the muzzle, eyes and mouth readable; the nape blends into the neck.
+                  addContourPlumage(headShell, 160, surfaceHeadHeight * 0.26, false, -surfaceHeadLength * 0.56);
+                }
                 var filamentCount = Math.round(22 + surfaceHypothesis.filamentCoverage * 48);
                 for (var coatIndex = 0; coatIndex < filamentCount; coatIndex++) {
                   var coatT = (coatIndex + integumentRng() * 0.72) / filamentCount;
-                  var coatAngle = -1.24 + integumentRng() * 2.48;
+                  var coatAngle = (integumentRng() - 0.5) * (dorsalCoatOnly ? 1.1 : 2.48);
                   var coatLength = Math.max(0.035 * detailScale, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
                   addSeatedFilament(bodyShell, shoulder.clone().lerp(hip, coatT), vec(0, Math.cos(coatAngle), Math.sin(coatAngle)),
                     coatLength, Math.max(0.004 * detailScale, ht * 0.0017), Math.max(0.006 * detailScale, len * 0.0035), true);
                 }
-                for (var neckFilamentIndex = 0; neckFilamentIndex < 18; neckFilamentIndex++) {
+                for (var neckFilamentIndex = 0; neckFilamentIndex < (dorsalCoatOnly ? 0 : 18); neckFilamentIndex++) {
                   var neckFilamentT = (neckFilamentIndex + 0.45) / 18.5;
                   var neckCenter = neckSurfaceCurve.getPoint(neckFilamentT);
                   var neckSide = neckFilamentIndex % 2 ? 1 : -1;
@@ -8763,7 +8912,7 @@ window.StemLab = window.StemLab || {
                     Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55),
                     Math.max(0.004 * detailScale, ht * 0.0016), Math.max(0.008 * detailScale, len * 0.003), true);
                 }
-                for (var tailFilamentIndex = 0; tailFilamentIndex < 22; tailFilamentIndex++) {
+                for (var tailFilamentIndex = 0; tailFilamentIndex < (dorsalCoatOnly ? 0 : 22); tailFilamentIndex++) {
                   var tailFilamentT = 0.08 + tailFilamentIndex / 25;
                   var tailCoatCenter = tailSurfaceCurve.getPoint(tailFilamentT);
                   var tailCoatSide = tailFilamentIndex % 2 ? 1 : -1;
@@ -9568,6 +9717,19 @@ window.StemLab = window.StemLab || {
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
             }
+            function addContourPlumage(surface, count, length, dorsalOnly, minX, maxU) {
+              if (!surface || !contourCoatMat) return;
+              var geometry = dinoCoatGeometry(THREE, surface.geometry, {
+                count: count * surfaceHypothesis.filamentCoverage, length: length * (0.70 + surfaceHypothesis.filamentCoverage * 0.30),
+                pennaceous: skeletalProfile.integumentMode === 'pennaceous', seed: integumentSeed + count,
+                dorsalOnly: dorsalOnly, minX: minX, maxU: maxU
+              });
+              if (!geometry) return;
+              var mesh = new THREE.Mesh(geometry, contourCoatMat);
+              mesh.name = 'contour-plumage-' + surface.userData.dinoRegion;
+              mesh.userData.dinoFeature = 'contour-plumage'; mesh.userData.dinoRegion = surface.userData.dinoRegion;
+              mesh.castShadow = true; mesh.receiveShadow = true; surface.add(mesh);
+            }
             function addSeatedFilament(surface, center, outward, length, radius, sweep, clustered) {
               var anchor = surfaceAnchor(surface, center, outward);
               if (!anchor) return;
@@ -9669,6 +9831,7 @@ window.StemLab = window.StemLab || {
                 var upperLimbShell = addSoftTissueChain([limbSkinRoot, thighMid, knee, calfMid, ankle, foot],
                   [thighRadius * 0.88, thighRadius, kneeRadius, kneeRadius * 1.02, ankleRadius, ankleRadius * 0.68], bodyMat)[0];
                 upperLimbShell.userData.dinoRegion = (front ? 'foreleg-' : 'hindleg-') + sideSign;
+                if (!front && !surfaceHypothesis.featureScales) addContourPlumage(upperLimbShell, 240, thighRadius * 0.80, false, null, 0.46);
                 addBodyContour(upperLimbShell);
                 if (!front && surfaceHypothesis.hindWingFeathers) addLimbPlumage(upperLimbShell, knee, ankle, sideSign, true);
               }
@@ -10310,6 +10473,7 @@ window.StemLab = window.StemLab || {
             cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
+            var previousBodyLabels = [], bodyLabelContext = '', bodyLabelMetricKey = '', bodyLabelMetrics = {};
             function layoutBodyPartLabels() {
               var overlay = bodyLabelOverlayRef.current;
               if (!overlay) return;
@@ -10318,8 +10482,32 @@ window.StemLab = window.StemLab || {
               function reportPartVisibility(message) {
                 if (bodyPartVisibilityRef.current && bodyPartVisibilityRef.current.textContent !== message) bodyPartVisibilityRef.current.textContent = message;
               }
-              if (!active) { reportPartVisibility('Show the body or skeleton to locate this part.'); return; }
+              if (!active) { previousBodyLabels = []; reportPartVisibility('Show the body or skeleton to locate this part.'); return; }
               var width = canvas.clientWidth, height = canvas.clientHeight, projectedParts = {};
+              var labelNodes = Array.prototype.slice.call(overlay.querySelectorAll('[data-dino-part-label]'));
+              var metricKey = width + '|' + (labelNodes[0] ? window.getComputedStyle(labelNodes[0]).font : '') + '|' + (document.fonts ? document.fonts.status : '') + '|' + labelNodes.map(function (node) { return node.textContent; }).join('|');
+              if (metricKey !== bodyLabelMetricKey) {
+                bodyLabelMetricKey = metricKey; bodyLabelMetrics = {};
+                var maxWidth = Math.max(1, Math.min(width - 16, width < 560 ? 144 : 176));
+                labelNodes.forEach(function (node) {
+                  node.style.visibility = 'hidden'; node.style.display = 'block'; node.style.width = 'max-content'; node.style.height = 'auto';
+                  node.style.maxWidth = maxWidth + 'px'; node.style.minWidth = Math.min(96, maxWidth) + 'px';
+                });
+                // Batch reads after all measurement styles are written. Cache by
+                // text, font and width so animation frames do not remeasure text.
+                labelNodes.forEach(function (node) {
+                  var bounds = node.getBoundingClientRect();
+                  // offsetWidth rounds to the nearest pixel; rounding a glyph's
+                  // natural width down can wrap its final word into a clipped row.
+                  bodyLabelMetrics[node.getAttribute('data-dino-part-label')] = { width: Math.ceil(bounds.width), height: Math.ceil(bounds.height) };
+                });
+                labelNodes.forEach(function (node) {
+                  var metric = bodyLabelMetrics[node.getAttribute('data-dino-part-label')];
+                  node.style.width = metric.width + 'px'; node.style.height = metric.height + 'px'; node.style.visibility = ''; node.style.display = 'none';
+                });
+              }
+              var context = metricKey + '|' + height + '|' + cameraStudy + '|' + selectedBodyPartRef.current;
+              if (context !== bodyLabelContext) { previousBodyLabels = []; bodyLabelContext = context; }
               model.updateMatrixWorld(true); camera.updateMatrixWorld(true);
               bodyPartAnchors.forEach(function (anchor) {
                 var world = anchor.getWorldPosition(new THREE.Vector3()), view = world.clone().applyMatrix4(camera.matrixWorldInverse), clip = world.clone().project(camera);
@@ -10327,10 +10515,17 @@ window.StemLab = window.StemLab || {
                 var id = anchor.userData.dinoBodyPart;
                 if (!projectedParts[id] || view.z > projectedParts[id].depth) projectedParts[id] = { id: id, x: (clip.x + 1) * width / 2, y: (1 - clip.y) * height / 2, depth: view.z };
               });
-              var points = bodyPartDefinitions.filter(function (part) { return projectedParts[part.id] && (cameraStudy === 'full' || part.region === cameraStudy); }).map(function (part) { return projectedParts[part.id]; });
+              var points = bodyPartDefinitions.filter(function (part) { return projectedParts[part.id] && (cameraStudy === 'full' || part.region === cameraStudy); }).map(function (part) {
+                var point = projectedParts[part.id], metric = bodyLabelMetrics[part.id];
+                if (metric) { point.width = metric.width; point.height = metric.height; }
+                return point;
+              });
               var readouts = canvas.parentNode.querySelector('.dinolab-3d-readouts');
               var top = Math.max(64, readouts ? readouts.offsetTop + readouts.offsetHeight + 12 : 64);
-              var layouts = dinoBodyLabelLayout(points, width, height, top, width < 560 ? 132 : 88, selectedBodyPartRef.current);
+              // Selected views place their lower readouts below the canvas.
+              var bottom = selectedBodyPartRef.current ? 18 : (width < 560 ? 132 : 88);
+              var layouts = dinoBodyLabelLayout(points, width, height, top, bottom, selectedBodyPartRef.current, previousBodyLabels);
+              previousBodyLabels = layouts;
               var selectedLayout = layouts.some(function (item) { return item.selected; });
               reportPartVisibility(selectedLayout ? 'The double-ring marker identifies the selected part.' : 'The selected marker is outside this view or has no clear label space. Use Show part to bring it into view.');
               overlay.querySelectorAll('[data-dino-part-label]').forEach(function (node) { node.style.display = 'none'; });
@@ -10343,8 +10538,7 @@ window.StemLab = window.StemLab || {
                 group.style.display = 'block';
                 node.setAttribute('data-dino-selected', item.selected ? 'true' : 'false');
                 node.style.background = item.selected ? '#115e59' : '#0f172a';
-                node.style.border = item.selected ? '2px solid #ffffff' : '1px solid #5eead4';
-                node.style.lineHeight = item.selected ? '24px' : '26px';
+                node.style.borderColor = item.selected ? '#ffffff' : '#5eead4';
                 node.style.boxShadow = item.selected ? '0 0 0 2px #115e59, 0 3px 10px #00000066' : 'none';
                 var line = group.firstChild, dot = group.lastChild, ring = group.querySelector('[data-dino-part-ring]');
                 line.setAttribute('stroke', item.selected ? '#ffffff' : '#99f6e4');
@@ -10680,6 +10874,12 @@ window.StemLab = window.StemLab || {
               materials.coat.depthWrite = opaqueSurface;
               materials.coat.needsUpdate = true;
             }
+            if (materials.contourCoat) {
+              materials.contourCoat.opacity = materials.body.opacity;
+              materials.contourCoat.transparent = !opaqueSurface;
+              materials.contourCoat.depthWrite = opaqueSurface;
+              materials.contourCoat.needsUpdate = true;
+            }
             materials.feather.opacity = opaqueSurface ? 1 : Math.min(0.92, 0.48 + alpha * 0.60);
             if (materials.crest) {
               materials.crest.opacity = materials.feather.opacity;
@@ -10753,15 +10953,15 @@ var evidenceRoute = [
                 el('circle', { 'data-dino-part-ring': part.id, r: 9, fill: 'none', stroke: '#ffffff', strokeWidth: 3, style: { display: 'none', filter: 'drop-shadow(0 1px 2px #0f172a)' } }),
                 el('circle', { r: 3, fill: '#0f172a', stroke: '#99f6e4', strokeWidth: 1.5 }));
             })),
-            bodyPartDefinitions.map(function (part) { return el('span', { key: part.id, 'data-dino-part-label': part.id, style: { display: 'none', position: 'absolute', left: 0, top: 0, width: 96, height: 28, boxSizing: 'border-box', border: '1px solid #5eead4', borderRadius: 7, background: '#0f172a', color: '#f0fdfa', textAlign: 'center', fontSize: 12, fontWeight: 800, lineHeight: '26px', whiteSpace: 'nowrap' } }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
+            bodyPartDefinitions.map(function (part) { return el('span', { key: part.id, 'data-dino-part-label': part.id, style: { display: 'none', position: 'absolute', left: 0, top: 0, width: 'max-content', minWidth: 96, maxWidth: 176, minHeight: 28, padding: '4px 8px', boxSizing: 'border-box', border: '1px solid #5eead4', borderRadius: 7, background: '#0f172a', color: '#f0fdfa', textAlign: 'center', fontSize: 12, fontWeight: 800, lineHeight: '18px', whiteSpace: 'normal', overflowWrap: 'anywhere' } }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
           ),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
+            props.showBody ? readoutChip(surfaceHypothesis.id === 'classic' ? 'Historical comparison' : (Number(props.bodyOpacity) >= 98 ? 'Life reconstruction · ' : 'Surface · ') + surfaceHypothesis.shortLabel, surfaceHypothesis.id === 'classic' ? 'rgba(245,158,11,0.85)' : 'rgba(94,234,212,0.68)') : null,
             readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
             readoutChip('Pose ' + posture.shortLabel, 'rgba(245,158,11,0.62)'),
             readoutChip('Body ' + postcranialSurface.shortLabel, 'rgba(251,146,60,0.62)'),
             readoutChip('Head ' + cranialSurface.shortLabel, 'rgba(167,139,250,0.62)'),
-            Number(props.bodyOpacity) >= 98 ? readoutChip('Life reconstruction', 'rgba(94,234,212,0.68)') : null,
             props.showEvidence && props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.showEvidence && props.loggedCount != null ? readoutChip('Scan ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Logged ' + props.loggedCount + '/' + (props.scanTotal || 3) + ' | Path ' + (props.pathLoggedCount || 0) + '/' + (props.pathTotal || 2), 'rgba(34,197,94,0.65)') : null
           ),
@@ -11107,6 +11307,15 @@ var evidenceRoute = [
             el('span', { style: { display: 'block', fontSize: 10.8, color: statusColor, lineHeight: 1.25, fontWeight: 800 } }, hypothesis.status)
           );
         }));
+        var coveringEvidence = coveringEvidenceFor(dn, skeletalProfile);
+        var coveringGuide = el('details', { className: 'dinolab-covering-evidence', style: { marginBottom: 10, border: '1px solid ' + T.border, borderRadius: 9, padding: '0 10px', color: T.soft, fontSize: 12, lineHeight: 1.5 } },
+          el('summary', { style: { cursor: 'pointer', minHeight: 44, display: 'list-item', alignContent: 'center', color: T.text, fontWeight: 800 } }, 'Why this covering?'),
+          el('p', { style: { margin: '2px 0 8px' } }, 'Birds are living theropod dinosaurs. Feathers and scales can occur on the same animal; their distribution depends on the species.'),
+          el('p', { style: { margin: '0 0 8px' } }, el('strong', { style: { color: T.text } }, 'Supported: '), coveringEvidence.supported),
+          el('p', { style: { margin: '0 0 8px' } }, el('strong', { style: { color: T.text } }, 'Still uncertain: '), coveringEvidence.uncertain),
+          el('p', { style: { margin: '0 0 8px' } }, 'Compare the same animal with the buttons above. Evidence-led is the default; Conservative reduces inference; Avian-informed explores additional coverage. Classic shows reconstruction history and may contradict fossil evidence.'),
+          coveringEvidence.source ? el('a', { href: coveringEvidence.source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '8px 0 12px', color: T.text, textDecoration: 'underline' } }, coveringEvidence.source.label + ' (opens in a new tab)') : null
+        );
         var hypothesisNote = el('div', { role: 'note', style: { margin: '0 0 10px', padding: '9px 10px', borderRadius: 9, border: '1px solid ' + (activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.42)' : 'rgba(20,184,166,0.30)'), background: activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.08)' : 'rgba(20,184,166,0.07)', color: T.soft, fontSize: 11.5, lineHeight: 1.45 } },
           el('strong', { style: { color: T.text } }, activeHypothesis.label + ': '), activeHypothesis.description + ' ',
           el('span', { style: { color: activeHypothesis.id === 'classic' ? '#fbbf24' : T.soft } }, activeHypothesis.warning),
@@ -11624,6 +11833,7 @@ var evidenceRoute = [
                 );
               })),
               presetStrip,
+              el('button', { id: 'dinolab-compare-coverings', type: 'button', onClick: function () { openFieldDrawer('reconstruct'); }, 'aria-controls': 'dinolab-field-drawer', 'aria-expanded': drawerOpen && drawerSection === 'reconstruct' ? 'true' : 'false', style: Object.assign({}, actionStyle, { minHeight: 44, marginBottom: 10, textAlign: 'left' }) }, 'Compare coverings: ' + activeHypothesis.shortLabel),
               el('div', { className: 'dinolab-presentation-controls', style: { display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10 } },
                 el('div', { role: 'group', 'aria-label': __alloT('stem.dinolab.scene_lighting', 'Scene lighting') },
                   pill(d.field3dStage !== 'habitat', __alloT('stem.dinolab.studio_lighting', 'Studio'), function () { upd('field3dStage', 'studio'); }, 'studio'),
@@ -11727,7 +11937,7 @@ var evidenceRoute = [
               el('div', { hidden: drawerSection !== 'assemble' }, assemblyPanel),
               el('div', { hidden: drawerSection !== 'claim' }, claimBuilderPanel),
               el('div', { hidden: drawerSection !== 'reconstruct' },
-                hypothesisStrip, hypothesisNote,
+                hypothesisStrip, hypothesisNote, coveringGuide,
                 panel([
                 el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, 'Reconstruction layers'),
                 checkRow('field3dShowSkeleton', showSkeleton, 'Skeleton proxy', 'Shows modular cranial bars, the single occipital condyle, atlas-axis complex, clade-scaled coronoid and retroarticular jaw levers, regionalized centra and neural arches, double-headed curved dorsal ribs, differentiated sternal connections, supported gastral baskets or uncinate processes, expanded sacral ribs and iliac contacts, tapered proximal caudal ribs, true haemal arches, blade-like girdles, rimmed sockets, tapered paired limb bones, articulated phalangeal chains, and tail.'),

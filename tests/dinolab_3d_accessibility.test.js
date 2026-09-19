@@ -132,7 +132,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("id: 'avian'");
     expect(source).toContain("label: 'Historical classic'");
     expect(source).toContain("status: directFeatherEvidence ? 'Contradicted historical model' : 'Historical comparison'");
-    expect(source).toContain("status: avianEligible ? (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis') : 'Not supported for this clade'");
+    expect(source).toContain("status: avianEligible ? (regionalMosaic ? 'Speculative regional covering' : (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis')) : 'Not supported for this clade'");
     expect(source).toContain("var requestedReconstructionMode = d.field3dReconstructionMode || 'evidence';");
     expect(source).toContain(`role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_hypothesis', 'Reconstruction hypothesis')`);
     expect(source).toContain('Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.');

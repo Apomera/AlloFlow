@@ -1,0 +1,155 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Warning: The current testing environment is not configured to support act(...)
+    at DinoFieldStation3D (eval at setupDinoLab (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/dino_lab_harness.js:83:3), <anonymous>:7592:31)
+    at div
+    at div
+    at div
+    at div
+    at div
+Warning: The current testing environment is not configured to support act(...)
+    at DinoFieldStation3D (eval at setupDinoLab (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/dino_lab_harness.js:83:3), <anonymous>:7592:31)
+    at div
+    at div
+    at div
+    at div
+    at div
+Warning: The current testing environment is not configured to support act(...)
+    at DinoFieldStation3D (eval at setupDinoLab (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/dino_lab_harness.js:83:3), <anonymous>:7592:31)
+    at div
+    at div
+    at div
+    at div
+    at div
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > copies a readable investigation summary from the share disclosure
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+Warning: The current testing environment is not configured to support act(...)
+
+stderr | tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+Warning: The current testing environment is not configured to support act(...)
+
+stdout | tests/dinolab_3d_accessibility.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/dinolab_3d_accessibility.test.js (15 tests | 6 failed) 84188ms
+     × lets keyboard users enter and revisit available Field Station workflow steps 14775ms
+     × restores and clears a saved evidence investigation 6653ms
+     × copies a readable investigation summary from the share disclosure 1625ms
+     × moves the active evidence focus from the in-stage route 518ms
+     × switches to an opaque Life view without changing the reconstruction hypothesis 1402ms
+     × keeps the same 3D canvas mounted across unrelated Field Station updates 969ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > lets keyboard users enter and revisit available Field Station workflow steps
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/dinolab_3d_accessibility.test.js:668:3
+    666|     host.remove();
+    667|   });
+    668|   it('lets keyboard users enter and revisit available Field Station wo…
+       |   ^
+    669|     const api = setupDinoLab();
+    670|     const host = document.createElement('div');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > restores and clears a saved evidence investigation
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/dinolab_3d_accessibility.test.js:752:3
+    750|     host.remove();
+    751|   });
+    752|   it('restores and clears a saved evidence investigation', async () =>…
+       |   ^
+    753|     const api = setupDinoLab();
+    754|     const host = document.createElement('div');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > copies a readable investigation summary from the share disclosure
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:848:23
+    846|     await api.React.act(async () => { render(); });
+    847|     const share = host.querySelector('details.dinolab-investigation-sh…
+    848|     expect(share).not.toBeNull();
+       |                       ^
+    849|     const copy = host.querySelector('button[aria-label="Copy Dino Lab …
+    850|     expect(copy).not.toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > moves the active evidence focus from the in-stage route
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:880:26
+    878|     await api.React.act(async () => { render(); });
+    879|     const shoulder = host.querySelector('button[aria-label="Focus Shou…
+    880|     expect(shoulder).not.toBeNull();
+       |                          ^
+    881|     await api.React.act(async () => { shoulder?.click(); });
+    882|     expect(lastPatch?.field3dScanTargetIdx).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > switches to an opaque Life view without changing the reconstruction hypothesis
+AssertionError: expected undefined to be 'false' // Object.is equality
+
+- Expected:
+"false"
+
++ Received:
+undefined
+
+ ❯ tests/dinolab_3d_accessibility.test.js:919:52
+    917|     const lifeView = [...host.querySelectorAll('button')].find(button …
+    918|     expect(lifeView).not.toBeNull();
+    919|     expect(lifeView?.getAttribute('aria-pressed')).toBe('false');
+       |                                                    ^
+    920|     await api.React.act(async () => { lifeView?.click(); });
+    921|     expect(lastPatch).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > keeps the same 3D canvas mounted across unrelated Field Station updates
+AssertionError: expected null not to be null
+ ❯ tests/dinolab_3d_accessibility.test.js:962:29
+    960|     await api.React.act(async () => { render(); });
+    961|     const firstCanvas = host.querySelector('canvas[aria-roledescriptio…
+    962|     expect(firstCanvas).not.toBeNull();
+       |                             ^
+    963|
+    964|     data = { ...data, field3dChallengeIdx: 1 };
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  6 failed | 51 passed (57)
+   Start at  19:30:50
+   Duration  96.47s (transform 442ms, setup 125ms, import 1.07s, tests 84.90s, environment 7.40s)

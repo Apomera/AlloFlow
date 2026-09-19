@@ -1,0 +1,20 @@
+
+Running 8 tests using 1 worker
+
+
+
+(node:43584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:43584) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:27:81 › microraptor shows rooted continuous plumage
+[2/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:27:81 › anchiornis shows rooted continuous plumage
+[3/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:27:81 › yutyrannus shows rooted continuous plumage
+[4/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:27:81 › sinosauropteryx shows rooted continuous plumage
+[5/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:55:5 › Tyrannosaurus alternative is restricted to a speculative dorsal tract
+[6/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:63:5 › Psittacosaurus bristles never become an inferred full coat
+[7/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:67:5 › coat stays rooted during motion and follows opacity without rebuilding
+[8/8] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:85:5 › Velociraptor minimum keeps forearm feathers without claiming a preserved body coat
+  8 passed (4.8m)

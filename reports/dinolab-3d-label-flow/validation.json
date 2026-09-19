@@ -1,0 +1,31 @@
+{
+  "date": "2026-09-19",
+  "focusedPassed": 98,
+  "browserUniquePassed": 3,
+  "browserAcceptance": "Two motion/camera cases passed in the full run; text-fitting case passed in the targeted final recheck.",
+  "axeViolations": [],
+  "motion": {
+    "maxOffsetChange": 0.08327465333616146,
+    "anchorTravel": 0.12226920619843579,
+    "memory": {
+      "geometries": 195,
+      "textures": 7
+    },
+    "savedUnchanged": true
+  },
+  "mirrorPaths": [
+    "stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+    "desktop/app-build/stem_lab/stem_tool_dinolab.js"
+  ],
+  "rendererSHA256": "4803f10ee5c8b8cb467695b7dd16bd930fa18f7dd3df613934cf63e8d9e3b4f8",
+  "mirrorsIdentical": true,
+  "reviewed": [
+    "triceratops-callouts.png",
+    "orbit-callouts.png",
+    "phone-long-label.png",
+    "phone-rtl-label.png"
+  ],
+  "deployed": false
+}

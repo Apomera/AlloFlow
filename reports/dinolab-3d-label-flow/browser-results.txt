@@ -1,0 +1,51 @@
+
+Running 3 tests using 1 worker
+
+
+
+(node:34888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:34888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:39:5 › breathing labels remain steady and keyboard orbit keeps routes clear
+[2/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+  1) [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      27 | function check(p,min=1){
+      28 |  expect(p.labels.length).toBeGreaterThanOrEqual(min);expect(p.errors).toEqual([]);expect(p.lost).toBe(false);expect(p.overflow).toBe(false);
+    > 29 |  for(const a of p.labels){expect(a.clipped).toBe(false);expect(a.x).toBeGreaterThanOrEqual(7.8);expect(a.x+a.width).toBeLessThanOrEqual(p.width-7.8);
+         |                                             ^
+      30 |   for(const b of p.labels)if(a!==b){
+      31 |    expect(a.x+a.width<=b.x||b.x+b.width<=a.x||a.y+a.height<=b.y||b.y+b.height<=a.y).toBe(true);
+      32 |    let blocked=false;for(let t=.01;t<1;t+=.01){const x=a.anchorX+(a.lineX-a.anchorX)*t,y=a.anchorY+(a.lineY-a.anchorY)*t;if(x>b.x+.2&&x<b.x+b.width-.2&&y>b.y+.2&&y<b.y+b.height-.2){blocked=true;break;}}expect(blocked).toBe(false);
+        at check (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-label-flow.spec.ts:29:45)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-label-flow.spec.ts:52:208
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-label-flow\browser-artifacts\dinolab-3d-label-flow-long-3b9d2-ipping-after-phone-resizing-chromium\error-context.md
+
+
+
+(node:39652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+(node:39652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[3/3] [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:55:5 › whole-animal callouts stay clear through camera and study changes
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-label-flow.spec.ts:47:5 › long and right-to-left names wrap without clipping after phone resizing
+  2 passed (7.2m)

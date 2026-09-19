@@ -1,0 +1,10 @@
+{
+  "paths": [
+    "stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+    "desktop/app-build/stem_lab/stem_tool_dinolab.js"
+  ],
+  "sha256": "8e562e6adcec3d39298434486d5b60d89f486b01f1611b404e6ee17e6b3d074b",
+  "identical": true
+}

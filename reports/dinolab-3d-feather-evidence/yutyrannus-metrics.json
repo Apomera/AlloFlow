@@ -1,0 +1,95 @@
+{
+  "coats": [
+    {
+      "region": "torso",
+      "roots": 1012,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 36432,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "head",
+      "roots": 147,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 5292,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "neck",
+      "roots": 386,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 13896,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "tail",
+      "roots": 386,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 13896,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "hindleg-1",
+      "roots": 221,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 7956,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "hindleg--1",
+      "roots": 221,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 7956,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    }
+  ],
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "geometries": 211,
+  "textures": 7,
+  "shaderFailures": 0
+}

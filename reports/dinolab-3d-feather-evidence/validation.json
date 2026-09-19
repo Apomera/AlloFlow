@@ -1,0 +1,40 @@
+{
+  "date": "2026-09-19",
+  "focusedPassed": 155,
+  "focusedFiles": 8,
+  "browserUniquePassed": 8,
+  "finalPhoneRecheckPassed": 1,
+  "axeViolations": [],
+  "motionRootGap": 0,
+  "motionTravel": 0.00005220188838238443,
+  "stableResources": {
+    "before": {
+      "geometries": 353,
+      "textures": 8
+    },
+    "after": {
+      "geometries": 353,
+      "textures": 8
+    }
+  },
+  "mirrors": {
+    "paths": [
+      "stem_lab/stem_tool_dinolab.js",
+      "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "desktop/app-build/stem_lab/stem_tool_dinolab.js"
+    ],
+    "sha256": "8e562e6adcec3d39298434486d5b60d89f486b01f1611b404e6ee17e6b3d074b",
+    "identical": true
+  },
+  "reviewed": [
+    "microraptor-life.png",
+    "anchiornis-life.png",
+    "yutyrannus-life.png",
+    "sinosauropteryx-life.png",
+    "evidence-phone.png",
+    "microraptor-phone.png",
+    "historical-phone.png"
+  ],
+  "deployed": false
+}
