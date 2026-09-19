@@ -76,6 +76,7 @@ test('play labels expose hover and selected structure without changing mission b
  await page.mouse.move(0,0);
  await canvas.evaluate((c:any) => c._cellSimShowOrganelleTooltip('plantcell','Chloroplast'));
  await expect.poll(() => canvas.evaluate((c:any) => c._cellSimGetAnatomyLabels().some((b:any) => b.selected))).toBe(true);
- await expect.poll(() => canvas.evaluate((c:any) => c._cellSimGetOrganelleTooltip()), {timeout:15000}).toBeNull();
+ await page.getByRole('button',{name:'Close structure explanation',exact:true}).click();
+ await expect.poll(() => canvas.evaluate((c:any) => c._cellSimGetOrganelleTooltip())).toBeNull();
  expect(await canvas.evaluate((c:any) => c._cellSimGetAnatomyLabels().some((b:any) => b.selected || b.hovered))).toBe(false);
 });

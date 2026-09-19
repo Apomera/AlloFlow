@@ -37,8 +37,8 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('function findOrganelleLabelHit(mx, my)');
       expect(source).toContain('function showOrganelleLabelTooltip(hitLabel)');
       expect(source).toContain('var hitLabel = findOrganelleLabelHit(mx, my);');
-      expect(source).toContain('var playHitLabel = findOrganelleLabelHit(mx, my);');
-      expect(source).toContain('if (playHitLabel) showOrganelleLabelTooltip(playHitLabel);');
+      expect(source).toContain('pointerDownLabel.org === (playAsOrg || selectedOrg)');
+      expect(source).toContain('if (!cancelled && !pointerDidDrag');
 
       expect(source).toContain('canvasEl._onZoom = function (z) { syncCanvasZoomState(z); };');
       expect(source).toContain('canvasEl.addEventListener(\'pointerdown\', onPointerDown);');
@@ -130,8 +130,8 @@ describe('cell simulator canvas ref stability', () => {
 
       expect(source).toContain('canvasEl._cellSimShowOrganelleTooltip = function (orgId, organelleName)');
       expect(source).toContain('if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(a.name);');
-      expect(source).toContain("document.querySelector('[data-cell-target-legend]')");
-      expect(source).toContain('ttSafeTop = Math.max(ttSafeTop, (ttLegendRect.bottom - ttCanvasRect.top + 8) * ttScaleY);');
+      expect(source).toContain("'data-cell-explanation-panel': true");
+      expect(source).toContain('canvasEl._cellSimStepStructure = function(direction)');
       expect(source).toContain('canvasEl._cellSimGetOrganelleTooltip = function ()');
       expect(source).toContain('canvasEl._cellSimGetOrganelleTooltip = null;');
       expect(source).toContain("if (e.type === 'keydown') world._tooltip = null;");
@@ -159,7 +159,7 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('function schedulePausedOverlayFrame()');
       expect(source).toContain('function renderStaticFrame()');
       expect(source).toContain('function scheduleLoop()');
-      expect(source).toContain('if (!world._tooltip && !world._highlightOrganelle) return;');
+      expect(source).toContain('if (!world._highlightOrganelle) return;');
       expect(source).toContain('if (rendered && canvasEl._cellSimPaused) schedulePausedOverlayFrame();');
       expect(source).toContain('if (canvasEl._cellSimPaused) renderStaticFrame(); else scheduleLoop();');
       expect(source).toContain('var hoverChanged = hoveredOrg !== foundHover;');
@@ -172,8 +172,8 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('if (renderMotion) { db.x += db.dx; db.y += db.dy; }');
       expect(source).toContain('if (renderMotion) {');
       expect(source).toContain('v.trail.push({ x: v.x, y: v.y });');
-      expect(source).toContain('var ttAgeMs = tt.startTime ? renderNow - tt.startTime : (world.tick - tt.startTick) * (1000 / 60);');
-      expect(source).toContain('if (explanation && (explanation.org !== focalOrganism || (playAsOrg && explanationAge > 5000)))');
+      expect(source).toContain('syncCellExplanationPanel();');
+      expect(source).toContain('if (explanation && explanation.org !== focalOrganism)');
       expect(source).toContain('var hlAgeMs = hl.startTime ? renderNow - hl.startTime : (world.tick - hl.startTick) * (1000 / 60);');
       expect(source).toContain('if (hlAgeMs > 1000)');
       expect(source).toContain('startTime: canvasNow()');

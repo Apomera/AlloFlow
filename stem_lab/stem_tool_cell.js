@@ -2373,7 +2373,7 @@ var d = labToolData.cell || {};
             cellSound('badge');
             addToast('🏆 Challenge Unlocked: ' + chal.label, 'success');
             if (typeof awardStemXP === 'function') awardStemXP('cell_chal_' + chal.id, 20, chal.label);
-            
+
             var rewardRP = 10;
             if (chal.id === 'play_organism') rewardRP = 20;
             if (chal.id === 'study_vocab' || chal.id === 'quiz_correct_3' || chal.id === 'anatomy_ace') rewardRP = 15;
@@ -18872,6 +18872,8 @@ var d = labToolData.cell || {};
           // Keep the ref callback identity stable so selecting an organism can
           // refresh the React info panel without tearing down the live canvas.
           var canvasRefStateRef = React.useRef({ lastCanvas: null });
+          var cellExplanationState = React.useState(null);
+          var cellExplanation = cellExplanationState[0], setCellExplanation = cellExplanationState[1];
           var canvasMissionProgressRef = React.useRef({ organismId: null, progress: 0, evidenceComplete: false, missionComplete: false });
           var playControlTraceState = React.useState(null);
           var playControlTrace = playControlTraceState[0];
@@ -21876,9 +21878,8 @@ var d = labToolData.cell || {};
               var focalOrganism = playAsOrg || selectedOrg;
               // Explanations and transient focus belong to one specimen, including duplicate species.
               var explanation = world._tooltip;
-              var explanationAge = explanation && (explanation.startTime ? renderNow - explanation.startTime : (world.tick - explanation.startTick) * (1000 / 60));
-              // Clear before drawing labels so paused play cannot retain a stale selection outline.
-              if (explanation && (explanation.org !== focalOrganism || (playAsOrg && explanationAge > 5000))) {
+              // Keep explanations readable until dismissed or the active specimen changes.
+              if (explanation && explanation.org !== focalOrganism) {
                 world._tooltip = null;
                 world._highlightOrganelle = null;
               }
@@ -21913,174 +21914,8 @@ var d = labToolData.cell || {};
               }
 
 
-              // ── Click-to-explain tooltip ──
-
-              if (world._tooltip) {
-
-                var tt = world._tooltip;
-
-                // Fade in
-
-                var ttAgeMs = tt.startTime ? renderNow - tt.startTime : (world.tick - tt.startTick) * (1000 / 60);
-
-                tt.alpha = Math.min(1, Math.max(tt.alpha || 0, 0.12, ttAgeMs / 180));
-
-                cctx.save();
-
-                cctx.globalAlpha = tt.alpha;
-
-                var ttFontSize = 12 * dpr;
-
-                cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
-
-                var ttTitle = tt.anatomy.name;
-
-                cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
-
-                // Word-wrap the description
-
-                var ttMaxW = Math.min(340 * dpr, W - 24 * dpr);
-
-                var ttWords = tt.anatomy.fn.split(' ');
-
-                var ttLines = []; var ttCurLine = '';
-
-                ttWords.forEach(function (w) {
-
-                  var test = ttCurLine ? ttCurLine + ' ' + w : w;
-
-                  if (cctx.measureText(test).width > ttMaxW - 28 * dpr) {
-
-                    if (ttCurLine) ttLines.push(ttCurLine);
-
-                    ttCurLine = w;
-
-                  } else { ttCurLine = test; }
-
-                });
-
-                if (ttCurLine) ttLines.push(ttCurLine);
-
-                var ttPadX = 14 * dpr, ttPadY = 12 * dpr;
-
-                cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
-
-                var ttTitleLines = [], ttTitleLine = '';
-                ttTitle.split(' ').forEach(function(word) {
-                  var next = ttTitleLine ? ttTitleLine + ' ' + word : word;
-                  if (ttTitleLine && cctx.measureText(next).width > ttMaxW - 72 * dpr) {
-                    ttTitleLines.push(ttTitleLine); ttTitleLine = word;
-                  } else ttTitleLine = next;
-                });
-                if (ttTitleLine) ttTitleLines.push(ttTitleLine);
-                var ttHeaderH = Math.max(44 * dpr, ttTitleLines.length * ttFontSize * 1.35 + ttPadY * 2);
-
-                cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
-
-                var ttW = ttMaxW;
-
-                var ttH = ttHeaderH + ttPadY + ttLines.length * ttFontSize * 1.55;
-
-                var ttX = Math.max(4 * dpr, Math.min(W - ttW - 4 * dpr, tt.x));
-
-                // Selection can reflow the header during the explanation fade-in.
-                var ttSafeBand = readCellMissionOverlaySafeBand(true);
-                var ttSafeTop = ttSafeBand.top;
-                var ttLegendBottom = 0;
-                var ttCanvasRect = canvasEl.getBoundingClientRect();
-                var ttLegendEl = typeof document !== 'undefined' ? document.querySelector('[data-cell-target-legend]') : null;
-                if (ttLegendEl && ttCanvasRect && ttCanvasRect.height > 0) {
-                  var ttLegendRect = ttLegendEl.getBoundingClientRect();
-                  if (ttLegendRect.width > 0 && ttLegendRect.height > 0 && ttLegendRect.bottom > ttCanvasRect.top && ttLegendRect.top < ttCanvasRect.bottom) {
-                    var ttScaleY = HH / ttCanvasRect.height;
-                    ttLegendBottom = Math.max(0, (ttLegendRect.bottom - ttCanvasRect.top) * ttScaleY);
-                    ttSafeTop = Math.max(ttSafeTop, (ttLegendRect.bottom - ttCanvasRect.top + 8) * ttScaleY);
-                  }
-                }
-                var ttMaxY = Math.max(4 * dpr, ttSafeBand.bottom - ttH);
-                var ttMinY = Math.min(ttSafeTop, ttMaxY);
-                var ttY = Math.max(ttMinY, Math.min(ttMaxY, tt.y - ttH - 8 * dpr));
-                tt.layout = {
-                  bounds: { left: ttX, right: ttX + ttW, top: ttY, bottom: ttY + ttH },
-                  safeTop: ttMinY,
-                  legendBottom: ttLegendBottom,
-                  dpr: dpr,
-                  closeBounds: { left: ttX + ttW - 44 * dpr, top: ttY, right: ttX + ttW, bottom: ttY + 44 * dpr }
-                };
-
-                // Shadow
-
-                cctx.shadowColor = 'rgba(0,0,0,0.3)'; cctx.shadowBlur = 12 * dpr; cctx.shadowOffsetY = 4 * dpr;
-
-                // Background
-
-                // Canvas fillStyle cannot resolve CSS custom properties; use an explicit opaque surface.
-                cctx.fillStyle = 'rgba(15,23,42,0.98)';
-
-                cctx.beginPath();
-
-                var ttR = 12 * dpr;
-
-                cctx.moveTo(ttX + ttR, ttY); cctx.lineTo(ttX + ttW - ttR, ttY);
-
-                cctx.arcTo(ttX + ttW, ttY, ttX + ttW, ttY + ttR, ttR);
-
-                cctx.lineTo(ttX + ttW, ttY + ttH - ttR);
-
-                cctx.arcTo(ttX + ttW, ttY + ttH, ttX + ttW - ttR, ttY + ttH, ttR);
-
-                cctx.lineTo(ttX + ttR, ttY + ttH);
-
-                cctx.arcTo(ttX, ttY + ttH, ttX, ttY + ttH - ttR, ttR);
-
-                cctx.lineTo(ttX, ttY + ttR);
-
-                cctx.arcTo(ttX, ttY, ttX + ttR, ttY, ttR);
-
-                cctx.closePath(); cctx.fill();
-
-                cctx.shadowBlur = 0; cctx.shadowOffsetY = 0;
-
-                // Accent bar
-
-                cctx.fillStyle = tt.def.color;
-
-                cctx.fillRect(ttX, ttY, 3 * dpr, ttH);
-
-                // Title
-
-                cctx.font = 'bold ' + (ttFontSize * 1.1) + 'px Inter, system-ui, sans-serif';
-
-                cctx.fillStyle = '#ecfdf5'; cctx.textAlign = 'left'; cctx.textBaseline = 'top';
-
-                ttTitleLines.forEach(function(line, index) {
-                  cctx.fillText(line, ttX + ttPadX, ttY + ttPadY + index * ttFontSize * 1.35, ttW - 72 * dpr);
-                });
-                // A generous 44px close target matches the rest of the microscope controls.
-                var closeCX = ttX + ttW - 22 * dpr, closeCY = ttY + 22 * dpr;
-                cctx.beginPath(); cctx.moveTo(closeCX - 5 * dpr, closeCY - 5 * dpr); cctx.lineTo(closeCX + 5 * dpr, closeCY + 5 * dpr);
-                cctx.moveTo(closeCX + 5 * dpr, closeCY - 5 * dpr); cctx.lineTo(closeCX - 5 * dpr, closeCY + 5 * dpr);
-                cctx.strokeStyle = '#d1fae5'; cctx.lineWidth = 2 * dpr; cctx.stroke();
-                cctx.beginPath(); cctx.moveTo(ttX + ttPadX, ttY + ttHeaderH - 6 * dpr); cctx.lineTo(ttX + ttW - ttPadX, ttY + ttHeaderH - 6 * dpr);
-                cctx.strokeStyle = 'rgba(167,243,208,0.22)'; cctx.lineWidth = dpr; cctx.stroke();
-
-                // Body
-
-                cctx.font = ttFontSize + 'px Inter, system-ui, sans-serif';
-
-                cctx.fillStyle = '#f8fafc';
-
-                ttLines.forEach(function (line, li) {
-
-                  cctx.fillText(line, ttX + ttPadX, ttY + ttHeaderH + li * ttFontSize * 1.55);
-
-                });
-
-                cctx.restore();
-
-              }
-
-
+              // Mirror only explanation changes into React; animation frames do not rerender the panel.
+              syncCellExplanationPanel();
 
               // ── Highlight pulse for selected structure ──
 
@@ -22446,8 +22281,8 @@ var d = labToolData.cell || {};
 
             function schedulePausedOverlayFrame() {
               if (!canvasEl._cellSimAlive || !canvasEl._cellSimPaused || pausedOverlayAnimId) return;
-              if (!world._tooltip && !world._highlightOrganelle) return;
-              if (!playAsOrg && world._tooltip && world._tooltip.alpha >= 1 && !world._highlightOrganelle) return;
+              if (!world._highlightOrganelle) return;
+
               pausedOverlayAnimId = requestAnimationFrame(function () {
                 pausedOverlayAnimId = null;
                 renderStaticFrame();
@@ -22616,8 +22451,17 @@ var d = labToolData.cell || {};
               emitMissionCue(o, 'evidence', missionEvidenceNextStep(o, cellPlayTutorialFor(o.def)), 100, anatomy.name, '');
               return true;
             }
+            var lastCellExplanation = null;
+            function syncCellExplanationPanel() {
+              var tt = world._tooltip || null;
+              if (tt === lastCellExplanation) return;
+              lastCellExplanation = tt;
+              setCellExplanation(tt ? { organismId: tt.def.id, organismName: tt.def.label, name: tt.anatomy.name,
+                description: tt.anatomy.fn, index: tt.def.anatomy.indexOf(tt.anatomy), count: tt.def.anatomy.length } : null);
+            }
             function showOrganelleLabelTooltip(hitLabel) {
               world._tooltip = { org: hitLabel.org, anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick, startTime: canvasNow() };
+              syncCellExplanationPanel();
               if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(hitLabel.anatomy.name);
               rewardPlantStructure(hitLabel.org, hitLabel.anatomy);
               if (canvasEl._cellSimPaused) renderStaticFrame();
@@ -22627,6 +22471,7 @@ var d = labToolData.cell || {};
               if (!world._tooltip) return false;
               world._tooltip = null;
               world._highlightOrganelle = null;
+              syncCellExplanationPanel();
               if (canvasEl._cellSimPaused) renderStaticFrame();
               return true;
             }
@@ -22673,36 +22518,25 @@ var d = labToolData.cell || {};
             function onPointerDown(e) {
               if (typeof e.button === 'number' && e.button !== 0) return;
               if (activePointerId !== null) return;
-              if (playAsOrg) {
-                var rect = canvasEl.getBoundingClientRect();
-                var mx = (e.clientX - rect.left) * dpr;
-                var my = (e.clientY - rect.top) * dpr;
-                if (hitCellExplanationClose(mx, my)) { dismissCellExplanation(); return; }
-                if (hitCellExplanationBody(mx, my)) return;
-                var playHitLabel = findOrganelleLabelHit(mx, my);
-                if (playHitLabel) showOrganelleLabelTooltip(playHitLabel);
-                if (e.pointerType !== 'mouse') e.preventDefault();
-                return;
-              }
               activePointerId = e.pointerId;
               pointerDidDrag = false;
               pointerTapTolerance = e.pointerType === 'mouse' ? 5 : 10;
               var tapRect = canvasEl.getBoundingClientRect();
               var tapX = (e.clientX - tapRect.left) * dpr, tapY = (e.clientY - tapRect.top) * dpr;
               pointerDownLabel = hitCellExplanationBody(tapX, tapY) ? null : findOrganelleLabelHit(tapX, tapY);
-              dragging = true;
+              dragging = !playAsOrg;
               dragStartX = e.clientX; dragStartY = e.clientY;
               camStartX = cam.x; camStartY = cam.y;
-              canvasEl.style.cursor = 'grabbing';
+              canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grabbing';
               try { if (canvasEl.setPointerCapture) canvasEl.setPointerCapture(e.pointerId); } catch (err) {}
               if (e.pointerType !== 'mouse') e.preventDefault();
             }
 
             function onPointerMove(e) {
-              if (dragging) {
+              if (activePointerId !== null) {
                 if (activePointerId !== null && e.pointerId !== activePointerId) return;
                 if (Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) >= pointerTapTolerance) pointerDidDrag = true;
-                if (pointerDidDrag) {
+                if (pointerDidDrag && !playAsOrg) {
                   setObservationFollow(false);
                   var dx = (e.clientX - dragStartX) / cam.zoom;
                   var dy = (e.clientY - dragStartY) / cam.zoom;
@@ -22720,8 +22554,8 @@ var d = labToolData.cell || {};
               if (!cancelled && !pointerDidDrag && Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) < pointerTapTolerance) {
                 // A moving label can leave the release point; keep the structure touched at press time.
                 if (pointerDownLabel) {
-                  if (pointerDownLabel.org === selectedOrg && observationLabelsVisible) showOrganelleLabelTooltip(pointerDownLabel);
-                } else handleCanvasTap(e.clientX, e.clientY);
+                  if (pointerDownLabel.org === (playAsOrg || selectedOrg) && (playAsOrg || observationLabelsVisible)) showOrganelleLabelTooltip(pointerDownLabel);
+                } else if (!playAsOrg) handleCanvasTap(e.clientX, e.clientY);
               }
               dragging = false;
               activePointerId = null;
@@ -22785,6 +22619,7 @@ var d = labToolData.cell || {};
             // button, and movement has to work from there.
             function cellKeyTargetIsFormControl(target) {
               if (!target || !target.tagName) return false;
+              if (target.closest && target.closest('[data-cell-explanation-panel]')) return true;
               var tag = target.tagName;
               return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable === true;
             }
@@ -23049,7 +22884,7 @@ var d = labToolData.cell || {};
 
             canvasEl._cellSimFocusOrganism = function (orgId) {
 
-              var target = world.organisms.find(function (o) { return o.def.id === orgId; });
+              var target = playAsOrg && playAsOrg.def.id === orgId ? playAsOrg : selectedOrg && selectedOrg.def.id === orgId ? selectedOrg : world.organisms.find(function (o) { return o.def.id === orgId; });
 
               if (target) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; selectedOrg = target; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); }
 
@@ -23209,11 +23044,24 @@ var d = labToolData.cell || {};
 
               cellSound('select');
 
+              syncCellExplanationPanel();
               if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(a.name);
               rewardPlantStructure(o, a);
 
               if (canvasEl._cellSimPaused) renderStaticFrame();
 
+            };
+
+            canvasEl._cellSimDismissExplanation = dismissCellExplanation;
+            canvasEl._cellSimStepStructure = function(direction) {
+              var org = playAsOrg || selectedOrg;
+              if (!org || !org.def.anatomy || !org.def.anatomy.length) return;
+              var anatomy = org.def.anatomy;
+              var current = world._tooltip && world._tooltip.org === org ? anatomy.indexOf(world._tooltip.anatomy) : -1;
+              var next = current < 0 ? (direction < 0 ? anatomy.length - 1 : 0) : (current + (direction < 0 ? -1 : 1) + anatomy.length) % anatomy.length;
+              observationLabelsVisible = true;
+              canvasEl._cellSimShowOrganelleTooltip(org.def.id, anatomy[next].name);
+              syncCellExplanationPanel();
             };
 
             canvasEl._cellSimDrawSpecimenPreview = function (previewCanvas, orgId) {
@@ -23290,6 +23138,8 @@ var d = labToolData.cell || {};
               canvasEl._cellSimGetTargetGuide = null;
               canvasEl._cellSimGetControlResponse = null;
               canvasEl._cellSimGetOrganelleTooltip = null;
+              canvasEl._cellSimDismissExplanation = null;
+              canvasEl._cellSimStepStructure = null;
               canvasEl._cellSimGetAnatomyLabels = null;
               canvasEl._cellSimSetObservationLabels = null;
               canvasEl._cellSimDrawSpecimenPreview = null;
@@ -23854,6 +23704,19 @@ var d = labToolData.cell || {};
             };
             return React.createElement('svg', { viewBox: '0 0 24 24', width: 20, height: 20, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' },
               React.createElement('path', { d: paths[kind] || paths.locate }));
+          }
+          var cellExplanationButtonStyle = { minHeight: 44, padding: '8px 16px', border: '1px solid #648f7f', borderRadius: 8, background: '#ffffff', color: '#164b3c', fontWeight: 700 };
+          function stepCellExplanation(direction) {
+            var cv = canvasRefStateRef.current.lastCanvas;
+            if (cv && cv._cellSimStepStructure) {
+              if (!d.playAsOrganism && d.observationLabels === false) upd('observationLabels', true);
+              cv._cellSimStepStructure(direction);
+            }
+          }
+          function closeCellExplanationPanel() {
+            var cv = canvasRefStateRef.current.lastCanvas;
+            if (cv && cv._cellSimDismissExplanation) cv._cellSimDismissExplanation();
+            if (cv && cv.focus) cv.focus({ preventScroll: true });
           }
           function returnToCellDish() {
             var cv = document.querySelector('[data-cell-sim-canvas]');
@@ -25739,6 +25602,22 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
               })()
 
             ),
+            (activePlayDef || selDef) && React.createElement('section', {
+              'data-cell-explanation-panel': true, 'aria-label': 'Structure explorer',
+              style: { marginTop: 12, padding: 16, border: '1px solid #bbd7cd', borderRadius: 14, background: '#f4faf7', color: '#163e35' },
+              onKeyDown: function(e) { if (e.key === 'Escape' && cellExplanation) { e.preventDefault(); e.stopPropagation(); closeCellExplanationPanel(); } }
+            },
+              React.createElement('div', { 'aria-live': 'polite', 'aria-atomic': true, style: { overflowWrap: 'anywhere' } },
+                React.createElement('p', { style: { margin: '0 0 6px', fontSize: 12, color: '#41665a' } }, cellExplanation ? cellExplanation.organismName + ' · Structure ' + (cellExplanation.index + 1) + ' of ' + cellExplanation.count : (activePlayDef || selDef).label + ' · Structure explorer'),
+                React.createElement('h3', { 'data-cell-explanation-title': true, style: { margin: '0 0 8px', fontSize: 18 } }, cellExplanation ? cellExplanation.name : 'Explore cell structures'),
+                React.createElement('p', { 'data-cell-explanation-text': true, style: { margin: 0, fontSize: 14, lineHeight: 1.65 } }, cellExplanation ? cellExplanation.description : 'Select a label in the dish, or use Previous and Next to explore each structure.')
+              ),
+              React.createElement('div', { role: 'group', 'aria-label': 'Browse cell structures', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
+                React.createElement('button', { type: 'button', 'aria-label': 'Previous structure', onClick: function() { stepCellExplanation(-1); }, style: cellExplanationButtonStyle }, 'Previous'),
+                React.createElement('button', { type: 'button', 'aria-label': 'Next structure', onClick: function() { stepCellExplanation(1); }, style: cellExplanationButtonStyle }, 'Next'),
+                cellExplanation && React.createElement('button', { type: 'button', 'aria-label': 'Close structure explanation', onClick: closeCellExplanationPanel, style: cellExplanationButtonStyle }, 'Close')
+              )
+            ),
             d.mode === 'play' && activePlayDef && activePlayTutorial && React.createElement("section", { "data-cell-mission-checkpoint": true, className: "mt-3 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm", "aria-labelledby": "cell-mission-checkpoint-title" },
               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 bg-gradient-to-r from-violet-50 via-white to-emerald-50 px-4 py-3" },
                 React.createElement("div", { className: "min-w-0 flex-1" },
@@ -27547,7 +27426,7 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     )
                   ),
                   React.createElement('p', { className: 'text-xs text-slate-700 leading-relaxed font-medium bg-white/60 p-2.5 rounded-lg border border-white/80' }, item.description),
-                  
+
                   React.createElement('div', { className: 'p-2.5 bg-white/80 border rounded-lg shadow-sm ' + theme.border },
                     React.createElement('div', { className: 'flex justify-between items-center gap-3 text-[0.625rem] text-slate-500 font-bold mb-2' },
                       React.createElement('span', null, '🔬 Scale Comparison'),
