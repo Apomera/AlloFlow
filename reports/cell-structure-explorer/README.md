@@ -56,3 +56,18 @@ Observe mode now places the structure explorer beside the microscope when its av
 
 The same DOM wrappers and canvas remain mounted across layout changes. The layout test resizes between desktop, a 900px app container and a 320px phone, checking canvas identity, preserved camera/selection/zoom and retained picker focus. Screenshots capture the full desktop workspace and both stacked variants. Existing explorer and focused-label scenarios verify navigation, stable label positions, keyboard return, touch cancellation and play behavior at the new sizes.
 All nine explorer/focused-label/layout browser scenarios passed. Desktop split and phone stacked screenshots reviewed; source syntax, scoped whitespace and all four mirror copies passed. No push or deployment.
+
+## Compact phone microscope toolbar — 2026-09-19
+
+At narrow microscope widths, Labels, Center, Follow/Following and Notes now remain visible in one row with icons and short captions. Each control retains a large tap target; Labels still exposes the current Show labels/Hide labels action to assistive technology, and Notes retains the full Specimen notes accessible name. Desktop wording and the existing action behavior remain unchanged. No extra menu or disclosure is needed.
+
+Browser checks cover 280/320/390/1200px layouts, four non-overlapping controls of at least 44px in each dimension, a phone HUD below 160px tall, steady toolbar height while following, keyboard activation, show/hide labels, centering, notes navigation and label clearance below the HUD. Existing motion-stability and touch-label scenarios are included.
+All ten toolbar, motion-stability and touch-label browser scenarios passed. Reviewed 280px and desktop screenshots. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.
+
+## Clearer phone zoom and speed controls — 2026-09-19
+
+At microscope widths up to 640px, each utility card now gives its heading and value the full top row, with its slider and action button below. This separates Zoom from magnification even at 400× on a 280px display. The cards retain their existing height and 44px touch controls. The desktop layout is unchanged.
+
+The toolbar browser checks now exercise maximum zoom/speed through the keyboard, measure heading separation and button clearance, confirm canvas zoom synchronization, and exercise reset and play/pause. Existing touch-label checks cover label access around the overlays.
+
+All eight toolbar and touch-label browser scenarios passed at 280/320/390/1200px. Phone and desktop screenshots reviewed. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.

@@ -23718,6 +23718,9 @@ var d = labToolData.cell || {};
               reset: 'M4 10a8 8 0 1 1 1 8 M4 4v6h6',
               previous: 'M14 6l-6 6 6 6',
               up: 'M12 19V5 M6 11l6-6 6 6',
+              labels: 'M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12 M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0',
+              follow: 'M4 3l16 8-7 2-2 8-7-18z',
+              notes: 'M5 3h14v18H5z M8 7h8 M8 11h8 M8 15h5',
               next: 'M10 6l6 6-6 6',
               close: 'M6 6l12 12 M18 6L6 18',
               structure: 'M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0 M15 11a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M7 16l1 1 M16 6l1 1',
@@ -23904,10 +23907,12 @@ var d = labToolData.cell || {};
 [data-cell-observation-identity]>span:first-child{width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px #ffffff30}
 [data-cell-observation-identity]>span:last-child{font-size:10px;color:#b8d5d0}
 [data-cell-observation-actions]{display:flex;gap:6px}
+[data-cell-mobile-tool-icon],[data-cell-tool-short-label]{display:none}
 [data-cell-observation-actions] button{display:flex;gap:5px;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:1px solid #759891;border-radius:8px;color:#ecfdf5;background:#234b48;font-size:11px;font-weight:700}
 [data-cell-observation-actions] button:hover{background:#35635b}
 [data-cell-observation-actions] button[aria-pressed=true]{background:#d7f5e9;color:#16483e;border-color:#d7f5e9}
-@container(max-width:640px){[data-cell-observation-tools]{gap:7px}[data-cell-observation-actions]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}[data-cell-observation-actions] button{padding:6px 4px;font-size:10px}[data-cell-observation-identity]>span:last-child{display:none}}
+@container(max-width:640px){[data-cell-observation-tools]{gap:7px}[data-cell-observation-actions]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}[data-cell-observation-actions] button{flex-direction:column;gap:3px;min-height:56px;min-width:0;padding:6px 2px;font-size:11px;line-height:1.2}[data-cell-observation-actions] svg{width:20px;height:20px;flex:none}[data-cell-mobile-tool-icon]{display:inline-flex}[data-cell-tool-short-label]{display:inline}[data-cell-tool-full-label]{display:none}[data-cell-observation-identity]>span:last-child{display:none}}
+@container(max-width:340px){[data-cell-observation-actions] button{font-size:10px}}
 [data-cell-stage-hud]{background:rgba(9,38,43,.94)!important;border-color:#587b7c!important;border-radius:12px!important;box-shadow:0 4px 14px #092e3626!important}
 [data-cell-target-legend]{background:rgba(9,38,43,.96)!important;border-color:#587b7c!important;border-radius:12px!important;box-shadow:0 6px 18px #092e3626!important}
 [data-cell-stage] button:focus-visible{outline:3px solid #fff;outline-offset:3px}
@@ -23920,10 +23925,13 @@ var d = labToolData.cell || {};
 [data-cell-stage-utility] button:focus-visible,[data-cell-stage-utility] input:focus-visible{outline:3px solid #0f766e;outline-offset:3px}
 [data-cell-direction-pad],[data-cell-control-lock]{bottom:86px!important}
 @container(max-width:640px){
-[data-cell-stage-utility]{width:calc(50% - 12px);grid-template-columns:minmax(0,1fr) auto 44px;grid-template-rows:14px 44px;column-gap:5px!important;min-height:72px;padding:6px!important;white-space:nowrap}
+[data-cell-stage-utility]{width:calc(50% - 12px);grid-template-columns:minmax(0,1fr) 44px;grid-template-rows:14px 44px;column-gap:5px!important;min-height:72px;padding:6px!important;white-space:nowrap}
 [data-cell-stage-utility=zoom]{left:8px!important;right:auto!important}
 [data-cell-stage-utility=speed]{right:8px!important;left:auto!important}
-[data-cell-stage-utility] input{height:44px}
+[data-cell-stage-utility] [data-cell-control-label],[data-cell-stage-utility] [data-cell-control-value]{line-height:14px}
+[data-cell-stage-utility] [data-cell-control-value]{justify-self:end}
+[data-cell-stage-utility] input{grid-column:1;height:44px}
+[data-cell-stage-utility] button{grid-column:2;grid-row:2}
 [data-cell-direction-pad],[data-cell-control-lock]{bottom:90px!important}
 }
 [data-cell-visibility-panel]{padding:18px!important;border:1px solid #d4e3df!important;border-radius:16px!important;box-shadow:0 4px 14px #143b4408!important}
@@ -25201,18 +25209,18 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                     React.createElement("span", null, "Selected specimen")
                   ),
                   React.createElement("div", { "data-cell-observation-actions": true, role: "group", "aria-label": "Inspect selected specimen" },
-                    React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, onClick: function() {
+                    React.createElement("button", { type: "button", "data-cell-observation-labels": true, "aria-pressed": d.observationLabels !== false, "aria-label": d.observationLabels === false ? "Show labels" : "Hide labels", onClick: function() {
                       var visible = d.observationLabels === false;
                       upd('observationLabels', visible);
                       var cv = document.querySelector('[data-cell-sim-canvas]');
                       if (cv && cv._cellSimSetObservationLabels) cv._cellSimSetObservationLabels(visible);
-                    } }, d.observationLabels === false ? "Show labels" : "Hide labels"),
+                    } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('labels')), React.createElement('span', { 'data-cell-tool-full-label': true }, d.observationLabels === false ? "Show labels" : "Hide labels"), React.createElement('span', { 'data-cell-tool-short-label': true }, 'Labels')),
                     React.createElement("button", { type: "button", "data-cell-observation-center": true, onClick: returnToCellDish }, cellControlIcon('locate'), "Center"),
                     d.mode === 'observe' && React.createElement("button", { type: "button", "data-cell-observation-follow": true, "aria-pressed": !!d.followSpecimen, "aria-label": "Follow selected specimen", title: "Keep the selected specimen in view. Drag the dish to stop following.", onClick: function() {
                       var cv = document.querySelector('[data-cell-sim-canvas]');
                       if (cv && cv._cellSimSetFollowSpecimen) cv._cellSimSetFollowSpecimen(!d.followSpecimen);
-                    } }, d.followSpecimen ? "Following" : "Follow"),
-                    React.createElement("button", { type: "button", "data-cell-observation-notes": true, onClick: function() { focusCellOrganismDetail(selDef.id); } }, "Specimen notes")
+                    } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('follow')), d.followSpecimen ? "Following" : "Follow"),
+                    React.createElement("button", { type: "button", "data-cell-observation-notes": true, "aria-label": "Specimen notes", onClick: function() { focusCellOrganismDetail(selDef.id); } }, React.createElement('span', { 'data-cell-mobile-tool-icon': true, 'aria-hidden': true }, cellControlIcon('notes')), React.createElement('span', { 'data-cell-tool-full-label': true }, 'Specimen notes'), React.createElement('span', { 'data-cell-tool-short-label': true }, 'Notes'))
                   )
                 )
               ),
