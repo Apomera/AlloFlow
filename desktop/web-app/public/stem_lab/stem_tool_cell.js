@@ -20654,8 +20654,12 @@ var d = labToolData.cell || {};
               if (focusSelectedLabel && !playAsOrg && canvasEl.getAttribute('data-cell-view-mode') === 'observe' && labelBoxes.some(function(box) { return box.selected; })) {
                 labelBoxes = labelBoxes.filter(function(box) { return box.selected; });
               }
+              var hasEmphasizedLabel = labelBoxes.some(function(box) { return box.emphasized; });
               // Draw emphasized leaders last, underneath the pills, to make their paths easy to trace.
               labelBoxes.slice().sort(function(a, b) { return (Number(a.hovered) + 2 * Number(a.selected)) - (Number(b.hovered) + 2 * Number(b.selected)); }).forEach(function(box) {
+                // Quiet competing paths without fading the labels or moving their hit targets.
+                cctx.save();
+                if (hasEmphasizedLabel && !box.emphasized) cctx.globalAlpha = 0.28;
                 var ex = box.side === 'left' ? box.x + box.w : box.x;
                 var ey = box.y + box.h / 2;
                 cctx.beginPath(); cctx.moveTo(box.sx, box.sy);
@@ -20671,6 +20675,7 @@ var d = labToolData.cell || {};
                 cctx.beginPath(); cctx.arc(box.sx, box.sy, 2.5 * dpr, 0, Math.PI * 2);
                 cctx.fillStyle = box.emphasized ? '#164e40' : '#647e74'; cctx.fill();
                 cctx.strokeStyle = '#fff'; cctx.lineWidth = dpr; cctx.stroke();
+                cctx.restore();
               });
               labelBoxes.forEach(function(box) {
                 var pillX = box.x, pillY = box.y, pillW = box.w, pillH = box.h;

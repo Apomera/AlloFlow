@@ -71,3 +71,11 @@ At microscope widths up to 640px, each utility card now gives its heading and va
 The toolbar browser checks now exercise maximum zoom/speed through the keyboard, measure heading separation and button clearance, confirm canvas zoom synchronization, and exercise reset and play/pause. Existing touch-label checks cover label access around the overlays.
 
 All eight toolbar and touch-label browser scenarios passed at 280/320/390/1200px. Phone and desktop screenshots reviewed. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.
+
+## Calmer organelle connectors — 2026-09-19
+
+Hovering or selecting a structure now softens competing connector paths and their anchor dots. Active paths retain their strong outline and endpoint ring, while all label text and pills stay fully readable in the same stable positions. Clearing hover/selection restores the normal connector treatment. This also works with the existing selected-label study view and play labels; it introduces no animation or new control.
+
+Existing focus checks cover desktop/phone hover, selection, dismissal, specimen changes and play interactions. The moving-specimen checks verify stable label rows across 120 frames at both sizes. Updated visual evidence is in reports/cell-label-focus.
+
+All five existing focus and moving-label browser scenarios passed. Reviewed phone selection and desktop hover screenshots. Source syntax, scoped whitespace and four-way mirror parity passed. No push or deployment.
