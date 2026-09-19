@@ -55,3 +55,17 @@ describe('Dino Lab swept keratin surfaces', () => {
     expect(dinoStudyBounds(T,model,'torso',seed).equals(seed)).toBe(true); expect(seed.max.y).toBe(1);
   });
 });
+// The skeletal core uses the same curve as the sheath, ending before its tip.
+it('keeps a shorter bony core enclosed by the curved claw sheath', () => {
+  const direction = new T.Vector3(-1, -.3, 0), sheath = dinoKeratinGeometry(T, direction, .04, 'claw');
+  const core = dinoKeratinGeometry(T, direction, .0264, 'claw', 1 / 1.14);
+  const material = new T.MeshBasicMaterial({side:T.DoubleSide}), mesh = new T.Mesh(sheath,material);mesh.updateMatrixWorld(true);
+  const p=core.attributes.position, rayDirection=new T.Vector3(.31,.73,.61).normalize();
+  for(let i=12;i<p.count-1;i++){
+    const point=new T.Vector3().fromBufferAttribute(p,i),hits=new T.Raycaster(point,rayDirection,0,5).intersectObject(mesh,false);
+    const distances=hits.map(h=>h.distance).filter((d,j,a)=>j===0||d-a[j-1]>1e-6);
+    expect(distances.length%2,'core vertex '+i+' is enclosed').toBe(1);
+  }
+  expect(dinoKeratinGeometry(T,direction,.04,'claw',0)).toBeNull();
+  core.dispose();sheath.dispose();material.dispose();
+});

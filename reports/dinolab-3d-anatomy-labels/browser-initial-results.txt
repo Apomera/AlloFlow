@@ -1,0 +1,151 @@
+
+Running 6 tests using 1 worker
+
+
+
+(node:35480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:35480) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:29:5 › Therizinosaurus claws grow from the hands and have continuous forelimbs
+[2/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › tyrannosaurus labels follow camera and study views
+  1) [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › tyrannosaurus labels follow camera and study views
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"tab\":\"field3d\",\"field3dSelected\":\"tyrannosaurus\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\"}"
+    Received: "{\"tab\":\"field3d\",\"field3dSelected\":\"tyrannosaurus\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\",\"field3dProgress\":{\"version\":1,\"speciesId\":\"tyrannosaurus\",\"workflowStarted\":false,\"reconstructionMode\":\"evidence\",\"showSkeleton\":false,\"showBody\":true,\"showHuman\":false,\"showEvidence\":false,\"bodyOpacity\":100,\"autoRotate\":false,\"scanTargetIdx\":0,\"scanLogged\":{},\"scanSpecies\":\"tyrannosaurus\",\"assemblyPlaced\":{},\"assemblySpecies\":\"tyrannosaurus\",\"assemblyFocusIdx\":0,\"claimFocus\":\"scale\",\"claimBone\":null,\"claimBoneSpecies\":null,\"challengeIdx\":0,\"challengePicked\":null,\"challengeScore\":0,\"challengeDone\":0,\"hasProgress\":false}}"
+
+      39 |  await page.getByRole('button',{name:'Study head details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.every(l=>['head','neck'].includes(l.id))).toBe(true);
+      40 |  await page.getByRole('button',{name:'Study tail details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.map(l=>l.id)).toEqual(['tail']);
+    > 41 |  await page.getByRole('button',{name:'Body-part labels',exact:true}).click();await settle(page);expect((await inspect(page)).labels).toEqual([]);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.dinoLab))).toBe(JSON.stringify({...saved,field3dLabelMode:'key'}));
+         |                                                                                                                                                                                                                                      ^
+      42 | });
+      43 | test('phone labels, key and fossil life round trip stay usable',async({page})=>{
+      44 |  test.skip(baseline);await mount(page,'therizinosaurus');await page.setViewportSize({width:390,height:844});await labelsOn(page);let p=await inspect(page);check(p,true);checkLabels(p,2);expect(p.labels.length).toBeLessThanOrEqual(4);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-body-labels.spec.ts:41:230
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-tyr-dbcc7-llow-camera-and-study-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-tyr-dbcc7-llow-camera-and-study-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-tyr-dbcc7-llow-camera-and-study-views-chromium\error-context.md
+
+
+(node:28532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+(node:28532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › triceratops labels follow camera and study views
+  2) [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › triceratops labels follow camera and study views
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"tab\":\"field3d\",\"field3dSelected\":\"triceratops\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\"}"
+    Received: "{\"tab\":\"field3d\",\"field3dSelected\":\"triceratops\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\",\"field3dProgress\":{\"version\":1,\"speciesId\":\"triceratops\",\"workflowStarted\":false,\"reconstructionMode\":\"evidence\",\"showSkeleton\":false,\"showBody\":true,\"showHuman\":false,\"showEvidence\":false,\"bodyOpacity\":100,\"autoRotate\":false,\"scanTargetIdx\":0,\"scanLogged\":{},\"scanSpecies\":\"triceratops\",\"assemblyPlaced\":{},\"assemblySpecies\":\"triceratops\",\"assemblyFocusIdx\":0,\"claimFocus\":\"scale\",\"claimBone\":null,\"claimBoneSpecies\":null,\"challengeIdx\":0,\"challengePicked\":null,\"challengeScore\":0,\"challengeDone\":0,\"hasProgress\":false}}"
+
+      39 |  await page.getByRole('button',{name:'Study head details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.every(l=>['head','neck'].includes(l.id))).toBe(true);
+      40 |  await page.getByRole('button',{name:'Study tail details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.map(l=>l.id)).toEqual(['tail']);
+    > 41 |  await page.getByRole('button',{name:'Body-part labels',exact:true}).click();await settle(page);expect((await inspect(page)).labels).toEqual([]);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.dinoLab))).toBe(JSON.stringify({...saved,field3dLabelMode:'key'}));
+         |                                                                                                                                                                                                                                      ^
+      42 | });
+      43 | test('phone labels, key and fossil life round trip stay usable',async({page})=>{
+      44 |  test.skip(baseline);await mount(page,'therizinosaurus');await page.setViewportSize({width:390,height:844});await labelsOn(page);let p=await inspect(page);check(p,true);checkLabels(p,2);expect(p.labels.length).toBeLessThanOrEqual(4);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-body-labels.spec.ts:41:230
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-tri-4282c-llow-camera-and-study-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-tri-4282c-llow-camera-and-study-views-chromium\error-context.md
+
+
+
+
+(node:26336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:26336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[4/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › brachiosaurus labels follow camera and study views
+  3) [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › brachiosaurus labels follow camera and study views
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"tab\":\"field3d\",\"field3dSelected\":\"brachiosaurus\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\"}"
+    Received: "{\"tab\":\"field3d\",\"field3dSelected\":\"brachiosaurus\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\",\"field3dProgress\":{\"version\":1,\"speciesId\":\"brachiosaurus\",\"workflowStarted\":false,\"reconstructionMode\":\"evidence\",\"showSkeleton\":false,\"showBody\":true,\"showHuman\":false,\"showEvidence\":false,\"bodyOpacity\":100,\"autoRotate\":false,\"scanTargetIdx\":0,\"scanLogged\":{},\"scanSpecies\":\"brachiosaurus\",\"assemblyPlaced\":{},\"assemblySpecies\":\"brachiosaurus\",\"assemblyFocusIdx\":0,\"claimFocus\":\"scale\",\"claimBone\":null,\"claimBoneSpecies\":null,\"challengeIdx\":0,\"challengePicked\":null,\"challengeScore\":0,\"challengeDone\":0,\"hasProgress\":false}}"
+
+      39 |  await page.getByRole('button',{name:'Study head details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.every(l=>['head','neck'].includes(l.id))).toBe(true);
+      40 |  await page.getByRole('button',{name:'Study tail details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.map(l=>l.id)).toEqual(['tail']);
+    > 41 |  await page.getByRole('button',{name:'Body-part labels',exact:true}).click();await settle(page);expect((await inspect(page)).labels).toEqual([]);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.dinoLab))).toBe(JSON.stringify({...saved,field3dLabelMode:'key'}));
+         |                                                                                                                                                                                                                                      ^
+      42 | });
+      43 | test('phone labels, key and fossil life round trip stay usable',async({page})=>{
+      44 |  test.skip(baseline);await mount(page,'therizinosaurus');await page.setViewportSize({width:390,height:844});await labelsOn(page);let p=await inspect(page);check(p,true);checkLabels(p,2);expect(p.labels.length).toBeLessThanOrEqual(4);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-body-labels.spec.ts:41:230
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-bra-090da-llow-camera-and-study-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-bra-090da-llow-camera-and-study-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-bra-090da-llow-camera-and-study-views-chromium\error-context.md
+
+
+
+(node:32924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:32924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[5/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › microraptor labels follow camera and study views
+  4) [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › microraptor labels follow camera and study views
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "{\"tab\":\"field3d\",\"field3dSelected\":\"microraptor\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\"}"
+    Received: "{\"tab\":\"field3d\",\"field3dSelected\":\"microraptor\",\"field3dReconstructionMode\":\"evidence\",\"field3dAutoRotate\":false,\"field3dOrientationDismissed\":true,\"field3dWorkflowStarted\":false,\"field3dShowSkeleton\":false,\"field3dShowBody\":true,\"field3dShowHuman\":false,\"field3dShowEvidence\":false,\"field3dBodyOpacity\":100,\"field3dLabelMode\":\"key\",\"field3dProgress\":{\"version\":1,\"speciesId\":\"microraptor\",\"workflowStarted\":false,\"reconstructionMode\":\"evidence\",\"showSkeleton\":false,\"showBody\":true,\"showHuman\":false,\"showEvidence\":false,\"bodyOpacity\":100,\"autoRotate\":false,\"scanTargetIdx\":0,\"scanLogged\":{},\"scanSpecies\":\"microraptor\",\"assemblyPlaced\":{},\"assemblySpecies\":\"microraptor\",\"assemblyFocusIdx\":0,\"claimFocus\":\"scale\",\"claimBone\":null,\"claimBoneSpecies\":null,\"challengeIdx\":0,\"challengePicked\":null,\"challengeScore\":0,\"challengeDone\":0,\"hasProgress\":false}}"
+
+      39 |  await page.getByRole('button',{name:'Study head details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.every(l=>['head','neck'].includes(l.id))).toBe(true);
+      40 |  await page.getByRole('button',{name:'Study tail details',exact:true}).click();await settle(page);p=await inspect(page);check(p);checkLabels(p);expect(p.labels.map(l=>l.id)).toEqual(['tail']);
+    > 41 |  await page.getByRole('button',{name:'Body-part labels',exact:true}).click();await settle(page);expect((await inspect(page)).labels).toEqual([]);expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.dinoLab))).toBe(JSON.stringify({...saved,field3dLabelMode:'key'}));
+         |                                                                                                                                                                                                                                      ^
+      42 | });
+      43 | test('phone labels, key and fossil life round trip stay usable',async({page})=>{
+      44 |  test.skip(baseline);await mount(page,'therizinosaurus');await page.setViewportSize({width:390,height:844});await labelsOn(page);let p=await inspect(page);check(p,true);checkLabels(p,2);expect(p.labels.length).toBeLessThanOrEqual(4);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-body-labels.spec.ts:41:230
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-mic-8bd4c-llow-camera-and-study-views-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-mic-8bd4c-llow-camera-and-study-views-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-anatomy-labels\browser-run\dinolab-3d-body-labels-mic-8bd4c-llow-camera-and-study-views-chromium\error-context.md
+
+
+(node:34308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+
+(node:34308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[6/6] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:43:5 › phone labels, key and fossil life round trip stay usable
+  4 failed
+    [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › tyrannosaurus labels follow camera and study views
+    [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › triceratops labels follow camera and study views
+    [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › brachiosaurus labels follow camera and study views
+    [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › microraptor labels follow camera and study views
+  2 passed (11.1m)

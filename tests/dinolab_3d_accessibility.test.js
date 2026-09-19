@@ -53,7 +53,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-label': piece.label + ' fossil");
     expect(source).toContain('var DinoFieldStation3DStable = null;');
     expect(source).toContain('if (!DinoFieldStation3DStable) DinoFieldStation3DStable = DinoFieldStation3D;');
-    expect(source).toContain("el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', focusMode: focusMode, reconstructionMode: activeHypothesis.id,");
+    expect(source).toContain("el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id,");
     expect(source).toContain("var focusMode = d.field3dFocusMode === true;");
     expect(source).toContain("else if (focusMode) { e.preventDefault(); toggleFieldFocus(); }");
     expect(source).toContain("'aria-keyshortcuts': focusMode ? 'Escape' : null");
@@ -283,7 +283,9 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("else if (/Spinosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Ankylosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Pachycephalosaur/i.test(cladeName))");
-    expect(source).toContain("else if (/Therizinosaur/i.test(cladeName))");
+    expect(source).not.toContain('var clawBase = shoulder.clone()');
+    expect(source).toContain('manualClaw.userData.dinoManualAttachment');
+    expect(source).toContain("var manualClawLength = dn.id === 'therizinosaurus' ? len * 0.085 : handLength * manualUngualScale;");
     expect(source).toContain('if (isPennaraptoran) {');
     expect(source).toContain("else if (/Tyrannosaur/i.test(cladeName))");
     expect(source).toContain("else if (/Abelisaur/i.test(cladeName) && /horn/i.test");

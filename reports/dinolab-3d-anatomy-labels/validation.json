@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-19",
+  "baselineRevision": "59d0f3638",
+  "rendererSHA256": "a334a77cd0c991fc61897a5cdd9cad4156fae89b815c235562262274ec54a8e6",
+  "focused": {
+    "uniquePassed": 153,
+    "initialBroadPassed": 150,
+    "finalGeometryPassed": 36,
+    "notes": [
+      "The existing multi-tab axe audit timed out during the broad run and passed in isolation.",
+      "Updated source assertions for the new label callback and removal of duplicate shoulder claws.",
+      "Only the Field Station snapshot was updated; the existing fullscreen attribute is now represented."
+    ]
+  },
+  "browser": {
+    "uniquePassed": 8,
+    "mainAcceptancePassed": 7,
+    "finalCoreAndPhonePassed": 2,
+    "repeatedCase": "phone labels, key and fossil life round trip stay usable",
+    "initialFailed": 4,
+    "initialFailureReason": "The test did not allow the existing derived progress-record initialization on display-setting changes."
+  },
+  "bodyLabelAxeViolations": [],
+  "clawCore": {
+    "cores": 6,
+    "shells": 6,
+    "outside": 0,
+    "samples": 54
+  },
+  "mirrorPaths": [
+    "stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+    "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+    "desktop/app-build/stem_lab/stem_tool_dinolab.js"
+  ],
+  "reportLinks": true,
+  "syntax": true,
+  "scopedWhitespace": true,
+  "reviewed": [
+    "therizinosaurus-labeled.png",
+    "triceratops-labels.png",
+    "phone-key.png",
+    "therizinosaurus-transparent.png"
+  ],
+  "deployed": false
+}

@@ -1,0 +1,40 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+x-------------········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'else if (/Therizinosaur/i.test(cladeN…'
+
+- Expected
++ Received
+
+- else if (/Therizinosaur/i.test(cladeName))
+[Full renderer source echoed by the obsolete shoulder-claw assertion omitted here.]
++         '@media(max-width:720px){.dinolab-root .dinolab-explore-layout{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-mission-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-compare-grid,.dinolab-root .dinolab-compare-pickers{grid-template-columns:minmax(0,1fr)!important}.dinolab-root .dinolab-map-stats{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important}.dinolab-root .dinolab-field-toolbar-actions{width:100%!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(108px,1fr))!important;margin-left:0!important}.dinolab-root .dinolab-field-toolbar-actions>button{width:100%!important}.dinolab-root .dinolab-3d-viewer{min-height:380px!important}.dinolab-root .dinolab-3d-canvas{height:380px!important}.dinolab-root .dinolab-3d-readouts{max-height:88px;overflow:hidden}.dinolab-root .dinolab-3d-chip{font-size:10px!important;padding:4px 7px!important}}' +
++         '@media(max-width:720px){.dinolab-root .dinolab-field-drawer{padding:14px!important;border-radius:14px 14px 10px 10px!important;box-shadow:0 -8px 24px rgba(0,0,0,0.24)!important;border-top:2px solid rgba(20,184,166,0.42)!important}.dinolab-root .dinolab-field-drawer-handle{display:block!important}}' +
++         '@media(max-width:480px){.dinolab-root #dinopanel{padding:10px!important}.dinolab-root .dinolab-tablist{padding:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}.dinolab-root .dinolab-section-cue{padding-left:10px!important;padding-right:10px!important}.dinolab-root .dinolab-3d-viewer{min-height:340px!important}.dinolab-root .dinolab-3d-canvas{height:340px!important}.dinolab-root .dinolab-3d-readouts{left:7px!important;right:7px!important;top:7px!important;gap:4px!important;max-height:70px}.dinolab-root .dinolab-3d-camera-readout{right:7px!important;bottom:58px!important;font-size:10px!important}.dinolab-root .dinolab-3d-status{left:7px!important;right:7px!important;bottom:7px!important;font-size:10px!important;padding:6px 8px!important}.dinolab-root .dinolab-3d-view-controls{align-items:stretch!important}.dinolab-root .dinolab-3d-view-controls>button{flex:1 1 72px}}';
++       var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;
++       return el('div', { className: 'dinolab-root', style: { minHeight: '100%', background: T.canvas, color: T.text } }, el('style', null, accessibilityStyles), fieldFocusActive ? null : tabNavigation, el('div', { id: 'dinopanel', role: fieldFocusActive ? 'region' : 'tabpanel', 'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab, 'aria-label': fieldFocusActive ? '3D Field Station focused workspace' : null, style: { padding: fieldFocusActive ? 10 : 16 } }, tab === 'explore' ? renderMissionDeck() : null, content));
++     }
++   });
++ })();
++
+
+ ❯ tests/dinolab_3d_accessibility.test.js:286:20
+    284|     expect(source).toContain("else if (/Ankylosaur/i.test(cladeName))"…
+    285|     expect(source).toContain("else if (/Pachycephalosaur/i.test(cladeN…
+    286|     expect(source).toContain("else if (/Therizinosaur/i.test(cladeName…
+       |                    ^
+    287|     expect(source).toContain('if (isPennaraptoran) {');
+    288|     expect(source).toContain("else if (/Tyrannosaur/i.test(cladeName))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 8 passed | 13 skipped (22)
+   Start at  16:27:21
+   Duration  28.00s (transform 416ms, setup 368ms, import 787ms, tests 22.09s, environment 3.96s)

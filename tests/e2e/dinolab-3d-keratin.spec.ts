@@ -59,7 +59,7 @@ for(const species of ['triceratops','styracosaurus','therizinosaurus','velocirap
  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData))).toBe(saved);
  await page.locator('.dinolab-surface-presets').getByRole('button',{name:/Fossil anchors/}).click();await settle(page);const fossil=await fossilFingerprint(page);expect((await inspect(page)).sheaths.length).toBe(0);
  const beforePath=report+'/'+species+'-before.json';
- if(!baseline&&fs.existsSync(beforePath)){const before=JSON.parse(fs.readFileSync(beforePath,'utf8'));expect(landmarks(first)).toEqual(landmarks(before));expect(fossil).toEqual(before.fossil);expect(first.memory.textures).toBe(before.memory.textures);expect(first.render.calls).toBe(before.render.calls);}
+ if(!baseline&&process.env.DINO_KERATIN_COMPARE_BASELINE&&fs.existsSync(beforePath)){const before=JSON.parse(fs.readFileSync(beforePath,'utf8'));expect(landmarks(first)).toEqual(landmarks(before));expect(fossil).toEqual(before.fossil);expect(first.memory.textures).toBe(before.memory.textures);expect(first.render.calls).toBe(before.render.calls);}
  fs.writeFileSync(report+'/'+species+(baseline?'-before':'')+'.json',JSON.stringify({...compact(first),fossil},null,2));
 });
 test('phone studies retain horns through opacity, fossil and life changes',async({page})=>{

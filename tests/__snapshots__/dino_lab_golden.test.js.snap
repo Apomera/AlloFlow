@@ -3181,7 +3181,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="font-size:18px;font-weight:800">3D Field Station</div>
 <div style="font-size:12.5px;color:var(--allo-stem-text-soft, #94a3b8);margin-top:2px">A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.</div>
 </div>
-<div class="dinolab-field-stage" aria-label="3D Field Station" style="position:relative">
+<div class="dinolab-field-stage" data-allo-fs-stage="dinolab-field" aria-label="3D Field Station" style="position:relative">
 <div>
 <div class="dinolab-field-toolbar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
 <select aria-label="Choose species for 3D field station" style="flex:1 1 240px;min-width:220px;padding:9px 10px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:13px">
@@ -3622,6 +3622,7 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <label for="dino-scene-labels" style="font-size:12px;font-weight:700;color:var(--allo-stem-text-soft, #94a3b8)">Model labels</label>
 <select id="dino-scene-labels" style="padding:9px 12px;min-height:40px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:700;cursor:pointer">
 <option value="key" selected="">Key labels</option>
+<option value="anatomy">Body-part labels</option>
 <option value="all">All labels</option>
 <option value="off">Labels off</option>
 </select>
@@ -3632,6 +3633,100 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Environment scene hypothesis: Seasonal floodplain / open woodland. A broad environmental scene hypothesis based on the listed formation and region; vegetation, water, and weather remain interpretive. Pose cue: Balanced bipedal stance with lightly flexed knees. Foot contact and joint flex are clade-informed visual cues; exact habitual posture remains inferred. Color evidence: Inferred palette. No direct pigment map is encoded for this taxon; the color is an evidence-compatible illustration, not a measured reconstruction. Reconstruction profile: Deep-skulled large theropod with limited fossil coverage. Active surface hypothesis: Evidence-led reconstruction, status Recommended. Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal. Limb osteology: Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.; evidence basis: Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.. Girdle architecture: Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.. Vertebral architecture: Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.; evidence basis: Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.. Thoracic cage: Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.; evidence basis: Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.. Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments. Uncinate evidence: No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.. Sacral load path: 5-element series; Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.; evidence basis: Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.. Caudal transition: Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.. Haemal arches: Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.; evidence basis: Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.. Distal limbs: Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.; evidence basis: Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.. Postcranial surface silhouette: Deep chest, narrow waist, powerful pelvis, and muscular tail base. Overlapping trunk volumes and graded neck, limb, and tail transitions follow clade-level postcranial proportions. Muscle thickness, skin folds, and the exact resting contour remain inferred. Cranial surface silhouette: Deep, broad tyrannosaur cranial silhouette. This visible head envelope follows clade-level skull proportions; lips, cheeks, brow thickness, beak margins, and external nostril shape remain inferred. Cranial mechanics: braced, predominantly akinetic non-avian theropod skull; evidence basis: Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.. Head-neck junction: A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.; evidence basis: The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.. Mandibular lever: The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.; evidence basis: Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.. Integument mode: scaled; evidence basis: direct scale impressions in large derived tyrannosaurids. Respiratory reconstruction: air-sac proxy; evidence basis: Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
 <canvas id="dinolab-3d-canvas-tyrannosaurus" class="dinolab-3d-canvas" tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Environment scene hypothesis: Floodplain woodland. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view." style="width:100%;height:clamp(520px, 62vh, 760px);display:block;touch-action:none;outline:none;outline-offset:-3px">
 </canvas>
+<div class="dinolab-body-label-overlay" aria-hidden="true" style="display:none;position:absolute;inset:0;pointer-events:none">
+<svg width="100%" height="100%" style="position:absolute;inset:0;overflow:hidden">
+<g data-dino-part-line="head" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="head" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="tail" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="tail" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="trunk" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="trunk" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="hand" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="hand" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="foot" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="foot" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="neck" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="neck" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="forelimb" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="forelimb" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="knee" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="knee" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="ankle" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="ankle" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+<g data-dino-part-line="thigh" style="display:none">
+<line stroke="#99f6e4" stroke-width="1.5">
+</line>
+<circle data-dino-part-ring="thigh" r="9" fill="none" stroke="#ffffff" stroke-width="3" style="display:none;filter:drop-shadow(0 1px 2px #0f172a)">
+</circle>
+<circle r="3" fill="#0f172a" stroke="#99f6e4" stroke-width="1.5">
+</circle>
+</g>
+</svg>
+<span data-dino-part-label="head" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Head</span>
+<span data-dino-part-label="tail" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Tail</span>
+<span data-dino-part-label="trunk" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Trunk</span>
+<span data-dino-part-label="hand" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Hand</span>
+<span data-dino-part-label="foot" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Foot</span>
+<span data-dino-part-label="neck" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Neck</span>
+<span data-dino-part-label="forelimb" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Upper arm</span>
+<span data-dino-part-label="knee" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Knee</span>
+<span data-dino-part-label="ankle" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Ankle</span>
+<span data-dino-part-label="thigh" style="display:none;position:absolute;left:0;top:0;width:96px;height:28px;box-sizing:border-box;border:1px solid #5eead4;border-radius:7px;background:#0f172a;color:#f0fdfa;text-align:center;font-size:12px;font-weight:800;line-height:26px;white-space:nowrap">Thigh</span>
+</div>
 <div class="dinolab-3d-readouts" style="position:absolute;left:10px;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none">
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(56,189,248,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Length 12.3 m | Height 3.7 m | Mass 8.4 t</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(20,184,166,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Scene Neutral studio</span>
@@ -3656,6 +3751,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <button type="button" aria-label="Study head details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Head</button>
 <button type="button" aria-label="Study body details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Body</button>
 <button type="button" aria-label="Study tail details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Tail</button>
+</div>
+<div class="dinolab-body-label-controls" style="margin-top:10px">
+<button type="button" aria-pressed="false" style="min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Body-part labels</button>
 </div>
 <div class="dinolab-size-controls" style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:10px">
 <button type="button" aria-label="Study size reference" aria-pressed="false" style="padding:9px 12px;min-height:44px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Size reference</button>

@@ -1,0 +1,19 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+·············x········
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_body_labels.test.js > Dino Lab anatomy callouts > handles dense or tiny layouts without returning overlapping labels
+AssertionError: expected 4 to be less than or equal to 2
+ ❯ tests/dinolab_3d_body_labels.test.js:11:263
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 21 passed (22)
+   Start at  16:09:20
+   Duration  8.83s (transform 283ms, setup 228ms, import 784ms, tests 268ms, environment 6.08s)

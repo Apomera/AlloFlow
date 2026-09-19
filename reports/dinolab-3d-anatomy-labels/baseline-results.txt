@@ -1,0 +1,13 @@
+
+Running 1 test using 1 worker
+
+
+
+(node:28436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:28436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/1] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:29:5 › Therizinosaurus claws grow from the hands and have continuous forelimbs
+  1 passed (31.8s)

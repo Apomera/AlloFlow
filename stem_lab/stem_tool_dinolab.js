@@ -73,7 +73,7 @@ window.StemLab = window.StemLab || {
     { id: 'diplodocus', name: 'Diplodocus carnegii', common: 'Diplodocus', say: 'dih-PLOD-uh-kus', meaning: 'double beam', group: 'sauropod', clade: 'Diplodocidae', diet: 'herbivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 154, myaLo: 152, lengthM: 26, heightM: 4.5, weightKg: 12000, speedKmh: 16, region: 'North America', formation: 'Morrison', named: 1878, namedBy: 'Othniel Charles Marsh', blurb: 'An extremely long, slender sauropod whose casts stand in museums around the world.', traits: ['Very long neck and even longer tail', 'Forward-raking comb-like teeth', 'Lightly built'], facts: ['Casts donated by Andrew Carnegie spread copies across Europe.', 'It probably held its neck closer to horizontal.'], uncertain: 'Neck posture and browsing height are reconstructed from bone shape.', howKnow: 'Several good skeletons; the Carnegie cast is one of the most-copied fossils.' },
     { id: 'iguanodon', name: 'Iguanodon bernissartensis', common: 'Iguanodon', say: 'ig-WA-nuh-don', meaning: 'iguana tooth', group: 'ornithischian', clade: 'Iguanodontia', diet: 'herbivore', period: 'cretaceous', epoch: 'Early Cretaceous', myaHi: 126, myaLo: 122, lengthM: 10, heightM: 3, weightKg: 3000, speedKmh: 24, region: 'Europe (Belgium)', formation: 'Bernissart', named: 1825, namedBy: 'Gideon Mantell', blurb: 'One of the first dinosaurs ever named, famous for a thumb spike once mistaken for a nose horn.', traits: ['Cone-shaped thumb spike', 'Flexible fifth finger', 'Walked on two or four legs'], facts: ['A coal mine in Bernissart yielded dozens of skeletons.', 'Early reconstructions put the thumb spike on the snout.'], uncertain: 'The thumb spike’s use (defense, foraging, display) is uncertain.', howKnow: 'Dozens of skeletons from the Bernissart coal mine.' },
     { id: 'compsognathus', name: 'Compsognathus longipes', common: 'Compsognathus', say: 'komp-SOG-nay-thus', meaning: 'elegant jaw', group: 'theropod', clade: 'Compsognathidae', diet: 'carnivore', period: 'jurassic', epoch: 'Late Jurassic', myaHi: 150, myaLo: 148, lengthM: 1.1, heightM: 0.3, weightKg: 3, speedKmh: 40, region: 'Europe (Germany/France)', formation: 'Solnhofen', named: 1859, namedBy: 'Johann A. Wagner', blurb: 'A chicken-sized hunter long held up as one of the smallest known dinosaurs.', traits: ['Light, fast build', 'Two-fingered hands', 'Long legs for sprinting'], facts: ['A lizard was found preserved in one specimen’s gut.', 'It shared the Solnhofen lagoons with Archaeopteryx.'], uncertain: 'Whether it had simple feather-like filaments is not yet shown for this genus.', howKnow: 'Two good skeletons, one from Germany and one from France.' },
-    { id: 'therizinosaurus', name: 'Therizinosaurus cheloniformis', common: 'Therizinosaurus', say: 'THERR-ih-ZINE-uh-SOR-us', meaning: 'scythe lizard', group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 68, lengthM: 10, heightM: 4.5, weightKg: 5000, speedKmh: 10, region: 'Asia (Mongolia)', formation: 'Nemegt', named: 1954, namedBy: 'Evgeny Maleev', blurb: 'A bizarre plant-eating theropod with the longest claws of any known animal, up to a meter long.', traits: ['Enormous hand claws', 'Pot belly for digesting plants', 'Small head on a long neck'], facts: ['Despite being a theropod, it ate plants.', 'The claws were likely for pulling vegetation and defense.'], uncertain: 'Exact claw use is inferred from shape; no behavior is preserved.', howKnow: 'Originally known mostly from the giant claws; relatives fill in the rest.' },
+    { id: 'therizinosaurus', name: 'Therizinosaurus cheloniformis', common: 'Therizinosaurus', say: 'THERR-ih-ZINE-uh-SOR-us', meaning: 'scythe lizard', group: 'theropod', clade: 'Therizinosauridae', diet: 'herbivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 68, lengthM: 10, heightM: 4.5, weightKg: 5000, speedKmh: 10, region: 'Asia (Mongolia)', formation: 'Nemegt', named: 1954, namedBy: 'Evgeny Maleev', blurb: 'A bizarre plant-eating theropod with the longest claws of any known animal, up to a meter long.', traits: ['Enormous hand claws', 'Pot belly for digesting plants', 'Small head on a long neck'], facts: ['Despite being a theropod, it ate plants.', 'Researchers debate feeding and display as possible roles for the giant claws.'], uncertain: 'Exact claw use is inferred from shape; no behavior is preserved.', howKnow: 'Originally known mostly from the giant claws; relatives fill in the rest.' },
     { id: 'pteranodon', name: 'Pteranodon longiceps', common: 'Pteranodon', say: 'ter-AN-uh-don', meaning: 'toothless wing', group: 'other', clade: 'Pterosauria', diet: 'piscivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 86, myaLo: 84, lengthM: 1.8, heightM: 1.8, weightKg: 25, speedKmh: 80, region: 'North America', formation: 'Niobrara', named: 1876, namedBy: 'Othniel Charles Marsh', blurb: 'A large flying reptile with a long head crest. Note: pterosaurs are not dinosaurs, but close cousins.', traits: ['Wingspan up to about 7 meters', 'Toothless beak', 'Backward-pointing crest'], facts: ['It flew over a shallow sea that once split North America.', 'Pterosaurs, not dinosaurs, were the first vertebrates to fly.'], uncertain: 'Crest function is debated. It is included here to show what is NOT a dinosaur.', howKnow: 'Many specimens from the chalk of the Western Interior Seaway.' },
     { id: 'coelophysis', name: 'Coelophysis bauri', common: 'Coelophysis', say: 'see-luh-FY-sis', meaning: 'hollow form', group: 'theropod', clade: 'Coelophysidae', diet: 'carnivore', period: 'triassic', epoch: 'Late Triassic', myaHi: 215, myaLo: 208, lengthM: 3, heightM: 0.8, weightKg: 20, speedKmh: 40, region: 'North America', formation: 'Chinle', named: 1889, namedBy: 'Edward Drinker Cope', blurb: 'A slender, early predator known from hundreds of individuals found together at Ghost Ranch.', traits: ['Hollow, bird-like bones', 'Long neck and tail', 'Many small sharp teeth'], facts: ['A Coelophysis skull flew on the Space Shuttle in 1998.', 'The Ghost Ranch quarry preserves a mass death.'], uncertain: 'Reports of cannibalism were later reinterpreted as small reptiles.', howKnow: 'Hundreds of skeletons from the Ghost Ranch bonebed in New Mexico.' },
     { id: 'gallimimus', name: 'Gallimimus bullatus', common: 'Gallimimus', say: 'GAL-ih-MIME-us', meaning: 'chicken mimic', group: 'theropod', clade: 'Ornithomimidae', diet: 'omnivore', period: 'cretaceous', epoch: 'Late Cretaceous', myaHi: 70, myaLo: 68, lengthM: 6, heightM: 1.9, weightKg: 440, speedKmh: 50, region: 'Asia (Mongolia)', formation: 'Nemegt', named: 1972, namedBy: 'Osmólska, Roniewicz & Barsbold', blurb: 'A long-legged ostrich-like dinosaur built for speed, with a toothless beak.', traits: ['Very long legs', 'Toothless beak', 'Large eyes'], facts: ['It is the running herd in the original Jurassic Park film.', 'It is one of the largest ornithomimids.'], uncertain: 'Its exact diet is inferred from the beak and gut region.', howKnow: 'Several good skeletons from the Nemegt Formation.' },
@@ -6353,6 +6353,53 @@ window.StemLab = window.StemLab || {
     return { texelSize: texel, floorY: floorY, min: bounds.min.toArray(), max: bounds.max.toArray() };
   }
 
+  function dinoBodyPartDefinitions(quadruped) {
+    return [
+      { id: 'head', label: 'Head', region: 'head', detail: 'The skull supports the jaws and surrounds the brain.' },
+      { id: 'tail', label: 'Tail', region: 'tail', detail: 'Caudal vertebrae form the bony axis of the tail.' },
+      { id: 'trunk', label: 'Trunk', region: 'body', detail: 'The dorsal vertebrae and ribs support the trunk. Its outer contour includes reconstructed soft tissue.' },
+      { id: 'hand', label: quadruped ? 'Front foot' : 'Hand', region: 'body', detail: quadruped ? 'The manus is the front foot. Digit and claw arrangements vary among groups.' : 'The manus includes the wrist and fingers. Where claws are present, their sheaths cover terminal finger bones (unguals).' },
+      { id: 'foot', label: quadruped ? 'Hind foot' : 'Foot', region: 'body', detail: 'The pes includes the metatarsals and toes of the hind limb.' },
+      { id: 'neck', label: 'Neck', region: 'head', detail: 'Cervical vertebrae connect the skull to the trunk.' },
+      { id: 'forelimb', label: quadruped ? 'Foreleg' : 'Upper arm', region: 'body', detail: 'The humerus connects the shoulder to the elbow; the radius and ulna continue toward the wrist.' },
+      { id: 'knee', label: 'Knee', region: 'body', detail: 'The knee joins the thigh bone (femur) to the lower leg. It is distinct from the ankle.' },
+      { id: 'ankle', label: 'Ankle', region: 'body', detail: 'The ankle lies between the lower leg and the metatarsals of the foot.' },
+      { id: 'thigh', label: 'Thigh', region: 'body', detail: 'The femur runs from the hip to the knee, surrounded by reconstructed muscle and skin.' }
+    ];
+  }
+
+  // Place readable callouts in screen space; omit crowded labels rather than
+  // stacking them. The accompanying text key always contains every body part.
+  function dinoBodyLabelLayout(points, width, height, top, bottom, selectedId) {
+    var placed = [], w = 96, h = 28, pad = 8, limit = width < 560 ? 4 : 8;
+    var offsets = [[-w / 2, -h - 26], [22, -h / 2], [-w - 22, -h / 2], [-w / 2, 26],
+      [22, -h - 42], [-w - 22, -h - 42], [22, 42], [-w - 22, 42]];
+    function overlaps(a, b) { return a.x < b.x + b.width + pad && a.x + a.width + pad > b.x && a.y < b.y + b.height + pad && a.y + a.height + pad > b.y; }
+    var ordered = points.slice().sort(function (a, b) { return (b.id === selectedId ? 1 : 0) - (a.id === selectedId ? 1 : 0); });
+    ordered.forEach(function (point) {
+      var selected = point.id === selectedId;
+      if (placed.length >= limit || !isFinite(point.x) || !isFinite(point.y) || point.x < pad || point.x > width - pad || point.y < (selected ? pad : top) || point.y > height - (selected ? pad : bottom)) return;
+      var candidates = offsets.slice();
+      // A selected landmark takes priority even when its nearby callout slots
+      // are crowded. Search the clear margins while keeping its true anchor.
+      if (selected) {
+        for (var row = top; row + h <= height - bottom; row += h + pad) {
+          [pad, width - pad - w].forEach(function (x) { candidates.push([x - point.x, row - point.y]); });
+        }
+        candidates.sort(function (a, b) { return a[0] * a[0] + a[1] * a[1] - b[0] * b[0] - b[1] * b[1]; });
+      }
+      for (var i = 0; i < candidates.length; i++) {
+        var rect = { id: point.id, selected: selected, x: point.x + candidates[i][0], y: point.y + candidates[i][1], width: w, height: h, anchorX: point.x, anchorY: point.y };
+        if (rect.x < pad || rect.x + w > width - pad || rect.y < top || rect.y + h > height - bottom || placed.some(function (other) { return overlaps(rect, other); })) continue;
+        if (points.some(function (other) { return other.x > rect.x - 4 && other.x < rect.x + w + 4 && other.y > rect.y - 4 && other.y < rect.y + h + 4; })) continue;
+        rect.lineX = Math.max(rect.x, Math.min(rect.x + w, point.x));
+        rect.lineY = Math.max(rect.y, Math.min(rect.y + h, point.y));
+        placed.push(rect); break;
+      }
+    });
+    return placed;
+  }
+
   function dinoStudyBounds(THREE, model, region, seed) {
     var bounds = seed.clone();
     model.updateMatrixWorld(true);
@@ -6396,8 +6443,10 @@ window.StemLab = window.StemLab || {
   }
   // Sweep a tapered sheath between the existing landmarks. Horns stay round;
   // claws have a deeper, narrower section and a more pronounced dorsal curve.
-  function dinoKeratinGeometry(THREE, direction, radius, kind) {
+  function dinoKeratinGeometry(THREE, direction, radius, kind, coverage) {
     var length = direction.length();
+    coverage = coverage == null ? 1 : coverage;
+    if (!isFinite(coverage) || coverage <= 0 || coverage > 1) return null;
     if (!isFinite(length) || !isFinite(radius) || length <= 0 || radius <= 0) return null;
     var horn = kind === 'horn', bow = horn ? 0.065 : 0.16, breadth = horn ? 1 : 0.58;
     var along = direction.clone().normalize(), bend = new THREE.Vector3(0, 1, 0);
@@ -6409,7 +6458,7 @@ window.StemLab = window.StemLab || {
     var across = new THREE.Vector3().crossVectors(along, bend).normalize();
     var positions = [], indices = [], rings = 12, sides = 12;
     for (var ring = 0; ring < rings; ring++) {
-      var t = ring / rings, taper = radius * Math.pow(1 - t, 0.8);
+      var fraction = ring / rings, t = fraction * coverage, taper = radius * Math.pow(1 - fraction, 0.8);
       var center = along.clone().multiplyScalar(length * t).addScaledVector(bend, length * bow * 4 * t * (1 - t));
       var tangent = along.clone().addScaledVector(bend, bow * 4 * (1 - 2 * t)).normalize();
       var normal = new THREE.Vector3().crossVectors(across, tangent).normalize();
@@ -6423,7 +6472,9 @@ window.StemLab = window.StemLab || {
         }
       }
     }
-    var tip = positions.length / 3; positions.push(direction.x, direction.y, direction.z);
+    // A shorter bony core can follow the same curve as its keratin sheath.
+    var endpoint = coverage === 1 ? direction : along.clone().multiplyScalar(length * coverage).addScaledVector(bend, length * bow * 4 * coverage * (1 - coverage));
+    var tip = positions.length / 3; positions.push(endpoint.x, endpoint.y, endpoint.z);
     var base = positions.length / 3; positions.push(0, 0, 0);
     for (var cap = 0; cap < sides; cap++) {
       var last = (rings - 1) * sides;
@@ -6433,7 +6484,7 @@ window.StemLab = window.StemLab || {
     var geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setIndex(indices); geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
-    geometry.parameters = { length: length, radius: radius, kind: horn ? 'horn' : 'claw' };
+    geometry.parameters = { length: length * coverage, radius: radius, kind: horn ? 'horn' : 'claw', coverage: coverage };
     return geometry;
   }
 
@@ -7406,6 +7457,17 @@ window.StemLab = window.StemLab || {
         var canvasRef = React.useRef(null);
         var labelModeRef = React.useRef(props.labelMode || 'key');
         labelModeRef.current = props.labelMode || 'key';
+        var bodyLabelOverlayRef = React.useRef(null);
+        var bodyPartVisibilityRef = React.useRef(null);
+        var bodyPartState = React.useState({ speciesId: props.species.id, id: '' });
+        var bodyPartSelection = bodyPartState[0], setBodyPartSelection = bodyPartState[1];
+        var selectedBodyPartId = bodyPartSelection.speciesId === props.species.id ? bodyPartSelection.id : '';
+        var selectedBodyPartRef = React.useRef('');
+        selectedBodyPartRef.current = selectedBodyPartId;
+        React.useEffect(function () {
+          selectedBodyPartRef.current = '';
+          setBodyPartSelection({ speciesId: props.species.id, id: '' });
+        }, [props.species.id]);
         var statusRef = React.useRef(null);
         var cameraReadoutRef = React.useRef(null);
         var sceneRef = React.useRef(null);
@@ -7460,6 +7522,8 @@ window.StemLab = window.StemLab || {
         }
         var reconstructionProfile = reconstructionProfileFor(props.species);
         var skeletalProfile = skeletalAnatomyProfileFor(props.species);
+        var bodyPartDefinitions = dinoBodyPartDefinitions(skeletalProfile.weightBearingForelimbs);
+        var selectedBodyPart = bodyPartDefinitions.find(function (part) { return part.id === selectedBodyPartId; });
         var cranialSurface = cranialSurfaceProfileFor(props.species);
         var postcranialSurface = postcranialSurfaceProfileFor(props.species);
         var habitat = habitatProfileFor(props.species);
@@ -7467,6 +7531,7 @@ window.StemLab = window.StemLab || {
         var integumentEvidence = integumentEvidenceFor(props.species);
         var studyViewState = React.useState({ speciesId: props.species.id, region: 'full' }), studyView = studyViewState[0], setStudyView = studyViewState[1];
         var activeStudy = studyView.speciesId === props.species.id ? studyView.region : 'full';
+        var externalViewReadouts = activeStudy === 'size' || !!selectedBodyPart;
         var cameraPresetState = React.useState(null), cameraPreset = cameraPresetState[0], setCameraPreset = cameraPresetState[1];
         var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
         var surfaceHypothesis = hypothesisSet.active;
@@ -8321,7 +8386,17 @@ window.StemLab = window.StemLab || {
               return mesh;
             }
 
-            var sceneLabels = [];
+            var sceneLabels = [], bodyPartAnchors = [];
+            function addBodyPartAnchor(id, point, owner) {
+              var anchor = new THREE.Object3D();
+              anchor.name = 'dinolab-part-' + id;
+              anchor.userData.dinoBodyPart = id;
+              model.updateMatrixWorld(true);
+              anchor.position.copy(point);
+              if (owner && owner !== model) anchor.position.copy(owner.worldToLocal(model.localToWorld(point.clone())));
+              (owner || model).add(anchor); bodyPartAnchors.push(anchor);
+              return anchor;
+            }
             function addTextLabel(text, pos, color, scaleFactor, parent) {
               var labelCanvas = document.createElement('canvas');
               labelCanvas.width = 256;
@@ -8874,14 +8949,6 @@ window.StemLab = window.StemLab || {
                 }
               } else if (/Pachycephalosaur/i.test(cladeName)) {
                 addEllipsoid(head.clone().add(vec(0, Math.max(0.03 * detailScale, ht * 0.055 * cranialSurface.domeScale), 0)), vec(Math.max(0.07 * detailScale, len * 0.035 * (0.48 + cranialSurface.domeScale * 0.52)), Math.max(0.035 * detailScale, ht * 0.050 * cranialSurface.domeScale), Math.max(0.07 * detailScale, bodyDepth * 0.62 * (0.55 + cranialSurface.domeScale * 0.45))), anatomyAccentMat);
-              } else if (/Therizinosaur/i.test(cladeName)) {
-                [-1, 1].forEach(function (side) {
-                  for (var clawIndex = -1; clawIndex <= 1; clawIndex++) {
-                    var clawBase = shoulder.clone().add(vec(-len * 0.040, -ht * 0.12, side * (bodyDepth * 0.46 + clawIndex * bodyDepth * 0.12)));
-                    addKeratinCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34 * detailScale, len * 0.095), -Math.max(0.06 * detailScale, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.021 * detailScale, ht * 0.007));
-                  }
-                });
-
               } else if (/Tyrannosaur/i.test(cladeName)) {
                 model.children.filter(function (part) { return part.userData.dinoFeature === 'eye'; }).forEach(function (eye) {
                   var browRadius = eye.geometry.parameters.radius;
@@ -9544,6 +9611,9 @@ window.StemLab = window.StemLab || {
               var knee = vec(x + (front ? -len * 0.012 : (isTheropod ? -len * 0.043 : len * 0.018)) * columnFactor, Math.max(0.20 * detailScale, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10)) - posture.kneeFlex * Math.max(0.20 * detailScale, top.y)), z + sideSign * Math.max(0.015 * detailScale, bodyDepth * 0.06) * columnFactor);
               var ankle = vec(x + (front ? -len * 0.026 : len * (isTheropod ? 0.025 : 0.050) * distalScale) * columnFactor, Math.max(0.10 * detailScale, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045 * detailScale, bodyDepth * 0.12) * columnFactor);
               var foot = vec(x + (front ? -len * 0.050 : len * (isTheropod ? 0.005 : 0.065) * distalScale) * posture.footReach * columnFactor, Math.max(0.008, ht * 0.010), z + sideSign * Math.max(0.08 * detailScale, bodyDepth * 0.20) * columnFactor);
+              addBodyPartAnchor(front ? 'forelimb' : 'thigh', topPoint.clone().lerp(knee, 0.52));
+              addBodyPartAnchor(front ? 'hand' : 'foot', foot);
+              if (!front) { addBodyPartAnchor('knee', knee); addBodyPartAnchor('ankle', ankle); }
               var upperRadius = Math.max(0.034 * detailScale, ht * (front ? 0.011 : 0.013)) * limbRobustness;
               var lowerRadius = Math.max(0.028 * detailScale, ht * (front ? 0.009 : 0.011)) * limbRobustness;
               var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;
@@ -9628,8 +9698,10 @@ window.StemLab = window.StemLab || {
                 addLimbCrest(freeDeltoBase, freeDeltoBase.clone().add(vec(-humerusRadius * 1.18 * skeletalProfile.deltopectoralCrestScale, humerusRadius * 0.18, armSide * humerusRadius * 0.58)), humerusRadius * 0.44);
                 addLimbJoint(elbow, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.025 * detailScale, ht * 0.009) * armRobustness, 1.30);
                 addLimbJoint(wrist, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.018 * detailScale, ht * 0.0065) * armRobustness, 1.12);
+                addBodyPartAnchor('forelimb', armStart.clone().lerp(elbow, 0.55));
                 var handDigits = skeletalProfile.manualDigits;
                 var handLength = Math.max(0.07 * detailScale, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
+                addBodyPartAnchor('hand', wrist.clone().add(vec(-handLength * 0.62, -handLength * 0.10, 0)));
                 if (props.showBody) addBodyContour(addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, Math.max(0.014 * detailScale, ht * 0.0055), Math.max(0.025 * detailScale, bodyDepth * 0.085)), headMat));
                 for (var handDigitIndex = 0; handDigitIndex < handDigits; handDigitIndex++) {
                   var handSpread = (handDigitIndex - (handDigits - 1) * 0.5) * Math.max(0.025 * detailScale, bodyDepth * 0.10);
@@ -9653,9 +9725,24 @@ window.StemLab = window.StemLab || {
                   }
                   if (manualUngualVisible) {
                     var manualUngualScale = /Therizinosaur/i.test(cladeName) ? 0.58 : (/Alvarezsaur/i.test(cladeName) ? 0.38 : 0.20);
-                    var handClawTip = fingerTip.clone().add(vec(-handLength * manualUngualScale, -handLength * (manualUngualScale * 0.30), 0));
-                    addSkeletonCone(fingerTip, handClawTip, Math.max(0.004 * detailScale, ht * 0.0018), toothMat);
-                    if (props.showBody) addKeratinCone(fingerTip, new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14), Math.max(0.006 * detailScale, ht * 0.0025));
+                    // The giant Therizinosaurus claws belong on the fingers, not the shoulder.
+                    // This is a schematic length envelope, not a measured specimen reconstruction.
+                    var manualClawLength = dn.id === 'therizinosaurus' ? len * 0.085 : handLength * manualUngualScale;
+                    var handClawTip = fingerTip.clone().add(vec(-manualClawLength, -manualClawLength * 0.30, 0));
+                    var manualBone = addSkeletonCone(fingerTip, handClawTip, Math.max(0.004 * detailScale, ht * 0.0018), toothMat);
+                    var manualClawRadius = dn.id === 'therizinosaurus' ? Math.max(0.021 * detailScale, ht * 0.007) : Math.max(0.006 * detailScale, ht * 0.0025);
+                    var manualSheathTip = new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14);
+                    if (dn.id === 'therizinosaurus' && manualBone) {
+                      manualBone.geometry.dispose();
+                      manualBone.geometry = dinoKeratinGeometry(THREE, manualSheathTip.clone().sub(fingerTip), manualClawRadius * 0.66, 'claw', 1 / 1.14);
+                      manualBone.position.copy(fingerTip); manualBone.quaternion.identity();
+                      manualBone.userData.dinoFeature = 'manual-ungual';
+                      manualBone.userData.dinoManualAttachment = { side: armSide, digit: handDigitIndex + 1, root: fingerTip.toArray() };
+                    }
+                    if (props.showBody) {
+                      var manualClaw = addKeratinCone(fingerTip, manualSheathTip, manualClawRadius);
+                      if (manualClaw) manualClaw.userData.dinoManualAttachment = { side: armSide, digit: handDigitIndex + 1, root: fingerTip.toArray() };
+                    }
                   }
                   else {
                     addSkeletonEllipsoid(fingerTip, vec(Math.max(0.010 * detailScale, handLength * 0.10), Math.max(0.007 * detailScale, ht * 0.0028), Math.max(0.008 * detailScale, bodyDepth * 0.028)), boneMat);
@@ -9663,18 +9750,24 @@ window.StemLab = window.StemLab || {
                   }
                 }
                 if (props.showBody) {
+                  var armSurfaceFullness = /Therizinosaur/i.test(cladeName) ? 2.4 : 1;
                   var armShell = addSoftTissueChain([armStart, armStart.clone().lerp(elbow, 0.55), elbow, elbow.clone().lerp(wrist, 0.55), wrist],
-                    [Math.max(0.025 * detailScale, ht * 0.010) * armRobustness,
-                     Math.max(0.024 * detailScale, ht * 0.010) * armRobustness,
-                     Math.max(0.020 * detailScale, ht * 0.008) * armRobustness,
-                     Math.max(0.017 * detailScale, ht * 0.007) * armRobustness,
-                     Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness], bodyMat)[0];
+                    [Math.max(0.025 * detailScale, ht * 0.010) * armRobustness * armSurfaceFullness,
+                     Math.max(0.024 * detailScale, ht * 0.010) * armRobustness * armSurfaceFullness,
+                     Math.max(0.020 * detailScale, ht * 0.008) * armRobustness * armSurfaceFullness,
+                     Math.max(0.017 * detailScale, ht * 0.007) * armRobustness * armSurfaceFullness,
+                     Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness * armSurfaceFullness], bodyMat)[0];
                   armShell.userData.dinoRegion = 'forearm-' + armSide;
                   addBodyContour(armShell);
                   if (surfaceHypothesis.wingFeathers) addLimbPlumage(armShell, elbow, wrist, armSide, false);
                 }
               });
             }
+
+            addBodyPartAnchor('head', head.clone().lerp(surfaceSnout, 0.35).add(vec(0, surfaceHeadHeight * 0.55, 0)));
+            addBodyPartAnchor('neck', shoulder.clone().lerp(head, 0.56));
+            addBodyPartAnchor('trunk', bodyCenter.clone().add(vec(0, surfaceBodyHeight * 0.40, 0)), bodyShell);
+            addBodyPartAnchor('tail', hip.clone().lerp(tail, 0.62), idleMotion.tail);
 
             // Frame anatomy, not sprites, detached assembly pieces, or habitat scenery.
             var specimenBounds = new THREE.Box3();
@@ -9702,6 +9795,20 @@ window.StemLab = window.StemLab || {
                 bodyCenter.clone().add(vec(bodyLen, surfaceBodyHeight, surfaceBodyDepth)))),
               tail: dinoStudyBounds(THREE, model, 'tail', new THREE.Box3().setFromPoints([hip, tail]).expandByScalar(Math.max(ht * 0.07, len * 0.012)))
             };
+            // Regional framing alone can omit distal joints of small animals.
+            // Include the selected landmark on both sides, with context padding.
+            var bodyPartStudyBounds = {};
+            bodyPartDefinitions.forEach(function (part) {
+              var bounds = studyBounds[part.region].clone();
+              bodyPartAnchors.forEach(function (anchor) {
+                if (anchor.userData.dinoBodyPart === part.id) bounds.expandByPoint(anchor.getWorldPosition(new THREE.Vector3()));
+              });
+              bodyPartStudyBounds[part.id] = bounds.expandByScalar(Math.max(ht * 0.06, len * 0.007));
+            });
+            function boundsForStudy(region) {
+              var part = bodyPartDefinitions.find(function (item) { return item.id === selectedBodyPartRef.current; });
+              return part && part.region === region ? bodyPartStudyBounds[part.id] : studyBounds[region];
+            }
             model.userData.studyBounds = {};
             Object.keys(studyBounds).forEach(function (region) {
               model.userData.studyBounds[region] = { min: studyBounds[region].min.toArray(), max: studyBounds[region].max.toArray() };
@@ -10145,7 +10252,7 @@ window.StemLab = window.StemLab || {
             yawRef.current.study = cameraStudy;
             var cameraTargetIsEvidence = !!(cameraStudy === 'full' && scanKey && yawRef.current.framing === 'evidence' && evidenceAnchorPoints[scanTargetId]);
             setStudyView({ speciesId: props.species.id, region: cameraTargetIsEvidence ? 'evidence' : cameraStudy });
-            var cameraTarget = cameraStudy !== 'full' ? studyBounds[cameraStudy].getCenter(new THREE.Vector3()) :
+            var cameraTarget = cameraStudy !== 'full' ? boundsForStudy(cameraStudy).getCenter(new THREE.Vector3()) :
               (cameraTargetIsEvidence ? evidenceAnchorPoints[scanTargetId].clone() : modelCenter.clone());
             function updateCameraReadout() {
               var rotationDegrees = Math.round((((yaw * 180 / Math.PI) + 180) % 360 + 360) % 360 - 180);
@@ -10162,7 +10269,7 @@ window.StemLab = window.StemLab || {
               if (measurementGuides) measurementGuides.visible = cameraStudy === 'size' || fullOverview;
               surveyDecorations.visible = cameraStudy !== 'size';
               evidenceDisplayParts.forEach(function (part) { part.visible = cameraStudy !== 'size'; });
-              var viewHalf = cameraStudy === 'full' ? (fullOverview ? overviewHalf : modelHalf) : studyBounds[cameraStudy].getSize(new THREE.Vector3()).multiplyScalar(0.5);
+              var viewHalf = cameraStudy === 'full' ? (fullOverview ? overviewHalf : modelHalf) : boundsForStudy(cameraStudy).getSize(new THREE.Vector3()).multiplyScalar(0.5);
               var rotatedWidth = Math.abs(Math.cos(yaw)) * viewHalf.x + Math.abs(Math.sin(yaw)) * viewHalf.z;
               var rotatedDepth = Math.abs(Math.sin(yaw)) * viewHalf.x + Math.abs(Math.cos(yaw)) * viewHalf.z;
               var verticalSpan = viewHalf.y * Math.cos(pitch) + rotatedDepth * Math.sin(pitch);
@@ -10183,7 +10290,7 @@ window.StemLab = window.StemLab || {
               yawRef.current.study = cameraStudy;
               setStudyView({ speciesId: props.species.id, region: cameraStudy });
               cameraTargetIsEvidence = false;
-              cameraTarget = cameraStudy === 'full' ? modelCenter.clone() : studyBounds[cameraStudy].getCenter(new THREE.Vector3());
+              cameraTarget = cameraStudy === 'full' ? modelCenter.clone() : boundsForStudy(cameraStudy).getCenter(new THREE.Vector3());
               yawRef.current.framing = 'full';
               yaw = nextYaw; pitch = clampView(nextPitch, 0.04, 1.50); zoom = clampView(nextZoom, 0.68, 1.65);
               yawRef.current.value = yaw; interactionPauseUntil = performance.now() + (cameraStudy === 'full' ? 3000 : 30000);
@@ -10203,6 +10310,50 @@ window.StemLab = window.StemLab || {
             cameraControlRef.current = activeCameraControl;
             updateCameraView();
 
+            function layoutBodyPartLabels() {
+              var overlay = bodyLabelOverlayRef.current;
+              if (!overlay) return;
+              var active = labelModeRef.current === 'anatomy' && (props.showBody || props.showSkeleton) && cameraStudy !== 'size' && cameraStudy !== 'tray';
+              overlay.style.display = active ? 'block' : 'none';
+              function reportPartVisibility(message) {
+                if (bodyPartVisibilityRef.current && bodyPartVisibilityRef.current.textContent !== message) bodyPartVisibilityRef.current.textContent = message;
+              }
+              if (!active) { reportPartVisibility('Show the body or skeleton to locate this part.'); return; }
+              var width = canvas.clientWidth, height = canvas.clientHeight, projectedParts = {};
+              model.updateMatrixWorld(true); camera.updateMatrixWorld(true);
+              bodyPartAnchors.forEach(function (anchor) {
+                var world = anchor.getWorldPosition(new THREE.Vector3()), view = world.clone().applyMatrix4(camera.matrixWorldInverse), clip = world.clone().project(camera);
+                if (view.z >= 0 || Math.max(Math.abs(clip.x), Math.abs(clip.y), Math.abs(clip.z)) > 1) return;
+                var id = anchor.userData.dinoBodyPart;
+                if (!projectedParts[id] || view.z > projectedParts[id].depth) projectedParts[id] = { id: id, x: (clip.x + 1) * width / 2, y: (1 - clip.y) * height / 2, depth: view.z };
+              });
+              var points = bodyPartDefinitions.filter(function (part) { return projectedParts[part.id] && (cameraStudy === 'full' || part.region === cameraStudy); }).map(function (part) { return projectedParts[part.id]; });
+              var readouts = canvas.parentNode.querySelector('.dinolab-3d-readouts');
+              var top = Math.max(64, readouts ? readouts.offsetTop + readouts.offsetHeight + 12 : 64);
+              var layouts = dinoBodyLabelLayout(points, width, height, top, width < 560 ? 132 : 88, selectedBodyPartRef.current);
+              var selectedLayout = layouts.some(function (item) { return item.selected; });
+              reportPartVisibility(selectedLayout ? 'The double-ring marker identifies the selected part.' : 'The selected marker is outside this view or has no clear label space. Use Show part to bring it into view.');
+              overlay.querySelectorAll('[data-dino-part-label]').forEach(function (node) { node.style.display = 'none'; });
+              overlay.querySelectorAll('[data-dino-part-line]').forEach(function (node) { node.style.display = 'none'; });
+              layouts.forEach(function (item) {
+                var node = overlay.querySelector('[data-dino-part-label="' + item.id + '"]');
+                var group = overlay.querySelector('[data-dino-part-line="' + item.id + '"]');
+                if (!node || !group) return;
+                node.style.display = 'block'; node.style.transform = 'translate(' + item.x.toFixed(1) + 'px,' + item.y.toFixed(1) + 'px)';
+                group.style.display = 'block';
+                node.setAttribute('data-dino-selected', item.selected ? 'true' : 'false');
+                node.style.background = item.selected ? '#115e59' : '#0f172a';
+                node.style.border = item.selected ? '2px solid #ffffff' : '1px solid #5eead4';
+                node.style.lineHeight = item.selected ? '24px' : '26px';
+                node.style.boxShadow = item.selected ? '0 0 0 2px #115e59, 0 3px 10px #00000066' : 'none';
+                var line = group.firstChild, dot = group.lastChild, ring = group.querySelector('[data-dino-part-ring]');
+                line.setAttribute('stroke', item.selected ? '#ffffff' : '#99f6e4');
+                line.setAttribute('stroke-width', item.selected ? 2.5 : 1.5);
+                if (ring) { ring.style.display = item.selected ? 'block' : 'none'; ring.setAttribute('cx', item.anchorX); ring.setAttribute('cy', item.anchorY); }
+                line.setAttribute('x1', item.anchorX); line.setAttribute('y1', item.anchorY); line.setAttribute('x2', item.lineX); line.setAttribute('y2', item.lineY);
+                dot.setAttribute('cx', item.anchorX); dot.setAttribute('cy', item.anchorY);
+              });
+            }
             function layoutSceneLabels() {
               var width = canvas.clientWidth || 720, height = canvas.clientHeight || 420;
               var mode = labelModeRef.current, occupied = [];
@@ -10222,9 +10373,9 @@ window.StemLab = window.StemLab || {
                 var text = label.userData.dinoLabel;
                 var keyLabel = /^(Skull|Shoulder|Hip)( done)?$|^(Claim:|Placed|Assemble)/.test(text);
                 var measurement = /^\d.* (m|cm)$/.test(text);
-                label.visible = mode !== 'off' && (mode === 'all' || keyLabel || (props.showHuman && measurement && label.userData.labelScale >= 0.5));
+                label.visible = mode !== 'off' && mode !== 'anatomy' && (mode === 'all' || keyLabel || (props.showHuman && measurement && label.userData.labelScale >= 0.5));
                 if (label.userData.dinoMeasurement) {
-                  label.visible = measurementGuides.visible && mode !== 'off' && (label.userData.dinoMeasurementEndpoint || (mode === 'all' && width >= 560));
+                  label.visible = measurementGuides.visible && mode !== 'off' && (mode !== 'anatomy' || cameraStudy === 'size') && (label.userData.dinoMeasurementEndpoint || (mode === 'all' && width >= 560));
                 } else if (cameraStudy === 'size') label.visible = false;
                 if (!label.visible) return;
                 var world = label.getWorldPosition(new THREE.Vector3()), projected = world.clone().project(camera);
@@ -10425,6 +10576,7 @@ window.StemLab = window.StemLab || {
                 });
               }
               layoutSceneLabels();
+              layoutBodyPartLabels();
               renderer.render(scene, camera);
               syncAnimation();
             }
@@ -10481,7 +10633,22 @@ window.StemLab = window.StemLab || {
           var view = presets[preset] || presets.reset;
           cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? 'full' : null);
         }
+        function selectBodyPart(id) {
+          var part = bodyPartDefinitions.find(function (item) { return item.id === id; });
+          selectedBodyPartRef.current = part ? part.id : '';
+          setBodyPartSelection({ speciesId: props.species.id, id: part ? part.id : '' });
+          if (!part) return;
+          notifyOrientationInteraction();
+          setCameraPreset('side');
+          yawRef.current.study = part.region;
+          setStudyView({ speciesId: props.species.id, region: part.region });
+          if (cameraControlRef.current) cameraControlRef.current(0, 0.16, 1, part.label + ' selected. The double-ring marker follows this landmark.', part.region);
+        }
         function applyStudyView(region) { notifyOrientationInteraction();
+          if (selectedBodyPart && region !== 'full' && region !== selectedBodyPart.region) {
+            selectedBodyPartRef.current = '';
+            setBodyPartSelection({ speciesId: props.species.id, id: '' });
+          }
           setCameraPreset(null);
           yawRef.current.study = region;
           setStudyView({ speciesId: props.species.id, region: region });
@@ -10579,6 +10746,15 @@ var evidenceRoute = [
           el('div', { className: 'dinolab-3d-viewer' + (props.focusMode ? ' dinolab-3d-viewer-focus' : ''), style: { position: 'relative', minHeight: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
           el('div', { id: viewerDescId, style: srOnlyStyle }, viewerSummary),
           el('canvas', { id: 'dinolab-3d-canvas-' + props.species.id, ref: canvasRef, className: 'dinolab-3d-canvas', tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D dinosaur reconstruction', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home', 'aria-describedby': viewerDescId + ' ' + statusId, 'aria-label': props.species.common + ' procedural 3D reconstruction viewer. Environment scene hypothesis: ' + habitat.shortLabel + '. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : ''), onFocus: function () { setCanvasFocused(true); }, onBlur: function () { setCanvasFocused(false); }, style: { width: '100%', height: props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)', display: 'block', touchAction: 'none', outline: canvasFocused ? '3px solid #5eead4' : 'none', outlineOffset: '-3px' } }),
+          el('div', { ref: bodyLabelOverlayRef, className: 'dinolab-body-label-overlay', 'aria-hidden': 'true', style: { display: 'none', position: 'absolute', inset: 0, pointerEvents: 'none' } },
+            el('svg', { width: '100%', height: '100%', style: { position: 'absolute', inset: 0, overflow: 'hidden' } }, bodyPartDefinitions.map(function (part) {
+              return el('g', { key: part.id, 'data-dino-part-line': part.id, style: { display: 'none' } },
+                el('line', { stroke: '#99f6e4', strokeWidth: 1.5 }),
+                el('circle', { 'data-dino-part-ring': part.id, r: 9, fill: 'none', stroke: '#ffffff', strokeWidth: 3, style: { display: 'none', filter: 'drop-shadow(0 1px 2px #0f172a)' } }),
+                el('circle', { r: 3, fill: '#0f172a', stroke: '#99f6e4', strokeWidth: 1.5 }));
+            })),
+            bodyPartDefinitions.map(function (part) { return el('span', { key: part.id, 'data-dino-part-label': part.id, style: { display: 'none', position: 'absolute', left: 0, top: 0, width: 96, height: 28, boxSizing: 'border-box', border: '1px solid #5eead4', borderRadius: 7, background: '#0f172a', color: '#f0fdfa', textAlign: 'center', fontSize: 12, fontWeight: 800, lineHeight: '26px', whiteSpace: 'nowrap' } }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })
+          ),
           el('div', { className: 'dinolab-3d-readouts', style: { position: 'absolute', left: 10, top: 10, right: 10, display: 'flex', gap: 6, flexWrap: 'wrap', pointerEvents: 'none' } },
             readoutChip('Length ' + fmtLength(props.species.lengthM) + ' | Height ' + fmtLength(props.species.heightM) + ' | Mass ' + fmtWeight(props.species.weightKg), 'rgba(56,189,248,0.62)'),
             readoutChip('Scene ' + (props.stage === 'habitat' ? habitat.shortLabel : selectedStudioLight.sceneLabel), 'rgba(20,184,166,0.65)'),
@@ -10594,9 +10770,9 @@ var evidenceRoute = [
             el('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.45, maxWidth: 280 } }, 'Drag to orbit. Use the wheel or Page Up/Page Down to zoom. Start with the amber ' + (props.scanLabel || 'evidence') + ' target.'),
             el('button', { type: 'button', onClick: props.onOrientationDismiss, 'aria-label': __alloT('stem.dinolab.a11y_dismiss_3d_viewer_orientation_tips', 'Dismiss 3D viewer orientation tips'), style: { marginTop: 8, padding: '6px 9px', borderRadius: 7, border: '1px solid #5eead4', background: 'rgba(20,184,166,0.16)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11.5, fontWeight: 800 } }, 'Got it')
           ) : null,
-          el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); }, style: { position: activeStudy === 'size' ? 'static' : 'absolute', left: 12, bottom: activeStudy === 'size' ? 0 : 52, marginTop: activeStudy === 'size' ? 8 : 0, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
-          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: activeStudy === 'size' ? 'static' : 'absolute', right: activeStudy === 'size' ? 0 : 10, bottom: activeStudy === 'size' ? 0 : 56, margin: activeStudy === 'size' ? '8px 10px 0' : 0, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
-          el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: activeStudy === 'size' ? 'static' : 'absolute', left: activeStudy === 'size' ? 0 : 10, bottom: activeStudy === 'size' ? 0 : 10, right: activeStudy === 'size' ? 0 : 10, margin: activeStudy === 'size' ? '8px 10px 10px' : 0, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
+          el('button', { type: 'button', className: 'dinolab-fit-model', onClick: function () { applyCameraPreset('reset'); }, style: { position: externalViewReadouts ? 'static' : 'absolute', left: 12, bottom: externalViewReadouts ? 0 : 52, marginTop: externalViewReadouts ? 8 : 0, padding: '8px 12px', borderRadius: 9, border: '1px solid #94a3b8', background: '#0f172a', color: '#f8fafc', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.fit_model', 'Fit whole animal')),
+          el('div', { ref: cameraReadoutRef, className: 'dinolab-3d-camera-readout', 'aria-label': __alloT('stem.dinolab.a11y_current_3d_camera_view', 'Current 3D camera view'), style: { position: externalViewReadouts ? 'static' : 'absolute', right: externalViewReadouts ? 0 : 10, bottom: externalViewReadouts ? 0 : 56, margin: externalViewReadouts ? '8px 10px 0' : 0, padding: '5px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.78)', color: '#e2e8f0', fontSize: 11, fontWeight: 800, pointerEvents: 'none' } }, 'Camera view loading...'),
+          el('div', { id: statusId, ref: statusRef, className: 'dinolab-3d-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: externalViewReadouts ? 'static' : 'absolute', left: externalViewReadouts ? 0 : 10, bottom: externalViewReadouts ? 0 : 10, right: externalViewReadouts ? 0 : 10, margin: externalViewReadouts ? '8px 10px 10px' : 0, padding: '7px 10px', borderRadius: 9, background: 'rgba(15,23,42,0.78)', color: '#cbd5e1', fontSize: 11, pointerEvents: 'none' } }, 'Loading 3D reconstruction...')
         ),
           el('div', { className: 'dinolab-study-controls', role: 'group', 'aria-label': __alloT('stem.dinolab.study_details', 'Study details'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 7, marginTop: 10, maxWidth: 560 } },
             el('span', { style: { color: T.soft, fontSize: 12, fontWeight: 800, gridColumn: '1 / -1' } }, __alloT('stem.dinolab.study_details', 'Study details')),
@@ -10608,6 +10784,27 @@ var evidenceRoute = [
                 onClick: function () { if (region === 'full') applyCameraPreset('reset'); else applyStudyView(region); },
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
+          ),
+          el('div', { className: 'dinolab-body-label-controls', style: { marginTop: 10 } },
+            el('button', { type: 'button', 'aria-pressed': props.labelMode === 'anatomy' ? 'true' : 'false', onClick: function () { notifyOrientationInteraction(); if (props.onLabelModeChange) props.onLabelModeChange(props.labelMode === 'anatomy' ? 'key' : 'anatomy'); },
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: props.labelMode === 'anatomy' ? '#0f766e' : T.deeper, color: props.labelMode === 'anatomy' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.body_part_labels', 'Body-part labels')),
+            props.labelMode === 'anatomy' ? el('div', { className: 'dinolab-part-locator', style: { marginTop: 10, padding: 12, borderRadius: 10, border: '1px solid ' + T.border, background: T.deeper, maxWidth: 620 } },
+              el('label', { htmlFor: 'dinolab-part-picker', style: { display: 'block', color: T.text, fontSize: 12, fontWeight: 800, marginBottom: 6 } }, __alloT('stem.dinolab.locate_body_part', 'Locate a body part')),
+              el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                el('select', { id: 'dinolab-part-picker', value: selectedBodyPartId, onChange: function (event) { selectBodyPart(event.target.value); }, 'aria-describedby': 'dinolab-part-explanation', style: { minHeight: 44, minWidth: 0, flex: '1 1 180px', padding: '8px 10px', borderRadius: 7, border: '1px solid ' + T.border, background: T.deep, color: T.text, fontSize: 13 } },
+                  el('option', { value: '' }, __alloT('stem.dinolab.all_body_parts', 'All parts')),
+                  bodyPartDefinitions.map(function (part) { return el('option', { key: part.id, value: part.id }, __alloT('stem.dinolab.body_part_' + part.id + (skeletalProfile.weightBearingForelimbs ? '_quadruped' : ''), part.label)); })),
+                selectedBodyPart ? el('button', { type: 'button', onClick: function () { selectBodyPart(selectedBodyPartId); }, style: { minHeight: 44, padding: '8px 12px', borderRadius: 7, border: '1px solid ' + T.border, background: '#0f766e', color: '#ffffff', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.show_body_part', 'Show part')) : null),
+              el('div', { id: 'dinolab-part-explanation', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8, fontSize: 12, lineHeight: 1.55, color: T.text } },
+                selectedBodyPart ? el('strong', null, selectedBodyPart.label + '. ') : null,
+                selectedBodyPart ? selectedBodyPart.detail : 'Choose a part to frame its region and keep its callout visible. You can still rotate and zoom.'),
+              selectedBodyPart ? el('p', { ref: bodyPartVisibilityRef, className: 'dinolab-part-visibility', style: { color: T.soft, margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.5 } }, 'Locating the selected part…') : null
+            ) : null,
+            props.labelMode === 'anatomy' ? el('details', { className: 'dinolab-body-part-key', style: { marginTop: 8, color: T.text, fontSize: 12, lineHeight: 1.5 } },
+              el('summary', { style: { cursor: 'pointer', fontWeight: 800, minHeight: 28 } }, __alloT('stem.dinolab.body_part_key', 'Body-part key')),
+              el('p', { style: { color: T.soft, marginTop: 6 } }, 'Labels follow visible regions of the model. Crowded labels are hidden; every part is listed here. Soft-tissue outlines remain reconstructions.'),
+              el('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(76px,auto) minmax(0,1fr)', gap: '6px 12px', marginTop: 8 } }, bodyPartDefinitions.map(function (part) { return el(React.Fragment, { key: part.id }, el('dt', { style: { fontWeight: 800 } }, part.label), el('dd', { style: { margin: 0, color: T.soft } }, part.detail)); }))
+            ) : null
           ),
           props.showEvidence || props.showHuman ?
             el('div', { className: 'dinolab-size-controls', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
@@ -11434,10 +11631,11 @@ var evidenceRoute = [
                 el('label', { htmlFor: 'dino-scene-labels', style: { fontSize: 12, fontWeight: 700, color: T.soft } }, __alloT('stem.dinolab.model_labels', 'Model labels')),
                 el('select', { id: 'dino-scene-labels', value: d.field3dLabelMode || 'key', onChange: function (event) { upd('field3dLabelMode', event.target.value); }, style: actionStyle },
                   el('option', { value: 'key' }, __alloT('stem.dinolab.key_labels', 'Key labels')),
+                  el('option', { value: 'anatomy' }, __alloT('stem.dinolab.body_part_labels', 'Body-part labels')),
                   el('option', { value: 'all' }, __alloT('stem.dinolab.all_labels', 'All labels')),
                   el('option', { value: 'off' }, __alloT('stem.dinolab.labels_off', 'Labels off'))),
                 el('span', { style: { fontSize: 11, color: T.soft } }, __alloT('stem.dinolab.studio_note', 'Studio lighting shows form; habitat scenes and surface colors are interpretations.'))),
-              el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', onLabelModeChange: function (mode) { upd('field3dLabelMode', mode); }, focusMode: focusMode, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, bodyOpacity: bodyOpacitySetting, onBodyOpacityChange: function (nextOpacity) { upd('field3dBodyOpacity', nextOpacity); }, autoRotate: autoRotate, orientationCueVisible: orientationCueVisible, onOrientationDismiss: dismissOrientationCue, onScanTargetChange: setScanTarget, scanActive: workflowStarted, onLogScanTarget: logScanTarget, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { key: 'evidenceContext', className: 'dinolab-field-context-strip', 'data-dinolab-evidence-strip': 'true', role: 'group', 'aria-label': __alloT('stem.dinolab.a11y_reconstruction_evidence_context', 'Reconstruction evidence context'), style: { marginTop: 10, padding: 10, borderRadius: 11, border: '1px solid rgba(94,234,212,0.28)', background: 'linear-gradient(135deg, rgba(15,23,42,0.88), rgba(20,184,166,0.08))', boxShadow: '0 8px 24px rgba(2,6,23,0.18)' } },
                 el('div', { key: 'contextHeader', style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
                   el('div', { style: { color: T.text, fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', textTransform: 'uppercase' } }, 'Evidence context'),

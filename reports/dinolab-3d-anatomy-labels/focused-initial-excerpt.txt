@@ -1,0 +1,43 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+·········································································x·············x································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > supports focused keyboard rotation with live status and cleanup
+AssertionError: expected '/**\n * stem_tool_dinolab.js — Dino L…' to contain 'el(DinoFieldStation3DStable, { specie…'
+
+- Expected
++ Received
+
+- el(DinoFieldStation3DStable, { species: dn, stage: d.field3dStage || 'studio', labelMode: d.field3dLabelMode || 'key', focusMode: focusMode, reconstructionMode: activeHypothesis.id,
+[Full renderer source echoed by the failed string assertion omitted here.]
++     }
++   });
++ })();
++
+
+ ❯ tests/dinolab_3d_accessibility.test.js:56:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/dinolab_3d_accessibility.test.js > Dino Lab 3D Field Station accessibility contract > renders Quiz, Classify, Map, and Compare without automated structural WCAG A/AA axe violations
+Error: Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/dinolab_3d_accessibility.test.js:1030:3
+    1028|     expect(results.violations).toEqual([]);
+    1029|   }, AXE_AUDIT_TIMEOUT_MS);
+    1030|   it('renders Quiz, Classify, Map, and Compare without automated struc…
+       |   ^
+    1031|     setupDinoLab();
+    1032|     for (const tab of ['quiz', 'classify', 'map', 'compare']) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 7 passed (8)
+      Tests  2 failed | 150 passed (152)
+   Start at  16:15:31
+   Duration  552.91s (transform 1.86s, setup 2.15s, import 3.57s, tests 472.79s, environment 64.92s)

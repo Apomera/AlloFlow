@@ -1,0 +1,21 @@
+
+Running 7 tests using 1 worker
+
+
+
+(node:30156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:30156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:29:5 › Therizinosaurus claws grow from the hands and have continuous forelimbs
+[2/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › tyrannosaurus labels follow camera and study views
+[3/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › triceratops labels follow camera and study views
+[4/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › brachiosaurus labels follow camera and study views
+[5/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:35:88 › microraptor labels follow camera and study views
+[6/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:43:5 › phone labels, key and fossil life round trip stay usable
+[7/7] [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts:54:5 › body labels coexist with evidence layers and size measurements
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-body-labels.spec.ts (7.2m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  7 passed (7.5m)

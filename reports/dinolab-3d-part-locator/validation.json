@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-19",
+  "focusedUniquePassed": 90,
+  "browserUniquePassed": 3,
+  "browserRepeatedPassed": 1,
+  "axeViolations": [],
+  "allTenPartsPhone": true,
+  "savedObservationsUnchanged": true,
+  "gpuResourcesUnchanged": true,
+  "selectedMarkerReadoutOverlap": false,
+  "reviewed": [
+    "phone-knee.png",
+    "triceratops-front-foot.png",
+    "microraptor-ankle.png"
+  ],
+  "initialBrowserFailure": "Microraptor ankle omitted from regional frame; fixed by including selected landmarks in camera bounds.",
+  "rendererSHA256": "1b7ade0a42f966ff0c84cbd7c1415409f19840f7a3a648052c576adbf4a2284a",
+  "mirrorsIdentical": true,
+  "syntax": true,
+  "scopedWhitespace": true,
+  "deployed": false
+}
