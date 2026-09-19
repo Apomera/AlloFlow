@@ -592,6 +592,18 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(errors).toEqual([]);
   },120000);
 
+
+  it('changing friendship notes survive the real hub return and reopen flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Endings/}).click();
+    const activity=page.getByRole('region',{name:'Changing friendship practice',exact:true});
+    await activity.getByLabel('Choose a changing-friendship context',{exact:true}).selectOption('space');await activity.getByText('Make room for my next day (optional)',{exact:true}).click();
+    await activity.getByLabel('What could help in my day? (optional)',{exact:true}).fill('Ask for help with shared class routines.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();
+    await page.locator('[data-sel-tool-card-id="friendship"]').click();expect(await activity.getByLabel('Choose a changing-friendship context',{exact:true}).inputValue()).toBe('space');await activity.getByText('Make room for my next day (optional)',{exact:true}).click();
+    expect(await activity.getByLabel('What could help in my day? (optional)',{exact:true}).inputValue()).toBe('Ask for help with shared class routines.');
+    expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.endingIdx)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

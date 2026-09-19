@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-19",
+  "tool": "Friendship Workshop / Endings",
+  "validation": "passed",
+  "fictionalContexts": 3,
+  "gradeSpecificSetups": 9,
+  "comparisons": 6,
+  "gradeSpecificExampleWordings": 18,
+  "optionalNotes": 4,
+  "ownExample": true,
+  "uniquePassingChecks": 62,
+  "focused": {
+    "browser": 15,
+    "controlContracts": 5
+  },
+  "regressions": {
+    "repair": 15,
+    "digital": 20
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 99
+  },
+  "targetedTheme": {
+    "passed": 4,
+    "filtered": 292
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "57d8f9f5e9df68a4e5cad3f27115f78724e8ca41eb0b51624936e464654ab5e1",
+  "retryHistory": "All selected checks passed on their first run.",
+  "counting": "Filtered cases and render enumeration excluded from the 62-test count.",
+  "delivery": "Local enhancement only. No push, deployment or packaged build."
+}
