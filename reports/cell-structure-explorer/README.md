@@ -49,3 +49,10 @@ All seven focused-view and explorer browser scenarios passed. Reviewed the 280px
 ## Commit blocker resolved — 2026-09-19
 
 After approval to proceed, verified that the root content engine is the documented canonical source and its stale desktop duplicate had no independent edits against HEAD. Synchronized that duplicate to the existing canonical working copy; the root was not changed. The source-pair guard now passes. Content-engine work remains outside the scoped cell commit. Cell implementation and validated behavior are unchanged.
+
+## Responsive microscope split view — 2026-09-19
+
+Observe mode now places the structure explorer beside the microscope when its available container is at least 1000px wide. A 320px sidebar keeps explanations readable while the microscope retains at least 640px of usable width. Narrow windows and embedded app panels stack the explorer below the dish. Play mode retains its full-width stage, and clearing the specimen restores a full-width observation stage.
+
+The same DOM wrappers and canvas remain mounted across layout changes. The layout test resizes between desktop, a 900px app container and a 320px phone, checking canvas identity, preserved camera/selection/zoom and retained picker focus. Screenshots capture the full desktop workspace and both stacked variants. Existing explorer and focused-label scenarios verify navigation, stable label positions, keyboard return, touch cancellation and play behavior at the new sizes.
+All nine explorer/focused-label/layout browser scenarios passed. Desktop split and phone stacked screenshots reviewed; source syntax, scoped whitespace and all four mirror copies passed. No push or deployment.

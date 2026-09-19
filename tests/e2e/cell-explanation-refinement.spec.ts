@@ -14,7 +14,8 @@ for(const width of [280,320,1200])test('external structure explorer at '+width,a
  await expect(panel.locator('[data-cell-explanation-title]')).toHaveText('Endoplasmic Reticulum');
  await expect(panel.locator('[data-cell-explanation-text]')).toContainText('Rough ER');
  const c=(await canvas.boundingBox())!,p=(await panel.boundingBox())!;
- expect(p.y).toBeGreaterThanOrEqual(c.y+c.height);
+ if(width>=1000){expect(p.x).toBeGreaterThanOrEqual(c.x+c.width);expect(Math.abs(p.y-c.y)).toBeLessThan(3);expect(c.width).toBeGreaterThan(640);}
+ else expect(p.y).toBeGreaterThanOrEqual(c.y+c.height);
  expect(p.x).toBeGreaterThanOrEqual(0);expect(p.x+p.width).toBeLessThanOrEqual(width+1);
  const initial=await canvas.evaluate((c:any)=>c._cellSimGetObservationView());
  const picker=panel.getByRole('combobox',{name:'Jump to structure'});

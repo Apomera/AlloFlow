@@ -23861,6 +23861,10 @@ var d = labToolData.cell || {};
 [data-cell-header]{padding:14px 4px 18px;gap:10px!important}
 [data-cell-header] h3{font-size:22px!important;letter-spacing:-.6px}
 [data-cell-header] button{min-height:40px}
+[data-cell-microscope-workspace]{container-type:inline-size;container-name:cell-microscope;min-width:0}
+[data-cell-microscope-layout]{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0}
+[data-cell-microscope-layout]>[data-cell-explanation-panel]{margin-top:0}
+@container cell-microscope (min-width:1000px){[data-cell-microscope-layout=split]{grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}}
 [data-cell-stage]{border:1px solid #a6c4bb!important;border-radius:18px!important;box-shadow:0 14px 36px #123e3920!important}
 [data-cell-explanation-panel]{container-type:inline-size;margin-top:14px;border:1px solid #aac8be;border-radius:18px;background:#fcfefd;color:#163e35;box-shadow:0 8px 24px #163e350a;overflow:hidden}
 [data-cell-explanation-header]{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(110deg,#e7f4ed,#f5faf7);border-bottom:1px solid #d5e5de}
@@ -25098,6 +25102,9 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
 
 
+            // Stable wrappers let the layout respond to available space without remounting the canvas.
+            React.createElement('div', { 'data-cell-microscope-workspace': true },
+              React.createElement('div', { 'data-cell-microscope-layout': activeCellMode === 'observe' && selDef ? 'split' : 'stacked' },
             // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
             d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '680px', containerType: 'inline-size', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
@@ -25706,6 +25713,8 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
                 React.createElement('button', { type: 'button', 'data-cell-explanation-next': true, 'aria-label': 'Next structure', onClick: function() { stepCellExplanation(1); } }, 'Next', cellControlIcon('next')),
                 cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-return': true, 'aria-label': 'Back to microscope', onClick: function() { focusCellPlayRegion('[data-cell-stage]', '[data-cell-sim-canvas]'); } }, cellControlIcon('up'), 'Back to dish'),
                 cellExplanation && React.createElement('button', { type: 'button', 'data-cell-explanation-close': true, 'aria-label': 'Close structure explanation', onClick: closeCellExplanationPanel }, cellControlIcon('close'), 'Close')
+              )
+            ),
               )
             ),
             d.mode === 'play' && activePlayDef && activePlayTutorial && React.createElement("section", { "data-cell-mission-checkpoint": true, className: "mt-3 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm", "aria-labelledby": "cell-mission-checkpoint-title" },
