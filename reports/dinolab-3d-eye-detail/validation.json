@@ -1,0 +1,115 @@
+{
+  "unitTests": 35,
+  "unitSuites": 5,
+  "browserScenarios": 5,
+  "initialTestLocatorFailures": 1,
+  "locatorCorrection": "The Microraptor lighting test initially used shortened button labels; it passed after using the existing accessible names. No renderer change was needed.",
+  "reviewedImages": [
+    "anchiornis-head.png",
+    "anchiornis-zoom.png",
+    "anchiornis-phone.png",
+    "microraptor-head.png",
+    "microraptor-detail-light.png",
+    "tyrannosaurus-head.png",
+    "brachiosaurus-head.png"
+  ],
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "9803173580cd6dc8d3ca940ab58b81123eaf68c2c5d7a7d021dc4073b70d4a3e"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "9803173580cd6dc8d3ca940ab58b81123eaf68c2c5d7a7d021dc4073b70d4a3e"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "9803173580cd6dc8d3ca940ab58b81123eaf68c2c5d7a7d021dc4073b70d4a3e"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "9803173580cd6dc8d3ca940ab58b81123eaf68c2c5d7a7d021dc4073b70d4a3e"
+    }
+  ],
+  "species": {
+    "anchiornis": {
+      "eyeParts": 8,
+      "irisVertices": [
+        825,
+        825
+      ],
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "microraptor": {
+      "eyeParts": 8,
+      "irisVertices": [
+        825,
+        825
+      ],
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "tyrannosaurus": {
+      "eyeParts": 8,
+      "irisVertices": [
+        825,
+        825
+      ],
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "brachiosaurus": {
+      "eyeParts": 8,
+      "irisVertices": [
+        825,
+        825
+      ],
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "blink": {
+    "minY": 0.10340180146132455,
+    "closed": true,
+    "reopened": true,
+    "glintHidden": true,
+    "frames": 48,
+    "coordinatesStable": true
+  },
+  "resources": {
+    "lighting": {
+      "before": {
+        "geometries": 417,
+        "textures": 8
+      },
+      "after": {
+        "geometries": 417,
+        "textures": 8
+      }
+    },
+    "blink": {
+      "before": {
+        "geometries": 439,
+        "textures": 8
+      },
+      "after": {
+        "geometries": 439,
+        "textures": 8
+      }
+    }
+  },
+  "deployed": false
+}

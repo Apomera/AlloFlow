@@ -1,0 +1,228 @@
+{
+  "parts": [
+    {
+      "role": "iris",
+      "side": -1,
+      "id": "D97933C1-3737-4FAC-8A11-BFCC566FA68C",
+      "radius": 0.0035300999999999996,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        -0.014601585458256593
+      ],
+      "scale": [
+        1,
+        0.82,
+        0.46
+      ],
+      "visible": true,
+      "irisVertices": 825,
+      "key": "dinolab-iris-v1",
+      "map": false,
+      "material": "MeshStandardMaterial",
+      "opacity": 1,
+      "color": [
+        0.29613827078752575,
+        0.174647403645279,
+        0.06480326668529614
+      ]
+    },
+    {
+      "role": "pupil",
+      "side": -1,
+      "id": "8B401632-1999-4C4A-8622-907CCCAE1A9B",
+      "radius": 0.0019062539999999998,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        -0.01597832445825659
+      ],
+      "scale": [
+        1,
+        0.82,
+        0.28
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshBasicMaterial",
+      "opacity": 1,
+      "color": [
+        0.0033465357620980074,
+        0.0030352698352941175,
+        0.002428215868235294
+      ]
+    },
+    {
+      "role": "glint",
+      "side": -1,
+      "id": "CB3F9109-6B9F-4910-AD65-AB4BCE65C8C8",
+      "radius": 0.00031770899999999995,
+      "position": [
+        -0.155885022,
+        0.23479682400000002,
+        -0.016472538458256594
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshBasicMaterial",
+      "opacity": 1,
+      "color": [
+        1,
+        0.9529411764705882,
+        0.8117647058823529
+      ]
+    },
+    {
+      "role": "cornea",
+      "side": -1,
+      "id": "DE73E915-2FFC-4BE6-8B74-F23AFC778453",
+      "radius": 0.0036360029999999996,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        -0.015025197458256593
+      ],
+      "scale": [
+        1,
+        0.84,
+        0.5
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshPhysicalMaterial",
+      "opacity": 0.07,
+      "color": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "role": "iris",
+      "side": 1,
+      "id": "E16AC0E3-4A17-440D-998B-DA03081A5B77",
+      "radius": 0.0035300999999999996,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        0.014599211160451639
+      ],
+      "scale": [
+        1,
+        0.82,
+        0.46
+      ],
+      "visible": true,
+      "irisVertices": 825,
+      "key": "dinolab-iris-v1",
+      "map": false,
+      "material": "MeshStandardMaterial",
+      "opacity": 1,
+      "color": [
+        0.29613827078752575,
+        0.174647403645279,
+        0.06480326668529614
+      ]
+    },
+    {
+      "role": "pupil",
+      "side": 1,
+      "id": "6184637A-BD74-4695-B74C-2C975F32E0F1",
+      "radius": 0.0019062539999999998,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        0.015975950160451637
+      ],
+      "scale": [
+        1,
+        0.82,
+        0.28
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshBasicMaterial",
+      "opacity": 1,
+      "color": [
+        0.0033465357620980074,
+        0.0030352698352941175,
+        0.002428215868235294
+      ]
+    },
+    {
+      "role": "glint",
+      "side": 1,
+      "id": "EE97E351-D259-4456-96A0-8BEF58A03E6D",
+      "radius": 0.00031770899999999995,
+      "position": [
+        -0.155885022,
+        0.23479682400000002,
+        0.01647016416045164
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshBasicMaterial",
+      "opacity": 1,
+      "color": [
+        1,
+        0.9529411764705882,
+        0.8117647058823529
+      ]
+    },
+    {
+      "role": "cornea",
+      "side": 1,
+      "id": "DECB0346-4D49-4336-9536-727D90D66AFF",
+      "radius": 0.0036360029999999996,
+      "position": [
+        -0.1551084,
+        0.2339496,
+        0.01502282316045164
+      ],
+      "scale": [
+        1,
+        0.84,
+        0.5
+      ],
+      "visible": true,
+      "irisVertices": 0,
+      "key": "function(){}",
+      "map": false,
+      "material": "MeshPhysicalMaterial",
+      "opacity": 0.07,
+      "color": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
+  "model": "F52AAEB8-AE79-4FC6-9D39-327FB4D75ADB",
+  "invalid": 0,
+  "outside": 0,
+  "geometries": 439,
+  "textures": 8,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

@@ -6964,6 +6964,42 @@ window.StemLab = window.StemLab || {
     return material;
   }
 
+  // Iris detail uses the eye's own coordinates, so pigment stays seated during blinks.
+  function dinoEyeGeometry(THREE, radius) {
+    var geometry = new THREE.SphereGeometry(radius, 32, 24);
+    var position = geometry.attributes.position, iris = [];
+    for (var i = 0; i < position.count; i++) iris.push(position.getX(i) / radius, position.getY(i) / radius);
+    geometry.setAttribute('dinoIris', new THREE.Float32BufferAttribute(iris, 2));
+    return geometry;
+  }
+
+  function dinoIrisShading(material) {
+    var baseCompile = material.onBeforeCompile;
+    material.extensions = Object.assign({}, material.extensions, { derivatives: true });
+    material.onBeforeCompile = function (shader) {
+      baseCompile.call(this, shader);
+      shader.vertexShader = 'attribute vec2 dinoIris;\nvarying vec2 vDinoIris;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoIris = dinoIris;');
+      shader.fragmentShader = 'varying vec2 vDinoIris;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+        '#include <color_fragment>',
+        'float irisRadius = length(vDinoIris);',
+        'float irisAngle = atan(vDinoIris.y, vDinoIris.x + 0.000001);',
+        // Estimate angular footprint without an atan seam at the back of the iris.
+        'float irisFootprint = max(length(dFdx(vDinoIris)), length(dFdy(vDinoIris))) / max(irisRadius, 0.35);',
+        'float irisBroad = sin(irisAngle * 28.0 + sin(irisAngle * 7.0) * 1.1 + irisRadius * 8.0)',
+        '  * (1.0 - smoothstep(0.8, 2.8, irisFootprint * 28.0));',
+        'float irisFine = sin(irisAngle * 59.0 - irisRadius * 13.0 + sin(irisAngle * 11.0))',
+        '  * (1.0 - smoothstep(0.8, 2.8, irisFootprint * 59.0));',
+        'float irisCollarette = smoothstep(0.53, 0.61, irisRadius) * (1.0 - smoothstep(0.64, 0.74, irisRadius));',
+        'float irisRim = smoothstep(0.78, 1.0, irisRadius);',
+        'diffuseColor.rgb *= (1.0 + 0.13 * irisBroad + 0.055 * irisFine + 0.16 * irisCollarette) * (1.0 - 0.58 * irisRim);'
+      ].join('\n'));
+    };
+    material.customProgramCacheKey = function () { return 'dinolab-iris-v1'; };
+    return material;
+  }
+
   function dinoStudioLightProfile(mode) {
     if (mode === 'detail') return { id: 'detail', label: 'Surface detail', sceneLabel: 'Surface detail', description: 'Lower side lighting reveals surface relief and overlapping forms.', ambient: 0.16, hemisphere: 0.42, key: 1.45, keyPosition: [-10, 4, 12], fill: 0.22, fillPosition: [10, 7, 8], rim: 0.55, rimPosition: [2, 8, -12] };
     if (mode === 'rim') return { id: 'rim', label: 'Rim light', sceneLabel: 'Rim light', description: 'Stronger rear lighting separates the silhouette, crests and feathers.', ambient: 0.18, hemisphere: 0.48, key: 0.78, keyPosition: [-8, 12, 10], fill: 0.28, fillPosition: [10, 6, 8], rim: 1.85, rimPosition: [2, 8, -12] };
@@ -8170,10 +8206,12 @@ window.StemLab = window.StemLab || {
               dinoSkinMapping(THREE, material, Math.max(len * 0.20, ht * 0.60), integument.pattern === 'iridescent' ? 0.07 : 0.22, integument);
               material.bumpScale = Math.min(0.012, ht * (material === headMat ? 0.0008 : 0.0015));
             });
-            var eyeMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x6d5434, roughness: 0.22, metalness: 0.03 }) : new THREE.MeshPhongMaterial({ color: 0x6d5434, shininess: 82 });
-            var eyePupilMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x090705, roughness: 0.14, metalness: 0.02 }) : new THREE.MeshPhongMaterial({ color: 0x090705, shininess: 96 });
+            var irisColor = new THREE.Color(0x947448).convertSRGBToLinear();
+            var eyeMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: irisColor, roughness: 0.46, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: irisColor, shininess: 24 });
+            dinoIrisShading(eyeMat);
+            var eyePupilMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x0b0a08).convertSRGBToLinear() });
             var eyeGlintMat = new THREE.MeshBasicMaterial({ color: 0xfff3cf });
-            var corneaMat = THREE.MeshPhysicalMaterial ? new THREE.MeshPhysicalMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.18, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, depthWrite: false }) : new THREE.MeshBasicMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.14, depthWrite: false });
+            var corneaMat = THREE.MeshPhysicalMaterial ? new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.07, roughness: 0.08, metalness: 0, clearcoat: 0.7, clearcoatRoughness: 0.08, depthWrite: false }) : new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06, depthWrite: false });
             var mouthMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.94 }) : new THREE.MeshPhongMaterial({ color: 0x241a17, shininess: 2 });
             var mouthCreaseMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x302821).convertSRGBToLinear(), transparent: headMat.transparent, opacity: headMat.opacity, depthWrite: headMat.depthWrite, side: THREE.DoubleSide });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
@@ -9121,19 +9159,19 @@ window.StemLab = window.StemLab || {
                 ];
                 addFacialStrip(browPoints, eyeRadius * 0.33 * cranialSurface.browScale,
                   eyeRadius * 0.28 * cranialSurface.browScale, faceSide, headMat, 'brow-relief');
-                var eye = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius, 18, 12), eyeMat);
+                var eye = new THREE.Mesh(dinoEyeGeometry(THREE, eyeRadius), eyeMat);
                 eye.position.copy(eyePos);
                 eye.userData.dinoFeature = 'eye';
                 eye.userData.headRadius = Math.min(surfaceHeadHeight, surfaceHeadDepth);
                 eye.scale.set(1, 0.82, 0.46);
                 eye.renderOrder = 10;
                 model.add(eye);
-                var pupil = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 0.58, 14, 10), eyePupilMat);
-                pupil.position.copy(eyePos).add(vec(-eyeRadius * 0.16, eyeRadius * 0.10, faceSide * eyeRadius * 0.37));
-                pupil.scale.set(1, 0.88, 0.28);
+                var pupil = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 0.54, 24, 16), eyePupilMat);
+                pupil.position.copy(eyePos).add(vec(0, 0, faceSide * eyeRadius * 0.39));
+                pupil.scale.set(1, 0.82, 0.28);
                 pupil.renderOrder = 11;
                 model.add(pupil);
-                var glint = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 0.12, 10, 8), eyeGlintMat);
+                var glint = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius * 0.09, 10, 8), eyeGlintMat);
                 glint.position.copy(eyePos).add(vec(-eyeRadius * 0.22, eyeRadius * 0.24, faceSide * eyeRadius * 0.53));
                 glint.renderOrder = 12;
                 model.add(glint);
@@ -9153,6 +9191,9 @@ window.StemLab = window.StemLab || {
                 lowerLid.scale.y = 0.82;
                 lowerLid.renderOrder = 13;
                 model.add(lowerLid);
+                [[eye, 'iris'], [pupil, 'pupil'], [cornea, 'cornea'], [glint, 'glint']].forEach(function (part) {
+                  part[0].userData.dinoRegion = 'head'; part[0].userData.dinoEyeRole = part[1]; part[0].userData.dinoEyeSide = faceSide;
+                });
                 idleMotion.eyes.push({ eye: eye, pupil: pupil, glint: glint, cornea: cornea, upperLid: upperLid, lowerLid: lowerLid, eyeBaseY: eye.scale.y, pupilBaseY: pupil.scale.y, corneaBaseY: cornea.scale.y, lidBaseY: upperLid.scale.y });
                 var nostrilPos = head.clone().lerp(surfaceSnout, cranialSurface.nostrilPosition).add(vec(0, surfaceHeadHeight * 0.12 * cranialSurface.nostrilHeightScale, faceSide * surfaceHeadDepth * (isTheropod ? 0.65 : 0.60 * cranialSurface.muzzleTipScale)));
                 var nostrilRadius = Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.065 * cranialSurface.nostrilScale;

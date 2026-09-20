@@ -1,0 +1,15 @@
+Running 4 tests using 1 worker
+
+
+
+(node:37488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:37488) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/4] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › microraptor has clear layered eyes in head studies
+[2/4] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › tyrannosaurus has clear layered eyes in head studies
+[3/4] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › brachiosaurus has clear layered eyes in head studies
+[4/4] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:57:5 › iris detail survives a blink, reduced motion and manual pause
+  4 passed (3.7m)

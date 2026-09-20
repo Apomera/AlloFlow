@@ -1,0 +1,40 @@
+Running 2 tests using 1 worker
+
+
+
+(node:16808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:16808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/2] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › anchiornis has clear layered eyes in head studies
+[2/2] [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › microraptor has clear layered eyes in head studies
+  1) [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › microraptor has clear layered eyes in head studies
+
+    TimeoutError: locator.click: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('group', { name: 'Studio light angle', exact: true }).getByRole('button', { name: 'Surface detail', exact: true })
+
+
+      45 |  }
+      46 |  if(id==='microraptor'){
+    > 47 |   const group=page.getByRole('group',{name:'Studio light angle',exact:true});await group.getByRole('button',{name:'Surface detail',exact:true}).click();check(await inspect(page));await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/microraptor-detail-light.png'});
+         |                                                                                                                                                 ^
+      48 |   await group.getByRole('button',{name:'Balanced',exact:true}).click();const after=await inspect(page);check(after);expect(after.model).toBe(before.model);expect(after.geometries).toBe(before.geometries);expect(after.textures).toBe(before.textures);
+      49 |   fs.writeFileSync(report+'/lighting-resources.json',JSON.stringify({before,after},null,2));
+      50 |  }
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-eye-detail.spec.ts:47:145
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-eye-detail\preview-artifacts\dinolab-3d-eye-detail-micr-8b891-ayered-eyes-in-head-studies-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-eye-detail\preview-artifacts\dinolab-3d-eye-detail-micr-8b891-ayered-eyes-in-head-studies-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-eye-detail\preview-artifacts\dinolab-3d-eye-detail-micr-8b891-ayered-eyes-in-head-studies-chromium\error-context.md
+
+
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-eye-detail.spec.ts:36:82 › microraptor has clear layered eyes in head studies
+  1 passed (3.3m)
