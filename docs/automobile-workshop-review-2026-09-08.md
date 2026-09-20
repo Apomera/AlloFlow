@@ -429,6 +429,17 @@ Validation: 313 workshop unit/render tests passed (18 new cases). Three Chromium
 - [Selected tool case](../reports/automobile-workshop/inspection-outline-tools.png)
 - [High contrast phone outline](../reports/automobile-workshop/inspection-outline-contrast.png)
 
+## Differentiated high-contrast workshop materials — 2026-09-19
+
+The workshop now retains the authored dark/light and role colors for solid parts in high-contrast mode, with matte shading and no specular shine. This fixes the shared trim helper's uniform-white treatment of battery bodies, posts, meter leads, brake layers, tool cases and lift controls. Red/black leads and the red emergency stop remain distinguishable; metal parts stand apart from dark housings. The change stays inside the workshop scene. Standard and dark modes retain the shared material helper, and glass, labels, displays, geometry and operating gates are unchanged. The inspected-control outline is now yellow in high contrast to suit the restored darker surfaces; cyan remains in standard/dark views.
+
+Validation: all 313 workshop unit/render tests passed. Four distinct Chromium WebGL workflows passed: two new contrast journeys, existing inspection-outline/resource checks and the immediate emergency-stop/lift/drag regression. The new checks verify base-material separation, matte/opaque solid surfaces, preserved state across contrast/dark/light changes, actual contact picking, invalid battery-post evidence, brake backing versus lining measurements, the physical stop and a valid 4.6 L oil capture. The phone view has no horizontal overflow and both new journeys reported no browser errors. The first new test baseline was corrected to account for the existing contact-focus action clearing feedback text while retaining evidence; an initial browser-mount timeout passed on rerun. A final mechanical journey rerun centers the whole-shop capture below sticky navigation. Four final captures visually reviewed. Syntax, scoped whitespace and four-copy parity passed (SHA256 df877b415ca3819d93a27f3ab81b17b9cd0043a1a51d4d3f61f970edd81101cc); ignored build copies verified against HEAD before synchronization. No deployment.
+
+- [Battery contacts and leads](../reports/automobile-workshop/contrast-materials-contacts.png)
+- [Phone contact inspection](../reports/automobile-workshop/contrast-materials-phone.png)
+- [Brake layers and components](../reports/automobile-workshop/contrast-materials-brakes.png)
+- [Whole mechanic shop](../reports/automobile-workshop/contrast-materials-shop.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

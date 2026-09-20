@@ -10060,13 +10060,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
   function buildWorkshopScene(THREE, api) {
     var state = arShopState(api.sceneProps), scene = api.scene;
+    // Preserve dark/light part separation; the shared contrast trim is uniformly white.
+    // Matte surfaces retain depth shading without bright specular glare.
+    function workshopTrim(hex, shiny) {
+      return api.contrast ? new THREE.MeshPhongMaterial({ color: hex, shininess: 0, specular: 0x000000 }) : api.trim(hex, shiny);
+    }
     var meshes = {}, picks = [];
     var height = arShopLiftStatus(state).height;
     if (scene.fog) { scene.fog.near = 12; scene.fog.far = 26; }
     var room = new THREE.Group(); room.name = 'full-workshop-environment'; scene.add(room);
-    var paint = api.trim(0x246b8e, 90), rubber = api.trim(0x171e29, 8), metal = api.trim(0xa4b3c1, 75);
-    var dark = api.trim(0x283647, 25), amber = api.trim(0xf8b73c, 45), blue = api.trim(0x1958a1, 50);
-    var red = api.trim(0xc83542, 45), pale = api.trim(0xd5e3e8, 30), green = api.trim(0x36b58e, 40);
+    var paint = workshopTrim(0x246b8e, 90), rubber = workshopTrim(0x171e29, 8), metal = workshopTrim(0xa4b3c1, 75);
+    var dark = workshopTrim(0x283647, 25), amber = workshopTrim(0xf8b73c, 45), blue = workshopTrim(0x1958a1, 50);
+    var red = workshopTrim(0xc83542, 45), pale = workshopTrim(0xd5e3e8, 30), green = workshopTrim(0x36b58e, 40);
     function box(parent, name, size, pos, mat) {
       var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), mat);
       mesh.name = name; mesh.position.set(pos[0], pos[1], pos[2]); parent.add(mesh);
@@ -10128,7 +10133,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       });
       meshes[id] = group;
     }
-    box(room, 'workshop-floor', [10, 0.12, 8], [0, -0.1, 0], api.trim(0x475b6d, 15));
+    box(room, 'workshop-floor', [10, 0.12, 8], [0, -0.1, 0], workshopTrim(0x475b6d, 15));
     for (var tile = -4; tile <= 4; tile++) {
       box(room, 'floor-seam-x-' + tile, [0.016, 0.005, 7.9], [tile, -0.034, 0], dark);
       box(room, 'floor-seam-z-' + tile, [9.9, 0.005, 0.016], [0, -0.033, tile], dark);
@@ -10235,7 +10240,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     pipe(positiveClamp, 'positive-clamp-cable', [-0.92, 1.15, 0.49], [-0.89, 1.11, 0.36], 0.014, red);
     pipe(engine, 'negative-battery-cable', [-0.76, 1.15, 0.49], [-0.69, 1.10, 0.38], 0.015, rubber);
     if (state.job === 'electrical' && !state.serviced) {
-      var corrosion = cylinder(engine, 'workshop-terminal-corrosion', 0.065, 0.018, [-0.97, 1.157, 0.51], api.trim(0x99ddc6, 2)); corrosion.userData.faultState = 'high-resistance';
+      var corrosion = cylinder(engine, 'workshop-terminal-corrosion', 0.065, 0.018, [-0.97, 1.157, 0.51], workshopTrim(0x99ddc6, 2)); corrosion.userData.faultState = 'high-resistance';
     }
     box(engine, 'air-filter-housing', [0.41, 0.22, 0.34], [-0.92, 1.01, -0.49], rubber);
     pipe(engine, 'intake-hose', [-0.96, 1.14, -0.38], [-1.21, 1.13, -0.17], 0.075, rubber);
@@ -10339,7 +10344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     register('oil', oil, [-1.2, 0.40 + height, 0]);
     var drainX = state.oilDrained && state.lift === 'locked' ? -1.2 : 2.95;
     var pan = cylinder(room, 'workshop-drain-pan', 0.35, 0.08, [drainX, 0.07, 0], dark);
-    if (state.oilDrained) cylinder(room, 'captured-used-oil', 0.31, 0.008, [drainX, 0.114, 0], api.trim(0x3c271c, 70));
+    if (state.oilDrained) cylinder(room, 'captured-used-oil', 0.31, 0.008, [drainX, 0.114, 0], workshopTrim(0x3c271c, 70));
     var underbody = new THREE.Group(); underbody.name = 'workshop-underbody'; car.add(underbody);
     pipe(underbody, 'exhaust-downpipe', [-1.2, 0.43, -0.30], [-0.50, 0.33, -0.24], 0.046, metal);
     cylinder(underbody, 'catalytic-converter', 0.13, 0.48, [-0.35, 0.33, -0.24], metal, 'x');
@@ -10384,9 +10389,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         box(alignmentRig, 'alignment-rear-slip-plate-' + side, [0.8, 0.014, 0.7], [1.28, 0.001, z], metal);
         pipe(alignmentRig, 'alignment-reference-' + side, [-1.3, 0.02, z], [-3.0, 0.02, z], 0.008, pale);
         var guideColor = toe.inSpec ? 0x34d399 : side === state.alignment.selected ? 0xfbbf24 : 0x38bdf8;
-        pipe(alignmentRig, 'alignment-toe-guide-' + side, [-1.3, 0.03, z], [-3.0, 0.03, z - sign * Math.tan(angle) * 1.7], 0.017, api.trim(guideColor, 5));
+        pipe(alignmentRig, 'alignment-toe-guide-' + side, [-1.3, 0.03, z], [-3.0, 0.03, z - sign * Math.tan(angle) * 1.7], 0.017, workshopTrim(guideColor, 5));
         pipe(alignmentRig, 'alignment-tie-rod-' + side, [-1.05, 0.33, sign * 0.17], [-1.2, 0.33, sign * 0.70], 0.023, metal);
-        var collar = pipe(alignmentRig, 'alignment-adjuster-' + side, [-1.10, 0.33, sign * 0.35], [-1.15, 0.33, sign * 0.52], 0.045, api.trim(guideColor, 45));
+        var collar = pipe(alignmentRig, 'alignment-adjuster-' + side, [-1.10, 0.33, sign * 0.35], [-1.15, 0.33, sign * 0.52], 0.045, workshopTrim(guideColor, 45));
         collar.userData.partId = 'shop-toe-' + side; collar.material.userData._keepOpaqueOnRecede = true; picks.push(collar);
         // Visible target plates and adjustment collars select the same side as the HTML controls.
         var physicalTarget = brakes.getObjectByName('alignment-target-' + side);
@@ -10431,19 +10436,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           { name: 'black', color: 0x1f2937, x: -2.31, end: [state.instrument.contact === 'posts' ? -0.76 : -0.90, 1.19, 0.51] }];
         contacts.forEach(function (lead) {
           var curve = new THREE.CatmullRomCurve3([new THREE.Vector3(lead.x, 0.99, 1.15), new THREE.Vector3(-2.05, 1.37, 0.84), new THREE.Vector3(-1.35, 1.39, 0.60), new THREE.Vector3(lead.end[0], lead.end[1], lead.end[2])]);
-          var cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, 0.009, 6, false), api.trim(lead.color, 15));
+          var cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 28, 0.009, 6, false), workshopTrim(lead.color, 15));
           cable.name = 'workshop-meter-' + lead.name + '-lead'; cable.userData.contact = lead.name === 'red' ? 'positive-post' : state.instrument.contact === 'posts' ? 'negative-post' : 'positive-clamp'; meter.add(cable);
-          cylinder(meter, 'workshop-meter-' + lead.name + '-probe', 0.015, 0.12, [lead.end[0], 1.23, lead.end[2]], api.trim(lead.color, 25));
+          cylinder(meter, 'workshop-meter-' + lead.name + '-probe', 0.015, 0.12, [lead.end[0], 1.23, lead.end[2]], workshopTrim(lead.color, 25));
         });
       } else {
         var jug = new THREE.Group(); jug.name = 'workshop-measuring-jug'; cart.add(jug);
         jug.userData.quantityMl = state.instrument.jugMl;
         box(jug, 'jug-clear-container', [0.31, 0.48, 0.28], [-2.40, 1.15, 1.0], new THREE.MeshPhongMaterial({ color: 0xd7ecf3, transparent: true, opacity: 0.22, depthWrite: false }));
         var fillHeight = state.instrument.jugMl / 5000 * 0.42;
-        if (fillHeight > 0) box(jug, 'jug-oil-volume', [0.28, fillHeight, 0.25], [-2.40, 0.92 + fillHeight / 2, 1.0], api.trim(0xc88c24, 65));
+        if (fillHeight > 0) box(jug, 'jug-oil-volume', [0.28, fillHeight, 0.25], [-2.40, 0.92 + fillHeight / 2, 1.0], workshopTrim(0xc88c24, 65));
         for (var mark = 0; mark <= 5; mark++) box(jug, 'jug-graduation-' + mark, [mark % 5 ? 0.07 : 0.13, 0.008, 0.008], [-2.30, 0.92 + mark * 0.084, 1.145], dark);
         for (var fineMark = 1; fineMark < 50; fineMark++) if (fineMark % 10 !== 0) box(jug, 'jug-fine-graduation-' + fineMark, [fineMark % 5 === 0 ? 0.05 : 0.025, 0.002, 0.008], [-2.30, 0.92 + fineMark * 0.0084, 1.145], dark);
-        var jugTarget = box(jug, 'jug-target-line', [0.30, 0.004, 0.009], [-2.40, 0.92 + 4600 / 5000 * 0.42, 1.151], api.trim(0x22d3ee, 25));
+        var jugTarget = box(jug, 'jug-target-line', [0.30, 0.004, 0.009], [-2.40, 0.92 + 4600 / 5000 * 0.42, 1.151], workshopTrim(0x22d3ee, 25));
         jugTarget.userData.quantityMl = 4600;
         pipe(jug, 'jug-handle-top', [-2.23, 1.32, 1.0], [-2.10, 1.32, 1.0], 0.017, metal);
         pipe(jug, 'jug-handle-side', [-2.10, 1.32, 1.0], [-2.10, 1.02, 1.0], 0.017, metal);
@@ -10466,7 +10471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (state.wheelSeated || state.torqued) {
       for (var lugIndex = 0; lugIndex < 5; lugIndex++) {
         var angle = Math.PI / 2 - lugIndex * Math.PI * 2 / 5;
-        var lugMaterial = api.trim(state.lugs.indexOf(lugIndex) !== -1 ? 0x34d399 : 0xfbbf24, 60);
+        var lugMaterial = workshopTrim(state.lugs.indexOf(lugIndex) !== -1 ? 0x34d399 : 0xfbbf24, 60);
         lugMaterial.userData._keepOpaqueOnRecede = true;
         var lug = cylinder(brakes, 'workshop-wheel-fastener-' + lugIndex, 0.026, 0.035,
           [-1.30 + Math.cos(angle) * 0.13, 0.40 + Math.sin(angle) * 0.13, 0.962], lugMaterial, 'z');
@@ -10547,7 +10552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     function directButton(parent, id, caption, pos, width) {
       if (!directActions.some(function (action) { return action.id === id; })) return;
       var group = new THREE.Group(); group.name = 'workshop-control-' + id; group.position.set(pos[0], pos[1], pos[2]); parent.add(group);
-      box(group, 'control-case-' + id, [width + 0.04, width * 0.32 + 0.045, 0.045], [0, 0, 0], api.trim(0x22d3ee, 20));
+      box(group, 'control-case-' + id, [width + 0.04, width * 0.32 + 0.045, 0.045], [0, 0, 0], workshopTrim(0x22d3ee, 20));
       instrumentDisplay(group, caption, [0, 0, 0.026], width); bindControl(group, id); return group;
     }
     bindControl(stopButton, 'lift-stop');
@@ -10559,7 +10564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     arShop3DTools(state).forEach(function (tool, index) {
       var kit = new THREE.Group(); kit.name = 'workshop-tool-kit-' + tool[0]; kit.position.set(1.15 + index * 0.55, 1.28, -2.97); bench.add(kit);
       kit.userData.toolId = tool[0]; kit.userData.equipped = state.tool === tool[0];
-      box(kit, 'tool-case-' + tool[0], [0.48, 0.31, 0.16], [0, 0, 0], api.trim(state.tool === tool[0] ? 0x28bb8b : 0x2385ad, 30));
+      box(kit, 'tool-case-' + tool[0], [0.48, 0.31, 0.16], [0, 0, 0], workshopTrim(state.tool === tool[0] ? 0x28bb8b : 0x2385ad, 30));
       pipe(kit, 'tool-handle-' + tool[0], [-0.10, 0.18, 0], [0.10, 0.18, 0], 0.025, metal);
       instrumentDisplay(kit, toolShort[tool[0]] || 'TOOL', [0, 0.01, 0.087], 0.43); bindControl(kit, null, tool[0]);
     });
@@ -10591,9 +10596,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           target.position.set(contact.x, 1.19, 0.51); engine.add(target);
           target.userData.selected = state.instrument.contact === contact.id;
           var targetColor = target.userData.selected ? 0x6ee7b7 : 0x67e8f9;
-          var ring = new THREE.Mesh(new THREE.TorusGeometry(contact.id === 'joint' ? 0.027 : 0.04, 0.005, 8, 24), api.trim(targetColor, 10));
+          var ring = new THREE.Mesh(new THREE.TorusGeometry(contact.id === 'joint' ? 0.027 : 0.04, 0.005, 8, 24), workshopTrim(targetColor, 10));
           ring.name = 'probe-contact-ring-' + contact.id; ring.rotation.x = Math.PI / 2; ring.position.y = 0.01; target.add(ring);
-          pipe(target, 'probe-contact-guide-' + contact.id, [0, 0.01, 0], [contact.dx, 0.135, 0.04], 0.003, api.trim(targetColor, 10));
+          pipe(target, 'probe-contact-guide-' + contact.id, [0, 0.01, 0], [contact.dx, 0.135, 0.04], 0.003, workshopTrim(targetColor, 10));
           var tag = label(target, contact.label, [contact.dx, 0.16, 0.04], contact.id === 'posts' ? 0.16 : 0.22, target.userData.selected ? '#6ee7b7' : '#67e8f9');
           if (tag) tag.name = 'workshop-probe-label-' + contact.id;
           bindControl(target, 'meter-' + contact.id);
@@ -10667,7 +10672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var inspectionBounds = new THREE.Box3(), candidateBounds = new THREE.Box3();
     // Tubular edges stay legible where WebGL renders ordinary lines at one pixel.
     var inspectionOutline = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6),
-      new THREE.MeshBasicMaterial({ color: api.contrast ? 0x000000 : 0x22d3ee, depthWrite: false }), 12);
+      new THREE.MeshBasicMaterial({ color: api.contrast ? 0xffff00 : 0x22d3ee, depthWrite: false }), 12);
     inspectionOutline.name = 'workshop-inspection-outline'; inspectionOutline.box = inspectionBounds;
     inspectionOutline.frustumCulled = false;
     var inspectionEdges = [[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
@@ -20619,7 +20624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               view && h('p', { 'data-ar-control-view-status': view.blocked ? 'blocked' : 'available', style: { fontSize: 12, lineHeight: 1.5 } },
                 view.blocked || ('Camera destination: ' + view.label + '. This changes the view only; equipment appears when its task setup is ready.')),
               info && arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick) && h('p', { 'data-ar-control-outline-legend': true, style: { fontSize: 12, lineHeight: 1.5 } },
-                (isContrast ? 'Black' : 'Cyan') + ' outline: the inspected control, when present in the 3D scene. Use View area in 3D to locate it. The outline does not operate the control.'),
+                (isContrast ? 'Yellow' : 'Cyan') + ' outline: the inspected control, when present in the 3D scene. Use View area in 3D to locate it. The outline does not operate the control.'),
               info && h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Selected control actions' },
               view && control('View area in 3D', function () {
                 var current = arShopCurrentPreview(shop, d.shopInspectPick), destination = current && arShopControlView(shop, current.id);

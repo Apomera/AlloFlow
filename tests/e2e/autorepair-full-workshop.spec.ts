@@ -1549,10 +1549,63 @@ test('inspection outline follows physical controls without rebuilding or operati
   await page.locator('[data-ar-shop-interaction="inspect"]').click();await chooser.selectOption('oil');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-control-view]')).toBeDisabled();
   await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
   await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
-  await choose('shop-use-electrical-2-meter-posts');expect((await outline()).color).toBe(0x000000);await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contrast.png'});
+  await choose('shop-use-electrical-2-meter-posts');expect((await outline()).color).toBe(0xffff00);await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contrast.png'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   await page.locator('[data-ar-control-use]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');
   await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'electrical',step:2,station:'engine',tool:'socket',hood:false});});
   await chooser.selectOption('shop-use-electrical-2-read');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+
+async function workshopMaterial(page:any,name:string){
+  return page.evaluate((n:string)=>{const o=(window as any).__shopScene?.getObjectByName(n),m=o?.material;if(!m)return null;return {color:m.color.toArray(),hex:m.color.getHex(),shininess:m.shininess,specular:m.specular?.getHex(),opacity:m.opacity,transparent:m.transparent};},name);
+}
+function materialSeparation(a:number[],b:number[]){
+  const luminance=(rgb:number[])=>rgb.map(v=>v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4)).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
+  const first=luminance(a),second=luminance(b);return (Math.max(first,second)+0.05)/(Math.min(first,second)+0.05);
+}
+test('contrast workshop keeps battery contacts and leads distinct through theme changes',async({page})=>{
+  await page.setViewportSize({width:1360,height:1000});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep this measured finding.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-meter-contacts-focus]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-meter-contacts-focus]').click();await shopPoint(page,'negative-post');
+  const battery=await workshopMaterial(page,'workshop-battery'),post=await workshopMaterial(page,'negative-post'),red=await workshopMaterial(page,'workshop-meter-red-lead'),black=await workshopMaterial(page,'workshop-meter-black-lead');
+  expect(materialSeparation(battery.color,post.color)).toBeGreaterThan(4.5);expect(materialSeparation(red.color,black.color)).toBeGreaterThan(3);
+  for(const m of [battery,post,red,black]){expect(m.shininess).toBe(0);expect(m.specular).toBe(0);expect(m.opacity).toBe(1);}
+  expect(red.color[0]).toBeGreaterThan(red.color[1]*2);expect(await raw()).toBe(before);
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-contacts.png'});
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();await page.locator('#ar-shop-inspect-target').selectOption('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-control-view]').click();
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});await shopPoint(page,'negative-post');
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-phone.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await expect(page.locator('[data-ar-control-outline-legend]')).toContainText('Yellow');expect(await raw()).toBe(before);
+  for(const isDark of [true,false]){
+    await page.evaluate(dark=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=dark;w.__ctx.update('autoRepair','shopLabels',false);},isDark);
+    await page.locator('[data-ar-control-view]').click();await expect.poll(async()=>(await workshopMaterial(page,'negative-post'))?.shininess).toBeGreaterThan(0);expect(await raw()).toBe(before);
+  }
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});await page.locator('[data-ar-control-view]').click();
+  await expect.poll(async()=>(await workshopMaterial(page,'negative-post'))?.shininess).toBe(0);
+  await page.locator('[data-ar-shop-interaction="operate"]').click();await page.locator('[data-ar-meter-contacts-focus]').click();await clickShop(page,'negative-post');await expect(page.locator('#ar-shop-instrument-contact')).toHaveValue('posts');await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');
+  await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('10.4 V');await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','false');
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+
+test('contrast workshop separates brake layers, lift stop and measured oil',async({page})=>{
+  await page.setViewportSize({width:1360,height:1000});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,brakeSpread:100,brakePart:'pad'}}});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-brake-closeup]').click();await shopPoint(page,'pad-steel-backing');
+  const lining=await workshopMaterial(page,'pad-friction-lining'),backing=await workshopMaterial(page,'pad-steel-backing');expect(materialSeparation(lining.color,backing.color)).toBeGreaterThan(4.5);
+  await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-brakes.png'});
+  await clickShop(page,'pad-steel-backing');await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-brake-measurement]')).toHaveAttribute('data-ar-brake-measurement','wrong-layer');
+  await page.locator('[data-ar-gauge-layer="lining"]').click();await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-brake-measurement]')).toHaveAttribute('data-ar-brake-measurement','lining');
+  await page.locator('[data-ar-lift-focus]').click();await shopPoint(page,'lift-emergency-stop');const stop=await workshopMaterial(page,'lift-emergency-stop'),surround=await workshopMaterial(page,'lift-stop-surround');
+  expect(stop.color[0]).toBeGreaterThan(stop.color[1]*2);expect(stop.hex).not.toBe(surround.hex);await clickShop(page,'lift-emergency-stop');await expect(page.locator('[data-ar-lift-stop-status]')).toHaveAttribute('data-ar-lift-stop-status','stopped');
+  await page.getByRole('button',{name:'Whole shop',exact:true}).click();await page.locator('.ar-bay-viewport').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('.ar-bay-viewport').screenshot({path:'reports/automobile-workshop/contrast-materials-shop.png'});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',oilDrained:true,plugSecured:true,serviced:true});});
+  await page.locator('[data-ar-shop-instrument-focus]').click();await shopPoint(page,'jug-clear-container');
+  const oil=await workshopMaterial(page,'jug-oil-volume'),jug=await workshopMaterial(page,'jug-clear-container');expect(oil.hex).not.toBe(0xffffff);expect(oil.opacity).toBe(1);expect(jug.transparent).toBe(true);expect(jug.opacity).toBeLessThan(0.5);
+  await page.locator('[data-ar-shop-jug-change="500"]').click();await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','true');
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });

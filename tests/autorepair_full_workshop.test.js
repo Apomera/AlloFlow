@@ -1376,6 +1376,6 @@ describe('Inspection outline explanation',()=>{
   it.each([{isDark:false},{isDark:true},{isContrast:true}])('pairs the outline with an accessible explanation in %j',theme=>{
     const shop=model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true});const host=document.createElement('div');
     host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopInteraction:'inspect',shopInspectPick:model.preview(shop,'engine')}},theme);
-    const text=host.querySelector('[data-ar-control-outline-legend]').textContent;expect(text).toContain(theme.isContrast?'Black':'Cyan');expect(text).toContain('does not operate');
+    const text=host.querySelector('[data-ar-control-outline-legend]').textContent;expect(text).toContain(theme.isContrast?'Yellow':'Cyan');expect(text).toContain('does not operate');
   });
 });
