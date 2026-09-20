@@ -26,6 +26,7 @@
 /bird-lab /app/?tool=birdLab 302
 /brain-atlas /app/?tool=brainAtlas 302
 /bridge-lab /app/?tool=bridgeLab 302
+/butterfly /app/?tool=butterfly 302
 /calculus /app/?tool=calculus 302
 /cell /app/?tool=cell 302
 /cell-atlas-lab /app/?tool=cellAtlasLab 302

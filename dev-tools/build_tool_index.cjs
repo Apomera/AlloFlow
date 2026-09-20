@@ -111,17 +111,25 @@ function extractTools(file, src) {
     // The config head is enough: icon/label/desc/color/category/questHooks all
     // precede render() by convention in every tool in this repo.
     const seg = src.slice(headAt, headAt + 6000);
-    const label = firstMatch(seg, /\blabel:\s*['"]((?:\\.|[^'"\\])*)['"]/, id);
-    const desc = firstMatch(seg, /\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/, null) === null
-      ? firstMatch(seg, /\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/, '')
-      : '';
-    // The regex above needs the 2nd group; redo simply:
-    const dm = seg.match(/\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/);
+    // Two spellings are in use. Most tools register `label:` + `desc:`; a sizeable
+    // minority register `name:` + `description:` (roadReady, firstResponse, lifeSkills,
+    // petsLab and twelve others). Reading only the first spelling harvested an EMPTY
+    // description for sixteen tools that describe themselves perfectly well, which in turn
+    // suppressed their landing page as "too thin to publish" — so the tools least visible
+    // in search were the ones whose authors had picked the other key. Prefer `desc:` when
+    // both appear, since that is the documented one.
+    const label = firstMatch(seg, /\blabel:\s*['"]((?:\\.|[^'"\\])*)['"]/, null)
+      ?? firstMatch(seg, /\bname:\s*['"]((?:\\.|[^'"\\])*)['"]/, id);
+    const dm = seg.match(/\bdesc:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/)
+      || seg.match(/\bdescription:\s*(['"])((?:\\.|(?!\1)[\s\S])*)\1/);
     const description = dm ? dm[2] : '';
     const category = firstMatch(seg, /\bcategory:\s*['"]([a-z]+)['"]/, '');
     // Quest-hook labels describe capabilities in plain language — cheap signal.
+    // The first `label:` is the TOOL's own label and is dropped, but only when the tool
+    // actually used that key; a `name:`-style tool's first `label:` is already a quest.
+    const usesLabelKey = /\blabel:\s*['"]/.test(seg.slice(0, (seg.match(/\bname:\s*['"]/) || { index: seg.length }).index));
     const quests = [...seg.matchAll(/\blabel:\s*['"]((?:\\.|[^'"\\])*)['"]/g)]
-      .map((q) => q[1]).slice(1, 5);
+      .map((q) => q[1]).slice(usesLabelKey ? 1 : 0, usesLabelKey ? 5 : 4);
     out.push({ id, label, description, category, quests, file: path.basename(file) });
   }
   return out;
