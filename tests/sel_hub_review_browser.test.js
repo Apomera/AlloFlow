@@ -655,6 +655,12 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await activity().getByLabel('Choose an observation to explore',{exact:true}).inputValue()).toBe('listen');expect(await claim().getByRole('status').innerText()).toContain('This matches the authored interpretation.');await activity().getByText('Review my observation notes',{exact:true}).click();expect(await activity().getByLabel('Observation notes to review or copy',{exact:true}).inputValue()).toContain('Ask what helps the person listen.');expect(errors).toEqual([]);
   },120000);
 
+
+  it('keeps Strengths Interview focus and reflection notes through the real hub return flow',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="strengths"]').click();await page.getByRole('tab',{name:/Interview/}).click();const activity=page.getByRole('region',{name:'Strengths interview reflection',exact:true});await activity.getByLabel('Choose an interview focus',{exact:true}).selectOption('conditions');await activity.getByText('My reflection (optional)',{exact:true}).click();await activity.getByLabel('What should stay, change or be requested next time? (optional)',{exact:true}).fill('Keep visual instructions and pause time.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="strengths"]').click();expect(await activity.getByLabel('Choose an interview focus',{exact:true}).inputValue()).toBe('conditions');await activity.getByText('Review my interview notes',{exact:true}).click();expect(await activity.getByLabel('Interview notes to review or copy',{exact:true}).inputValue()).toContain('Keep visual instructions and pause time.');expect(await page.evaluate(()=>window.__alloflowSelToolData.strengths.interviewComplete)).toBeUndefined();expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

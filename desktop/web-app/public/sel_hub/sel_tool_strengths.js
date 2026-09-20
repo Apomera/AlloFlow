@@ -489,6 +489,7 @@ window.SelHub = window.SelHub || {
   }
 ];
 
+  // Retained only to explain earlier interview answers in their original wording.
   var INTERVIEW_QUESTIONS = {
     elementary: [
       { id: 'iq1', question: 'When do you lose track of time because you\'re having so much fun?', hint: 'Think about activities at school, home, or with friends.' },
@@ -521,6 +522,85 @@ window.SelHub = window.SelHub || {
       { id: 'iq8', question: 'What legacy do you want to leave? What strengths would that require?', hint: 'Long-term vision connects strengths to purpose.' }
     ]
   };
+
+  var INTERVIEW_LENSES = [
+  {
+    "id": "moment",
+    "title": "Notice a specific moment",
+    "prompt": {
+      "elementary": "What did you or a made-up person actually say or do?",
+      "middle": "What specific action can you describe from an everyday or fictional situation?",
+      "high": "What observable action can you describe, without turning it into a fixed trait?"
+    },
+    "followup": "What strengths language might fit, and what is still uncertain?",
+    "why": "Start with an action in its setting. An interest, a compliment or one successful result does not establish a lasting ability or personality. Ordinary moments count; you do not need a difficult personal story.",
+    "example": {
+      "elementary": "A child draws labels so the group can find the art supplies.",
+      "middle": "A student adds picture labels to shared supplies after the group has trouble finding them.",
+      "high": "A participant reorganizes shared materials with visual labels after noticing that the existing system is difficult to use."
+    },
+    "notice": "The person made labels for shared materials.",
+    "consider": "Organization, creativity or care could describe the action. More than one description may fit.",
+    "limit": "We do not yet know whether the labels helped everyone. Ask the people using them before judging the result."
+  },
+  {
+    "id": "conditions",
+    "title": "Notice support and conditions",
+    "prompt": {
+      "elementary": "What helped you or the person take part? What made it harder?",
+      "middle": "Which supports, conditions or barriers affected what was possible?",
+      "high": "How did access, opportunity, preparation, energy or support shape the action and outcome?"
+    },
+    "followup": "What should stay, change or be requested next time?",
+    "why": "Effort and support can coexist with strengths. Needing a tool, rest, instruction or another person does not make a contribution less valuable. Adults and organizers share responsibility for access.",
+    "example": {
+      "elementary": "With picture directions and a break, a child returns to building and connects two pieces.",
+      "middle": "A learner uses visual instructions and a pause, then returns to a project and completes one part.",
+      "high": "A participant requests visual instructions and time to pause, then resumes a shared task and completes one component."
+    },
+    "notice": "The example includes visual instructions, a pause and a completed part.",
+    "consider": "Planning or asking for support may describe the approach. The conditions also contributed.",
+    "limit": "The result does not prove that effort alone was enough or that the person should manage without support."
+  },
+  {
+    "id": "perspectives",
+    "title": "Consider another perspective",
+    "prompt": {
+      "elementary": "What did someone notice? What do you think about their words?",
+      "middle": "What concrete example supports another person’s view, and where does your view differ?",
+      "high": "How does another person’s observation compare with your own account of the context and your intentions?"
+    },
+    "followup": "What would you keep, reword, question or leave undecided?",
+    "why": "Another person sees part of the situation. Feedback is an invitation to explore, not an authority on your identity. You can disagree, ask for an example or choose not to ask anyone.",
+    "example": {
+      "elementary": "Someone calls a child quiet. The child says, “I wrote down my idea and shared it later.”",
+      "middle": "A peer describes a student as quiet. The student explains that they prepared a written idea and contributed after thinking time.",
+      "high": "A teammate equates speaking little with disengagement. The participant describes preparing written ideas and sharing them after processing time."
+    },
+    "notice": "Speaking little and contributing a written idea can both be part of the account.",
+    "consider": "Preparation or thoughtful participation may be useful language if the person thinks it fits.",
+    "limit": "Volume, eye contact or speed of response do not by themselves establish interest or ability. Ask what happened; avoid deciding who the person is."
+  },
+  {
+    "id": "experiment",
+    "title": "Choose a small experiment",
+    "prompt": {
+      "elementary": "What small thing could you try, if you want to? Who or what could help?",
+      "middle": "What small, optional action could help you explore a possible strength in one setting?",
+      "high": "What limited, reversible experiment could explore a possible strength without requiring you to prove a trait?"
+    },
+    "followup": "What would you look for, and when might you adapt or pause?",
+    "why": "Choose something within your control and capacity. A useful next step may be practicing, asking for access, resting or leaving an idea open. Someone else’s approval is not the measure of your worth.",
+    "example": {
+      "elementary": "A child tries drawing one step of a game, asks if it is clear and changes the drawing.",
+      "middle": "A student tests a sketch of one instruction with a willing classmate and revises it after a question.",
+      "high": "A participant tries one visual instruction with a willing partner, checks its clarity and revises it based on specific feedback."
+    },
+    "notice": "The person tried a small action, asked about its usefulness and made a change.",
+    "consider": "Communication, creativity or flexibility could describe this practice.",
+    "limit": "A confusing first version is information for revision, not proof that the person lacks a strength. Check time, access and willingness before continuing."
+  }
+];
 
   // ═══════════════════════════════════════════════════════════════
   // ── Strengths Action Planner Data ──
@@ -968,7 +1048,7 @@ window.SelHub = window.SelHub || {
     perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Earlier match quiz: all answers matched' },
     fiveReflections: { icon: '\uD83D\uDCDA', name: 'Philosopher', desc: 'Complete 5 reflections' },
     explorer: { icon: '\uD83D\uDE80', name: 'Full Explorer', desc: 'Visit all tabs' },
-    interviewComplete: { icon: '\uD83C\uDF99\uFE0F', name: 'Interview Complete', desc: 'Finish the Strengths Interview' },
+    interviewComplete: { icon: '\uD83C\uDF99\uFE0F', name: 'Interview Complete', desc: 'Earlier activity: Strengths Interview completed' },
     actionPlanner: { icon: '\uD83D\uDCCB', name: 'Action Planner', desc: 'Complete 3 action items' },
     peerObserver: { icon: '\uD83D\uDC41\uFE0F', name: 'Peer Observer', desc: 'Record strengths you see in others' },
     affirmationPractice: { icon: '\uD83D\uDCAC', name: 'Affirmation Practice', desc: 'Read 5 affirmation cards' },
@@ -1306,7 +1386,7 @@ window.SelHub = window.SelHub || {
           (function() {
             var TAB_META = {
               discover:  { accent: _strFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\u2B50',          title: 'Discover \u2014 your top 5 character strengths',     hint: 'VIA Institute (Peterson + Seligman 2004): 24 character strengths grouped in 6 virtues. Your top 5 \u201Csignature strengths\u201D show up unbidden, energize you, and feel like you. Use them = predicts well-being.' },
-              interview: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF99', title: 'Interview \u2014 someone who knows you well',       hint: 'Strengths-spotting from outside often catches what you can\u2019t see in yourself. \u201CWhen am I at my best?\u201D from a parent / friend / teacher \u2014 their answers are data you can use.' },
+              interview: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF99', title: 'Interview — examples, context and your perspective', hint: 'Explore an action, the conditions around it and words that may fit. You decide what to keep, question or leave open; another person’s view is optional.' },
               scenarios: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — strengths in context', hint: 'Compare possible actions, the support they need and their limits. A choice in one situation does not define your character. Rest, quiet support and asking for help can be workable choices.' },
               quiz:      { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83E\uDDE9', title: 'Spot Strengths — evidence and interpretation', hint: 'Name what an example actually shows, consider possible strengths language and notice what remains unknown. One action does not establish a personality type, motive or fixed ability.' },
               reflect:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCDD', title: 'Reflect \u2014 written self-knowledge',               hint: 'Pennebaker 1986 expressive writing protocol; 15 min, focused on a specific moment. Strengths-focused reflection (vs. problem-focused) builds approach motivation rather than avoidance \u2014 Fredrickson broaden-and-build.' },
@@ -1407,103 +1487,44 @@ window.SelHub = window.SelHub || {
 
             // ── INTERVIEW TAB ──
             tab === 'interview' ? (function() {
-              var questions = INTERVIEW_QUESTIONS[band] || INTERVIEW_QUESTIONS.elementary;
-              var interviewAnswers = d.interviewAnswers || {};
-              var interviewStep = d.interviewStep || 0;
-              var interviewResult = d.interviewResult || null;
-              var interviewAnalyzing = d.interviewAnalyzing || false;
-              var answeredCount = Object.keys(interviewAnswers).length;
-              var allAnswered = answeredCount >= questions.length;
-
-              // Analyze with AI
-              var analyzeInterview = function() {
-                if (!callGemini || interviewAnalyzing) return;
-                sfxReflect();
-                var answerText = questions.map(function(q, i) {
-                  return 'Q' + (i + 1) + ': ' + q.question + '\nA: ' + (interviewAnswers[q.id] || '(skipped)');
-                }).join('\n\n');
-                // Safety pre-check on combined interview answers.
-                var iSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
-                  ? window.SelHub.safeRehearseCheck(answerText, { toolId: 'strengths_interview', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
-                  : { action: 'continue' };
-                if (iSafety.action === 'block') {
-                  upd({ interviewResult: window.SelHub.rehearseBreakCharacterText(iSafety.severity), interviewAnalyzing: false, interviewComplete: true, _lastTier: 3 });
-                  return;
-                }
-                var prompt = 'You are a strengths-based coach analyzing a ' + band + ' school student\'s (grade ' + gradeLevel + ') self-discovery interview.\n\n' +
-                  'Their answers:\n' + answerText + '\n\n' +
-                  'Based on these answers, identify 3-5 strengths this student likely has. For each strength, explain briefly WHY their answers suggest it.\n' +
-                  'Format: Start with "These answers suggest you have:" then list each strength as:\n' +
-                  '- **[Strength Name]**: [1-sentence explanation connecting to their answers]\n\n' +
-                  (band === 'elementary' ? 'Use simple, encouraging language. Keep explanations to 1 short sentence each.' :
-                   band === 'middle' ? 'Be specific and affirming. Reference their actual answers.' :
-                   'Be insightful and nuanced. Draw meaningful connections between their answers and recognized character/talent strengths.');
-                upd({ interviewAnalyzing: true });
-                callGemini(prompt, false, false, 0.8).then(function(resp) {
-                  upd({ interviewResult: resp || 'Your answers show real self-awareness! Keep exploring your strengths.', interviewAnalyzing: false, interviewComplete: true });
-                }).catch(function() {
-                  upd({ interviewResult: 'AI analysis is unavailable right now. Review your answers above \u2014 each one holds clues to your strengths!', interviewAnalyzing: false, interviewComplete: true });
-                });
-              };
-
-              if (interviewResult) {
-                return h('div', null,
-                  h('div', { style: { textAlign: 'center', marginBottom: 16 } },
-                    h('div', { style: { fontSize: 40, marginBottom: 8 } }, '\uD83C\uDF1F'),
-                    h('p', { style: { fontSize: 16, fontWeight: 'bold', color: _strFg('#fbbf24') } }, 'Your Strengths Analysis')
-                  ),
-                  h('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.8, color: _strFg('#fde68a'), whiteSpace: 'pre-wrap' } },
-                    interviewResult
-                  ),
-                  callTTS ? h('button', { 'aria-label': 'Read Analysis Aloud', onClick: function() { speak(interviewResult); }, style: { marginBottom: 12, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, padding: '6px 14px', color: _strFg('#fbbf24'), fontSize: 11, cursor: 'pointer' } }, '\uD83D\uDD0A Read Analysis Aloud') : null,
-                  h('div', { style: { display: 'flex', gap: 8 } },
-                    h('button', { 'aria-label': 'Start Over', onClick: function() { upd({ interviewResult: null, interviewAnswers: {}, interviewStep: 0, interviewComplete: false }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: _strFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Start Over'),
-                    h('button', { 'aria-label': 'Go Select Strengths', onClick: function() { upd({ tab: 'discover' }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u2B50 Go Select Strengths')
-                  )
-                );
-              }
-
-              var q = questions[interviewStep];
-              return h('div', null,
-                h('p', { style: { fontSize: 13, color: _strFg('#94a3b8'), marginBottom: 12, lineHeight: 1.6 } },
-                  band === 'elementary' ? 'Answer these questions to discover strengths you might not know you have!' :
-                  'This guided interview helps uncover strengths through self-reflection. Answer honestly \u2014 there are no wrong answers.'
-                ),
-                h('div', { style: { fontSize: 10, color: _strFg('#94a3b8'), marginBottom: 12 } },
-                  'Question ' + (interviewStep + 1) + ' of ' + questions.length + ' \u2022 ' + answeredCount + ' answered'
-                ),
-                // Progress bar
-                h('div', { style: { width: '100%', height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)', marginBottom: 16, overflow: 'hidden' } },
-                  h('div', { style: { width: Math.round((interviewStep / questions.length) * 100) + '%', height: '100%', background: _strBg('#b45309'), borderRadius: 3, transition: 'width 0.3s' } })
-                ),
-                // Question card
-                h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
-                  h('p', { style: { fontSize: 15, fontWeight: 'bold', color: _strFg('#fde68a'), lineHeight: 1.6, marginBottom: 8 } }, q.question),
-                  h('p', { style: { fontSize: 11, color: _strFg('#94a3b8'), fontStyle: 'italic', marginBottom: 12 } }, '\uD83D\uDCA1 ' + q.hint),
-                  callTTS ? h('button', { onClick: function() { speak(q.question + '. ' + q.hint); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: _strFg('#fbbf24'), fontSize: 10, cursor: 'pointer', marginBottom: 8 } }, '\uD83D\uDD0A Read aloud') : null,
-                  h('textarea', { value: interviewAnswers[q.id] || '', 'aria-label': 'Interview answer', onChange: function(e) {
-                    var newAnswers = Object.assign({}, interviewAnswers);
-                    newAnswers[q.id] = e.target.value;
-                    upd({ interviewAnswers: newAnswers });
-                  }, placeholder: band === 'elementary' ? 'Type your answer here...' : 'Take your time. Thoughtful answers lead to better insights...', style: { width: '100%', minHeight: 80, padding: 10, borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: _strFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
-                ),
-                // Navigation
-                h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
-                  h('button', { 'aria-label': 'Previous', onClick: function() { if (interviewStep > 0) upd({ interviewStep: interviewStep - 1 }); }, disabled: interviewStep === 0, style: { padding: '8px 16px', borderRadius: 8, background: interviewStep > 0 ? 'rgba(255,255,255,0.05)' : 'transparent', color: interviewStep > 0 ? _strFg('#94a3b8') : '#334155', border: '1px solid ' + (interviewStep > 0 ? 'rgba(99,102,241,0.15)' : 'transparent'), fontSize: 12, cursor: interviewStep > 0 ? 'pointer' : 'default' } }, '\u2190 Previous'),
-                  h('div', { style: { display: 'flex', gap: 8 } },
-                    interviewStep < questions.length - 1 ?
-                      h('button', { 'aria-label': 'Next', onClick: function() { upd({ interviewStep: interviewStep + 1 }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, 'Next \u2192') :
-                      h('button', { 'aria-label': 'Discover My Strengths', onClick: analyzeInterview, disabled: answeredCount < 3 || interviewAnalyzing, style: { padding: '8px 20px', borderRadius: 8, background: answeredCount >= 3 ? _strFg('#22c55e') : '#334155', color: answeredCount >= 3 ? _strFg('#0f172a') : _strFg('#94a3b8'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: answeredCount >= 3 ? 'pointer' : 'default' } }, interviewAnalyzing ? '\u23F3 Analyzing...' : '\uD83C\uDF1F Discover My Strengths')
-                  )
-                ),
-                // Quick answer dots
-                h('div', { style: { display: 'flex', justifyContent: 'center', gap: 6, marginTop: 16 } },
-                  questions.map(function(qq, qi) {
-                    var hasAnswer = !!(interviewAnswers[qq.id] && interviewAnswers[qq.id].trim());
-                    var isCurrent = qi === interviewStep;
-                    return h('button', { 'aria-label': '50%', key: qi, onClick: function() { upd({ interviewStep: qi }); }, style: { width: 10, height: 10, borderRadius: '50%', border: isCurrent ? '2px solid #fbbf24' : '1px solid rgba(99,102,241,0.2)', background: hasAnswer ? _strFg('#f59e0b') : 'rgba(255,255,255,0.05)', cursor: 'pointer', padding: 0 } });
-                  })
-                )
+              var obj = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+              var selections = obj(d.interviewReflectionSelections);
+              var focus = INTERVIEW_LENSES.find(function(item) { return item.id === selections[band]; }) || INTERVIEW_LENSES[0];
+              var index = INTERVIEW_LENSES.indexOf(focus);
+              var drafts = obj(d.interviewReflectionDrafts);
+              var gradeDraft = obj(drafts[band]);
+              var draft = obj(gradeDraft[focus.id]);
+              var note = function(record, id) { return typeof record[id] === 'string' ? record[id] : ''; };
+              var selectFocus = function(id) { var next = Object.assign({}, selections); next[band] = id; upd({ interviewReflectionSelections: next }); };
+              var save = function(id, value) { var next = Object.assign({}, drafts); var grade = Object.assign({}, gradeDraft); var values = Object.assign({}, draft); values[id] = value; grade[focus.id] = values; next[band] = grade; upd({ interviewReflectionDrafts: next }); };
+              var surface = _strHC ? '#000000' : _strL ? '#ffffff' : '#0f172a';
+              var ink = _strHC ? '#ffffff' : _strFg('#e2e8f0');
+              var edge = _strHC ? '#ffff00' : _strL ? '#64748b' : '#94a3b8';
+              var card = { padding: '16px', margin: '14px 0', border: '1px solid ' + edge, borderRadius: '12px', background: surface, color: ink, minWidth: 0 };
+              var control = { width: '100%', minHeight: '44px', padding: '10px', boxSizing: 'border-box', border: '1px solid ' + edge, borderRadius: '8px', background: surface, color: ink, font: 'inherit', fontSize: '16px' };
+              var button = Object.assign({}, control, { width: 'auto', cursor: 'pointer' });
+              var summary = { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 };
+              var fields = [{ id: 'observation', label: focus.prompt[band] }, { id: 'reflection', label: focus.followup }];
+              var preview = ['Strengths Interview — my reflections, not a personality assessment.'].concat(INTERVIEW_LENSES.map(function(item) { var record = obj(gradeDraft[item.id]); return item.title + '\n' + item.prompt[band] + '\n' + (note(record, 'observation').trim() ? note(record, 'observation') : '(No note yet)') + '\n\n' + item.followup + '\n' + (note(record, 'reflection').trim() ? note(record, 'reflection') : '(No note yet)'); })).join('\n\n');
+              var legacyAnswers = obj(d.interviewAnswers);
+              var legacyKeys = Object.keys(legacyAnswers).filter(function(id) { return typeof legacyAnswers[id] === 'string' && legacyAnswers[id].trim(); });
+              var legacyBand = ['elementary','middle','high'].indexOf(d.interviewLegacyBand) >= 0 ? d.interviewLegacyBand : band;
+              var legacyQuestions = INTERVIEW_QUESTIONS[legacyBand];
+              return h('section', { role: 'region', 'aria-label': 'Strengths interview reflection', style: { maxWidth: '760px', margin: '0 auto', padding: '16px', background: surface, color: ink, fontSize: '16px', lineHeight: 1.6, overflowWrap: 'anywhere' } },
+                h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'Explore strengths through examples'),
+                h('p', null, band === 'elementary' ? 'Think, draw or write about an everyday or made-up example. You can do this on your own or with someone who wants to join you. You can skip any part.' : 'Explore on your own or with a willing partner. Use an everyday or fictional example, keep private details out and skip any part. There is no required answer count or strength profile to earn.'),
+                h('details', { style: card }, h('summary', { style: summary }, 'If I choose to ask someone'), h('p', null, 'Ask whether they want to take part: “Would you share one example of something you noticed me do? It is okay to say no.”'), h('p', null, 'You choose whom to ask and what to share. A partner can listen, write, draw or use another communication method. You can stop, disagree or keep the reflection private.'), h('p', null, 'Ask for the action and its context instead of a label or comparison with other people. A partner’s perspective may be useful and incomplete; it does not replace your own view.')),
+                h('label', { htmlFor: 'str-interview-focus', style: { display: 'block', fontWeight: 700 } }, 'Choose an interview focus'),
+                h('select', { id: 'str-interview-focus', value: focus.id, style: control, onChange: function(ev) { selectFocus(ev.target.value); } }, INTERVIEW_LENSES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+                h('p', { role: 'status', 'aria-live': 'polite', style: { margin: '8px 0' } }, 'Focus ' + (index + 1) + ' of ' + INTERVIEW_LENSES.length + ': ' + focus.title + '. Explore in any order.'),
+                h('div', { key: band + ':' + focus.id, style: card }, h('h4', { style: { fontSize: '18px', marginTop: 0 } }, focus.prompt[band]), h('p', null, focus.why), callTTS && h('button', { style: button, onClick: function() { speak(focus.prompt[band] + ' ' + focus.why); } }, 'Read this focus aloud')),
+                h('details', { key: band + ':' + focus.id + ':example', style: card }, h('summary', { style: summary }, 'Explore a worked example'), h('p', null, focus.example[band]), h('p', null, 'Notice: ' + focus.notice), h('p', null, 'Possible interpretation: ' + focus.consider), h('p', null, 'Keep open: ' + focus.limit)),
+                h('details', { key: band + ':' + focus.id + ':notes', style: card }, h('summary', { style: summary }, 'My reflection (optional)'), h('p', null, 'Notes stay with this focus and grade. They are not monitored, do not request help and are not sent to the AI coach by this activity. Thinking or drawing elsewhere is also a way to take part.'), fields.map(function(field) { var id = 'str-interview-' + field.id; return h('div', { key: id, style: { margin: '16px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, value: note(draft, field.id), style: Object.assign({}, control, { resize: 'vertical' }), onChange: function(ev) { save(field.id, ev.target.value); } })); })),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '12px' } }, h('button', { disabled: index === 0, style: Object.assign({}, button, { opacity: index === 0 ? 0.6 : 1, cursor: index === 0 ? 'default' : 'pointer' }), onClick: function() { if (index > 0) selectFocus(INTERVIEW_LENSES[index - 1].id); } }, 'Previous focus'), h('button', { disabled: index === INTERVIEW_LENSES.length - 1, style: Object.assign({}, button, { opacity: index === INTERVIEW_LENSES.length - 1 ? 0.6 : 1, cursor: index === INTERVIEW_LENSES.length - 1 ? 'default' : 'pointer' }), onClick: function() { if (index < INTERVIEW_LENSES.length - 1) selectFocus(INTERVIEW_LENSES[index + 1].id); } }, 'Next focus')),
+                h('details', { key: band + ':review', style: card }, h('summary', { style: summary }, 'Review my interview notes'), h('p', null, 'This preview contains your notes from all four focuses in the current grade. You can revise them at any time. No answers are scored and no strengths are assigned.'), h('label', { htmlFor: 'str-interview-preview', style: { display: 'block', fontWeight: 700 } }, 'Interview notes to review or copy'), h('textarea', { id: 'str-interview-preview', readOnly: true, rows: 10, value: preview, style: Object.assign({}, control, { resize: 'vertical' }) })),
+                (legacyKeys.length > 0 || d.interviewResult || d.interviewComplete || d.interviewAnalyzing) && h('details', { style: card }, h('summary', { style: summary }, 'Earlier interview activity'), h('p', null, 'Earlier answers, results and awards remain stored separately. Earlier generated interpretations are not assessments or authoritative descriptions of you. This reflection does not continue an earlier analysis or change its records.'),
+                  legacyKeys.length > 0 && h('div', null, h('p', null, 'Earlier answers did not record a grade band. Choose the question wording used at the time; the current selection is a reference, not a verified match.'), h('label', { htmlFor: 'str-interview-legacy-band', style: { display: 'block', fontWeight: 700 } }, 'Earlier question wording'), h('select', { id: 'str-interview-legacy-band', value: legacyBand, style: control, onChange: function(ev) { upd({ interviewLegacyBand: ev.target.value }); } }, h('option', { value: 'elementary' }, 'Elementary'), h('option', { value: 'middle' }, 'Middle school'), h('option', { value: 'high' }, 'High school')), legacyKeys.map(function(id) { var question = legacyQuestions.find(function(item) { return item.id === id; }); return h('div', { key: id, style: { marginTop: '16px' } }, h('p', { style: { fontWeight: 700 } }, question ? question.question : 'Earlier answer (' + id + ')'), h('p', { style: { whiteSpace: 'pre-wrap' } }, legacyAnswers[id])); })),
+                  typeof d.interviewResult === 'string' && h('div', null, h('h4', null, 'Earlier generated response'), h('p', { style: { whiteSpace: 'pre-wrap' } }, d.interviewResult)))
               );
             })() : null,
 

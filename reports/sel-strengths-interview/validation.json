@@ -1,0 +1,27 @@
+{
+  "date": "2026-09-19",
+  "scope": "Strengths Interview: examples, context and learner-owned interpretation",
+  "uniqueSelectedPassed": 52,
+  "checks": {
+    "newInterviewBrowser": 20,
+    "spotStrengthsRegression": 20,
+    "controlContracts": 5,
+    "targetedStrengthsTheme": 4,
+    "actualHubReopening": 3
+  },
+  "filtered": {
+    "theme": 292,
+    "hub": 107
+  },
+  "firstRun": "All selected checks passed on the first run; no assertion or timeout changes.",
+  "renderedTools": 72,
+  "phoneCapturesReviewed": 9,
+  "scopedAxeScans": 3,
+  "axeViolations": 0,
+  "sourcePublicByteParity": true,
+  "sourceSHA256": "b954cb0bcd69a4057892854979f9eec713d36684fa6caa5f33f18b8d9fe04a82",
+  "syntax": "Both modules passed node --check",
+  "whitespace": "Scoped git diff --check passed",
+  "providers": "Narration and coach interfaces mocked; the new Interview makes no AI request.",
+  "deployment": "Local only; no push, deploy or packaged build"
+}
