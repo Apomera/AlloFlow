@@ -1,0 +1,22 @@
+
+Running 8 tests using 1 worker
+
+
+
+(node:29756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:29756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › microraptor plumage has connected broad surfaces
+[2/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › archaeopteryx plumage has connected broad surfaces
+[3/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › caudipteryx plumage has connected broad surfaces
+[4/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › anchiornis plumage has connected broad surfaces
+[5/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › sinosauropteryx plumage has connected broad surfaces
+[6/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › tyrannosaurus plumage has connected broad surfaces
+[7/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:118:5 › hand wings and tail fans remain rooted during live motion
+[8/8] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:137:5 › hand wings respect historical and minimum evidence views
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts (6.4m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  8 passed (7.7m)

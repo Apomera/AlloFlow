@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 import {GlHarness} from './helpers/stem_gl_harness';
 test.describe.configure({timeout:240_000});test.use({video:'off',trace:'off'});
-const report='reports/dinolab-3d-feather-evidence';
+const report=process.env.DINOLAB_REPORT_DIR||'reports/dinolab-3d-feather-evidence';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_dinolab.js',toolId:'dinoLab',width:1180,height:920,appStyles:true,
  probes:"var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),render=r.render.bind(r);r.render=function(s,c){window.__coatScene=s;window.__coatCamera=c;window.__coatRenderer=r;return render(s,c);};return r;};"});
 test.beforeAll(async()=>{fs.mkdirSync(report,{recursive:true});await harness.start();});test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
@@ -26,7 +26,7 @@ async function inspect(page){return page.evaluate(()=>{
 function check(r){expect(r.invalid).toBe(0);expect(r.outside).toBe(0);expect(r.errors).toEqual([]);expect(r.lost).toBe(false);expect(r.shaderFailures).toBe(0);}
 for(const id of ['microraptor','anchiornis','yutyrannus','sinosauropteryx'])test(id+' shows rooted continuous plumage',async({page})=>{
  const consoleErrors:string[]=[];page.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGL|GL_INVALID/i.test(m.text()))consoleErrors.push(m.text());});
- await mount(page,id);const result=await inspect(page);check(result);expect(result.coats.map(p=>p.region).sort()).toEqual(['head','hindleg--1','hindleg-1','neck','tail','torso']);
+ await mount(page,id);const result=await inspect(page);check(result);expect(result.coats.map(p=>p.region).sort()).toEqual(['forearm--1','forearm-1','head','hindleg--1','hindleg-1','neck','tail','torso']);
  expect(result.coats.reduce((s,c)=>s+c.roots,0)).toBeGreaterThan(1400);
  expect(result.coats.every(p=>p.opacity===1&&!p.transparent)).toBe(true);
  expect(result.coats.every(p=>p.pennaceous===['microraptor','anchiornis'].includes(id))).toBe(true);
@@ -38,11 +38,11 @@ for(const id of ['microraptor','anchiornis','yutyrannus','sinosauropteryx'])test
   await choice.getByRole('button',{name:/Historical classic/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(0);
   await expect(choice.getByRole('button',{name:/Historical classic/})).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('.dinolab-3d-readouts')).toContainText('Historical comparison');
-  await choice.getByRole('button',{name:/Conservative minimum/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(6);check(await inspect(page));
+  await choice.getByRole('button',{name:/Conservative minimum/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(8);check(await inspect(page));
   await choice.getByRole('button',{name:/Evidence-led reconstruction/}).click();await expect.poll(async()=>(await inspect(page)).coats[0]?.roots).toBe(result.coats[0].roots);
   await page.getByRole('button',{name:'Close field tools and return to the 3D model',exact:true}).click();
   await page.locator('.dinolab-surface-presets').getByRole('button',{name:/Fossil anchors/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(0);
-  await page.locator('.dinolab-surface-presets').getByRole('button',{name:/Life view/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(6);
+  await page.locator('.dinolab-surface-presets').getByRole('button',{name:/Life view/}).click();await expect.poll(async()=>(await inspect(page)).coats.length).toBe(8);
   await page.setViewportSize({width:320,height:844});await page.getByRole('button',{name:'Fit whole animal',exact:true}).click();check(await inspect(page));
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await expect(page.locator('.dinolab-3d-readouts').getByText('Life reconstruction · Evidence-led',{exact:true})).toBeVisible();
@@ -54,7 +54,7 @@ for(const id of ['microraptor','anchiornis','yutyrannus','sinosauropteryx'])test
   await expect(page.locator('.dinolab-3d-readouts').getByText('Historical comparison',{exact:true})).toBeVisible();
   await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/historical-phone.png'});
   await page.getByRole('button',{name:/^Compare coverings:/}).click();await choice.getByRole('button',{name:/Evidence-led reconstruction/}).click();
-  await expect.poll(async()=>(await inspect(page)).coats.length).toBe(6);
+  await expect.poll(async()=>(await inspect(page)).coats.length).toBe(8);
   const again=await inspect(page);expect(again.geometries).toBe(result.geometries);expect(again.textures).toBe(result.textures);
  }
  expect(consoleErrors).toEqual([]);fs.writeFileSync(report+'/'+id+'-metrics.json',JSON.stringify(result,null,2));
@@ -90,7 +90,7 @@ test('coat stays rooted during motion and follows opacity without rebuilding',as
  fs.writeFileSync(report+'/motion-opacity-accessibility.json',JSON.stringify({motion,violations,before,after},null,2));
 });
 test('Velociraptor minimum keeps forearm feathers without claiming a preserved body coat',async({page})=>{
- await mount(page,'velociraptor');expect((await inspect(page)).coats).toHaveLength(6);
+ await mount(page,'velociraptor');expect((await inspect(page)).coats).toHaveLength(8);
  await page.getByRole('button',{name:/^Compare coverings:/}).click();await page.getByRole('button',{name:/Conservative minimum/}).click();
  await expect.poll(async()=>(await inspect(page)).coats.length).toBe(0);
  const wings=await page.evaluate(()=>{let count=0;(window as any).__coatScene.traverse(p=>{if(p.userData.featherTract==='forewing')count++;});return count;});expect(wings).toBe(20);

@@ -1,0 +1,46 @@
+{
+  "tracts": {
+    "tail-frond": 16,
+    "manual-wing": 16,
+    "manual-wing-coverts": 16,
+    "forewing": 20,
+    "forewing-coverts": 20
+  },
+  "owners": {
+    "tail": 16,
+    "hand--1": 16,
+    "forearm--1": 20,
+    "hand-1": 16,
+    "forearm-1": 20
+  },
+  "rootGap": 0.030000000000001737,
+  "wingArea": 0.06099021891899712,
+  "wingSides": {
+    "forearm--1": 10,
+    "forearm-1": 10
+  },
+  "manualSides": {
+    "hand--1": 8,
+    "hand-1": 8
+  },
+  "manualMinY": 0.08059694220125899,
+  "materials": [
+    {
+      "uuid": "8D58B773-E616-4FE0-B6EA-7A2899911214",
+      "color": [
+        0.35640014413537763,
+        0.23074004851362043,
+        0.11443537381770343
+      ],
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true
+    }
+  ],
+  "featherMaps": 1,
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

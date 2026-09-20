@@ -1,0 +1,123 @@
+{
+  "coats": [
+    {
+      "region": "torso",
+      "roots": 814,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 29304,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "head",
+      "roots": 118,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 4248,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "neck",
+      "roots": 311,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 11196,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "tail",
+      "roots": 311,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 11196,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "hindleg-1",
+      "roots": 178,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 6408,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "hindleg--1",
+      "roots": 178,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 6408,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "forearm--1",
+      "roots": 133,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 4788,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    },
+    {
+      "region": "forearm-1",
+      "roots": 133,
+      "pennaceous": false,
+      "dorsalOnly": false,
+      "vertices": 4788,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    }
+  ],
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "geometries": 201,
+  "textures": 7,
+  "shaderFailures": 0
+}

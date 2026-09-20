@@ -6028,6 +6028,7 @@ window.StemLab = window.StemLab || {
     var records = {
       velociraptor: ['Quill knobs on a forearm bone support attached wing feathers. Feather presence is not just an artistic alternative.', 'The body coat and tail arrangement are inferred from relatives; the fossil does not give a complete plumage map.', 'Turner et al., 2007: forearm feather evidence', 'https://doi.org/10.1126/science.1145076'],
       microraptor: ['Preserved long feathers on the arms and legs support four feathered limbs, alongside body plumage.', 'Coat density and feather posture are simplified here. Feathered limbs alone do not settle how the animal flew or glided.', 'Xu et al., 2003: four-winged Microraptor', 'https://doi.org/10.1038/nature01342'],
+      caudipteryx: ['Fossils preserve large feathers on the hands. Hand feathers are retained in the minimum reconstruction.', 'Forearm feather arrangements differ between reconstructions. The minimum view omits long forearm feathers; this does not prove they were absent. Feather counts and resting pose are schematic.', 'Qiu et al., 2019: caudipterid wing attachments', 'https://doi.org/10.1038/s41598-019-42547-6'],
       anchiornis: ['Fossils preserve plumage on the body, arms and legs; a birdlike covering belongs in the evidence-led model.', 'The exact three-dimensional coat shape and resting feather arrangement are reconstructed.', 'Hu et al., 2009: feathered Anchiornis', 'https://doi.org/10.1038/nature08322'],
       yutyrannus: ['Long filamentous feathers are preserved in three specimens, including large individuals.', 'A shaggy coat is supported; its full extent and exact color are not preserved as a complete living surface.', 'Xu et al., 2012: feathered Yutyrannus', 'https://doi.org/10.1038/nature10906'],
       tyrannosaurus: ['Skin impressions preserve scales at sampled neck, pelvic and tail regions. The default is scale-dominated.', 'Unsampled regions remain uncertain. A speculative dorsal filament patch is not evidence for a fully feathered adult.', 'Bell et al., 2017: tyrannosaur skin', 'https://doi.org/10.1098/rsbl.2017.0092'],
@@ -6036,6 +6037,19 @@ window.StemLab = window.StemLab || {
     var record = records[id];
     if (record) { evidence.supported = record[0]; evidence.uncertain = record[1]; evidence.source = { label: record[2], url: record[3] }; }
     return evidence;
+  }
+
+  // These hand tracts are curated from feather-preserving taxa. Counts and
+  // resting three-dimensional arrangements are schematic, not fossil measurements.
+  function handWingProfileFor(dn, hypothesis) {
+    if (!hypothesis || !hypothesis.wingFeathers) return null;
+    var profiles = {
+      microraptor: { lengthScale: 0.126, covertScale: 0.56 },
+      archaeopteryx: { lengthScale: 0.118, covertScale: 0.62 },
+      anchiornis: { lengthScale: 0.108, covertScale: 0.76 },
+      caudipteryx: { lengthScale: 0.090, covertScale: 0.54 }
+    };
+    return profiles[String((dn && dn.id) || '')] || null;
   }
 
   function reconstructionHypothesesFor(dn, skeletalProfile, requestedMode) {
@@ -6142,6 +6156,10 @@ window.StemLab = window.StemLab || {
       tailSoftTissueScale: 1.04,
       paletteMode: 'avian'
     };
+    if (speciesId === 'caudipteryx') {
+      conservativeMode.forearmFeathers = false;
+      conservativeMode.warning = 'Hand feathers are retained. Long forearm feathers are omitted because their arrangement is less secure; this is not proof they were absent.';
+    }
     var options = [evidenceMode, conservativeMode, classicMode, avianMode];
     var requested = String(requestedMode || 'evidence');
     var active = evidenceMode;
@@ -9763,6 +9781,22 @@ window.StemLab = window.StemLab || {
               }
             }
 
+            function addHandPlumage(surface, start, end, side, profile) {
+              var spread = end.clone().sub(start), count = 8;
+              for (var featherIndex = 0; featherIndex < count; featherIndex++) {
+                var t = featherIndex / (count - 1), center = start.clone().lerp(end, 0.08 + t * 0.82);
+                var featherLength = len * profile.lengthScale * (0.78 + 0.22 * Math.sin(Math.PI * (t * 0.82 + 0.04)));
+                // A resting, swept-back hand-wing blends into the forearm fan.
+                var direction = vec(featherLength, -featherLength * (0.08 + t * 0.04), side * featherLength * (0.16 + t * 0.16));
+                var width = featherLength * (0.12 - t * 0.025);
+                var outward = vec(0, 0.4, side);
+                addSeatedFeather(surface, center, outward, direction, width, spread, 'manual-wing');
+                addSeatedFeather(surface, center, outward,
+                  direction.clone().multiplyScalar(profile.covertScale).add(vec(0, width * 0.18, side * width * 0.12)),
+                  width * 0.88, spread, 'manual-wing-coverts');
+              }
+            }
+
             function addLeg(x, z, front) {
               var top = front ? shoulder : hip;
               var sideSign = z >= 0 ? 1 : -1;
@@ -9863,6 +9897,7 @@ window.StemLab = window.StemLab || {
                 addLimbJoint(wrist, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.018 * detailScale, ht * 0.0065) * armRobustness, 1.12);
                 addBodyPartAnchor('forelimb', armStart.clone().lerp(elbow, 0.55));
                 var handDigits = skeletalProfile.manualDigits;
+                var handWingProfile = handWingProfileFor(dn, surfaceHypothesis);
                 var handLength = Math.max(0.07 * detailScale, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
                 addBodyPartAnchor('hand', wrist.clone().add(vec(-handLength * 0.62, -handLength * 0.10, 0)));
                 if (props.showBody) addBodyContour(addEllipsoid(wrist.clone().add(vec(-handLength * 0.12, -handLength * 0.03, 0)), vec(handLength * 0.28, Math.max(0.014 * detailScale, ht * 0.0055), Math.max(0.025 * detailScale, bodyDepth * 0.085)), headMat));
@@ -9873,7 +9908,14 @@ window.StemLab = window.StemLab || {
                   var manualNonUngualCount = Math.max(0, Math.min(4, manualFormulaCount - 1));
                   var metacarpalEnd = wrist.clone().add(vec(-handLength * 0.28, -handLength * 0.035, handSpread * 0.42));
                   var fingerTip = wrist.clone().add(vec(-handLength, -handLength * 0.14, handSpread * 1.22));
-                  if (props.showBody) addBodyContour(addSoftTissueCylinder(metacarpalEnd, fingerTip, Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.005 * detailScale, ht * 0.0021), headMat));
+                  if (props.showBody) {
+                    var fingerShell = addSoftTissueCylinder(metacarpalEnd, fingerTip, Math.max(0.007 * detailScale, ht * 0.0030), Math.max(0.005 * detailScale, ht * 0.0021), headMat);
+                    addBodyContour(fingerShell);
+                    if (fingerShell && handWingProfile && handDigitIndex === 1) {
+                      fingerShell.userData.dinoRegion = 'hand-' + armSide;
+                      addHandPlumage(fingerShell, metacarpalEnd, fingerTip, armSide, handWingProfile);
+                    }
+                  }
                   addTaperedBoneSegment(wrist, metacarpalEnd, Math.max(0.008 * detailScale, ht * 0.0031), Math.max(0.006 * detailScale, ht * 0.0024), boneMat);
                   addLimbJoint(metacarpalEnd, new THREE.Vector3().subVectors(metacarpalEnd, wrist), Math.max(0.008 * detailScale, ht * 0.0030), 1.12);
                   var previousManualPhalanx = metacarpalEnd;
@@ -9921,8 +9963,9 @@ window.StemLab = window.StemLab || {
                      Math.max(0.017 * detailScale, ht * 0.007) * armRobustness * armSurfaceFullness,
                      Math.max(0.014 * detailScale, ht * 0.0055) * armRobustness * armSurfaceFullness], bodyMat)[0];
                   armShell.userData.dinoRegion = 'forearm-' + armSide;
+                  if (!surfaceHypothesis.featureScales) addContourPlumage(armShell, 180, Math.max(0.012 * detailScale, ht * 0.022) * armSurfaceFullness, false);
                   addBodyContour(armShell);
-                  if (surfaceHypothesis.wingFeathers) addLimbPlumage(armShell, elbow, wrist, armSide, false);
+                  if (surfaceHypothesis.wingFeathers && surfaceHypothesis.forearmFeathers !== false) addLimbPlumage(armShell, elbow, wrist, armSide, false);
                 }
               });
             }

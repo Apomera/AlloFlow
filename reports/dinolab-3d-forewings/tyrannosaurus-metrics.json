@@ -1,0 +1,16 @@
+{
+  "tracts": {},
+  "owners": {},
+  "rootGap": 0,
+  "wingArea": 0,
+  "wingSides": {},
+  "manualSides": {},
+  "manualMinY": null,
+  "materials": [],
+  "featherMaps": 0,
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

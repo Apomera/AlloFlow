@@ -1,0 +1,88 @@
+{
+  "unitTests": 52,
+  "unitSuites": 5,
+  "distinctBrowserScenarios": 15,
+  "completedBrowserExecutions": 16,
+  "interruptedRun": "coat-browser-interrupted.txt",
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "db153309ce9a2af969c04c0bb2ae1fcd5b6d07eb1a49907669f87be0500336f9"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "db153309ce9a2af969c04c0bb2ae1fcd5b6d07eb1a49907669f87be0500336f9"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "db153309ce9a2af969c04c0bb2ae1fcd5b6d07eb1a49907669f87be0500336f9"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "db153309ce9a2af969c04c0bb2ae1fcd5b6d07eb1a49907669f87be0500336f9"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "microraptor",
+      "handPrimaries": 16,
+      "handCoverts": 16,
+      "rootGapInFeatherWidths": 0.0300000000000018,
+      "minimumHandFeatherHeight": 0.07683269420807891,
+      "invalidVertices": 0,
+      "clippedVertices": 0,
+      "shaderFailures": 0
+    },
+    {
+      "id": "archaeopteryx",
+      "handPrimaries": 16,
+      "handCoverts": 16,
+      "rootGapInFeatherWidths": 0.030000000000001737,
+      "minimumHandFeatherHeight": 0.08059694220125899,
+      "invalidVertices": 0,
+      "clippedVertices": 0,
+      "shaderFailures": 0
+    },
+    {
+      "id": "anchiornis",
+      "handPrimaries": 16,
+      "handCoverts": 16,
+      "rootGapInFeatherWidths": 0.030000000000001702,
+      "minimumHandFeatherHeight": 0.08153057037279603,
+      "invalidVertices": 0,
+      "clippedVertices": 0,
+      "shaderFailures": 0
+    },
+    {
+      "id": "caudipteryx",
+      "handPrimaries": 16,
+      "handCoverts": 16,
+      "rootGapInFeatherWidths": 0.030000000000007188,
+      "minimumHandFeatherHeight": 0.13147217329477712,
+      "invalidVertices": 0,
+      "clippedVertices": 0,
+      "shaderFailures": 0
+    }
+  ],
+  "coatResources": {
+    "before": {
+      "geometries": 419,
+      "textures": 8
+    },
+    "after": {
+      "geometries": 419,
+      "textures": 8
+    },
+    "axeViolations": 0
+  },
+  "reviewedImages": [
+    "microraptor-life.png",
+    "microraptor-wing-study.png",
+    "archaeopteryx-life.png",
+    "anchiornis-life.png",
+    "caudipteryx-life.png",
+    "microraptor-mobile.png",
+    "caudipteryx-minimum.png"
+  ],
+  "deployed": false
+}

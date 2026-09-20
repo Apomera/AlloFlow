@@ -1,0 +1,14 @@
+
+Running 2 tests using 1 worker
+
+
+
+(node:30952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:30952) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/2] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:65:7 › caudipteryx plumage has connected broad surfaces
+[2/2] [chromium] › tests\e2e\dinolab-3d-plumage.spec.ts:150:5 › Caudipteryx minimum distinguishes hand evidence from forearm inference
+  2 passed (3.1m)
