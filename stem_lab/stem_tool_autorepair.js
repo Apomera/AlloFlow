@@ -9751,11 +9751,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     });
   }
 
+  function arShopCompletion(raw) {
+    var state = arShopState(raw), ended = state.step === arShopJob(state.job).tasks.length;
+    var complete = ended && state.verified === true && state.released === true;
+    return { complete: complete, review: ended && !complete,
+      label: complete ? 'Training job completed' : ended ? 'Review saved record' : 'In progress',
+      message: complete ? 'This training work order is complete. Review the saved evidence and handoff.' : ended ?
+        'This saved attempt has reached the end, but verification or release is not confirmed. Review its records or restart with the current attempt kept recoverable.' : 'Continue the current work-order task.' };
+  }
+
   // One set of checks drives both the live guide and task completion.
   function arShopReadiness(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], checks = [];
-    if (!task) return { complete: true, ready: false, checks: checks, next: null,
-      message: 'This training work order is complete. Review the handoff or choose another job.' };
+    if (!task) { var completion = arShopCompletion(state); return { complete: completion.complete, review: completion.review, ready: false, checks: checks, next: null, message: completion.message }; }
     function check(id, label, ready, message) { checks.push({ id: id, label: label, ready: !!ready, message: message }); }
     if (task.tool === 'lift-controls') check('lift-stop', 'Lift stop released', !state.liftStopped,
       'Lift stop is latched. Check the bay is clear and reset the stop before issuing a new lift command.');
@@ -9906,7 +9914,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     };
     return SHOP_JOBS.map(function (job) {
       var state = arShopSavedJob(active, records, job.id), total = job.tasks.length;
-      var complete = state.step === total && state.released === true && state.verified === true;
+      var complete = arShopCompletion(state).complete;
       var status = complete ? 'complete' : state.step === total ? 'review' : state.step > 0 ? 'in-progress' : 'not-started';
       return { id: job.id, title: job.title, skills: skills[job.id], current: active.job === job.id, completed: state.step, total: total,
         status: status, next: complete ? 'Review your findings, service and customer handoff.' : state.step === total ? 'Review this saved work order: verification or release is not confirmed.' : job.tasks[state.step].label };
@@ -9923,6 +9931,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         tool: SHOP_TOOLS.filter(function (tool) { return tool[0] === task.tool; })[0][1], result: record ? record.result : '' };
     });
   }
+  function arShopReport(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], completion = arShopCompletion(state);
+    var route = arShopTaskRoute(state).filter(function (item) { return item.number <= state.step; });
+    var recorded = route.filter(function (item) { return item.status === 'recorded'; }).length;
+    var lines = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
+      'Service sheet: ' + job.spec, '', 'Status: ' + completion.label, completion.message,
+      'Task position: ' + state.step + ' / ' + job.tasks.length + ' steps', 'Saved task records: ' + recorded + ' / ' + state.step + ' earlier steps',
+      'Current task: ' + (task ? task.label : 'End of saved attempt'),
+      'Verification state: ' + (state.verified === true ? 'Confirmed' : 'Not confirmed'),
+      'Release state: ' + (state.released === true ? 'Confirmed' : 'Not confirmed'), '', 'EVIDENCE & SERVICE RECORD'];
+    if (!route.length) lines.push('No completed task records yet.');
+    route.forEach(function (item) {
+      lines.push(item.number + '. ' + item.label, item.status === 'recorded' ? item.result : 'No saved record for this earlier step. No evidence is inferred.', '');
+    });
+    var reading = task && state.reading && state.reading.key === arShopReadingKey(state) && Number.isFinite(state.reading.value) && typeof state.reading.unit === 'string' ? state.reading : null;
+    lines.push('CURRENT TASK CAPTURE', reading ? reading.value + ' ' + reading.unit + (reading.valid === true ? ' — Valid for the current measurement setup.' : ' — Check measurement setup; this capture is not valid evidence.') : 'No current task capture.');
+    if (reading && typeof reading.detail === 'string') lines.push(reading.detail);
+    lines.push('A capture does not complete a task or verify the whole repair.');
+    var seen = {}, history = state.history.filter(function (entry) {
+      var index = entry && job.tasks.findIndex(function (item) { return item.id === entry.id; });
+      if (!entry || index < 0 || index >= state.step || typeof entry.result !== 'string' || !entry.result.trim() || seen[entry.id]) return false;
+      seen[entry.id] = true; return true;
+    });
+    return lines.concat(arShopVoltageReviewText(Object.assign({}, state, { history: history })), ['', 'CUSTOMER HANDOFF',
+      typeof state.notes === 'string' && state.notes.trim() ? state.notes : '(No handoff recorded)', '',
+      'Educational simulation only. This report does not certify real service or vehicle safety.']).join('\n');
+  }
+
   function arShopHandoffGuide(raw) {
     var state = arShopState(raw), job = arShopJob(state.job);
     var prompts = {
@@ -20602,7 +20638,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // the CDN, the module loses a picture and loses nothing else.
       // ─────────────────────────────────────────
       function renderWorkshop() {
-        var shop = arShopState(d.shop), job = arShopJob(shop.job), task = job.tasks[shop.step];
+        var shop = arShopState(d.shop), job = arShopJob(shop.job), task = job.tasks[shop.step], completion = arShopCompletion(shop);
         var station = SHOP_STATIONS.filter(function (p) { return p.id === shop.station; })[0];
         var liftLabels = { ground: 'On the floor', prepared: 'Setup checked', low: 'Low lift — check stability', checked: 'Stability checked', raised: 'Raised — not yet locked', locked: 'Supported on mechanical locks' };
         function save(next) {
@@ -20640,7 +20676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('section', { 'data-ar-attempt-panel': valid ? 'review' : request ? 'stale' : 'previous', style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
             previous && h('details', { 'data-ar-previous-attempt': shop.job },
               h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Previous attempt · ' + previous.step + '/' + job.tasks.length + ' steps'),
-              h('p', null, 'Saved position: ' + (job.tasks[previous.step] ? job.tasks[previous.step].label : previous.released ? 'Completed work order' : 'Review saved record')),
+              h('p', null, 'Saved position: ' + (job.tasks[previous.step] ? job.tasks[previous.step].label : arShopCompletion(previous).complete ? 'Completed work order' : 'Review saved record')),
               h('p', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, 'Handoff: ' + (typeof previous.notes === 'string' && previous.notes.trim() ? previous.notes : 'No handoff written.')),
               h('p', null, 'Its instrument setup, captured reading and service record will return with this attempt.')),
             request && !valid && h('p', { role: 'status', 'data-ar-attempt-stale': true }, 'The work order or previous attempt changed. Review the action again before continuing.'),
@@ -20720,7 +20756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accentHi, borderRadius: 8, background: T.card, color: T.text, overflowWrap: 'anywhere' } },
             h('h3', { style: { fontSize: 14, margin: '0 0 6px' } }, 'Workshop response'),
             h('p', { 'data-ar-response-feedback': true, style: { fontSize: 13, lineHeight: 1.5, margin: '6px 0' } }, shop.feedback || (d.shopInteraction === 'inspect' ? 'Inspect a control to learn what it does before using it.' : 'Choose a 3D control or use the labeled work panels. Its result appears here.')),
-            h('p', { 'data-ar-response-task': true, style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0' } }, h('strong', null, task ? 'Current task: ' : 'Work order: '), task ? task.label : shop.released ? 'Completed' : 'Review saved record'),
+            h('p', { 'data-ar-response-task': true, style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0' } }, h('strong', null, task ? 'Current task: ' : 'Work order: '), task ? task.label : completion.complete ? 'Completed' : 'Review saved record'),
             h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0' } }, 'In hand: ' + held),
             guide && h('p', { 'data-ar-response-capture': guide.capture ? (guide.capture === 'No current capture' ? 'missing' : guide.captured ? 'current' : 'check-setup') : 'sequence',
               style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0', fontWeight: 700 } },
@@ -21025,17 +21061,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function taskGuidePanel() {
           var readiness = arShopReadiness(shop), next = readiness.next, coach = arShopInstrumentGuide(shop);
           var instruction = next && next.id === 'evidence' && coach ? coach.detail : next ? next.message : readiness.message;
-          var target = next ? next.id : readiness.complete ? 'complete' : 'ready';
+          var target = next ? next.id : readiness.complete ? 'complete' : readiness.review ? 'review' : 'ready';
           var labels = { 'lift-stop': 'Show lift reset controls', prerequisites: 'Review task requirements', tool: 'Show tool choices',
             station: 'Go to task station', evidence: 'Show equipment controls', calculation: 'Enter calculation', handoff: 'Write customer handoff',
-            ready: 'Show task controls', complete: 'Review completed work order' };
+            ready: 'Show task controls', complete: 'Review completed work order', review: 'Review saved work order' };
           function guide() {
             var selector;
             if (target === 'tool') { focusToolControls(); selector = '[data-ar-scene-tool]'; }
             else if (target === 'lift-stop') { focusLiftControls(); selector = '[data-ar-scene-action="' + (shop.liftBayClear ? 'lift-reset' : 'lift-clear') + '"]'; }
             else if (target === 'calculation' || target === 'handoff') selector = target === 'calculation' ? '#ar-shop-scene-answer' : '#ar-shop-scene-notes';
             else if (target === 'prerequisites') selector = '#ar-shop-setup-checks';
-            else if (target === 'complete') selector = '#ar-shop-work-order';
+            else if (target === 'complete' || target === 'review') selector = '#ar-shop-work-order';
             else {
               focusServiceControls();
               if (target === 'evidence' && coach) selector = instrumentGuideSelector(coach);
@@ -21050,11 +21086,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var passed = readiness.checks.filter(function (item) { return item.ready; }).length;
           return h('section', { 'data-ar-task-guide': target, 'aria-label': 'Live task guide',
             style: { padding: 12, margin: '10px 0', border: '1px solid #67e8f9', borderRadius: 8, background: '#172f43' } },
-            h('strong', { style: { display: 'block', fontSize: 14 } }, readiness.complete ? 'Work order complete' : 'Task ' + (shop.step + 1) + '/' + job.tasks.length + ' · ' + task.label),
+            h('strong', { style: { display: 'block', fontSize: 14 } }, readiness.complete ? 'Work order complete' : readiness.review ? 'Review saved record' : 'Task ' + (shop.step + 1) + '/' + job.tasks.length + ' · ' + task.label),
             h('p', { 'data-ar-task-guide-status': true, role: 'status', 'aria-atomic': 'true', style: { fontSize: 12, margin: '8px 0', color: '#a5f3fc' } },
-              readiness.complete ? 'Service and verification recorded.' : readiness.ready ? 'All checks ready. Perform the task when you are ready.' : instruction),
+              readiness.complete ? 'Review your saved evidence and customer handoff.' : readiness.ready ? 'All checks ready. Perform the task when you are ready.' : instruction),
             control(labels[target], guide, { 'data-ar-task-guide-go': target }),
-            !readiness.complete && h('details', { style: { fontSize: 12, marginTop: 8 } },
+            task && h('details', { style: { fontSize: 12, marginTop: 8 } },
               h('summary', { style: { cursor: 'pointer', padding: '8px 0' } }, passed + '/' + readiness.checks.length + ' task checks ready'),
               h('ul', { style: { paddingLeft: 18, margin: '4px 0', lineHeight: 1.8 } }, readiness.checks.map(function (item) {
                 return h('li', { key: item.id, 'data-ar-task-check': item.id, 'data-ar-check-ready': String(item.ready) },
@@ -21432,11 +21468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             selected ? selected.title + ': ' + selected.prompt : 'Write your own finding, service and verification. Name what remains unchecked when the record is incomplete.');
         }
         function downloadReport() {
-          var text = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
-            'Service sheet: ' + job.spec, '', 'Status: ' + (shop.released ? 'Training job completed' : 'In progress'),
-            'Tasks: ' + shop.step + ' / ' + job.tasks.length, '', 'EVIDENCE & SERVICE RECORD'].concat(
-              shop.history.map(function (entry, i) { return (i + 1) + '. ' + entry.label + '\n' + entry.result; }),
-              arShopVoltageReviewText(shop), ['', 'CUSTOMER HANDOFF', shop.notes || '(No handoff recorded)', '', 'Educational simulation only. This report does not certify real service or vehicle safety.']).join('\n');
+          var text = arShopReport(shop);
           var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
           var link = document.createElement('a'); link.href = url; link.download = 'auto-workshop-' + job.id + '.txt'; link.click();
           setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
@@ -21463,7 +21495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { className: 'ar-shop-metrics', 'aria-label': 'Workshop status' },
             h('span', { 'data-ar-shop-lift': shop.lift, style: { color: shop.lift === 'locked' ? T.good : T.accentHi } }, liftLabels[shop.lift]),
             h('span', null, shop.wheelRemoved ? (shop.wheelSeated ? 'Wheel seated — torque pending' : 'Front wheel on rack') : 'Wheels fitted'),
-            h('span', null, shop.released ? 'Work order completed' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
+            h('span', null, completion.complete ? 'Work order completed' : completion.review ? 'Review saved record' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
           workshopShortcuts(),
           h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
             h('section', { 'aria-label': 'Workshop scene and stations', style: { minWidth: 0 } },
@@ -21520,7 +21552,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-shop-perform': task.id,
                   onClick: function () { var next = arShopAdvance(shop); save(next); arAnnounce(next.feedback); },
                   style: btnPrimary({ marginTop: 14, minHeight: 46, width: '100%', fontSize: 14 }) }, task.id === 'release' ? 'Complete training work order' : 'Perform simulated task'))
-                : h('div', { 'data-ar-shop-complete': true }, h('h3', { style: { color: T.good, marginTop: 15 } }, 'Work order completed'), h('p', null, 'Your findings, service and verification are recorded below. Choose another job to continue practicing.')),
+                : h('div', { 'data-ar-shop-complete': completion.complete ? true : undefined, 'data-ar-shop-review': completion.review ? true : undefined },
+                  h('h3', { style: { color: completion.complete ? T.good : T.text, marginTop: 15 } }, completion.complete ? 'Work order completed' : 'Review saved record'), h('p', null, completion.message)),
               h('p', { role: 'status', 'aria-live': 'polite', 'data-ar-shop-feedback': true, style: { color: T.accentHi, minHeight: 20 } }, shop.feedback),
               handoffGuidePanel(),
               handoffWritingPrompt(),
@@ -21528,8 +21561,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('textarea', { id: 'ar-shop-notes', 'aria-describedby': d.shopHandoffHelp ? 'ar-handoff-writing-prompt' : undefined, rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
                 onChange: function (e) { change({ notes: e.target.value }); } }),
               voltageEvidencePanel(),
-              h('details', { style: { marginTop: 12 } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Service record (' + shop.history.length + ' completed tasks)'),
-                h('ol', { style: { paddingLeft: 22, fontSize: 12, lineHeight: 1.6 } }, shop.history.map(function (entry) { return h('li', { key: entry.id }, h('strong', null, entry.label), h('p', null, entry.result)); }))),
+              h('details', { 'data-ar-service-record': true, style: { marginTop: 12 } },
+                h('summary', { style: { cursor: 'pointer', fontWeight: 700, minHeight: 44 } }, 'Service record (' + arShopTaskRoute(shop).filter(function (item) { return item.status === 'recorded'; }).length + ' saved task records)'),
+                h('ol', { style: { paddingLeft: 22, fontSize: 12, lineHeight: 1.6 } }, arShopTaskRoute(shop).filter(function (item) { return item.number <= shop.step; }).map(function (item) {
+                  return h('li', { key: item.id }, h('strong', null, item.label), h('p', null, item.result || 'No saved record for this earlier step. No evidence is inferred.'));
+                }))),
+              h('details', { 'data-ar-report-preview': true, style: { marginTop: 12 } },
+                h('summary', { style: { cursor: 'pointer', fontWeight: 700, minHeight: 44 } }, 'Preview downloadable work order'),
+                h('p', { style: { fontSize: 12, lineHeight: 1.5 } }, 'This is the text included in your download. Missing records stay visible; your handoff remains your own wording.'),
+                h('pre', { 'data-ar-report-text': true, tabIndex: 0, role: 'region', 'aria-label': 'Downloadable training work order',
+                  style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 360, overflow: 'auto', padding: 12, fontSize: 12, lineHeight: 1.6, border: '1px solid ' + T.border, borderRadius: 8, color: T.text, background: T.cardAlt } }, arShopReport(shop))),
               h('div', { className: 'ar-shop-actions' }, control('Download work order', downloadReport),
                 control('Restart this job', function () { requestAttempt('restart'); }, { 'data-ar-attempt-open': 'restart' })),
               attemptPanel(),

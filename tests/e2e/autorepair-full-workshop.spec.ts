@@ -1695,3 +1695,39 @@ test('inspection previews setup effects and evidence retention before deliberate
   await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,notes:'Updated diagnosis.'});});
   await expect(effect).toHaveCount(0);await expect(use).toHaveCount(0);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('work-order previews match readable downloads and preserve incomplete saved attempts',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});await harness.mount(page,{autoRepair:{view:'workshop'}});
+  const preview=page.locator('[data-ar-report-preview]'),report=page.locator('[data-ar-report-text]');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));
+  async function openPreview(){if(await preview.getAttribute('open')===null)await preview.locator('summary').click();}
+  async function checkDownload(job:string){
+    const expected=await report.textContent(),before=await raw(),event=page.waitForEvent('download');
+    await page.getByRole('button',{name:'Download work order',exact:true}).click();const download=await event;
+    expect(download.suggestedFilename()).toBe('auto-workshop-'+job+'.txt');const stream=await download.createReadStream();expect(stream).not.toBeNull();
+    const chunks:Buffer[]=[];for await(const chunk of stream!)chunks.push(Buffer.from(chunk));
+    const text=Buffer.concat(chunks).toString('utf8');expect(text).toBe(expected);expect(text.split('\n').length).toBeGreaterThan(15);expect(await raw()).toBe(before);return text;
+  }
+  for(const job of ['brakes','oil','alignment','electrical']){
+    await page.locator('#ar-shop-job').selectOption(job);await openPreview();await expect(report).toContainText('Status: In progress');expect(await checkDownload(job)).not.toContain(String.fromCharCode(92)+'n');
+  }
+  await page.locator('#ar-shop-notes').fill('The connection was tested under load, serviced, and tested again.');
+  await perform(page,'job-card','1.4');await perform(page,'lamp','1.4');await page.locator('#ar-shop-tool').selectOption('meter');await prepareInstrument(page);
+  await openPreview();await expect(report).toContainText('CURRENT TASK CAPTURE\n1.6 V');await expect(report).toContainText('Before service: Not recorded yet');
+  await perform(page,'meter','1.4');await perform(page,'terminal-kit','1.4');await perform(page,'meter','1.4');await perform(page,'job-card','1.4');
+  await expect(page.locator('[data-ar-shop-complete]')).toBeVisible();await openPreview();await expect(report).toContainText('Status: Training job completed');await expect(report).toContainText('After service: 0.08 V');
+  const completed=await raw();await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-desktop.png'});await checkDownload('electrical');
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,verified:false});});
+  await expect(page.locator('[data-ar-shop-complete]')).toHaveCount(0);await expect(page.locator('[data-ar-shop-review]')).toBeVisible();await expect(page.locator('[data-ar-task-guide]')).toHaveAttribute('data-ar-task-guide','review');
+  await page.locator('[data-ar-task-guide-go="review"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  await openPreview();await expect(report).toContainText('Status: Review saved record');expect(await checkDownload('electrical')).not.toContain('Status: Training job completed');
+  await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'brakes',step:3,history:[null,{id:'intake',label:'Wrong saved label',result:'Customer concern recorded.'},{id:'verify',result:'Future record must stay absent.'}],notes:'<img src=x> Learner handoff remains text.'});});
+  await openPreview();await expect(report).toContainText('Saved task records: 1 / 3 earlier steps');await expect(report).toContainText('No saved record for this earlier step');await expect(report).not.toContainText('Future record must stay absent.');expect(await report.locator('img').count()).toBe(0);
+  const pending=await raw();await report.focus();await page.keyboard.press('End');await expect(report).toBeFocused();expect(await raw()).toBe(pending);
+  await report.evaluate((el:HTMLElement)=>{el.scrollTop=0;});await preview.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await preview.screenshot({path:'reports/automobile-workshop/report-review-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await checkDownload('brakes');await page.locator('#ar-shop-notes').fill('Revised handoff, kept in my own words.');await expect(report).toContainText('Revised handoff, kept in my own words.');await checkDownload('brakes');
+  expect(await preview.locator('summary').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);expect(JSON.parse(completed).released).toBe(true);
+});

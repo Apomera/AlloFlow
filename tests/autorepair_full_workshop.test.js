@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks, controlEffect: arShopControlEffect };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks, controlEffect: arShopControlEffect, completion: arShopCompletion, report: arShopReport };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1347,7 +1347,8 @@ describe('Viewport workshop response', () => {
   });
   it('clears instrument details on a different job and labels the completed work order',()=>{
     const p=panel(model.initial('oil'));expect(p.querySelector('[data-ar-response-capture]')).toBeNull();expect(p.querySelector('[data-ar-response-open]').textContent).toBe('Open work order');
-    expect(panel({job:'electrical',step:6,released:true}).querySelector('[data-ar-response-task]').textContent).toBe('Work order: Completed');
+    expect(panel({job:'electrical',step:6,released:true,verified:true}).querySelector('[data-ar-response-task]').textContent).toBe('Work order: Completed');
+    expect(panel({job:'electrical',step:6,released:true}).querySelector('[data-ar-response-task]').textContent).toBe('Work order: Review saved record');
   });
 });
 
@@ -1557,4 +1558,72 @@ describe('Read-only control effect previews',()=>{
       expect(host.querySelector('[data-ar-control-effect]')).toBeNull();
     }
   });
+});
+
+
+describe('Faithful work-order review and downloads',()=>{
+  it.each(model.jobs)('exports a completed $id with real line breaks and retained evidence',job=>{
+    let state=model.initial(job.id);
+    while(state.step<job.tasks.length)state=step(state,{notes:'Finding recorded. Service completed. Verification checked.\nFollow-up remains documented.'});
+    const saved=JSON.stringify(state),report=model.report(state);
+    expect(report.split('\n').length).toBeGreaterThan(25);expect(report).toContain('Status: Training job completed\n');
+    expect(report).toContain('Saved task records: '+job.tasks.length+' / '+job.tasks.length+' earlier steps');
+    for(const entry of state.history)expect(report).toContain(entry.result);
+    expect(report).toContain(state.notes);expect(report).toContain('CURRENT TASK CAPTURE\nNo current task capture.');
+    expect(report).not.toContain(String.fromCharCode(92)+'n');expect(JSON.stringify(state)).toBe(saved);
+    if(job.id==='electrical'){expect(report).toContain('Before service: 1.6 V');expect(report).toContain('After service: 0.08 V');}
+  });
+  it.each(model.jobs)('exports a new $id without inferring service',job=>{
+    const report=model.report(model.initial(job.id));
+    expect(report).toContain('Status: In progress');expect(report).toContain('No completed task records yet.');expect(report).toContain('(No handoff recorded)');
+    expect(report).toContain('Verification state: Not confirmed');expect(report).toContain('Release state: Not confirmed');
+  });
+  it.each(model.jobs)('requires strict verification and release at the end of $id',job=>{
+    for(const patch of [{verified:false,released:true},{verified:true,released:false},{verified:'yes',released:true},{verified:true,released:1}]){
+      const state={...model.initial(job.id),step:job.tasks.length,...patch},saved=JSON.stringify(state);
+      expect(model.completion(state)).toMatchObject({complete:false,review:true,label:'Review saved record'});
+      expect(model.readiness(state)).toMatchObject({complete:false,review:true,ready:false,next:null});
+      expect(model.advance(state).step).toBe(job.tasks.length);expect(model.advance(state).feedback).toContain('not confirmed');
+      expect(model.report(state)).toContain('Status: Review saved record');expect(model.practiceBoard(state,{}).find(j=>j.id===job.id).status).toBe('review');expect(JSON.stringify(state)).toBe(saved);
+    }
+  });
+  it('does not promote a premature release flag to completion',()=>{
+    const state={...model.initial('brakes'),released:true,verified:true};expect(model.completion(state)).toMatchObject({complete:false,review:false});expect(model.report(state)).toContain('Status: In progress');
+  });
+  it('uses authored labels and identifies gaps while ignoring malformed and future records',()=>{
+    const state={...model.initial('brakes'),step:3,history:[null,{id:'intake',label:'Wrong label',result:'Accepted customer concern.'},{id:'raise',result:'Invented future operation.'},{id:'setup',result:'  '},{id:'intake',result:'Duplicate ignored.'}]};
+    const report=model.report(state);expect(report).toContain('Saved task records: 1 / 3 earlier steps');expect(report).toContain('Accepted customer concern.');
+    expect(report.match(/No saved record for this earlier step/g)).toHaveLength(2);for(const text of ['Wrong label','Invented future operation.','Duplicate ignored.'])expect(report).not.toContain(text);
+  });
+  it('does not include future voltage snapshots as completed comparative evidence',()=>{
+    const evidence=value=>({kind:'meter',unit:'V',value,setup:{mode:'dcv',contact:'joint',load:'starter'}});
+    const state={...model.initial('electrical'),step:2,history:[{id:'measure',result:'Future measure',evidence:evidence(1.6)},{id:'service',result:'Future service'},{id:'verify',result:'Future verification',evidence:evidence(.08)}]};
+    const report=model.report(state);expect(report).toContain('Before service: Not recorded yet');expect(report).toContain('After service: Not recorded yet');expect(report).not.toContain('supports the connection repair');
+  });
+  it('separates a current captured measurement from completed task evidence',()=>{
+    const state=model.operate({job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}},{type:'read'});
+    const report=model.report(state);expect(report).toContain('CURRENT TASK CAPTURE\n1.6 V — Valid for the current measurement setup.');expect(report).toContain('Before service: Not recorded yet');expect(report).toContain('A capture does not complete a task');
+    const wrong=model.operate({...state,instrument:{mode:'dcv',contact:'posts',load:'off'}},{type:'read'});expect(model.report(wrong)).toContain('12.6 V — Check measurement setup');
+    expect(model.report({...state,hood:false})).toContain('CURRENT TASK CAPTURE\nNo current task capture.');
+  });
+  it('preserves literal learner wording and tolerates a malformed saved handoff',()=>{
+    const notes='<script>learner text</script>\nKeep C:'+String.fromCharCode(92)+'notes as written.';
+    expect(model.report({...model.initial('oil'),notes})).toContain(notes);expect(model.report({...model.initial('oil'),notes:{bad:true}})).toContain('(No handoff recorded)');
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('renders incomplete saved attempts and report text safely in %j',theme=>{
+    resetStemLab();loadTool(file,'autoRepair');const job=model.jobs[0],shop={...model.initial(job.id),step:job.tasks.length,released:true,verified:false,history:[null],notes:'<img src=x onerror=alert(1)> My own handoff.'};
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop}},theme);
+    expect(host.querySelector('[data-ar-shop-complete]')).toBeNull();expect(host.querySelector('[data-ar-shop-review]')).not.toBeNull();
+    expect(host.querySelector('[data-ar-task-guide]').getAttribute('data-ar-task-guide')).toBe('review');expect(host.querySelector('[data-ar-task-guide-go="review"]')).not.toBeNull();
+    const preview=host.querySelector('[data-ar-report-text]');expect(preview.textContent).toBe(model.report(shop));expect(preview.getAttribute('tabindex')).toBe('0');expect(preview.getAttribute('role')).toBe('region');expect(preview.querySelector('img')).toBeNull();
+    expect(host.querySelector('[data-ar-service-record]').textContent).toContain('0 saved task records');
+  });
+});
+
+
+it('labels an unverified previous attempt for review before restoration',()=>{
+  resetStemLab();loadTool(file,'autoRepair');const shop=model.initial('brakes'),previous={...shop,step:model.jobs[0].tasks.length,released:true,verified:false};
+  const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopPreviousAttempts:{brakes:previous}}});
+  expect(host.querySelector('[data-ar-previous-attempt]').textContent).toContain('Saved position: Review saved record');
+  expect(host.querySelector('[data-ar-previous-attempt]').textContent).not.toContain('Completed work order');
 });

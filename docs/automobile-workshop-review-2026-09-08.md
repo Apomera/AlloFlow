@@ -476,6 +476,20 @@ Validation: 380 workshop unit/render tests passed, including 23 new cases for se
 - [High contrast phone blocked jug addition](../reports/automobile-workshop/control-effect-contrast.png)
 - [Narrow dark phone gauge placement](../reports/automobile-workshop/control-effect-dark.png)
 
+## Faithful work-order preview and download — 2026-09-20
+
+Download work order now uses a shared plain-text formatter with real line breaks, replacing the literal backslash-n separators in the previous export. The optional Preview downloadable work order disclosure shows exactly the same text in a labeled, keyboard-focusable scrolling region. It updates with the current job and the learner's own handoff; rendering preserves that wording as text.
+
+The report separates task position, saved task-record count, verification/release state, earlier service records and the current task capture. Earlier steps without a usable saved record are explicitly marked as gaps. Unknown, duplicate, malformed and future task records do not become completed evidence. Current captures require a matching setup key and remain separate from completed service evidence; invalid captures are labeled for correction. The exported voltage comparison only uses eligible earlier records. The visible service-record list uses the same authored task route and tolerates missing entries.
+
+Completion now consistently requires the final task position plus strict verification and release flags. The header, live guide, viewport response, practice board, recoverable-attempt summary and report share that rule. An end-position save missing confirmation is labeled Review saved record, with navigation to the work order and guidance toward the existing recoverable restart. A completion label does not manufacture missing history; report gaps remain explicit. Existing saved work is not rewritten by review or download.
+
+Validation: all 401 workshop unit/render tests passed, including 21 new checks for all four completed/new jobs, strict completion flags, premature release, preserved text and inputs, malformed/duplicate/future records, current/invalid/stale captures, exported voltage evidence, accessible themed previews and previous-attempt status. Updated an existing completion fixture that omitted verification to assert both confirmed completion and the corrected review state. Four Chromium WebGL workflows passed: full brake service/handoff, practice-board oil completion, recoverable attempts and the new report journey. The new workflow reads all four job downloads and verifies exact preview parity and real line breaks, completes an electrical work order with 1.6 V/0.08 V recorded evidence, checks incomplete saved-state labels and keyboard review focus, tests 390px contrast and 320px dark reflow without horizontal overflow, preserves handoff text and confirms no browser errors. Three screenshots visually reviewed. Syntax, scoped whitespace and all four module copies match SHA256 ec193e9e524629b54082a7d3b754190b5fc36eab74278cc9d67b286ad45f44a2; ignored build copies verified before synchronization. No deployment.
+
+- [Desktop completed report preview](../reports/automobile-workshop/report-review-desktop.png)
+- [High contrast phone saved-record review](../reports/automobile-workshop/report-review-contrast.png)
+- [Narrow dark phone evidence gaps](../reports/automobile-workshop/report-review-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
