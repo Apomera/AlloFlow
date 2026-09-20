@@ -61,6 +61,53 @@ describe('water cycle manual matches the shipped tool', () => {
   });
 });
 
+// EvoLab (2026-09-20). Its manual put Homology vs Analogy in the "Evidence and ancestry"
+// path, where the tool puts Trait Divergence Model, and left Homology vs Analogy out of the
+// "Practice and project" path it actually belongs to. It also said three cards sit under
+// Teacher Resources while the tool renders four, and then described all four. A teacher
+// following the path table would have sent students to the wrong module.
+describe('evolab manual matches the shipped tool', () => {
+  const manual = text(read('manual-evo-lab.html'));
+  const tool = read('stem_lab/stem_tool_evolab.js');
+
+  const moduleTitle = (key) => {
+    const m = new RegExp(key + ":\\s*'([^']+)'").exec(tool);
+    expect(m, 'MODULE_TITLES entry for ' + key).toBeTruthy();
+    return m[1];
+  };
+  const trackModules = (id) => {
+    const block = new RegExp("id: '" + id + "'[^]{0,400}?modules: \\[([^\\]]+)\\]").exec(tool);
+    expect(block, 'learningTracks entry for ' + id).toBeTruthy();
+    return block[1].split(',').map((x) => x.trim().replace(/'/g, ''));
+  };
+
+  it('lists each learning path with the modules the tool assigns to it', () => {
+    for (const id of ['evidence', 'practice']) {
+      for (const key of trackModules(id)) {
+        expect(manual, id + ' path should name ' + key).toContain(moduleTitle(key));
+      }
+    }
+  });
+
+  it('does not place a module in a path the tool assigns elsewhere', () => {
+    // The specific defect: Homology vs Analogy belongs to 'practice', not 'evidence'.
+    expect(trackModules('practice')).toContain('homologySleuth');
+    expect(trackModules('evidence')).toContain('speciation');
+    const evidenceRow = /Evidence and ancestry<\/th>[\s\S]{0,200}?<\/tr>/.exec(read('manual-evo-lab.html'));
+    expect(evidenceRow, 'evidence path row').toBeTruthy();
+    expect(evidenceRow[0]).toContain(moduleTitle('speciation'));
+    expect(evidenceRow[0]).not.toContain(moduleTitle('homologySleuth'));
+  });
+
+  it('counts the Teacher Resources cards the tool renders', () => {
+    const cards = ['class_snapshot', '5_day_curriculum_guide', 'module_map', 'standards_crosswalk']
+      .filter((key) => tool.includes("'stem.evolab." + key + "',"));
+    expect(cards.length, 'Teacher Resources cards found in source').toBe(4);
+    expect(manual).toMatch(/Four things sit under/);
+    expect(manual).not.toMatch(/Three things sit under/);
+  });
+});
+
 describe('every catalogued STEM manual points at a real tool', () => {
   it('names a tool source that exists and is substantial', () => {
     expect(toolManuals.length).toBeGreaterThanOrEqual(5);
@@ -68,5 +115,36 @@ describe('every catalogued STEM manual points at a real tool', () => {
       const source = read(item.canonicalSource);
       expect(source.length, item.id + ' tool source is not a stub').toBeGreaterThan(10000);
     }
+  });
+});
+
+// Coaster Lab (2026-09-20). The manual said "three built-in design challenges ship with the
+// tool" and located them in the Missions panel. Missions ships fifteen, and the panel prints
+// its own count. The three named challenges are real but belong to a different control in a
+// different panel: the "Guided design challenge" selector in Build's Designer workbench. A
+// teacher reading section 3 would have gone looking in the wrong place and found fifteen
+// things instead of three.
+describe('coaster lab manual matches the shipped tool', () => {
+  const manual = text(read('manual-coaster-lab.html'));
+  const tool = read('stem_lab/stem_tool_coasterlab.js');
+
+  it('counts the missions the tool actually defines', () => {
+    const block = /const MISSIONS = \[([^]*?)\n\s*\];/.exec(tool);
+    expect(block, 'MISSIONS array').toBeTruthy();
+    const count = (block[1].match(/name: '/g) || []).length;
+    expect(count).toBe(15);
+    expect(manual, 'manual states the real mission count').toMatch(/Fifteen\s+missions/i);
+    expect(manual, 'manual must not claim three built-in challenges ship')
+      .not.toMatch(/Three\s+built-in design challenges/i);
+  });
+
+  it('puts the three guided design challenges where the tool puts them', () => {
+    for (const label of ['Build a smooth 20 m hill', 'Create 3 seconds of airtime', 'Finish below 4.0 vertical g']) {
+      expect(tool, 'tool offers ' + label).toContain('>' + label + '<');
+    }
+    expect(tool, 'the selector the labels belong to').toContain('clab-designChallenge');
+    expect(manual, 'manual sends teachers to the Designer workbench').toMatch(/Designer\s+workbench/i);
+    expect(manual, 'manual no longer sources them from Missions')
+      .not.toMatch(/three challenges from the Missions panel/i);
   });
 });
