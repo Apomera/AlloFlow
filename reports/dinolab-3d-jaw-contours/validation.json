@@ -1,0 +1,266 @@
+{
+  "date": "2026-09-20",
+  "unitTests": 47,
+  "unitSuites": 5,
+  "browserScenarios": 8,
+  "browserRuns": 8,
+  "reviewedImages": [
+    "tyrannosaurus-head.png",
+    "brachiosaurus-head.png",
+    "spinosaurus-head.png",
+    "anchiornis-head.png",
+    "microraptor-head.png",
+    "triceratops-head.png",
+    "parasaurolophus-head.png",
+    "tyrannosaurus-side.png",
+    "brachiosaurus-side.png",
+    "brachiosaurus-phone.png"
+  ],
+  "minimumEnclosure": 3.395418290863504,
+  "jawVertices": 1227,
+  "jawTriangles": 2352,
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "0bb1c22458c3b4d592dd2cbd79d9bd4b78d6f684793e263b83ae9fba12cce679"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "0bb1c22458c3b4d592dd2cbd79d9bd4b78d6f684793e263b83ae9fba12cce679"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "0bb1c22458c3b4d592dd2cbd79d9bd4b78d6f684793e263b83ae9fba12cce679"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "0bb1c22458c3b4d592dd2cbd79d9bd4b78d6f684793e263b83ae9fba12cce679"
+    }
+  ],
+  "species": {
+    "tyrannosaurus": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        25.87641231290818,
+        8.525683535221441
+      ],
+      "minEnclosure": 8.525683535221441,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 135,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "brachiosaurus": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        14.75228077017253,
+        5.120374425501601
+      ],
+      "minEnclosure": 5.120374425501601,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 133,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "spinosaurus": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        32.320724947454025,
+        12.914704168621714
+      ],
+      "minEnclosure": 12.914704168621714,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 136,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "anchiornis": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        14.118896472861337,
+        3.395418290863504
+      ],
+      "minEnclosure": 3.395418290863504,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 439,
+      "textures": 8,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "microraptor": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        14.929658525225646,
+        4.391519984761897
+      ],
+      "minEnclosure": 4.391519984761897,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 417,
+      "textures": 8,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "triceratops": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        19.536786551229476,
+        6.933894631220162
+      ],
+      "minEnclosure": 6.933894631220162,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 139,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "parasaurolophus": {
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        26.822352825278234,
+        13.432616662683085
+      ],
+      "minEnclosure": 13.432616662683085,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 128,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "reconstructionModes": [
+    {
+      "mode": "conservative",
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        28.94551124613168,
+        8.599920205477055
+      ],
+      "minEnclosure": 8.599920205477055,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 173,
+      "textures": 8,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    {
+      "mode": "avian",
+      "hasJaw": true,
+      "capOutside": 0,
+      "capEnclosures": [
+        31.07884114685506,
+        9.02696509192443
+      ],
+      "minEnclosure": 9.02696509192443,
+      "invalid": 0,
+      "outside": 0,
+      "maxPlumageGap": 0,
+      "creases": 2,
+      "vertices": 1227,
+      "opacity": 1,
+      "transparent": false,
+      "depthWrite": true,
+      "skinMapped": true,
+      "geometries": 317,
+      "textures": 8,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  ],
+  "resources": {
+    "opacity": {
+      "before": {
+        "geometries": 439,
+        "textures": 8
+      },
+      "after": {
+        "geometries": 439,
+        "textures": 8
+      }
+    }
+  },
+  "deployed": false
+}

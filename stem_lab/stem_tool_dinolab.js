@@ -6318,6 +6318,17 @@ window.StemLab = window.StemLab || {
     return { point: curve.getPoint(t), radius: radius, t: t, distance: distance };
   }
 
+  // Taper both mandibular ends upward into the head; retain the three jaw stations.
+  function dinoJawProfile(THREE, start, end, height, depth, length) {
+    var rear = start.clone().add(new THREE.Vector3(length * 0.12, height * 0.28, 0));
+    var front = end.clone().add(new THREE.Vector3(-length * 0.08, height * 0.20, 0));
+    return {
+      points: [rear, start.clone(), start.clone().lerp(end, 0.5), end.clone(), front],
+      radii: [[height * 0.025, depth * 0.035], [height * 0.30, depth * 0.72],
+        [height * 0.24, depth * 0.58], [height * 0.12, depth * 0.40], [height * 0.02, depth * 0.03]]
+    };
+  }
+
   // Broad cheek relief is part of the head skin, with no overlapping cheek pieces.
   function dinoCranialGeometry(THREE, points, radii, shape) {
     var geometry = dinoSurfaceGeometry(THREE, points, radii, {
@@ -9161,10 +9172,13 @@ window.StemLab = window.StemLab || {
               var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale);
               var lowerJawStart = head.clone().lerp(surfaceSnout, 0.12).add(vec(0, -surfaceHeadHeight * 0.44, 0));
               var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37, 0));
-              var lowerJawShell = addSoftTissueChain([lowerJawStart, lowerJawStart.clone().lerp(lowerJawEnd, 0.5), lowerJawEnd],
-                [[surfaceHeadHeight * 0.30, jawDepth * 0.72], [surfaceHeadHeight * 0.24, jawDepth * 0.58], [surfaceHeadHeight * 0.12, jawDepth * 0.40]], headMat)[0];
+              var jawProfile = dinoJawProfile(THREE, lowerJawStart, lowerJawEnd, surfaceHeadHeight, jawDepth, surfaceHeadLength);
+              var lowerJawShell = addSoftTissueChain(jawProfile.points, jawProfile.radii, headMat)[0];
               addBodyContour(lowerJawShell);
-              if (lowerJawShell) { lowerJawShell.userData.dinoRegion = 'head'; lowerJawShell.name = 'lower-jaw-surface'; }
+              if (lowerJawShell) {
+                lowerJawShell.userData.dinoRegion = 'head'; lowerJawShell.name = 'lower-jaw-surface';
+                lowerJawShell.userData.dinoJawTerminals = [jawProfile.points[0].toArray(), jawProfile.points[4].toArray()];
+              }
               [-1, 1].forEach(function (faceSide) {
                 var eyePos = head.clone().add(vec(-surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale, surfaceHeadHeight * 0.30 * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.94));
                 eyePos = faceSurfacePoint(eyePos, faceSide, -eyeRadius * 0.14);

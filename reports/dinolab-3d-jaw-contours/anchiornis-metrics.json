@@ -1,0 +1,24 @@
+{
+  "hasJaw": true,
+  "capOutside": 0,
+  "capEnclosures": [
+    14.118896472861337,
+    3.395418290863504
+  ],
+  "minEnclosure": 3.395418290863504,
+  "invalid": 0,
+  "outside": 0,
+  "maxPlumageGap": 0,
+  "creases": 2,
+  "vertices": 1227,
+  "opacity": 1,
+  "transparent": false,
+  "depthWrite": true,
+  "skinMapped": true,
+  "model": "D5E9DB83-2E2E-4459-B149-F3BE83917823",
+  "geometries": 439,
+  "textures": 8,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

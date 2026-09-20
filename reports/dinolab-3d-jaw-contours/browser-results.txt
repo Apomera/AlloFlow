@@ -1,0 +1,17 @@
+Running 6 tests using 1 worker
+
+
+
+(node:3816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:3816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:43:128 › spinosaurus has rounded enclosed jaw terminals
+[2/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:43:128 › anchiornis has rounded enclosed jaw terminals
+[3/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:43:128 › microraptor has rounded enclosed jaw terminals
+[4/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:43:128 › triceratops has rounded enclosed jaw terminals
+[5/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:43:128 › parasaurolophus has rounded enclosed jaw terminals
+[6/6] [chromium] › tests\e2e\dinolab-3d-jaw-contours.spec.ts:61:5 › conservative and avian inference retain seated jaw closures
+  6 passed (4.2m)

@@ -1,0 +1,52 @@
+[
+  {
+    "mode": "conservative",
+    "hasJaw": true,
+    "capOutside": 0,
+    "capEnclosures": [
+      28.94551124613168,
+      8.599920205477055
+    ],
+    "minEnclosure": 8.599920205477055,
+    "invalid": 0,
+    "outside": 0,
+    "maxPlumageGap": 0,
+    "creases": 2,
+    "vertices": 1227,
+    "opacity": 1,
+    "transparent": false,
+    "depthWrite": true,
+    "skinMapped": true,
+    "model": "EB3843E8-B80D-4EF9-819E-D2118EA8C670",
+    "geometries": 173,
+    "textures": 8,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  {
+    "mode": "avian",
+    "hasJaw": true,
+    "capOutside": 0,
+    "capEnclosures": [
+      31.07884114685506,
+      9.02696509192443
+    ],
+    "minEnclosure": 9.02696509192443,
+    "invalid": 0,
+    "outside": 0,
+    "maxPlumageGap": 0,
+    "creases": 2,
+    "vertices": 1227,
+    "opacity": 1,
+    "transparent": false,
+    "depthWrite": true,
+    "skinMapped": true,
+    "model": "2A92BC9F-EF9F-48FC-8234-605D2D793117",
+    "geometries": 317,
+    "textures": 8,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  }
+]
