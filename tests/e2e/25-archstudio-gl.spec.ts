@@ -2932,4 +2932,151 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
 
+  test('floor explorer previews occupied floors without changing the build and opens the selected view', async ({ page }, testInfo) => {
+    const blocks = [
+      { x: -1, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 1, y: 0, z: -2, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: 0, y: 2, z: 0, shape: 'arch', material: 'wood', color: '#92400e', rotation: 90 },
+      { x: 2, y: 5, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }];
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await mount3d(page, { blocks, undoStack: [[]], redoStack: [[blocks[0]]], projectName: 'Floor study', projectNotes: 'Keep notes', filterMaterial: 'wood', viewLayer: 2, sidebarCollapsed: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1060px}' });
+    const before = await page.evaluate(() => { const w = window as any; w.__floorCanvas = document.querySelector('canvas[data-arch-gl]'); return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=floorplans]').click();
+    const panel = page.locator('#arch-floor-panel'), select = panel.getByRole('combobox', { name: 'Preview floor (Y)', exact: true });
+    await expect(page.locator('#arch-floor-heading')).toBeFocused();
+    await expect(select).toHaveValue('2');
+    await panel.getByRole('button', { name: 'Show all floors in 3D', exact: true }).click();
+    await expect(select).toHaveValue('2');
+    await panel.getByRole('button', { name: 'View this floor in 3D', exact: true }).click();
+    await panel.getByRole('button', { name: 'Next occupied floor', exact: true }).click();
+    await expect(select).toHaveValue('5');
+    await expect(page.locator('#arch-floor-heading')).toBeFocused();
+    await expect(panel.getByRole('button', { name: 'Next occupied floor', exact: true })).toBeDisabled();
+    await select.selectOption('0');
+    await expect(panel.locator('[data-arch-floor-count]')).toHaveText('2 blocks on this floor');
+    await expect(panel.locator('[data-drawing-cell]')).toHaveCount(2);
+    await expect(panel.locator('[data-drawing-cut]')).toHaveCount(0);
+    await expect(panel.locator('.arch-floor-materials')).toContainText('Stone: 1 block');
+    expect(await page.evaluate(() => (window as any).__bucket().viewLayer)).toBe(2);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(1);
+    await panel.getByRole('button', { name: 'View this floor in 3D', exact: true }).click();
+    await expect(page.locator('canvas[data-arch-gl]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ viewLayer: 0, editorView: '3d', filterMaterial: 'wood' });
+    await panel.getByRole('button', { name: 'Show all floors in 3D', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl().blockCount)).toBe(2);
+    await page.locator('#arch-floor-heading').focus();
+    await page.screenshot({ path: testInfo.outputPath('floor-explorer-desktop.png'), fullPage: true });
+    expect(await page.evaluate(() => (window as any).__floorCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="1,0,-2"]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ editorView: 'grid', editLayer: 0, viewLayer: -1, filterMaterial: 'wood' });
+    expect(await page.evaluate(() => { const w = window as any; return { blocks: w.__bucket().blocks, undo: w.__bucket().undoStack, redo: w.__bucket().redoStack, name: w.__bucket().projectName, notes: w.__bucket().projectNotes }; })).toEqual(before);
+    await panel.getByRole('button', { name: 'Close floor explorer', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=floorplans]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('floor explorer follows replay, keeps an empty saved floor, and opens a read-only grid', async ({ page }) => {
+    const live = [{ x: 0, y: 2, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }];
+    const past = [{ ...live[0], x: 64, y: 9, z: -64, material: 'wood', color: '#92400e' }];
+    await mount3d(page, { blocks: live, undoStack: [past], showReplay: true, replayStep: 0, floorPlanY: 2, sidebarCollapsed: true, soundEnabled: false });
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('floor');
+    await page.locator('#arch-tool-browser [data-arch-tool=floorplans]').click();
+    const panel = page.locator('#arch-floor-panel'), select = panel.getByRole('combobox', { name: 'Preview floor (Y)', exact: true });
+    await expect(page.locator('#arch-floor-heading')).toBeFocused();
+    await expect(select).toHaveValue('2');
+    await expect(panel.locator('.arch-floor-note').first()).toContainText('This floor is empty');
+    await expect(panel.locator('[data-arch-floor-frame]')).toHaveText('Replay step 1 of 2');
+    await select.focus(); await page.keyboard.press('Escape'); await expect(panel).toBeVisible();
+    await panel.getByRole('button', { name: 'Next occupied floor', exact: true }).click();
+    await expect(select).toHaveValue('9');
+    await expect(panel.locator('[data-block="64,9,-64"]')).toHaveCount(1);
+    await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="64,9,-64"]')).toBeFocused();
+    await expect(page.getByRole('grid')).toHaveAttribute('aria-readonly', 'true');
+    await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(live);
+    await page.locator('#arch-replay-panel').getByRole('slider').focus(); await page.keyboard.press('End');
+    await expect(panel.locator('[data-arch-floor-count]')).toHaveText('0 blocks on this floor');
+    await expect(select).toHaveValue('9');
+    await expect(page.getByRole('slider', { name: 'Visible floor layer', exact: true })).toHaveAttribute('max', '2');
+    await panel.getByRole('button', { name: 'Previous occupied floor', exact: true }).focus(); await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=floorplans]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ blocks: live, undoStack: [past], showReplay: true, replayStep: 1 });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('floor visibility uses the replay range without changing the editing floor', async ({ page }) => {
+    const live = [{ x: 0, y: 1, z: 0, shape: 'block', material: 'stone' }];
+    await mount3d(page, { blocks: live, undoStack: [[{ ...live[0], y: 12 }]], showReplay: true, replayStep: 0, viewLayer: 12, editLayer: 7, soundEnabled: false });
+    const slider = page.getByRole('slider', { name: 'Visible floor layer', exact: true });
+    await expect(slider).toHaveAttribute('max', '12');
+    await expect(slider).toHaveAttribute('aria-valuetext', 'Floor Y=12; 1 block in this frame');
+    await slider.focus(); await page.keyboard.press('Home');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ viewLayer: -1, editLayer: 7 });
+    await page.keyboard.press('ArrowRight');
+    await expect(slider).toHaveAttribute('aria-valuetext', 'Floor Y=0; 0 blocks in this frame');
+    await page.keyboard.press('End');
+    await page.getByRole('button', { name: 'Explore floor plans', exact: true }).click();
+    await expect(page.locator('#arch-floor-heading')).toBeFocused();
+    await expect(page.locator('#arch-floor-select')).toHaveValue('12');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ editLayer: 7, viewLayer: 12, blocks: live });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('floor explorer supports building an empty selected floor and undo', async ({ page }) => {
+    await mount3d(page, { blocks: [], floorPlanY: 3, showFloorPlans: true, soundEnabled: false });
+    const panel = page.locator('#arch-floor-panel');
+    await expect(panel.locator('.arch-floor-note').first()).toContainText('This frame has no blocks');
+    await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="0,3,0"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel.locator('[data-arch-floor-count]')).toHaveText('1 block on this floor');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toMatchObject([{ x: 0, y: 3, z: 0 }]);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect(panel.locator('[data-arch-floor-count]')).toHaveText('0 blocks on this floor');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('floor explorer has reachable phone controls and accessible themes', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 960 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=floorplans]').click();
+    const panel = page.locator('#arch-floor-panel');
+    const sizes = await panel.locator('button,select').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, right: r.right }; }));
+    expect(sizes.filter(r => r.width < 44 || r.height < 44 || r.left < 0 || r.right > 320)).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('floor-controls-phone.png'), fullPage: true });
+    await panel.locator('.arch-floor-figure').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('floor-drawing-phone.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).scrollIntoViewIfNeeded();
+    expect(await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await panel.getByRole('button', { name: 'Open this floor in the grid', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="0,0,0"]')).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await page.addStyleTag({ content: '#wrap{height:1060px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await panel.getByRole('combobox', { name: 'Preview floor (Y)', exact: true }).focus();
+    await page.keyboard.press('End'); await page.keyboard.press('Enter');
+    await expect(panel.locator('[data-arch-floor-name]')).toHaveText('Floor Y=2');
+    await panel.getByRole('button', { name: 'Previous occupied floor', exact: true }).focus(); await page.keyboard.press('Escape');
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=floorplans]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
 });

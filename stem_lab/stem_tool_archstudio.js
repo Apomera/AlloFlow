@@ -2249,6 +2249,70 @@ function __alloAST(k, fb) {
 
 
 
+
+  var ARCH_FLOOR_LABELS = {
+  "title": "Floor explorer",
+  "close": "Close floor explorer",
+  "close_short": "Close",
+  "choose": "Preview floor (Y)",
+  "option": "Y={floor} · {count} blocks",
+  "option_one": "Y={floor} · {count} block",
+  "previous": "Previous occupied floor",
+  "next": "Next occupied floor",
+  "previous_short": "Previous floor",
+  "next_short": "Next floor",
+  "floor": "Floor Y={floor}",
+  "count": "{count} blocks on this floor",
+  "count_one": "{count} block on this floor",
+  "floors": "{count} occupied floors",
+  "floors_one": "{count} occupied floor",
+  "preview": "Floor plan preview",
+  "scope": "The plan follows the current frame and includes blocks hidden by 3D filters.",
+  "cells": "The plan shows occupied cells. Curved and sloped shapes appear as cells.",
+  "empty": "This floor is empty in the current frame. Choose another floor to inspect it.",
+  "empty_frame": "This frame has no blocks. Open the floor grid to build, or choose another replay step.",
+  "materials": "Materials on this floor",
+  "material_count": "{material}: {count} blocks",
+  "material_count_one": "{material}: {count} block",
+  "view": "View this floor in 3D",
+  "grid": "Open this floor in the grid",
+  "actions": "Inspect this floor",
+  "grid_opened": "Floor grid opened at Y={floor}.",
+  "replay_grid": "Floor grid opened at Y={floor}; replay is read-only.",
+  "filter_help": "Other 3D filters still apply. The floor grid shows the full editing floor.",
+  "all": "Show all floors in 3D",
+  "visibility": "Floor visibility",
+  "all_label": "All floors",
+  "range_value": "Floor Y={floor}; {count} blocks in this frame",
+  "range_value_one": "Floor Y={floor}; {count} block in this frame",
+  "full_count": "{count} blocks in this frame",
+  "full_count_one": "{count} block in this frame",
+  "visibility_help": "Changes the 3D view; the editing floor stays unchanged.",
+  "explore": "Explore floor plans",
+  "close_help": "Closing keeps your view settings.",
+  "active_floor": "3D floor filter: Y={floor}",
+  "active_all": "3D floor filter: all floors"
+};
+  function summarizeArchFloors(input, requestedFloor) {
+    var frame = getArchRuntimeBlocks(input), counts = {}, materials = {};
+    frame.forEach(function (block) { counts[block.y] = (counts[block.y] || 0) + 1; });
+    var levels = Object.keys(counts).map(Number).sort(function (a, b) { return a - b; });
+    var parsed = parseArchCoordinate(requestedFloor);
+    var floor = parsed != null && parsed >= ARCH_Y_MIN && parsed <= ARCH_Y_MAX ? parsed : (levels[0] || 0);
+    var previous = null, next = null;
+    levels.forEach(function (level) {
+      if (level < floor) previous = level;
+      if (next == null && level > floor) next = level;
+    });
+    var selected = frame.filter(function (block) { return block.y === floor; });
+    selected.sort(function (a, b) { return a.z - b.z || a.x - b.x; });
+    selected.forEach(function (block) { materials[block.material] = (materials[block.material] || 0) + 1; });
+    return { floor: floor, count: selected.length, total: frame.length, blocks: selected, materials: materials,
+      highest: levels.length ? levels[levels.length - 1] : 0, previous: previous, next: next,
+      levels: levels.map(function (level) { return { floor: level, count: counts[level] }; }) };
+  }
+  window.__alloArchFloors = { summary: summarizeArchFloors, labels: ARCH_FLOOR_LABELS };
+
   var ARCH_SECTION_LABELS = {
   "title": "Cross-section explorer",
   "close": "Close cross-section explorer",
@@ -4158,19 +4222,6 @@ function __alloAST(k, fb) {
     // ── Multi-Floor Plan View ──
     // ══════════════════════════════════════════════════════════════
     var showFloorPlans = d.showFloorPlans || false;
-    var floorPlans = [];
-    if (showFloorPlans && totalBlocks > 0) {
-      var byFloor = {};
-      blocks.forEach(function (b) { if (!byFloor[b.y]) byFloor[b.y] = []; byFloor[b.y].push(b); });
-      var floors = Object.keys(byFloor).map(Number).sort(function (a, b) { return a - b; });
-      floors.forEach(function (y) {
-        var floorBlocks = byFloor[y];
-        var grid = {};
-        floorBlocks.forEach(function (b) { grid[b.x + ',' + b.z] = b; });
-        floorPlans.push({ y: y, blocks: floorBlocks, count: floorBlocks.length, grid: grid });
-      });
-    }
-
     // ══════════════════════════════════════════════════════════════
     // ── STL Export ──
     // ══════════════════════════════════════════════════════════════
@@ -4606,6 +4657,118 @@ function __alloAST(k, fb) {
 
 
 
+
+
+    function floorText(key, values) {
+      if (ARCH_FLOOR_LABELS[key + '_one'] && values && values.count === 1) key += '_one';
+      var text = t('stem.archstudio.floors_' + key, ARCH_FLOOR_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function focusFloorExplorer(opening) {
+      setTimeout(function () {
+        var target = opening ? document.getElementById('arch-floor-heading') :
+          document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="floorplans"]');
+        if (target) { target.focus(); target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }, 0);
+    }
+    function toggleFloorExplorer() {
+      if (!showFloorPlans) { openFloorExplorer(); return; }
+      upd('showFloorPlans', false);
+      focusFloorExplorer(false);
+    }
+    function openFloorExplorer() {
+      var requested = d.floorPlanY != null ? d.floorPlanY : viewLayer >= 0 ? viewLayer : null;
+      upd({ showFloorPlans: true, floorPlanY: summarizeArchFloors(archReplayFrame, requested).floor });
+      focusFloorExplorer(true);
+    }
+    function choosePreviewFloor(value) {
+      var floor = parseArchCoordinate(value);
+      if (floor == null || floor < ARCH_Y_MIN || floor > ARCH_Y_MAX) return;
+      var control = document.activeElement;
+      upd('floorPlanY', floor);
+      setTimeout(function () {
+        if (control && control.disabled) { var heading = document.getElementById('arch-floor-heading'); if (heading) heading.focus(); }
+      }, 0);
+    }
+    function renderFloorExplorer() {
+      if (!showFloorPlans) return null;
+      var summary = summarizeArchFloors(archReplayFrame, d.floorPlanY != null ? d.floorPlanY : viewLayer >= 0 ? viewLayer : null);
+      var options = summary.levels.slice();
+      if (!options.some(function (item) { return item.floor === summary.floor; })) {
+        options.push({ floor: summary.floor, count: 0 }); options.sort(function (a, b) { return a.floor - b.floor; });
+      }
+      var projection = archDrawingProjection(archReplayFrame, { view: 'plan', floor: summary.floor, cut: -65 });
+      // A floor preview has no active section line; the 3D section remains independent.
+      projection.cut = -65;
+      var drawingLabels = {}; Object.keys(ARCH_DRAWING_LABELS).forEach(function (key) { drawingLabels[key] = drawingText(key); });
+      function openGridFloor() {
+        var target = summary.blocks[0] || { x: 0, z: 0 };
+        upd({ editorView: 'grid', editLayer: summary.floor, floorPlanY: summary.floor, gridCursorX: target.x, gridCursorZ: target.z });
+        focusArchGridCell(target.x, target.z);
+        if (announceToSR) announceToSR(floorText(showReplay ? 'replay_grid' : 'grid_opened', { floor: summary.floor }));
+      }
+      function viewFloorIn3d() {
+        upd({ editorView: '3d', hide3d: false, viewLayer: summary.floor, floorPlanY: summary.floor });
+        setTimeout(function () {
+          var canvas = document.querySelector('canvas[data-arch-gl]');
+          if (canvas) { canvas.focus(); canvas.scrollIntoView({ block: 'nearest' }); }
+        }, 0);
+      }
+      return el('section', { id: 'arch-floor-panel', className: 'arch-floor-panel', 'aria-labelledby': 'arch-floor-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleFloorExplorer(); } } },
+        el('div', { className: 'arch-floor-header' },
+          el('h3', { id: 'arch-floor-heading', tabIndex: -1 }, floorText('title')),
+          el('button', { type: 'button', 'aria-label': floorText('close'), onClick: toggleFloorExplorer }, floorText('close_short'))),
+        el('div', { className: 'arch-floor-meta' },
+          el('span', { 'data-arch-floor-frame': true }, showReplay ? filterText('replay', { step: replayStep + 1, total: replayFrames + 1 }) : filterText('live')),
+          el('span', null, floorText('floors', { count: summary.levels.length }))),
+        el('label', { className: 'arch-floor-picker', htmlFor: 'arch-floor-select' }, floorText('choose'),
+          el('select', { id: 'arch-floor-select', 'aria-label': floorText('choose'), value: summary.floor,
+            onChange: function (event) { choosePreviewFloor(event.target.value); } },
+            options.map(function (item) { return el('option', { key: item.floor, value: item.floor }, floorText('option', item)); }))),
+        el('div', { className: 'arch-floor-navigation', role: 'group', 'aria-label': floorText('title') },
+          el('button', { type: 'button', 'aria-label': floorText('previous'), disabled: summary.previous == null,
+            onClick: function () { choosePreviewFloor(summary.previous); } }, '\u2190 ' + floorText('previous_short')),
+          el('button', { type: 'button', 'aria-label': floorText('next'), disabled: summary.next == null,
+            onClick: function () { choosePreviewFloor(summary.next); } }, floorText('next_short') + ' \u2192')),
+        el('div', { className: 'arch-floor-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+          el('strong', { 'data-arch-floor-name': true }, floorText('floor', { floor: summary.floor })),
+          el('span', { 'data-arch-floor-count': true }, floorText('count', { count: summary.count }))),
+        !summary.count && el('p', { className: 'arch-floor-note' }, floorText(summary.total ? 'empty' : 'empty_frame')),
+        el('figure', { className: 'arch-floor-figure' },
+          el('div', { className: 'arch-floor-drawing', role: 'group', 'aria-label': floorText('preview'),
+            dangerouslySetInnerHTML: { __html: archDrawingSvg(projection, { width: 320, height: 260, labels: drawingLabels, dimensions: false }) } }),
+          el('figcaption', null, floorText('cells'))),
+        summary.count > 0 && el('div', { className: 'arch-floor-materials', role: 'group', 'aria-label': floorText('materials') },
+          el('h4', null, floorText('materials')),
+          materials.filter(function (material) { return summary.materials[material.id]; }).map(function (material) {
+            return el('div', { key: material.id, className: 'arch-floor-material' },
+              el('span', { className: 'arch-material-swatch arch-material-' + material.id, 'aria-hidden': 'true', style: { backgroundColor: normalizeArchColor(material.color, material.id) } }),
+              el('span', null, floorText('material_count', { material: material.label, count: summary.materials[material.id] })));
+          })),
+        el('p', { className: 'arch-floor-note' }, floorText('scope')),
+        el('div', { className: 'arch-floor-actions', role: 'group', 'aria-label': floorText('actions') },
+          el('button', { type: 'button', className: 'arch-floor-view', onClick: viewFloorIn3d }, floorText('view')),
+          el('button', { type: 'button', onClick: openGridFloor }, floorText('grid')),
+          el('button', { type: 'button', 'aria-pressed': viewLayer === -1, onClick: function () { upd({ viewLayer: -1, floorPlanY: summary.floor }); } }, floorText('all'))),
+        el('p', { className: 'arch-floor-current', 'data-arch-floor-current': true }, viewLayer < 0 ? floorText('active_all') : floorText('active_floor', { floor: viewLayer })),
+        el('p', null, floorText('filter_help')),
+        el('p', { className: 'arch-floor-footnote' }, floorText('close_help')));
+    }
+    function renderFloorVisibility() {
+      var summary = summarizeArchFloors(archReplayFrame, viewLayer);
+      return el('section', { className: 'arch-floor-visibility', 'aria-labelledby': 'arch-floor-visibility-heading' },
+        el('h3', { id: 'arch-floor-visibility-heading' }, floorText('visibility')),
+        el('div', { className: 'arch-floor-visibility-value' }, viewLayer < 0 ? floorText('all_label') : floorText('floor', { floor: viewLayer })),
+        el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_visible_floor_layer', 'Visible floor layer'),
+          'aria-describedby': 'arch-floor-visibility-help', 'aria-valuetext': viewLayer < 0 ? floorText('all_label') : floorText('range_value', { floor: viewLayer, count: summary.count }),
+          min: -1, max: Math.max(summary.highest, viewLayer, 0), step: 1, value: viewLayer,
+          onChange: function (event) { upd('viewLayer', Number(event.target.value)); } }),
+        el('p', { 'data-arch-floor-visibility-count': true }, floorText('full_count', { count: viewLayer < 0 ? summary.total : summary.count })),
+        el('p', { id: 'arch-floor-visibility-help' }, floorText('visibility_help')),
+        el('button', { type: 'button', onClick: openFloorExplorer }, floorText('explore')));
+    }
 
     function sectionText(key, values) {
       if ((key === 'option' || key === 'count' || key === 'all_count') && values && values.count === 1) key += '_one';
@@ -5995,6 +6158,31 @@ function __alloAST(k, fb) {
         + '.theme-contrast #arch-studio-region .arch-shape-icon{color:#ffff00!important;}.theme-contrast #arch-studio-region .arch-shape-choice[aria-pressed=true],.theme-contrast #arch-studio-region .arch-material-choice[aria-pressed=true]{border-color:#00ff00!important;background:#142314!important;}'
 
 
+
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-floors{width:clamp(310px,30vw,370px)!important;}'
+        + '#arch-studio-region .arch-floor-panel{flex:none;min-width:0;border:1px solid #8b82ae;border-radius:12px;padding:12px;background:linear-gradient(150deg,#302c4c,#17283a);color:#e2e8f0;}'
+        + '#arch-studio-region .arch-floor-header{display:flex;align-items:center;justify-content:space-between;gap:8px;}#arch-studio-region .arch-floor-header h3{font-size:16px;line-height:1.35;margin:0;color:#ede9fe;}'
+        + '#arch-studio-region #arch-floor-heading:focus{outline:2px solid #c4b5fd;outline-offset:4px;}'
+        + '#arch-studio-region .arch-floor-panel button,#arch-studio-region .arch-floor-panel select,#arch-studio-region .arch-floor-visibility button{box-sizing:border-box;min-height:44px;min-width:44px;border:1px solid #a39cc0;border-radius:7px;padding:8px;background:#35344f;color:#f8fafc;font-size:12px;font-weight:650;line-height:1.35;font-family:inherit;cursor:pointer;overflow-wrap:anywhere;}'
+        + '#arch-studio-region .arch-floor-panel button:disabled{cursor:default;}#arch-studio-region .arch-floor-panel select{font-family:inherit;font-size:12px;}'
+        + '#arch-studio-region .arch-floor-panel p,#arch-studio-region .arch-floor-visibility p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:9px 0;}'
+        + '#arch-studio-region .arch-floor-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:12px 0;font-size:11px;color:#ddd6fe;}'
+        + '#arch-studio-region .arch-floor-meta span:first-child{font-weight:750;letter-spacing:.4px;}'
+        + '#arch-studio-region .arch-floor-picker{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;}#arch-studio-region .arch-floor-picker select{width:100%;}'
+        + '#arch-studio-region .arch-floor-picker select:focus-visible{outline:2px solid #c4b5fd;outline-offset:2px;}'
+        + '#arch-studio-region .arch-floor-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px;}'
+        + '#arch-studio-region .arch-floor-status{display:flex;align-items:baseline;justify-content:space-between;gap:6px;flex-wrap:wrap;margin:15px 0 10px;}#arch-studio-region .arch-floor-status strong{font-size:20px;color:#f5f3ff;}#arch-studio-region .arch-floor-status span{font-size:12px;color:#ddd6fe;}'
+        + '#arch-studio-region .arch-floor-figure{margin:10px 0;}#arch-studio-region .arch-floor-drawing{border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;}#arch-studio-region .arch-floor-drawing svg{display:block;width:100%;height:auto;}'
+        + '#arch-studio-region .arch-floor-figure figcaption{font-size:11px;line-height:1.5;color:#cbd5e1;margin-top:7px;}'
+        + '#arch-studio-region .arch-floor-materials{display:flex;flex-direction:column;gap:6px;margin:12px 0;}#arch-studio-region .arch-floor-materials h4{margin:0 0 3px;font-size:12px;font-weight:700;color:#ede9fe;}'
+        + '#arch-studio-region .arch-floor-material{display:flex;align-items:center;gap:7px;font-size:12px;color:#e2e8f0;}#arch-studio-region .arch-floor-material .arch-material-swatch{width:18px;height:20px;}'
+        + '#arch-studio-region .arch-floor-note{padding:9px;border-left:3px solid #c4b5fd;border-radius:4px;background:#292b46;}'
+        + '#arch-studio-region .arch-floor-actions{display:flex;flex-direction:column;gap:7px;}#arch-studio-region .arch-floor-actions .arch-floor-view{background:#5b3d87;border-color:#c4b5fd;}#arch-studio-region .arch-floor-actions button[aria-pressed=true]{background:#282148;border-color:#c4b5fd;}'
+        + '#arch-studio-region .arch-floor-panel .arch-floor-current{color:#ede9fe;font-size:11px;font-weight:700;}#arch-studio-region .arch-floor-panel .arch-floor-footnote{font-size:11px;margin-bottom:0;}'
+        + '#arch-studio-region .arch-floor-visibility{flex:none;padding:10px;border:1px solid #687b94;border-radius:10px;background:#17283b;}#arch-studio-region .arch-floor-visibility h3{font-size:12px;margin:0 0 7px;color:#e2e8f0;}'
+        + '#arch-studio-region .arch-floor-visibility-value{font-size:14px;font-weight:700;color:#ddd6fe;}#arch-studio-region .arch-floor-visibility input{display:block;width:100%;height:44px;margin:0;accent-color:#c4b5fd;}#arch-studio-region .arch-floor-visibility button{width:100%;}'
+        + '.theme-contrast #arch-studio-region .arch-floor-panel,.theme-contrast #arch-studio-region .arch-floor-visibility{background:#000;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-floor-panel button,.theme-contrast #arch-studio-region .arch-floor-panel select,.theme-contrast #arch-studio-region .arch-floor-visibility button{background:#000;color:#ffff00;border-color:#ffff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-floors{width:auto!important;max-height:min(54vh,440px);}#arch-studio-region .arch-floor-panel{padding:10px;}#arch-studio-region .arch-floor-picker select{font-size:16px;}}'
         + '#arch-studio-region .arch-studio-sidebar.arch-studio-sections{width:clamp(310px,30vw,370px)!important;}'
         + '#arch-studio-region .arch-section-panel{flex:none;min-width:0;border:1px solid #568b96;border-radius:12px;padding:12px;background:linear-gradient(150deg,#1d3b45,#142738);color:#e2e8f0;}'
         + '#arch-studio-region .arch-section-header{display:flex;align-items:center;justify-content:space-between;gap:8px;}'
@@ -6272,7 +6460,7 @@ function __alloAST(k, fb) {
           { id: 'replay', node: pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }) },
           { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', toggleFilterPanel) },
           { id: 'badges', node: pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }) },
-          { id: 'floorplans', node: pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }) },
+          { id: 'floorplans', node: pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', toggleFloorExplorer) },
           { id: 'gravity', node: el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity') },
           { id: 'screenshot', node: el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8') },
           { id: 'sound', node: el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07') },
@@ -6289,9 +6477,10 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : '') + (showSlice ? ' arch-studio-sections' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : '') + (showSlice ? ' arch-studio-sections' : '') + (showFloorPlans ? ' arch-studio-floors' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderReplayPanel(),
+          renderFloorExplorer(),
           renderSectionPanel(),
           renderFilterPanel(),
           renderTemplateLibrary(),
@@ -6498,17 +6687,7 @@ function __alloAST(k, fb) {
             );
           })(),
 
-          // Layer View
-          el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-              el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
-              el('input', { type: 'range', 'aria-label': __alloAST('stem.archstudio.a11y_visible_floor_layer', 'Visible floor layer'), 'aria-valuetext': viewLayer === -1 ? 'All floors' : 'Floor Y equals ' + viewLayer, min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
-            ),
-            viewLayer >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
-              blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
-            )
-          ),
+          renderFloorVisibility(),
 
           // Challenge Panel
           showChallenges && el('div', null,
@@ -6797,35 +6976,7 @@ function __alloAST(k, fb) {
           // (The 3D view lives in the main viewport, not here — a building in a
           //  185px sidebar column was unreadable, and the main panel was empty.)
 
-          // ── Multi-Floor Plan View ──
-          showFloorPlans && floorPlans.length > 0 && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83C\uDFE2 Floor Plans'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 300, overflowY: 'auto' } },
-              floorPlans.map(function (floor) {
-                // Mini grid for each floor
-                var fMinX = Infinity, fMaxX = -Infinity, fMinZ = Infinity, fMaxZ = -Infinity;
-                floor.blocks.forEach(function (b) { if (b.x < fMinX) fMinX = b.x; if (b.x > fMaxX) fMaxX = b.x; if (b.z < fMinZ) fMinZ = b.z; if (b.z > fMaxZ) fMaxZ = b.z; });
-                var fW = fMaxX - fMinX + 1, fD = fMaxZ - fMinZ + 1;
-                var cellPx = Math.min(12, Math.floor(140 / Math.max(fW, fD, 1)));
-                var cells = [];
-                for (var fz = fMinZ; fz <= fMaxZ; fz++) for (var fx = fMinX; fx <= fMaxX; fx++) {
-                  var fb = floor.grid[fx + ',' + fz];
-                  cells.push(el('div', { key: fx + ',' + fz, style: {
-                    width: cellPx, height: cellPx, borderRadius: 1,
-                    background: fb ? (fb.color || matColorLookup[fb.material || 'stone'] || '#94a3b8') : 'rgba(30,41,59,.3)',
-                    border: fb ? 'none' : '1px solid rgba(51,65,85,.3)'
-                  } }));
-                }
-                return el('div', { key: floor.y, style: { padding: '5px 8px', background: 'rgba(30,41,59,.5)', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)' } },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 3 } },
-                    el('span', { style: { fontSize: 10, fontWeight: 700, color: '#f8fafc' } }, 'Y=' + floor.y),
-                    el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, floor.count + ' blocks')
-                  ),
-                  el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(' + fW + ', ' + cellPx + 'px)', gap: 1, justifyContent: 'center' } }, cells)
-                );
-              })
-            )
-          )
+
         ),
 
         // ══════════════════════════════════════════════════════════
