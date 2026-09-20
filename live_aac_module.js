@@ -444,7 +444,7 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
       cleaned.sourceInstructionalText = readingContract.normalizeSourceInstructionalText(item.sourceInstructionalText);
     }
     if (item.readingSupports && readingContract.validateReadingSupports) {
-      cleaned.readingSupports = readingContract.validateReadingSupports(readingSnapshot, item.readingSupports);
+      cleaned.readingSupports = readingContract.validateReadingSupports(item, item.readingSupports);
     }
     // A complete input can recover its normalized role after live-budget
     // cleanup downgraded it; never upgrade an already incomplete input.

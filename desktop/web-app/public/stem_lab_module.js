@@ -833,6 +833,22 @@
             return opts.orbitRequired ? orbit : orbit.catch(function () { console.warn('[StemLab] OrbitControls failed to load, proceeding without orbit controls'); return true; });
           }).then(function () { return window.THREE; });
         },
+        // Small shared scene kit, loaded only by meadow consumers. Resolve beside the
+        // actual script so bundled, local-preview and CDN paths all behave alike.
+        ensureMeadow: function () {
+          if (window.StemMeadow) return Promise.resolve(window.StemMeadow);
+          var urls=[];
+          Array.prototype.forEach.call(document.getElementsByTagName('script'),function(script){
+            var src=script.src||'';
+            if (/\/stem_lab\/(stem_lab_module|stem_tool_beehive|stem_tool_butterfly)\.js(?:[?#]|$)/.test(src)) {
+              var url=new URL('stem_sim_meadow.js',src);url.search=new URL(src).search;urls.push(url.href);
+            }
+          });
+          if(!urls.length)urls.push(new URL('stem_lab/stem_sim_meadow.js',document.baseURI).href);
+          return this.loadScriptResilient(urls.filter(function(url,i){return urls.indexOf(url)===i;}),{
+            cacheKey:'stem-meadow-v1',check:function(){return !!window.StemMeadow;},failMessage:'The meadow scene could not load.'
+          }).then(function(){return window.StemMeadow;});
+        },
         // One AudioContext for the whole lab. WebKit (Safari, every iPad) refuses a fifth live AudioContext with
         // QuotaExceededError, and a context a tool creates and never closes stays live for the rest of the session,
         // so a student who visited four sound-making tools lost sound in every later one: the creation threw
@@ -2202,8 +2218,10 @@
             el.addEventListener('webglcontextrestored', localS.onContextRestored);
             if (typeof window.IntersectionObserver === 'function') {
               localS.observer = new window.IntersectionObserver(function(entries) {
-                if (!entries || !entries[0] || localS.disposing) return;
-                localS.visible = entries[0].isIntersecting !== false;
+                if (!entries || !entries.length || localS.disposing) return;
+                // Several transitions can arrive together after scrolling or layout changes.
+                // This observer watches one host; the latest entry is its current visibility.
+                localS.visible = entries[entries.length - 1].isIntersecting !== false;
                 if (localS.visible) {
                   localS.dirty = true;
                   ensureFrame();
@@ -2686,7 +2704,7 @@
 
     window.AlloModules = window.AlloModules || {};
     // STEM_AUTOSAVE_START
-    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', '_tutorialSeen'];
+    var _STEM_SAVED_KEYS = ['calculus', 'wave', 'physics', 'punnett', 'chemBalance', 'galaxy', 'rockCycle', 'waterCycle', 'lumen', 'companionPlanting', 'cellProgress', 'butterfly', '_tutorialSeen'];
     function _stemPersistencePayload(labToolData) {
           var _toSave = {};
           // @tool waterCycle
@@ -5925,6 +5943,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'butterfly', icon: '\uD83E\uDD8B', label: 'Butterfly Habitat Lab',
+                desc: 'Fly through a summer meadow as a monarch. Compare nectar flowers, milkweed host plants, and a mown lawn; collect evidence in your field journal.',
+                color: 'orange', ready: true
+              },
+              {
                 id: 'beehive', icon: '\uD83D\uDC1D', label: t('stem.tools_menu.beehive_colony_simulator') || 'Beehive Colony Simulator',
                 desc: t('stem.tools_menu.manage_a_living_honeybee_colony_nectar') || 'Manage a living honeybee colony \u2014 nectar economics, waggle dances, seasonal cycles, threats, and the science of superorganisms. Connected to Companion Planting!',
                 color: 'amber', ready: true
@@ -7983,6 +8006,7 @@
             diagnosisEligibility: true,
             musicSynth: true,
             beehive: true,
+            butterfly: true,
             echolocation: true,
             echoTrainer: true,
             oratory: true,
