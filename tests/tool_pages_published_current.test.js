@@ -10,7 +10,7 @@
 // that cannot go red teaches people to trust nothing.
 import { describe, expect, it, vi } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 // The generator reads a 149-entry registry and 125 pages from OneDrive-synced storage.
@@ -65,5 +65,29 @@ describe('every manual-backed tool page offers its manual', () => {
       const manual = readFileSync(resolve(process.cwd(), item.href), 'utf8');
       expect(manual, item.id + ' manual links back to its tool page').toContain('tool-' + slug + '.html');
     }
+  });
+});
+
+// Orphaned landing pages (2026-09-20). build_promo_tool_directory.cjs decides whether to
+// print an "About" link by asking whether tool-<slug>.html exists AT GENERATION TIME, and
+// build_tool_pages.cjs decides what to publish from the registry. Run them in the wrong
+// order after adding a tool and you get a published, sitemapped, indexable page that the
+// directory never links to: exactly what happened to the butterfly page, which existed and
+// was in the sitemap while tools.html pointed only at the app. Neither generator's own
+// --check can see it, because each is internally consistent.
+describe('every published tool page is reachable from the directory', () => {
+  it('links each tool-*.html from tools.html', () => {
+    const dir = readFileSync(resolve(process.cwd(), 'tools.html'), 'utf8');
+    const pages = readdirSync(process.cwd()).filter((f) => /^tool-[a-z0-9-]+\.html$/.test(f));
+    expect(pages.length).toBeGreaterThan(100);
+    const orphans = pages.filter((f) => !dir.includes('"' + f + '"'));
+    expect(orphans, 'run `node dev-tools/build_promo_tool_directory.cjs` after generating pages').toEqual([]);
+  });
+
+  it('does not advertise a page that was never published', () => {
+    const dir = readFileSync(resolve(process.cwd(), 'tools.html'), 'utf8');
+    const linked = [...dir.matchAll(/href="(tool-[a-z0-9-]+\.html)"/g)].map((m) => m[1]);
+    const missing = [...new Set(linked)].filter((f) => !existsSync(resolve(process.cwd(), f)));
+    expect(missing, 'tools.html links a landing page that does not exist').toEqual([]);
   });
 });
