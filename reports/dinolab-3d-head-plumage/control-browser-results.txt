@@ -1,0 +1,13 @@
+Running 2 tests using 1 worker
+
+
+
+(node:45624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:45624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/2] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:80:5 › coat stays rooted during motion and follows opacity without rebuilding
+[2/2] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:98:5 › Velociraptor minimum keeps forearm feathers without claiming a preserved body coat
+  2 passed (1.8m)

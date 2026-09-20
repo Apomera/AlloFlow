@@ -1,0 +1,135 @@
+{
+  "unitTests": 41,
+  "unitSuites": 5,
+  "browserScenarios": 6,
+  "reviewedImages": [
+    "anchiornis-head.png",
+    "anchiornis-side.png",
+    "anchiornis-phone.png",
+    "microraptor-head.png",
+    "sinosauropteryx-head.png",
+    "yutyrannus-head.png"
+  ],
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "c6a4d2729b8fcacaf8a1d6746dd561352a33822656672e05bf6f696126b514c8"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "c6a4d2729b8fcacaf8a1d6746dd561352a33822656672e05bf6f696126b514c8"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "c6a4d2729b8fcacaf8a1d6746dd561352a33822656672e05bf6f696126b514c8"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "c6a4d2729b8fcacaf8a1d6746dd561352a33822656672e05bf6f696126b514c8"
+    }
+  ],
+  "species": {
+    "anchiornis": {
+      "headRoots": 211,
+      "eyeClearance": 0.0031525845855116807,
+      "frontCount": 84,
+      "backCount": 207,
+      "frontMax": 0.2962777862410557,
+      "backMin": 0.7236146675049485,
+      "neckTaper": {
+        "u": [
+          0.55,
+          0.3
+        ]
+      },
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "microraptor": {
+      "headRoots": 211,
+      "eyeClearance": 0.002846785510662586,
+      "frontCount": 72,
+      "backCount": 249,
+      "frontMax": 0.2816009391256438,
+      "backMin": 0.7350239028429162,
+      "neckTaper": {
+        "u": [
+          0.55,
+          0.3
+        ]
+      },
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "sinosauropteryx": {
+      "headRoots": 178,
+      "eyeClearance": 0.004875143947122129,
+      "frontCount": 102,
+      "backCount": 426,
+      "frontMax": 0.32204505209177897,
+      "backMin": 0.836445769029259,
+      "neckTaper": {
+        "u": [
+          0.55,
+          0.3
+        ]
+      },
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "yutyrannus": {
+      "headRoots": 221,
+      "eyeClearance": 0.039530861005555806,
+      "frontCount": 138,
+      "backCount": 564,
+      "frontMax": 0.3428608334013651,
+      "backMin": 0.8324806039192026,
+      "neckTaper": {
+        "u": [
+          0.55,
+          0.3
+        ]
+      },
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "motion": {
+    "gap": 0,
+    "travel": 0.00005220188838238443,
+    "scaleBefore": [
+      1,
+      1.0104943789527847,
+      1.0058302105293249
+    ],
+    "scaleAfter": [
+      1,
+      1.0173309457388018,
+      1.0096283031882232
+    ]
+  },
+  "resources": {
+    "before": {
+      "geometries": 419,
+      "textures": 8
+    },
+    "after": {
+      "geometries": 419,
+      "textures": 8
+    }
+  },
+  "axeViolations": 0,
+  "deployed": false
+}

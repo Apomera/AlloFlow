@@ -1,0 +1,19 @@
+{
+  "headRoots": 211,
+  "eyeClearance": 0.0031525845855116807,
+  "frontCount": 84,
+  "backCount": 207,
+  "frontMax": 0.2962777862410557,
+  "backMin": 0.7236146675049485,
+  "neckTaper": {
+    "u": [
+      0.55,
+      0.3
+    ]
+  },
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

@@ -6654,6 +6654,16 @@ window.StemLab = window.StemLab || {
       along.normalize();
       var across = new THREE.Vector3().crossVectors(along, n).normalize();
       var length = options.length * (0.72 + random() * 0.52), pennaceous = !!options.pennaceous;
+      // Short feathers soften anatomical boundaries without changing their roots or pigment samples.
+      var taper = options.taper;
+      if (taper && taper.x) {
+        var xBlend = Math.max(0, Math.min(1, (root.x - taper.x[0]) / Math.max(1e-8, taper.x[1] - taper.x[0])));
+        length *= taper.x[2] + (1 - taper.x[2]) * xBlend * xBlend * (3 - 2 * xBlend);
+      }
+      if (taper && taper.u && uv) {
+        var uBlend = Math.max(0, Math.min(1, (rootU - taper.u[0]) / Math.max(1e-8, 1 - taper.u[0])));
+        length *= 1 - (1 - taper.u[1]) * uBlend * uBlend * (3 - 2 * uBlend);
+      }
       var shade = 0.90 + random() * 0.12, blades = pennaceous ? 1 : 3;
       for (var blade = 0; blade < blades; blade++) {
         var start = positions.length / 3, fan = pennaceous ? 0 : (blade - 1) * 0.22;
@@ -6700,7 +6710,7 @@ window.StemLab = window.StemLab || {
       }
     }
     geometry.computeBoundingBox(); geometry.computeBoundingSphere();
-    geometry.parameters = { roots: count, pennaceous: !!options.pennaceous, length: options.length, dorsalOnly: !!options.dorsalOnly };
+    geometry.parameters = { roots: count, pennaceous: !!options.pennaceous, length: options.length, dorsalOnly: !!options.dorsalOnly, taper: options.taper || null };
     return geometry;
   }
 
@@ -8811,6 +8821,9 @@ window.StemLab = window.StemLab || {
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
             ], headMat, cranialShape)[0];
             if (headShell) { headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface'; }
+            var faceScale = reconstructionProfile.head;
+            var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
+            var eyeCenterX = head.x - surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale;
             // Seat surface details on the rendered head, including narrow and deep species profiles.
             function faceSurfacePoint(point, side, inset) {
               if (!headShell) return point;
@@ -8955,10 +8968,12 @@ window.StemLab = window.StemLab || {
                 var dorsalCoatOnly = surfaceHypothesis.featureScales;
                 addContourPlumage(bodyShell, 1100, surfaceBodyHeight * 0.50, dorsalCoatOnly);
                 if (!dorsalCoatOnly) {
-                  addContourPlumage(neckMeshes[0], 420, neckBaseRadius * 0.62, false);
+                  addContourPlumage(neckMeshes[0], 420, neckBaseRadius * 0.62, false, null, null, { u: [0.55, 0.30] });
                   addContourPlumage(tailMeshes[0], 420, tailBaseRadius * 0.55, false);
-                  // Keep the muzzle, eyes and mouth readable; the nape blends into the neck.
-                  addContourPlumage(headShell, 160, surfaceHeadHeight * 0.26, false, -surfaceHeadLength * 0.56);
+                  // Start behind the eye, with a short front edge blending into the fuller nape.
+                  var napeStartX = eyeCenterX + eyeRadius * 1.8 - headShell.position.x;
+                  addContourPlumage(headShell, 240, surfaceHeadHeight * 0.22, false, napeStartX, null,
+                    { x: [napeStartX, napeStartX + surfaceHeadLength * 0.45, 0.18] });
                 }
                 var filamentCount = Math.round(22 + surfaceHypothesis.filamentCoverage * 48);
                 for (var coatIndex = 0; coatIndex < filamentCount; coatIndex++) {
@@ -8972,9 +8987,11 @@ window.StemLab = window.StemLab || {
                   var neckFilamentT = (neckFilamentIndex + 0.45) / 18.5;
                   var neckCenter = neckSurfaceCurve.getPoint(neckFilamentT);
                   var neckSide = neckFilamentIndex % 2 ? 1 : -1;
+                  var neckBlend = Math.max(0, Math.min(1, (neckFilamentT - 0.55) / 0.45));
+                  var neckTuftScale = 1 - 0.70 * neckBlend * neckBlend * (3 - 2 * neckBlend);
                   addSeatedFilament(neckMeshes[0], neckCenter, vec(0, 0.7, neckSide),
-                    Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55),
-                    Math.max(0.004 * detailScale, ht * 0.0016), Math.max(0.008 * detailScale, len * 0.003), true);
+                    Math.max(0.040 * detailScale, ht * 0.019) * (0.75 + integumentRng() * 0.55) * neckTuftScale,
+                    Math.max(0.004 * detailScale, ht * 0.0016) * Math.sqrt(neckTuftScale), Math.max(0.008 * detailScale, len * 0.003) * neckTuftScale, true);
                 }
                 for (var tailFilamentIndex = 0; tailFilamentIndex < (dorsalCoatOnly ? 0 : 22); tailFilamentIndex++) {
                   var tailFilamentT = 0.08 + tailFilamentIndex / 25;
@@ -9036,7 +9053,6 @@ window.StemLab = window.StemLab || {
                 }
               }
 
-              var faceScale = reconstructionProfile.head;
               var jawDepth = surfaceHeadDepth * Math.min(1.12, cranialSurface.jawDepthScale);
               var lowerJawStart = head.clone().lerp(surfaceSnout, 0.12).add(vec(0, -surfaceHeadHeight * 0.44, 0));
               var lowerJawEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.37, 0));
@@ -9045,7 +9061,6 @@ window.StemLab = window.StemLab || {
               addBodyContour(lowerJawShell);
               if (lowerJawShell) { lowerJawShell.userData.dinoRegion = 'head'; lowerJawShell.name = 'lower-jaw-surface'; }
               [-1, 1].forEach(function (faceSide) {
-                var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
                 var eyePos = head.clone().add(vec(-surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale, surfaceHeadHeight * 0.30 * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.94));
                 eyePos = faceSurfacePoint(eyePos, faceSide, -eyeRadius * 0.14);
                 var browStart = eyePos.clone().add(vec(-eyeRadius * 1.22, eyeRadius * 0.84, -faceSide * eyeRadius * 0.16));
@@ -9781,12 +9796,12 @@ window.StemLab = window.StemLab || {
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
             }
-            function addContourPlumage(surface, count, length, dorsalOnly, minX, maxU) {
+            function addContourPlumage(surface, count, length, dorsalOnly, minX, maxU, taper) {
               if (!surface || !contourCoatMat) return;
               var geometry = dinoCoatGeometry(THREE, surface.geometry, {
                 count: count * surfaceHypothesis.filamentCoverage, length: length * (0.70 + surfaceHypothesis.filamentCoverage * 0.30),
                 pennaceous: skeletalProfile.integumentMode === 'pennaceous', seed: integumentSeed + count,
-                dorsalOnly: dorsalOnly, minX: minX, maxU: maxU
+                dorsalOnly: dorsalOnly, minX: minX, maxU: maxU, taper: taper
               });
               if (!geometry) return;
               var mesh = new THREE.Mesh(geometry, contourCoatMat);

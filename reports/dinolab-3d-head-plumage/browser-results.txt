@@ -1,0 +1,14 @@
+Running 3 tests using 1 worker
+
+
+
+(node:27928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/3] [chromium] › tests\e2e\dinolab-3d-head-plumage.spec.ts:38:81 › microraptor has a tapered nape with clear eyes
+[2/3] [chromium] › tests\e2e\dinolab-3d-head-plumage.spec.ts:38:81 › sinosauropteryx has a tapered nape with clear eyes
+[3/3] [chromium] › tests\e2e\dinolab-3d-head-plumage.spec.ts:38:81 › yutyrannus has a tapered nape with clear eyes
+  3 passed (1.7m)
