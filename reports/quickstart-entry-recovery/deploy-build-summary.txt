@@ -1,0 +1,42 @@
+Initial preflight/build:
+=== Step 0: release.json freshness check ===
+=== Step 0.6: render-path free-variable gate ===
+✓ check_render_refs: 497 module(s) parse + no dep-array free vars (261 useMemo-body + IIFE-body advisories — run --verbose).
+✓ check_wrapper_contracts: every parsable host↔module seam agrees on arity.
+✓ check_agent_core_mirrors: 4 hand-mirrored agent_core module(s) byte-identical; MCP still reads the root copy.
+✓ check_da_clinical_isolation: 8 ambient channels guarded on _isolatedContext, 3 dispatcher copies carry it, 3 host shells wire 2 isolated adapter copies.
+✓ check_dead_signals: 23 emitted gameType(s); every offered goal and persisted ledger field has a writer.
+✓ check_search_queries: 20 grounded call site(s) supply a web query (or are allowlisted).
+✓ check_stem_render: no app-crash render failures across 152 STEM tools.
+✓ check_sel_render: no app-crash render failures across 72 SEL tools.
+✓ check_module_render: all curated non-STEM module renders pass (21 renders).
+✓ check_oss_credits: 84 credited libraries all present with copyright notices; 11 bundled license texts all referenced.
+=== Step 0.7: CDN-deployability gate (asset size + npm-10 lock) ===
+=== Step 0.75: host comment budget (ratchet, advisory) ===
+=== Step 0.8: behavioural gate (tests affected by this change) ===
+check_changed_tests: running tests affected by commit range HEAD~1..HEAD (excluding 9 quarantined file(s))
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+check_changed_tests: OK — every test covering this change passes.
+=== Step 1: Source commit ===
+=== Step 2: Push source commit to origin ===
+=== Step 3: Run build.js --mode=prod --force ===
+=== Step 3.5: Mirror link-distribution files to desktop/web-app/public/ ===
+=== Step 4: npm run build (desktop/web-app) ===
+Failed to compile.
+Resumed build:
+=== Step 4: npm run build (desktop/web-app) ===
+Compiled successfully.
+✓ Post-build complete: split shell assets are precached for offline/repeat launch
+  ✓ npm build complete.
+=== Step 4.5: Build + verify desktop/app-build ===
+Compiled successfully.
+✓ Post-build complete: split shell assets are precached for offline/repeat launch
+[AlloFlow Desktop] Web app atomically staged at desktop\app-build
+[AlloFlow Desktop] Key scan, remediation parity, manifest, and service-worker checks passed
+[AlloFlow Desktop] Verified source/public/app-build parity for doc_pipeline_module.js, misc_handlers_module.js
+[AlloFlow Desktop] Asset manifest and service-worker precache are internally consistent
+  ✓ desktop/app-build is current and internally consistent.
+=== Step 5: Firebase deploy ===
+=== Step 6: Post-deploy commit (CDN hash refs) ===
+Author identity unknown

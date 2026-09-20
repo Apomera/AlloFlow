@@ -13,6 +13,16 @@ The fresh-workspace handler now removes `allo_wizard_completed`, resets the prev
 
 The browser harness uses the real recovery component, Quick Start module, loading adapter, fresh-workspace handler and role handler in a controlled state host. It does not mount the complete application or exercise live AI calls. Blank unrelated translations/icons in its captures are fixture omissions, not a full-app appearance assessment. Before/after JSON and screenshots record the result. Run `node reports/quickstart-entry-recovery/browser-qa.cjs` (or append `--before` to exercise the captured old handler).
 
+## Complete compiled app
+
+The complete production app was also exercised through the real recovery, workspace-choice and role-choice UI: Start a fresh workspace → Full Platform → Teacher. The old bundle skipped Quick Start and retained the completion marker. The rebuilt bundle opens Quick Start, removes the marker and advances to the source-selection step with no page errors. Its settled 1280 px screenshot was visually inspected. This test replaces only the Canvas device-storage transport with a controlled saved-work fixture; UI, app state and handlers are the compiled application. It does not test Gemini's storage approval UI or live AI calls. See full-app-qa.cjs, full-app-before.json and full-app-after.json.
+
 ## Release
 
-Source validation is complete. A focused deployment will be built from the committed fix in an isolated checkout, preserving concurrent unfinished STEM/UI work in the shared workspace. Release evidence will be added when publishing and live verification finish.
+Source fix: 994aa53a6ef7c52d88e37760a40860daa0041480. Normal commit hooks, all blocking deploy preflight checks, the six-test changed-test gate, and the hosted build passed. The release uses an isolated checkout to preserve concurrent shared-workspace changes. The desktop build and its artifact checks also passed. Generated release 406dcbe47d695cdc48c7a9d8d6fbeec5411237ed was pushed to GitHub and Codeberg. Cloudflare Pages succeeded, and all 12 live SHA-256 checks match that release, including the canonical shell and every app/ file. Live app: https://alloflow-cdn.pages.dev/app/.
+
+The initial isolated hosted build lacked the workspace's ignored .env and failed under fallback CRA lint settings. After restoring the existing project configuration, the hosted build passed. Unchanged deploy.sh stages 4 onward were resumed; repository preflight checks and hooks were not altered. The isolated checkout also needed the original repository's local Git author identity before the generated commit; after copying that identity, unchanged stages 6–10 completed. The script's initial CDN propagation warning is superseded by live-verification.json (12/12 matches). Firebase was intentionally skipped because no school-owned project is configured. No desktop installer was produced.
+
+This is a focused regression/release check; it does not claim the entire repository CI suite passes.
+
+Release logs: deploy-build-summary.txt and deploy-final.txt. The pending live snapshot is retained only as propagation history; live-verification.json is the final result. Concurrent work added after the focused source commit is preserved locally and is outside this deployment.
