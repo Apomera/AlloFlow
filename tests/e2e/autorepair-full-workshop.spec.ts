@@ -1662,3 +1662,36 @@ test('setup guidance explains blocked work and reviews earlier steps without cha
   await page.locator('[data-ar-setup-review="wheelRemoved"]').click();await expect(page.locator('[data-ar-route-step="intake"] summary')).toBeFocused();expect(await raw()).toBe(alignment);
   expect(await page.locator('[data-ar-setup-review="wheelRemoved"]').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('inspection previews setup effects and evidence retention before deliberate use',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Keep my diagnostic reasoning.'}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),effect=page.locator('[data-ar-control-effect]'),use=page.locator('[data-ar-control-use]');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await chooser.selectOption('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-control-view]').click();await clickShop(page,'negative-post');
+  await expect(effect.locator('[data-ar-effect-before]')).toHaveText('Across positive post-to-clamp joint');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('Across battery posts');
+  await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','cleared');expect(await raw()).toBe(before);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-desktop.png'});
+  await use.focus();await page.keyboard.press('Enter');await expect(effect).toHaveCount(0);await expect(chooser).toBeFocused();
+  expect(await page.evaluate(()=>{const s=(window as any).__toolData.autoRepair.shop;return{contact:s.instrument.contact,reading:s.reading,step:s.step,notes:s.notes};})).toEqual({contact:'posts',reading:null,step:2,notes:'Keep my diagnostic reasoning.'});
+  await page.locator('[data-ar-shop-instrument-read]').click();const invalid=await raw();await chooser.selectOption('shop-use-electrical-2-meter-posts');
+  await expect(effect).toHaveAttribute('data-ar-control-effect','unchanged');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','kept');expect(await raw()).toBe(invalid);
+  await use.click();expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.reading.valid)).toBe(false);
+  await page.evaluate(()=>{const w=window as any,s=w.__toolData.autoRepair.shop;w.__ctx.update('autoRepair','shop',{...s,tool:'socket'});});
+  const wrongTool=await raw();await chooser.selectOption('shop-use-electrical-2-meter-mode');await expect(effect).toHaveAttribute('data-ar-control-effect','blocked');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('DC volts');await expect(effect.locator('[data-ar-effect-blocked]')).toContainText('Select DC voltmeter');expect(await raw()).toBe(wrongTool);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',plugSecured:true,lift:'ground',instrument:{jugMl:4600}});});
+  await page.locator('[data-ar-shop-instrument-read]').click();const oil=await raw();await chooser.selectOption('shop-use-oil-9-jug-add');
+  await expect(effect).toHaveAttribute('data-ar-control-effect','blocked');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('4600 mL (4.6 L)');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','kept');await expect(effect.locator('[data-ar-effect-blocked]')).toContainText('between 0 and 5000');expect(await raw()).toBe(oil);
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await chooser.selectOption('shop-use-oil-9-jug-remove');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('4500 mL (4.5 L)');await expect(effect.locator('[data-ar-effect-capture]')).toHaveAttribute('data-ar-effect-capture','cleared');expect(await raw()).toBe(oil);
+  await use.click();expect(await page.evaluate(()=>{const s=(window as any).__toolData.autoRepair.shop;return{jug:s.instrument.jugMl,refilled:s.refilled,reading:s.reading};})).toEqual({jug:4500,refilled:false,reading:null});
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'brakes',step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true,instrument:{surface:'lining'}});});
+  await page.locator('[data-ar-shop-instrument-read]').click();const brake=await raw();await chooser.selectOption('shop-use-brakes-7-gauge-backing');await expect(effect.locator('[data-ar-effect-after]')).toHaveText('Steel backing plate');expect(await raw()).toBe(brake);
+  await effect.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await effect.screenshot({path:'reports/automobile-workshop/control-effect-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(await use.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{...w.__toolData.autoRepair.shop,notes:'Updated diagnosis.'});});
+  await expect(effect).toHaveCount(0);await expect(use).toHaveCount(0);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

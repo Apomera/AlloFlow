@@ -10096,6 +10096,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return arShopOperate(atStation, action.action);
   }
 
+  // Project only setup controls through the same pure reducer used by the 3D bay.
+  // The projection is descriptive: it is never saved or used to complete a task.
+  function arShopControlEffect(raw, id) {
+    var state = arShopState(raw);
+    if (!arShopControlCatalog(state).some(function (item) { return item.id === id; })) return null;
+    var prefix = arShop3DToken(state, '');
+    if (id.indexOf(prefix) !== 0) return null;
+    var actionId = id.slice(prefix.length), action = arShop3DActions(state).filter(function (item) { return item.id === actionId; })[0];
+    var field, title, choices;
+    if (actionId.indexOf('equip-') === 0) { field = 'tool'; title = 'Held tool'; }
+    else if (actionId === 'hood') { field = 'hood'; title = 'Hood access'; }
+    else if (action && action.action && action.action.type === 'configure') {
+      field = action.action.field;
+      title = { mode: 'Meter mode', contact: 'Probe placement', load: 'Simulated starter load', surface: 'Gauge contact' }[field];
+      choices = { mode: { dcv: 'DC volts', resistance: 'Resistance' }, contact: { posts: 'Across battery posts', joint: 'Across positive post-to-clamp joint' },
+        load: { off: 'Off', starter: 'On' }, surface: { lining: 'Friction lining', backing: 'Steel backing plate' } }[field];
+    } else if (action && action.action && action.action.type === 'quantity') { field = 'jugMl'; title = 'Quantity in the jug'; }
+    else return null;
+    var next = arShop3DPick(state, id), task = arShopJob(state.job).tasks[state.step];
+    var equipment = action && action.action, blocked = !!(equipment && (state.tool !== task.tool ||
+      Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; }) ||
+      (equipment.type === 'quantity' && (state.instrument.jugMl + equipment.delta < 0 || state.instrument.jugMl + equipment.delta > 5000))));
+    function value(current) {
+      if (field === 'tool') return (SHOP_TOOLS.filter(function (tool) { return tool[0] === current.tool; })[0] || ['', 'No listed tool'])[1];
+      if (field === 'hood') return current.hood ? 'Open' : 'Closed';
+      if (field === 'jugMl') return current.instrument.jugMl + ' mL (' + (current.instrument.jugMl / 1000).toFixed(1) + ' L)';
+      return choices[current.instrument[field]];
+    }
+    var before = value(state), after = value(next), currentReading = state.reading && state.reading.key === arShopReadingKey(state);
+    var capture = !currentReading ? 'none' : next.reading && next.reading.key === arShopReadingKey(next) ? 'kept' : 'cleared';
+    return { title: title, before: before, after: after, status: blocked ? 'blocked' : before === after ? 'unchanged' : 'change',
+      reason: blocked ? next.feedback : '', capture: capture,
+      evidence: capture === 'cleared' ? 'Using this control clears the current captured reading. Capture again after the setup change.' :
+        capture === 'kept' ? 'The current captured reading is kept. Its measurement validity does not change.' : 'There is no current captured reading to clear.',
+      station: next.station !== state.station ? 'Using this control also selects ' + SHOP_STATIONS.filter(function (station) { return station.id === next.station; })[0].label + '.' : '',
+      note: field === 'jugMl' ? 'This changes the jug quantity; transferring oil is a separate work-order task.' : '' };
+  }
+
   function arShopInspectionTarget(raw, mode, preview) {
     if (mode !== 'inspect') return '';
     var item = arShopCurrentPreview(raw, preview), view = item && arShopControlView(raw, item.id);
@@ -20692,7 +20730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function controlInspector() {
           var inspecting = d.shopInteraction === 'inspect', info = arShopCurrentPreview(shop, d.shopInspectPick);
-          var view = info ? arShopControlView(shop, info.id) : null;
+          var view = info ? arShopControlView(shop, info.id) : null, effect = info ? arShopControlEffect(shop, info.id) : null;
           return h('section', { 'data-ar-control-inspector': inspecting ? 'inspect' : 'operate', 'aria-label': '3D click mode',
             style: { margin: '8px 0', padding: 10, border: '1px solid #64748b', borderRadius: 8, background: '#102033', color: '#e2e8f0' } },
             h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': '3D click mode' }, ['operate', 'inspect'].map(function (mode) {
@@ -20706,7 +20744,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 style: { minHeight: 44, width: '100%', boxSizing: 'border-box', background: '#fff', color: '#102033', padding: 8 } },
                 h('option', { value: '' }, 'Choose a current control'), arShopControlCatalog(shop).map(function (item) { return h('option', { key: item.id, value: item.id }, item.label); })),
               h('div', { 'data-ar-control-preview': info ? info.id : '', role: 'status', 'aria-atomic': 'true', style: { fontSize: 13, lineHeight: 1.5, marginTop: 8 } },
-                info ? h('div', null, h('strong', null, info.label), h('p', { style: { margin: '6px 0' } }, info.detail)) :
+                info ? h('div', null, h('strong', null, info.label), h('p', { style: { margin: '6px 0' } }, info.detail),
+                  effect && h('div', { 'data-ar-control-effect': effect.status, style: { marginTop: 10, padding: 10, border: '1px solid ' + T.border, borderRadius: 6, background: T.cardAlt, color: T.text } },
+                    h('strong', null, 'If you use this control · ' + effect.title),
+                    h('dl', { style: { margin: '8px 0', overflowWrap: 'anywhere' } },
+                      h('dt', { style: { fontWeight: 700 } }, 'Current'), h('dd', { 'data-ar-effect-before': true, style: { margin: '0 0 8px' } }, effect.before),
+                      h('dt', { style: { fontWeight: 700 } }, effect.status === 'blocked' ? 'After use · blocked' : effect.status === 'unchanged' ? 'After use · unchanged' : 'After use'),
+                      h('dd', { 'data-ar-effect-after': true, style: { margin: 0 } }, effect.after)),
+                    effect.reason && h('p', { 'data-ar-effect-blocked': true, style: { margin: '8px 0' } }, effect.reason),
+                    h('p', { 'data-ar-effect-capture': effect.capture, style: { margin: '8px 0' } }, effect.evidence),
+                    effect.station && h('p', { style: { margin: '8px 0' } }, effect.station),
+                    effect.note && h('p', { style: { margin: '8px 0' } }, effect.note),
+                    h('p', { style: { margin: '8px 0 0', fontSize: 12 } }, 'Preview only. Use selected control applies the action.'))) :
                   d.shopInspectPick ? 'The workshop changed. Inspect a current control again.' : 'Select a control to read what it does.'),
               view && h('p', { 'data-ar-control-view-status': view.blocked ? 'blocked' : 'available', style: { fontSize: 12, lineHeight: 1.5 } },
                 view.blocked || ('Camera destination: ' + view.label + '. This changes the view only; equipment appears when its task setup is ready.')),

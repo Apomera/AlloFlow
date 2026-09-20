@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks, controlEffect: arShopControlEffect };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1478,5 +1478,83 @@ describe('Vehicle setup checklist rendering',()=>{
   });
   it('collapses satisfied checks and omits empty setup lists',()=>{
     const p=panel({job:'electrical',step:2,hood:true});expect(p.open).toBe(false);expect(p.getAttribute('data-ar-setup-checks')).toBe('ready');expect(p.querySelector('[data-ar-setup-review]')).toBeNull();expect(panel({job:'electrical',step:0})).toBeNull();
+  });
+});
+
+
+describe('Read-only control effect previews',()=>{
+  function fixture(job='electrical'){
+    return model.normalize(job==='electrical'?{job,step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}}:
+      job==='brakes'?{job,step:7,station:'brakes',tool:'gauge',lift:'locked',wheelRemoved:true}:
+      {job:'oil',step:9,station:'engine',tool:'funnel',lift:'ground',plugSecured:true,instrument:{jugMl:4600}});
+  }
+  function effect(state,id){return model.controlEffect(state,model.token(state,id));}
+  it.each([
+    ['meter-mode','DC volts','Resistance'],['meter-contact','Across positive post-to-clamp joint','Across battery posts'],
+    ['meter-load','On','Off'],['meter-posts','Across positive post-to-clamp joint','Across battery posts']
+  ])('previews %s without changing the captured test',(id,before,after)=>{
+    const state=model.operate(fixture(),{type:'read'}),saved=JSON.stringify(state);
+    expect(effect(state,id)).toMatchObject({before,after,status:'change',capture:'cleared'});
+    expect(JSON.stringify(state)).toBe(saved);expect(model.ready(state)).toBe(true);
+    const used=model.direct(state,model.token(state,id));expect(used.reading).toBeNull();expect(used.step).toBe(2);
+  });
+  it('keeps evidence when the selected battery contact is already connected',()=>{
+    const state=model.operate(fixture(),{type:'read'});
+    expect(effect(state,'meter-joint')).toMatchObject({status:'unchanged',capture:'kept'});
+    expect(model.direct(state,model.token(state,'meter-joint')).reading).toEqual(state.reading);
+  });
+  it('keeps an unsuitable capture without claiming it became valid',()=>{
+    const state=model.operate({...fixture(),instrument:{mode:'dcv',contact:'posts',load:'off'}},{type:'read'});
+    expect(state.reading.valid).toBe(false);const preview=effect(state,'meter-posts');
+    expect(preview).toMatchObject({status:'unchanged',capture:'kept'});expect(preview.evidence).toContain('validity does not change');
+  });
+  it.each([['gauge-backing','Steel backing plate','change','cleared'],['gauge-lining','Friction lining','unchanged','kept'],['gauge-surface','Steel backing plate','change','cleared']])('previews %s and retains layer evidence correctly',(id,after,status,capture)=>{
+    const state=model.operate(fixture('brakes'),{type:'read'}),saved=JSON.stringify(state);
+    expect(effect(state,id)).toMatchObject({before:'Friction lining',after,status,capture});expect(JSON.stringify(state)).toBe(saved);
+  });
+  it.each([['jug-add',4100,4600],['jug-fine',4500,4600],['jug-remove',4700,4600]])('previews %s quantity without transferring oil',(id,before,after)=>{
+    const state=model.normalize({...fixture('oil'),instrument:{jugMl:before}}),saved=JSON.stringify(state),preview=effect(state,id);
+    expect(preview).toMatchObject({before:before+' mL ('+(before/1000).toFixed(1)+' L)',after:after+' mL (4.6 L)',status:'change',capture:'none'});
+    expect(preview.note).toContain('transferring oil is a separate');expect(JSON.stringify(state)).toBe(saved);expect(state.refilled).toBe(false);
+  });
+  it.each([['jug-add',5000],['jug-remove',0]])('explains %s capacity limit and keeps the actual quantity',(id,jugMl)=>{
+    const state=model.operate({...fixture('oil'),instrument:{jugMl}},{type:'read'}),preview=effect(state,id);
+    expect(preview.status).toBe('blocked');expect(preview.before).toBe(preview.after);expect(preview.capture).toBe('kept');expect(preview.reason).toContain('between 0 and 5000');
+  });
+  it.each([['wrong tool',{tool:'socket'}],['hood access',{hood:false}]])('mirrors %s gates instead of promising a change',(label,patch)=>{
+    const captured=model.operate(fixture(),{type:'read'}),state={...captured,...patch},preview=effect(state,'meter-mode');
+    expect(preview.status).toBe('blocked');expect(preview.after).toBe('DC volts');expect(preview.reason).toMatch(/Select|prerequisites/);
+    expect(preview.capture).toBe(label==='wrong tool'?'kept':'none');expect(preview.station).toBe('');
+  });
+  it('describes hood and tool station effects while leaving all work untouched',()=>{
+    const state=model.operate(fixture(),{type:'read'}),saved=JSON.stringify(state),tool=model.tools(state)[0];
+    expect(effect(state,'hood')).toMatchObject({before:'Open',after:'Closed',capture:'cleared'});
+    expect(effect(state,'equip-'+tool[0])).toMatchObject({after:tool[1],capture:'kept',station:'Using this control also selects Tool bench.'});
+    expect(JSON.stringify(state)).toBe(saved);
+  });
+  it('does not expose readings, task results, unrelated controls or obsolete tokens',()=>{
+    const state=fixture();
+    for(const id of ['read','task','lift-stop'])expect(effect(state,id)).toBeNull();
+    expect(model.controlEffect(state,'engine')).toBeNull();expect(model.controlEffect(state,'shop-use-electrical-1-meter-mode')).toBeNull();
+    expect(model.controlEffect(state,'shop-use-electrical-2-equip-unknown')).toBeNull();expect(model.controlEffect(state,null)).toBeNull();
+  });
+  it('treats an old capture as absent and does not revive it',()=>{
+    const state={...fixture(),reading:{key:'old',value:1.6,unit:'V',valid:true}},saved=JSON.stringify(state);
+    expect(effect(state,'meter-mode').capture).toBe('none');expect(JSON.stringify(state)).toBe(saved);
+  });
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('renders an accessible effect preview in %j',theme=>{
+    resetStemLab();loadTool(file,'autoRepair');const shop=model.operate(fixture(),{type:'read'}),id=model.token(shop,'meter-mode');
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',uh3dStatus:'failed',shop,shopInteraction:'inspect',shopInspectPick:model.preview(shop,id)}},theme);
+    const panel=host.querySelector('[data-ar-control-effect]');expect(panel.getAttribute('data-ar-control-effect')).toBe('change');expect(panel.querySelector('dl')).not.toBeNull();
+    expect(panel.querySelector('[data-ar-effect-before]').textContent).toBe('DC volts');expect(panel.querySelector('[data-ar-effect-after]').textContent).toBe('Resistance');
+    expect(panel.querySelector('[data-ar-effect-capture]').getAttribute('data-ar-effect-capture')).toBe('cleared');expect(panel.closest('[role="status"]')).not.toBeNull();
+    expect(host.querySelector('[data-ar-control-use]')).not.toBeNull();
+  });
+  it('removes the effect when its preview expires or Inspect mode ends',()=>{
+    resetStemLab();loadTool(file,'autoRepair');const shop=fixture(),preview=model.preview(shop,model.token(shop,'meter-mode'));
+    for(const patch of [{shop:{...shop,notes:'Changed draft'},shopInteraction:'inspect'},{shop,shopInteraction:'operate'}]){
+      const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shopInspectPick:preview,...patch}});
+      expect(host.querySelector('[data-ar-control-effect]')).toBeNull();
+    }
   });
 });

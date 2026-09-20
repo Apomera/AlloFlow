@@ -464,6 +464,18 @@ Validation: all 357 workshop unit/render tests passed, including 21 new cases co
 - [High contrast phone oil setup](../reports/automobile-workshop/setup-guidance-contrast.png)
 - [Narrow dark phone starting setup](../reports/automobile-workshop/setup-guidance-dark.png)
 
+## Control effect previews — 2026-09-19
+
+Inspect mode now shows Current and After use for tool selection, hood access, meter mode/contact/load, gauge placement and oil-jug quantity. The preview runs the existing pure 3D control reducer without saving its result. It explains whether the current captured reading will be cleared or retained, and identifies any station change. An unsuitable reading that is retained is not promoted to valid evidence; an expired capture is treated as absent.
+
+Blocked controls show their actual unchanged value and the existing gate explanation. This includes missing equipment/access and jug capacity limits. Selecting an already-connected contact or gauge layer accurately shows no setup change and retained evidence. Jug previews distinguish changing the measured quantity from transferring oil. The existing Use selected control action remains required; stale previews disappear when workshop state changes. Capturing measurements and completing tasks are excluded from these setup previews, so inspection does not reveal an unperformed measurement or create service evidence.
+
+Validation: 380 workshop unit/render tests passed, including 23 new cases for settings, no-op contacts, invalid/stale captures, quantity limits, access/equipment gates, unchanged inputs, tool station changes and accessible themed rendering. An initial test used the wrong station label; corrected it to the existing Tool bench label and reran successfully. Four Chromium WebGL workflows passed: the new effect-preview journey, existing explicit-use/stale-preview interaction, physical emergency-stop/lift/drag behavior and inspection-outline/resource stability. The new journey uses physical battery-contact picking, keyboard application, capture preservation/clearing, blocked meter and jug controls, separate oil transfer, stale-preview removal, 390px high contrast and 320px dark reflow, 44px actions and no browser errors. Three new screenshots visually reviewed. Syntax, scoped whitespace and all four module copies agree (SHA256 2dbbd520f7eba144071fd477d17c202444bfe261c9e90e544f46f9c53d7389d4); build mirrors verified against HEAD before editing. No deployment.
+
+- [Desktop probe placement preview](../reports/automobile-workshop/control-effect-desktop.png)
+- [High contrast phone blocked jug addition](../reports/automobile-workshop/control-effect-contrast.png)
+- [Narrow dark phone gauge placement](../reports/automobile-workshop/control-effect-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
