@@ -1,0 +1,63 @@
+=== Step 6: Post-deploy commit (CDN hash refs) ===
+check_staleness_delta: no English rewording vs HEAD (0 added, 0 removed - gap-report territory).
+[main c1bd2e5cf] Post-deploy: update CDN hash refs to @f5b045fc9
+ 32 files changed, 7820 insertions(+), 6042 deletions(-)
+ delete mode 100644 app/static/css/main.1fb7b97e.css
+ create mode 100644 app/static/css/main.f14b4317.css
+ delete mode 100644 app/static/js/main.0cd7ef8e.js
+ create mode 100644 app/static/js/main.18cad255.js
+ rename app/static/js/{main.0cd7ef8e.js.LICENSE.txt => main.18cad255.js.LICENSE.txt} (100%)
+ delete mode 100644 desktop/web-app/public/app/static/css/main.1fb7b97e.css
+ create mode 100644 desktop/web-app/public/app/static/css/main.f14b4317.css
+ delete mode 100644 desktop/web-app/public/app/static/js/main.0cd7ef8e.js
+ create mode 100644 desktop/web-app/public/app/static/js/main.18cad255.js
+ rename desktop/web-app/public/app/static/js/{main.0cd7ef8e.js.LICENSE.txt => main.18cad255.js.LICENSE.txt} (100%)
+  ✓ Post-deploy commit created (hash @f5b045fc9).
+
+=== Step 7: Push post-deploy commit to origin ===
+To https://github.com/Apomera/AlloFlow.git
+   f5b045fc9..c1bd2e5cf  main -> main
+  ✓ Pushed post-deploy to origin.
+
+=== Step 8: Mirror to Codeberg backup ===
+To https://codeberg.org/Pomera/AlloFlow-backup.git
+   749347d7b..c1bd2e5cf  main -> main
+  ✓ Mirrored main to backup (Codeberg).
+
+=== Step 9: Push tags to backup ===
+Everything up-to-date
+  ✓ Tags mirrored.
+
+=== Step 10: Post-deploy verification ===
+  [1/4] Hash consistency…
+  [32m✓ pluginCdnVersion @f5b045fc9 matches the built hash[0m
+  [32m✓ desktop/web-app/src mirror agrees (@f5b045fc9)[0m
+  [32m✓ @f5b045fc9 is a real commit in history[0m
+  [2/4] Firebase host (not configured)…
+  [32m✓ Firebase intentionally skipped; no maintainer/demo project was touched[0m
+  [3/4] CDN modules (https://alloflow-cdn.pages.dev)…
+  [32m✓ doc_pipeline_module.js reachable (200) — content not yet propagated[0m
+  [32m✓ view_pdf_audit_module.js reachable + fresh (md5 matches local)[0m
+  [32m✓ view_export_preview_module.js reachable + fresh (md5 matches local)[0m
+  [32m✓ gemini_api_module.js reachable + fresh (md5 matches local)[0m
+  [32m✓ app/index.html reachable (200) — content not yet propagated[0m
+  [32m✓ app/sw.js reachable (200) — content not yet propagated[0m
+  [32m✓ lame.min.js reachable + fresh (md5 matches local)[0m
+  … 3 module(s) still propagating; re-checking in 20s (attempt 1/4)
+  … 3 module(s) still propagating; re-checking in 20s (attempt 2/4)
+  [32m✓ app/index.html now fresh (md5 matches local)[0m
+  [32m✓ app/sw.js now fresh (md5 matches local)[0m
+  … 1 module(s) still propagating; re-checking in 20s (attempt 3/4)
+  [32m✓ doc_pipeline_module.js now fresh (md5 matches local)[0m
+  [4/4] veraPDF runtime artifacts (https://alloflow-cdn.pages.dev)…
+  [32m✓ verapdf/verapdf_validator.html is the validator (identity + ready/boot markers present)[0m
+  [32m✓ verapdf/verapdf-cli.jar is a real JAR (PK magic + >1MB)[0m
+
+════════════════════════════════════════════
+  ✓ Deploy complete + verified
+════════════════════════════════════════════
+
+  Live URL:  https://alloflow-cdn.pages.dev/app/
+  Hash:      @c1bd2e5cf
+  GitHub:    https://github.com/Apomera/AlloFlow
+  Codeberg:  https://codeberg.org/Pomera/AlloFlow-backup

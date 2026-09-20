@@ -1,0 +1,188 @@
+{
+  "checkedAt": "2026-09-20T05:44:25.477Z",
+  "run": "https://github.com/Apomera/AlloFlow/actions/runs/35492117260",
+  "headSha": "c1bd2e5cf97340a003ada0ca473c55ded8ae6c81",
+  "status": "in_progress",
+  "conclusion": "",
+  "jobs": [
+    {
+      "id": 106028737031,
+      "name": "STEM plugin failure recovery (BLOCKING)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737097,
+      "name": "Quarantined tests (non-blocking)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737104,
+      "name": "CDN-heavy goldens (non-blocking — network flake tolerated)",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737106,
+      "name": "Tagged-PDF goldens (BLOCKING)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737135,
+      "name": "Research integration contracts + accessibility",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737144,
+      "name": "Unit tests (shard 5/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737146,
+      "name": "Adventure journey (choice + free response + debate)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "AlloBot reviewed visual baseline"
+      ]
+    },
+    {
+      "id": 106028737150,
+      "name": "veraPDF ISO 14289-1 ground-truth gate (independent validator)",
+      "status": "completed",
+      "conclusion": "success",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737165,
+      "name": "Full verify suite (non-blocking visibility)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737172,
+      "name": "Unit tests (shard 3/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737174,
+      "name": "Unit tests (shard 8/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737178,
+      "name": "Remediation preservation (source + browser + export)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "Source, generated module, rendered fidelity and export regressions"
+      ]
+    },
+    {
+      "id": 106028737189,
+      "name": "Render smoke — deployed demo (non-blocking)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737201,
+      "name": "Static gate (crash + load classes)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        "verify:gate (generated modules + render refs + module contracts)"
+      ]
+    },
+    {
+      "id": 106028737206,
+      "name": "Unit tests (shard 6/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737218,
+      "name": "Unit tests (shard 2/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737228,
+      "name": "Unit tests (shard 7/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737230,
+      "name": "Unit tests (shard 1/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737276,
+      "name": "Documentation + promotion integrity",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    },
+    {
+      "id": 106028737278,
+      "name": "Unit tests (shard 4/8)",
+      "status": "in_progress",
+      "conclusion": "",
+      "failedSteps": []
+    }
+  ],
+  "cloudflare": [
+    {
+      "name": "Workers Builds: alloflow-cdn",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://dash.cloudflare.com/37d398da2811e2beead8fe41dac52058/workers/services/view/alloflow-cdn/production/builds/ccc05e9f-7b79-466d-a532-d6d8bcb1c564"
+    },
+    {
+      "name": "Cloudflare Pages",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://dash.cloudflare.com/?to=/37d398da2811e2beead8fe41dac52058/pages/view/alloflow-cdn/5772fed7-887c-41c8-9cff-d44b7c068df1"
+    }
+  ],
+  "failureAnalysis": {
+    "staticGate": "STEM mirror parity is fixed. Remaining eight missing and three obsolete command-translation manifest keys exactly match September 18 baseline.",
+    "allobot": "Same four light/contrast corner and 200% visual snapshots fail as September 18 baseline.",
+    "remediation": {
+      "currentPassed": 800,
+      "currentTotal": 801,
+      "baselinePassed": 605,
+      "baselineTotal": 606,
+      "file": "tests/doc_pipeline_build_parity.test.js",
+      "line": 32,
+      "assertion": "document pipeline generated artifacts > match a fresh source build byte for byte in both shipping locations",
+      "error": "AssertionError: expected false to be true",
+      "baselineArtifact": 10547082396,
+      "currentArtifact": 10599581326,
+      "browserPhase": "not run",
+      "limit": "Exact same sole assertion as baseline; underlying byte difference not classified."
+    },
+    "workers": "Failure cause unavailable in GitHub check output: no error text or annotations. Logs require authenticated Cloudflare dashboard. Pages succeeded and live content was verified."
+  }
+}

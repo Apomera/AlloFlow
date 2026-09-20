@@ -1,0 +1,264 @@
+{
+  "checkedAt": "2026-09-20T05:41:06.119Z",
+  "commit": "c1bd2e5cf97340a003ada0ca473c55ded8ae6c81",
+  "url": "https://alloflow-cdn.pages.dev/app/",
+  "mainPath": "app/static/js/main.18cad255.js",
+  "passed": 21,
+  "total": 21,
+  "results": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "status": 200,
+      "bytes": 2760653,
+      "contentType": "text/plain; charset=utf-8",
+      "expectedSha256": "bb94b14f1237fa4b387df5fa19b9c09cf76e22a6e586215ee3cff25bfbb2bd06",
+      "sha256": "bb94b14f1237fa4b387df5fa19b9c09cf76e22a6e586215ee3cff25bfbb2bd06",
+      "markers": [
+        {
+          "value": "_alloResolveHostedShareMailbox",
+          "present": true
+        },
+        {
+          "value": "Pack has no resources or shared activity",
+          "present": true
+        },
+        {
+          "value": "SharedActivity.SharedAssignmentActivityPanel",
+          "present": true
+        },
+        {
+          "value": "__alloLazySharedActivity",
+          "present": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "host_handlers_module.js",
+      "status": 200,
+      "bytes": 493000,
+      "contentType": "application/javascript",
+      "expectedSha256": "06f1bfcc69fb2c6471ca4405defa1496c1c9ab660d4bc44a72246a5b8726bcda",
+      "sha256": "06f1bfcc69fb2c6471ca4405defa1496c1c9ab660d4bc44a72246a5b8726bcda",
+      "markers": [
+        {
+          "value": "_savedShareMailboxConnection",
+          "present": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "view_share_session_surfaces_module.js",
+      "status": 200,
+      "bytes": 62293,
+      "contentType": "application/javascript",
+      "expectedSha256": "4fbf452cc2a6531792efaf569f22e2fd0f5183eab76aa5541b50463ec67a9d08",
+      "sha256": "4fbf452cc2a6531792efaf569f22e2fd0f5183eab76aa5541b50463ec67a9d08",
+      "markers": [
+        {
+          "value": "qrShareMailbox",
+          "present": true
+        },
+        {
+          "value": "Reconnect the Class Mailbox used for this assignment to view or manage its activity.",
+          "present": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "shared_activity_module.js",
+      "status": 200,
+      "bytes": 95918,
+      "contentType": "application/javascript",
+      "expectedSha256": "ca49be1debdcfe1156b06ef90b9fc5c2438ce768083518e596e822786a931e76",
+      "sha256": "ca49be1debdcfe1156b06ef90b9fc5c2438ce768083518e596e822786a931e76",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "misc_handlers_module.js",
+      "status": 200,
+      "bytes": 130369,
+      "contentType": "application/javascript",
+      "expectedSha256": "c8c3ac392a9701bfa08dfda30ba0af3125a40b93d6d66d6095e8003d39298dc2",
+      "sha256": "c8c3ac392a9701bfa08dfda30ba0af3125a40b93d6d66d6095e8003d39298dc2",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "instructional_context_module.js",
+      "status": 200,
+      "bytes": 71114,
+      "contentType": "application/javascript",
+      "expectedSha256": "361318b1b155d5e1bd739bb1ef47bc6949cbc1a1a6df93774d44932e249f5777",
+      "sha256": "361318b1b155d5e1bd739bb1ef47bc6949cbc1a1a6df93774d44932e249f5777",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "games_module.js",
+      "status": 200,
+      "bytes": 445079,
+      "contentType": "application/javascript",
+      "expectedSha256": "789363e365d05c1b39b513e68f8666936f66d08a467a690f2557f1dd8277a918",
+      "sha256": "789363e365d05c1b39b513e68f8666936f66d08a467a690f2557f1dd8277a918",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "view_sidebar_panels_module.js",
+      "status": 200,
+      "bytes": 377932,
+      "contentType": "application/javascript",
+      "expectedSha256": "8ef4f0c57f5d14a5b1110c8fb054a2ba7168309f21c9088530167b055ff95eb3",
+      "sha256": "8ef4f0c57f5d14a5b1110c8fb054a2ba7168309f21c9088530167b055ff95eb3",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "stem_lab/stem_tool_butterfly.js",
+      "status": 200,
+      "bytes": 51743,
+      "contentType": "application/javascript",
+      "expectedSha256": "af536e15b308555134274cbe252b0bc3e8c899843d1f070937231d06bc663ccc",
+      "sha256": "af536e15b308555134274cbe252b0bc3e8c899843d1f070937231d06bc663ccc",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "stem_lab/stem_lab_module.js",
+      "status": 200,
+      "bytes": 582471,
+      "contentType": "application/javascript",
+      "expectedSha256": "650eaf19df409ce2688d5703674f5604271df90af454c8014ebcb4bedd050542",
+      "sha256": "650eaf19df409ce2688d5703674f5604271df90af454c8014ebcb4bedd050542",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "live_aac_module.js",
+      "status": 200,
+      "bytes": 58920,
+      "contentType": "application/javascript",
+      "expectedSha256": "766ec65cb9d88d3503fa6999bddda8f502066572f7ea17a514e10826e66b5677",
+      "sha256": "766ec65cb9d88d3503fa6999bddda8f502066572f7ea17a514e10826e66b5677",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "mailbox_script_source_module.js",
+      "status": 200,
+      "bytes": 148943,
+      "contentType": "application/javascript",
+      "expectedSha256": "91802c6bc2a5a9e4c67f93659a42f4139779131b6e254eb8dbacbf33f2bf62ca",
+      "sha256": "91802c6bc2a5a9e4c67f93659a42f4139779131b6e254eb8dbacbf33f2bf62ca",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/ai_backend_module.js",
+      "status": 200,
+      "bytes": 174553,
+      "contentType": "application/javascript",
+      "expectedSha256": "2b536b7cd8afee8b2b00c6d038097c7164d68f879038d14e330526f3adcb9796",
+      "sha256": "2b536b7cd8afee8b2b00c6d038097c7164d68f879038d14e330526f3adcb9796",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/alloflow_desktop_bridge.js",
+      "status": 200,
+      "bytes": 7935,
+      "contentType": "application/javascript",
+      "expectedSha256": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d",
+      "sha256": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/asset-manifest.json",
+      "status": 200,
+      "bytes": 240,
+      "contentType": "application/json",
+      "expectedSha256": "d58927c7580d10af6e8c69818fff37bfc4882ab41e5022139644dd17f2e42df3",
+      "sha256": "d58927c7580d10af6e8c69818fff37bfc4882ab41e5022139644dd17f2e42df3",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/index.html",
+      "status": 200,
+      "bytes": 5918,
+      "contentType": "text/html; charset=utf-8",
+      "expectedSha256": "661764a2157869ac206926a8b92cf5d3a770151e48a301831ffb3f079d95f75a",
+      "sha256": "661764a2157869ac206926a8b92cf5d3a770151e48a301831ffb3f079d95f75a",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/qrcode.js",
+      "status": 200,
+      "bytes": 56694,
+      "contentType": "application/javascript",
+      "expectedSha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+      "sha256": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/static/css/main.f14b4317.css",
+      "status": 200,
+      "bytes": 622570,
+      "contentType": "text/css; charset=utf-8",
+      "expectedSha256": "964400ec1733ee67348b2b50f2a80c56159032809fba2e3aa3b1bfe1915f6059",
+      "sha256": "964400ec1733ee67348b2b50f2a80c56159032809fba2e3aa3b1bfe1915f6059",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/static/js/main.18cad255.js",
+      "status": 200,
+      "bytes": 1926079,
+      "contentType": "application/javascript",
+      "expectedSha256": "3a4236fd855411a7a9a27a2ae18ec5bc6214ef59bebab44d2e2166143ac63961",
+      "sha256": "3a4236fd855411a7a9a27a2ae18ec5bc6214ef59bebab44d2e2166143ac63961",
+      "markers": [
+        {
+          "value": "Pack has no resources or shared activity",
+          "present": true
+        },
+        {
+          "value": "SharedActivity.SharedAssignmentActivityPanel",
+          "present": true
+        },
+        {
+          "value": "__alloLazySharedActivity",
+          "present": true
+        }
+      ],
+      "pass": true
+    },
+    {
+      "path": "app/static/js/main.18cad255.js.LICENSE.txt",
+      "status": 200,
+      "bytes": 10144,
+      "contentType": "text/plain; charset=utf-8",
+      "expectedSha256": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274",
+      "sha256": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274",
+      "markers": [],
+      "pass": true
+    },
+    {
+      "path": "app/sw.js",
+      "status": 200,
+      "bytes": 6448,
+      "contentType": "application/javascript",
+      "expectedSha256": "689912fa21166d554b5896c5e26062befe2a979b635f61563c21acc4bb653a60",
+      "sha256": "689912fa21166d554b5896c5e26062befe2a979b635f61563c21acc4bb653a60",
+      "markers": [],
+      "pass": true
+    }
+  ]
+}
