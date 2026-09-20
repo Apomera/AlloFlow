@@ -61,6 +61,14 @@ const KNOWN_GLOBALS = new Set([
   'Uint8Array', 'Uint8ClampedArray', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array',
   'Float32Array', 'Float64Array', 'ArrayBuffer', 'DataView', 'BigInt', 'Intl', 'performance', 'crypto',
   'DOMParser', 'XMLSerializer', 'Node', 'Element', 'HTMLElement', 'Image', 'Audio', 'Event', 'CustomEvent',
+  // Document and HTMLFormElement belong beside Node/Element/HTMLElement above: the
+  // same standard DOM constructors, reached the same way. They were missing, so
+  // doc_pipeline_source.jsx's named-control defence - which reads native getters off
+  // Document.prototype / HTMLFormElement.prototype precisely BECAUSE a form's named
+  // fields shadow them - was reported as a rename-dangler that 'throws ReferenceError
+  // at runtime'. It does not: that code is inside a `typeof DOMParser === 'undefined'`
+  // guard, so it only runs where these constructors exist.
+  'Document', 'HTMLFormElement', 'DocumentFragment', 'ShadowRoot',
   'KeyboardEvent', 'MouseEvent', 'PointerEvent', 'SpeechSynthesisUtterance', 'speechSynthesis',
   'MutationObserver', 'IntersectionObserver', 'ResizeObserver', 'getComputedStyle', 'matchMedia',
   'MediaRecorder', 'MediaStream', 'MediaSource',
