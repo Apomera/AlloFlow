@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-19",
+  "tool": "Friendship Workshop / Practice coach",
+  "validation": "passed",
+  "gradeSpecificFictionalStarters": 9,
+  "uniquePassingChecks": 74,
+  "focused": {
+    "browser": 18,
+    "controlContracts": 5
+  },
+  "existingSafetyLayer": 16,
+  "careRegressions": 28,
+  "actualHub": {
+    "passed": 3,
+    "filtered": 103
+  },
+  "targetedTheme": {
+    "passed": 4,
+    "filtered": 292
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "8b34ce961bbae87685e4221085fa4ed278a6eab36bb40cbd8e0b3a7de293e0f8",
+  "retryHistory": "All selected cases passed on their first run. No assertions or timeouts weakened.",
+  "providerCoverage": "Mocked success, rejected/synchronous/empty failures, pending/duplicate/IME input, real safety helper with mocked assessment and provider, fallback block, consent and offline draft. No live provider calls.",
+  "counting": "Filtered cases and render enumeration excluded.",
+  "delivery": "Local only. No push, deployment or packaged build."
+}
