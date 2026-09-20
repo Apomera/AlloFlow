@@ -1,0 +1,58 @@
+{
+  "before": {
+    "hasJunction": true,
+    "rootOutside": 0,
+    "minRootEnclosure": 1.8006097482173433,
+    "neckOutside": 0,
+    "invalid": 0,
+    "outside": 0,
+    "eyes": [
+      0.32000000000000356,
+      0.32000000000000994
+    ],
+    "coats": 8,
+    "coatGap": 0,
+    "model": "34BB2629-98D7-40D9-8770-65A4B7E031E6",
+    "geometries": 439,
+    "textures": 8,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "after": {
+    "hasJunction": true,
+    "rootOutside": 0,
+    "minRootEnclosure": 1.8051169172137387,
+    "neckOutside": 0,
+    "invalid": 0,
+    "outside": 0,
+    "eyes": [
+      0.32000000000000356,
+      0.32000000000000994
+    ],
+    "coats": 8,
+    "coatGap": 0,
+    "model": "34BB2629-98D7-40D9-8770-65A4B7E031E6",
+    "geometries": 439,
+    "textures": 8,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "samples": [
+    1.8006252202772284,
+    1.8006911122872646,
+    1.8008071542008248,
+    1.8009728704440473,
+    1.8011875818701573,
+    1.801450408550183,
+    1.801760273388551,
+    1.8021159065484975,
+    1.8025158506689547,
+    1.8029584668512673,
+    1.8034419413908807,
+    1.8039642932261224,
+    1.8045233820732052,
+    1.8051169172137387
+  ]
+}

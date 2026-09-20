@@ -1,0 +1,14 @@
+Running 3 tests using 1 worker
+
+
+
+(node:50752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:50752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/3] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › brachiosaurus has an enclosed rounded neck junction
+[2/3] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › triceratops has an enclosed rounded neck junction
+[3/3] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › parasaurolophus has an enclosed rounded neck junction
+  3 passed (1.7m)

@@ -1,0 +1,20 @@
+{
+  "hasJunction": true,
+  "rootOutside": 0,
+  "minRootEnclosure": 1.8134722629810496,
+  "neckOutside": 0,
+  "invalid": 0,
+  "outside": 0,
+  "eyes": [
+    0.32000000000000295,
+    0.32000000000000295
+  ],
+  "coats": 0,
+  "coatGap": 0,
+  "model": "E19965F9-B51D-43D5-B34B-7776CC13B6CB",
+  "geometries": 135,
+  "textures": 7,
+  "errors": [],
+  "lost": false,
+  "shaderFailures": 0
+}

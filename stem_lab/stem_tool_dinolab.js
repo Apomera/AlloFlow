@@ -6307,6 +6307,17 @@ window.StemLab = window.StemLab || {
     geometry.userData.dinoSmoothProfile = !!options.smoothProfile;
     return geometry;
   }
+  // Close the back of the cranial loft inside the existing neck volume.
+  // The added root leaves the forward face stations in place.
+  function dinoNeckJunction(THREE, points, radii, reach) {
+    var curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
+    var length = curve.getLength(), distance = Math.min(Math.max(0, reach), length * 0.35);
+    var t = length > 0 ? curve.getUtoTmapping(1 - distance / length) : 1;
+    var station = t * (radii.length - 1);
+    var radius = Math.min(dinoLoftRadius(radii, station, 0), dinoLoftRadius(radii, station, 1)) * 0.55;
+    return { point: curve.getPoint(t), radius: radius, t: t, distance: distance };
+  }
+
   // Broad cheek relief is part of the head skin, with no overlapping cheek pieces.
   function dinoCranialGeometry(THREE, points, radii, shape) {
     var geometry = dinoSurfaceGeometry(THREE, points, radii, {
@@ -8888,28 +8899,39 @@ window.StemLab = window.StemLab || {
             var surfaceHeadHeight = Math.max(0.045 * detailScale, ht * (/Tyrannosaur|Abelisaur/i.test(cladeName) ? 0.12 : (isTheropod ? 0.085 : (isSauropod ? 0.030 : 0.055)))) * surfaceHeadFactor * cranialSurface.headHeightScale;
             var surfaceHeadDepth = Math.max(0.035 * detailScale, ht * (isTheropod ? 0.082 : 0.050)) * surfaceHeadFactor * cranialSurface.headDepthScale;
             var surfaceSnout = head.clone().add(new THREE.Vector3().subVectors(snout, head).multiplyScalar(cranialSurface.muzzleLengthScale));
+            var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
+            var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
+            neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.66);
+            var neckMidA = new THREE.Vector3().copy(shoulder).lerp(head, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.neckBaseCurve, 0));
+            var neckMidB = new THREE.Vector3().copy(shoulder).lerp(head, 0.70).add(vec(0, surfaceBodyHeight * postcranialSurface.neckMidCurve, 0));
+            var neckPoints = [shoulder, neckMidA, neckMidB, head];
+            var neckRadii = [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius];
+            var neckJunction = dinoNeckJunction(THREE, neckPoints, neckRadii, surfaceHeadLength * 1.10);
             var cranialShape = { center: head.clone().lerp(surfaceSnout, 0.28).add(vec(0, -surfaceHeadHeight * 0.24, 0)),
               length: surfaceHeadLength, height: surfaceHeadHeight, depth: surfaceHeadDepth, cheek: isSauropod ? 0 : cranialSurface.cheekScale };
             var headShell = isTheropod ? addSoftTissueChain([
-              head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
+              neckJunction.point, head.clone().add(vec(surfaceHeadLength * 0.65, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout, surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.28, 0, 0))
             ], [
-              [surfaceHeadHeight * 0.40, surfaceHeadDepth * 0.40], [surfaceHeadHeight * 0.86, surfaceHeadDepth],
+              [neckJunction.radius, neckJunction.radius], [surfaceHeadHeight * 0.40, surfaceHeadDepth * 0.40], [surfaceHeadHeight * 0.86, surfaceHeadDepth],
               [surfaceHeadHeight * 0.70, surfaceHeadDepth * 0.72], [surfaceHeadHeight * 0.48, surfaceHeadDepth * 0.60],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
             ], headMat, cranialShape)[0] : addSoftTissueChain([
-              head.clone().add(vec(surfaceHeadLength * 0.82, 0, 0)),
+              neckJunction.point, neckJunction.point.clone().lerp(head.clone().add(vec(surfaceHeadLength * 0.32, 0, 0)), 0.5),
               head.clone().add(vec(surfaceHeadLength * 0.32, 0, 0)), head,
               head.clone().lerp(surfaceSnout, 0.58), surfaceSnout,
               surfaceSnout.clone().add(vec(-surfaceHeadLength * 0.25, -surfaceHeadHeight * 0.03, 0))
             ], [
-              [surfaceHeadHeight * 0.20, surfaceHeadDepth * 0.24],
+              [neckJunction.radius, neckJunction.radius], [surfaceHeadHeight * 0.20, surfaceHeadDepth * 0.24],
               [surfaceHeadHeight * 0.84, surfaceHeadDepth * 0.82], [surfaceHeadHeight, surfaceHeadDepth],
               [surfaceHeadHeight * 0.62 * cranialSurface.muzzleHeightScale, surfaceHeadDepth * 0.72 * cranialSurface.muzzleDepthScale],
               [surfaceHeadHeight * 0.45 * cranialSurface.muzzleTipScale, surfaceHeadDepth * 0.62 * cranialSurface.muzzleTipScale],
               [surfaceHeadHeight * 0.025, surfaceHeadDepth * 0.04]
             ], headMat, cranialShape)[0];
-            if (headShell) { headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface'; }
+            if (headShell) {
+              headShell.userData.dinoRegion = 'head'; headShell.name = 'continuous-cranial-surface';
+              headShell.userData.dinoNeckJunction = { point: neckJunction.point.toArray(), radius: neckJunction.radius, t: neckJunction.t };
+            }
             var faceScale = reconstructionProfile.head;
             var eyeRadius = Math.min(Math.max(0.022 * detailScale, ht * 0.012) * faceScale * cranialSurface.eyeScale, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.21);
             var eyeCenterX = head.x - surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale;
@@ -8927,19 +8949,13 @@ window.StemLab = window.StemLab || {
             idleMotion.breathingMeshes.forEach(function (breathingEntry) { breathingEntry.contour = addBodyContour(breathingEntry.mesh); });
             addBodyContour(headShell);
             if (props.showBody) {
-              var neckBaseRadius = Math.max(0.035 * detailScale, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckBase * postcranialSurface.neckFullness;
-              var neckTipRadius = Math.max(0.028 * detailScale, ht * (isTheropod ? 0.085 : 0.038)) * surfaceHypothesis.neckSoftTissueScale * reconstructionProfile.neckTip * Math.max(0.82, postcranialSurface.neckFullness);
-              neckTipRadius = Math.min(neckTipRadius, Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.66);
               var tailBaseRadius = Math.max(0.045 * detailScale, ht * (isTheropod ? 0.105 : 0.075)) * surfaceHypothesis.tailSoftTissueScale * reconstructionProfile.tailBase * postcranialSurface.tailBaseFullness;
-              // Neck and tail overlap the continuous trunk within its tapered ends.
-              var neckMidA = new THREE.Vector3().copy(shoulder).lerp(head, 0.34).add(vec(0, surfaceBodyHeight * postcranialSurface.neckBaseCurve, 0));
-              var neckMidB = new THREE.Vector3().copy(shoulder).lerp(head, 0.70).add(vec(0, surfaceBodyHeight * postcranialSurface.neckMidCurve, 0));
-              var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head], [neckBaseRadius, neckBaseRadius * 0.82, neckTipRadius * 1.22, neckTipRadius], bodyMat);
+              var neckMeshes = addSoftTissueChain(neckPoints, neckRadii, bodyMat);
               if (neckMeshes[0]) {
                 neckMeshes[0].userData.dinoRegion = 'neck';
                 neckMeshes[0].userData.dinoNeckTip = head.toArray();
               }
-              var neckSurfaceCurve = new THREE.CatmullRomCurve3([shoulder, neckMidA, neckMidB, head], false, 'centripetal');
+              var neckSurfaceCurve = new THREE.CatmullRomCurve3(neckPoints, false, 'centripetal');
               var neckContours = addContourGroup(neckMeshes);
               if (neckMeshes.length) {
                 idleMotion.neck = neckMeshes[0];

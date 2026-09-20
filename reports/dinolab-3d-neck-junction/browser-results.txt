@@ -1,0 +1,17 @@
+Running 6 tests using 1 worker
+
+
+
+(node:29564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › spinosaurus has an enclosed rounded neck junction
+[2/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › anchiornis has an enclosed rounded neck junction
+[3/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › sinosauropteryx has an enclosed rounded neck junction
+[4/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › triceratops has an enclosed rounded neck junction
+[5/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:44:132 › parasaurolophus has an enclosed rounded neck junction
+[6/6] [chromium] › tests\e2e\dinolab-3d-neck-junction.spec.ts:61:5 › junction overlap and plumage remain seated during neck breathing
+  6 passed (5.1m)

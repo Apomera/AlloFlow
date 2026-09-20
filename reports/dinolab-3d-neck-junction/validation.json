@@ -1,0 +1,201 @@
+{
+  "date": "2026-09-20",
+  "unitTests": 45,
+  "unitSuites": 5,
+  "browserScenarios": 8,
+  "successfulBrowserRuns": 11,
+  "visualCorrection": "The initial screenshot review revealed a posterior hook on the non-theropod branch. Its rear control point now follows the neck approach. Brachiosaurus, Triceratops and Parasaurolophus were rerun and their final captures reviewed.",
+  "reviewedImages": [
+    "tyrannosaurus-head.png",
+    "brachiosaurus-head.png",
+    "spinosaurus-head.png",
+    "anchiornis-head.png",
+    "sinosauropteryx-head.png",
+    "triceratops-head.png",
+    "parasaurolophus-head.png",
+    "tyrannosaurus-side.png",
+    "brachiosaurus-side.png",
+    "brachiosaurus-phone.png"
+  ],
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "282d12b74b62bbe0904ebb305f49675653ac3dbf1cae89040a26bb4db76d03e1"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "282d12b74b62bbe0904ebb305f49675653ac3dbf1cae89040a26bb4db76d03e1"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "282d12b74b62bbe0904ebb305f49675653ac3dbf1cae89040a26bb4db76d03e1"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "282d12b74b62bbe0904ebb305f49675653ac3dbf1cae89040a26bb4db76d03e1"
+    }
+  ],
+  "species": {
+    "tyrannosaurus": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.8134722629810496,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.32000000000000295,
+        0.32000000000000295
+      ],
+      "coats": 0,
+      "coatGap": 0,
+      "geometries": 135,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "brachiosaurus": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.8133553835586051,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.3200000000000001,
+        0.31999999999999795
+      ],
+      "coats": 0,
+      "coatGap": 0,
+      "geometries": 133,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "spinosaurus": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.8044039164627346,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.3199999999999977,
+        0.3200000000000022
+      ],
+      "coats": 0,
+      "coatGap": 0,
+      "geometries": 136,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "anchiornis": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.8006097482173433,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.32000000000000356,
+        0.32000000000000994
+      ],
+      "coats": 8,
+      "coatGap": 0,
+      "geometries": 439,
+      "textures": 8,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "sinosauropteryx": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.8217098861039425,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.3200000000000023,
+        0.32000000000000056
+      ],
+      "coats": 8,
+      "coatGap": 0,
+      "geometries": 199,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "triceratops": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.7714603620048661,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.32,
+        0.320000000000005
+      ],
+      "coats": 0,
+      "coatGap": 0,
+      "geometries": 139,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "parasaurolophus": {
+      "hasJunction": true,
+      "rootOutside": 0,
+      "minRootEnclosure": 1.7685827307837079,
+      "neckOutside": 0,
+      "invalid": 0,
+      "outside": 0,
+      "eyes": [
+        0.3199999999999996,
+        0.3200000000000008
+      ],
+      "coats": 0,
+      "coatGap": 0,
+      "geometries": 128,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "breathing": {
+    "frames": 14,
+    "minRootEnclosure": 1.8006252202772284,
+    "maxRootEnclosure": 1.8051169172137387
+  },
+  "resources": {
+    "opacity": {
+      "before": {
+        "geometries": 439,
+        "textures": 8
+      },
+      "after": {
+        "geometries": 439,
+        "textures": 8
+      }
+    },
+    "breathing": {
+      "before": {
+        "geometries": 439,
+        "textures": 8
+      },
+      "after": {
+        "geometries": 439,
+        "textures": 8
+      }
+    }
+  },
+  "deployed": false
+}
