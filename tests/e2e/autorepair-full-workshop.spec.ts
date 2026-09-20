@@ -1609,3 +1609,30 @@ test('contrast workshop separates brake layers, lift stop and measured oil',asyn
   await page.locator('[data-ar-shop-jug-change="500"]').click();await page.locator('[data-ar-shop-instrument-read]').click();await expect(page.locator('[data-ar-shop-reading]')).toHaveText('4.6 L');await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid','true');
   expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('reviewed restarts recover measurements, records and drafts independently for each job',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  const other={job:'oil',step:2,station:'lift',tool:'lift-controls',lift:'prepared',notes:'Keep the oil work order.'};
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Original customer explanation.',history:[{id:'intake',label:'Read work order',result:'Concern recorded.'},{id:'hood',label:'Open hood',result:'Access ready.'}]},shopRecords:{oil:other}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const original=await raw();
+  const restart=page.locator('[data-ar-attempt-open="restart"]'),review=page.locator('#ar-attempt-review');
+  await restart.click();await expect(review).toBeFocused();expect(await raw()).toBe(original);await page.keyboard.press('Escape');await expect(restart).toBeFocused();await expect(review).toHaveCount(0);expect(await raw()).toBe(original);
+  await restart.click();await page.locator('#ar-shop-notes').fill('Revised customer explanation.');await expect(page.locator('[data-ar-attempt-confirm]')).toHaveCount(0);await expect(page.locator('[data-ar-attempt-stale]')).toBeVisible();
+  const revised=await raw();await restart.click();await review.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-desktop.png'});
+  await page.locator('[data-ar-attempt-confirm="restart"]').focus();await page.keyboard.press('Enter');await expect(page.locator('#ar-shop-work-order')).toBeFocused();await expect(page.locator('[data-ar-shop-task="intake"]')).toBeVisible();await expect(page.locator('#ar-shop-notes')).toHaveValue('');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopPreviousAttempts.electrical))).toBe(revised);expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shopRecords.oil)).toEqual(other);
+  await page.locator('#ar-shop-notes').fill('New practice draft.');const newer=await raw();
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-cancel]').click();await expect(page.locator('[data-ar-attempt-open="restore"]')).toBeFocused();expect(await raw()).toBe(newer);
+  await page.locator('#ar-shop-job').selectOption('oil');await expect(page.locator('[data-ar-attempt-open="restore"]')).toHaveCount(0);await expect(page.locator('#ar-shop-notes')).toHaveValue(other.notes);
+  await page.locator('#ar-shop-job').selectOption('electrical');await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-confirm="restore"]').click();expect(await raw()).toBe(revised);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('1.6 V');
+  expect(await page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shopPreviousAttempts.electrical))).toBe(newer);
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-attempt-confirm="restore"]').click();expect(await raw()).toBe(newer);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await page.locator('[data-ar-attempt-open="restore"]').click();await page.locator('[data-ar-previous-attempt] summary').click();await page.locator('[data-ar-attempt-panel]').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('#ar-shop-job').selectOption('oil');await page.locator('#ar-shop-job').selectOption('electrical');await expect(page.locator('[data-ar-attempt-confirm]')).toHaveCount(0);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await restart.click();await page.locator('[data-ar-attempt-panel]').evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await page.locator('[data-ar-attempt-panel]').screenshot({path:'reports/automobile-workshop/attempt-review-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  for(const button of await review.locator('button').all())expect(await button.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);
+  await page.locator('[data-ar-attempt-cancel]').click();expect(await raw()).toBe(newer);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

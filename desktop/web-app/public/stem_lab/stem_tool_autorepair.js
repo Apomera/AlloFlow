@@ -9852,6 +9852,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     saved[active.job] = active;
     return { shop: next, shopRecords: saved };
   }
+  function arShopPreviousAttempt(raw, previous) {
+    var id = arShopState(raw).job, saved = previous && Object.prototype.hasOwnProperty.call(previous, id) ? previous[id] : null;
+    return saved && typeof saved === 'object' && !Array.isArray(saved) && saved.job === id ? arShopState(saved) : null;
+  }
+  function arShopAttemptRequest(raw, previous, action) {
+    var state = arShopState(raw), backup = arShopPreviousAttempt(state, previous);
+    if (action !== 'restart' && action !== 'restore' || action === 'restore' && !backup) return null;
+    return { job: state.job, action: action, key: JSON.stringify([state, backup]) };
+  }
+  function arShopApplyAttempt(raw, records, previous, request) {
+    var expected = request && arShopAttemptRequest(raw, previous, request.action);
+    if (!expected || expected.job !== request.job || expected.key !== request.key) return null;
+    var state = arShopState(raw), next = request.action === 'restart' ? arShopInitial(state.job) : arShopPreviousAttempt(state, previous);
+    var saved = Object.assign({}, records || {}), backups = Object.assign({}, previous || {});
+    next = JSON.parse(JSON.stringify(next));
+    backups[state.job] = JSON.parse(JSON.stringify(state)); saved[state.job] = next;
+    return { shop: next, shopRecords: saved, shopPreviousAttempts: backups };
+  }
   function arShopPracticeBoard(current, records) {
     var active = arShopState(current);
     var skills = {
@@ -20531,13 +20549,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function selectJob(id, focusOrder) {
           var next = arShopSelectJob(shop, d.shopRecords, id);
           if (!next) return;
-          updMulti(next);
+          updMulti(Object.assign({}, next, { shopAttemptRequest: null }));
           if (id !== shop.job) SHOP3D.reset();
           arAnnounce(arShopJob(id).title + ' opened. Saved progress and notes retained.');
           if (focusOrder) requestAnimationFrame(function () {
             var field = document.querySelector('[data-ar-workshop] #ar-shop-job');
             if (field) { field.focus({ preventScroll: true }); field.scrollIntoView({ block: 'center', behavior: 'auto' }); }
           });
+        }
+        function requestAttempt(action) {
+          var request = arShopAttemptRequest(shop, d.shopPreviousAttempts, action);
+          if (!request) return;
+          upd('shopAttemptRequest', request);
+          requestAnimationFrame(function () { var panel = document.getElementById('ar-attempt-review'); if (panel) { panel.focus({ preventScroll: true }); panel.scrollIntoView({ block: 'center', behavior: 'auto' }); } });
+        }
+        function cancelAttempt() {
+          var action = d.shopAttemptRequest && d.shopAttemptRequest.action;
+          upd('shopAttemptRequest', null);
+          requestAnimationFrame(function () { var button = document.querySelector('[data-ar-attempt-open="' + (action === 'restore' ? 'restore' : 'restart') + '"]'); if (button) button.focus({ preventScroll: true }); });
+        }
+        function attemptPanel() {
+          var previous = arShopPreviousAttempt(shop, d.shopPreviousAttempts), request = d.shopAttemptRequest;
+          var expected = request && arShopAttemptRequest(shop, d.shopPreviousAttempts, request.action);
+          var valid = !!(expected && expected.job === request.job && expected.key === request.key);
+          if (!previous && !request) return null;
+          return h('section', { 'data-ar-attempt-panel': valid ? 'review' : request ? 'stale' : 'previous', style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
+            previous && h('details', { 'data-ar-previous-attempt': shop.job },
+              h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700 } }, 'Previous attempt · ' + previous.step + '/' + job.tasks.length + ' steps'),
+              h('p', null, 'Saved position: ' + (job.tasks[previous.step] ? job.tasks[previous.step].label : previous.released ? 'Completed work order' : 'Review saved record')),
+              h('p', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, 'Handoff: ' + (typeof previous.notes === 'string' && previous.notes.trim() ? previous.notes : 'No handoff written.')),
+              h('p', null, 'Its instrument setup, captured reading and service record will return with this attempt.')),
+            request && !valid && h('p', { role: 'status', 'data-ar-attempt-stale': true }, 'The work order or previous attempt changed. Review the action again before continuing.'),
+            valid && h('div', { id: 'ar-attempt-review', tabIndex: -1, role: 'group', 'aria-labelledby': 'ar-attempt-title', 'aria-describedby': 'ar-attempt-effect',
+              onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); cancelAttempt(); } } },
+              h('h3', { id: 'ar-attempt-title', style: { fontSize: 15, marginTop: 12 } }, request.action === 'restart' ? 'Start a new attempt?' : 'Restore the previous attempt?'),
+              h('p', { id: 'ar-attempt-effect' }, request.action === 'restart'
+                ? 'This job returns to its first task. Your current progress, measurements and handoff become its one recoverable previous attempt.' + (previous ? ' This replaces the older previous attempt shown above.' : '')
+                : 'The previous attempt becomes current. The attempt you are leaving is kept in its place, so you can switch back.'),
+              h('p', null, 'Other service jobs keep their saved progress.'),
+              h('div', { className: 'ar-shop-actions' },
+                control(request.action === 'restart' ? 'Start new attempt' : 'Restore previous attempt', function () {
+                  var next = arShopApplyAttempt(shop, d.shopRecords, d.shopPreviousAttempts, d.shopAttemptRequest);
+                  if (!next) return;
+                  updMulti(Object.assign({}, next, { shopAttemptRequest: null, shopInspectPick: null, shopCalculationCheck: null }));
+                  SHOP3D.reset();
+                  requestAnimationFrame(function () { workshopJump('order'); });
+                  arAnnounce(request.action === 'restart' ? 'New attempt started. The previous attempt is available below your work order.' : 'Previous attempt restored. The attempt you left is available to restore again.');
+                }, { 'data-ar-attempt-confirm': request.action }),
+                control('Keep current attempt', cancelAttempt, { 'data-ar-attempt-cancel': true }))),
+            !valid && previous && control('Review restore', function () { requestAttempt('restore'); }, { 'data-ar-attempt-open': 'restore' }),
+            !valid && request && control('Dismiss review', cancelAttempt, { 'data-ar-attempt-cancel': true }));
         }
         function practiceBoardPanel() {
           var cards = arShopPracticeBoard(shop, d.shopRecords), open = !!d.shopPracticeBoard;
@@ -21365,7 +21426,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('details', { style: { marginTop: 12 } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Service record (' + shop.history.length + ' completed tasks)'),
                 h('ol', { style: { paddingLeft: 22, fontSize: 12, lineHeight: 1.6 } }, shop.history.map(function (entry) { return h('li', { key: entry.id }, h('strong', null, entry.label), h('p', null, entry.result)); }))),
               h('div', { className: 'ar-shop-actions' }, control('Download work order', downloadReport),
-                control('Restart this job', function () { save(arShopInitial(job.id)); SHOP3D.reset(); arAnnounce('Training work order restarted.'); })),
+                control('Restart this job', function () { requestAttempt('restart'); }, { 'data-ar-attempt-open': 'restart' })),
+              attemptPanel(),
               h('p', { style: { color: T.muted, fontSize: 12 } }, 'Each job keeps its own progress while you explore other activities. Training steps summarize supervised work; they are not a complete repair manual.'),
               h('a', { href: 'https://www.autolift.org/be-a-smart-auto-lift-user/', target: '_blank', rel: 'noopener noreferrer', style: { color: T.link, fontSize: 12 } }, 'Lift training guidance / Automotive Lift Institute (opens in a new tab)'))),
           disclaimerFooter());

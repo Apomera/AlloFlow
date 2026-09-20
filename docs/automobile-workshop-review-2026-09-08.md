@@ -440,6 +440,18 @@ Validation: all 313 workshop unit/render tests passed. Four distinct Chromium We
 - [Brake layers and components](../reports/automobile-workshop/contrast-materials-brakes.png)
 - [Whole mechanic shop](../reports/automobile-workshop/contrast-materials-shop.png)
 
+## Recoverable practice attempts — 2026-09-19
+
+Restart this job now opens an inline review before changing the work order. Starting a new attempt retains the current job's normalized state as its one recoverable previous attempt, including instrument setup, captured evidence, completed service records and handoff notes. If an older backup exists, the review explicitly explains that it will be replaced. Other service jobs keep their own saved progress and previous attempts.
+
+Review restore shows the saved task position and handoff. Confirming exchanges the previous and current attempts, allowing the learner to switch back to the newer draft. Keep current attempt and Escape cancel without changing work and return focus to the initiating control. Changes to the active work or backup invalidate an open review; switching jobs dismisses it. Successful actions reset the camera, clear obsolete inspection/calculation feedback and focus the work order. The feature uses the existing saved tool state and retains one backup per job, rather than an unbounded attempt history.
+
+Validation: 336 workshop unit/render tests passed, including 23 new cases for all four completed jobs, valid instrument evidence, exchange/restore, detached snapshots, stale requests, malformed or foreign backups, older-backup replacement, other-job isolation, theme rendering and escaped notes. Three Chromium WebGL workflows passed: new restart/restore journey, practice-board saved-work regression and task-route evidence regression. The new flow checks keyboard review focus and Escape, cancellation, invalidation after editing a draft, exact reading/history/draft restoration, switching back, job switching, 390px contrast and 320px dark layouts, 44px actions, no horizontal overflow and no browser errors. All three captures visually reviewed. Syntax, scoped whitespace and all four module copies match (SHA256 44ce5d4ea137b52f94e9a378fbfc2f68dd4e743a28c423fc0d2db6064f8a4621); ignored build copies verified against HEAD before synchronization. No deployment.
+
+- [Desktop restart review](../reports/automobile-workshop/attempt-review-desktop.png)
+- [Phone restore review](../reports/automobile-workshop/attempt-review-contrast.png)
+- [Narrow dark restart review](../reports/automobile-workshop/attempt-review-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

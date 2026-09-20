@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1377,5 +1377,57 @@ describe('Inspection outline explanation',()=>{
     const shop=model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true});const host=document.createElement('div');
     host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopInteraction:'inspect',shopInspectPick:model.preview(shop,'engine')}},theme);
     const text=host.querySelector('[data-ar-control-outline-legend]').textContent;expect(text).toContain(theme.isContrast?'Yellow':'Cyan');expect(text).toContain('does not operate');
+  });
+});
+
+
+describe('Recoverable workshop attempts',()=>{
+  it.each(model.jobs)('restarts and restores $id without losing completed work or other jobs',job=>{
+    let state=model.initial(job.id);for(let i=0;i<job.tasks.length;i++)state=step(state,{notes:'Finding, service and verification recorded for the customer.'});
+    const sibling=model.initial(job.id==='oil'?'brakes':'oil'),records={[job.id]:{...state,notes:'Stale saved active copy'},[sibling.job]:sibling},previous={[sibling.job]:{...sibling,notes:'Other previous attempt'}};
+    const before=JSON.stringify({state,records,previous}),request=model.attemptRequest(state,previous,'restart'),next=model.applyAttempt(state,records,previous,request);
+    expect(next.shop).toEqual(model.initial(job.id));expect(next.shopPreviousAttempts[job.id]).toEqual(model.normalize(state));expect(next.shopRecords[sibling.job]).toBe(sibling);expect(next.shopPreviousAttempts[sibling.job]).toBe(previous[sibling.job]);
+    const restored=model.applyAttempt(next.shop,next.shopRecords,next.shopPreviousAttempts,model.attemptRequest(next.shop,next.shopPreviousAttempts,'restore'));
+    expect(restored.shop).toEqual(model.normalize(state));expect(restored.shop).toMatchObject({verified:true,released:true});expect(restored.shopRecords[job.id]).toEqual(restored.shop);expect(restored.shopPreviousAttempts[job.id]).toEqual(model.initial(job.id));
+    expect(JSON.stringify({state,records,previous})).toBe(before);
+  });
+  it('retains a current instrument capture and exchanges a newer draft on restore',()=>{
+    const state=model.operate(model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Original measured finding'}),{type:'read'});
+    const started=model.applyAttempt(state,{}, {},model.attemptRequest(state,{},'restart'));const draft={...started.shop,notes:'New attempt draft'};
+    const restored=model.applyAttempt(draft,started.shopRecords,started.shopPreviousAttempts,model.attemptRequest(draft,started.shopPreviousAttempts,'restore'));
+    expect(restored.shop.reading).toEqual(state.reading);expect(model.ready(restored.shop)).toBe(true);expect(restored.shopPreviousAttempts.electrical.notes).toBe('New attempt draft');
+    const exchanged=model.applyAttempt(restored.shop,restored.shopRecords,restored.shopPreviousAttempts,model.attemptRequest(restored.shop,restored.shopPreviousAttempts,'restore'));
+    expect(exchanged.shop.notes).toBe('New attempt draft');expect(exchanged.shopPreviousAttempts.electrical.reading).toEqual(state.reading);
+    restored.shop.instrument.contact='posts';expect(state.instrument.contact).toBe('joint');expect(started.shopPreviousAttempts.electrical.instrument.contact).toBe('joint');
+  });
+  it.each([{notes:'Changed'},{answer:'6'},{step:1},{tool:'socket'},{job:'oil'}])('rejects a review after current work changes: %j',patch=>{
+    const state=model.initial('brakes'),request=model.attemptRequest(state,{},'restart');expect(model.applyAttempt({...state,...patch},{},{},request)).toBeNull();
+  });
+  it('rejects a changed backup, mismatched job, unsupported action and missing request',()=>{
+    const state=model.initial('oil'),previous={oil:{...state,notes:'Old attempt'}},request=model.attemptRequest(state,previous,'restore');
+    for(const change of [{oil:{...state,notes:'Changed backup'}},{}])expect(model.applyAttempt(state,{},change,request)).toBeNull();
+    for(const bad of [null,{}, {...request,job:'brakes'},{...request,action:'delete'},{...request,key:'bad'}])expect(model.applyAttempt(state,{},previous,bad)).toBeNull();
+  });
+  it.each([null,[],17,'bad',{}, {job:'brakes'}, {job:'unknown'}])('ignores malformed or foreign previous attempts: %j',saved=>{
+    const state=model.initial('oil');expect(model.previousAttempt(state,{oil:saved})).toBeNull();expect(model.attemptRequest(state,{oil:saved},'restore')).toBeNull();
+  });
+  it('keeps only the latest previous attempt for the current job and survives JSON persistence',()=>{
+    const state={...model.initial('oil'),notes:'Most recent'},previous={oil:{...model.initial('oil'),notes:'Older'},electrical:model.initial('electrical')};
+    const request=JSON.parse(JSON.stringify(model.attemptRequest(state,previous,'restart'))),next=model.applyAttempt(state,{},previous,request);
+    expect(Object.keys(next.shopPreviousAttempts).sort()).toEqual(['electrical','oil']);expect(next.shopPreviousAttempts.oil.notes).toBe('Most recent');expect(previous.oil.notes).toBe('Older');
+  });
+});
+
+describe('Practice attempt review rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function render(shop,previous,request,theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopPreviousAttempts:previous,shopAttemptRequest:request}},theme);return host;}
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('explains backup replacement and provides keep-current action in %j',theme=>{
+    const shop=model.initial('oil'),previous={oil:{...shop,notes:'Older finding'}};const host=render(shop,previous,model.attemptRequest(shop,previous,'restart'),theme);
+    expect(host.querySelector('#ar-attempt-review').getAttribute('tabindex')).toBe('-1');expect(host.querySelector('[data-ar-attempt-confirm]').textContent).toBe('Start new attempt');expect(host.querySelector('[data-ar-attempt-cancel]').textContent).toBe('Keep current attempt');expect(host.textContent).toContain('replaces the older previous attempt');
+  });
+  it('escapes saved handoff text, hides stale confirmation and keeps restore scoped to this job',()=>{
+    const shop=model.initial('oil'),previous={oil:{...shop,notes:'<img src=x onerror=alert(1)>'}};const request=model.attemptRequest(shop,previous,'restore');
+    const host=render({...shop,notes:'Changed'},previous,request);expect(host.querySelector('[data-ar-attempt-confirm]')).toBeNull();expect(host.querySelector('[data-ar-attempt-stale]')).not.toBeNull();expect(host.querySelector('[data-ar-previous-attempt] img')).toBeNull();expect(host.textContent).toContain('<img');
+    expect(render(model.initial('brakes'),previous,null).querySelector('[data-ar-attempt-open="restore"]')).toBeNull();
   });
 });
