@@ -6344,6 +6344,56 @@ window.StemLab = window.StemLab || {
     return { point: hit.point, normal: normal };
   }
 
+  // Project each strip vertex onto the cranial mesh, then add only shallow relief.
+  // World-space curve points are converted back into the surface's local frame.
+  function dinoFacialStripGeometry(THREE, surface, points, options) {
+    if (!surface || !points || points.length < 2 || !(options.width > 0)) return null;
+    surface.updateWorldMatrix(true, false);
+    if (!surface.geometry.boundingBox) surface.geometry.computeBoundingBox();
+    var bounds = surface.geometry.boundingBox.clone().applyMatrix4(surface.matrixWorld);
+    var reach = Math.max(bounds.max.z - bounds.min.z, options.width * 4);
+    var side = options.side < 0 ? -1 : 1, rings = options.rings || 32, columns = 4;
+    var curve = new THREE.CatmullRomCurve3(points), positions = [], roots = [], uvs = [], indices = [], seated = [];
+    var projected = 0, offset = options.width * 0.06;
+    for (var row = 0; row <= rings; row++) {
+      var t = row / rings, center = curve.getPoint(t), tangent = curve.getTangent(t);
+      var across = new THREE.Vector3(-tangent.y, tangent.x, 0).normalize();
+      if (across.lengthSq() < 0.5) across.set(0, 1, 0);
+      var taper = 0.02 + 0.98 * Math.pow(Math.max(0, Math.sin(Math.PI * t)), 0.65);
+      for (var column = 0; column <= columns; column++) {
+        var v = column / columns * 2 - 1;
+        var sample = center.clone().addScaledVector(across, v * options.width * taper);
+        var origin = sample.clone(); origin.z = side > 0 ? bounds.max.z + reach : bounds.min.z - reach;
+        var anchor = dinoSurfaceAnchor(THREE, surface, origin, new THREE.Vector3(0, 0, -side), reach * 3);
+        seated.push(!!anchor);
+        var root = anchor ? anchor.point : sample;
+        var point = root.clone();
+        if (anchor) {
+          projected++;
+          point.addScaledVector(anchor.normal, offset + (options.relief || 0) * taper * (1 - v * v));
+        }
+        surface.worldToLocal(point); root = surface.worldToLocal(root.clone());
+        positions.push(point.x, point.y, point.z); roots.push(root.x, root.y, root.z); uvs.push(t, column / columns);
+      }
+    }
+    for (var i = 0; i < rings; i++) for (var j = 0; j < columns; j++) {
+      var a = i * (columns + 1) + j, b = a + columns + 1;
+      // Missing surface samples leave a gap instead of a floating facial detail.
+      if (!seated[a] || !seated[b] || !seated[a + 1] || !seated[b + 1]) continue;
+      if (side > 0) indices.push(a, b, a + 1, b, b + 1, a + 1);
+      else indices.push(a, a + 1, b, b, a + 1, b + 1);
+    }
+    if (!indices.length) return null;
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('dinoFaceRoot', new THREE.Float32BufferAttribute(roots, 3));
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geometry.setIndex(indices); geometry.computeVertexNormals();
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.parameters = { width: options.width, relief: options.relief || 0, offset: offset, projected: projected, samples: seated.length, rings: rings, columns: columns, side: side };
+    return geometry;
+  }
+
   // The specimen turns about the origin. Fit once around its whole orbit so the
   // shadow texel grid stays still while the camera and idle anatomy move.
   function dinoShadowOrbitBounds(THREE, bounds) {
@@ -8125,7 +8175,7 @@ window.StemLab = window.StemLab || {
             var eyeGlintMat = new THREE.MeshBasicMaterial({ color: 0xfff3cf });
             var corneaMat = THREE.MeshPhysicalMaterial ? new THREE.MeshPhysicalMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.18, roughness: 0.06, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.04, depthWrite: false }) : new THREE.MeshBasicMaterial({ color: 0xdff7ff, transparent: true, opacity: 0.14, depthWrite: false });
             var mouthMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.94 }) : new THREE.MeshPhongMaterial({ color: 0x241a17, shininess: 2 });
-            var oralTissueMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x5b2d2b, roughness: 0.82, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0x5b2d2b, shininess: 5 });
+            var mouthCreaseMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(0x302821).convertSRGBToLinear(), transparent: headMat.transparent, opacity: headMat.opacity, depthWrite: headMat.depthWrite, side: THREE.DoubleSide });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
             var toothMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xfff5d6, roughness: 0.48, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xfff5d6, shininess: 24 });
             var muscleMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), roughness: 0.92, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), shininess: 4, depthWrite: false });
@@ -8185,6 +8235,7 @@ window.StemLab = window.StemLab || {
             }
             activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, coat: coatMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             activeMaterialSet.contourCoat = contourCoatMat;
+            activeMaterialSet.mouthCrease = mouthCreaseMat;
             activeMaterialSet.callout = anatomyCalloutMat;
             var crestMat = null;
             if (props.showBody && integument.pattern === 'white-banded' && surfaceHypothesis.filamentCoverage > 0) {
@@ -9063,9 +9114,13 @@ window.StemLab = window.StemLab || {
               [-1, 1].forEach(function (faceSide) {
                 var eyePos = head.clone().add(vec(-surfaceHeadLength * 0.20 * cranialSurface.eyeForwardScale, surfaceHeadHeight * 0.30 * cranialSurface.eyeHeightScale, faceSide * surfaceHeadDepth * 0.94));
                 eyePos = faceSurfacePoint(eyePos, faceSide, -eyeRadius * 0.14);
-                var browStart = eyePos.clone().add(vec(-eyeRadius * 1.22, eyeRadius * 0.84, -faceSide * eyeRadius * 0.16));
-                var browEnd = eyePos.clone().add(vec(eyeRadius * 1.02, eyeRadius * 0.96, -faceSide * eyeRadius * 0.12));
-                addSoftTissueCylinder(browStart, browEnd, eyeRadius * 0.25 * cranialSurface.browScale, eyeRadius * 0.18 * cranialSurface.browScale, headMat);
+                var browPoints = [
+                  eyePos.clone().add(vec(-eyeRadius * 1.28, eyeRadius * 0.84, 0)),
+                  eyePos.clone().add(vec(0, eyeRadius * 1.12, 0)),
+                  eyePos.clone().add(vec(eyeRadius * 1.20, eyeRadius * 0.90, 0))
+                ];
+                addFacialStrip(browPoints, eyeRadius * 0.33 * cranialSurface.browScale,
+                  eyeRadius * 0.28 * cranialSurface.browScale, faceSide, headMat, 'brow-relief');
                 var eye = new THREE.Mesh(new THREE.SphereGeometry(eyeRadius, 18, 12), eyeMat);
                 eye.position.copy(eyePos);
                 eye.userData.dinoFeature = 'eye';
@@ -9112,19 +9167,11 @@ window.StemLab = window.StemLab || {
                 nostrilRim.scale.set(1.25, 0.56, 1);
                 nostrilRim.renderOrder = 11;
                 model.add(nostrilRim);
-                var mouthStart = head.clone().lerp(surfaceSnout, 0.18).add(vec(0, -surfaceHeadHeight * 0.28, faceSide * jawDepth * 0.72));
-                var mouthEnd = head.clone().lerp(surfaceSnout, 0.92).add(vec(0, -surfaceHeadHeight * 0.29, faceSide * jawDepth * 0.44));
-                var lipRadius = Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.024;
-                var mouthPoints = [];
-                for (var lipIndex = 0; lipIndex <= 8; lipIndex++) {
-                  mouthPoints.push(faceSurfacePoint(mouthStart.clone().lerp(mouthEnd, lipIndex / 8), faceSide, lipRadius * 0.18));
-                }
-                var mouthLine = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(mouthPoints), 24, lipRadius, 6, false), mouthMat);
-                mouthLine.renderOrder = 10; model.add(mouthLine);
-                var mouthCorner = new THREE.Mesh(new THREE.SphereGeometry(lipRadius * 1.3, 12, 8), oralTissueMat);
-                mouthCorner.position.copy(mouthPoints[0]);
-                mouthCorner.renderOrder = 11;
-                model.add(mouthCorner);
+                var mouthStart = head.clone().lerp(surfaceSnout, 0.18).add(vec(0, -surfaceHeadHeight * 0.28, 0));
+                var mouthEnd = head.clone().lerp(surfaceSnout, 0.98).add(vec(0, -surfaceHeadHeight * 0.29, 0));
+                var mouthMiddle = mouthStart.clone().lerp(mouthEnd, 0.5).add(vec(0, -surfaceHeadHeight * 0.035, 0));
+                addFacialStrip([mouthStart, mouthMiddle, mouthEnd], Math.min(surfaceHeadHeight, surfaceHeadDepth) * 0.013,
+                  0, faceSide, mouthCreaseMat, 'mouth-crease');
               });
 
               if (/Ceratops/i.test(cladeName)) {
@@ -9795,6 +9842,15 @@ window.StemLab = window.StemLab || {
               scale.quaternion.setFromUnitVectors(vec(0, 0, 1), anchor.normal);
               scale.userData.dinoFeature = 'surface-scale';
               bindSurfaceDetail(scale, surface, anchor);
+            }
+            function addFacialStrip(points, width, relief, side, material, feature) {
+              var geometry = dinoFacialStripGeometry(THREE, headShell, points, { width: width, relief: relief, side: side });
+              if (!geometry) return null;
+              var mesh = new THREE.Mesh(geometry, material);
+              mesh.name = feature + '-' + side; mesh.userData.dinoFeature = feature; mesh.userData.dinoRegion = 'head';
+              mesh.renderOrder = 10; mesh.receiveShadow = relief > 0;
+              headShell.add(mesh);
+              return mesh;
             }
             function addContourPlumage(surface, count, length, dorsalOnly, minX, maxU, taper) {
               if (!surface || !contourCoatMat) return;
@@ -10965,6 +11021,9 @@ window.StemLab = window.StemLab || {
             [materials.muscle, materials.lung, materials.airSac, materials.callout].forEach(function (material) { if (material) material.visible = !opaqueSurface; });
             materials.body.opacity = opaqueSurface ? 1 : alpha;
             materials.head.opacity = opaqueSurface ? 1 : Math.min(0.87, alpha + 0.12);
+            materials.mouthCrease.opacity = materials.head.opacity;
+            materials.mouthCrease.transparent = !opaqueSurface;
+            materials.mouthCrease.depthWrite = opaqueSurface;
             materials.wire.opacity = opaqueSurface ? 0 : 0.16;
             materials.accent.opacity = opaqueSurface ? 1 : Math.min(0.90, alpha + 0.40);
             materials.muscle.opacity = Math.min(0.52, 0.14 + alpha * 0.62);

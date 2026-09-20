@@ -1,0 +1,126 @@
+{
+  "unitTests": 37,
+  "unitSuites": 4,
+  "browserScenarios": 7,
+  "initialBrowserTimeouts": 1,
+  "timeoutResolution": "Anchiornis screenshot timed out in the first preview; the same renderer passed its complete workflow on rerun with a 360-second test budget.",
+  "reviewedImages": [
+    "anchiornis-side.png",
+    "anchiornis-phone.png",
+    "microraptor-head.png",
+    "tyrannosaurus-head.png",
+    "spinosaurus-head.png",
+    "triceratops-head.png",
+    "parasaurolophus-head.png",
+    "brachiosaurus-head.png"
+  ],
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "4ee1c7797c637e75cebbca4d46de0a8dbeb65039131fe1c3d59517be2c81f856"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "4ee1c7797c637e75cebbca4d46de0a8dbeb65039131fe1c3d59517be2c81f856"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "4ee1c7797c637e75cebbca4d46de0a8dbeb65039131fe1c3d59517be2c81f856"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "4ee1c7797c637e75cebbca4d46de0a8dbeb65039131fe1c3d59517be2c81f856"
+    }
+  ],
+  "species": {
+    "anchiornis": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "microraptor": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "tyrannosaurus": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "spinosaurus": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "triceratops": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "parasaurolophus": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "brachiosaurus": {
+      "strips": 4,
+      "projected": 660,
+      "samples": 660,
+      "maximumRootGap": 0,
+      "invalid": 0,
+      "outside": 0,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "resources": {
+    "before": {
+      "geometries": 417,
+      "textures": 8
+    },
+    "after": {
+      "geometries": 417,
+      "textures": 8
+    }
+  },
+  "previousMicroraptorGeometries": 419,
+  "deployed": false
+}

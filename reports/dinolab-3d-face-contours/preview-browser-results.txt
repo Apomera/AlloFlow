@@ -1,0 +1,52 @@
+Running 2 tests using 1 worker
+
+
+
+(node:50872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:50872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/2] [chromium] › tests\e2e\dinolab-3d-face-contours.spec.ts:36:128 › anchiornis has seated tapered facial contours
+  1) [chromium] › tests\e2e\dinolab-3d-face-contours.spec.ts:36:128 › anchiornis has seated tapered facial contours
+
+    TimeoutError: locator.screenshot: Timeout 10239.068ms exceeded.
+    Call log:
+      - taking element screenshot
+      - waiting for fonts to load...
+      - fonts loaded
+      - attempting scroll into view action
+        - waiting for element to be stable
+
+
+      36 | for(const id of ['anchiornis','microraptor','tyrannosaurus','spinosaurus','triceratops','parasaurolophus','brachiosaurus'])test(id+' has seated tapered facial contours',async({page})=>{
+      37 |  await mount(page,id);await page.getByRole('button',{name:'Study head details',exact:true}).click();const before=await inspect(page);check(before);
+    > 38 |  await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+id+'-head.png'});
+         |                                           ^
+      39 |  await page.locator('.dinolab-3d-controls-disclosure > summary').click();await page.getByRole('button',{name:'Front camera view',exact:true}).click();check(await inspect(page));
+      40 |  await page.getByRole('button',{name:'Side camera view',exact:true}).click();check(await inspect(page));
+      41 |  if(id==='anchiornis'){
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dinolab-3d-face-contours.spec.ts:38:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dinolab-3d-face-contours\preview-artifacts\dinolab-3d-face-contours-a-b17ee-ted-tapered-facial-contours-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dinolab-3d-face-contours\preview-artifacts\dinolab-3d-face-contours-a-b17ee-ted-tapered-facial-contours-chromium\error-context.md
+
+    Error Context: reports\dinolab-3d-face-contours\preview-artifacts\dinolab-3d-face-contours-a-b17ee-ted-tapered-facial-contours-chromium\error-context.md
+
+
+
+(node:39856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+(node:39856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[2/2] [chromium] › tests\e2e\dinolab-3d-face-contours.spec.ts:36:128 › microraptor has seated tapered facial contours
+  1 failed
+    [chromium] › tests\e2e\dinolab-3d-face-contours.spec.ts:36:128 › anchiornis has seated tapered facial contours
+  1 passed (2.7m)
