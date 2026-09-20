@@ -9726,6 +9726,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return { key: JSON.stringify([state.job, state.step, String(state.answer)]), status: status, correct: status === 'correct', message: message, formula: lessons[state.job][0], hint: lessons[state.job][1] };
   }
 
+  function arShopSetupChecks(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
+    if (!task) return [];
+    var labels = { lift: 'Vehicle support', hood: 'Hood access', wheelRemoved: 'Front wheel', measured: 'Initial measurement step',
+      serviced: 'Service step', torqued: 'Wheel refit and fastener check', oilDrained: 'Oil drain step', plugSecured: 'Drain plug',
+      refilled: 'Oil refill step', verified: 'Verification step', alignmentReady: 'Alignment preparation' };
+    function value(key, current) {
+      if (key === 'lift') return arShopLiftStatus({ job: state.job, lift: current }).label;
+      if (current !== true && current !== false) return 'Not recorded';
+      if (key === 'hood') return current ? 'Open' : 'Closed';
+      if (key === 'wheelRemoved') return current ? 'Removed' : 'Fitted';
+      if (key === 'plugSecured') return current ? 'Secured' : 'Not secured';
+      return current ? 'Completed' : 'Not completed';
+    }
+    return Object.keys(task.requires).map(function (key) {
+      var required = task.requires[key], source = null;
+      for (var i = 0; i < state.step; i++) {
+        if (Object.prototype.hasOwnProperty.call(job.tasks[i].changes, key) && job.tasks[i].changes[key] === required)
+          source = { id: job.tasks[i].id, number: i + 1, label: job.tasks[i].label };
+      }
+      return { id: key, label: labels[key] || 'Additional vehicle setup', ready: state[key] === required,
+        required: value(key, required), current: value(key, state[key]), source: source };
+    });
+  }
+
   // One set of checks drives both the live guide and task completion.
   function arShopReadiness(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], checks = [];
@@ -9738,8 +9763,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var toolLabel = SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1];
     check('station', stationLabel, state.station === task.station, 'Go to ' + stationLabel + ' for this task.');
     check('tool', toolLabel, state.tool === task.tool, 'Choose ' + toolLabel + ' for this task.');
-    check('prerequisites', 'Vehicle setup and access', Object.keys(task.requires).every(function (key) { return state[key] === task.requires[key]; }),
-      'The vehicle is not ready for this operation. Complete the preceding setup and reassembly steps.');
+    var missingSetup = arShopSetupChecks(state).filter(function (item) { return !item.ready; });
+    check('prerequisites', 'Vehicle setup and access', !missingSetup.length,
+      'The vehicle is not ready for this operation. ' + missingSetup.map(function (item) { return item.label + ': requires ' + item.required + '; current state: ' + item.current + '.'; }).join(' '));
     if (task.id === 'measure' || task.id === 'refill') check('calculation', 'Service-sheet calculation',
       arShopCalculation(state).correct,
       'Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
@@ -20753,6 +20779,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', { style: { display: 'block', fontSize: 16, color: T.link, marginBottom: 6 } }, calc.formula),
               h('span', null, calc.hint), h('p', { style: { marginBottom: 0 } }, 'Use the starting values in this service-sheet question, even after changing the equipment.')));
         }
+        function setupChecksPanel() {
+          var checks = arShopSetupChecks(shop);
+          if (!checks.length) return null;
+          var ready = checks.filter(function (item) { return item.ready; }).length;
+          function reviewSource(item) {
+            upd('shopTaskRoute', true);
+            requestAnimationFrame(function () {
+              var row = document.querySelector('[data-ar-route-step="' + (item.source ? item.source.id : 'intake') + '"]');
+              if (!row) return;
+              var details = row.querySelector('details'), summary = row.querySelector('summary');
+              if (details) details.open = true;
+              if (summary) { summary.focus({ preventScroll: true }); summary.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+            });
+          }
+          return h('details', { id: 'ar-shop-setup-checks', 'data-ar-setup-checks': ready === checks.length ? 'ready' : 'needed', tabIndex: -1, open: ready !== checks.length,
+            'aria-label': 'Vehicle setup for the current task', style: { margin: '12px 0', padding: 12, border: '1px solid ' + T.border, borderRadius: 8, background: T.cardAlt } },
+            h('summary', { style: { minHeight: 44, cursor: 'pointer', fontWeight: 700, fontSize: 13, lineHeight: 1.6 } }, 'Vehicle setup · ' + ready + '/' + checks.length + ' conditions ready'),
+            h('p', null, 'Compare the current simulation state with this task’s requirements. Reviewing a step does not perform it or create a missing record.'),
+            h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } }, checks.map(function (item) {
+              return h('li', { key: item.id, 'data-ar-setup-check': item.id, 'data-ar-setup-ready': String(item.ready), style: { padding: '10px 0', borderTop: '1px solid ' + T.border, fontSize: 12, lineHeight: 1.6 } },
+                h('strong', null, (item.ready ? 'Ready · ' : 'Needed · ') + item.label),
+                h('div', { 'data-ar-setup-required': true }, 'Required: ' + item.required),
+                h('div', { 'data-ar-setup-current': true }, 'Current: ' + item.current),
+                !item.ready && h('p', null, item.source ? 'Established by step ' + item.source.number + ': ' + item.source.label : 'Expected from the starting vehicle setup.'),
+                !item.ready && control(item.source ? 'Review step ' + item.source.number : 'Review starting setup', function () { reviewSource(item); }, { 'data-ar-setup-review': item.id }));
+            })),
+            ready < checks.length && h('p', { style: { marginBottom: 0 } }, 'If this saved attempt is missing an earlier setup step, review its record. Restart this job keeps the current attempt recoverable.'));
+        }
         function taskRoutePanel() {
           var open = !!d.shopTaskRoute, route = arShopTaskRoute(shop), recorded = route.filter(function (item) { return item.status === 'recorded'; }).length;
           var statuses = { recorded: 'Recorded', current: 'Current task', upcoming: 'Upcoming', missing: 'No saved record' };
@@ -20931,7 +20985,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             if (target === 'tool') { focusToolControls(); selector = '[data-ar-scene-tool]'; }
             else if (target === 'lift-stop') { focusLiftControls(); selector = '[data-ar-scene-action="' + (shop.liftBayClear ? 'lift-reset' : 'lift-clear') + '"]'; }
             else if (target === 'calculation' || target === 'handoff') selector = target === 'calculation' ? '#ar-shop-scene-answer' : '#ar-shop-scene-notes';
-            else if (target === 'prerequisites' || target === 'complete') selector = '#ar-shop-work-order';
+            else if (target === 'prerequisites') selector = '#ar-shop-setup-checks';
+            else if (target === 'complete') selector = '#ar-shop-work-order';
             else {
               focusServiceControls();
               if (target === 'evidence' && coach) selector = instrumentGuideSelector(coach);
@@ -20939,7 +20994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             }
             requestAnimationFrame(function () {
               var element = document.querySelector('[data-ar-workshop] ' + selector);
-              if (element) { element.focus({ preventScroll: true }); element.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+              if (element) { if (target === 'prerequisites') element.open = true; element.focus({ preventScroll: true }); element.scrollIntoView({ block: 'center', behavior: 'auto' }); }
             });
             arAnnounce(instruction);
           }
@@ -21403,6 +21458,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('details', { open: true }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Vehicle service sheet — simulation values'), h('p', null, job.spec)),
               h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': 'Work order progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
               taskRoutePanel(),
+              setupChecksPanel(),
               task ? h('div', { id: 'ar-shop-current-task', tabIndex: -1, 'data-ar-shop-task': task.id },
                 h('h3', { style: { marginTop: 15, fontSize: 17 } }, (shop.step + 1) + '. ' + task.label),
                 h('p', null, task.why),

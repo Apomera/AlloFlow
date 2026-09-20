@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget, previousAttempt: arShopPreviousAttempt, attemptRequest: arShopAttemptRequest, applyAttempt: arShopApplyAttempt, setupChecks: arShopSetupChecks };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1429,5 +1429,54 @@ describe('Practice attempt review rendering',()=>{
     const shop=model.initial('oil'),previous={oil:{...shop,notes:'<img src=x onerror=alert(1)>'}};const request=model.attemptRequest(shop,previous,'restore');
     const host=render({...shop,notes:'Changed'},previous,request);expect(host.querySelector('[data-ar-attempt-confirm]')).toBeNull();expect(host.querySelector('[data-ar-attempt-stale]')).not.toBeNull();expect(host.querySelector('[data-ar-previous-attempt] img')).toBeNull();expect(host.textContent).toContain('<img');
     expect(render(model.initial('brakes'),previous,null).querySelector('[data-ar-attempt-open="restore"]')).toBeNull();
+  });
+});
+
+
+describe('Specific vehicle setup guidance',()=>{
+  it.each(model.jobs)('matches every authored prerequisite and earlier source in $id',job=>{
+    let state=model.initial(job.id);
+    for(let i=0;i<job.tasks.length;i++){
+      const before=JSON.stringify(state),checks=model.setupChecks(state),task=job.tasks[i];expect(checks.map(c=>c.id)).toEqual(Object.keys(task.requires));expect(checks.every(c=>c.ready)).toBe(true);
+      for(const check of checks){expect(check.label).not.toBe('Additional vehicle setup');expect(check.current).toBe(check.required);if(check.source){expect(check.source.number).toBeLessThan(i+1);expect(job.tasks[check.source.number-1].changes[check.id]).toBe(task.requires[check.id]);}}
+      expect(JSON.stringify(state)).toBe(before);state=step(state,{notes:'Finding, service and verification recorded for the customer.'});
+    }
+    expect(model.setupChecks(state)).toEqual([]);
+  });
+  it.each(['ground','prepared','low','checked','raised'])('explains why %s does not meet the mechanical-lock prerequisite',lift=>{
+    const state=model.normalize({job:'brakes',step:6,station:'brakes',tool:'socket',lift}),check=model.setupChecks(state)[0];
+    expect(check).toMatchObject({id:'lift',ready:false,required:'Supported on mechanical locks',source:{id:'locks',number:6}});expect(check.current).toBe(model.liftStatus(state).label);
+    const feedback=model.advance(state).feedback;expect(feedback).toContain(check.required);expect(feedback).toContain(check.current);expect(model.advance(state).step).toBe(6);
+  });
+  it.each([
+    [{job:'electrical',step:2,hood:false},'hood','Open','Closed','hood'],
+    [{job:'oil',step:9,plugSecured:false},'plugSecured','Secured','Not secured','filter'],
+    [{job:'brakes',step:8,measured:false},'measured','Completed','Not completed','measure'],
+    [{job:'brakes',step:11,torqued:false},'torqued','Completed','Not completed','refit'],
+    [{job:'alignment',step:2,alignmentReady:false},'alignmentReady','Completed','Not completed','alignment-setup']
+  ])('names the missing condition and its earlier task for %j',(raw,id,required,current,source)=>{
+    expect(model.setupChecks(raw).find(c=>c.id===id)).toMatchObject({ready:false,required,current,source:{id:source}});
+  });
+  it('distinguishes fitted and removed wheels and does not invent an earlier operation',()=>{
+    expect(model.setupChecks({job:'alignment',step:2,wheelRemoved:true}).find(c=>c.id==='wheelRemoved')).toMatchObject({ready:false,required:'Fitted',current:'Removed',source:null});
+    expect(model.setupChecks({job:'brakes',step:7,wheelRemoved:false}).find(c=>c.id==='wheelRemoved')).toMatchObject({ready:false,required:'Removed',current:'Fitted',source:{id:'wheel-off'}});
+  });
+  it('does not equate a saved result with the live prerequisite or accept truthy malformed flags',()=>{
+    const state={job:'electrical',step:4,serviced:'yes',history:[{id:'service',result:'Old record'}]};
+    expect(model.setupChecks(state).find(c=>c.id==='serviced')).toMatchObject({ready:false,current:'Not recorded'});expect(model.readiness(state).next.id).toBe('prerequisites');
+  });
+  it('finds the latest earlier ground-state operation and handles completion',()=>{
+    expect(model.setupChecks({job:'brakes',step:12}).find(c=>c.id==='lift').source).toMatchObject({id:'lower',number:11});expect(model.setupChecks({job:'brakes',step:13})).toEqual([]);
+  });
+});
+
+describe('Vehicle setup checklist rendering',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  function panel(shop,theme={}){const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,uh3dStatus:'failed'}},theme);return host.querySelector('[data-ar-setup-checks]');}
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('shows required/current values and review-only navigation in %j',theme=>{
+    const p=panel({job:'brakes',step:6,lift:'raised'},theme);expect(p.open).toBe(true);expect(p.getAttribute('tabindex')).toBe('-1');expect(p.textContent).toContain('Current: Raised: locks not set');expect(p.textContent).toContain('Required: Supported on mechanical locks');expect(p.querySelector('[data-ar-setup-review="lift"]').textContent).toBe('Review step 6');expect(p.textContent).toContain('does not perform it');
+  });
+  it('collapses satisfied checks and omits empty setup lists',()=>{
+    const p=panel({job:'electrical',step:2,hood:true});expect(p.open).toBe(false);expect(p.getAttribute('data-ar-setup-checks')).toBe('ready');expect(p.querySelector('[data-ar-setup-review]')).toBeNull();expect(panel({job:'electrical',step:0})).toBeNull();
   });
 });

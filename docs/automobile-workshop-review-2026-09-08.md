@@ -452,6 +452,18 @@ Validation: 336 workshop unit/render tests passed, including 23 new cases for al
 - [Phone restore review](../reports/automobile-workshop/attempt-review-contrast.png)
 - [Narrow dark restart review](../reports/automobile-workshop/attempt-review-dark.png)
 
+## Specific vehicle setup guidance — 2026-09-19
+
+The work order now compares each authored prerequisite with the current vehicle state: lift support, hood access, wheel fitment, drain-plug status and earlier service steps. Unmet conditions expand automatically and explain the exact required/current values. Ready conditions remain available in a collapsed checklist. The live task guide focuses this checklist, and blocked-operation feedback names the missing conditions while preserving the existing strict advancement rules.
+
+Review step opens and focuses the latest earlier authored task that establishes that condition. When the condition belongs to the starting vehicle setup, the link opens intake. Review does not operate equipment, advance a task or manufacture a service record. Missing or malformed saved values remain unsatisfied even when older history exists. The checklist also points learners toward the existing recoverable restart flow when an earlier step is absent from a saved attempt.
+
+Validation: all 357 workshop unit/render tests passed, including 21 new cases covering every prerequisite across all four jobs, lift states, strict boolean values, source-step selection, unchanged inputs, completion and themed/fallback rendering. Five Chromium WebGL workflows passed: the new setup checklist journey, both live task-guide regressions, task-route evidence review and recoverable attempts. Browser checks cover exact required/current text, blocked advancement, keyboard focus, preserved state and captured measurements during review, live updates after opening the hood, earlier-step and intake links, 390px high contrast and 320px dark layouts, 44px controls, no horizontal overflow and no browser errors. All three new screenshots visually reviewed. Syntax, scoped whitespace and four-copy module parity passed (SHA256 a530c2e30b9d3661f6c5fad73b04f5e6813aa5d4c86e79b5631e5f0a6f877534); ignored build copies verified against HEAD before synchronization. No deployment.
+
+- [Desktop blocked lift setup](../reports/automobile-workshop/setup-guidance-desktop.png)
+- [High contrast phone oil setup](../reports/automobile-workshop/setup-guidance-contrast.png)
+- [Narrow dark phone starting setup](../reports/automobile-workshop/setup-guidance-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

@@ -1636,3 +1636,29 @@ test('reviewed restarts recover measurements, records and drafts independently f
   for(const button of await review.locator('button').all())expect(await button.evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);
   await page.locator('[data-ar-attempt-cancel]').click();expect(await raw()).toBe(newer);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('setup guidance explains blocked work and reviews earlier steps without changing the vehicle',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'brakes',step:6,station:'brakes',tool:'socket',lift:'raised',notes:'Keep this service draft.'}}});
+  const setup=page.locator('[data-ar-setup-checks]'),raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  await page.locator('[data-ar-task-guide-go="prerequisites"]').focus();await page.keyboard.press('Enter');await expect(setup).toBeFocused();await expect(setup).toHaveAttribute('open','');expect(await raw()).toBe(before);
+  await expect(setup).toContainText('Required: Supported on mechanical locks');await expect(setup).toContainText('Current: Raised: locks not set');
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-desktop.png'});
+  await page.locator('[data-ar-setup-review="lift"]').click();const row=page.locator('[data-ar-route-step="locks"]');await expect(row.locator('summary')).toBeFocused();await expect(row.locator('details')).toHaveAttribute('open','');await expect(row).toContainText('No evidence is inferred');expect(await raw()).toBe(before);
+  await page.locator('[data-ar-shop-perform]').click();await expect(page.locator('[data-ar-shop-feedback]')).toContainText('Raised: locks not set');await expect(page.locator('[data-ar-shop-task="wheel-off"]')).toBeVisible();expect(await page.evaluate(()=>(window as any).__toolData.autoRepair.shop.wheelRemoved)).not.toBe(true);
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'electrical',step:2,station:'engine',tool:'meter',hood:false,instrument:{mode:'dcv',contact:'joint',load:'starter'},notes:'Electrical draft.'});});
+  await expect(setup).toContainText('Required: Open');await expect(setup).toContainText('Current: Closed');
+  await page.locator('[data-ar-scene-action="hood"]').click();await expect(setup).toHaveAttribute('data-ar-setup-checks','ready');await expect(setup).not.toHaveAttribute('open','');await expect(page.locator('[data-ar-task-guide]')).toHaveAttribute('data-ar-task-guide','evidence');
+  await page.locator('[data-ar-shop-instrument-read]').click();const captured=await raw();await setup.locator('summary').click();await expect(setup).toContainText('Ready · Hood access');expect(await raw()).toBe(captured);
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shop',{job:'oil',step:9,station:'engine',tool:'funnel',lift:'locked',plugSecured:false,notes:'Oil draft.'});});
+  await expect(setup).toContainText('Required: Secured');await expect(setup).toContainText('Current: Not secured');await expect(setup).toContainText('Required: On the floor');
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-contrast.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  const oil=await raw();await page.locator('[data-ar-setup-review="plugSecured"]').click();await expect(page.locator('[data-ar-route-step="filter"] summary')).toBeFocused();expect(await raw()).toBe(oil);
+  await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=false;w.__ctx.isDark=true;w.__ctx.update('autoRepair','shop',{job:'alignment',step:1,station:'brakes',tool:'aligner',lift:'ground',wheelRemoved:true});});
+  await expect(setup).toContainText('Required: Fitted');await expect(setup).toContainText('Current: Removed');const alignment=await raw();
+  await setup.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await setup.screenshot({path:'reports/automobile-workshop/setup-guidance-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-setup-review="wheelRemoved"]').click();await expect(page.locator('[data-ar-route-step="intake"] summary')).toBeFocused();expect(await raw()).toBe(alignment);
+  expect(await page.locator('[data-ar-setup-review="wheelRemoved"]').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
