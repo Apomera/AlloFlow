@@ -11,7 +11,8 @@
 // On success, this script:
 //   1. Overwrites desktop/web-app/public/release.json with the new release.
 //   2. Prepends a new entry to desktop/web-app/public/releases.json.
-//   3. Rewrites the FALLBACK_CANVAS_URL constant in launch.html.
+//   3. Rewrites the FALLBACK_CANVAS_URL and FALLBACK_VERSION constants and the
+//      visible version label in launch.html.
 //   4. Rewrites the data-version-label element in index.html (warning-only).
 //   5. Runs dev-tools/set_canvas_url.cjs, the ONE list of every place the link is
 //      held (it also stamps the in-app "Use AlloFlow inside Gemini Canvas" button
@@ -47,6 +48,11 @@ const SET_CANVAS_URL = path.posix.join(REPO_ROOT, "dev-tools/set_canvas_url.cjs"
 
 const CANVAS_URL_RE = /^https:\/\/(?:gemini\.google\.com\/share\/[a-f0-9]+|share\.gemini\.google\/[A-Za-z0-9]+)$/;
 const FALLBACK_RE = /const\s+FALLBACK_CANVAS_URL\s*=\s*"[^"]*"\s*;/g;
+// The launcher's OFFLINE fallback version and the version it paints before the
+// fetch resolves. Both were hand-maintained and both were still on 1.5 when 1.6
+// shipped, so the badge read "Offline - using bundled v1.5" for every visitor.
+const FALLBACK_VERSION_RE = /const\s+FALLBACK_VERSION\s*=\s*"[^"]*"\s*;/g;
+const LAUNCH_VERSION_LABEL_RE = /(<span\s+id="version-label"\s*>)v?\d+\.\d+(<\/span>)/;
 const LAUNCH_HREF_RE = /(<a[^>]*\bid="launch-btn"[^>]*\bhref=")[^"]*(")/;
 const VERSION_LABEL_RE =
   /(<[^>]*\b(?:data-version-label|data-release-version)\b[^>]*>)v?\d+\.\d+(<\/[^>]+>)?/;
@@ -169,7 +175,7 @@ function checkGitClean(force) {
 
 // ---------- launch.html rewrite (done first, can abort cleanly) -------------
 
-async function rewriteLaunchHtml(newUrl) {
+async function rewriteLaunchHtml(newUrl, newVersion) {
   if (!(await exists(LAUNCH_HTML))) {
     die(6, `launch.html not found at ${LAUNCH_HTML}`);
   }
@@ -188,9 +194,27 @@ async function rewriteLaunchHtml(newUrl) {
       `FALLBACK_CANVAS_URL constant matched ${matches.length} times in launch.html; expected exactly 1.`
     );
   }
+  // Hard failure, not a warning: a silent skip here is exactly how the launcher
+  // shipped release 1.6 still announcing v1.5.
+  const versionMatches = original.match(FALLBACK_VERSION_RE);
+  if (!versionMatches || versionMatches.length !== 1) {
+    die(
+      6,
+      `FALLBACK_VERSION constant matched ${versionMatches ? versionMatches.length : 0} times in launch.html; expected exactly 1.`
+    );
+  }
+  if (!LAUNCH_VERSION_LABEL_RE.test(original)) {
+    die(6, `no <span id="version-label"> found in launch.html; the pre-fetch version would stay stale.`);
+  }
   const updated = original.replace(
     FALLBACK_RE,
     `const FALLBACK_CANVAS_URL = "${newUrl}";`
+  ).replace(
+    FALLBACK_VERSION_RE,
+    `const FALLBACK_VERSION = "${newVersion}";`
+  ).replace(
+    LAUNCH_VERSION_LABEL_RE,
+    (_m, before, after) => `${before}v${newVersion}${after}`
   ).replace(
     LAUNCH_HREF_RE,
     (_m, before, after) => before + newUrl + after
@@ -200,6 +224,7 @@ async function rewriteLaunchHtml(newUrl) {
   }
   await writeAtomic(LAUNCH_HTML, updated);
   info(`  launch.html: FALLBACK_CANVAS_URL -> ${newUrl}`);
+  info(`  launch.html: FALLBACK_VERSION + version label -> v${newVersion}`);
 }
 
 // ---------- index.html rewrite (warning-only) -------------------------------
@@ -369,7 +394,7 @@ async function main() {
 
   // Step 5: rewrite launch.html FIRST so that a regex failure aborts before
   // any JSON files are touched.
-  await rewriteLaunchHtml(newUrl);
+  await rewriteLaunchHtml(newUrl, newVersion);
   await rewriteMiscModals(newUrl);
 
   // Step 6: JSON writes.

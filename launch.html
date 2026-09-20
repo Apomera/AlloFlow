@@ -411,7 +411,7 @@
     </section>
 
     <footer>
-      <span>AlloFlow <span id="version-label">v1.5</span></span>
+      <span>AlloFlow <span id="version-label">v1.6</span></span>
       <span aria-hidden="true"> &middot; </span>
       <span>Bookmark this page &mdash; the launch link stays stable across releases.</span>
     </footer>
@@ -464,7 +464,7 @@
       }());
 
       const FALLBACK_CANVAS_URL = "https://share.gemini.google/4wPpHHtUoPdi";
-      const FALLBACK_VERSION = "1.5";
+      const FALLBACK_VERSION = "1.6";
       const BROWSER_APP_URL = "https://alloflow-cdn.pages.dev/app/";
 
       const launchBtn = document.getElementById('launch-btn');
@@ -517,9 +517,14 @@
         }
       }
 
-      // Fetch release.json with cache-busting
+      // Fetch release.json with cache-busting.
+      // The path must be RELATIVE. GitHub Pages serves this launcher from a project
+      // subpath (apomera.github.io/AlloFlow/launch.html), so a root-absolute
+      // '/release.json' asks the ACCOUNT root, which 404s, and every visitor silently
+      // fell back to the baked-in constants below. Resolving against the launcher's own
+      // directory keeps it correct under the subpath, at the domain root, and locally.
       function loadRelease() {
-        const url = '/release.json?t=' + Date.now();
+        const url = new URL('release.json', window.location.href).href + '?t=' + Date.now();
         fetch(url, { cache: 'no-store' })
           .then(function (r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
