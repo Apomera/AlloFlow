@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-19",
+  "tool": "Strengths Finder / Scenarios",
+  "validation": "passed",
+  "contexts": 4,
+  "gradeSpecificSetups": 12,
+  "approaches": 8,
+  "gradeSpecificModelWordings": 24,
+  "optionalNotes": 4,
+  "ownExample": true,
+  "uniquePassingChecks": 31,
+  "focused": {
+    "browser": 19,
+    "controlContracts": 5,
+    "initialPassed": 23,
+    "isolatedRetryPassed": 1
+  },
+  "actualHub": {
+    "passed": 3,
+    "filtered": 105
+  },
+  "targetedTheme": {
+    "passedOnRetry": 4,
+    "filtered": 292,
+    "initialWorkerStartupErrors": 1
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "scopedAxeScans": 3,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "8b3328133b3582a1492efb36cc6dab1ee491b92b1a522d43e226a51e051b9784",
+  "retryHistory": "The first focused browser case timed out navigating to the local test page before interacting with the activity; it passed unchanged on isolated retry. The first theme worker failed to start; four targeted theme cases passed unchanged on retry after browser runs completed. No assertions or timeouts weakened.",
+  "providerCoverage": "No AI request from the new activity; narration uses a mock and receives only the selected fictional scene.",
+  "counting": "Filtered and repeated cases and render enumeration excluded.",
+  "delivery": "Local only. No push, deployment or packaged build."
+}

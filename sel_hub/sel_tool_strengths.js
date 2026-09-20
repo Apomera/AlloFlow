@@ -206,98 +206,152 @@ window.SelHub = window.SelHub || {
   // ═══════════════════════════════════════════════════════════════
   // ── Scenario Data (Grade-Adaptive Branching) ──
   // ═══════════════════════════════════════════════════════════════
-  var SCENARIOS = {
-    elementary: [
-      { id: 'sc1', title: 'The Hard Test', setup: 'You have a big spelling test tomorrow and you don\'t feel ready. What do you do?',
-        choices: [
-          { text: 'Practice your words again and again until you feel better.', strength: 'persevere', feedback: 'That\'s perseverance! You didn\'t give up even when it felt hard.', rating: 3 },
-          { text: 'Ask a family member to quiz you on the words.', strength: 'brave', feedback: 'That takes bravery \u2014 asking for help shows you\'re smart, not weak!', rating: 3 },
-          { text: 'Just hope for the best and play instead.', strength: null, feedback: 'It\'s okay to take breaks, but a little practice goes a long way. Which strength could help you?', rating: 1 }
-        ] },
-      { id: 'sc2', title: 'The New Kid', setup: 'A new student joins your class and doesn\'t know anyone. They look nervous. What do you do?',
-        choices: [
-          { text: 'Go say hi and ask if they want to sit with you at lunch.', strength: 'kind', feedback: 'That\'s kindness in action! You made someone feel welcome.', rating: 3 },
-          { text: 'Smile at them from your seat but don\'t go over.', strength: null, feedback: 'A smile is nice! But going over would use your bravery strength too.', rating: 2 },
-          { text: 'Tell the teacher someone should help the new kid.', strength: 'fair', feedback: 'Good thinking! You used fairness to make sure they got help.', rating: 2 }
-        ] },
-      { id: 'sc3', title: 'The Broken Project', setup: 'You spent a whole week building an amazing art project, and it falls off the table and breaks. What do you do?',
-        choices: [
-          { text: 'Take a deep breath and start fixing what you can.', strength: 'persevere', feedback: 'Amazing perseverance! You didn\'t let a setback stop you.', rating: 3 },
-          { text: 'Ask your teacher if you can have extra time to redo parts.', strength: 'brave', feedback: 'Speaking up for yourself takes courage! That\'s a real strength.', rating: 3 },
-          { text: 'Get really upset and say you don\'t want to do art anymore.', strength: null, feedback: 'It\'s okay to feel upset! But which strength could help you bounce back?', rating: 1 }
-        ] },
-      { id: 'sc4', title: 'The Disagreement', setup: 'You and your best friend both want to be the team leader for a group project. What do you do?',
-        choices: [
-          { text: 'Suggest you take turns \u2014 one leads the first half, the other leads the second.', strength: 'fair', feedback: 'Brilliant! Fairness means finding solutions that work for everyone.', rating: 3 },
-          { text: 'Let your friend be leader because you don\'t want to fight.', strength: 'kind', feedback: 'That\'s kind, but remember \u2014 your ideas matter too!', rating: 2 },
-          { text: 'Tell your friend you should be leader because it was your idea.', strength: null, feedback: 'Having confidence is good, but fairness means listening to others too.', rating: 1 }
-        ] },
-      { id: 'sc5', title: 'The Mistake', setup: 'You accidentally knock over someone\'s water bottle in the hallway and it spills everywhere. What do you do?',
-        choices: [
-          { text: 'Say sorry right away and help clean it up.', strength: 'honest', feedback: 'That\'s honesty and responsibility! Owning your mistakes is a superpower.', rating: 3 },
-          { text: 'Pretend you didn\'t see it and keep walking.', strength: null, feedback: 'It\'s natural to feel embarrassed, but being honest builds trust.', rating: 1 },
-          { text: 'Go get paper towels and help clean up without saying anything.', strength: 'kind', feedback: 'Taking action shows kindness! Adding a sorry would use honesty too.', rating: 2 }
-        ] }
+  var STRENGTH_CASES = [
+  {
+    "id": "effort",
+    "title": "Effort, rest and useful support",
+    "setup": {
+      "elementary": "You have tried a tricky task several times. You are tired and the same part still does not make sense.",
+      "middle": "You are practising for an assessment, but repeating the same method is not helping and other responsibilities need time.",
+      "high": "You are balancing a demanding task with work, care or other commitments. More hours alone may not address the difficulty."
+    },
+    "question": "What is the obstacle: missing information, an inaccessible method, limited time, tiredness or something else?",
+    "options": [
+      {
+        "title": "Try a different small step",
+        "skill": "Curiosity and flexible persistence",
+        "when": "A smaller step or another format may reveal what you understand and where help is needed.",
+        "limit": "Repeating harder is not always useful. Decide when to stop and reassess; needing access or support is not a lack of strength.",
+        "words": {
+          "elementary": "Could we try one part another way?",
+          "middle": "Can I try a worked example or another format before repeating this?",
+          "high": "Could we identify the specific barrier and test a smaller, accessible step?"
+        }
+      },
+      {
+        "title": "Pause and ask for practical support",
+        "skill": "Self-awareness and self-advocacy",
+        "when": "Rest, clarification, an accommodation or a revised plan may make participation more workable.",
+        "limit": "You may not control deadlines or resources. An adult or organizer shares responsibility for addressing barriers; a request need not guarantee a yes.",
+        "words": {
+          "elementary": "I need a break and help with this part.",
+          "middle": "I need help figuring out what to change, including time or the way I do it.",
+          "high": "What support or adjustment is available, and which commitment can realistically change?"
+        }
+      }
     ],
-    middle: [
-      { id: 'sc1', title: 'The Group Freeloader', setup: 'Your group project partner isn\'t doing their share of the work. The deadline is tomorrow. What do you do?',
-        choices: [
-          { text: 'Talk to them privately and ask what\'s going on \u2014 maybe they\'re struggling.', strength: 'empathy', feedback: 'Empathy first! Understanding the situation before judging shows real maturity.', rating: 3 },
-          { text: 'Do their part yourself to make sure the grade is good.', strength: 'persevere', feedback: 'Perseverance gets the job done, but advocating for yourself matters too.', rating: 2 },
-          { text: 'Tell the teacher they\'re not helping.', strength: 'advocacy', feedback: 'Self-advocacy is important! Though talking to them first builds better relationships.', rating: 2 }
-        ] },
-      { id: 'sc2', title: 'The Viral Post', setup: 'Someone posts an embarrassing photo of a classmate in a group chat. Everyone is laughing. What do you do?',
-        choices: [
-          { text: 'Message the person who posted it and say it\'s not cool.', strength: 'brave', feedback: 'Standing up when everyone is going along takes real moral courage.', rating: 3 },
-          { text: 'Don\'t laugh or share it, but don\'t say anything either.', strength: null, feedback: 'Not participating is better than joining in, but speaking up uses your bravery strength.', rating: 2 },
-          { text: 'Check on the classmate privately to see if they\'re okay.', strength: 'kind', feedback: 'Compassion in action! You prioritized someone\'s feelings over social pressure.', rating: 3 }
-        ] },
-      { id: 'sc3', title: 'The Failed Tryout', setup: 'You didn\'t make the basketball team after practicing all summer. What do you do?',
-        choices: [
-          { text: 'Ask the coach what you can improve and make a plan for next year.', strength: 'resilience', feedback: 'Resilience! Turning rejection into a growth plan is incredibly mature.', rating: 3 },
-          { text: 'Try out for a different sport or activity instead.', strength: 'flexibility', feedback: 'Flexibility! Redirecting your energy shows adaptability and self-awareness.', rating: 3 },
-          { text: 'Decide sports aren\'t for you and quit trying.', strength: null, feedback: 'Disappointment is valid, but one setback doesn\'t define your abilities.', rating: 1 }
-        ] },
-      { id: 'sc4', title: 'The Ethical Dilemma', setup: 'You find a completed homework assignment on the floor. It belongs to someone in another class. Your homework is due today and you haven\'t finished it.',
-        choices: [
-          { text: 'Return the homework to the office and finish your own as best you can.', strength: 'honest', feedback: 'Integrity! Doing the right thing when no one is watching is the truest strength.', rating: 3 },
-          { text: 'Copy some answers but do some of your own work too.', strength: null, feedback: 'Tempting, but integrity means your work reflects YOUR learning.', rating: 1 },
-          { text: 'Ask your teacher for extra time and explain you\'re struggling.', strength: 'advocacy', feedback: 'Self-advocacy! Asking for help is always stronger than cutting corners.', rating: 3 }
-        ] },
-      { id: 'sc5', title: 'The Cultural Clash', setup: 'A friend makes a joke about a tradition your family celebrates. They don\'t realize it\'s hurtful.',
-        choices: [
-          { text: 'Explain calmly why it matters to you and your family.', strength: 'brave', feedback: 'Bravery! Educating others with patience is a powerful strength.', rating: 3 },
-          { text: 'Laugh along even though it hurts inside.', strength: null, feedback: 'Your identity matters. Which strength could help you stand up for it?', rating: 1 },
-          { text: 'Share something interesting about the tradition instead of confronting.', strength: 'creative', feedback: 'Creative approach! Turning a negative into a learning moment shows wisdom.', rating: 3 }
-        ] }
+    "changed": "The deadline stays the same, but the current method is still inaccessible.",
+    "review": "Name the access barrier and ask the responsible adult for a workable alternative. Do not treat exhaustion or missing support as evidence that you lack perseverance."
+  },
+  {
+    "id": "welcome",
+    "title": "Welcome with access and choice",
+    "setup": {
+      "elementary": "A classmate is alone near a game. You do not know whether they want to join or prefer their own activity.",
+      "middle": "A new group member has not joined the usual activity. You do not know their interest, comfort or access needs.",
+      "high": "Someone has not taken part in a group event. The format may present a barrier, but their reasons and preferences are unknown."
+    },
+    "question": "What can you observe, and what would you need to ask without putting someone on the spot?",
+    "options": [
+      {
+        "title": "Offer an invitation with room to decline",
+        "skill": "Kindness and respect",
+        "when": "A quiet, specific invitation can make an option visible while leaving the decision with the person.",
+        "limit": "Being alone does not mean lonely. Do not repeat invitations after a no or ask for private explanations.",
+        "words": {
+          "elementary": "Would you like to play, watch, or do your own thing?",
+          "middle": "Would you like to join in any way? It is okay to pass.",
+          "high": "Would an invitation or a different way to participate be welcome? No explanation is needed."
+        }
+      },
+      {
+        "title": "Improve access with others",
+        "skill": "Fairness and collaboration",
+        "when": "Changing the format or asking an organizer for help can make participation more possible for everyone.",
+        "limit": "Do not publicly identify someone’s needs or make them responsible for fixing the activity. Adults and organizers have responsibilities too.",
+        "words": {
+          "elementary": "Could we make another way to play?",
+          "middle": "Could we offer different roles or a quieter option?",
+          "high": "Could the organizer review access, cost and participation options without singling anyone out?"
+        }
+      }
     ],
-    high: [
-      { id: 'sc1', title: 'The Ethical Leader', setup: 'You\'re student council president and discover that a popular fundraiser idea involves a company with questionable labor practices. The council loves the idea.',
-        choices: [
-          { text: 'Research the issue and present the facts to the council, proposing alternatives.', strength: 'honest', feedback: 'Integrity-driven leadership. You balanced truth with practical solutions.', rating: 3 },
-          { text: 'Go along with it since the fundraiser benefits students.', strength: null, feedback: 'Pragmatism has its place, but your values are your compass. What strength could guide you?', rating: 1 },
-          { text: 'Privately suggest alternatives to the advisor without calling out the issue publicly.', strength: 'perspective', feedback: 'Strategic perspective! Sometimes the wisest path isn\'t the loudest one.', rating: 2 }
-        ] },
-      { id: 'sc2', title: 'The Identity Crossroads', setup: 'You\'re passionate about art, but your family expects you to pursue a "practical" career like engineering. College applications are due soon.',
-        choices: [
-          { text: 'Have an honest conversation about your passion and propose a path that honors both.', strength: 'brave', feedback: 'Moral courage! Advocating for your authentic self while respecting your family.', rating: 3 },
-          { text: 'Apply for engineering but take art classes as electives.', strength: 'adaptability', feedback: 'Adaptability! Finding creative compromises is itself a strength.', rating: 2 },
-          { text: 'Apply for art school and tell your family after.', strength: null, feedback: 'Authenticity matters, but relationships do too. What strength helps navigate both?', rating: 1 }
-        ] },
-      { id: 'sc3', title: 'The Systemic Injustice', setup: 'You notice that students from lower-income neighborhoods consistently get fewer resources and opportunities at your school. What do you do?',
-        choices: [
-          { text: 'Research the disparity, gather data, and present a proposal to the school board.', strength: 'fair', feedback: 'Justice in action! Using evidence to advocate for systemic change is the highest form of fairness.', rating: 3 },
-          { text: 'Start a peer tutoring program to help bridge the gap yourself.', strength: 'leader', feedback: 'Initiative-driven leadership! You didn\'t wait for permission to make a difference.', rating: 3 },
-          { text: 'Post about it on social media to raise awareness.', strength: null, feedback: 'Awareness is a start, but action creates change. Which strength could move you beyond posts?', rating: 2 }
-        ] },
-      { id: 'sc4', title: 'The Burnout', setup: 'You\'ve been overcommitting \u2014 AP classes, clubs, volunteer work, part-time job. You\'re exhausted and your grades are slipping.',
-        choices: [
-          { text: 'Evaluate priorities and let go of one commitment to protect your well-being.', strength: 'metacognition', feedback: 'Metacognition! Recognizing your own limits and acting on it is profound self-awareness.', rating: 3 },
-          { text: 'Push through until the semester ends, then rest.', strength: 'persevere', feedback: 'Grit is admirable, but wisdom knows when perseverance becomes self-harm.', rating: 1 },
-          { text: 'Talk to a counselor or trusted adult about feeling overwhelmed.', strength: 'vulnerability', feedback: 'Vulnerability! Asking for help when you\'re struggling is one of the bravest things you can do.', rating: 3 }
-        ] }
-    ]
-  };
+    "changed": "The person declines the invitation, while the activity still has an access barrier.",
+    "review": "Respect the decline and continue addressing access with the organizer. Participation is a choice, not proof that your kindness worked."
+  },
+  {
+    "id": "leadership",
+    "title": "Shared decisions and fair roles",
+    "setup": {
+      "elementary": "Two classmates both want to lead a group task. Other group members have not said what they need or want to do.",
+      "middle": "A group has different ideas about roles and who should decide. Some members need another way or more time to contribute.",
+      "high": "A team has competing priorities, unequal availability and a deadline. One person has started assigning roles without checking with others."
+    },
+    "question": "Whose preferences, workload and access needs have not yet shaped the plan?",
+    "options": [
+      {
+        "title": "Ask before dividing the work",
+        "skill": "Listening and perspective",
+        "when": "Inviting input in more than one way can reveal preferences and practical limits before roles are assigned.",
+        "limit": "A public discussion may not suit everyone. Allow writing or processing time without treating quietness as having nothing to contribute.",
+        "words": {
+          "elementary": "What would each person like to try? You can tell us or show us.",
+          "middle": "Can we collect ideas in writing too, then check what is workable?",
+          "high": "Could we check preferences, capacity and access before agreeing on responsibilities?"
+        }
+      },
+      {
+        "title": "Agree on a small trial and review it",
+        "skill": "Fairness and flexible leadership",
+        "when": "A temporary division of work can be reviewed using actual workload and what people communicate.",
+        "limit": "Fairness is not necessarily identical tasks or equal minutes. A trial needs consent, a review point and a way to ask for support.",
+        "words": {
+          "elementary": "Can we try these jobs and check if they work for everyone?",
+          "middle": "Could we try this division, then review the workload before the next session?",
+          "high": "Can we agree on a short trial, decision rules and a way to change roles without blame?"
+        }
+      }
+    ],
+    "changed": "A quieter member says the agreed role is not accessible to them.",
+    "review": "Revisit the role or format with that person’s input. Their request is useful information, not failure to be a team player."
+  },
+  {
+    "id": "harm",
+    "title": "Responding to a hurtful comment",
+    "setup": {
+      "elementary": "Someone makes a joke about a classmate’s way of speaking. You can seek help without repeating the words.",
+      "middle": "A peer makes a hurtful comment about a tradition or identity. You do not know how safe it would feel to respond directly.",
+      "high": "A group member dismisses another person’s identity or access needs. You are considering support, a boundary or involving someone responsible."
+    },
+    "question": "Who may need support, what feels safe, and who has responsibility to help?",
+    "options": [
+      {
+        "title": "Set a limit when it is workable",
+        "skill": "Courage and care",
+        "when": "A brief limit can communicate that the behavior is unwelcome without requiring a debate.",
+        "limit": "Direct confrontation is optional. You do not owe a personal story, calm performance or lesson about your identity; stop if pressure escalates.",
+        "words": {
+          "elementary": "I do not want to join that joke.",
+          "middle": "I am not okay with that comment. I am stepping away.",
+          "high": "That comment is harmful. I want it to stop; I am not going to debate someone’s identity."
+        }
+      },
+      {
+        "title": "Seek support or check privately",
+        "skill": "Care and shared responsibility",
+        "when": "A trusted adult can address the behavior, and a private check can ask what support would be welcome.",
+        "limit": "Do not promise secrecy about danger or make the targeted person choose the whole response. Quiet or indirect support is not lesser courage.",
+        "words": {
+          "elementary": "Can you help with a hurtful comment?",
+          "middle": "Would support be useful? We can ask a trusted adult.",
+          "high": "Could someone responsible help address this? I also want to check what support the affected person wants."
+        }
+      }
+    ],
+    "changed": "The comments continue after someone asks them to stop.",
+    "review": "Shift toward trusted support and a plan for safety. The responsibility for stopping harmful behavior does not rest on finding perfect words."
+  }
+];
 
   // ═══════════════════════════════════════════════════════════════
   // ── Strength Match Quiz Data ──
@@ -1159,7 +1213,7 @@ window.SelHub = window.SelHub || {
             var TAB_META = {
               discover:  { accent: _strFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\u2B50',          title: 'Discover \u2014 your top 5 character strengths',     hint: 'VIA Institute (Peterson + Seligman 2004): 24 character strengths grouped in 6 virtues. Your top 5 \u201Csignature strengths\u201D show up unbidden, energize you, and feel like you. Use them = predicts well-being.' },
               interview: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF99', title: 'Interview \u2014 someone who knows you well',       hint: 'Strengths-spotting from outside often catches what you can\u2019t see in yourself. \u201CWhen am I at my best?\u201D from a parent / friend / teacher \u2014 their answers are data you can use.' },
-              scenarios: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 strengths in real moments',         hint: 'Strengths show up most clearly under pressure: a deadline, a conflict, a hard ask. Mapping each scenario to a strength builds the language for self-narrative \u2014 \u201Cthat was my curiosity\u201D, not just \u201CI did it.\u201D' },
+              scenarios: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — strengths in context', hint: 'Compare possible actions, the support they need and their limits. A choice in one situation does not define your character. Rest, quiet support and asking for help can be workable choices.' },
               quiz:      { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83E\uDDE9', title: 'Quiz \u2014 self-assessment',                         hint: 'Forced-choice strengths quiz. Roughly correlates with full VIA-72 results in a fraction of the time. Use as a starting hypothesis, then triangulate against scenarios + interview + your own gut feel.' },
               reflect:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCDD', title: 'Reflect \u2014 written self-knowledge',               hint: 'Pennebaker 1986 expressive writing protocol; 15 min, focused on a specific moment. Strengths-focused reflection (vs. problem-focused) builds approach motivation rather than avoidance \u2014 Fredrickson broaden-and-build.' },
               stories:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCD6', title: 'Stories \u2014 strengths-spotting in narrative',     hint: 'Practice on characters first; safer than self. McAdams 1985 narrative-identity research: the way you tell your life story IS your identity. Strengths language gives the story handles.' },
@@ -1361,50 +1415,50 @@ window.SelHub = window.SelHub || {
 
             // ── SCENARIOS TAB ──
             tab === 'scenarios' ? (function() {
-              var scenarios = SCENARIOS[band] || SCENARIOS.elementary;
-              var sc = scenarios[scenarioIdx % scenarios.length];
-              return h('div', null,
-                h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), marginBottom: 12 } },
-                  band === 'elementary' ? 'Read the story and pick the choice that shows YOUR strengths!' :
-                  'Choose how you\'d respond. Each choice shows a different strength in action.'
-                ),
-                h('div', { style: { fontSize: 10, color: _strFg('#94a3b8'), marginBottom: 12 } },
-                  'Scenario ' + ((scenarioIdx % scenarios.length) + 1) + ' of ' + scenarios.length +
-                  (scenariosDone.length > 0 ? ' \u2014 ' + scenariosDone.length + ' completed' : '')
-                ),
-                // Scenario card
-                h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.25)', marginBottom: 16 } },
-                  h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _strFg('#fbbf24'), marginBottom: 8 } }, '\uD83C\uDFAD ' + sc.title),
-                  h('p', { style: { fontSize: 13, color: _strFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 12 } }, sc.setup),
-                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(sc.setup); }, style: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '3px 8px', color: _strFg('#fbbf24'), fontSize: 10, cursor: 'pointer', marginBottom: 12 } }, '\uD83D\uDD0A Read aloud') : null,
-                  // Choices
-                  !scenarioChoice ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                    sc.choices.map(function(ch, ci) {
-                      return h('button', { 'aria-label': 'Choices', key: ci, onClick: function() {
-                        sfxSelect();
-                        var newDone = scenariosDone.indexOf(sc.id) < 0 ? scenariosDone.concat([sc.id]) : scenariosDone;
-                        var newTop = ch.rating === 3 ? topScenarios + 1 : topScenarios;
-                        upd({ scenarioChoice: { idx: ci, choice: ch }, scenariosDone: newDone, topScenarios: newTop });
-                        if (awardXP) awardXP(ch.rating === 3 ? 10 : ch.rating === 2 ? 5 : 2);
-                      }, style: { textAlign: 'left', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.15)', color: _strFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5, cursor: 'pointer', transition: 'all 0.15s' } },
-                        h('span', { style: { fontWeight: 'bold', color: _strFg('#a5b4fc'), marginRight: 6 } }, String.fromCharCode(65 + ci) + '.'),
-                        ch.text
-                      );
-                    })
-                  ) :
-                  // Feedback after choosing
-                  h('div', { style: { padding: 14, borderRadius: 10, background: scenarioChoice.choice.rating === 3 ? 'rgba(52,211,153,0.1)' : scenarioChoice.choice.rating === 2 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (scenarioChoice.choice.rating === 3 ? 'rgba(52,211,153,0.3)' : scenarioChoice.choice.rating === 2 ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)') } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
-                      h('span', { style: { fontSize: 16 } }, scenarioChoice.choice.rating === 3 ? '\u2B50\u2B50\u2B50' : scenarioChoice.choice.rating === 2 ? '\u2B50\u2B50' : '\u2B50'),
-                      scenarioChoice.choice.strength ? h('span', { style: { padding: '2px 10px', borderRadius: 12, background: 'rgba(245,158,11,0.2)', color: _strFg('#fbbf24'), fontSize: 10, fontWeight: 'bold' } }, 'Strength: ' + scenarioChoice.choice.strength) : null
-                    ),
-                    h('p', { style: { fontSize: 13, color: _strFg('#e2e8f0'), lineHeight: 1.6 } }, scenarioChoice.choice.feedback),
-                    h('div', { style: { display: 'flex', gap: 8, marginTop: 12 } },
-                      h('button', { 'aria-label': 'Next Scenario', onClick: function() { upd({ scenarioChoice: null, scenarioIdx: (scenarioIdx + 1) % scenarios.length }); }, style: { padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\u27A1 Next Scenario'),
-                      h('button', { 'aria-label': 'Try Again', onClick: function() { upd({ scenarioChoice: null }); }, style: { padding: '8px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: _strFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\uD83D\uDD04 Try Again')
-                    )
-                  )
-                )
+              var obj = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+              var selections = obj(d.contextSelections);
+              var selected = selections[band];
+              var example = STRENGTH_CASES.find(function(item) { return item.id === selected; }) || STRENGTH_CASES[0];
+              var own = selected === 'own';
+              var contextId = own ? 'own' : example.id;
+              var key = band + ':' + contextId;
+              var drafts = obj(d.contextDrafts);
+              var draft = obj(drafts[key]);
+              var note = function(id) { return typeof draft[id] === 'string' ? draft[id] : ''; };
+              var surface = _strHC ? '#000000' : _strL ? '#ffffff' : '#0f172a';
+              var ink = _strHC ? '#ffffff' : _strFg('#e2e8f0');
+              var edge = _strHC ? '#ffff00' : _strL ? '#64748b' : '#94a3b8';
+              var card = { padding: '16px', margin: '14px 0', border: '1px solid ' + edge, borderRadius: '12px', background: surface, color: ink, minWidth: 0 };
+              var control = { width: '100%', minHeight: '44px', padding: '10px', boxSizing: 'border-box', border: '1px solid ' + edge, borderRadius: '8px', background: surface, color: ink, font: 'inherit', fontSize: '16px' };
+              var summary = { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 };
+              var fields = [
+                { id: 'notice', label: 'What do I notice, and what do I still need to ask?' },
+                { id: 'support', label: 'What support, access or boundaries matter here?' },
+                { id: 'action', label: 'What might I try, combine, adapt or pause?' },
+                { id: 'review', label: 'What would tell me to keep or change the plan?' }
+              ];
+              var preview = ['Strengths in context — practice notes, not a character assessment.', 'Context: ' + (own ? 'My own example' : example.title)].concat(fields.map(function(field) { return field.label + '\n' + (note(field.id).trim() || '(No note yet)'); })).join('\n\n');
+              return h('section', { role: 'region', 'aria-label': 'Strengths in context practice', style: { maxWidth: '760px', margin: '0 auto', padding: '16px', background: surface, color: ink, fontSize: '16px', lineHeight: 1.6, overflowWrap: 'anywhere' } },
+                h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'Explore strengths in context'),
+                h('p', null, band === 'elementary' ? 'Different actions can help in different moments. You can ask for help, rest or change your plan. A choice does not tell us what kind of person you are.' : 'Consider what an action makes possible, its limits and the support available. A choice in a fictional situation does not measure a fixed strength or your worth.'),
+                h('p', null, 'Read, think or discuss with someone you trust. Every note is optional; there are no stars or right-answer points in this practice.'),
+                h('label', { htmlFor: 'str-context', style: { display: 'block', fontWeight: 700 } }, 'Choose a strengths context'),
+                h('select', { id: 'str-context', value: contextId, style: control, onChange: function(ev) { var next = Object.assign({}, selections); next[band] = ev.target.value; upd({ contextSelections: next }); } }, STRENGTH_CASES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+                h('div', { key: key, style: card }, h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, own ? 'Consider a situation of your own' : example.title),
+                  h('p', null, own ? 'Use an everyday or fictional situation. Start with what happened, what you do not know and what support might help. Personal details are not needed.' : example.setup[band]),
+                  h('p', null, own ? 'Which possible actions fit the needs, access and boundaries involved? You can consider more than one.' : example.question),
+                  !own && callTTS && h('button', { 'aria-label': 'Read this strengths scenario aloud', onClick: function() { speak(example.setup[band]); }, style: Object.assign({}, control, { width: 'auto', cursor: 'pointer' }) }, 'Read scenario aloud')),
+                !own && h('details', { key: key + '-compare', style: card }, h('summary', { style: summary }, 'Compare possible approaches'),
+                  h('p', null, 'These approaches can be combined or adapted. The strengths named are possible ways to describe an action, not labels assigned to you.'),
+                  example.options.map(function(option) { return h('div', { key: option.title, style: card }, h('h4', { style: { margin: '0 0 8px', fontSize: '18px' } }, option.title), h('p', null, 'Possible strengths: ' + option.skill), h('p', null, 'When it may help: ' + option.when), h('p', null, 'Limits and support: ' + option.limit), h('p', { style: { fontWeight: 700 } }, 'Words to adapt: ' + option.words[band])); })),
+                h('details', { key: key + '-change', style: card }, h('summary', { style: summary }, 'Reconsider when something changes'), h('p', null, own ? 'What if an offer is declined, a barrier remains or your capacity changes?' : example.changed), h('p', null, own ? 'You can revise the action, seek support or pause. Changing a plan does not mean you lack a strength.' : example.review)),
+                h('details', { key: key + '-notes', style: card }, h('summary', { style: summary }, 'Consider my own response (optional)'),
+                  h('p', null, 'Notes stay with this context and grade. They are not monitored, do not request help and are not sent to the AI coach by this activity.'),
+                  fields.map(function(field) { var id = 'str-context-' + field.id; return h('div', { key: id, style: { margin: '16px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, value: note(field.id), style: Object.assign({}, control, { resize: 'vertical' }), onChange: function(ev) { var next = Object.assign({}, drafts); var values = Object.assign({}, draft); values[field.id] = ev.target.value; next[key] = values; upd({ contextDrafts: next }); } })); })),
+                h('details', { key: key + '-preview', style: card }, h('summary', { style: summary }, 'Review my practice notes'), h('label', { htmlFor: 'str-context-preview', style: { display: 'block', fontWeight: 700 } }, 'Notes to review or copy'), h('textarea', { id: 'str-context-preview', rows: 9, readOnly: true, value: preview, style: Object.assign({}, control, { resize: 'vertical' }) })),
+                (d.scenarioChoice || (Array.isArray(d.scenariosDone) && d.scenariosDone.length > 0) || d.topScenarios) && h('details', { style: card }, h('summary', { style: summary }, 'Earlier scenario activity'),
+                  h('p', null, 'Earlier choices, completion records and awards remain stored. Their ratings belong to the earlier activity; they are not assessments of your character. This practice does not add ratings or change your selected strengths.'),
+                  d.scenarioChoice && d.scenarioChoice.choice && typeof d.scenarioChoice.choice.text === 'string' && h('p', null, 'Earlier choice: ' + d.scenarioChoice.choice.text))
               );
             })() : null,
 
