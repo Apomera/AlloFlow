@@ -1,3 +1,51 @@
+
+  function SimplifiedReadingRoleControl(props) {
+    const [open, setOpen] = React.useState(!!props.isTeacherMode);
+    const [pending, setPending] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const summaryRef = React.useRef(null);
+    const confirmRef = React.useRef(null);
+    const selectRef = React.useRef(null);
+    React.useEffect(() => { if (pending && confirmRef.current) confirmRef.current.focus(); }, [pending]);
+    const save = role => {
+      if (props.disabled) return;
+      try {
+        if (props.onSave(role) === false) {
+          setError('The choice could not be saved. Please try again.');
+          return;
+        }
+        setPending(false); setError(''); setOpen(false);
+        if (summaryRef.current) summaryRef.current.focus();
+      } catch (_) { setError('The choice could not be saved. Please try again.'); }
+    };
+    return <details data-instructional-role={props.role} open={open}
+      className="my-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800">
+      <summary ref={summaryRef} onClick={event => { event.preventDefault(); setOpen(value => !value); }} className="min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600">
+        <strong>{props.formLabel}</strong><span aria-hidden="true"> · </span><span>{props.roleLabel}</span>
+      </summary>
+      {props.isTeacherMode && <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className="inline-flex flex-wrap items-center gap-2">Use in this lesson
+          <select ref={selectRef} aria-label="Use in this lesson" value={pending ? 'primary' : props.role} disabled={props.disabled}
+            onChange={event => { const role = event.target.value; setError(''); if (role === 'primary' && props.needsAuthorization) setPending(true); else save(role); }}
+            className="min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2">
+            <option value="primary">Main reading</option><option value="supplemental">Supporting reading</option><option value="unspecified">Not designated</option>
+          </select>
+        </label>
+        {props.role === 'primary' && props.needsAuthorization && !pending && <button type="button" disabled={props.disabled} onClick={() => setPending(true)} className="min-h-11 rounded-lg border border-amber-400 px-3">Review main-reading choice</button>}
+        {props.onSelectSource && <button type="button" disabled={props.disabled || pending} onClick={props.onSelectSource} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900">Use for activities</button>}
+      </div>}
+      {pending && props.isTeacherMode && <div role="group" aria-label="Confirm main reading" className="mt-3 rounded-lg border border-amber-400 bg-amber-50 p-3 text-amber-950">
+        <p>Use this adapted text as the main reading? Confirm that replacing the original fits the student’s documented plan, instructional target, assessment conditions, and local policy.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button ref={confirmRef} type="button" disabled={props.disabled} onClick={() => save('primary')} className="min-h-11 rounded-lg border border-amber-700 bg-white px-3 font-semibold">Confirm main reading</button>
+          <button type="button" disabled={props.disabled} onClick={() => { setPending(false); setError(''); if (selectRef.current) selectRef.current.focus(); }} className="min-h-11 rounded-lg border border-slate-400 bg-white px-3">Cancel</button>
+        </div>
+      </div>}
+      {error && <p role="alert" className="mt-2 text-red-800">{error}</p>}
+      {props.showCompanionNote && <p className="mt-2">Adapted companions help preview ideas and build context for reading the original.</p>}
+      {props.missingOriginal && <p role="status" className="mt-2 text-amber-900">Original not captured. Check the matching source before sharing.</p>}
+    </details>;
+  }
 // A model field the prompt declares as text is not guaranteed to BE text, and React throws
   // "Objects are not valid as a React child" on anything else - costing the whole panel rather
   // than the one value (2026-09-13: one such entry blanked an entire Curriculum Audit). The
@@ -2472,20 +2520,9 @@
           : 'bg-amber-50 text-amber-900 border-amber-200';
     var isSupplementalSourceUnlinked = instructionalRole === 'supplemental' &&
       !instructionalTextProfile.sourceArtifactId && !instructionalTextProfile.primaryArtifactId;
-    var handleInstructionalRoleChange = function (event) {
-      var nextRole = event && event.target ? event.target.value : 'unspecified';
-      if (instructionalTextProfile.form === 'adapted' && nextRole === 'primary' && !(instructionalRole === 'primary' && replacementIsEducatorAuthorized)) {
-        var confirmed = false;
-        try {
-          confirmed = window.confirm(
-            'Designate this adapted text as the primary replacement? This records an educator-authorized replacement decision. Continue only when replacement is permitted by the student’s documented plan, the instructional target, assessment conditions, and local policy.'
-          );
-        } catch (_) {}
-        if (!confirmed) return;
-      }
+    var saveInstructionalRole = function (nextRole) {
       if (typeof props.onInstructionalRoleChange === 'function') {
-        props.onInstructionalRoleChange(generatedContent, nextRole, { authorizeReplacement: instructionalTextProfile.form === 'adapted' && nextRole === 'primary' });
-        return;
+        return props.onInstructionalRoleChange(generatedContent, nextRole, { authorizeReplacement: instructionalTextProfile.form === 'adapted' && nextRole === 'primary' });
       }
       var fullBase = findFullHistoryArtifact(history, generatedContent);
       // The open item wins for mutable display fields, while the history copy
@@ -2499,7 +2536,15 @@
         });
       }
     };
-    var instructionalRoleControl = generatedContent ? <div data-instructional-role={instructionalRole} className="my-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800"><div className="flex flex-wrap items-center gap-2"><strong>{instructionalFormLabel}</strong><span aria-hidden="true">·</span><span>{instructionalRoleLabel}</span></div>{isTeacherMode && <div className="mt-3 flex flex-wrap items-center gap-3"><label className="inline-flex flex-wrap items-center gap-2">Use in this lesson<select aria-label="Use in this lesson" value={instructionalRole} disabled={isProcessing} onChange={handleInstructionalRoleChange} className="min-h-11 rounded-lg border border-slate-300 bg-white px-2"><option value="primary">Main reading</option><option value="supplemental">Supporting reading</option><option value="unspecified">Not designated</option></select></label>{instructionalRole === 'primary' && instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized && <button type="button" onClick={() => handleInstructionalRoleChange({ target: { value: 'primary' } })} className="min-h-11 rounded-lg border border-amber-400 px-3">Review main-reading choice</button>}{props.onSelectReadingSource && (!protectedOriginal || verifiedOriginal) && <button type="button" disabled={isProcessing} onClick={() => props.onSelectReadingSource(generatedContent)} className="min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900">Use for activities</button>}</div>}{!protectedOriginal && instructionalRole !== 'primary' && <p className="mt-2">Adapted companions help preview ideas and build context for reading the original.</p>}{!protectedOriginal && !capturedSource && <p role="status" className="mt-2 text-amber-900">Original not captured. Check the matching source before sharing.</p>}</div> : null;
+    var instructionalRoleControl = generatedContent ? <SimplifiedReadingRoleControl
+      key={generatedContent.id || generatedContent.data}
+      role={instructionalRole} roleLabel={instructionalRoleLabel} formLabel={instructionalFormLabel}
+      needsAuthorization={instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized}
+      isTeacherMode={isTeacherMode} disabled={isProcessing} onSave={saveInstructionalRole}
+      onSelectSource={props.onSelectReadingSource && (!protectedOriginal || verifiedOriginal) ? () => props.onSelectReadingSource(generatedContent) : null}
+      showCompanionNote={!protectedOriginal && instructionalRole !== 'primary'}
+      missingOriginal={!protectedOriginal && !capturedSource}
+    /> : null;
     var simplifiedComplexityDisplay = getSimplifiedComplexityDisplay(generatedContent, gradeLevel);
     var readingColumnState = React.useState(function () {
       try {
@@ -3231,3 +3276,5 @@
   SimplifiedView.getComplexityDisplay = getSimplifiedComplexityDisplay;
   SimplifiedView.checkAlignment = checkSimplifiedAlignment;
   SimplifiedView.regenerateWithRigor = regenerateSimplifiedWithRigor;
+
+  SimplifiedView.ReadingRoleControl = SimplifiedReadingRoleControl;

@@ -20,6 +20,106 @@
   var Fragment = React.Fragment;
 
   function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+function SimplifiedReadingRoleControl(props) {
+  const [open, setOpen] = React.useState(!!props.isTeacherMode);
+  const [pending, setPending] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const summaryRef = React.useRef(null);
+  const confirmRef = React.useRef(null);
+  const selectRef = React.useRef(null);
+  React.useEffect(() => {
+    if (pending && confirmRef.current) confirmRef.current.focus();
+  }, [pending]);
+  const save = role => {
+    if (props.disabled) return;
+    try {
+      if (props.onSave(role) === false) {
+        setError('The choice could not be saved. Please try again.');
+        return;
+      }
+      setPending(false);
+      setError('');
+      setOpen(false);
+      if (summaryRef.current) summaryRef.current.focus();
+    } catch (_) {
+      setError('The choice could not be saved. Please try again.');
+    }
+  };
+  return /*#__PURE__*/React.createElement("details", {
+    "data-instructional-role": props.role,
+    open: open,
+    className: "my-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800"
+  }, /*#__PURE__*/React.createElement("summary", {
+    ref: summaryRef,
+    onClick: event => {
+      event.preventDefault();
+      setOpen(value => !value);
+    },
+    className: "min-h-11 cursor-pointer rounded-lg py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+  }, /*#__PURE__*/React.createElement("strong", null, props.formLabel), /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, " · "), /*#__PURE__*/React.createElement("span", null, props.roleLabel)), props.isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap items-center gap-3"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex flex-wrap items-center gap-2"
+  }, "Use in this lesson", /*#__PURE__*/React.createElement("select", {
+    ref: selectRef,
+    "aria-label": "Use in this lesson",
+    value: pending ? 'primary' : props.role,
+    disabled: props.disabled,
+    onChange: event => {
+      const role = event.target.value;
+      setError('');
+      if (role === 'primary' && props.needsAuthorization) setPending(true);else save(role);
+    },
+    className: "min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "primary"
+  }, "Main reading"), /*#__PURE__*/React.createElement("option", {
+    value: "supplemental"
+  }, "Supporting reading"), /*#__PURE__*/React.createElement("option", {
+    value: "unspecified"
+  }, "Not designated"))), props.role === 'primary' && props.needsAuthorization && !pending && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: props.disabled,
+    onClick: () => setPending(true),
+    className: "min-h-11 rounded-lg border border-amber-400 px-3"
+  }, "Review main-reading choice"), props.onSelectSource && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: props.disabled || pending,
+    onClick: props.onSelectSource,
+    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
+  }, "Use for activities")), pending && props.isTeacherMode && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    "aria-label": "Confirm main reading",
+    className: "mt-3 rounded-lg border border-amber-400 bg-amber-50 p-3 text-amber-950"
+  }, /*#__PURE__*/React.createElement("p", null, "Use this adapted text as the main reading? Confirm that replacing the original fits the student’s documented plan, instructional target, assessment conditions, and local policy."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    ref: confirmRef,
+    type: "button",
+    disabled: props.disabled,
+    onClick: () => save('primary'),
+    className: "min-h-11 rounded-lg border border-amber-700 bg-white px-3 font-semibold"
+  }, "Confirm main reading"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: props.disabled,
+    onClick: () => {
+      setPending(false);
+      setError('');
+      if (selectRef.current) selectRef.current.focus();
+    },
+    className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3"
+  }, "Cancel"))), error && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-2 text-red-800"
+  }, error), props.showCompanionNote && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2"
+  }, "Adapted companions help preview ideas and build context for reading the original."), props.missingOriginal && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-2 text-amber-900"
+  }, "Original not captured. Check the matching source before sharing."));
+}
 // A model field the prompt declares as text is not guaranteed to BE text, and React throws
 // "Objects are not valid as a React child" on anything else - costing the whole panel rather
 // than the one value (2026-09-13: one such entry blanked an entire Curriculum Audit). The
@@ -3421,20 +3521,11 @@ function SimplifiedView(props) {
   var instructionalRoleLabel = instructionalRole === 'primary' ? instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized ? 'Main reading — needs review' : 'Main reading' : instructionalRole === 'supplemental' ? 'Supporting reading' : 'Not designated';
   var instructionalRoleTone = instructionalRole === 'supplemental' ? 'bg-blue-50 text-blue-900 border-blue-200' : instructionalRole === 'primary' && replacementIsEducatorAuthorized ? 'bg-violet-50 text-violet-900 border-violet-200' : instructionalRole === 'primary' ? 'bg-red-50 text-red-900 border-red-200' : 'bg-amber-50 text-amber-900 border-amber-200';
   var isSupplementalSourceUnlinked = instructionalRole === 'supplemental' && !instructionalTextProfile.sourceArtifactId && !instructionalTextProfile.primaryArtifactId;
-  var handleInstructionalRoleChange = function (event) {
-    var nextRole = event && event.target ? event.target.value : 'unspecified';
-    if (instructionalTextProfile.form === 'adapted' && nextRole === 'primary' && !(instructionalRole === 'primary' && replacementIsEducatorAuthorized)) {
-      var confirmed = false;
-      try {
-        confirmed = window.confirm('Designate this adapted text as the primary replacement? This records an educator-authorized replacement decision. Continue only when replacement is permitted by the student’s documented plan, the instructional target, assessment conditions, and local policy.');
-      } catch (_) {}
-      if (!confirmed) return;
-    }
+  var saveInstructionalRole = function (nextRole) {
     if (typeof props.onInstructionalRoleChange === 'function') {
-      props.onInstructionalRoleChange(generatedContent, nextRole, {
+      return props.onInstructionalRoleChange(generatedContent, nextRole, {
         authorizeReplacement: instructionalTextProfile.form === 'adapted' && nextRole === 'primary'
       });
-      return;
     }
     var fullBase = findFullHistoryArtifact(history, generatedContent);
     // The open item wins for mutable display fields, while the history copy
@@ -3448,48 +3539,19 @@ function SimplifiedView(props) {
       });
     }
   };
-  var instructionalRoleControl = generatedContent ? /*#__PURE__*/React.createElement("div", {
-    "data-instructional-role": instructionalRole,
-    className: "my-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center gap-2"
-  }, /*#__PURE__*/React.createElement("strong", null, instructionalFormLabel), /*#__PURE__*/React.createElement("span", {
-    "aria-hidden": "true"
-  }, "·"), /*#__PURE__*/React.createElement("span", null, instructionalRoleLabel)), isTeacherMode && /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 flex flex-wrap items-center gap-3"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "inline-flex flex-wrap items-center gap-2"
-  }, "Use in this lesson", /*#__PURE__*/React.createElement("select", {
-    "aria-label": "Use in this lesson",
-    value: instructionalRole,
+  var instructionalRoleControl = generatedContent ? /*#__PURE__*/React.createElement(SimplifiedReadingRoleControl, {
+    key: generatedContent.id || generatedContent.data,
+    role: instructionalRole,
+    roleLabel: instructionalRoleLabel,
+    formLabel: instructionalFormLabel,
+    needsAuthorization: instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized,
+    isTeacherMode: isTeacherMode,
     disabled: isProcessing,
-    onChange: handleInstructionalRoleChange,
-    className: "min-h-11 rounded-lg border border-slate-300 bg-white px-2"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "primary"
-  }, "Main reading"), /*#__PURE__*/React.createElement("option", {
-    value: "supplemental"
-  }, "Supporting reading"), /*#__PURE__*/React.createElement("option", {
-    value: "unspecified"
-  }, "Not designated"))), instructionalRole === 'primary' && instructionalTextProfile.form === 'adapted' && !replacementIsEducatorAuthorized && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: () => handleInstructionalRoleChange({
-      target: {
-        value: 'primary'
-      }
-    }),
-    className: "min-h-11 rounded-lg border border-amber-400 px-3"
-  }, "Review main-reading choice"), props.onSelectReadingSource && (!protectedOriginal || verifiedOriginal) && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    disabled: isProcessing,
-    onClick: () => props.onSelectReadingSource(generatedContent),
-    className: "min-h-11 rounded-lg border border-indigo-300 px-3 text-indigo-900"
-  }, "Use for activities")), !protectedOriginal && instructionalRole !== 'primary' && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2"
-  }, "Adapted companions help preview ideas and build context for reading the original."), !protectedOriginal && !capturedSource && /*#__PURE__*/React.createElement("p", {
-    role: "status",
-    className: "mt-2 text-amber-900"
-  }, "Original not captured. Check the matching source before sharing.")) : null;
+    onSave: saveInstructionalRole,
+    onSelectSource: props.onSelectReadingSource && (!protectedOriginal || verifiedOriginal) ? () => props.onSelectReadingSource(generatedContent) : null,
+    showCompanionNote: !protectedOriginal && instructionalRole !== 'primary',
+    missingOriginal: !protectedOriginal && !capturedSource
+  }) : null;
   var simplifiedComplexityDisplay = getSimplifiedComplexityDisplay(generatedContent, gradeLevel);
   var readingColumnState = React.useState(function () {
     try {
@@ -5722,6 +5784,7 @@ SimplifiedView.resolveCompareSource = resolveSimplifiedCompareSource;
 SimplifiedView.getComplexityDisplay = getSimplifiedComplexityDisplay;
 SimplifiedView.checkAlignment = checkSimplifiedAlignment;
 SimplifiedView.regenerateWithRigor = regenerateSimplifiedWithRigor;
+SimplifiedView.ReadingRoleControl = SimplifiedReadingRoleControl;
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.SimplifiedView = SimplifiedView;

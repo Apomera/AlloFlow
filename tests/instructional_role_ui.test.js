@@ -72,15 +72,52 @@ describe('leveled-text instructional role controls', () => {
     });
   });
 
-  it('requires an explicit confirmation before the UI records primary replacement authorization', () => {
-    const source = readFileSync(resolve(process.cwd(), 'view_simplified_source.jsx'), 'utf8');
-    const handler = source.slice(
-      source.indexOf('var handleInstructionalRoleChange'),
-      source.indexOf('var instructionalRoleControl')
-    );
-    expect(handler).toContain("instructionalTextProfile.form === 'adapted' && nextRole === 'primary'");
-    expect(handler).toContain('window.confirm(');
-    expect(handler.indexOf('window.confirm(')).toBeLessThan(handler.indexOf('updateSimplifiedInstructionalRole('));
+  it('confirms inline, saves the role, collapses and can reopen without native dialogs', () => {
+    const { createRoot } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/client'));
+    const { flushSync } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom'));
+    const container = document.createElement('div'); document.body.appendChild(container);
+    const root = createRoot(container);
+    const onSave = vi.fn(); const nativeConfirm = vi.spyOn(window, 'confirm').mockImplementation(() => { throw new Error('Blocked in iframe'); });
+    const Control = SimplifiedView.ReadingRoleControl;
+    function Harness() {
+      const [item, setItem] = React.useState(baseItem());
+      return React.createElement(Control, { role: item.instructionalText.role, roleLabel: item.instructionalText.role === 'primary' ? 'Main reading' : 'Supporting reading', formLabel: 'Adapted text', isTeacherMode: true, needsAuthorization: !item.instructionalText.replacementAuthorization.authorized,
+        onSave: role => { onSave(role); setItem(SimplifiedView.updateInstructionalRole(item, role)); return true; } });
+    }
+    const change = value => flushSync(() => { const select = container.querySelector('select'); select.value = value; select.dispatchEvent(new Event('change', { bubbles: true })); });
+    const click = text => flushSync(() => Array.from(container.querySelectorAll('button')).find(button => button.textContent === text).click());
+    try {
+      flushSync(() => root.render(React.createElement(Harness)));
+      change('primary');
+      expect(onSave).not.toHaveBeenCalled();
+      expect(container.querySelector('[aria-label="Confirm main reading"]')).not.toBeNull();
+      click('Cancel'); expect(container.querySelector('select').value).toBe('supplemental');
+      expect(onSave).not.toHaveBeenCalled();
+      change('primary'); click('Confirm main reading');
+      expect(onSave).toHaveBeenCalledWith('primary');
+      expect(container.querySelector('summary').textContent).toContain('Main reading');
+      expect(container.querySelector('details').open).toBe(false);
+      expect(document.activeElement).toBe(container.querySelector('summary'));
+      flushSync(() => container.querySelector('summary').click());
+      expect(container.querySelector('details').open).toBe(true);
+      change('supplemental');
+      expect(onSave).toHaveBeenLastCalledWith('supplemental');
+      expect(container.querySelector('details').open).toBe(false);
+      expect(nativeConfirm).not.toHaveBeenCalled();
+    } finally { flushSync(() => root.unmount()); container.remove(); nativeConfirm.mockRestore(); }
+  });
+
+  it('keeps the choice open with feedback if saving fails', () => {
+    const { createRoot } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/client'));
+    const { flushSync } = require(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom'));
+    const container = document.createElement('div'); const root = createRoot(container);
+    try {
+      flushSync(() => root.render(React.createElement(SimplifiedView.ReadingRoleControl, { role: 'supplemental', roleLabel: 'Supporting reading', formLabel: 'Adapted text', isTeacherMode: true, onSave: () => false })));
+      flushSync(() => { const select = container.querySelector('select'); select.value = 'unspecified'; select.dispatchEvent(new Event('change', { bubbles: true })); });
+      expect(container.querySelector('details').open).toBe(true);
+      expect(container.querySelector('[role="alert"]').textContent).toContain('could not be saved');
+      expect(container.querySelector('select').value).toBe('supplemental');
+    } finally { flushSync(() => root.unmount()); }
   });
 
   it('revokes replacement authorization when returned to supplemental use', () => {
