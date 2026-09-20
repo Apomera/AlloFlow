@@ -183,6 +183,7 @@ describe('persistent history artifact instance identity', () => {
   it('keeps the canonical helper and normalized setters identical in all host sources', () => {
     const rootHost = read(hostPaths[0]);
     const canonicalBlock = identityBlock(rootHost);
+    const extractedHandlers = read('host_handlers_source.jsx');
     const canonicalDuplicate = between(rootHost, 'const handleDuplicateResource', 'const handleDeleteHistoryItem');
     const canonicalDelete = between(rootHost, 'const handleDeleteHistoryItem', 'const handleStartEdit');
     const canonicalEdit = between(rootHost, 'const handleStartEdit', 'const handleSaveEdit');
@@ -196,11 +197,11 @@ describe('persistent history artifact instance identity', () => {
       expect(host, path).toContain('return ensureArtifactInstanceId(candidate)');
       expect(host, path).toContain('const [history, _setHistory] = useState([])');
       expect(host, path).toContain('return normalizeArtifactInstanceIds(candidate)');
-      expect(host, path).toContain('const requestedInstanceId = getArtifactInstanceId(itemRef)');
-      expect(host, path).toContain('removeArtifactInstanceFromList(prev, requestedInstanceId, safePublicId)');
-      expect(host, path).toContain('sameArtifactInstance(generatedContent, deletedArtifact)');
+      expect(extractedHandlers).toContain('const requestedInstanceId = __d.getArtifactInstanceId(itemRef)');
+      expect(extractedHandlers).toContain('__d.removeArtifactInstanceFromList(prev, requestedInstanceId, safePublicId)');
+      expect(extractedHandlers).toContain('__d.sameArtifactInstance(__d.generatedContent, deletedArtifact)');
       expect(host, path).toContain('_alloArtifactMatchesInstanceId(item, itemInstanceId)');
-      expect(host, path).toContain("addToast(t('errors.invalid_resource') || 'This resource could not be duplicated.'");
+      expect(extractedHandlers).toContain("__d.addToast(__d.t('errors.invalid_resource') || 'This resource could not be duplicated.'");
     }
   });
 
@@ -210,7 +211,8 @@ describe('persistent history artifact instance identity', () => {
     expect(source).toContain('generatedArtifactInstanceId === persistedItemInstanceId');
     expect(source).toContain('editingId === itemInstanceId');
     expect(source).toContain('movingItemId === itemInstanceId');
-    expect(source).toContain('handleMoveToUnit(itemInstanceId');
+    expect(source).toContain('selectMoveUnit(itemInstanceId');
+    expect(source).toContain('handleMoveToUnit(itemId, unitId)');
     expect(source).toContain('handleDragStart(e, itemInstanceId)');
     expect(source).toContain('handleDragEnter(e, itemInstanceId)');
     expect(source).toContain("moveItem(e, itemInstanceId, 'up', getHistoryRowInstanceId(filteredHistory[idx - 1]))");

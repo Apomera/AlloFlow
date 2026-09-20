@@ -602,6 +602,12 @@ function HistoryPanel(props) {
       addToast && addToast("Could not open submission form: " + (err && err.message), "error");
     }
   };
+  const [isOrganizing, setIsOrganizing] = React.useState(false);
+  const [resourceActionsId, setResourceActionsId] = React.useState(null);
+  const resourceUiText = (key, fallback) => {
+    const value = t(key);
+    return value && value !== key ? value : fallback;
+  };
   const [resourceSearch, setResourceSearch] = React.useState("");
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState("all");
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
@@ -747,7 +753,7 @@ function HistoryPanel(props) {
     const publicId = getSafePublicArtifactId(item);
     if (publicId) publicHistoryIdCounts.set(publicId, (publicHistoryIdCounts.get(publicId) || 0) + 1);
   });
-  const canReorderResources = !isSyncMode && !isResourceFilterActive;
+  const canReorderResources = isOrganizing && !isSyncMode && !isResourceFilterActive;
   const clearResourceFilters = () => {
     setResourceSearch("");
     setResourceTypeFilter("all");
@@ -881,7 +887,19 @@ function HistoryPanel(props) {
   React.useEffect(() => {
     clearResourceFilters();
     setIsMoreActionsOpen(false);
+    setIsOrganizing(false);
+    setResourceActionsId(null);
   }, [activeUnitId]);
+  React.useEffect(() => {
+    setResourceActionsId(null);
+    if (movingItemId) setMovingItemId(null);
+    if (isSyncMode) setIsOrganizing(false);
+  }, [activeUnitId, resourceSearch, resourceTypeFilter, isSyncMode]);
+  const finishResourceRename = (event, itemInstanceId, cancel = false) => {
+    if (cancel) handleCancelEdit(event);
+    else handleSaveEdit(event);
+    window.requestAnimationFrame(() => document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus());
+  };
   React.useEffect(() => {
     if (typeof window === "undefined" || typeof setShowSelHub !== "function") return void 0;
     const opener = () => {
@@ -1121,7 +1139,21 @@ function HistoryPanel(props) {
       "aria-label": t("history.delete_unit_tooltip")
     },
     /* @__PURE__ */ React.createElement(Trash2, { size: 14 })
-  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), (unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-history-organize": true,
+      "aria-pressed": isOrganizing,
+      onClick: () => {
+        setIsOrganizing((value) => !value);
+        setResourceActionsId(null);
+        closeMoveMenu(false);
+      },
+      className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    },
+    isOrganizing ? resourceUiText("history.done_organizing", "Done organizing") : resourceUiText("history.organize", "Organize")
+  ), isOrganizing && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, isResourceFilterActive ? t("history.clear_filters_to_reorder") : resourceUiText("history.organize_hint", "Drag a handle or use the move buttons. Keyboard: Alt + Up or Down."))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_new_unit_name"),
@@ -1254,7 +1286,7 @@ function HistoryPanel(props) {
           onDragEnd: handleDragEnd,
           className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : "border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 w-full" }, /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 w-full" }, isOrganizing && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1295,7 +1327,7 @@ function HistoryPanel(props) {
             className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
             autoFocus: true
           }
-        ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleSaveEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleCancelEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => finishResourceRename(e, itemInstanceId), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => finishResourceRename(e, itemInstanceId, true), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -1334,141 +1366,181 @@ function HistoryPanel(props) {
         ), isTeacherMode && /* @__PURE__ */ React.createElement(
           "button",
           {
-            "aria-label": t("common.edit"),
-            "data-help-key": "history_rename_btn",
-            onClick: (e) => handleStartEdit(e, item),
-            className: "min-h-11 min-w-11 self-center grid place-items-center rounded-lg border border-transparent text-indigo-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50",
-            title: t("actions.rename")
-          },
-          /* @__PURE__ */ React.createElement(Pencil, { size: 10 })
-        ))),
-        isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-between border-t border-slate-200 pt-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
-          "button",
-          {
             type: "button",
-            "aria-label": `${t("actions.move_up") || "Move up"}: ${itemTitle}`,
-            "data-help-key": "history_move_up_btn",
-            onClick: (e) => moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1])),
-            disabled: !canReorderResources || idx === 0,
-            className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-            title: t("actions.move_up")
-          },
-          /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
-        ), /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            "aria-label": `${t("actions.move_down") || "Move down"}: ${itemTitle}`,
-            "data-help-key": "history_move_down_btn",
-            onClick: (e) => moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1])),
-            disabled: !canReorderResources || idx === filteredHistory.length - 1,
-            className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-            title: t("actions.move_down")
-          },
-          /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-        ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            "data-help-key": "history_move_to_unit_btn",
-            "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
-            "aria-expanded": movingItemId === itemInstanceId,
-            "aria-haspopup": "menu",
-            id: `history-move-trigger-${itemInstanceId}`,
-            "aria-controls": movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : void 0,
-            onClick: (event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId),
-            onKeyDown: (event) => {
-              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                event.preventDefault();
-                openMoveMenu(event, itemInstanceId, event.key === "ArrowUp" ? "last" : "first");
-              }
+            id: "history-actions-trigger-" + itemInstanceId,
+            "aria-label": resourceUiText("history.resource_actions", "Actions") + ": " + itemTitle,
+            "aria-expanded": resourceActionsId === itemInstanceId || isOrganizing,
+            "aria-controls": "history-actions-" + itemInstanceId,
+            onClick: () => {
+              if (isOrganizing) {
+                setIsOrganizing(false);
+                setResourceActionsId(null);
+              } else setResourceActionsId(resourceActionsId === itemInstanceId ? null : itemInstanceId);
+              closeMoveMenu(false);
             },
-            className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? "text-amber-700" : ""}`,
-            title: t("history.tooltips.move_to_unit")
+            className: "min-h-11 self-start rounded-lg px-2 text-xs font-bold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           },
-          /* @__PURE__ */ React.createElement(FolderInput, { size: 12, "aria-hidden": "true" })
-        ), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement(
+          resourceUiText("history.resource_actions", "Actions"),
+          " ",
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, resourceActionsId === itemInstanceId || isOrganizing ? "\u25B4" : "\u25BE")
+        ))),
+        isTeacherMode && (isOrganizing || resourceActionsId === itemInstanceId) && /* @__PURE__ */ React.createElement(
           "div",
           {
-            ref: moveMenuRef,
-            id: "history-move-menu-" + itemInstanceId,
-            role: "menu",
-            "aria-labelledby": "history-move-trigger-" + itemInstanceId,
-            onKeyDown: handleMoveMenuKeyDown,
-            style: { position: "fixed", maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", overflowY: "auto" },
-            className: "rp-menu-surface z-[200] w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15"
-          },
-          /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")),
-          /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
-            "button",
-            {
-              type: "button",
-              role: "menuitem",
-              tabIndex: -1,
-              onClick: () => selectMoveUnit(itemInstanceId, "uncategorized"),
-              className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
-            },
-            t("history.uncategorized")
-          ), units.map((u) => /* @__PURE__ */ React.createElement(
-            "button",
-            {
-              type: "button",
-              role: "menuitem",
-              key: u.id,
-              tabIndex: -1,
-              onClick: () => selectMoveUnit(itemInstanceId, u.id),
-              className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, "id"), "", 160) ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
-            },
-            u.name
-          )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))
-        ))), itemType === "word-sounds" && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              const words = getSafeArraySnapshot(itemData, 1e4);
-              const lines = [
-                "Date,Resource,Word,Activity,TotalWords",
-                ...words.map((w) => {
-                  const word = getSafeRowText(
-                    getSafeArtifactField(w, "targetWord") || getSafeArtifactField(w, "word") || getSafeArtifactField(w, "displayWord"),
-                    "",
-                    240
-                  );
-                  return `${(itemDate || /* @__PURE__ */ new Date()).toLocaleDateString()},${itemTitle || "Word Sounds"},${word},,${words.length}`;
-                })
-              ];
-              if (itemConfigSummary) {
-                lines.unshift("# Config: " + itemConfigSummary);
+            id: "history-actions-" + itemInstanceId,
+            className: "mt-2 flex flex-wrap items-center gap-1 border-t border-slate-200 pt-2",
+            onClick: (e) => e.stopPropagation(),
+            onKeyDown: (event) => {
+              if (event.key === "Escape" && !movingItemId) {
+                event.preventDefault();
+                event.stopPropagation();
+                setResourceActionsId(null);
+                setIsOrganizing(false);
+                document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus();
               }
-              const csv = lines.join("\n");
-              const blob = new Blob([csv], { type: "text/csv" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `word-sounds-${(itemDate || /* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`;
-              a.click();
-              URL.revokeObjectURL(url);
-              addToast && addToast("CSV downloaded for RTI progress monitoring", "success");
+            }
+          },
+          /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "aria-label": t("common.edit"),
+              "data-help-key": "history_rename_btn",
+              onClick: (event) => handleStartEdit(event, item),
+              className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
             },
-            className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
-            title: t("common.export_csv_for_rti")
-          },
-          /* @__PURE__ */ React.createElement(Download, { size: 12 }),
-          " CSV"
-        ), /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            "aria-label": t("common.delete"),
-            onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
-            className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
-            title: t("history.tooltips.remove_item"),
-            "data-help-key": "resource_delete_button"
-          },
-          /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
-          " ",
-          t("actions.remove")
-        ))
+            t("actions.rename") || "Rename"
+          ),
+          /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 relative" }, isOrganizing && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "aria-label": `${t("actions.move_up") || "Move up"}: ${itemTitle}`,
+              "data-help-key": "history_move_up_btn",
+              onClick: (e) => moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1])),
+              disabled: !canReorderResources || idx === 0,
+              className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+              title: t("actions.move_up")
+            },
+            /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
+          ), /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "aria-label": `${t("actions.move_down") || "Move down"}: ${itemTitle}`,
+              "data-help-key": "history_move_down_btn",
+              onClick: (e) => moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1])),
+              disabled: !canReorderResources || idx === filteredHistory.length - 1,
+              className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+              title: t("actions.move_down")
+            },
+            /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
+          )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "data-help-key": "history_move_to_unit_btn",
+              "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
+              "aria-expanded": movingItemId === itemInstanceId,
+              "aria-haspopup": "menu",
+              id: `history-move-trigger-${itemInstanceId}`,
+              "aria-controls": movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : void 0,
+              onClick: (event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId),
+              onKeyDown: (event) => {
+                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  openMoveMenu(event, itemInstanceId, event.key === "ArrowUp" ? "last" : "first");
+                }
+              },
+              className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? "text-amber-700" : ""}`,
+              title: t("history.tooltips.move_to_unit")
+            },
+            /* @__PURE__ */ React.createElement("span", { className: "px-2 text-xs font-semibold" }, t("history.tooltips.move_to_unit") || "Move to unit")
+          ), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement(
+            "div",
+            {
+              ref: moveMenuRef,
+              id: "history-move-menu-" + itemInstanceId,
+              role: "menu",
+              "aria-labelledby": "history-move-trigger-" + itemInstanceId,
+              onKeyDown: handleMoveMenuKeyDown,
+              style: { position: "fixed", maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", overflowY: "auto" },
+              className: "rp-menu-surface z-[200] w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15"
+            },
+            /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")),
+            /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                role: "menuitem",
+                tabIndex: -1,
+                onClick: () => selectMoveUnit(itemInstanceId, "uncategorized"),
+                className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+              },
+              t("history.uncategorized")
+            ), units.map((u) => /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                role: "menuitem",
+                key: u.id,
+                tabIndex: -1,
+                onClick: () => selectMoveUnit(itemInstanceId, u.id),
+                className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, "id"), "", 160) ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+              },
+              u.name
+            )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))
+          ))),
+          itemType === "word-sounds" && /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                const words = getSafeArraySnapshot(itemData, 1e4);
+                const lines = [
+                  "Date,Resource,Word,Activity,TotalWords",
+                  ...words.map((w) => {
+                    const word = getSafeRowText(
+                      getSafeArtifactField(w, "targetWord") || getSafeArtifactField(w, "word") || getSafeArtifactField(w, "displayWord"),
+                      "",
+                      240
+                    );
+                    return `${(itemDate || /* @__PURE__ */ new Date()).toLocaleDateString()},${itemTitle || "Word Sounds"},${word},,${words.length}`;
+                  })
+                ];
+                if (itemConfigSummary) {
+                  lines.unshift("# Config: " + itemConfigSummary);
+                }
+                const csv = lines.join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `word-sounds-${(itemDate || /* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                addToast && addToast("CSV downloaded for RTI progress monitoring", "success");
+              },
+              className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
+              title: t("common.export_csv_for_rti")
+            },
+            /* @__PURE__ */ React.createElement(Download, { size: 12 }),
+            " CSV"
+          ),
+          /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              "aria-label": t("common.delete"),
+              onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
+              className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
+              title: t("history.tooltips.remove_item"),
+              "data-help-key": "resource_delete_button"
+            },
+            /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
+            " ",
+            t("actions.remove")
+          )
+        )
       );
     })
   ));

@@ -43169,8 +43169,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           submissionContext={mbStudent ? 'mailbox-live' : mbHostedAssignment ? 'mailbox-homework' : activeSessionCode ? 'standard-live' : 'file'}
       />
       {showSaveModal && (
-        <div ref={saveModalRef} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetShowSaveModalToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" data-save-project-backdrop>
+            <div ref={saveModalRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative border-4 border-indigo-100 transition-all animate-in zoom-in-95 duration-200" role="dialog" aria-modal="true" aria-labelledby="save-project-title" onClick={e => e.stopPropagation()}>
                 <button
                     aria-label={t('common.close_save_dialog')}
                     onClick={handleSetShowSaveModalToFalse}
@@ -43178,7 +43178,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 >
                     <X size={20} />
                 </button>
-                <h2 className="text-xl font-black text-indigo-900 mb-4 flex items-center gap-2">
+                <h2 id="save-project-title" className="text-xl font-black text-indigo-900 mb-4 pr-10 flex items-center gap-2">
                     <Save size={24} className="text-indigo-600"/> {t('modals.save_project.title')}
                 </h2>
                 <div className="mb-6">

@@ -57,7 +57,7 @@ describe('HistoryPanel resource discovery controls', () => {
   });
 
   it('prevents ambiguous reordering while discovery filters are active', () => {
-    expect(source).toContain('const canReorderResources = !isSyncMode && !isResourceFilterActive;');
+    expect(source).toContain('const canReorderResources = isOrganizing && !isSyncMode && !isResourceFilterActive;');
     expect(source).toContain('draggable={editingId === null && canReorderResources}');
     expect(source).toContain('if (!e.altKey || !canReorderResources) return;');
     expect(source).toContain('disabled={!canReorderResources || idx === 0}');

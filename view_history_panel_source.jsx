@@ -568,6 +568,9 @@ function HistoryPanel(props) {
     }
   };
 
+  const [isOrganizing, setIsOrganizing] = React.useState(false);
+  const [resourceActionsId, setResourceActionsId] = React.useState(null);
+  const resourceUiText = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
   const [resourceSearch, setResourceSearch] = React.useState('');
   const [resourceTypeFilter, setResourceTypeFilter] = React.useState('all');
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
@@ -706,7 +709,7 @@ function HistoryPanel(props) {
     const publicId = getSafePublicArtifactId(item);
     if (publicId) publicHistoryIdCounts.set(publicId, (publicHistoryIdCounts.get(publicId) || 0) + 1);
   });
-  const canReorderResources = !isSyncMode && !isResourceFilterActive;
+  const canReorderResources = isOrganizing && !isSyncMode && !isResourceFilterActive;
   const clearResourceFilters = () => {
     setResourceSearch('');
     setResourceTypeFilter('all');
@@ -846,7 +849,20 @@ function HistoryPanel(props) {
   React.useEffect(() => {
     clearResourceFilters();
     setIsMoreActionsOpen(false);
+    setIsOrganizing(false);
+    setResourceActionsId(null);
   }, [activeUnitId]);
+
+  React.useEffect(() => {
+    setResourceActionsId(null);
+    if (movingItemId) setMovingItemId(null);
+    if (isSyncMode) setIsOrganizing(false);
+  }, [activeUnitId, resourceSearch, resourceTypeFilter, isSyncMode]);
+
+  const finishResourceRename = (event, itemInstanceId, cancel = false) => {
+    if (cancel) handleCancelEdit(event); else handleSaveEdit(event);
+    window.requestAnimationFrame(() => document.getElementById('history-actions-trigger-' + itemInstanceId)?.focus());
+  };
 
   // SEL tool links: a #sel-hub/<toolId> link anywhere in rendered text is handled by
   // sel_hub_module.js (window.SelHub.toolLinks), which loads at boot but only mounts
@@ -1198,6 +1214,18 @@ function HistoryPanel(props) {
                             )}
                         </div>
                     )}
+                    {(unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button type="button" data-history-organize aria-pressed={isOrganizing}
+                                onClick={() => { setIsOrganizing(value => !value); setResourceActionsId(null); closeMoveMenu(false); }}
+                                className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                {isOrganizing ? resourceUiText('history.done_organizing', 'Done organizing') : resourceUiText('history.organize', 'Organize')}
+                            </button>
+                            {isOrganizing && <p role="status" className="text-xs text-slate-600">
+                                {isResourceFilterActive ? t('history.clear_filters_to_reorder') : resourceUiText('history.organize_hint', 'Drag a handle or use the move buttons. Keyboard: Alt + Up or Down.')}
+                            </p>}
+                        </div>
+                    )}
                     {isUnitModalOpen && (
                         <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in slide-in-from-top-2">
                             <label className="block text-xs font-bold text-slate-700 mb-1">{t('history.new_unit_label')}</label>
@@ -1404,7 +1432,7 @@ function HistoryPanel(props) {
                             className={`group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? 'border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5' : 'border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70'} ${isSyncMode ? 'cursor-not-allowed opacity-60' : 'cursor-default'}`}
                         >
                             <div className="flex flex-wrap items-stretch gap-2 w-full">
-                                <button
+                                {isOrganizing && <button
                                     type="button"
                                     draggable={editingId === null && canReorderResources}
                                     onDragStart={(e) => {
@@ -1435,7 +1463,7 @@ function HistoryPanel(props) {
                                 >
                                     <GripVertical size={14} aria-hidden="true" />
                                     <span className="text-[11px] font-bold" aria-hidden="true">{idx + 1}</span>
-                                </button>
+                                </button>}
                                 <div className={`self-center p-2 rounded-lg shrink-0 ${isCurrent ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
                                     {getIconForType(itemType)}
                                 </div>
@@ -1448,8 +1476,8 @@ function HistoryPanel(props) {
                                             className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                                             autoFocus
                                         />
-                                        <button onClick={(e) => handleSaveEdit(e)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50" aria-label={t('common.save')}><Save size={14}/></button>
-                                        <button onClick={(e) => handleCancelEdit(e)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50" aria-label={t('common.cancel')}><X size={14}/></button>
+                                        <button onClick={(e) => finishResourceRename(e, itemInstanceId)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50" aria-label={t('common.save')}><Save size={14}/></button>
+                                        <button onClick={(e) => finishResourceRename(e, itemInstanceId, true)} className="min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50" aria-label={t('common.cancel')}><X size={14}/></button>
                                     </div>
                                 ) : (
                                     <>
@@ -1519,23 +1547,38 @@ function HistoryPanel(props) {
                                             </span>
                                         </button>
                                         {isTeacherMode && (
-                                            <button
-                                                aria-label={t('common.edit')}
-                                                data-help-key="history_rename_btn"
-                                                onClick={(e) => handleStartEdit(e, item)}
-                                                className="min-h-11 min-w-11 self-center grid place-items-center rounded-lg border border-transparent text-indigo-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50"
-                                                title={t('actions.rename')}
-                                            >
-                                                <Pencil size={10} />
+                                            <button type="button" id={'history-actions-trigger-' + itemInstanceId}
+                                                aria-label={resourceUiText('history.resource_actions', 'Actions') + ': ' + itemTitle}
+                                                aria-expanded={resourceActionsId === itemInstanceId || isOrganizing}
+                                                aria-controls={'history-actions-' + itemInstanceId}
+                                                onClick={() => {
+                                                    if (isOrganizing) { setIsOrganizing(false); setResourceActionsId(null); }
+                                                    else setResourceActionsId(resourceActionsId === itemInstanceId ? null : itemInstanceId);
+                                                    closeMoveMenu(false);
+                                                }}
+                                                className="min-h-11 self-start rounded-lg px-2 text-xs font-bold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                                {resourceUiText('history.resource_actions', 'Actions')} <span aria-hidden="true">{resourceActionsId === itemInstanceId || isOrganizing ? '▴' : '▾'}</span>
                                             </button>
                                         )}
                                     </>
                                 )}
                             </div>
-                            {isTeacherMode && (
-                            <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2" onClick={e => e.stopPropagation()}>
-                                <div className="flex items-center gap-1 relative">
-                                    <button
+                            {isTeacherMode && (isOrganizing || resourceActionsId === itemInstanceId) && (
+                            <div id={'history-actions-' + itemInstanceId} className="mt-2 flex flex-wrap items-center gap-1 border-t border-slate-200 pt-2" onClick={e => e.stopPropagation()}
+                                onKeyDown={event => {
+                                    if (event.key === 'Escape' && !movingItemId) {
+                                        event.preventDefault(); event.stopPropagation();
+                                        setResourceActionsId(null); setIsOrganizing(false);
+                                        document.getElementById('history-actions-trigger-' + itemInstanceId)?.focus();
+                                    }
+                                }}>
+                                <button type="button" aria-label={t('common.edit')} data-help-key="history_rename_btn"
+                                    onClick={event => handleStartEdit(event, item)}
+                                    className="min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">
+                                    {t('actions.rename') || 'Rename'}
+                                </button>
+                                <div className="flex flex-wrap items-center gap-1 relative">
+                                    {isOrganizing && <><button
                                         type="button"
                                         aria-label={`${t('actions.move_up') || 'Move up'}: ${itemTitle}`}
                                         data-help-key="history_move_up_btn"
@@ -1556,7 +1599,7 @@ function HistoryPanel(props) {
                                         title={t('actions.move_down')}
                                     >
                                         <ChevronDown size={12} />
-                                    </button>
+                                    </button></>}
                                     <div className="relative">
                                         <button
                                             type="button"
@@ -1576,7 +1619,7 @@ function HistoryPanel(props) {
                                             className={`min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? 'text-amber-700' : ''}`}
                                             title={t('history.tooltips.move_to_unit')}
                                         >
-                                            <FolderInput size={12} aria-hidden="true" />
+                                            <span className="px-2 text-xs font-semibold">{t('history.tooltips.move_to_unit') || 'Move to unit'}</span>
                                         </button>
                                         {movingItemId === itemInstanceId && (
                                             <div ref={moveMenuRef} id={'history-move-menu-' + itemInstanceId} role="menu"

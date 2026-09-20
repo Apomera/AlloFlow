@@ -1,0 +1,12 @@
+{
+  "hostSourcesParsed": [
+    "AlloFlowANTI.txt",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "saveDialogMirrorsIdentical": true,
+  "generatedModules": {
+    "view_history_panel_module.js": "75cf883871d46296cb8db7eb631d5f6a84c33b0395c6293bb0583724257ee41c",
+    "view_project_settings_module.js": "d37f7de2be9b843478784fdb48945fe40d4417b7b3fa7c280159263e6dbbfe16"
+  }
+}

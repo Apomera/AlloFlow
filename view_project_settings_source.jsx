@@ -90,6 +90,15 @@ function ProjectSettingsDialogFocusManager(props) {
         'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
       )).filter(function(element) {
         if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        // A summary stays focusable; controls inside any closed disclosure do not.
+        var ancestor = element.parentElement;
+        while (ancestor && ancestor !== root) {
+          if (ancestor.tagName === 'DETAILS' && !ancestor.open) {
+            var summary = ancestor.querySelector(':scope > summary');
+            if (!summary || !summary.contains(element)) return false;
+          }
+          ancestor = ancestor.parentElement;
+        }
         var style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
         return !style || (style.display !== 'none' && style.visibility !== 'hidden');
       });
@@ -377,7 +386,7 @@ function ProjectSettingsView(props) {
         aria-describedby="project-settings-description"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <header className="flex flex-none items-start gap-3 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 px-5 py-4 pr-16 sm:px-6">
+        <header className="relative flex flex-none items-start gap-3 border-b border-slate-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 px-5 py-4 pr-16 sm:px-6">
           <div className="rounded-xl bg-indigo-100 p-2 text-indigo-700" aria-hidden="true"><Settings2 size={22}/></div>
           <div>
             <h3 id="project-settings-title" className="text-lg font-black text-slate-900">{t('project_settings.title')}</h3>
@@ -388,120 +397,12 @@ function ProjectSettingsView(props) {
           <button
             type="button"
             onClick={handleSetIsProjectSettingsOpenToFalse}
-            className="absolute right-5 top-4 rounded-full p-2 text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="absolute right-3 top-3 min-h-11 min-w-11 grid place-items-center rounded-full p-2 text-slate-600 transition-colors hover:bg-white hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             aria-label={t('common.close')}
           ><X size={20}/></button>
         </header>
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
-          {isSchoolRole && (
-            <section aria-labelledby="school-rewards-title" className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className={`text-xs font-black uppercase tracking-wider ${isRewardsPortalConnected ? 'text-emerald-700' : 'text-amber-700'}`}>{isRewardsPortalConnected ? 'School rewards connected' : 'Google Education setup required'}</p>
-                  <h4 id="school-rewards-title" className="mt-1 text-base font-black text-slate-900">School Rewards & Store</h4>
-                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">A school-owned rewards ledger for staff recognition, private balance emails to managed student addresses, prize previews, and locked trimester checkout. The pilot stays separate from AlloHaven XP and can later point to a district-owned deployment without changing this launcher.</p>
-                </div>
-                <button type="button" onClick={onOpenSchoolRewards} className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}>{isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards'}</button>
-              </div>
-              {typeof onSaveRewardsPortalUrl === 'function' && (
-                <form className="mt-4 border-t border-emerald-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyRewardsPortalUrl(rewardsPortalUrlDraft); }}>
-                  <label htmlFor="school-rewards-portal-url" className="block text-xs font-black text-slate-700">School or district Apps Script web-app URL</label>
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                    <input id="school-rewards-portal-url" type="url" inputMode="url" autoComplete="off" spellCheck={false} defaultValue={rewardsPortalUrlDraft} onChange={function(event) { rewardsPortalUrlDraft = event.target.value; }} aria-describedby="school-rewards-portal-help" placeholder="https://script.google.com/macros/s/…/exec" className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
-                    <button type="submit" className="min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">{isRewardsPortalConnected ? 'Update connection' : 'Connect portal'}</button>
-                    {isRewardsPortalConnected && <button type="button" onClick={function() { applyRewardsPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Disconnect</button>}
-                  </div>
-                  <p id="school-rewards-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">{isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.'}</p>
-                </form>
-              )}
-            </section>
-          )}
-          {/* School role only. A parent running a lesson for their own child has
-              no use for a district personnel-evaluation portal, and offering
-              them a field for a district Apps Script URL is actively confusing. */}
-          {isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && (
-            <section aria-labelledby="principal-evaluation-title" className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  {/* Three record paths sit behind this entry point, so the badge,
-                      the button and the prose all have to say which one you are
-                      about to get. Before this the not-connected state read
-                      "Local preview available", which does not tell a principal
-                      whether the tool is ready to use on real staff. */}
-                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'On-device workspace · portal not connected'}</p>
-                  <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
-                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
-                    {isEvaluationPortalConnected
-                      ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.'
-                      : 'Opens the evaluator setup center for three paths: private on-device work, a principal-managed Drive share helper, or the district portal. The private path is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records. Nothing is uploaded until you deliberately use a district-approved sharing path.'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpenPrincipalEvaluation}
-                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}
-                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open Educator Evaluation'}</button>
-              </div>
-              <p className="mt-2 text-xs font-semibold">
-                <a
-                  href="https://alloflow-cdn.pages.dev/educator-evaluation-manual"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-700 underline hover:text-indigo-900"
-                >Read the user manual</a>
-                <span className="ml-1 font-normal text-slate-600">covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.</span>
-              </p>
-              {!isEvaluationPortalConnected && <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"><strong>Need the middle path?</strong> Open Educator Evaluation, choose <strong>Setup</strong>, then select <strong>Principal-managed Drive</strong>. A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check.</p>}
-              {typeof onSaveEvaluationPortalUrl === 'function' && (
-                <>
-                  <form className="mt-4 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>
-                  <label htmlFor="principal-evaluation-portal-url" className="block text-xs font-black text-slate-700">District Apps Script web-app URL</label>
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                    <input
-                      id="principal-evaluation-portal-url"
-                      type="url"
-                      inputMode="url"
-                      autoComplete="off"
-                      spellCheck={false}
-                      defaultValue={portalUrlDraft}
-                      onChange={function(event) { portalUrlDraft = event.target.value; }}
-                      aria-describedby="principal-evaluation-portal-help"
-
-                      placeholder="https://script.google.com/macros/s/…/exec"
-                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                    />
-                    <button type="submit" className="min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'}</button>
-                    {isEvaluationPortalConnected && <button type="button" onClick={function() { applyEvaluationPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Disconnect</button>}
-                  </div>
-                  <p id="principal-evaluation-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">
-                    {isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.'}
-                  </p>
-
-                  </form>
-                  {/* The setup steps used to live only in
-                      apps_script/educator_evaluation/README.md, a repo file no
-                      principal will ever open. The field above asked for a URL
-                      and never said where to get one. */}
-                  <details className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-3">
-                    <summary className="cursor-pointer text-xs font-black text-slate-800">Where does this URL come from?</summary>
-                    <div className="mt-2 space-y-2 text-xs leading-relaxed text-slate-600">
-                      <p><strong>This is not a self-serve setup.</strong> The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first.</p>
-                      <ol className="ml-4 list-decimal space-y-1">
-                        <li>Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions.</li>
-                        <li>They deploy it as a Web app with <strong>Execute as: the district owner</strong> and <strong>Who has access: users in your domain</strong>. Never "Anyone".</li>
-                        <li>They run the one-time setup with your school's staff list, evaluator assignments, and roles.</li>
-                        <li>They give you the deployment URL ending in <code>/exec</code>. Paste it above.</li>
-                      </ol>
-                      <p>AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have.</p>
-                      <p>The full setup and compliance checklist ships with the package, at <code className="break-all">apps_script/educator_evaluation/README.md</code>.</p>
-                    </div>
-                  </details>
-                  <EvaluationPortalQr t={t} url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
-                </>
-              )}
-            </section>
-          )}
           <fieldset>
             <legend className="text-xs font-black uppercase tracking-wider text-slate-600">
               {tx('project_settings.starting_point', 'Starting point')}
@@ -648,6 +549,127 @@ function ProjectSettingsView(props) {
               </fieldset>
             </div>
           </details>
+
+          {isSchoolRole && <details id="project-school-connections" className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <summary className="min-h-11 cursor-pointer rounded-lg px-1 py-2 text-sm font-bold text-slate-800">
+              {tx('project_settings.school_connections', 'School connections')}
+              <span className="mt-1 block text-xs font-normal text-slate-600">{tx('project_settings.school_connections_desc', 'School Rewards and Principal Evaluation')}</span>
+            </summary>
+            <div className="mt-3 space-y-4">
+          {isSchoolRole && (
+            <section aria-labelledby="school-rewards-title" className="rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className={`text-xs font-black uppercase tracking-wider ${isRewardsPortalConnected ? 'text-emerald-700' : 'text-amber-700'}`}>{isRewardsPortalConnected ? 'School rewards connected' : 'Google Education setup required'}</p>
+                  <h4 id="school-rewards-title" className="mt-1 text-base font-black text-slate-900">School Rewards & Store</h4>
+                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">A school-owned rewards ledger for staff recognition, private balance emails to managed student addresses, prize previews, and locked trimester checkout. The pilot stays separate from AlloHaven XP and can later point to a district-owned deployment without changing this launcher.</p>
+                </div>
+                <button type="button" onClick={onOpenSchoolRewards} className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}>{isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards'}</button>
+              </div>
+              {typeof onSaveRewardsPortalUrl === 'function' && (
+                <details open={!isRewardsPortalConnected} className="mt-4">
+                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-emerald-800">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
+                <form className="mt-2 border-t border-emerald-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyRewardsPortalUrl(rewardsPortalUrlDraft); }}>
+                  <label htmlFor="school-rewards-portal-url" className="block text-xs font-black text-slate-700">School or district Apps Script web-app URL</label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                    <input id="school-rewards-portal-url" type="url" inputMode="url" autoComplete="off" spellCheck={false} defaultValue={rewardsPortalUrlDraft} onChange={function(event) { rewardsPortalUrlDraft = event.target.value; }} aria-describedby="school-rewards-portal-help" placeholder="https://script.google.com/macros/s/…/exec" className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                    <button type="submit" className="min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">{isRewardsPortalConnected ? 'Update connection' : 'Connect portal'}</button>
+                    {isRewardsPortalConnected && <button type="button" onClick={function() { applyRewardsPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Disconnect</button>}
+                  </div>
+                  <p id="school-rewards-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">{isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Open School Rewards & Store from Leadership Hub for the step-by-step setup: it copies the reviewed apps_script/school_rewards package, generates the one-time setup call, and saves the /exec URL. You can also paste the URL here. AlloFlow stores only the launcher address.'}</p>
+                </form>
+                </details>
+              )}
+            </section>
+          )}
+          {/* School role only. A parent running a lesson for their own child has
+              no use for a district personnel-evaluation portal, and offering
+              them a field for a district Apps Script URL is actively confusing. */}
+          {isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && (
+            <section aria-labelledby="principal-evaluation-title" className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  {/* Three record paths sit behind this entry point, so the badge,
+                      the button and the prose all have to say which one you are
+                      about to get. Before this the not-connected state read
+                      "Local preview available", which does not tell a principal
+                      whether the tool is ready to use on real staff. */}
+                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'On-device workspace · portal not connected'}</p>
+                  <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
+                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                    {isEvaluationPortalConnected
+                      ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.'
+                      : 'Opens the evaluator setup center for three paths: private on-device work, a principal-managed Drive share helper, or the district portal. The private path is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records. Nothing is uploaded until you deliberately use a district-approved sharing path.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenPrincipalEvaluation}
+                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}
+                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open Educator Evaluation'}</button>
+              </div>
+              <p className="mt-2 text-xs font-semibold">
+                <a
+                  href="https://alloflow-cdn.pages.dev/educator-evaluation-manual"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-indigo-700 underline hover:text-indigo-900"
+                >Read the user manual</a>
+                <span className="ml-1 font-normal text-slate-600">covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.</span>
+              </p>
+              {!isEvaluationPortalConnected && <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"><strong>Need the middle path?</strong> Open Educator Evaluation, choose <strong>Setup</strong>, then select <strong>Principal-managed Drive</strong>. A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check.</p>}
+              {typeof onSaveEvaluationPortalUrl === 'function' && (
+                <details open={!isEvaluationPortalConnected} className="mt-4">
+                  <summary className="min-h-11 cursor-pointer rounded-lg px-2 py-3 text-xs font-bold text-indigo-800">{tx('project_settings.connection_setup', 'Connection setup')}</summary>
+                  <form className="mt-2 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>
+                  <label htmlFor="principal-evaluation-portal-url" className="block text-xs font-black text-slate-700">District Apps Script web-app URL</label>
+                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                    <input
+                      id="principal-evaluation-portal-url"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="off"
+                      spellCheck={false}
+                      defaultValue={portalUrlDraft}
+                      onChange={function(event) { portalUrlDraft = event.target.value; }}
+                      aria-describedby="principal-evaluation-portal-help"
+
+                      placeholder="https://script.google.com/macros/s/…/exec"
+                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <button type="submit" className="min-h-11 rounded-xl border border-indigo-600 bg-white px-4 py-2 text-sm font-black text-indigo-700 hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{isEvaluationPortalConnected ? 'Update connection' : 'Connect portal'}</button>
+                    {isEvaluationPortalConnected && <button type="button" onClick={function() { applyEvaluationPortalUrl(''); }} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Disconnect</button>}
+                  </div>
+                  <p id="principal-evaluation-portal-help" className="mt-2 text-xs leading-relaxed text-slate-500">
+                    {isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.'}
+                  </p>
+
+                  </form>
+                  {/* The setup steps used to live only in
+                      apps_script/educator_evaluation/README.md, a repo file no
+                      principal will ever open. The field above asked for a URL
+                      and never said where to get one. */}
+                  <details className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-3">
+                    <summary className="cursor-pointer text-xs font-black text-slate-800">Where does this URL come from?</summary>
+                    <div className="mt-2 space-y-2 text-xs leading-relaxed text-slate-600">
+                      <p><strong>This is not a self-serve setup.</strong> The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first.</p>
+                      <ol className="ml-4 list-decimal space-y-1">
+                        <li>Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions.</li>
+                        <li>They deploy it as a Web app with <strong>Execute as: the district owner</strong> and <strong>Who has access: users in your domain</strong>. Never "Anyone".</li>
+                        <li>They run the one-time setup with your school's staff list, evaluator assignments, and roles.</li>
+                        <li>They give you the deployment URL ending in <code>/exec</code>. Paste it above.</li>
+                      </ol>
+                      <p>AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have.</p>
+                      <p>The full setup and compliance checklist ships with the package, at <code className="break-all">apps_script/educator_evaluation/README.md</code>.</p>
+                    </div>
+                  </details>
+                  <EvaluationPortalQr t={t} url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
+                </details>
+              )}
+            </section>
+          )}
+            </div>
+          </details>}
 
           <button
             type="button"
