@@ -1,0 +1,52 @@
+{
+  "createdAt": "2026-09-20T15:41:18.633Z",
+  "passed": true,
+  "checks": [
+    {
+      "name": "Long comparison renders headings and emphasis without Markdown delimiters",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Original opens real karaoke, plays local audio and advances sweep",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Adapted karaoke uses its own text and supports keyboard sentence navigation",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "Spanish adapted device fallback receives Spanish language and clean text",
+      "status": "passed",
+      "detail": {
+        "text": "La costa",
+        "lang": "es"
+      }
+    },
+    {
+      "name": "Comparison and karaoke fit 320px and restore keyboard focus",
+      "status": "passed",
+      "detail": null
+    },
+    {
+      "name": "No runtime errors or external service requests",
+      "status": "passed",
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "sha256": {
+    "view_simplified_source.jsx": "f761309da1ddab216336636d3f344391c56e7e54e04b8c2e9ab8af5d16661041",
+    "view_simplified_module.js": "80c7880c9e51e97f2cc70b25393088dd1d8353bf65f6ca2e71c50a7521cd255a",
+    "immersive_reader_source.jsx": "e01e6ea953661cef476350b757fca7c93a20b197dccee733677ddf6170fbbd4d",
+    "immersive_reader_module.js": "9376839009eec8bb48387863fda4b3b2df9717a40b21089b4ad07f754e4042ab"
+  },
+  "limitations": [
+    "Actual generated components in an isolated fixture, not the full application shell.",
+    "Local silent WAV exercises real audio playback and sweep; device speech is instrumented. No live voice quality, model, microphone, or assistive-technology evaluation.",
+    "Microsoft Edge Chromium only; no deployment."
+  ]
+}

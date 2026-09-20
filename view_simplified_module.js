@@ -1025,34 +1025,85 @@ function simplifiedWordSegments(text, language) {
 function simplifiedPlainInline(text) {
   return String(text || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\*([^*]+)\*/g, '$1');
 }
-function simplifiedInline(text, leaf) {
-  // Structure remains intact in word-help and selection modes. Links remain
-  // ordinary links; punctuation is never a definition or phonics target.
+function simplifiedInline(text, leaf, sourceOffset) {
+  // Optional source offsets keep glosses anchored to the stored Markdown.
+  var cursor = sourceOffset || 0,
+    withOffsets = Number.isInteger(sourceOffset);
   return String(text || '').split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^\)]+\))/g).map(function (part, index) {
+    var start = cursor;
+    cursor += part.length;
     if (/^(\*\*|__)/.test(part)) return /*#__PURE__*/React.createElement("strong", {
       key: index
-    }, simplifiedInline(part.slice(2, -2), leaf));
+    }, simplifiedInline(part.slice(2, -2), leaf, withOffsets ? start + 2 : undefined));
     if (/^\*[^*]/.test(part)) return /*#__PURE__*/React.createElement("em", {
       key: index
-    }, simplifiedInline(part.slice(1, -1), leaf));
+    }, simplifiedInline(part.slice(1, -1), leaf, withOffsets ? start + 1 : undefined));
     if (/^`/.test(part)) return /*#__PURE__*/React.createElement("code", {
       key: index
-    }, part.slice(1, -1));
+    }, withOffsets ? leaf(part.slice(1, -1), start + 1, false) : part.slice(1, -1));
     var link = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
-    if (link) return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? /*#__PURE__*/React.createElement("a", {
-      key: index,
-      href: link[2],
-      target: "_blank",
-      rel: "noopener noreferrer",
-      className: "underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600",
-      onClick: e => e.stopPropagation()
-    }, link[1]) : /*#__PURE__*/React.createElement(React.Fragment, {
-      key: index
-    }, link[1]);
+    if (link) {
+      var label = withOffsets ? leaf(link[1], start + 1, false) : link[1];
+      return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? /*#__PURE__*/React.createElement("a", {
+        key: index,
+        href: link[2],
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600",
+        onClick: e => e.stopPropagation()
+      }, label) : /*#__PURE__*/React.createElement(React.Fragment, {
+        key: index
+      }, label);
+    }
     return /*#__PURE__*/React.createElement(React.Fragment, {
       key: index
-    }, leaf(part));
+    }, leaf(part, withOffsets ? start : undefined));
   });
+}
+function simplifiedExactBlocks(raw, formatted) {
+  var chunks = String(raw || '').split(/(\r\n|\r|\n)/),
+    cursor = 0;
+  var blocks = [];
+  for (var i = 0; i < chunks.length; i += 2) {
+    var line = chunks[i],
+      separator = chunks[i + 1] || '';
+    var block = {
+      type: 'line',
+      raw: line,
+      text: line,
+      start: cursor,
+      end: cursor + line.length,
+      textStart: cursor,
+      separator,
+      lineIndex: i
+    };
+    cursor += line.length + separator.length;
+    var heading = formatted && line.match(/^([ \t]{0,3})(#{1,6})[ \t]+(.+)$/);
+    var item = formatted && line.match(/^([ \t]*)([-+*]|\d+[.)])[ \t]+(.+)$/);
+    var quote = formatted && line.match(/^([ \t]*>[ \t]?)(.*)$/);
+    if (heading) Object.assign(block, {
+      type: 'heading',
+      level: heading[2].length,
+      text: heading[3],
+      textStart: block.end - heading[3].length
+    });else if (item) Object.assign(block, {
+      type: 'li',
+      indent: item[1].replace(/\t/g, '    ').length,
+      ordered: /^\d/.test(item[2]),
+      value: parseInt(item[2], 10) || 1,
+      text: item[3],
+      textStart: block.end - item[3].length
+    });else if (quote) Object.assign(block, {
+      type: 'quote',
+      text: quote[2],
+      textStart: block.start + quote[1].length
+    });
+    blocks.push(block);
+  }
+  return blocks;
+}
+function simplifiedComparisonPlainText(raw) {
+  return simplifiedExactBlocks(raw, true).map(block => simplifiedPlainInline(block.text) + block.separator).join('');
 }
 function simplifiedParagraphBlocks(text) {
   var lines = String(text || '').split('\n');
@@ -2026,6 +2077,7 @@ function SimplifiedView(props) {
   var FocusReaderOverlay = props.FocusReaderOverlay;
   var PerspectiveCrawlOverlay = props.PerspectiveCrawlOverlay;
   var KaraokeReaderOverlay = props.KaraokeReaderOverlay;
+  var [comparisonKaraoke, setComparisonKaraoke] = React.useState(null);
   var ConfettiExplosion = props.ConfettiExplosion;
   var ComplexityGauge = props.ComplexityGauge;
   var SourceReferencesPanel = props.SourceReferencesPanel;
@@ -2465,10 +2517,10 @@ function SimplifiedView(props) {
   // renders do not repeatedly invalidate karaoke's warm cache.
   var karaokeCallTTSRef = React.useRef(callTTS);
   karaokeCallTTSRef.current = callTTS;
-  var getKaraokeAudioUrl = React.useCallback(function (sentenceText, requestOptions) {
+  var getKaraokeAudioUrl = React.useCallback(function (sentenceText, requestOptions, languageOverride) {
     var voice = selectedVoice || typeof window !== 'undefined' && window.__alloSelectedVoice || 'Kore';
     var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
-    var language = leveledTextLanguage || 'English';
+    var language = languageOverride || leveledTextLanguage || 'English';
     var options = Object.assign({
       language: language,
       maxRetries: 1,
@@ -2522,6 +2574,11 @@ function SimplifiedView(props) {
       return null;
     });
   }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
+  var getComparisonKaraokeAudioUrl = React.useCallback(function (sentence, options) {
+    var occurrence = options && options.occurrence || 0;
+    var entry = comparisonKaraoke?.entries.find(item => item.text === sentence && item.occurrence === occurrence);
+    return getKaraokeAudioUrl(sentence, options, entry?.language || comparisonKaraoke?.language);
+  }, [getKaraokeAudioUrl, comparisonKaraoke]);
   var getReadAloudAudioProvenance = function (sentence, identityOptions) {
     var inspection = null;
     try {
@@ -2639,7 +2696,7 @@ function SimplifiedView(props) {
       maxBytes: maxBytes
     };
   };
-  var getReadAloudSentenceEntriesForText = function (rawText) {
+  var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {
     var text = typeof rawText === 'string' ? rawText : String(rawText || '');
     var isTableText = function (p) {
       return p.trim().startsWith('|') || p.indexOf('\n|') !== -1;
@@ -2695,7 +2752,7 @@ function SimplifiedView(props) {
         };
       }).filter(Boolean);
     };
-    return makeEntries(sourceList, leveledTextLanguage || 'English', 'source').concat(makeEntries(targetList, 'English', 'target'));
+    return makeEntries(sourceList, sourceLanguage || leveledTextLanguage || 'English', 'source').concat(makeEntries(targetList, 'English', 'target'));
   };
   var getReadAloudSentencesForText = function (rawText) {
     return getReadAloudSentenceEntriesForText(rawText).map(function (entry) {
@@ -3644,6 +3701,9 @@ function SimplifiedView(props) {
   var requestedComparisonSource = pairPreferences.source || 'linked';
   var selectedComparisonArtifact = isTeacherMode && (history || []).find(item => String(item.id) === requestedComparisonSource && item.id !== generatedContent?.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
   var comparisonSourceId = selectedComparisonArtifact ? requestedComparisonSource : 'linked';
+  React.useEffect(function () {
+    setComparisonKaraoke(null);
+  }, [generatedContent?.id, generatedContent?.data, isCompareMode, comparisonSourceId, comparisonLanguage]);
   function updateComparisonPreference(field, value) {
     if (typeof stopPlayback === 'function') stopPlayback();
     prepareReadingNavigation(null, false);
@@ -3836,8 +3896,8 @@ function SimplifiedView(props) {
     }) : comparisonSupports?.annotations || [] : [];
     // Tokenize whitespace too, so comparison preserves paragraphs and line breaks.
     // Bound the quadratic work; long texts use complete, unchanged source panels.
-    var oldTokens = sourceText.match(/\s+|\S+/g) || [],
-      newTokens = targetText.match(/\s+|\S+/g) || [];
+    var oldTokens = simplifiedComparisonPlainText(sourceText).match(/\s+|\S+/g) || [],
+      newTokens = simplifiedComparisonPlainText(targetText).match(/\s+|\S+/g) || [];
     var tooLarge = oldTokens.length * newTokens.length > 1000000;
     var mismatch = simplifiedLanguageTag(originalLanguage) && simplifiedLanguageTag(targetLanguage) && simplifiedLanguageTag(originalLanguage).split('-')[0] !== simplifiedLanguageTag(targetLanguage).split('-')[0];
     var showDiff = showComparisonChanges && !tooLarge && !mismatch && sourceText && targetText;
@@ -3892,7 +3952,7 @@ function SimplifiedView(props) {
     }, part.value) : /*#__PURE__*/React.createElement("ins", {
       key: i,
       className: "bg-green-100 text-green-900"
-    }, part.value)) : renderExactPassage(raw, kind, kind === 'source' ? originalLanguage : targetLanguage, kind === 'source' ? comparisonGlosses : [], kind === 'source' ? comparisonSupportOwner : null, kind === 'source' ? linkedRange : null);
+    }, part.value)) : renderExactPassage(raw, kind, kind === 'source' ? originalLanguage : targetLanguage, kind === 'source' ? comparisonGlosses : [], kind === 'source' ? comparisonSupportOwner : null, kind === 'source' ? linkedRange : null, true);
     return /*#__PURE__*/React.createElement("div", {
       "data-reading-comparison": "true",
       className: "space-y-4"
@@ -4026,10 +4086,25 @@ function SimplifiedView(props) {
       className: "mb-3 flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
-      className: "min-h-11 rounded border border-indigo-300 px-3 text-indigo-900",
-      "aria-label": (isExactPassagePlaying(version.key) ? 'Stop ' : 'Listen to ') + (version.key === 'source' ? 'original' : 'adapted'),
-      onClick: () => speakExactPassage(version.text, version.key, version.language)
-    }, isExactPassagePlaying(version.key) ? 'Stop' : 'Listen'), version.key === 'source' && props.onReadOriginal && original.text && /*#__PURE__*/React.createElement("button", {
+      "data-comparison-karaoke": version.key,
+      disabled: !version.text || !KaraokeReaderOverlay,
+      className: "min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+      "aria-label": 'Read ' + (version.key === 'source' ? 'original' : 'adapted') + ' with karaoke',
+      onClick: () => {
+        if (typeof stopPlayback === 'function') stopPlayback();
+        var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
+        setComparisonKaraoke({
+          text: version.text,
+          language: version.language || readingLanguage,
+          entries,
+          sentences: entries.map(entry => entry.text),
+          languages: entries.map(entry => simplifiedLanguageTag(entry.language))
+        });
+      }
+    }, /*#__PURE__*/React.createElement(Volume2, {
+      size: 16,
+      "aria-hidden": "true"
+    }), "Read along"), version.key === 'source' && props.onReadOriginal && original.text && /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "min-h-11 rounded border border-indigo-300 px-3 text-indigo-900",
       onClick: () => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)
@@ -4064,83 +4139,97 @@ function SimplifiedView(props) {
     if (wasPlaying) return;
     if (typeof handleSpeak === 'function') handleSpeak(text, 'reading-' + generatedContent.id + '-' + pane, 0, true, language || readingLanguage);
   }
-  function renderExactPassage(raw, pane, language, annotations, annotationOwner, relatedRange) {
-    var cursor = 0;
-    return String(raw).split(/(\r\n|\r|\n)/).map(function (line, lineIndex) {
-      var lineStart = cursor;
-      cursor += line.length;
-      if (/^[\r\n]+$/.test(line) || !line) return /*#__PURE__*/React.createElement(React.Fragment, {
+  function renderExactPassage(raw, pane, language, annotations, annotationOwner, relatedRange, formatted) {
+    var blocks = simplifiedExactBlocks(raw, formatted);
+    var renderBlock = function (block) {
+      var line = block.raw,
+        lineIndex = block.lineIndex,
+        lineStart = block.start;
+      if (!line) return /*#__PURE__*/React.createElement(React.Fragment, {
         key: lineIndex
-      }, line);
+      }, block.separator);
       var hasLineGloss = (annotations || []).some(entry => entry.end > lineStart && entry.end <= lineStart + line.length);
       // Plain reading does not need a React node or word segmentation for every token.
-      var parts = ['define', 'phonics'].includes(interactionMode) || hasLineGloss ? simplifiedWordSegments(line, language) : [{
-          text: line,
-          word: false
-        }],
-        wordOffset = 0;
-      var content = parts.map(function (part, index) {
-        var start = lineStart + wordOffset;
-        wordOffset += part.text.length;
-        var glosses = (annotations || []).filter(entry => entry.end > start && entry.end <= lineStart + wordOffset);
-        var node = part.text;
-        if (part.word && ['define', 'phonics'].includes(interactionMode)) {
-          var activate = event => {
-            event.stopPropagation();
-            if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, {
-              audioPlayback: 'reader',
-              language
-            });else handleWordClick(part.text, event, {
-              text: raw,
-              language
-            });
-          };
-          node = /*#__PURE__*/React.createElement("span", {
-            role: "button",
-            tabIndex: index === parts.findIndex(p => p.word) ? 0 : -1,
-            "data-exact-word": "true",
-            "aria-label": (interactionMode === 'phonics' ? 'Word sounds: ' : 'Define: ') + part.text,
-            onClick: activate,
-            onKeyDown: event => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                activate(event);
-              } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                const nodes = Array.from(event.currentTarget.parentElement.querySelectorAll('[data-exact-word]'));
-                const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1);
-                const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta));
-                event.preventDefault();
-                nodes[next]?.focus();
-              }
+      var wordIndex = 0;
+      var renderLeaf = function (text, offset, interactive) {
+        var parts = ['define', 'phonics'].includes(interactionMode) && interactive !== false || hasLineGloss ? simplifiedWordSegments(text, language) : [{
+            text,
+            word: false
+          }],
+          wordOffset = 0;
+        return parts.map(function (part, index) {
+          var start = offset + wordOffset;
+          wordOffset += part.text.length;
+          var glosses = (annotations || []).filter(entry => entry.end > start && entry.end <= offset + wordOffset);
+          var node = part.text;
+          if (part.word && interactive !== false && ['define', 'phonics'].includes(interactionMode)) {
+            var activate = event => {
+              event.stopPropagation();
+              if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, {
+                audioPlayback: 'reader',
+                language
+              });else handleWordClick(part.text, event, {
+                text: raw,
+                language
+              });
+            };
+            node = /*#__PURE__*/React.createElement("span", {
+              role: "button",
+              tabIndex: wordIndex++ === 0 ? 0 : -1,
+              "data-exact-word": "true",
+              "aria-label": (interactionMode === 'phonics' ? 'Word sounds: ' : 'Define: ') + part.text,
+              onClick: activate,
+              onKeyDown: event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  activate(event);
+                } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                  const nodes = Array.from(event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]'));
+                  const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1);
+                  const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta));
+                  event.preventDefault();
+                  nodes[next]?.focus();
+                }
+              },
+              onFocus: event => {
+                event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1);
+              },
+              className: "cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
+            }, part.text);
+          }
+          return /*#__PURE__*/React.createElement(React.Fragment, {
+            key: index
+          }, node, glosses.map(entry => /*#__PURE__*/React.createElement("span", {
+            key: entry.id,
+            "data-reading-gloss": true,
+            className: "mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900",
+            "aria-label": 'Gloss for ' + entry.quote
+          }, " (", entry.definition || entry.explanation || entry.text, ")", isTeacherMode && annotationOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement("button", {
+            type: "button",
+            "aria-label": 'Edit explanation for ' + entry.quote,
+            disabled: isProcessing,
+            onClick: event => {
+              event.stopPropagation();
+              setGlossEditorRequest(previous => ({
+                ownerId: annotationOwner.id,
+                id: entry.id,
+                serial: (previous?.serial || 0) + 1
+              }));
             },
-            onFocus: event => {
-              event.currentTarget.parentElement.querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1);
-            },
-            className: "cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
-          }, part.text);
-        }
-        return /*#__PURE__*/React.createElement(React.Fragment, {
-          key: index
-        }, node, glosses.map(entry => /*#__PURE__*/React.createElement("span", {
-          key: entry.id,
-          "data-reading-gloss": true,
-          className: "mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900",
-          "aria-label": 'Gloss for ' + entry.quote
-        }, " (", entry.definition || entry.explanation || entry.text, ")", isTeacherMode && annotationOwner && props.onUpdateReadingSupports && /*#__PURE__*/React.createElement("button", {
-          type: "button",
-          "aria-label": 'Edit explanation for ' + entry.quote,
-          disabled: isProcessing,
-          onClick: event => {
-            event.stopPropagation();
-            setGlossEditorRequest(previous => ({
-              ownerId: annotationOwner.id,
-              id: entry.id,
-              serial: (previous?.serial || 0) + 1
-            }));
-          },
-          className: "ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
-        }, "Edit"))));
-      });
+            className: "ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600"
+          }, "Edit"))));
+        });
+      };
+      var content = formatted ? simplifiedInline(block.text, renderLeaf, block.textStart) : renderLeaf(line, lineStart);
+      var Tag = block.type === 'heading' ? 'h' + block.level : block.type === 'quote' ? 'blockquote' : 'span';
+      var markdownStyle = block.type === 'heading' ? {
+        fontWeight: 750,
+        fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em',
+        marginBlock: '0.6em 0.3em'
+      } : block.type === 'quote' ? {
+        borderInlineStart: '3px solid #a5b4fc',
+        paddingInlineStart: '1em'
+      } : undefined;
       var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
       const explain = event => {
         if (interactionMode !== 'explain') return;
@@ -4153,8 +4242,10 @@ function SimplifiedView(props) {
           y: rect.bottom
         });
       };
-      return /*#__PURE__*/React.createElement("span", {
-        key: lineIndex,
+      return /*#__PURE__*/React.createElement(React.Fragment, {
+        key: lineIndex
+      }, /*#__PURE__*/React.createElement(Tag, {
+        style: markdownStyle,
         "data-reading-offset-start": lineStart,
         "data-reading-offset-end": lineStart + line.length,
         "data-related-original": isRelated ? "true" : undefined,
@@ -4175,8 +4266,9 @@ function SimplifiedView(props) {
           if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex);
         },
         className: isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50' : ''
-      }, content);
-    });
+      }, content), block.separator);
+    };
+    return formatted ? simplifiedNestLists(blocks, renderBlock) : blocks.map(renderBlock);
   }
   var returnComparisonItem = protectedOriginal && comparisonReturn && generatedContent.data === comparisonReturn.expectedText && readingContract?.sameReadingSourceFamily?.(generatedContent, comparisonReturn.sourceItem) && (history || []).find(item => item.id === comparisonReturn.id && readingFingerprint(item.data) === comparisonReturn.fingerprint && readingScopeIdentity(item) === comparisonReturn.scope && getSimplifiedInstructionalText(item).form === 'adapted');
   function switchReadingVersion(item, compare) {
@@ -4566,7 +4658,17 @@ function SimplifiedView(props) {
     ref: readerSurfaceRef,
     "data-adapted-reader": isTeacherMode ? "teacher" : "student",
     className: "space-y-6"
-  }, activeReadAloudStatus && /*#__PURE__*/React.createElement("span", {
+  }, comparisonKaraoke && isCompareMode && KaraokeReaderOverlay && /*#__PURE__*/React.createElement(KaraokeReaderOverlay, {
+    isOpen: true,
+    isTeacher: isTeacherMode,
+    playbackOnly: true,
+    onClose: () => setComparisonKaraoke(null),
+    text: comparisonKaraoke.text,
+    sentenceList: comparisonKaraoke.sentences,
+    sentenceLanguages: comparisonKaraoke.languages,
+    language: simplifiedLanguageTag(comparisonKaraoke.language),
+    getAudioUrl: getComparisonKaraokeAudioUrl
+  }), activeReadAloudStatus && /*#__PURE__*/React.createElement("span", {
     className: "sr-only",
     role: "status",
     "aria-live": "polite",

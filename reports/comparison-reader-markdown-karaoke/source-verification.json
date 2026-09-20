@@ -1,0 +1,27 @@
+{
+  "createdAt": "2026-09-20T15:42:10.768Z",
+  "modules": [
+    {
+      "file": "view_simplified_module.js",
+      "mirror": "desktop/web-app/public/view_simplified_module.js",
+      "matching": true,
+      "sha256": "80c7880c9e51e97f2cc70b25393088dd1d8353bf65f6ca2e71c50a7521cd255a"
+    },
+    {
+      "file": "immersive_reader_module.js",
+      "mirror": "desktop/web-app/public/immersive_reader_module.js",
+      "matching": true,
+      "sha256": "9376839009eec8bb48387863fda4b3b2df9717a40b21089b4ad07f754e4042ab"
+    }
+  ],
+  "parsed": [
+    "view_simplified_source.jsx",
+    "immersive_reader_source.jsx"
+  ],
+  "tests": {
+    "passed": 193,
+    "failed": 0,
+    "total": 193,
+    "files": 7
+  }
+}

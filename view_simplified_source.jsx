@@ -891,17 +891,41 @@
   function simplifiedPlainInline(text) {
     return String(text || '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\*\*|__|~~|`/g, '').replace(/\*([^*]+)\*/g, '$1');
   }
-  function simplifiedInline(text, leaf) {
-    // Structure remains intact in word-help and selection modes. Links remain
-    // ordinary links; punctuation is never a definition or phonics target.
+  function simplifiedInline(text, leaf, sourceOffset) {
+    // Optional source offsets keep glosses anchored to the stored Markdown.
+    var cursor = sourceOffset || 0, withOffsets = Number.isInteger(sourceOffset);
     return String(text || '').split(/(\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|`[^`]+`|\[[^\]]+\]\([^\)]+\))/g).map(function (part, index) {
-      if (/^(\*\*|__)/.test(part)) return <strong key={index}>{simplifiedInline(part.slice(2, -2), leaf)}</strong>;
-      if (/^\*[^*]/.test(part)) return <em key={index}>{simplifiedInline(part.slice(1, -1), leaf)}</em>;
-      if (/^`/.test(part)) return <code key={index}>{part.slice(1, -1)}</code>;
+      var start = cursor; cursor += part.length;
+      if (/^(\*\*|__)/.test(part)) return <strong key={index}>{simplifiedInline(part.slice(2, -2), leaf, withOffsets ? start + 2 : undefined)}</strong>;
+      if (/^\*[^*]/.test(part)) return <em key={index}>{simplifiedInline(part.slice(1, -1), leaf, withOffsets ? start + 1 : undefined)}</em>;
+      if (/^`/.test(part)) return <code key={index}>{withOffsets ? leaf(part.slice(1, -1), start + 1, false) : part.slice(1, -1)}</code>;
       var link = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
-      if (link) return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600" onClick={e => e.stopPropagation()}>{link[1]}</a> : <React.Fragment key={index}>{link[1]}</React.Fragment>;
-      return <React.Fragment key={index}>{leaf(part)}</React.Fragment>;
+      if (link) {
+        var label = withOffsets ? leaf(link[1], start + 1, false) : link[1];
+        return /^(https?:\/\/|mailto:|#|\/)/i.test(link[2]) ? <a key={index} href={link[2]} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-2 rounded focus-visible:ring-2 focus-visible:ring-indigo-600" onClick={e => e.stopPropagation()}>{label}</a> : <React.Fragment key={index}>{label}</React.Fragment>;
+      }
+      return <React.Fragment key={index}>{leaf(part, withOffsets ? start : undefined)}</React.Fragment>;
     });
+  }
+  function simplifiedExactBlocks(raw, formatted) {
+    var chunks = String(raw || '').split(/(\r\n|\r|\n)/), cursor = 0;
+    var blocks = [];
+    for (var i = 0; i < chunks.length; i += 2) {
+      var line = chunks[i], separator = chunks[i + 1] || '';
+      var block = { type: 'line', raw: line, text: line, start: cursor, end: cursor + line.length, textStart: cursor, separator, lineIndex: i };
+      cursor += line.length + separator.length;
+      var heading = formatted && line.match(/^([ \t]{0,3})(#{1,6})[ \t]+(.+)$/);
+      var item = formatted && line.match(/^([ \t]*)([-+*]|\d+[.)])[ \t]+(.+)$/);
+      var quote = formatted && line.match(/^([ \t]*>[ \t]?)(.*)$/);
+      if (heading) Object.assign(block, { type: 'heading', level: heading[2].length, text: heading[3], textStart: block.end - heading[3].length });
+      else if (item) Object.assign(block, { type: 'li', indent: item[1].replace(/\t/g, '    ').length, ordered: /^\d/.test(item[2]), value: parseInt(item[2], 10) || 1, text: item[3], textStart: block.end - item[3].length });
+      else if (quote) Object.assign(block, { type: 'quote', text: quote[2], textStart: block.start + quote[1].length });
+      blocks.push(block);
+    }
+    return blocks;
+  }
+  function simplifiedComparisonPlainText(raw) {
+    return simplifiedExactBlocks(raw, true).map(block => simplifiedPlainInline(block.text) + block.separator).join('');
   }
   function simplifiedParagraphBlocks(text) {
     var lines = String(text || '').split('\n');
@@ -1453,6 +1477,7 @@
     var FocusReaderOverlay = props.FocusReaderOverlay;
     var PerspectiveCrawlOverlay = props.PerspectiveCrawlOverlay;
     var KaraokeReaderOverlay = props.KaraokeReaderOverlay;
+    var [comparisonKaraoke, setComparisonKaraoke] = React.useState(null);
     var ConfettiExplosion = props.ConfettiExplosion;
     var ComplexityGauge = props.ComplexityGauge;
     var SourceReferencesPanel = props.SourceReferencesPanel;
@@ -1829,10 +1854,10 @@
     // renders do not repeatedly invalidate karaoke's warm cache.
     var karaokeCallTTSRef = React.useRef(callTTS);
     karaokeCallTTSRef.current = callTTS;
-    var getKaraokeAudioUrl = React.useCallback(function (sentenceText, requestOptions) {
+    var getKaraokeAudioUrl = React.useCallback(function (sentenceText, requestOptions, languageOverride) {
       var voice = selectedVoice || (typeof window !== 'undefined' && window.__alloSelectedVoice) || 'Kore';
       var speed = typeof voiceSpeed === 'number' && voiceSpeed > 0 ? voiceSpeed : 1;
-      var language = leveledTextLanguage || 'English';
+      var language = languageOverride || leveledTextLanguage || 'English';
       var options = Object.assign({
         language: language,
         maxRetries: 1,
@@ -1878,6 +1903,11 @@
       if (typeof resolver !== 'function') return Promise.resolve(null);
       return Promise.resolve(resolver(sentenceText, voice, speed, options, language)).catch(function () { return null; });
     }, [selectedVoice, voiceSpeed, leveledTextLanguage]);
+    var getComparisonKaraokeAudioUrl = React.useCallback(function (sentence, options) {
+      var occurrence = options && options.occurrence || 0;
+      var entry = comparisonKaraoke?.entries.find(item => item.text === sentence && item.occurrence === occurrence);
+      return getKaraokeAudioUrl(sentence, options, entry?.language || comparisonKaraoke?.language);
+    }, [getKaraokeAudioUrl, comparisonKaraoke]);
     var getReadAloudAudioProvenance = function (sentence, identityOptions) {
       var inspection = null;
       try {
@@ -1958,7 +1988,7 @@
       } catch (_) {}
       return { saved: saved, total: entries.length, bytes: bytes, maxBytes: maxBytes };
     };
-    var getReadAloudSentenceEntriesForText = function (rawText) {
+    var getReadAloudSentenceEntriesForText = function (rawText, sourceLanguage) {
       var text = typeof rawText === 'string' ? rawText : String(rawText || '');
       var isTableText = function (p) { return p.trim().startsWith('|') || p.indexOf('\n|') !== -1; };
       var splitForReadAloud = function (part) {
@@ -2006,7 +2036,7 @@
           };
         }).filter(Boolean);
       };
-      return makeEntries(sourceList, leveledTextLanguage || 'English', 'source')
+      return makeEntries(sourceList, sourceLanguage || leveledTextLanguage || 'English', 'source')
         .concat(makeEntries(targetList, 'English', 'target'));
     };
     var getReadAloudSentencesForText = function (rawText) {
@@ -2618,6 +2648,7 @@
     var requestedComparisonSource = pairPreferences.source || 'linked';
     var selectedComparisonArtifact = isTeacherMode && (history || []).find(item => String(item.id) === requestedComparisonSource && item.id !== generatedContent?.id && ['analysis', 'simplified'].includes(item.type) && getArtifactReadingText(item));
     var comparisonSourceId = selectedComparisonArtifact ? requestedComparisonSource : 'linked';
+    React.useEffect(function () { setComparisonKaraoke(null); }, [generatedContent?.id, generatedContent?.data, isCompareMode, comparisonSourceId, comparisonLanguage]);
     function updateComparisonPreference(field, value) {
       if (typeof stopPlayback === 'function') stopPlayback();
       prepareReadingNavigation(null, false);
@@ -2753,7 +2784,7 @@
       var comparisonGlosses = showReadingGlosses ? (readingContract?.selectReadingSupports ? readingContract.selectReadingSupports(comparisonSupportOwner, comparisonSupports, { density: glossDensity }) : (comparisonSupports?.annotations || [])) : [];
       // Tokenize whitespace too, so comparison preserves paragraphs and line breaks.
       // Bound the quadratic work; long texts use complete, unchanged source panels.
-      var oldTokens = sourceText.match(/\s+|\S+/g) || [], newTokens = targetText.match(/\s+|\S+/g) || [];
+      var oldTokens = simplifiedComparisonPlainText(sourceText).match(/\s+|\S+/g) || [], newTokens = simplifiedComparisonPlainText(targetText).match(/\s+|\S+/g) || [];
       var tooLarge = oldTokens.length * newTokens.length > 1000000;
       var mismatch = simplifiedLanguageTag(originalLanguage) && simplifiedLanguageTag(targetLanguage) && simplifiedLanguageTag(originalLanguage).split('-')[0] !== simplifiedLanguageTag(targetLanguage).split('-')[0];
       var showDiff = showComparisonChanges && !tooLarge && !mismatch && sourceText && targetText;
@@ -2783,7 +2814,7 @@
         diff.reverse();
       }
       var count = text => simplifiedWordSegments(simplifiedPlainInline(text), targetLanguage).filter(part => part.word).length;
-      var renderVersion = (kind, raw) => showDiff ? diff.filter(part => part.type !== (kind === 'source' ? 'add' : 'del')).map((part, i) => part.type === 'same' ? <React.Fragment key={i}>{part.value}</React.Fragment> : part.type === 'del' ? <del key={i} className="bg-red-100 text-red-900">{part.value}</del> : <ins key={i} className="bg-green-100 text-green-900">{part.value}</ins>) : renderExactPassage(raw, kind, kind === 'source' ? originalLanguage : targetLanguage, kind === 'source' ? comparisonGlosses : [], kind === 'source' ? comparisonSupportOwner : null, kind === 'source' ? linkedRange : null);
+      var renderVersion = (kind, raw) => showDiff ? diff.filter(part => part.type !== (kind === 'source' ? 'add' : 'del')).map((part, i) => part.type === 'same' ? <React.Fragment key={i}>{part.value}</React.Fragment> : part.type === 'del' ? <del key={i} className="bg-red-100 text-red-900">{part.value}</del> : <ins key={i} className="bg-green-100 text-green-900">{part.value}</ins>) : renderExactPassage(raw, kind, kind === 'source' ? originalLanguage : targetLanguage, kind === 'source' ? comparisonGlosses : [], kind === 'source' ? comparisonSupportOwner : null, kind === 'source' ? linkedRange : null, true);
       return <div data-reading-comparison="true" className="space-y-4">
         <div className="flex flex-wrap gap-3 rounded-xl bg-white p-4 border border-slate-200">
           <label className="inline-flex min-h-11 items-center gap-2"><input type="checkbox" aria-label="Show changes" checked={showComparisonChanges} disabled={!!tooLarge || !!mismatch || !sourceText} onChange={event => { const next = event.target.checked; setShowComparisonChanges(next); try { localStorage.setItem('alloflow_reading_show_changes', next ? 'on' : 'off'); } catch (_) {} }} />Show changes</label>
@@ -2800,7 +2831,11 @@
         {original.selection === 'original-not-captured' && <p role="status" className="rounded bg-amber-50 p-3 text-sm text-amber-900">{readerText('simplified.compare_fallback', 'Original not captured. Open or attach the matching source; another lesson will not be substituted.')}</p>}
         {(tooLarge || mismatch) && <p role="status" className="rounded bg-indigo-50 p-3 text-sm text-indigo-900">{mismatch ? readerText('simplified.compare_different_languages', 'These versions use different languages. Read them side by side; word change highlighting is unavailable.') : readerText('simplified.compare_long_text', 'For this long reading, complete versions are shown without word change highlighting.')}</p>}
         <p className="text-sm text-slate-600">{readerText('simplified.compare_word_count', 'Word counts')}: {count(sourceText)} → {count(targetText)}. {readerText('simplified.compare_review_hint', 'Check key ideas, terminology, examples, and citations before sharing. Word changes alone do not establish accuracy.')}</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ key: 'source', title: t('simplified.diff_original'), text: sourceText, language: originalLanguage }, { key: 'adapted', title: t('simplified.diff_adapted'), text: targetText, language: targetLanguage }].map(version => <section key={version.key} className="min-w-0 rounded-xl border border-slate-300 bg-white p-4"><h3 className="mb-3 font-bold">{version.title}{version.language ? ' · ' + version.language : ''}</h3><div className="mb-3 flex flex-wrap gap-2"><button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" aria-label={(isExactPassagePlaying(version.key) ? 'Stop ' : 'Listen to ') + (version.key === 'source' ? 'original' : 'adapted')} onClick={() => speakExactPassage(version.text, version.key, version.language)}>{isExactPassagePlaying(version.key) ? 'Stop' : 'Listen'}</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>Open original reader</button>}</div><div data-compare-version={version.key} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor key={comparisonSupportOwner.id} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[{ key: 'source', title: t('simplified.diff_original'), text: sourceText, language: originalLanguage }, { key: 'adapted', title: t('simplified.diff_adapted'), text: targetText, language: targetLanguage }].map(version => <section key={version.key} className="min-w-0 rounded-xl border border-slate-300 bg-white p-4"><h3 className="mb-3 font-bold">{version.title}{version.language ? ' · ' + version.language : ''}</h3><div className="mb-3 flex flex-wrap gap-2"><button type="button" data-comparison-karaoke={version.key} disabled={!version.text || !KaraokeReaderOverlay} className="min-h-11 inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={'Read ' + (version.key === 'source' ? 'original' : 'adapted') + ' with karaoke'} onClick={() => {
+            if (typeof stopPlayback === 'function') stopPlayback();
+            var entries = getReadAloudSentenceEntriesForText(version.text, version.language || readingLanguage);
+            setComparisonKaraoke({ text: version.text, language: version.language || readingLanguage, entries, sentences: entries.map(entry => entry.text), languages: entries.map(entry => simplifiedLanguageTag(entry.language)) });
+          }}><Volume2 size={16} aria-hidden="true" />Read along</button>{version.key === 'source' && props.onReadOriginal && original.text && <button type="button" className="min-h-11 rounded border border-indigo-300 px-3 text-indigo-900" onClick={() => openOriginalReading(selected ? original.artifact : capturedSource ? generatedContent : original.artifact, original.text, true)}>Open original reader</button>}</div><div data-compare-version={version.key} lang={simplifiedLanguageTag(version.language)} dir={getContentDirection(version.language)} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: '70vh', overflowY: 'auto' }} tabIndex={0} role="region" aria-label={version.title}>{renderVersion(version.key, version.text)}</div>{version.key === 'source' && isTeacherMode && comparisonSupportOwner && props.onUpdateReadingSupports && <ReadingGlossEditor key={comparisonSupportOwner.id} item={comparisonSupportOwner} supports={comparisonSupports} request={glossEditorRequest} onUpdate={props.onUpdateReadingSupports} disabled={isProcessing} />}</section>)}</div>
       </div>;
     }
 
@@ -2811,28 +2846,35 @@
       if (wasPlaying) return;
       if (typeof handleSpeak === 'function') handleSpeak(text, 'reading-' + generatedContent.id + '-' + pane, 0, true, language || readingLanguage);
     }
-    function renderExactPassage(raw, pane, language, annotations, annotationOwner, relatedRange) {
-      var cursor = 0;
-      return String(raw).split(/(\r\n|\r|\n)/).map(function (line, lineIndex) {
-        var lineStart = cursor; cursor += line.length;
-        if (/^[\r\n]+$/.test(line) || !line) return <React.Fragment key={lineIndex}>{line}</React.Fragment>;
+    function renderExactPassage(raw, pane, language, annotations, annotationOwner, relatedRange, formatted) {
+      var blocks = simplifiedExactBlocks(raw, formatted);
+      var renderBlock = function (block) {
+        var line = block.raw, lineIndex = block.lineIndex, lineStart = block.start;
+        if (!line) return <React.Fragment key={lineIndex}>{block.separator}</React.Fragment>;
         var hasLineGloss = (annotations || []).some(entry => entry.end > lineStart && entry.end <= lineStart + line.length);
         // Plain reading does not need a React node or word segmentation for every token.
-        var parts = ['define', 'phonics'].includes(interactionMode) || hasLineGloss ? simplifiedWordSegments(line, language) : [{ text: line, word: false }], wordOffset = 0;
-        var content = parts.map(function (part, index) {
-          var start = lineStart + wordOffset; wordOffset += part.text.length;
-          var glosses = (annotations || []).filter(entry => entry.end > start && entry.end <= lineStart + wordOffset);
-          var node = part.text;
-          if (part.word && ['define', 'phonics'].includes(interactionMode)) {
-            var activate = event => { event.stopPropagation(); if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, { audioPlayback: 'reader', language }); else handleWordClick(part.text, event, { text: raw, language }); };
-            node = <span role="button" tabIndex={index === parts.findIndex(p => p.word) ? 0 : -1} data-exact-word="true" aria-label={(interactionMode === 'phonics' ? 'Word sounds: ' : 'Define: ') + part.text} onClick={activate} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { const nodes = Array.from(event.currentTarget.parentElement.querySelectorAll('[data-exact-word]')); const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1); const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta)); event.preventDefault(); nodes[next]?.focus(); } }} onFocus={event => { event.currentTarget.parentElement.querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1); }} className="cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{part.text}</span>;
-          }
-          return <React.Fragment key={index}>{node}{glosses.map(entry => <span key={entry.id} data-reading-gloss className="mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900" aria-label={'Gloss for ' + entry.quote}> ({entry.definition || entry.explanation || entry.text}){isTeacherMode && annotationOwner && props.onUpdateReadingSupports && <button type="button" aria-label={'Edit explanation for ' + entry.quote} disabled={isProcessing} onClick={event => { event.stopPropagation(); setGlossEditorRequest(previous => ({ ownerId: annotationOwner.id, id: entry.id, serial: (previous?.serial || 0) + 1 })); }} className="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">Edit</button>}</span>)}</React.Fragment>;
-        });
+        var wordIndex = 0;
+        var renderLeaf = function (text, offset, interactive) {
+          var parts = ['define', 'phonics'].includes(interactionMode) && interactive !== false || hasLineGloss ? simplifiedWordSegments(text, language) : [{ text, word: false }], wordOffset = 0;
+          return parts.map(function (part, index) {
+            var start = offset + wordOffset; wordOffset += part.text.length;
+            var glosses = (annotations || []).filter(entry => entry.end > start && entry.end <= offset + wordOffset);
+            var node = part.text;
+            if (part.word && interactive !== false && ['define', 'phonics'].includes(interactionMode)) {
+              var activate = event => { event.stopPropagation(); if (interactionMode === 'phonics') handlePhonicsClick(part.text, event, { audioPlayback: 'reader', language }); else handleWordClick(part.text, event, { text: raw, language }); };
+              node = <span role="button" tabIndex={wordIndex++ === 0 ? 0 : -1} data-exact-word="true" aria-label={(interactionMode === 'phonics' ? 'Word sounds: ' : 'Define: ') + part.text} onClick={activate} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(event); } else if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) { const nodes = Array.from(event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]')); const delta = (event.key === 'ArrowRight' ? 1 : -1) * (getContentDirection(language) === 'rtl' ? -1 : 1); const next = event.key === 'Home' ? 0 : event.key === 'End' ? nodes.length - 1 : Math.max(0, Math.min(nodes.length - 1, nodes.indexOf(event.currentTarget) + delta)); event.preventDefault(); nodes[next]?.focus(); } }} onFocus={event => { event.currentTarget.closest('[data-reading-paragraph]').querySelectorAll('[data-exact-word]').forEach(n => n.tabIndex = n === event.currentTarget ? 0 : -1); }} className="cursor-help rounded hover:bg-yellow-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{part.text}</span>;
+            }
+            return <React.Fragment key={index}>{node}{glosses.map(entry => <span key={entry.id} data-reading-gloss className="mx-1 rounded bg-indigo-50 px-1 text-base text-indigo-900" aria-label={'Gloss for ' + entry.quote}> ({entry.definition || entry.explanation || entry.text}){isTeacherMode && annotationOwner && props.onUpdateReadingSupports && <button type="button" aria-label={'Edit explanation for ' + entry.quote} disabled={isProcessing} onClick={event => { event.stopPropagation(); setGlossEditorRequest(previous => ({ ownerId: annotationOwner.id, id: entry.id, serial: (previous?.serial || 0) + 1 })); }} className="ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded border border-indigo-200 px-2 text-xs font-semibold text-indigo-900 focus-visible:ring-2 focus-visible:ring-indigo-600">Edit</button>}</span>)}</React.Fragment>;
+          });
+        };
+        var content = formatted ? simplifiedInline(block.text, renderLeaf, block.textStart) : renderLeaf(line, lineStart);
+        var Tag = block.type === 'heading' ? 'h' + block.level : block.type === 'quote' ? 'blockquote' : 'span';
+        var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block.level === 1 ? '1.5em' : block.level === 2 ? '1.3em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : undefined;
         var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
         const explain = event => { if (interactionMode !== 'explain') return; const selected = window.getSelection?.().toString().trim(); const rect = event.currentTarget.getBoundingClientRect(); setSelectionMenu({ text: selected || line, language, x: rect.left, y: rect.bottom }); };
-        return <span key={lineIndex} data-reading-offset-start={lineStart} data-reading-offset-end={lineStart + line.length} data-related-original={isRelated ? "true" : undefined} data-reading-language={language} data-reading-paragraph={pane + '-' + lineIndex} lang={simplifiedLanguageTag(language)} dir={getContentDirection(language)} role={interactionMode === 'explain' ? 'button' : undefined} tabIndex={interactionMode === 'explain' || isLineFocusMode ? 0 : undefined} onClick={explain} onKeyDown={event => { if (interactionMode === 'explain' && ['Enter', ' '].includes(event.key)) { event.preventDefault(); explain(event); } }} onFocus={() => { if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex); }} className={isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? (focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50') : ''}>{content}</span>;
-      });
+        return <React.Fragment key={lineIndex}><Tag style={markdownStyle} data-reading-offset-start={lineStart} data-reading-offset-end={lineStart + line.length} data-related-original={isRelated ? "true" : undefined} data-reading-language={language} data-reading-paragraph={pane + '-' + lineIndex} lang={simplifiedLanguageTag(language)} dir={getContentDirection(language)} role={interactionMode === 'explain' ? 'button' : undefined} tabIndex={interactionMode === 'explain' || isLineFocusMode ? 0 : undefined} onClick={explain} onKeyDown={event => { if (interactionMode === 'explain' && ['Enter', ' '].includes(event.key)) { event.preventDefault(); explain(event); } }} onFocus={() => { if (isLineFocusMode && typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(pane + '-' + lineIndex); }} className={isRelated ? 'bg-indigo-100 outline outline-2 outline-indigo-500 text-slate-950' : isLineFocusMode ? (focusedParagraphIndex === pane + '-' + lineIndex || focusedParagraphIndex == null && lineIndex === 0 ? 'bg-yellow-100 text-slate-950' : 'opacity-50') : ''}>{content}</Tag>{block.separator}</React.Fragment>;
+      };
+      return formatted ? simplifiedNestLists(blocks, renderBlock) : blocks.map(renderBlock);
     }
     var returnComparisonItem = protectedOriginal && comparisonReturn && generatedContent.data === comparisonReturn.expectedText && readingContract?.sameReadingSourceFamily?.(generatedContent, comparisonReturn.sourceItem) && (history || []).find(item => item.id === comparisonReturn.id && readingFingerprint(item.data) === comparisonReturn.fingerprint && readingScopeIdentity(item) === comparisonReturn.scope && getSimplifiedInstructionalText(item).form === 'adapted');
     function switchReadingVersion(item, compare) {
@@ -2946,7 +2988,7 @@
       </div>;
     }
 
-    return <div ref={readerSurfaceRef} data-adapted-reader={isTeacherMode ? "teacher" : "student"} className="space-y-6">{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
+    return <div ref={readerSurfaceRef} data-adapted-reader={isTeacherMode ? "teacher" : "student"} className="space-y-6">{comparisonKaraoke && isCompareMode && KaraokeReaderOverlay && <KaraokeReaderOverlay isOpen={true} isTeacher={isTeacherMode} playbackOnly={true} onClose={() => setComparisonKaraoke(null)} text={comparisonKaraoke.text} sentenceList={comparisonKaraoke.sentences} sentenceLanguages={comparisonKaraoke.languages} language={simplifiedLanguageTag(comparisonKaraoke.language)} getAudioUrl={getComparisonKaraokeAudioUrl} />}{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onPointerMove={e => { if (immersiveSettings.lineFocus && e.clientY > immersiveToolbarBottom) setImmersiveRulerY(e.clientY); }} onFocusCapture={e => { if (immersiveSettings.lineFocus && !e.target.closest("[data-immersive-toolbar]") && e.target.closest("[role=dialog]") === immersiveDialogRef.current) { const rect = e.target.getBoundingClientRect(); setImmersiveRulerY(Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, rect.top + Math.min(rect.height / 2, immersiveSettings.textSize * 2.5))); } }}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);

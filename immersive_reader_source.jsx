@@ -1084,7 +1084,7 @@ const karaokeTrace = (event, detail) => {
 // falls back to the device voice and the next Play starts FRESH. 20s: real
 // generation lands in 2–8s; nobody in a classroom waits 45.
 const KARAOKE_RESOLVE_WATCHDOG_MS = 20000;
-const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, getAudioUrl, isTeacher, captureOn: captureOnProp, onCaptureChange }) => {
+const KaraokeReaderOverlay = React.memo(({ text, sentenceList, language, sentenceLanguages, onClose, isOpen, getAudioUrl, isTeacher, playbackOnly = false, captureOn: captureOnProp, onCaptureChange }) => {
     const { t } = useContext(LanguageContext);
     const dialogRef = useOverlayDialogFocus(isOpen);
     const [sentences, setSentences] = useState([]);
@@ -1099,7 +1099,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
     const [regenBusy, setRegenBusy] = useState(false);
     const [prepState, setPrepState] = useState(null); // { busy, done, total, bytes } | null
     const [localCaptureOn, setLocalCaptureOn] = useState(() => { try { return localStorage.getItem('allo_save_karaoke_audio') !== '0'; } catch (_) { return true; } });
-    const captureOn = typeof captureOnProp === 'boolean' ? captureOnProp : localCaptureOn;
+    const captureOn = !playbackOnly && (typeof captureOnProp === 'boolean' ? captureOnProp : localCaptureOn);
     const captureOnRef = useRef(captureOn);
     captureOnRef.current = captureOn;
     const setCaptureOn = useCallback((value) => {
@@ -1839,6 +1839,8 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                 + (resolveTimedOut ? ' Audio generation timed out — press Play to retry.' : ''));
             try {
                 const u = new SpeechSynthesisUtterance(sentenceText);
+                const speechLanguage = sentenceLanguages?.[idx] || language;
+                if (speechLanguage) u.lang = speechLanguage;
                 // Native word-boundary events give the device voice TRUE word
                 // timing for free (charIndex = the word about to be spoken).
                 // Sentence-only boundary events do not count: several Windows
@@ -1913,7 +1915,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         finishAudioLoad(audioLoadOwner);
         setPlaybackFallbackNotice('Audio is unavailable on this device. Try again when a generated voice or browser voice is available.');
         setIsPlaying(false);
-    }, [sentences, reducedMotion, scheduleCaptureForStorage, beginAudioLoad, transitionAudioLoad, finishAudioLoad, clearAudioLoad, occurrenceForIndex]);
+    }, [sentences, language, sentenceLanguages, reducedMotion, scheduleCaptureForStorage, beginAudioLoad, transitionAudioLoad, finishAudioLoad, clearAudioLoad, occurrenceForIndex]);
 
     // ── Teacher vetting handlers ────────────────────────────────────────
     // Regenerate the CURRENT sentence's audio, then replay so the teacher hears
@@ -2263,7 +2265,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                     </div>
                 </div>
                 <div className="flex items-center gap-4 flex-wrap text-xs font-bold">
-                    {isTeacher && (
+                    {isTeacher && !playbackOnly && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.teacher_audio_tools', 'Read-aloud tools')}>
                             <label className="flex items-center gap-1.5 cursor-pointer" title={safeT(t, 'immersive.save_readaloud_tip', 'Save each sentence shortly after it starts playing into this resource, so students hear your vetted audio instantly on any device.')}>
                                 <input type="checkbox" checked={captureOn} onChange={e => setCaptureOn(e.target.checked)} aria-label={safeT(t, "immersive.save_readaloud", "Save read-aloud as I listen")} />
@@ -2326,7 +2328,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
                             </button>
                         </div>
                     )}
-                    {!isTeacher && (
+                    {!isTeacher && !playbackOnly && (
                         <div className="flex items-center gap-2" role="group" aria-label={safeT(t, 'immersive.student_reading_tools', 'My reading')}>
                             <button type="button"
                                 onClick={recordCurrent}

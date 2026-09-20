@@ -255,6 +255,24 @@ describe('KaraokeReaderOverlay on-demand lifecycle', () => {
     expect(capture).toHaveBeenCalledWith('Capture this sentence.', 'blob:Capture this sentence.', { occurrence: 0 });
   });
 
+  it('comparison playback cannot save or record audio into the active resource', async () => {
+    audioInstances = [];
+    global.Audio = window.Audio = FakeAudio;
+    const capture = vi.fn(async () => true);
+    window.__alloCaptureKaraokeAudio = capture;
+    renderKaraoke(karaokeProps({
+      text: 'Original source sentence.', isTeacher: true, playbackOnly: true,
+      captureOn: true, getAudioUrl: async () => 'blob:original-sentence',
+    }));
+    await act(async () => {
+      host.querySelector('button[aria-label="Play"]').click();
+      await Promise.resolve(); await Promise.resolve();
+    });
+    expect(audioInstances.some(audio => audio.play.mock.calls.length > 0)).toBe(true);
+    expect(capture).not.toHaveBeenCalled();
+    expect(host.textContent).not.toMatch(/Record my|Regenerate this sentence|Prepare read-aloud/);
+  });
+
   it('warms one look-ahead sentence but persists only audio that actually plays', async () => {
     vi.useFakeTimers();
     audioInstances = [];

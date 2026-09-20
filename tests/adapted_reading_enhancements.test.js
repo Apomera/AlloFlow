@@ -381,16 +381,17 @@ describe('Paired reader playback and supported original continuity', () => {
     expect(host.querySelector('[data-reading-gloss]')).not.toBeNull();
     expect(original.data).toBe(original.sourceSnapshot.text);
   });
-  it('toggles the active original pane from Listen to Stop without restarting audio', () => {
-    const { original, adapted } = pair();
-    const { props } = mount({ isCompareMode: true, generatedContent: adapted, history: [original] });
-    act(() => host.querySelector('button[aria-label="Listen to original"]').click());
-    expect(props.handleSpeak).toHaveBeenCalledWith(original.data, 'reading-reading-source', 0, true, 'English');
-    act(() => root.render(React.createElement(View, { ...props, isPlaying: true, playingContentId: 'reading-reading-source' })));
-    expect(host.querySelector('button[aria-label="Stop original"]').textContent).toBe('Stop');
-    act(() => host.querySelector('button[aria-label="Stop original"]').click());
-    expect(props.handleSpeak).toHaveBeenCalledTimes(1);
-    expect(props.stopPlayback).toHaveBeenCalledTimes(2);
+  it('opens the existing karaoke reader for the chosen original and stops competing playback', () => {
+    const { original, adapted } = pair(); let overlay;
+    const KaraokeReaderOverlay = props => { overlay = props; return React.createElement('button', { onClick: props.onClose }, 'Close comparison karaoke'); };
+    const { props } = mount({ isCompareMode: true, generatedContent: adapted, history: [original], KaraokeReaderOverlay });
+    act(() => host.querySelector('[data-comparison-karaoke="source"]').click());
+    expect(overlay.isOpen).toBe(true); expect(overlay.text).toBe(original.data);
+    expect(overlay.sentenceList.join(' ')).toContain('Upon the heath.');
+    expect(props.stopPlayback).toHaveBeenCalledTimes(1);
+    expect(props.handleSpeak).not.toHaveBeenCalled();
+    act(() => overlay.onClose());
+    expect([...host.querySelectorAll('button')].some(button => button.textContent === 'Close comparison karaoke')).toBe(false);
   });
   it('provides a Stop action in the original-only reader', () => {
     const { original } = pair();
@@ -475,5 +476,81 @@ describe('Remembered reading width', () => {
       expect(select.value).toBe('72');act(() => { select.value = '56';select.dispatchEvent(new Event('change', { bubbles: true })); });
       expect(select.value).toBe('56');expect(host.querySelector('[data-simplified-reading-body]').style.maxWidth).toContain('56ch');
     } finally { getItem.mockRestore();setItem.mockRestore(); }
+  });
+});
+
+
+describe('Comparison Markdown and karaoke regression', () => {
+  function fixture(originalText, adaptedText = '## Adapted reading\n\nAn **adapted** explanation.', language = 'English') {
+    const api = window.AlloModules.InstructionalContext;
+    const original = api.createSupportedReading(originalText, { id: 'original-markdown', language: 'English' });
+    const adapted = { ...content(adaptedText), sourceSnapshot: original.sourceSnapshot, config: { language }, instructionalText: { form: 'adapted', role: 'supplemental' } };
+    return { original, adapted };
+  }
+  it('formats long original/adapted readings without changing the stored source', () => {
+    const originalText = '**The Process of Dreaming**\r\n\r\n' + 'Dreams can be vivid.\r\n\r\n'.repeat(180) + 'ORIGINAL_END';
+    const { original, adapted } = fixture(originalText, '## Dreams\n\n' + 'Dreams happen during sleep.\n\n'.repeat(180) + 'ADAPTED_END');
+    const saved = JSON.stringify(original);
+    mount({ isCompareMode: true, generatedContent: adapted, history: [original] });
+    const source = host.querySelector('[data-compare-version="source"]'), target = host.querySelector('[data-compare-version="adapted"]');
+    expect(source.querySelector('strong').textContent).toBe('The Process of Dreaming');
+    expect(target.querySelector('h2').textContent).toBe('Dreams');
+    expect(source.textContent).not.toContain('**'); expect(target.textContent).not.toContain('##');
+    expect(source.textContent.endsWith('ORIGINAL_END')).toBe(true); expect(target.textContent.endsWith('ADAPTED_END')).toBe(true);
+    expect(JSON.stringify(original)).toBe(saved); expect(host.textContent).toContain('without word change highlighting');
+  });
+  it('renders nested lists, quotations and safe links as structure', () => {
+    const { original, adapted } = fixture('## Reading\n\n3. Observe\n  - Ice\n  - Steam\n7. Explain\n\n> Look **closely**.\n\n[Source](https://example.com/reading)');
+    mount({ isCompareMode: true, generatedContent: adapted, history: [original] });
+    const pane = host.querySelector('[data-compare-version="source"]');
+    expect(pane.querySelector('ol').start).toBe(3);
+    expect([...pane.querySelectorAll('ol > li')].map(node => node.value)).toEqual([3, 7]);
+    expect(pane.querySelectorAll('ol > li > ul > li')).toHaveLength(2);
+    expect(pane.querySelector('blockquote strong').textContent).toBe('closely');
+    expect(pane.querySelector('a').href).toBe('https://example.com/reading');
+    expect(pane.textContent).not.toMatch(/##|\*\*|\[Source\]/);
+  });
+  it('keeps gloss positions and keyboard word help correct around Markdown', () => {
+    const { original, adapted } = fixture('## Place\r\n\r\nUpon the **heath** we wait.');
+    const start = original.data.indexOf('heath');
+    original.readingSupports = window.AlloModules.InstructionalContext.validateReadingSupports(original.sourceSnapshot, [{ id: 'heath', start, end: start + 5, quote: 'heath', text: 'Open land.' }]);
+    const { handleWordClick } = mount({ isCompareMode: true, generatedContent: adapted, history: [original], interactionMode: 'define' });
+    const pane = host.querySelector('[data-compare-version="source"]');
+    const word = pane.querySelector('strong [data-exact-word]');
+    expect(word.textContent).toBe('heath'); expect(pane.querySelector('[data-reading-gloss]').textContent).toContain('Open land.');
+    const line = word.closest('[data-reading-offset-start]');
+    expect(original.data.slice(Number(line.dataset.readingOffsetStart), Number(line.dataset.readingOffsetEnd))).toBe('Upon the **heath** we wait.');
+    act(() => word.click()); expect(handleWordClick).toHaveBeenCalledWith('heath', expect.anything(), { text: original.data, language: 'English' });
+    act(() => word.focus()); key(word, 'ArrowRight'); expect(document.activeElement.textContent).toBe('we');
+  });
+  it('compares readable words without showing Markdown delimiters in redlines', () => {
+    const { original, adapted } = fixture('## Dreams\n\nDreams are **vivid**.', '## Dreams\n\nDreams are **bright**.');
+    mount({ isCompareMode: true, generatedContent: adapted, history: [original] });
+    act(() => host.querySelector('input[aria-label="Show changes"]').click());
+    expect(host.querySelector('[data-compare-version="source"]').textContent).toBe('Dreams\n\nDreams are vivid.');
+    expect(host.querySelector('[data-compare-version="adapted"]').textContent).toBe('Dreams\n\nDreams are bright.');
+    expect(host.querySelector('del').textContent).toBe('vivid.'); expect(original.data).toContain('**vivid**');
+  });
+  it('uses each pane language and clean sentence text for karaoke audio', async () => {
+    const { original, adapted } = fixture('## Dreams\n\nDreams are **vivid**.', '## Sueños\n\nLos sueños son **vívidos**.', 'Spanish');
+    let overlay; const resolveAudio = vi.fn(async () => 'blob:comparison-audio');
+    window.__alloResolveReadAloudAudio = resolveAudio;
+    try {
+      const { props } = mount({ isCompareMode: true, generatedContent: adapted, history: [original], leveledTextLanguage: 'Spanish', KaraokeReaderOverlay: value => { overlay = value; return React.createElement('div', { 'data-karaoke-fixture': true }); } });
+      act(() => host.querySelector('[data-comparison-karaoke="source"]').click());
+      expect(overlay.sentenceList.join(' ')).not.toMatch(/##|\*\*/);
+      expect(overlay).toMatchObject({ language: 'en', playbackOnly: true });
+      expect(overlay.sentenceLanguages.every(language => language === 'en')).toBe(true);
+      await overlay.getAudioUrl(overlay.sentenceList[0], { occurrence: 0 });
+      expect(resolveAudio.mock.calls.at(-1)[1]).toMatchObject({ language: 'English', profile: { language: 'English', voice: 'Kore' } });
+      act(() => overlay.onClose()); act(() => host.querySelector('[data-comparison-karaoke="adapted"]').click());
+      await overlay.getAudioUrl(overlay.sentenceList[0], { occurrence: 0 });
+      expect(resolveAudio.mock.calls.at(-1)[1]).toMatchObject({ language: 'Spanish', profile: { language: 'Spanish' } });
+      expect(overlay.text).toContain('Los sueños');
+      expect(overlay.language).toBe('es');
+      expect(overlay.sentenceLanguages.every(language => language === 'es')).toBe(true);
+      act(() => root.render(React.createElement(View, { ...props, generatedContent: { ...adapted, data: 'A different reading.' } })));
+      expect(host.querySelector('[data-karaoke-fixture]')).toBeNull();
+    } finally { delete window.__alloResolveReadAloudAudio; }
   });
 });
