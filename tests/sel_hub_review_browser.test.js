@@ -644,6 +644,17 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="strengths"]').click();expect(await activity.getByLabel('Choose a strengths context',{exact:true}).inputValue()).toBe('leadership');await activity.getByText('Consider my own response (optional)',{exact:true}).click();expect(await activity.getByLabel('What support, access or boundaries matter here? (optional)',{exact:true}).inputValue()).toBe('Offer written input and time to think.');expect(await page.evaluate(()=>window.__alloflowSelToolData.strengths.selectedStrengths)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+
+  it('keeps Spot Strengths evidence choices and notes when reopening through the real hub',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="strengths"]').click();await page.getByRole('tab',{name:/Spot Strengths/}).click();
+    const activity=()=>page.getByRole('region',{name:'Spot Strengths evidence practice',exact:true});
+    await activity().getByLabel('Choose an observation to explore',{exact:true}).selectOption('listen');
+    const claim=()=>activity().getByRole('group',{name:'The person asked for clarification.',exact:true});await claim().getByRole('combobox').selectOption('shown');await claim().getByRole('button').click();
+    await activity().getByText('Try an observation of my own (optional)',{exact:true}).click();await activity().getByLabel('What else would I need to ask or observe? (optional)',{exact:true}).fill('Ask what helps the person listen.');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="strengths"]').click();
+    expect(await activity().getByLabel('Choose an observation to explore',{exact:true}).inputValue()).toBe('listen');expect(await claim().getByRole('status').innerText()).toContain('This matches the authored interpretation.');await activity().getByText('Review my observation notes',{exact:true}).click();expect(await activity().getByLabel('Observation notes to review or copy',{exact:true}).inputValue()).toContain('Ask what helps the person listen.');expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

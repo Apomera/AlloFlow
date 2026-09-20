@@ -354,42 +354,141 @@ window.SelHub = window.SelHub || {
 ];
 
   // ═══════════════════════════════════════════════════════════════
-  // ── Strength Match Quiz Data ──
+  // ── Strengths Observation Practice Data ──
   // ═══════════════════════════════════════════════════════════════
-  var MATCH_QUIZ = {
-    elementary: [
-      { situation: 'You see a younger kid drop their books. You stop to help pick them up.', answer: 'kind', options: ['kind', 'brave', 'curious'] },
-      { situation: 'You keep trying to ride your bike even after falling down three times.', answer: 'persevere', options: ['funny', 'persevere', 'fair'] },
-      { situation: 'You tell the truth about breaking the vase even though you might get in trouble.', answer: 'honest', options: ['honest', 'grateful', 'curious'] },
-      { situation: 'You want to know how caterpillars turn into butterflies, so you look it up.', answer: 'curious', options: ['brave', 'kind', 'curious'] },
-      { situation: 'You make sure everyone gets a turn on the swing at recess.', answer: 'fair', options: ['fair', 'funny', 'honest'] },
-      { situation: 'You stand up for a kid who is being teased, even though you\'re nervous.', answer: 'brave', options: ['grateful', 'brave', 'persevere'] },
-      { situation: 'You write a thank-you card for your teacher at the end of the year.', answer: 'grateful', options: ['kind', 'honest', 'grateful'] },
-      { situation: 'You make funny faces to cheer up your friend who is sad.', answer: 'funny', options: ['funny', 'fair', 'brave'] }
+  // Historical quiz threshold retained for existing award records.
+  var LEGACY_QUIZ_LENGTH = 8;
+  var OBSERVATION_CASES = [
+  {
+    "id": "help",
+    "title": "An offer of help",
+    "setup": {
+      "elementary": "A classmate drops some blocks. Another child asks, \"Would you like help?\" and waits for an answer.",
+      "middle": "A student sees a classmate struggling with materials, asks whether help is wanted, and waits before touching anything.",
+      "high": "During a shared task, a student notices a possible difficulty and asks what kind of assistance, if any, would be useful. They wait for the response."
+    },
+    "claims": [
+      {
+        "id": "asked",
+        "text": "The person asked whether help was wanted.",
+        "kind": "shown",
+        "why": "The example explicitly describes a question and waiting. It does not yet say whether help was wanted or accepted."
+      },
+      {
+        "id": "care",
+        "text": "Care and respect could describe this action.",
+        "kind": "possible",
+        "why": "Checking before acting can express care and respect for choice. These are possible descriptions of this action, not proof of a fixed personality."
+      },
+      {
+        "id": "motive",
+        "text": "The person wanted praise for helping.",
+        "kind": "unknown",
+        "why": "The example does not tell us their motive. A considerate action does not establish why it happened, and guessing a motive is not the same as observing it."
+      }
     ],
-    middle: [
-      { situation: 'You notice a classmate eating alone every day, so you invite them to your table.', answer: 'kind', options: ['kind', 'leader', 'creative'] },
-      { situation: 'You rewrite your essay three times to get it right before the deadline.', answer: 'persevere', options: ['humble', 'persevere', 'fair'] },
-      { situation: 'You admit to your coach that you missed practice because you overslept, not because you were sick.', answer: 'honest', options: ['honest', 'brave', 'leader'] },
-      { situation: 'You volunteer to lead the group project and organize tasks for everyone.', answer: 'leader', options: ['leader', 'creative', 'persevere'] },
-      { situation: 'You research multiple sides of a debate before forming your opinion.', answer: 'curious', options: ['humble', 'curious', 'fair'] },
-      { situation: 'You create an original design for the school mural instead of copying someone else\'s idea.', answer: 'creative', options: ['creative', 'brave', 'kind'] },
-      { situation: 'You accept criticism of your science project without getting defensive.', answer: 'humble', options: ['persevere', 'humble', 'honest'] },
-      { situation: 'You advocate for a classmate with a disability to be included in the field trip activities.', answer: 'fair', options: ['kind', 'brave', 'fair'] }
+    "question": "What help, if any, would be welcome? What does the person say next?",
+    "changed": "The offer is declined.",
+    "review": "Respecting the answer can also show care. A no does not prove the offer failed or that either person lacks kindness."
+  },
+  {
+    "id": "effort",
+    "title": "Changing a learning approach",
+    "setup": {
+      "elementary": "A learner tries a puzzle, takes a break, then asks to see a different way to start.",
+      "middle": "After practising without progress, a learner pauses and asks for a worked example in a more accessible format.",
+      "high": "A learner notices that repeated effort is not resolving a barrier. They pause and request another format or a smaller worked example."
+    },
+    "claims": [
+      {
+        "id": "ability",
+        "text": "The task is beyond the learner’s ability.",
+        "kind": "unknown",
+        "why": "Difficulty with one task or format does not establish an ability limit. Access, experience, support and the task itself may matter."
+      },
+      {
+        "id": "adapt",
+        "text": "Flexibility and self-advocacy could describe the action.",
+        "kind": "possible",
+        "why": "Changing approach and requesting support may express these skills. Other language could also fit; the learner’s own view matters."
+      },
+      {
+        "id": "pause",
+        "text": "The learner paused and asked for another approach.",
+        "kind": "shown",
+        "why": "Both actions are stated. A pause is part of this observation, not evidence that the learner lacks perseverance."
+      }
     ],
-    high: [
-      { situation: 'You challenge a popular opinion in class discussion with a well-researched alternative viewpoint.', answer: 'brave', options: ['brave', 'honest', 'creative'] },
-      { situation: 'You mentor a younger student struggling with the same challenges you overcame.', answer: 'kind', options: ['kind', 'leader', 'perspective'] },
-      { situation: 'You organize a community service project that addresses a local need you identified.', answer: 'leader', options: ['fair', 'leader', 'persevere'] },
-      { situation: 'After failing to get into your first-choice college, you reframe it as an opportunity.', answer: 'resilience', options: ['resilience', 'adaptability', 'vulnerability'] },
-      { situation: 'You recognize that your perfectionism is actually holding you back, and you choose to submit "good enough" work.', answer: 'metacognition', options: ['vulnerability', 'metacognition', 'adaptability'] },
-      { situation: 'You tell your friend group you need to skip the party to take care of your mental health.', answer: 'vulnerability', options: ['brave', 'vulnerability', 'advocacy'] }
-    ]
-  };
+    "question": "Which part is difficult, and what support or format might make it workable?",
+    "changed": "The next format still does not work.",
+    "review": "Revisit the barrier and available support rather than deciding that the learner lacks effort or a strength."
+  },
+  {
+    "id": "listen",
+    "title": "Listening in different ways",
+    "setup": {
+      "elementary": "While listening to directions, a child looks down and draws. They then repeat one instruction and ask about another.",
+      "middle": "During a discussion, a student looks away while taking notes. They summarize an idea and ask a clarifying question.",
+      "high": "A participant uses written notes and little eye contact. They summarize a point and ask for clarification before responding."
+    },
+    "claims": [
+      {
+        "id": "attention",
+        "text": "Careful listening could describe the action.",
+        "kind": "possible",
+        "why": "Summarizing and checking understanding may show listening. There can be several ways to attend; a single example does not establish a lasting trait."
+      },
+      {
+        "id": "question",
+        "text": "The person asked for clarification.",
+        "kind": "shown",
+        "why": "A clarifying question is explicitly described. That is evidence we can name without guessing an internal feeling."
+      },
+      {
+        "id": "disinterest",
+        "text": "Looking away means the person is uninterested.",
+        "kind": "unknown",
+        "why": "Eye contact does not establish interest or understanding. The example includes communication that checks meaning; preferences and access needs may differ."
+      }
+    ],
+    "question": "What helps this person listen and communicate? What did they understand or still need clarified?",
+    "changed": "The person says that looking away helps them concentrate.",
+    "review": "Include their explanation in your understanding. Do not demand a different appearance of attention before recognizing participation."
+  },
+  {
+    "id": "fairness",
+    "title": "Making participation possible",
+    "setup": {
+      "elementary": "A group offers drawing, speaking or building as ways to share an idea. A child chooses drawing.",
+      "middle": "A team offers spoken, written and visual ways to contribute. A member chooses writing, and the team includes that contribution.",
+      "high": "A group agrees on several participation formats, then includes a member’s written contribution in its decision."
+    },
+    "claims": [
+      {
+        "id": "access",
+        "text": "Fairness and collaboration could describe the action.",
+        "kind": "possible",
+        "why": "Offering and using different participation formats may support fair access. Fairness is not limited to everyone doing an identical task."
+      },
+      {
+        "id": "everyone",
+        "text": "The activity is now accessible to everyone.",
+        "kind": "unknown",
+        "why": "The example describes options and one contribution, not every person’s access. Ask about remaining barriers without requiring private explanations."
+      },
+      {
+        "id": "formats",
+        "text": "The group offered more than one way to contribute.",
+        "kind": "shown",
+        "why": "Different formats are named in the example. Their availability is observable; whether they meet everyone’s needs still requires checking."
+      }
+    ],
+    "question": "Whose input is still missing, and what further change might make participation possible?",
+    "changed": "Another member says none of the available formats works for them.",
+    "review": "Treat the request as useful information. Revisit the options with support from whoever is responsible for the activity."
+  }
+];
 
-  // ═══════════════════════════════════════════════════════════════
-  // ── Strengths Interview Questions (Grade-Adaptive) ──
-  // ═══════════════════════════════════════════════════════════════
   var INTERVIEW_QUESTIONS = {
     elementary: [
       { id: 'iq1', question: 'When do you lose track of time because you\'re having so much fun?', hint: 'Think about activities at school, home, or with friends.' },
@@ -865,8 +964,8 @@ window.SelHub = window.SelHub || {
     firstScenario: { icon: '\uD83C\uDFAD', name: 'Strength Applier', desc: 'Complete a scenario' },
     threeScenarios: { icon: '\uD83C\uDFC6', name: 'Scenario Pro', desc: 'Complete 3 scenarios with top rating' },
     allScenarios: { icon: '\uD83D\uDC51', name: 'Master Strategist', desc: 'Complete all scenarios' },
-    firstQuiz: { icon: '\uD83E\uDDE9', name: 'Strength Detective', desc: 'Score 3+ on the match quiz' },
-    perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Get a perfect quiz score' },
+    firstQuiz: { icon: '\uD83E\uDDE9', name: 'Strength Detective', desc: 'Earlier match quiz: 3 or more answers matched' },
+    perfectQuiz: { icon: '\uD83C\uDFAF', name: 'Perfect Match', desc: 'Earlier match quiz: all answers matched' },
     fiveReflections: { icon: '\uD83D\uDCDA', name: 'Philosopher', desc: 'Complete 5 reflections' },
     explorer: { icon: '\uD83D\uDE80', name: 'Full Explorer', desc: 'Visit all tabs' },
     interviewComplete: { icon: '\uD83C\uDF99\uFE0F', name: 'Interview Complete', desc: 'Finish the Strengths Interview' },
@@ -911,7 +1010,7 @@ window.SelHub = window.SelHub || {
     if (topScenarios >= 3) award('threeScenarios');
     if (scenariosDone.length >= 5) award('allScenarios');
     if (quizBest >= 3) award('firstQuiz');
-    var quizLen = (MATCH_QUIZ.elementary || []).length;
+    var quizLen = LEGACY_QUIZ_LENGTH;
     if (quizBest >= quizLen && quizLen > 0) award('perfectQuiz');
     if (d.tabsVisited && d.tabsVisited.length >= 10) award('explorer');
     if (d.interviewComplete) award('interviewComplete');
@@ -1004,19 +1103,14 @@ window.SelHub = window.SelHub || {
         var scenarioIdx = d.scenarioIdx || 0;
         var scenarioChoice = d.scenarioChoice || null;
         // Quiz state
-        var quizActive = d.quizActive || false;
-        var quizIdx = d.quizIdx || 0;
-        var quizScore = d.quizScore || 0;
         var quizBest = d.quizBest || 0;
-        var quizFeedback = d.quizFeedback || null;
-        var quizDone = d.quizDone || false;
         // Tab tracking for explorer badge
         var tabsVisited = d.tabsVisited || [];
         var strengthTabs = [
           { id: 'discover', label: '\u2B50 Discover' },
           { id: 'interview', label: '\uD83C\uDF99\uFE0F Interview' },
           { id: 'scenarios', label: '\uD83C\uDFAD Scenarios' },
-          { id: 'quiz', label: '\uD83E\uDDE9 Quiz' },
+          { id: 'quiz', label: '\uD83E\uDDE9 Spot Strengths' },
           { id: 'reflect', label: '\uD83D\uDCDD Reflect' },
           { id: 'stories', label: '\uD83D\uDCD6 Stories' },
           { id: 'compare', label: '\uD83D\uDD0D Compare' },
@@ -1214,7 +1308,7 @@ window.SelHub = window.SelHub || {
               discover:  { accent: _strFg('#f59e0b'), soft: 'rgba(245,158,11,0.14)', icon: '\u2B50',          title: 'Discover \u2014 your top 5 character strengths',     hint: 'VIA Institute (Peterson + Seligman 2004): 24 character strengths grouped in 6 virtues. Your top 5 \u201Csignature strengths\u201D show up unbidden, energize you, and feel like you. Use them = predicts well-being.' },
               interview: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF99', title: 'Interview \u2014 someone who knows you well',       hint: 'Strengths-spotting from outside often catches what you can\u2019t see in yourself. \u201CWhen am I at my best?\u201D from a parent / friend / teacher \u2014 their answers are data you can use.' },
               scenarios: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios — strengths in context', hint: 'Compare possible actions, the support they need and their limits. A choice in one situation does not define your character. Rest, quiet support and asking for help can be workable choices.' },
-              quiz:      { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83E\uDDE9', title: 'Quiz \u2014 self-assessment',                         hint: 'Forced-choice strengths quiz. Roughly correlates with full VIA-72 results in a fraction of the time. Use as a starting hypothesis, then triangulate against scenarios + interview + your own gut feel.' },
+              quiz:      { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83E\uDDE9', title: 'Spot Strengths — evidence and interpretation', hint: 'Name what an example actually shows, consider possible strengths language and notice what remains unknown. One action does not establish a personality type, motive or fixed ability.' },
               reflect:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCDD', title: 'Reflect \u2014 written self-knowledge',               hint: 'Pennebaker 1986 expressive writing protocol; 15 min, focused on a specific moment. Strengths-focused reflection (vs. problem-focused) builds approach motivation rather than avoidance \u2014 Fredrickson broaden-and-build.' },
               stories:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCD6', title: 'Stories \u2014 strengths-spotting in narrative',     hint: 'Practice on characters first; safer than self. McAdams 1985 narrative-identity research: the way you tell your life story IS your identity. Strengths language gives the story handles.' },
               compare:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDD0D', title: 'Compare \u2014 you vs. your past self',               hint: 'NOT you vs. peers (which crushes most people). Past-self comparison shows growth without inviting envy. \u201CWhat could I do this year I couldn\u2019t a year ago?\u201D \u2014 the most generative question.' },
@@ -1464,71 +1558,52 @@ window.SelHub = window.SelHub || {
 
             // ── QUIZ TAB ──
             tab === 'quiz' ? (function() {
-              var quizData = MATCH_QUIZ[band] || MATCH_QUIZ.elementary;
-              if (!quizActive && !quizDone) {
-                return h('div', { style: { textAlign: 'center', padding: 30 } },
-                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83E\uDDE9'),
-                  h('p', { style: { fontSize: 16, fontWeight: 'bold', color: _strFg('#fbbf24'), marginBottom: 8 } }, 'Strength Match Quiz'),
-                  h('p', { style: { fontSize: 12, color: _strFg('#94a3b8'), maxWidth: 350, margin: '0 auto 16px', lineHeight: 1.6 } },
-                    'Read each situation and identify which strength is being used. Test how well you can spot strengths in action!'
-                  ),
-                  h('p', { style: { fontSize: 11, color: _strFg('#94a3b8'), marginBottom: 16 } }, quizData.length + ' questions \u2022 Best score: ' + quizBest + '/' + quizData.length),
-                  h('button', { 'aria-label': 'Start Quiz', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '12px 30px', borderRadius: 10, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 14, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83C\uDFAE Start Quiz')
-                );
-              }
-              if (quizDone) {
-                var pct = Math.round((quizScore / quizData.length) * 100);
-                return h('div', { style: { textAlign: 'center', padding: 30 } },
-                  h('div', { style: { fontSize: 48, marginBottom: 12 } }, pct >= 80 ? '\uD83C\uDFC6' : pct >= 50 ? '\uD83C\uDF1F' : '\uD83D\uDCAA'),
-                  h('p', { style: { fontSize: 20, fontWeight: 'bold', color: _strFg('#fbbf24'), marginBottom: 4 } }, quizScore + ' / ' + quizData.length),
-                  h('p', { style: { fontSize: 13, color: _strFg('#94a3b8'), marginBottom: 16 } },
-                    pct >= 80 ? 'Outstanding! You\'re a natural strength spotter!' :
-                    pct >= 50 ? 'Great work! Keep exploring to sharpen your strength sense.' :
-                    'Good start! The more you practice, the better you\'ll get.'
-                  ),
-                  h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
-                    h('button', { 'aria-label': 'Play Again', onClick: function() { upd({ quizActive: true, quizIdx: 0, quizScore: 0, quizFeedback: null, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, '\uD83D\uDD04 Play Again'),
-                    h('button', { 'aria-label': 'Back', onClick: function() { upd({ quizActive: false, quizDone: false }); }, style: { padding: '10px 24px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', color: _strFg('#94a3b8'), border: '1px solid rgba(99,102,241,0.15)', fontSize: 12, cursor: 'pointer' } }, '\u2190 Back')
-                  )
-                );
-              }
-              // Active quiz question
-              var q = quizData[quizIdx];
-              if (!q) { upd({ quizDone: true }); return null; }
-              var shuffled = q.options.slice().sort(function() { return 0.5 - Math.random(); });
-              // Use stable order from state
-              if (!d._quizOptions || d._quizOptions.join() !== shuffled.join()) {
-                // Only shuffle once per question
-              }
-              return h('div', null,
-                h('div', { style: { fontSize: 10, color: _strFg('#94a3b8'), marginBottom: 8 } }, 'Question ' + (quizIdx + 1) + ' / ' + quizData.length + ' \u2022 Score: ' + quizScore),
-                h('div', { style: { padding: 16, borderRadius: 14, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', marginBottom: 16 } },
-                  h('p', { style: { fontSize: 14, color: _strFg('#e2e8f0'), lineHeight: 1.6, marginBottom: 4 } }, '\uD83D\uDCA1 ' + q.situation),
-                  h('p', { style: { fontSize: 11, color: _strFg('#94a3b8'), fontWeight: 'bold', marginTop: 8 } }, 'Which strength is being demonstrated?')
-                ),
-                quizFeedback ? h('div', { style: { padding: 14, borderRadius: 10, marginBottom: 12, background: quizFeedback.correct ? 'rgba(52,211,153,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (quizFeedback.correct ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)') } },
-                  h('p', { style: { fontSize: 13, fontWeight: 'bold', color: quizFeedback.correct ? _strFg('#34d399') : '#f87171' } }, quizFeedback.correct ? '\u2705 Correct!' : '\u274C Not quite \u2014 the answer is ' + q.answer),
-                  h('button', { 'aria-label': 'all 0.15s', onClick: function() {
-                    var nextIdx = quizIdx + 1;
-                    if (nextIdx >= quizData.length) {
-                      var best = Math.max(quizBest, quizScore);
-                      upd({ quizDone: true, quizFeedback: null, quizBest: best });
-                    } else {
-                      upd({ quizIdx: nextIdx, quizFeedback: null });
-                    }
-                  }, style: { marginTop: 8, padding: '8px 16px', borderRadius: 8, background: _strBg('#b45309'), color: _strFg('#0f172a'), border: 'none', fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, quizIdx + 1 >= quizData.length ? '\uD83C\uDFC1 See Results' : '\u27A1 Next')
-                ) :
-                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-                  q.options.map(function(opt) {
-                    return h('button', { 'aria-label': 'Go to reflect', key: opt, onClick: function() {
-                      var correct = opt === q.answer;
-                      if (correct) sfxComplete(); else sfxReflect();
-                      upd({ quizFeedback: { correct: correct, picked: opt }, quizScore: correct ? quizScore + 1 : quizScore });
-                    }, style: { textAlign: 'left', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(99,102,241,0.15)', color: _strFg('#cbd5e1'), fontSize: 13, fontWeight: 'bold', cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' } },
-                      '\uD83D\uDCA0 ' + opt
-                    );
-                  })
-                )
+              var obj = function(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; };
+              var selections = obj(d.observationSelections);
+              var chosen = selections[band];
+              var example = OBSERVATION_CASES.find(function(item) { return item.id === chosen; }) || OBSERVATION_CASES[0];
+              var own = chosen === 'own';
+              var contextId = own ? 'own' : example.id;
+              var key = band + ':' + contextId;
+              var drafts = obj(d.observationDrafts);
+              var draft = obj(drafts[key]);
+              var answers = obj(draft.answers);
+              var kinds = { shown: 'Stated in the example', possible: 'Possible interpretation', unknown: 'Not established here' };
+              var validKind = function(value) { return typeof value === 'string' && Object.prototype.hasOwnProperty.call(kinds, value); };
+              var save = function(values) { var next = Object.assign({}, drafts); next[key] = Object.assign({}, draft, values); upd({ observationDrafts: next }); };
+              var saveAnswer = function(id, values) { var next = Object.assign({}, answers); next[id] = Object.assign({}, obj(answers[id]), values); save({ answers: next }); };
+              var surface = _strHC ? '#000000' : _strL ? '#ffffff' : '#0f172a';
+              var ink = _strHC ? '#ffffff' : _strFg('#e2e8f0');
+              var edge = _strHC ? '#ffff00' : _strL ? '#64748b' : '#94a3b8';
+              var card = { padding: '16px', margin: '14px 0', border: '1px solid ' + edge, borderRadius: '12px', background: surface, color: ink, minWidth: 0 };
+              var control = { width: '100%', minHeight: '44px', padding: '10px', boxSizing: 'border-box', border: '1px solid ' + edge, borderRadius: '8px', background: surface, color: ink, font: 'inherit', fontSize: '16px' };
+              var button = Object.assign({}, control, { width: 'auto', cursor: 'pointer', marginTop: '8px' });
+              var summary = { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 };
+              var fields = [{ id: 'evidence', label: 'What did I observe, and what strength language might fit?' }, { id: 'question', label: 'What else would I need to ask or observe?' }];
+              var preview = ['Spot Strengths — observation notes, not a personality assessment.', 'Context: ' + (own ? 'My own example' : example.title)].concat(fields.map(function(field) { return field.label + '\n' + (typeof draft[field.id] === 'string' && draft[field.id].trim() ? draft[field.id] : '(No note yet)'); })).join('\n\n');
+              return h('section', { role: 'region', 'aria-label': 'Spot Strengths evidence practice', style: { maxWidth: '760px', margin: '0 auto', padding: '16px', background: surface, color: ink, fontSize: '16px', lineHeight: 1.6, overflowWrap: 'anywhere' } },
+                h('h3', { style: { fontSize: '22px', margin: '0 0 8px' } }, 'Notice actions and consider meaning'),
+                h('p', null, band === 'elementary' ? 'What does the story tell us? What might it mean? What do we not know yet? You can think about more than one strength without deciding what kind of person someone is.' : 'Distinguish an observed action from a possible interpretation and an unsupported conclusion. Several strengths may describe an action; one example does not establish a fixed trait.'),
+                h('details', { style: card }, h('summary', { style: summary }, 'How to compare the statements'),
+                  h('p', null, 'Stated in the example: words or actions the story explicitly describes.'), h('p', null, 'Possible interpretation: a qualified meaning that could fit, while leaving room for other explanations.'), h('p', null, 'Not established here: a claim about motives, ability or outcomes the story does not establish.'), h('p', null, 'Compare with the authored reasoning and revise freely. No points, ranking or personal assessment are produced. You can read and think without choosing.')),
+                h('label', { htmlFor: 'str-observation', style: { display: 'block', fontWeight: 700 } }, 'Choose an observation to explore'),
+                h('select', { id: 'str-observation', value: contextId, style: control, onChange: function(ev) { var next = Object.assign({}, selections); next[band] = ev.target.value; upd({ observationSelections: next }); } }, OBSERVATION_CASES.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); }), h('option', { value: 'own' }, 'My own example')),
+                h('div', { key: key, style: card }, h('h4', { style: { fontSize: '18px', margin: '0 0 8px' } }, own ? 'An observation of my own' : example.title), h('p', null, own ? 'Use an everyday or fictional action. Separate what was said or done from a possible interpretation. Include the person’s own perspective without asking for private details.' : example.setup[band]),
+                  !own && callTTS && h('button', { onClick: function() { speak(example.setup[band]); }, style: button }, 'Read observation aloud')),
+                !own && h('div', { key: key + '-claims' }, example.claims.map(function(claim) {
+                  var answer = obj(answers[claim.id]); var choice = validKind(answer.choice) ? answer.choice : ''; var reviewed = validKind(answer.reviewed) && answer.reviewed === choice;
+                  return h('div', { key: claim.id, role: 'group', 'aria-label': claim.text, style: card },
+                    h('p', { style: { fontWeight: 700, marginTop: 0 } }, claim.text),
+                    h('label', { htmlFor: 'str-claim-' + claim.id, style: { display: 'block' } }, 'How is this statement supported?'),
+                    h('select', { id: 'str-claim-' + claim.id, value: choice, style: control, onChange: function(ev) { saveAnswer(claim.id, { choice: ev.target.value, reviewed: '' }); } }, h('option', { value: '' }, 'Choose a category'), Object.keys(kinds).map(function(id) { return h('option', { key: id, value: id }, kinds[id]); })),
+                    h('button', { disabled: !choice, style: button, onClick: function() { if (choice) saveAnswer(claim.id, { reviewed: choice }); } }, 'Compare my reasoning'),
+                    reviewed && h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '12px' } }, h('p', { style: { fontWeight: 700 } }, choice === claim.kind ? 'This matches the authored interpretation.' : 'Consider a different distinction.'), h('p', null, 'Authored interpretation: ' + kinds[claim.kind] + '.'), h('p', null, claim.why)));
+                })),
+                !own && h('details', { key: key + '-change', style: card }, h('summary', { style: summary }, 'Ask and reconsider'), h('p', null, example.question), h('p', { style: { fontWeight: 700 } }, 'New information: ' + example.changed), h('p', null, example.review)),
+                h('details', { key: key + '-notes', style: card }, h('summary', { style: summary }, 'Try an observation of my own (optional)'), h('p', null, 'Notes stay with this example and grade. They are not monitored, do not request help and are not sent to the AI coach by this activity.'),
+                  fields.map(function(field) { var id = 'str-observation-' + field.id; return h('div', { key: id, style: { margin: '16px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, value: typeof draft[field.id] === 'string' ? draft[field.id] : '', style: Object.assign({}, control, { resize: 'vertical' }), onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; save(values); } })); })),
+                h('details', { key: key + '-preview', style: card }, h('summary', { style: summary }, 'Review my observation notes'), h('label', { htmlFor: 'str-observation-preview', style: { display: 'block', fontWeight: 700 } }, 'Observation notes to review or copy'), h('textarea', { id: 'str-observation-preview', readOnly: true, rows: 8, value: preview, style: Object.assign({}, control, { resize: 'vertical' }) })),
+                (d.quizActive || d.quizDone || d.quizFeedback || d.quizBest || d.quizScore) && h('details', { style: card }, h('summary', { style: summary }, 'Earlier quiz activity'), h('p', null, 'Earlier quiz progress, answers, scores and awards remain stored. They describe the earlier activity and are not a personality assessment or an equivalent to a formal strengths measure. This practice does not update those scores or your selected strengths.'))
               );
             })() : null,
 
@@ -2513,7 +2588,7 @@ window.SelHub = window.SelHub || {
                         { val: selectedStrengths.length, label: 'Strengths', color: _strFg('#fbbf24') },
                         { val: reflections.length + (d.deepReflections || []).length, label: 'Reflections', color: _strFg('#a78bfa') },
                         { val: scenariosDone.length, label: 'Scenarios', color: _strFg('#f97316') },
-                        { val: quizBest, label: 'Quiz Best', color: _strFg('#34d399') },
+                        { val: quizBest, label: 'Earlier Quiz Best', color: _strFg('#34d399') },
                         { val: d.actionsCompleted || 0, label: 'Actions', color: _strFg('#22c55e') },
                         { val: (d.stories || []).length, label: 'Stories', color: _strFg('#f59e0b') },
                         { val: d.challengesDone || 0, label: 'Challenges', color: _strFg('#f97316') },

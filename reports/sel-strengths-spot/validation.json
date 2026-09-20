@@ -1,0 +1,30 @@
+{
+  "date": "2026-09-19",
+  "scope": "Strengths Finder Spot Strengths observation practice",
+  "uniqueSelectedPassed": 51,
+  "checks": {
+    "newBrowser": 20,
+    "contextRegression": 19,
+    "controlContracts": 5,
+    "targetedTheme": 4,
+    "actualHub": 3
+  },
+  "filtered": {
+    "finalPhone": 17,
+    "theme": 292,
+    "hub": 106
+  },
+  "extraChecksExcludedFromUniqueCount": "Initial broad static selection also ran four viaStrengths theme checks; repeated checks excluded.",
+  "initialFailure": "One test counted native details elements as answer groups. Corrected selector to div[role=group]; full 39-case browser run passed. No assertions or timeouts weakened.",
+  "finalPolish": "Shortened clipped blank dropdown prompt and marked historical quiz statistic; final phone, controls, theme and hub checks passed.",
+  "renderedTools": 72,
+  "phoneCapturesReviewed": 9,
+  "scopedAxeScans": 3,
+  "axeViolations": 0,
+  "sourcePublicByteParity": true,
+  "sourceSHA256": "042b10dbd50b22a594ab8aa18077af8cab0c00690e8d5a1a8e74c6284416bb92",
+  "syntax": "Both modules passed node --check",
+  "whitespace": "Scoped git diff --check passed",
+  "providers": "Mocked narration/coach only; no live model requests",
+  "deployment": "Local changes only; no push, deploy or package build"
+}
