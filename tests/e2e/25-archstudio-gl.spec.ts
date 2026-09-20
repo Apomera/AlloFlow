@@ -3079,4 +3079,143 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
 
+  test('composition panel preserves the model while grouping and inspecting blocks', async ({ page }, testInfo) => {
+    const blocks = [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone' },
+      { x: 1, y: 0, z: 0, shape: 'block', material: 'stone' },
+      ...[0, 1, 2].map(x => ({ x, y: 2, z: 1, shape: 'arch', material: 'wood' })),
+      { x: 3, y: 2, z: 1, shape: 'slab', material: 'glass' }];
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await mount3d(page, { blocks, undoStack: [[]], redoStack: [[blocks[0]]], projectName: 'Composition study', projectNotes: 'Keep notes',
+      viewLayer: 0, filterMaterial: 'stone', filterShape: 'block', editorView: '3d', editLayer: 2, sidebarCollapsed: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1060px}' });
+    const snapshot = () => page.evaluate(() => { const b = (window as any).__bucket(); return { blocks: b.blocks, undo: b.undoStack, redo: b.redoStack, name: b.projectName, notes: b.projectNotes, editLayer: b.editLayer }; });
+    const before = await snapshot();
+    await page.evaluate(() => { (window as any).__compositionCanvas = document.querySelector('canvas[data-arch-gl]'); });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]').click();
+    const panel = page.locator('#arch-composition-panel');
+    await expect(page.locator('#arch-composition-heading')).toBeFocused();
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('6');
+    await expect(panel.locator('[data-arch-composition-metric=floors]')).toHaveText('2');
+    await expect(panel.locator('[data-arch-composition-span]')).toHaveText('Model span: X 4 × Y 3 × Z 2 grid units');
+    await expect(panel.locator('[data-arch-composition-row]').first()).toHaveAttribute('data-arch-composition-row', 'wood');
+    await expect(panel.locator('[data-arch-composition-row=wood]')).toContainText('3 blocks; 50% of this frame');
+    await panel.getByRole('combobox', { name: 'Order groups', exact: true }).selectOption('name');
+    await expect(panel.locator('[data-arch-composition-row]').first()).toHaveAttribute('data-arch-composition-row', 'glass');
+    await page.locator('#arch-composition-heading').focus();
+    await page.screenshot({ path: testInfo.outputPath('composition-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Shapes', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Shapes', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByRole('combobox', { name: 'Order groups', exact: true }).selectOption('count');
+    expect(await snapshot()).toEqual(before);
+    await panel.getByRole('button', { name: 'Inspect Arch shape', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ filterMaterial: '', filterShape: 'arch', viewLayer: 0, editorView: '3d' });
+    await expect(page.locator('#arch-filter-panel [data-arch-filter-result]')).toContainText('3');
+    await expect(page.locator('#arch-filter-panel').getByRole('button', { name: 'Reveal matches across floors and sections', exact: true })).toBeVisible();
+    expect(await snapshot()).toEqual(before);
+    expect(await page.evaluate(() => (window as any).__compositionCanvas === document.querySelector('canvas[data-arch-gl]'))).toBe(true);
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]').click();
+    await expect(panel.getByRole('button', { name: 'Shapes', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByRole('button', { name: 'Close build composition', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('composition panel follows replay including empty steps and a return to live', async ({ page }) => {
+    const live = [{ x: 0, y: 1, z: 0, shape: 'block', material: 'stone' }];
+    const past = [0, 1].map(x => ({ x, y: 9, z: -2, shape: 'slab', material: 'glass' }));
+    await mount3d(page, { blocks: live, undoStack: [[], past], showReplay: true, replayStep: 1, sidebarCollapsed: true, soundEnabled: false });
+    await page.getByRole('button', { name: 'All tools', exact: true }).click();
+    await page.locator('#arch-tool-browser').getByRole('searchbox').fill('stats');
+    await page.locator('#arch-tool-browser [data-arch-tool=stats]').click();
+    const panel = page.locator('#arch-composition-panel');
+    await expect(page.locator('#arch-composition-heading')).toBeFocused();
+    await expect(panel.locator('[data-arch-composition-frame]')).toHaveText('Replay step 2 of 3');
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('2');
+    await expect(panel.locator('[data-arch-composition-span]')).toContainText('X 2 × Y 1 × Z 1');
+    await panel.getByRole('button', { name: 'Inspect Glass material', exact: true }).click();
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ filterMaterial: 'glass', filterShape: '', showReplay: true, blocks: live, undoStack: [[], past] });
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]').click();
+    await page.locator('#arch-replay-panel').getByRole('slider').focus(); await page.keyboard.press('Home');
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('0');
+    await expect(panel.locator('.arch-composition-empty')).toContainText('This replay step has no blocks');
+    await expect(panel.locator('[data-arch-composition-row]')).toHaveCount(0);
+    await panel.getByRole('button', { name: 'Return to live build', exact: true }).click();
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('1');
+    await expect(panel.locator('[data-arch-composition-row=stone]')).toContainText('1 block; 100% of this frame');
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ showReplay: false, blocks: live, undoStack: [[], past] });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('composition panel guides empty builds into keyboard editing and undo', async ({ page }) => {
+    await mount3d(page, { blocks: [], showStats: true, editLayer: 3, soundEnabled: false });
+    const panel = page.locator('#arch-composition-panel');
+    await expect(panel.locator('.arch-composition-empty')).toContainText('Add blocks');
+    await panel.getByRole('button', { name: 'Open the floor grid', exact: true }).click();
+    await expect(page.locator('[data-arch-cell="0,3,0"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('1');
+    await expect(panel.locator('[data-arch-composition-span]')).toContainText('X 1 × Y 1 × Z 1');
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect(panel.locator('[data-arch-composition-metric=blocks]')).toHaveText('0');
+    await expect(panel.locator('.arch-composition-empty')).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('composition panel keeps phone rows reachable and restores keyboard focus', async ({ page }, testInfo) => {
+    const blocks = ['stone', 'brick', 'wood', 'glass', 'marble', 'metal'].map((material, x) => ({ x, y: 0, z: 0, material, shape: x % 2 ? 'slab' : 'block' }));
+    await page.setViewportSize({ width: 320, height: 960 });
+    await mount3d(page, { blocks, showStats: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    const panel = page.locator('#arch-composition-panel');
+    const sizes = await panel.locator('button,select').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, right: r.right }; }));
+    expect(sizes.filter(r => r.width < 44 || r.height < 44 || r.left < 0 || r.right > 320)).toEqual([]);
+    expect(await page.locator('canvas[data-arch-gl]').evaluate(el => { const r = el.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el; })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('composition-phone-summary.png'), fullPage: true });
+    const row = panel.getByRole('button', { name: 'Inspect Wood material', exact: true });
+    await row.scrollIntoViewIfNeeded();
+    expect(await row.evaluate(el => { const r = el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)); })).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('composition-phone-rows.png'), fullPage: true });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await row.click();
+    await expect(page.locator('#arch-filter-heading')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket().filterMaterial)).toBe('wood');
+    await page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]').click();
+    await panel.getByRole('combobox', { name: 'Order groups', exact: true }).focus(); await page.keyboard.press('Escape');
+    await expect(panel).toBeVisible();
+    await panel.getByRole('button', { name: 'Materials', exact: true }).focus(); await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=stats]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('composition panel supports accessible themes and forced-color grouping', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 1100 });
+    await mount3d(page, { blocks: tower().concat([{ x: -1, y: 1, z: -1, material: 'glass', shape: 'dome' }]), showStats: true, soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:1060px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    const panel = page.locator('#arch-composition-panel');
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      for (const group of ['Materials', 'Shapes']) {
+        await panel.getByRole('button', { name: group, exact: true }).click();
+        const violations = await page.evaluate(async () => {
+          const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+          return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+        });
+        expect(violations, theme + ' ' + group).toEqual([]);
+      }
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+    await panel.getByRole('button', { name: 'Materials', exact: true }).focus(); await page.keyboard.press('Enter');
+    await expect(panel.getByRole('button', { name: 'Materials', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await panel.getByRole('combobox', { name: 'Order groups', exact: true }).focus(); await page.keyboard.press('End'); await page.keyboard.press('Enter');
+    await expect(panel.getByRole('combobox', { name: 'Order groups', exact: true })).toHaveValue('name');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
 });

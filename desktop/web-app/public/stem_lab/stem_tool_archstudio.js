@@ -2250,6 +2250,54 @@ function __alloAST(k, fb) {
 
 
 
+  var ARCH_COMPOSITION_LABELS = {
+  "title": "Build composition",
+  "close": "Close build composition",
+  "close_short": "Close",
+  "blocks": "Blocks",
+  "materials": "Materials",
+  "shapes": "Shapes",
+  "floors": "Occupied floors",
+  "scope": "Counts include every block in this frame, including blocks hidden by 3D filters.",
+  "group": "Group blocks by",
+  "sort": "Order groups",
+  "most": "Most blocks first",
+  "name": "Name A–Z",
+  "rows_materials": "Materials in this frame",
+  "rows_shapes": "Shapes in this frame",
+  "small_share": "Less than 0.1%",
+  "percent": "{value}%",
+  "row_summary": "{count} blocks; {percent} of this frame",
+  "row_summary_one": "{count} block; {percent} of this frame",
+  "inspect_material": "Inspect {name} material",
+  "inspect_shape": "Inspect {name} shape",
+  "inspect_help": "Inspect a row to replace the material and shape filters. Floor and section settings stay unchanged.",
+  "span": "Model span: X {x} × Y {y} × Z {z} grid units",
+  "span_help": "Span measures the outer bounds of occupied cells, including any gaps.",
+  "empty": "Add blocks to see the materials and shapes in your build.",
+  "empty_replay": "This replay step has no blocks. Choose another step or return to the live build.",
+  "grid": "Open the floor grid",
+  "live": "Return to live build",
+  "close_help": "Closing keeps your model and view settings."
+};
+
+  function summarizeArchComposition(input) {
+    var frame = getArchRuntimeBlocks(input), materialCounts = {}, shapeCounts = {}, floors = {};
+    var minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    frame.forEach(function (block) {
+      materialCounts[block.material] = (materialCounts[block.material] || 0) + 1;
+      shapeCounts[block.shape] = (shapeCounts[block.shape] || 0) + 1;
+      floors[block.y] = true;
+      minX = Math.min(minX, block.x); maxX = Math.max(maxX, block.x);
+      minY = Math.min(minY, block.y); maxY = Math.max(maxY, block.y);
+      minZ = Math.min(minZ, block.z); maxZ = Math.max(maxZ, block.z);
+    });
+    return { total: frame.length, materials: materialCounts, shapes: shapeCounts, floors: Object.keys(floors).length,
+      materialCount: Object.keys(materialCounts).length, shapeCount: Object.keys(shapeCounts).length,
+      span: frame.length ? { x: maxX - minX + 1, y: maxY - minY + 1, z: maxZ - minZ + 1 } : { x: 0, y: 0, z: 0 } };
+  }
+  window.__alloArchComposition = { summary: summarizeArchComposition, labels: ARCH_COMPOSITION_LABELS };
+
   var ARCH_FLOOR_LABELS = {
   "title": "Floor explorer",
   "close": "Close floor explorer",
@@ -3893,8 +3941,6 @@ function __alloAST(k, fb) {
     // ── Block Statistics (for chart rendering) ──
     // ══════════════════════════════════════════════════════════════
     var showStats = d.showStats || false;
-    var maxMatCount = Math.max.apply(null, bomMaterialEntries.map(function (e) { return e.count; }).concat([1]));
-    var maxShapeCount = Math.max.apply(null, bomShapeEntries.map(function (e) { return e.count; }).concat([1]));
 
     // ══════════════════════════════════════════════════════════════
     // ── Gravity Simulation (drop floating blocks) ──
@@ -4658,6 +4704,74 @@ function __alloAST(k, fb) {
 
 
 
+
+
+    function compositionText(key, values) {
+      if (ARCH_COMPOSITION_LABELS[key + '_one'] && values && values.count === 1) key += '_one';
+      var text = t('stem.archstudio.composition_' + key, ARCH_COMPOSITION_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function toggleComposition() {
+      var opening = !showStats;
+      upd('showStats', opening);
+      setTimeout(function () {
+        var target = opening ? document.getElementById('arch-composition-heading') :
+          document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="stats"]');
+        if (target) { target.focus(); target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      }, 0);
+    }
+    function renderComposition() {
+      if (!showStats) return null;
+      var summary = summarizeArchComposition(archReplayFrame);
+      var group = d.compositionGroup === 'shapes' ? 'shapes' : 'materials';
+      var order = d.compositionOrder === 'name' ? 'name' : 'count';
+      var rows = (group === 'materials' ? materials : shapes).filter(function (item) { return summary[group][item.id] > 0; }).slice();
+      rows.sort(function (a, b) { return (order === 'count' ? summary[group][b.id] - summary[group][a.id] : 0) || a.label.localeCompare(b.label) || a.id.localeCompare(b.id); });
+      function inspect(item) {
+        upd({ showStats: false, showFilter: true, filterMaterial: group === 'materials' ? item.id : '', filterShape: group === 'shapes' ? item.id : '' });
+        setTimeout(function () { var target = document.getElementById('arch-filter-heading'); if (target) { target.focus(); target.scrollIntoView({ block: 'nearest' }); } }, 0);
+      }
+      return el('section', { id: 'arch-composition-panel', className: 'arch-composition-panel', 'aria-labelledby': 'arch-composition-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleComposition(); } } },
+        el('div', { className: 'arch-composition-header' },
+          el('h3', { id: 'arch-composition-heading', tabIndex: -1 }, compositionText('title')),
+          el('button', { type: 'button', 'aria-label': compositionText('close'), onClick: toggleComposition }, compositionText('close_short'))),
+        el('p', { className: 'arch-composition-frame', 'data-arch-composition-frame': true }, showReplay ? filterText('replay', { step: replayStep + 1, total: replayFrames + 1 }) : filterText('live')),
+        el('dl', { className: 'arch-composition-metrics' }, ['blocks', 'materials', 'shapes', 'floors'].map(function (key) {
+          var value = key === 'blocks' ? summary.total : key === 'materials' ? summary.materialCount : key === 'shapes' ? summary.shapeCount : summary.floors;
+          return el('div', { key: key }, el('dt', null, compositionText(key)), el('dd', { 'data-arch-composition-metric': key }, value));
+        })),
+        el('p', { className: 'arch-composition-scope' }, compositionText('scope')),
+        summary.total > 0 && el('div', null,
+          el('div', { className: 'arch-composition-groups', role: 'group', 'aria-label': compositionText('group') },
+            ['materials', 'shapes'].map(function (key) { return el('button', { key: key, type: 'button', 'aria-pressed': group === key,
+              onClick: function () { upd('compositionGroup', key); } }, compositionText(key)); })),
+          el('label', { className: 'arch-composition-sort', htmlFor: 'arch-composition-order' }, compositionText('sort'),
+            el('select', { id: 'arch-composition-order', 'aria-label': compositionText('sort'), value: order, onChange: function (event) { upd('compositionOrder', event.target.value === 'name' ? 'name' : 'count'); } },
+              el('option', { value: 'count' }, compositionText('most')), el('option', { value: 'name' }, compositionText('name')))),
+          el('p', { id: 'arch-composition-inspect-help' }, compositionText('inspect_help')),
+          el('ul', { className: 'arch-composition-list', 'aria-label': compositionText('rows_' + group) }, rows.map(function (item) {
+            var count = summary[group][item.id], share = count / summary.total * 100;
+            var percent = share < .1 ? compositionText('small_share') : compositionText('percent', { value: share.toFixed(1).replace(/\.0$/, '') });
+            var rowId = 'arch-composition-row-' + group + '-' + item.id;
+            return el('li', { key: group + '-' + item.id, 'data-arch-composition-row': item.id },
+              el('button', { type: 'button', className: 'arch-composition-row', 'aria-label': compositionText(group === 'materials' ? 'inspect_material' : 'inspect_shape', { name: item.label }),
+                'aria-describedby': rowId + ' arch-composition-inspect-help', onClick: function () { inspect(item); } },
+                group === 'materials' ? el('span', { className: 'arch-material-swatch arch-material-' + item.id, 'aria-hidden': 'true', style: { backgroundColor: item.color } }) : paletteShapeIcon(item.id),
+                el('span', { className: 'arch-composition-row-body' },
+                  el('strong', null, item.label),
+                  el('span', { id: rowId, className: 'arch-composition-row-summary' }, compositionText('row_summary', { count: count, percent: percent })),
+                  el('span', { className: 'arch-composition-bar', 'aria-hidden': 'true' }, el('span', { style: { width: share + '%', backgroundColor: group === 'materials' ? item.color : '#60a5fa' } }))),
+                el('span', { 'aria-hidden': 'true', className: 'arch-composition-arrow' }, '\u2192')));
+          })),
+          el('p', { className: 'arch-composition-span', 'data-arch-composition-span': true }, compositionText('span', summary.span)),
+          el('p', { className: 'arch-composition-footnote' }, compositionText('span_help'))),
+        !summary.total && el('div', { className: 'arch-composition-empty' },
+          el('p', null, compositionText(showReplay ? 'empty_replay' : 'empty')),
+          el('button', { type: 'button', onClick: showReplay ? exitReplay : function () { upd({ editorView: 'grid', gridCursorX: 0, gridCursorZ: 0 }); focusArchGridCell(0, 0); } }, compositionText(showReplay ? 'live' : 'grid'))),
+        el('p', { className: 'arch-composition-footnote' }, compositionText('close_help')));
+    }
 
     function floorText(key, values) {
       if (ARCH_FLOOR_LABELS[key + '_one'] && values && values.count === 1) key += '_one';
@@ -6159,6 +6273,23 @@ function __alloAST(k, fb) {
 
 
 
+        + "#arch-studio-region .arch-studio-sidebar.arch-studio-composition{width:clamp(310px,30vw,370px)!important;}"
+        + "#arch-studio-region .arch-composition-panel{flex:none;min-width:0;border:1px solid #647fab;border-radius:12px;padding:12px;background:linear-gradient(150deg,#203952,#19273d);color:#e2e8f0;}"
+        + "#arch-studio-region .arch-composition-header{display:flex;align-items:center;justify-content:space-between;gap:8px;}#arch-studio-region .arch-composition-header h3{font-size:16px;line-height:1.35;margin:0;color:#dbeafe;}"
+        + "#arch-studio-region #arch-composition-heading:focus{outline:2px solid #93c5fd;outline-offset:4px;}"
+        + "#arch-studio-region .arch-composition-panel button,#arch-studio-region .arch-composition-panel select{box-sizing:border-box;min-height:44px;min-width:44px;padding:8px;border:1px solid #8ca4c3;border-radius:7px;background:#243a53;color:#f8fafc;font-family:inherit;font-size:12px;font-weight:650;line-height:1.4;cursor:pointer;overflow-wrap:anywhere;}"
+        + "#arch-studio-region .arch-composition-panel p{font-size:12px;line-height:1.5;color:#cbd5e1;margin:10px 0;}#arch-studio-region .arch-composition-panel .arch-composition-frame{font-size:11px;color:#bfdbfe;font-weight:750;letter-spacing:.4px;}"
+        + "#arch-studio-region .arch-composition-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0;}#arch-studio-region .arch-composition-metrics>div{padding:10px;border:1px solid #58718c;border-radius:9px;background:#172b41;}#arch-studio-region .arch-composition-metrics dt{font-size:11px;color:#cbd5e1;line-height:1.4;}#arch-studio-region .arch-composition-metrics dd{margin:4px 0 0;font-size:25px;line-height:1.1;font-weight:750;color:#f0f9ff;font-variant-numeric:tabular-nums;}"
+        + "#arch-studio-region .arch-composition-panel .arch-composition-scope{padding:9px;border-left:3px solid #93c5fd;border-radius:4px;background:#172b41;}"
+        + "#arch-studio-region .arch-composition-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}#arch-studio-region .arch-composition-groups button[aria-pressed=true]{background:#155e75;border-color:#67e8f9;color:#ecfeff;box-shadow:inset 0 -3px #67e8f9;}"
+        + "#arch-studio-region .arch-composition-sort{display:flex;flex-direction:column;gap:5px;margin-top:12px;font-size:12px;font-weight:700;}#arch-studio-region .arch-composition-sort select{width:100%;}#arch-studio-region .arch-composition-sort select:focus-visible{outline:2px solid #93c5fd;outline-offset:2px;}"
+        + "#arch-studio-region .arch-composition-list{list-style:none;display:flex;flex-direction:column;gap:7px;padding:0;margin:12px 0;}#arch-studio-region .arch-composition-panel .arch-composition-row{display:grid;grid-template-columns:30px minmax(0,1fr) 14px;align-items:center;gap:9px;text-align:left;width:100%;padding:10px 8px;background:#172b41;border-color:#647e9e;}#arch-studio-region .arch-composition-row:hover{border-color:#93c5fd;background:#203c56;}"
+        + "#arch-studio-region .arch-composition-row .arch-material-swatch{width:26px;height:30px;}#arch-studio-region .arch-composition-row .arch-shape-icon{width:30px;height:30px;color:#bfdbfe;}#arch-studio-region .arch-composition-row-body{min-width:0;display:flex;flex-direction:column;gap:5px;}#arch-studio-region .arch-composition-row-body strong{font-size:13px;color:#eff6ff;}#arch-studio-region .arch-composition-row-summary{font-size:11px;font-weight:400;line-height:1.4;color:#cbd5e1;}#arch-studio-region .arch-composition-arrow{color:#bae6fd;}"
+        + "#arch-studio-region .arch-composition-bar{display:block;height:7px;border-radius:4px;background:#0b1728;overflow:hidden;}#arch-studio-region .arch-composition-bar>span{display:block;height:100%;border-radius:4px;}"
+        + "#arch-studio-region .arch-composition-panel .arch-composition-span{font-weight:700;color:#dbeafe;border-top:1px solid #58718c;padding-top:12px;}#arch-studio-region .arch-composition-panel .arch-composition-footnote{font-size:11px;margin-bottom:0;}#arch-studio-region .arch-composition-empty button{width:100%;}"
+        + ".theme-contrast #arch-studio-region .arch-composition-panel,.theme-contrast #arch-studio-region .arch-composition-metrics>div,.theme-contrast #arch-studio-region .arch-composition-panel .arch-composition-scope{background:#000;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-composition-panel button,.theme-contrast #arch-studio-region .arch-composition-panel select{background:#000;color:#ffff00;border-color:#ffff00;}.theme-contrast #arch-studio-region .arch-composition-groups button[aria-pressed=true]{background:#142314;border-color:#00ff00;box-shadow:inset 0 -3px #00ff00;}"
+        + "@media(forced-colors:active){#arch-studio-region .arch-composition-bar{border:1px solid CanvasText;forced-color-adjust:none;background:Canvas;}#arch-studio-region .arch-composition-bar>span{background:Highlight!important;}}"
+        + "@media(max-width:680px){#arch-studio-region aside.arch-studio-sidebar.arch-studio-composition{width:auto!important;max-height:min(42vh,360px);}#arch-studio-region .arch-composition-panel{padding:10px;}#arch-studio-region .arch-composition-sort select{font-size:16px;}}"
         + '#arch-studio-region .arch-studio-sidebar.arch-studio-floors{width:clamp(310px,30vw,370px)!important;}'
         + '#arch-studio-region .arch-floor-panel{flex:none;min-width:0;border:1px solid #8b82ae;border-radius:12px;padding:12px;background:linear-gradient(150deg,#302c4c,#17283a);color:#e2e8f0;}'
         + '#arch-studio-region .arch-floor-header{display:flex;align-items:center;justify-content:space-between;gap:8px;}#arch-studio-region .arch-floor-header h3{font-size:16px;line-height:1.35;margin:0;color:#ede9fe;}'
@@ -6449,7 +6580,7 @@ function __alloAST(k, fb) {
           { id: 'schedule', node: el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
           'aria-expanded': !!showBOM, 'aria-controls': showBOM ? 'arch-schedule-panel' : undefined,
           style: { background: showBOM ? '#713f12' : 'rgba(71,85,105,.3)', border: '1px solid #b89751', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, scheduleText('title')) },
-          { id: 'stats', node: pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showStats', !showStats); }) },
+          { id: 'stats', node: pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', toggleComposition) },
           { id: 'styles', node: pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }) },
           { id: 'phases', node: pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }) },
           { id: 'share', node: pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }) },
@@ -6477,9 +6608,10 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : '') + (showSlice ? ' arch-studio-sections' : '') + (showFloorPlans ? ' arch-studio-floors' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', hidden: sidebarCollapsed, tabIndex: -1, className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : '') + (showReplay ? ' arch-studio-replay' : '') + (showFilter ? ' arch-studio-filtering' : '') + (showSlice ? ' arch-studio-sections' : '') + (showFloorPlans ? ' arch-studio-floors' : '') + (showStats ? ' arch-studio-composition' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
           renderReplayPanel(),
+          renderComposition(),
           renderFloorExplorer(),
           renderSectionPanel(),
           renderFilterPanel(),
@@ -6773,43 +6905,6 @@ function __alloAST(k, fb) {
               el('div', null, '\uD83D\uDCE6 Volume: ' + realVolM3.toFixed(1) + ' m\u00B3'),
               el('div', null, '\u2696\uFE0F Est. weight: ' + realWeightTons.toFixed(1) + ' tonnes'),
               scaleComparisons.length > 0 && el('div', { style: { color: '#fbbf24', fontWeight: 600, marginTop: 2 } }, '\uD83C\uDFD7\uFE0F ' + scaleComparisons[0])
-            )
-          ),
-
-          // Block Statistics Chart
-          showStats && totalBlocks > 0 && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCCA Block Stats'),
-            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3, fontWeight: 600 } }, 'Material Distribution'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
-              bomMaterialEntries.map(function (e) {
-                var pct = maxMatCount > 0 ? Math.round((e.count / maxMatCount) * 100) : 0;
-                var mat = materials.find(function (m) { return m.id === e.id; });
-                var barColor = mat ? mat.color: 'var(--allo-stem-text-soft, #94a3b8)';
-                return el('div', { key: e.id },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
-                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, e.icon + ' ' + e.label),
-                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.count)
-                  ),
-                  el('div', { style: { height: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 3, overflow: 'hidden' } },
-                    el('div', { style: { height: '100%', width: pct + '%', background: barColor, borderRadius: 3, transition: 'width 0.3s ease' } })
-                  )
-                );
-              })
-            ),
-            el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3, marginTop: 8, fontWeight: 600 } }, 'Shape Distribution'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
-              bomShapeEntries.map(function (e) {
-                var pct = maxShapeCount > 0 ? Math.round((e.count / maxShapeCount) * 100) : 0;
-                return el('div', { key: e.id },
-                  el('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 1 } },
-                    el('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, e.icon + ' ' + e.label),
-                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, e.count)
-                  ),
-                  el('div', { style: { height: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 3, overflow: 'hidden' } },
-                    el('div', { style: { height: '100%', width: pct + '%', background: '#60a5fa', borderRadius: 3, transition: 'width 0.3s ease' } })
-                  )
-                );
-              })
             )
           ),
 
