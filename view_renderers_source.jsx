@@ -1099,7 +1099,13 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     {changed && <p role="status" className="mt-2 text-sm font-semibold text-amber-900">{tr("draft_changes", "You have changes that have not been submitted.")}</p>}
     <button type="button" onClick={submit} disabled={busy || !fields.some(([id]) => String(shown.values[id] || '').trim())} className="mt-4 min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-bold text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{busy ? tr("submitting", "Submitting…") : isTeacherMode || !sessionCode ? tr("save_reflection", "Save reflection") : shown.submitted ? tr("submit_revision", "Submit revision") : tr("submit_reflection", "Submit reflection")}</button>
     <p role="status" aria-live="polite" className="mt-3 text-sm">{notice || (shown.submitted && !changed ? tr("version_saved", "This version is saved. You can keep revising.") : '')}</p>
-    {!isTeacherMode && reflectionRequest && React.createElement(OrganizerLearnerFeedback, { key: submissionOwner, request: reflectionRequest, sessionCode, resourceId: String(resource?.id || ''), activityId, refreshKey: shown.submitted?.revision, t })}
+    {/* Only after a submission exists. Rendering this unconditionally showed a
+        student who had written nothing a "Feedback on your reflections" panel
+        saying "No teacher feedback yet. You can keep revising your draft." -
+        about work they had not started. It also meant useOrganizerInbox began
+        polling the teacher endpoint every 8 seconds for every student who
+        merely OPENED the activity, submitted or not. */}
+    {!isTeacherMode && reflectionRequest && shown.submitted && React.createElement(OrganizerLearnerFeedback, { key: submissionOwner, request: reflectionRequest, sessionCode, resourceId: String(resource?.id || ''), activityId, refreshKey: shown.submitted?.revision, t })}
   </section>;
 };
 
