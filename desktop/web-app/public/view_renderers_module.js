@@ -872,13 +872,17 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const owner = React.useRef(submissionOwner);
   owner.current = submissionOwner;
   const shown = entry.key === storageKey ? entry : empty();
+  const kwlNotesKey = React.useMemo(() => {
+    if (type !== "KWL Chart") return "";
+    const seed = [resource?.data?.main || "", ...(resource?.data?.branches || []).slice(0, 3).map((branch) => branch?.title || "")].join("|");
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash << 5) - hash + seed.charCodeAt(i) | 0;
+    return "alloflow_kwl_notes_" + Math.abs(hash);
+  }, [type, resource?.data?.main, JSON.stringify((resource?.data?.branches || []).slice(0, 3).map((branch) => branch?.title || ""))]);
   let earlierKwlNotes = null;
-  if (type === "KWL Chart" && !isTeacherMode) {
+  if (type === "KWL Chart" && !isTeacherMode && kwlNotesKey) {
     try {
-      const seed = [resource?.data?.main || "", ...(resource?.data?.branches || []).slice(0, 3).map((branch) => branch?.title || "")].join("|");
-      let hash = 0;
-      for (let i = 0; i < seed.length; i++) hash = (hash << 5) - hash + seed.charCodeAt(i) | 0;
-      const saved = JSON.parse(window.localStorage.getItem("alloflow_kwl_notes_" + Math.abs(hash)) || "null");
+      const saved = JSON.parse(window.localStorage.getItem(kwlNotesKey) || "null");
       if (Array.isArray(saved) && saved.length === 3 && saved.some((value) => typeof value === "string" && value.trim())) earlierKwlNotes = saved.map((value) => String(value || "").slice(0, 2e3));
     } catch (_) {
     }
@@ -899,6 +903,14 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
       setStorageFailed(true);
     }
   }, [entry, storageKey]);
+  React.useEffect(() => {
+    if (type !== "KWL Chart" || isTeacherMode || !kwlNotesKey || entry.key !== storageKey) return;
+    const notes = fields.slice(0, 3).map(([id]) => String(entry.values?.[id] || "").slice(0, 2e3));
+    try {
+      if (notes.some((text) => text.trim())) window.localStorage.setItem(kwlNotesKey, JSON.stringify(notes));
+    } catch (_) {
+    }
+  }, [entry, storageKey, kwlNotesKey, type, isTeacherMode]);
   const submit = async () => {
     if (busy || !fields.some(([id]) => String(shown.values[id] || "").trim())) return;
     const key = storageKey;

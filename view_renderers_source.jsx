@@ -1007,12 +1007,25 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   const submissionOwner = storageKey + '|' + (activityId || 'local');
   const owner = React.useRef(submissionOwner); owner.current = submissionOwner;
   const shown = entry.key === storageKey ? entry : empty();
+  // KWL carry-over. The reflection draft key (organizerReflectionKey) includes
+  // sessionCode, so a KWL revisited in a LATER session starts empty even though
+  // the student wrote Know/Want in the earlier one - which is the whole point of
+  // a KWL. This topic-scoped copy bridges that gap.
+  //
+  // The reader below existed on its own, with nothing anywhere writing the key:
+  // grep found exactly one occurrence in the repo, a getItem. The import button
+  // could therefore never appear. kwlNotesKey is shared by both sides now so the
+  // seed can never drift between writer and reader.
+  const kwlNotesKey = React.useMemo(() => {
+    if (type !== 'KWL Chart') return '';
+    const seed = [resource?.data?.main || '', ...(resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || '')].join('|');
+    let hash = 0; for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+    return 'alloflow_kwl_notes_' + Math.abs(hash);
+  }, [type, resource?.data?.main, JSON.stringify((resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || ''))]);
   let earlierKwlNotes = null;
-  if (type === 'KWL Chart' && !isTeacherMode) {
+  if (type === 'KWL Chart' && !isTeacherMode && kwlNotesKey) {
     try {
-      const seed = [resource?.data?.main || '', ...(resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || '')].join('|');
-      let hash = 0; for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-      const saved = JSON.parse(window.localStorage.getItem('alloflow_kwl_notes_' + Math.abs(hash)) || 'null');
+      const saved = JSON.parse(window.localStorage.getItem(kwlNotesKey) || 'null');
       if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, 2000));
     } catch (_) {}
   }
@@ -1024,6 +1037,17 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
     try { window.localStorage.setItem(storageKey, JSON.stringify({ version: 1, values: entry.values, submitted: entry.submitted })); setStorageFailed(false); }
     catch (_) { setStorageFailed(true); }
   }, [entry, storageKey]);
+  // Mirror a KWL draft to the topic-scoped key the import offer reads. Kept in a
+  // separate effect from the draft write above so a quota failure here can never
+  // flip storageFailed and tell the student their DRAFT was lost when it was not.
+  // Teacher previews are excluded: a preview must not seed a student's import.
+  React.useEffect(() => {
+    if (type !== 'KWL Chart' || isTeacherMode || !kwlNotesKey || entry.key !== storageKey) return;
+    const notes = fields.slice(0, 3).map(([id]) => String(entry.values?.[id] || '').slice(0, 2000));
+    try {
+      if (notes.some(text => text.trim())) window.localStorage.setItem(kwlNotesKey, JSON.stringify(notes));
+    } catch (_) { /* carry-over is a convenience; never surface it as a draft failure */ }
+  }, [entry, storageKey, kwlNotesKey, type, isTeacherMode]);
   const submit = async () => {
     if (busy || !fields.some(([id]) => String(shown.values[id] || '').trim())) return;
     const key = storageKey;
