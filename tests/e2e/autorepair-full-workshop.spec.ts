@@ -1526,3 +1526,33 @@ test('viewport response follows 3D input, capture freshness and keyboard equipme
   await panel.evaluate((el:HTMLElement)=>el.scrollIntoView({block:'center'}));await panel.screenshot({path:'reports/automobile-workshop/response-panel-dark.png'});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   expect(await panel.locator('button').evaluate(el=>el.getBoundingClientRect().height>=44)).toBe(true);expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
 });
+
+
+test('inspection outline follows physical controls without rebuilding or operating the workshop',async({page})=>{
+  await page.setViewportSize({width:1360,height:1100});await page.emulateMedia({reducedMotion:'reduce'});
+  await harness.mount(page,{autoRepair:{view:'workshop',shop:{job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}}}});
+  await page.locator('[data-ar-shop-instrument-read]').click();await page.locator('[data-ar-shop-interaction="inspect"]').click();
+  const chooser=page.locator('#ar-shop-inspect-target'),viewport=page.locator('.ar-bay-viewport');
+  const raw=()=>page.evaluate(()=>JSON.stringify((window as any).__toolData.autoRepair.shop));const before=await raw();
+  const outline=()=>page.evaluate(()=>{const s=(window as any).__shopScene,o=s.getObjectByName('workshop-inspection-outline');const geometries=new Set(),textures=new Set();s.traverse((n:any)=>{if(n.geometry)geometries.add(n.geometry.uuid);const mats=Array.isArray(n.material)?n.material:[n.material];for(const m of mats)if(m)for(const v of Object.values(m))if((v as any)?.isTexture)textures.add((v as any).uuid);});return{visible:o.visible,target:o.userData.targetId,uuid:o.uuid,geometry:o.geometry.uuid,room:s.getObjectByName('full-workshop-environment').uuid,geometries:geometries.size,textures:textures.size,color:o.material.color.getHex(),depthTest:o.material.depthTest};});
+  async function choose(id:string){await chooser.selectOption(id);await page.locator('[data-ar-control-view]').click();await page.waitForFunction(expected=>{const o=(window as any).__shopScene?.getObjectByName('workshop-inspection-outline');return o?.visible&&o.userData.targetId===expected;},id);}
+  await choose('shop-use-electrical-2-meter-posts');const first=await outline();expect(first.depthTest).toBe(true);expect(first.color).toBe(0x22d3ee);
+  expect(await page.evaluate(()=>{const w=window as any,s=w.__shopScene,o=s.getObjectByName('workshop-inspection-outline'),post=s.getObjectByName('negative-post');return o.box.containsBox(new w.THREE.Box3().setFromObject(post));})).toBe(true);
+  await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contacts.png'});
+  await clickShop(page,'positive-clamp-bolt');await expect(page.locator('[data-ar-control-preview]')).toContainText('positive');await viewport.scrollIntoViewIfNeeded();
+  await page.waitForFunction(()=>{const o=(window as any).__shopScene.getObjectByName('workshop-inspection-outline');return o.visible&&o.userData.targetId==='shop-use-electrical-2-meter-joint';});expect(await raw()).toBe(before);
+  for(const id of ['shop-use-electrical-2-equip-socket','shop-use-electrical-2-meter-posts','shop-use-electrical-2-meter-joint','shop-use-electrical-2-equip-socket']){await choose(id);const current=await outline();for(const key of ['uuid','geometry','room','geometries','textures'] as const)expect(current[key]).toBe(first[key]);}
+  await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-tools.png'});expect(await raw()).toBe(before);
+  await page.locator('[data-ar-control-dismiss]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await choose('shop-use-electrical-2-read');await page.locator('#ar-shop-answer').fill('1.4');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await choose('shop-use-electrical-2-meter-posts');await page.locator('[data-ar-shop-interaction="operate"]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  await page.locator('[data-ar-shop-interaction="inspect"]').click();await chooser.selectOption('oil');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-control-view]')).toBeDisabled();
+  await page.setViewportSize({width:390,height:844});await page.locator('#wrap').evaluate((el:HTMLElement)=>{el.style.width='100%';el.style.maxWidth='100%';});
+  await page.evaluate(()=>{const w=window as any;w.__ctx.isContrast=true;w.__ctx.update('autoRepair','shopLabels',false);});
+  await choose('shop-use-electrical-2-meter-posts');expect((await outline()).color).toBe(0x000000);await viewport.screenshot({path:'reports/automobile-workshop/inspection-outline-contrast.png'});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await page.locator('[data-ar-control-use]').click();await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);await expect(page.locator('[data-ar-shop-reading]')).toHaveText('— —');
+  await page.evaluate(()=>{const w=window as any;w.__ctx.update('autoRepair','shop',{job:'electrical',step:2,station:'engine',tool:'socket',hood:false});});
+  await chooser.selectOption('shop-use-electrical-2-read');await viewport.scrollIntoViewIfNeeded();await expect.poll(async()=>(await outline()).visible).toBe(false);
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});

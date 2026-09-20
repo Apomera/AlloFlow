@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide, controls: arShopControlCatalog, preview: arShopControlPreview, currentPreview: arShopCurrentPreview, voltageReview: arShopVoltageReview, chooseEvidence: arShopChooseVoltageEvidence, reviewText: arShopVoltageReviewText, handoffGuide: arShopHandoffGuide, practiceBoard: arShopPracticeBoard, selectJob: arShopSelectJob, wheelSequence: arShopWheelSequence, wheelPoint: arShopWheelPoint, liftStatus: arShopLiftStatus, taskRoute: arShopTaskRoute, calculation: arShopCalculation, controlView: arShopControlView, inspectionTarget: arShopInspectionTarget };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -1348,5 +1348,34 @@ describe('Viewport workshop response', () => {
   it('clears instrument details on a different job and labels the completed work order',()=>{
     const p=panel(model.initial('oil'));expect(p.querySelector('[data-ar-response-capture]')).toBeNull();expect(p.querySelector('[data-ar-response-open]').textContent).toBe('Open work order');
     expect(panel({job:'electrical',step:6,released:true}).querySelector('[data-ar-response-task]').textContent).toBe('Work order: Completed');
+  });
+});
+
+
+describe('3D inspection outline eligibility', () => {
+  const state=()=>model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true});
+  it.each(['engine','shop-use-electrical-2-meter-posts','shop-use-electrical-2-read','shop-use-electrical-2-equip-socket'])('selects %s without changing the workshop',id=>{
+    const s=state(),before=JSON.stringify(s),preview=model.preview(s,id);
+    expect(model.inspectionTarget(s,'inspect',preview)).toBe(id);expect(JSON.stringify(s)).toBe(before);
+    for(const mode of ['operate','',undefined])expect(model.inspectionTarget(s,mode,preview)).toBe('');
+  });
+  it.each([{answer:'1.4'},{tool:'socket'},{hood:false},{step:3},{notes:'Edited handoff'}])('clears the outline when a preview expires: %j',patch=>{
+    const s=state(),preview=model.preview(s,'engine');expect(model.inspectionTarget({...s,...patch},'inspect',preview)).toBe('');
+  });
+  it.each(['ground','prepared','low','checked','raised'])('does not outline gated underbody areas at %s',lift=>{
+    const s=model.normalize({job:'oil',lift});for(const id of ['oil','exhaust'])expect(model.inspectionTarget(s,'inspect',model.preview(s,id))).toBe('');
+  });
+  it('allows supported underbody inspection while stopped and rejects absent/unknown previews',()=>{
+    const s=model.normalize({job:'oil',lift:'locked',liftStopped:true});expect(model.inspectionTarget(s,'inspect',model.preview(s,'oil'))).toBe('oil');
+    for(const preview of [null,{},model.preview(s,'bad')])expect(model.inspectionTarget(s,'inspect',preview)).toBe('');
+  });
+});
+
+describe('Inspection outline explanation',()=>{
+  beforeEach(()=>{resetStemLab();loadTool(file,'autoRepair');});
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('pairs the outline with an accessible explanation in %j',theme=>{
+    const shop=model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true});const host=document.createElement('div');
+    host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,shopInteraction:'inspect',shopInspectPick:model.preview(shop,'engine')}},theme);
+    const text=host.querySelector('[data-ar-control-outline-legend]').textContent;expect(text).toContain(theme.isContrast?'Black':'Cyan');expect(text).toContain('does not operate');
   });
 });

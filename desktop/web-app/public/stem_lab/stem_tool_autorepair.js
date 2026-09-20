@@ -10052,6 +10052,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return arShopOperate(atStation, action.action);
   }
 
+  function arShopInspectionTarget(raw, mode, preview) {
+    if (mode !== 'inspect') return '';
+    var item = arShopCurrentPreview(raw, preview), view = item && arShopControlView(raw, item.id);
+    return view && !view.blocked ? item.id : '';
+  }
+
   function buildWorkshopScene(THREE, api) {
     var state = arShopState(api.sceneProps), scene = api.scene;
     var meshes = {}, picks = [];
@@ -10656,7 +10662,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       picks = picks.filter(function (object) { for (var node = object; node; node = node.parent) if (!node.visible) return false; return true; });
     }
     scene.updateMatrixWorld(true);
-    return { meshes: meshes, picks: picks, anchor: car };
+    // One reusable outline follows inspection UI state through the viewer's frame callback.
+    // Keep it out of picks and sceneKey: selecting a control must not rebuild equipment.
+    var inspectionBounds = new THREE.Box3(), candidateBounds = new THREE.Box3();
+    // Tubular edges stay legible where WebGL renders ordinary lines at one pixel.
+    var inspectionOutline = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 6),
+      new THREE.MeshBasicMaterial({ color: api.contrast ? 0x000000 : 0x22d3ee, depthWrite: false }), 12);
+    inspectionOutline.name = 'workshop-inspection-outline'; inspectionOutline.box = inspectionBounds;
+    inspectionOutline.frustumCulled = false;
+    var inspectionEdges = [[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
+    var inspectionCorners = inspectionEdges.slice(0, 8).map(function () { return new THREE.Vector3(); });
+    var edgePose = new THREE.Object3D(), edgeDelta = new THREE.Vector3(), edgeDirection = new THREE.Vector3(), edgeUp = new THREE.Vector3(0, 1, 0);
+    inspectionOutline.visible = false; scene.add(inspectionOutline);
+    var lastInspectionId = null;
+    function updateInspection(time, props) {
+      var id = props && typeof props.inspectionId === 'string' ? props.inspectionId : '';
+      if (id === lastInspectionId) return;
+      lastInspectionId = id; inspectionBounds.makeEmpty();
+      inspectionOutline.visible = false; inspectionOutline.userData.targetId = '';
+      if (!id) return;
+      scene.updateMatrixWorld(true);
+      var seen = new Set();
+      picks.forEach(function (object) {
+        if (seen.has(object) || object.userData.partId !== id || !object.geometry) return;
+        seen.add(object);
+        for (var parent = object; parent; parent = parent.parent) if (!parent.visible) return;
+        if (!object.geometry.boundingBox) object.geometry.computeBoundingBox();
+        if (object.geometry.boundingBox) inspectionBounds.union(candidateBounds.copy(object.geometry.boundingBox).applyMatrix4(object.matrixWorld));
+      });
+      if (inspectionBounds.isEmpty()) return;
+      inspectionBounds.expandByScalar(0.018);
+      inspectionCorners.forEach(function (corner, index) {
+        corner.set(index & 1 ? inspectionBounds.max.x : inspectionBounds.min.x,
+          index & 2 ? inspectionBounds.max.y : inspectionBounds.min.y, index & 4 ? inspectionBounds.max.z : inspectionBounds.min.z);
+      });
+      var radius = Math.max(0.0035, Math.min(0.01, inspectionBounds.getSize(edgeDelta).length() * 0.006));
+      inspectionEdges.forEach(function (edge, index) {
+        var a = inspectionCorners[edge[0]], b = inspectionCorners[edge[1]];
+        edgeDelta.subVectors(b, a); edgePose.position.copy(a).add(b).multiplyScalar(0.5);
+        edgePose.quaternion.setFromUnitVectors(edgeUp, edgeDirection.copy(edgeDelta).normalize());
+        edgePose.scale.set(radius, edgeDelta.length(), radius); edgePose.updateMatrix();
+        inspectionOutline.setMatrixAt(index, edgePose.matrix);
+      });
+      inspectionOutline.instanceMatrix.needsUpdate = true;
+      inspectionOutline.userData.targetId = id; inspectionOutline.visible = true;
+    }
+    updateInspection(0, api.sceneProps);
+    return { meshes: meshes, picks: picks, anchor: car, frame: updateInspection };
   }
 
   function makeViewer(cfg) {
@@ -20566,6 +20618,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   d.shopInspectPick ? 'The workshop changed. Inspect a current control again.' : 'Select a control to read what it does.'),
               view && h('p', { 'data-ar-control-view-status': view.blocked ? 'blocked' : 'available', style: { fontSize: 12, lineHeight: 1.5 } },
                 view.blocked || ('Camera destination: ' + view.label + '. This changes the view only; equipment appears when its task setup is ready.')),
+              info && arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick) && h('p', { 'data-ar-control-outline-legend': true, style: { fontSize: 12, lineHeight: 1.5 } },
+                (isContrast ? 'Black' : 'Cyan') + ' outline: the inspected control, when present in the 3D scene. Use View area in 3D to locate it. The outline does not operate the control.'),
               info && h('div', { className: 'ar-shop-actions', role: 'group', 'aria-label': 'Selected control actions' },
               view && control('View area in 3D', function () {
                 var current = arShopCurrentPreview(shop, d.shopInspectPick), destination = current && arShopControlView(shop, current.id);
@@ -20602,12 +20656,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus(id, { distance: 2.8, target: { x: -1.3, y: (shop.lift === 'locked' ? 1.58 : shop.lift === 'raised' ? 1.68 : 0) + 0.5, z: 0.65 }, immediate: true });
           } else SHOP3D.focus(id, { distance: id === 'lift' ? 5.8 : 3.7 });
         }
+        var inspectionId = arShopInspectionTarget(shop, d.shopInteraction, d.shopInspectPick);
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
         var sceneState = [shop.job, shop.step, shop.tool, shop.brakeSpread, shop.brakePart, shop.lift, shop.liftStopped, shop.liftBayClear, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
-          sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
+          sceneKey: 'whole-workshop-' + sceneState, sceneProps: Object.assign({}, shop, { inspectionId: inspectionId }), showAllLabels: !!d.shopLabels,
           onPick: scenePick, onStatus: function (next) { upd('uh3dStatus', next); } });
         function control(label, fn, attrs) {
           return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,

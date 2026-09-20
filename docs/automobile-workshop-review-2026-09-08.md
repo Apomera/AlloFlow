@@ -417,6 +417,18 @@ Validation: 295 workshop unit/render tests passed, including eight new checks fo
 - [High contrast phone response](../reports/automobile-workshop/response-panel-contrast.png)
 - [Narrow dark phone response](../reports/automobile-workshop/response-panel-dark.png)
 
+## Inspected-control 3D outline — 2026-09-19
+
+Inspect mode now marks the selected control with a static cyan outline (black in high contrast). The outline encloses the visible meshes assigned to that control, including its physical labels. It respects depth occlusion and does not accept clicks, move equipment, capture a measurement or operate a control. The existing description and keyboard chooser remain the accessible interaction path. Underbody access gates still apply; unavailable controls have no invented geometry. Dismissal, Operate mode, changed workshop state and stale previews clear the outline.
+
+The scene uses one reusable instanced outline with twelve solid edges. Changing the inspected control updates its bounds through the existing viewer frame callback; it does not change the scene key or rebuild equipment. The outline is static under reduced motion and follows the viewer's existing visibility pause and disposal lifecycle. Solid edges replaced the initial thin lines after screenshot review found weak visibility on bright surfaces.
+
+Validation: 313 workshop unit/render tests passed (18 new cases). Three Chromium WebGL workflows passed after the final visual revision: the new physical/keyboard inspection journey, existing explicit-use/stale-preview workflow, and immediate emergency-stop/lift/drag regression. Repeated selections preserve the scene and outline identities, geometry/texture counts, work order and captured evidence. Checks cover target bounds, absent geometry, underbody gates, explicit use, reduced motion, a 390px high-contrast layout, no horizontal overflow and no browser errors. All three final screenshots reviewed. Syntax, scoped whitespace and all four module copies agree (SHA256 8cc7aca51dfbba6e2208232177b2e252d09e266361cdfa75160cc54c22eee693). Existing ignored build copies were verified before synchronization. No deployment.
+
+- [Battery contact outline](../reports/automobile-workshop/inspection-outline-contacts.png)
+- [Selected tool case](../reports/automobile-workshop/inspection-outline-tools.png)
+- [High contrast phone outline](../reports/automobile-workshop/inspection-outline-contrast.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
