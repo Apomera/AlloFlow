@@ -54,3 +54,29 @@ describe('README inventory matches the tool registry', () => {
       .not.toMatch(near(count - 1, '(?:plugin files|registered)'));
   });
 });
+
+// The same drift reached the public pages (2026-09-20). Twelve numbers across index.html,
+// features.html, for-districts.html, students.html and about.html still said 149 — headline
+// stats, a diagram label, and body copy. There is a purpose-built syncer that rewrites them
+// from the registry and a --check mode that exits 1, and two more audits that noticed; all
+// three were manual-only, so all three stayed silent in the ordinary test pass.
+describe('published inventory numbers match the registry', () => {
+  const run = (script, args) => {
+    const file = resolve(process.cwd(), 'dev-tools/' + script);
+    try {
+      return { code: 0, out: execFileSync(process.execPath, [file, ...args], { encoding: 'utf8' }) };
+    } catch (error) {
+      return { code: error.status ?? 1, out: String(error.stdout || '') + String(error.stderr || '') };
+    }
+  };
+
+  it('has no stale number on any published page', () => {
+    const { code, out } = run('sync_promo_inventory_counts.cjs', ['--check']);
+    expect(code, 'run `node dev-tools/sync_promo_inventory_counts.cjs` to correct them:\n' + out).toBe(0);
+  });
+
+  it('keeps the homepage static count synchronized', () => {
+    const { code, out } = run('audit_promo_wave3.cjs', []);
+    expect(code, out).toBe(0);
+  });
+});
