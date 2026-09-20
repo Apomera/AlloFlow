@@ -1,0 +1,91 @@
+{
+  "checkedAt": "2026-09-20T15:16:03.497Z",
+  "commit": "406dcbe47d695cdc48c7a9d8d6fbeec5411237ed",
+  "pass": true,
+  "results": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "status": 200,
+      "expected": "af5a727b86bc448208dbafc378baf8c94cdf0fc4714176efb2e69cca2e3bad1f",
+      "actual": "af5a727b86bc448208dbafc378baf8c94cdf0fc4714176efb2e69cca2e3bad1f",
+      "pass": true
+    },
+    {
+      "path": "quickstart_module.js",
+      "status": 200,
+      "expected": "bd530443b919fc922e06a82402597c1dbd0a6e92fc31ddd2436f48a93269b2fb",
+      "actual": "bd530443b919fc922e06a82402597c1dbd0a6e92fc31ddd2436f48a93269b2fb",
+      "pass": true
+    },
+    {
+      "path": "view_canvas_recovery_dialog_module.js",
+      "status": 200,
+      "expected": "5f13b3340a5ae2c50e660fe2b22619697de56e0daceb0a83e00d3f54537e7919",
+      "actual": "5f13b3340a5ae2c50e660fe2b22619697de56e0daceb0a83e00d3f54537e7919",
+      "pass": true
+    },
+    {
+      "path": "app/ai_backend_module.js",
+      "status": 200,
+      "expected": "2b536b7cd8afee8b2b00c6d038097c7164d68f879038d14e330526f3adcb9796",
+      "actual": "2b536b7cd8afee8b2b00c6d038097c7164d68f879038d14e330526f3adcb9796",
+      "pass": true
+    },
+    {
+      "path": "app/alloflow_desktop_bridge.js",
+      "status": 200,
+      "expected": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d",
+      "actual": "83b288e1075e38588888235bc8cfee3e82fbfba7f0b97f6bba7011a382f26a2d",
+      "pass": true
+    },
+    {
+      "path": "app/asset-manifest.json",
+      "status": 200,
+      "expected": "0c2bf136fc017473bb61d7598b20acf1a69d7297fae9ad3e93a5c54d1a0b77e6",
+      "actual": "0c2bf136fc017473bb61d7598b20acf1a69d7297fae9ad3e93a5c54d1a0b77e6",
+      "pass": true
+    },
+    {
+      "path": "app/index.html",
+      "status": 200,
+      "expected": "bb42a3d34a317ed0e20e6cc495ff2a5743f11263a5827de4ce8cd688abd7177e",
+      "actual": "bb42a3d34a317ed0e20e6cc495ff2a5743f11263a5827de4ce8cd688abd7177e",
+      "pass": true
+    },
+    {
+      "path": "app/qrcode.js",
+      "status": 200,
+      "expected": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+      "actual": "18ae399f81182bc9de916e9c77b195df20cc58d6f2d55a62b085a299f1bf1780",
+      "pass": true
+    },
+    {
+      "path": "app/static/css/main.f14b4317.css",
+      "status": 200,
+      "expected": "964400ec1733ee67348b2b50f2a80c56159032809fba2e3aa3b1bfe1915f6059",
+      "actual": "964400ec1733ee67348b2b50f2a80c56159032809fba2e3aa3b1bfe1915f6059",
+      "pass": true
+    },
+    {
+      "path": "app/static/js/main.362b04ad.js",
+      "status": 200,
+      "expected": "6f17eda8fc452524523bc030cff206bdc7e9073384f2eb5b559c9423f472647b",
+      "actual": "6f17eda8fc452524523bc030cff206bdc7e9073384f2eb5b559c9423f472647b",
+      "pass": true
+    },
+    {
+      "path": "app/static/js/main.362b04ad.js.LICENSE.txt",
+      "status": 200,
+      "expected": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274",
+      "actual": "a2971f0429fa672618f64ad390cb12e09043ce58066034bbf594be3ff335d274",
+      "pass": true
+    },
+    {
+      "path": "app/sw.js",
+      "status": 200,
+      "expected": "c19f76b0b8c77f8e8d824c08596c9abeabbba46cfac668162635957c1a3a9fc0",
+      "actual": "c19f76b0b8c77f8e8d824c08596c9abeabbba46cfac668162635957c1a3a9fc0",
+      "pass": true
+    }
+  ]
+}
