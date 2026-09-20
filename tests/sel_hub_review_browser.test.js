@@ -634,6 +634,11 @@ describe('SEL hub reviewed learning flow in Chromium', () => {
     expect(await field.inputValue()).toBe('Fictional example: ask for a quieter activity.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.coachHistory)).toBeUndefined();expect(errors).toEqual([]);
   },120000);
 
+  it('friendship rehearsal reflection survives the real hub return flow without an AI request',async()=>{
+    await mount();await page.locator('[data-sel-tool-card-id="friendship"]').click();await page.getByRole('tab',{name:/Rehearse/}).click();const activity=page.getByRole('region',{name:'Friendship rehearsal practice',exact:true});await activity.getByLabel('Choose a simulated response condition',{exact:true}).selectOption('decline');await activity.getByRole('button',{name:/Explaining a boundary:/}).click();await activity.getByLabel('Your friendship role-play response',{exact:true}).fill('I need time away.');await activity.getByRole('button',{name:'Pause and reflect',exact:true}).click();await activity.getByLabel('What choice or boundary matters to me? (optional)',{exact:true}).fill('Time to rest');
+    const support=page.locator('details[aria-label="Practice support"]');await support.locator(':scope > summary').click();await support.getByRole('button',{name:'Return to activities',exact:true}).click();await page.locator('[data-sel-tool-card-id="friendship"]').click();expect(await activity.getByLabel('What choice or boundary matters to me? (optional)',{exact:true}).inputValue()).toBe('Time to rest');await activity.getByRole('button',{name:'Return to this rehearsal',exact:true}).click();expect(await activity.getByLabel('Your friendship role-play response',{exact:true}).inputValue()).toBe('I need time away.');expect(await page.evaluate(()=>window.__alloflowSelToolData.friendship.fRpHistory.length)).toBe(1);expect(errors).toEqual([]);
+  },120000);
+
   const learningGuides = JSON.parse(read('sel_hub/sel_learning_guides.json'));
   const learningGuideIds = Object.keys(learningGuides);
   it.each([0, 1, 2, 3])('learning guide covers every tool in batch %s', async batch => {

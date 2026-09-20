@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-19",
+  "tool": "Friendship Workshop / Rehearse",
+  "validation": "passed",
+  "scenarios": 6,
+  "gradeSpecificScenesAndOpeners": 18,
+  "simulatedResponseConditions": 3,
+  "optionalReflectionNotes": 3,
+  "uniquePassingChecks": 78,
+  "focused": {
+    "browser": 32,
+    "controlContracts": 5
+  },
+  "existingSafetyLayer": 16,
+  "coachRegressions": 18,
+  "actualHub": {
+    "passed": 3,
+    "filtered": 104
+  },
+  "targetedTheme": {
+    "passed": 4,
+    "filtered": 292
+  },
+  "renderedTools": 72,
+  "phoneWidth": 320,
+  "phoneCapturesReviewed": 9,
+  "scopedReflectionAxeScans": 3,
+  "axeViolations": 0,
+  "themes": [
+    "light",
+    "dark",
+    "contrast"
+  ],
+  "sourcePublicSha256": "3b070ebaa4150b5e2bd0a7806003ec5c6388103c23de16a866475f5ca5239508",
+  "retryHistory": "All selected cases passed on the first run. No assertions or timeouts weakened.",
+  "providerCoverage": "Mocked partner/coaching/reflection responses, rejected/synchronous/empty replies, pending pause, local safety block, consent, offline and malformed records. No live provider call.",
+  "counting": "Filtered cases and render enumeration excluded.",
+  "delivery": "Local only. No push, deployment or packaged build."
+}
