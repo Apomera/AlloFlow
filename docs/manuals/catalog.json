@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-09-02",
+  "updated": "2026-09-20",
   "publicHub": "manuals.html",
   "statusDefinitions": {
     "available": "Publicly linked and maintained",
@@ -12,7 +12,13 @@
       "title": "AlloFlow Teacher Guide",
       "href": "guide/index.html",
       "format": "searchable web guide",
-      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/guide.json",
       "status": "available",
       "lastVerified": "2026-08-22"
@@ -22,7 +28,13 @@
       "title": "Complete User Manual",
       "href": "https://github.com/Apomera/AlloFlow/blob/main/AlloFlow%20Complete%20User%20Manual.md",
       "format": "generated Markdown",
-      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/guide.json",
       "status": "available",
       "lastVerified": "2026-08-22"
@@ -32,7 +44,13 @@
       "title": "Offline / Print Edition",
       "href": "guide/offline.html",
       "format": "single-page HTML",
-      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/guide.json",
       "status": "available",
       "lastVerified": "2026-08-22"
@@ -42,7 +60,13 @@
       "title": "Quick Reference",
       "href": "guide/quick-reference.html",
       "format": "web chapter",
-      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/18-quick-reference.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -52,7 +76,11 @@
       "title": "Educator Growth & Evaluation Manual",
       "href": "educator-evaluation-manual.html",
       "format": "illustrated HTML manual",
-      "audiences": ["educators", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "educator-evaluation-manual.html",
       "status": "available",
       "lastVerified": "2026-09-02"
@@ -62,7 +90,11 @@
       "title": "School Rewards & Store Manual",
       "href": "school-rewards-manual.html",
       "format": "illustrated HTML manual",
-      "audiences": ["educators", "families", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "leaders"
+      ],
       "canonicalSource": "school-rewards-manual.html",
       "status": "available",
       "lastVerified": "2026-09-02"
@@ -72,7 +104,11 @@
       "title": "Dynamic Assessment Studio Guide",
       "href": "docs/dynamic_assessment_guide.html",
       "format": "HTML guide",
-      "audiences": ["multilingual", "specialists", "leaders"],
+      "audiences": [
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/dynamic_assessment_guide.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -82,7 +118,9 @@
       "title": "School Leaders Guide",
       "href": "guide/for-school-leaders.html",
       "format": "web chapter",
-      "audiences": ["leaders"],
+      "audiences": [
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/20-for-school-leaders.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -92,7 +130,9 @@
       "title": "IT Department Guide",
       "href": "guide/for-your-it-department.html",
       "format": "web chapter",
-      "audiences": ["leaders"],
+      "audiences": [
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/17-for-your-it-department.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -102,7 +142,13 @@
       "title": "Accessibility and UDL Guide",
       "href": "guide/accessibility-and-udl.html",
       "format": "web chapter",
-      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/04-accessibility-and-udl.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -112,7 +158,11 @@
       "title": "Accessibility Remediation",
       "href": "remediation.html",
       "format": "workflow overview",
-      "audiences": ["educators", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "remediation.html",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -122,7 +172,10 @@
       "title": "Family Mode Guide",
       "href": "guide/family-mode.html",
       "format": "web chapter",
-      "audiences": ["families", "educators"],
+      "audiences": [
+        "families",
+        "educators"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/16-family-mode.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -132,7 +185,12 @@
       "title": "Multilingual Learner Support Path",
       "href": "guide/accessibility-and-udl.html#vocabulary-language-and-translation",
       "format": "curated web path",
-      "audiences": ["educators", "families", "multilingual", "specialists"],
+      "audiences": [
+        "educators",
+        "families",
+        "multilingual",
+        "specialists"
+      ],
       "canonicalSource": "docs/teacher-guide/chapters/04-accessibility-and-udl.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -142,7 +200,12 @@
       "title": "SEL Hub Educator Guide",
       "href": "https://github.com/Apomera/AlloFlow/blob/main/sel_hub/FOR_EDUCATORS.md",
       "format": "Markdown responsible-use guide",
-      "audiences": ["educators", "families", "specialists", "leaders"],
+      "audiences": [
+        "educators",
+        "families",
+        "specialists",
+        "leaders"
+      ],
       "canonicalSource": "sel_hub/FOR_EDUCATORS.md",
       "status": "available",
       "lastVerified": "2026-08-20"
@@ -151,7 +214,9 @@
       "id": "parent-caregiver-manual",
       "title": "Parent and Caregiver Manual",
       "format": "future audience manual",
-      "audiences": ["families"],
+      "audiences": [
+        "families"
+      ],
       "currentPath": "guide/family-mode.html",
       "status": "planned"
     },
@@ -159,9 +224,83 @@
       "id": "multilingual-learner-manual",
       "title": "Multilingual Learner Implementation Guide",
       "format": "future audience manual",
-      "audiences": ["multilingual", "educators", "specialists"],
+      "audiences": [
+        "multilingual",
+        "educators",
+        "specialists"
+      ],
       "currentPath": "guide/accessibility-and-udl.html#vocabulary-language-and-translation",
       "status": "planned"
+    },
+    {
+      "id": "manual-water-cycle",
+      "title": "Water Cycle Teacher Manual",
+      "href": "manual-water-cycle.html",
+      "format": "STEM tool teacher manual",
+      "audiences": [
+        "educators",
+        "specialists"
+      ],
+      "canonicalSource": "stem_lab/stem_tool_watercycle.js",
+      "tryItHref": "https://alloflow-cdn.pages.dev/water-cycle",
+      "status": "available",
+      "lastVerified": "2026-09-20"
+    },
+    {
+      "id": "manual-evo-lab",
+      "title": "EvoLab Teacher Manual",
+      "href": "manual-evo-lab.html",
+      "format": "STEM tool teacher manual",
+      "audiences": [
+        "educators",
+        "specialists"
+      ],
+      "canonicalSource": "stem_lab/stem_tool_evolab.js",
+      "tryItHref": "https://alloflow-cdn.pages.dev/evo-lab",
+      "status": "available",
+      "lastVerified": "2026-09-20"
+    },
+    {
+      "id": "manual-solar-system",
+      "title": "Solar System Teacher Manual",
+      "href": "manual-solar-system.html",
+      "format": "STEM tool teacher manual",
+      "audiences": [
+        "educators",
+        "specialists"
+      ],
+      "canonicalSource": "stem_lab/stem_tool_solarsystem.js",
+      "tryItHref": "https://alloflow-cdn.pages.dev/solar-system",
+      "status": "available",
+      "lastVerified": "2026-09-20"
+    },
+    {
+      "id": "manual-kitchen-lab",
+      "title": "Kitchen Lab Teacher Manual",
+      "href": "manual-kitchen-lab.html",
+      "format": "STEM tool teacher manual",
+      "audiences": [
+        "educators",
+        "specialists"
+      ],
+      "canonicalSource": "stem_lab/stem_tool_kitchenlab.js",
+      "tryItHref": "https://alloflow-cdn.pages.dev/kitchen-lab",
+      "status": "available",
+      "lastVerified": "2026-09-20"
+    },
+    {
+      "id": "manual-coaster-lab",
+      "title": "Coaster Lab Teacher Manual",
+      "href": "manual-coaster-lab.html",
+      "format": "STEM tool teacher manual",
+      "audiences": [
+        "educators",
+        "specialists"
+      ],
+      "canonicalSource": "stem_lab/stem_tool_coasterlab.js",
+      "tryItHref": "https://alloflow-cdn.pages.dev/coaster-lab",
+      "status": "available",
+      "lastVerified": "2026-09-20"
     }
   ]
 }

@@ -96,6 +96,40 @@ describe('manuals and guides hub', () => {
   });
 });
 
+// STEM tool manuals (2026-09-20). These five were hand-written into the hub and lived
+// OUTSIDE catalog.json, so nothing checked that a manual, its card, its sitemap entry and
+// the tool it documents stayed in step. They are catalogued now; this keeps them there,
+// and makes the same guarantees the guides already had apply to every manual added next.
+describe('STEM tool manuals are catalogued, not hand-placed', () => {
+  const toolManuals = catalog.items.filter((item) => item.format === 'STEM tool teacher manual');
+
+  it('catalogues every manual-*.html page that the hub publishes', () => {
+    const onDisk = Array.from(hub.matchAll(/href="(manual-[a-z0-9-]+\.html)"/g), (m) => m[1]);
+    const catalogued = new Set(toolManuals.map((item) => item.href));
+    for (const href of new Set(onDisk)) {
+      expect(catalogued.has(href), href + ' is linked from the hub but missing from catalog.json').toBe(true);
+    }
+    expect(toolManuals.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('names the tool source each manual documents, and that file exists', () => {
+    for (const item of toolManuals) {
+      expect(item.canonicalSource, item.id + ' canonicalSource').toMatch(/^stem_lab\/stem_tool_[a-z0-9_]+\.js$/);
+      expect(existsSync(resolve(root, item.canonicalSource)), item.id + ' tool source').toBe(true);
+    }
+  });
+
+  it('keeps a working path from manual back to the hub and out to the live tool', () => {
+    for (const item of toolManuals) {
+      const page = read(localPath(item.href));
+      expect(page, item.id + ' back-link').toContain('manuals.html');
+      expect(page, item.id + ' canonical').toContain('rel="canonical"');
+      expect(item.tryItHref, item.id + ' tryItHref').toMatch(/^https:\/\//);
+      expect(cardMarkup(item.id), item.id + ' card offers the tool').toContain(item.tryItHref);
+    }
+  });
+});
+
 describe('manual quality guardrails', () => {
   it('documents Universal image style as the default and per-resource style as an override', () => {
     const universal = read('docs/teacher-guide/chapters/11-universal-settings.md');
