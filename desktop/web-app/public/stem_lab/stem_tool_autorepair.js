@@ -20531,6 +20531,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           upd('shopInspectPick', null);
           requestAnimationFrame(function () { var chooser = document.getElementById('ar-shop-inspect-target'); if (chooser) chooser.focus({ preventScroll: true }); });
         }
+        function workshopResponsePanel() {
+          var guide = arShopInstrumentGuide(shop);
+          var held = (SHOP_TOOLS.filter(function (tool) { return tool[0] === shop.tool; })[0] || ['', 'No listed tool'])[1];
+          return h('section', { 'data-ar-workshop-response': true, 'aria-label': 'Workshop response',
+            style: { margin: '10px 0', padding: 12, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accentHi, borderRadius: 8, background: T.card, color: T.text, overflowWrap: 'anywhere' } },
+            h('h3', { style: { fontSize: 14, margin: '0 0 6px' } }, 'Workshop response'),
+            h('p', { 'data-ar-response-feedback': true, style: { fontSize: 13, lineHeight: 1.5, margin: '6px 0' } }, shop.feedback || (d.shopInteraction === 'inspect' ? 'Inspect a control to learn what it does before using it.' : 'Choose a 3D control or use the labeled work panels. Its result appears here.')),
+            h('p', { 'data-ar-response-task': true, style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0' } }, h('strong', null, task ? 'Current task: ' : 'Work order: '), task ? task.label : shop.released ? 'Completed' : 'Review saved record'),
+            h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0' } }, 'In hand: ' + held),
+            guide && h('p', { 'data-ar-response-capture': guide.capture ? (guide.capture === 'No current capture' ? 'missing' : guide.captured ? 'current' : 'check-setup') : 'sequence',
+              style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0', fontWeight: 700 } },
+              guide.capture ? (guide.capture === 'No current capture' ? guide.capture : 'Captured: ' + guide.capture + (guide.captured ? ' · For this task' : ' · Check measurement setup')) : guide.summary),
+            guide && guide.capture && h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: '6px 0', color: T.muted } }, 'A capture records a measurement; it does not complete the task.'),
+            control(guide ? 'Open equipment controls' : 'Open work order', function () { workshopJump(guide ? 'equipment' : 'order'); }, { 'data-ar-response-open': guide ? 'equipment' : 'order' }));
+        }
         function controlInspector() {
           var inspecting = d.shopInteraction === 'inspect', info = arShopCurrentPreview(shop, d.shopInspectPick);
           var view = info ? arShopControlView(shop, info.id) : null;
@@ -21230,6 +21245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('div', { id: 'ar-shop-bay', tabIndex: -1, role: 'region', 'aria-label': '3D workshop bay and camera controls', className: 'ar-bay-viewer-frame ar-shop-viewport' },
                 bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
                   label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
+                workshopResponsePanel(),
                 controlInspector(),
                 bayControls({ viewer: SHOP3D, selected: shop.station, selectedLabel: station.label }),
                 h('div', { className: 'ar-shop-actions' },

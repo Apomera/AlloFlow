@@ -407,6 +407,16 @@ Validation: **287 workshop model/render tests passed** in the final run (20.58 s
 - [High-contrast phone blocked underbody view](../reports/automobile-workshop/inspector-location-contrast.png)
 - [Narrow dark-phone supported underbody preview](../reports/automobile-workshop/inspector-location-dark.png)
 
+## Viewport response panel — 2026-09-19
+
+Added a compact Workshop response panel directly below the 3D viewport. It shows the existing action feedback, current task, held tool, and current instrument capture or wheel-fastener sequence. Captures use the existing instrument guide and reading key: setup changes and stale saved keys cannot appear as current evidence. Unsuitable captures explicitly say to check the measurement setup; valid diagnostic measurements are not labeled as a completed task or successful repair. Equipment/work-order links move keyboard focus without operating controls or changing saved work. Existing action announcements remain the single announcement path.
+
+Validation: 295 workshop unit/render tests passed, including eight new checks for themes, stale and unsuitable captures, sequence progress, escaped feedback, fallback rendering and job completion. Three Chromium WebGL workflows passed: new feedback/capture/navigation journey, camera-only inspector lookup, and physical emergency-stop/lift/drag regression. The new journey exercises actual battery-contact picking, saved-job switching, keyboard focus, 390px high contrast and 320px dark layouts with no horizontal overflow or browser errors. All three new captures were visually reviewed. Syntax, scoped whitespace and four-copy module parity passed; existing ignored desktop build mirrors were verified against HEAD before synchronization. No deployment.
+
+- [Desktop response panel](../reports/automobile-workshop/response-panel-desktop.png)
+- [High contrast phone response](../reports/automobile-workshop/response-panel-contrast.png)
+- [Narrow dark phone response](../reports/automobile-workshop/response-panel-dark.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

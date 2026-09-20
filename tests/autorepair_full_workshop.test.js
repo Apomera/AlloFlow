@@ -1313,3 +1313,40 @@ describe('Inspector camera action rendering',()=>{
     expect(render({job:'electrical',step:2},'engine',{}, {answer:'1.4'}).querySelector('[data-ar-control-view]')).toBeNull();
   });
 });
+
+describe('Viewport workshop response', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  const meter = () => model.normalize({job:'electrical',step:2,station:'engine',tool:'meter',hood:true,instrument:{mode:'dcv',contact:'joint',load:'starter'}});
+  function panel(shop, theme={}, prefs={}) {
+    const host=document.createElement('div');host.innerHTML=renderTool('autoRepair',{autoRepair:{view:'workshop',shop,...prefs}},theme);
+    return host.querySelector('[data-ar-workshop-response]');
+  }
+  it.each([{isDark:false},{isDark:true},{isContrast:true}])('shows a current diagnostic capture without claiming task completion in %j', theme => {
+    const state=model.operate(meter(),{type:'read'}),before=JSON.stringify(state),p=panel(state,theme);
+    expect(p.querySelector('[data-ar-response-capture="current"]').textContent).toContain('1.6 V');
+    expect(p.textContent).toContain('does not complete the task');expect(p.textContent).toContain('Compare voltage-drop evidence');
+    expect(p.querySelector('[data-ar-response-open]').getAttribute('data-ar-response-open')).toBe('equipment');
+    expect(p.querySelector('[role="status"],[aria-live]')).toBeNull();expect(JSON.stringify(state)).toBe(before);
+  });
+  it('does not present an invalid battery-post reading as task evidence',()=>{
+    const state=model.operate({...meter(),instrument:{mode:'dcv',contact:'posts',load:'off'}},{type:'read'});
+    const p=panel(state);expect(p.querySelector('[data-ar-response-capture="check-setup"]').textContent).toContain('12.6 V');expect(p.textContent).toContain('Check measurement setup');
+  });
+  it('removes a capture after setup changes and ignores a stale saved key',()=>{
+    const state=model.operate(meter(),{type:'read'});
+    for(const changed of [model.operate(state,{type:'configure',field:'contact',value:'posts'}),{...state,serviced:true}]){
+      const p=panel(changed);expect(p.querySelector('[data-ar-response-capture="missing"]').textContent).toBe('No current capture');expect(p.textContent).not.toContain('Captured: 1.6');
+    }
+  });
+  it('shows wheel sequence progress without inventing a measured torque value',()=>{
+    const p=panel(model.normalize({job:'brakes',step:9,wheelSeated:true,lugs:[0,2]}));expect(p.querySelector('[data-ar-response-capture="sequence"]').textContent).toContain('2/5 fasteners checked');expect(p.textContent).not.toContain('Captured:');
+  });
+  it('escapes feedback and provides guidance in inspect mode without WebGL',()=>{
+    const p=panel({...meter(),feedback:'<img src=x onerror=alert(1)>'},{},{uh3dStatus:'failed'});expect(p.querySelector('img')).toBeNull();expect(p.textContent).toContain('<img');
+    expect(panel(model.initial('brakes'),{},{shopInteraction:'inspect'}).textContent).toContain('Inspect a control');
+  });
+  it('clears instrument details on a different job and labels the completed work order',()=>{
+    const p=panel(model.initial('oil'));expect(p.querySelector('[data-ar-response-capture]')).toBeNull();expect(p.querySelector('[data-ar-response-open]').textContent).toBe('Open work order');
+    expect(panel({job:'electrical',step:6,released:true}).querySelector('[data-ar-response-task]').textContent).toBe('Work order: Completed');
+  });
+});
