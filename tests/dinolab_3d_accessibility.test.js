@@ -209,7 +209,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('var thoraxCenter = new THREE.Vector3()');
     expect(source).toContain("var torsoRadii = [");
     expect(source).toContain("var bodyShell = addSoftTissueChain(torsoPoints, torsoRadii, bodyMat)[0] || null;");
-    expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
+    expect(source).toContain('var neckPoints = [shoulder, neckMidA, neckMidB, head];');
     expect(source).toContain('var tailMeshes = addSoftTissueChain([tailSkinRoot, tailMidA, tailMidB, tail]');
     expect(source).toContain('idleMotion.tailSegments.forEach(function (tailEntry, tailIndex)');
     expect(source).toContain("readoutChip('Body ' + postcranialSurface.shortLabel");
@@ -245,7 +245,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain('function addSoftTissueCylinder(a, b, startRadius, endRadius, mat)');
     expect(source).toContain('function addBodyContour(mesh)');
     expect(source).toContain("side: THREE.BackSide, depthWrite: false");
-    expect(source).toContain('var neckMeshes = addSoftTissueChain([shoulder, neckMidA, neckMidB, head]');
+    expect(source).toContain('var neckMeshes = addSoftTissueChain(neckPoints, neckRadii, bodyMat);');
     expect(source).toContain('var armShell = addSoftTissueChain([armStart');
     expect(source).toContain('function addTextLabel(text, pos, color, scaleFactor, parent)');
     expect(source).toContain('(parent || model).add(sprite);');
@@ -262,7 +262,7 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("var groundCanvas = document.createElement('canvas');");
     expect(source).toContain('new THREE.DodecahedronGeometry(rockSize, 0)');
     expect(source).toContain("var skinCanvas = document.createElement('canvas');");
-    expect(source).toContain('roughness: 0.82, metalness: 0');
+    expect(source).toContain('roughness: 0.86, metalness: 0');
     expect(source).toContain('function faceSurfacePoint(point, side, inset)');
     expect(source).toContain('ray.intersectObject(headShell, false)');
     expect(source).toContain('var faceScale = reconstructionProfile.head;');

@@ -1,0 +1,21 @@
+{
+  "checked": "2026-09-20",
+  "sources": {
+    "bones": {
+      "title": "AMNH: learning from fossils",
+      "url": "https://www.amnh.org/dinosaurs/dinosaur-bones"
+    },
+    "legs": {
+      "title": "Natural History Museum: dinosaur and bird legs",
+      "url": "https://www.nhm.ac.uk/discover/news/2024/november/dinosaur-fossils-reveal-how-birds-got-distinctive-walks.html"
+    },
+    "feathers": {
+      "title": "AMNH: Velociraptor feather evidence",
+      "url": "https://www.amnh.org/explore/news-blogs/velociraptor-feather-evidence"
+    },
+    "skin": {
+      "title": "AMNH: a dinosaur skin fossil",
+      "url": "https://www.amnh.org/exhibitions/permanent/ornithischian-dinosaurs/dinosaur-mummy"
+    }
+  }
+}

@@ -3754,6 +3754,9 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <button type="button" aria-label="Study body details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Body</button>
 <button type="button" aria-label="Study tail details" aria-pressed="false" style="padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);cursor:pointer;font-size:12px;font-weight:800">Tail</button>
 </div>
+<section class="dinolab-anatomy-quest" aria-label="Anatomy Quest" style="margin-top:10px;max-width:620px;border:1px solid var(--allo-stem-border, #334155);border-radius:10px;background:var(--allo-stem-deeper, #0b1220);overflow:hidden">
+<button type="button" aria-label="Anatomy Quest" aria-expanded="false" style="min-height:44px;padding:9px 12px;border-radius:0;border:0;background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:13px;font-weight:800;cursor:pointer;display:block;width:100%;text-align:left">Anatomy Quest · 5 clues</button>
+</section>
 <div class="dinolab-body-label-controls" style="margin-top:10px">
 <button type="button" aria-pressed="false" style="min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);font-size:12px;font-weight:800;cursor:pointer">Body-part labels</button>
 </div>

@@ -1,0 +1,22 @@
+{
+  "before": {
+    "model": "E05A3F8D-9B9E-4C86-ADFE-6870B64BD8EC",
+    "geometries": 135,
+    "textures": 7,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "after": {
+    "model": "E05A3F8D-9B9E-4C86-ADFE-6870B64BD8EC",
+    "geometries": 135,
+    "textures": 7,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  },
+  "violations": [],
+  "score": "4/5",
+  "reviewed": "foot",
+  "replayAndResume": true
+}

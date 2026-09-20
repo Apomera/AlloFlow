@@ -1,0 +1,94 @@
+{
+  "date": "2026-09-20",
+  "feature": "Dino Lab anatomy guides and Anatomy Quest",
+  "unit": {
+    "passed": 130,
+    "suites": 7,
+    "focused": 57,
+    "golden": 73
+  },
+  "browser": {
+    "project": "chromium",
+    "finalScenarios": 5,
+    "finalPassed": 5,
+    "initialQuestPassed": 2,
+    "workers": 1,
+    "retries": 0
+  },
+  "accessibility": {
+    "desktopViolations": 0,
+    "phone320Violations": 0,
+    "locatorPhoneViolations": 0,
+    "keyboardFocus": true,
+    "phoneOverflow": false
+  },
+  "desktop": {
+    "before": {
+      "model": "E05A3F8D-9B9E-4C86-ADFE-6870B64BD8EC",
+      "geometries": 135,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "after": {
+      "model": "E05A3F8D-9B9E-4C86-ADFE-6870B64BD8EC",
+      "geometries": 135,
+      "textures": 7,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    },
+    "violations": [],
+    "score": "4/5",
+    "reviewed": "foot",
+    "replayAndResume": true
+  },
+  "phone": {
+    "violations": [],
+    "allTenGuides": true,
+    "quadrupedLabels": true,
+    "hiddenLayerQuiz": true,
+    "speciesReset": true,
+    "after": {
+      "model": "37C58377-6556-47E8-BEA9-6151722DB9AF",
+      "geometries": 2,
+      "textures": 3,
+      "errors": [],
+      "lost": false,
+      "shaderFailures": 0
+    }
+  },
+  "locator": {
+    "violations": [],
+    "memory": {
+      "geometries": 201,
+      "textures": 7
+    },
+    "savedUnchanged": true
+  },
+  "reviewedScreenshots": [
+    "desktop-question.png",
+    "desktop-feedback.png",
+    "desktop-results.png",
+    "phone-part-guide.png",
+    "phone-feedback.png",
+    "locator-regression/phone-knee.png",
+    "locator-regression/triceratops-front-foot.png",
+    "locator-regression/microraptor-ankle.png"
+  ],
+  "rendererHashes": {
+    "stem_lab/stem_tool_dinolab.js": "fc9da4bcb096c577127aef6326446f5eb1482b3d9cbb186926becb4ce2f29c48",
+    "desktop/web-app/public/stem_lab/stem_tool_dinolab.js": "fc9da4bcb096c577127aef6326446f5eb1482b3d9cbb186926becb4ce2f29c48",
+    "desktop/web-app/build/stem_lab/stem_tool_dinolab.js": "fc9da4bcb096c577127aef6326446f5eb1482b3d9cbb186926becb4ce2f29c48",
+    "desktop/app-build/stem_lab/stem_tool_dinolab.js": "fc9da4bcb096c577127aef6326446f5eb1482b3d9cbb186926becb4ce2f29c48"
+  },
+  "scope": {
+    "newGeometry": false,
+    "notebookMutations": false,
+    "quizPersistence": "Current mounted 3D viewer only; species change resets the attempt",
+    "packagedBuild": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

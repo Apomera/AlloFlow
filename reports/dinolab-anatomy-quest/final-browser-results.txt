@@ -1,0 +1,16 @@
+Running 5 tests using 1 worker
+
+
+
+(node:46716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:46716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/5] [chromium] › tests\e2e\dinolab-3d-part-locator.spec.ts:23:5 › phone locator reaches every joint with keyboard access and unchanged observations
+[2/5] [chromium] › tests\e2e\dinolab-3d-part-locator.spec.ts:32:5 › quadruped locator survives orbit and fossil transitions and resets for another species
+[3/5] [chromium] › tests\e2e\dinolab-3d-part-locator.spec.ts:41:5 › small-species locator follows real anchors and clears incompatible regional studies
+[4/5] [chromium] › tests\e2e\dinolab-anatomy-quest.spec.ts:22:5 › desktop quest explains answers, scores once, reviews mistakes and replays without rebuilding
+[5/5] [chromium] › tests\e2e\dinolab-anatomy-quest.spec.ts:42:5 › phone guides adapt to quadrupeds and the quiz survives hidden layers then resets by species
+  5 passed (4.5m)

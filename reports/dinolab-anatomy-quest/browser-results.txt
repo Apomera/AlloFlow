@@ -1,0 +1,13 @@
+Running 2 tests using 1 worker
+
+
+
+(node:50272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:50272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/2] [chromium] › tests\e2e\dinolab-anatomy-quest.spec.ts:22:5 › desktop quest explains answers, scores once, reviews mistakes and replays without rebuilding
+[2/2] [chromium] › tests\e2e\dinolab-anatomy-quest.spec.ts:42:5 › phone guides adapt to quadrupeds and the quiz survives hidden layers then resets by species
+  2 passed (2.6m)

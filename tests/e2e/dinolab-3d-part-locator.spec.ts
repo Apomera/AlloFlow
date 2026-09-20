@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 import {GlHarness} from './helpers/stem_gl_harness';
 test.describe.configure({timeout:240_000});test.use({video:'off',trace:'off'});
-const report='reports/dinolab-3d-part-locator';
+const report=process.env.DINOLAB_REPORT_DIR||'reports/dinolab-3d-part-locator';
 const harness=new GlHarness({toolFile:'stem_lab/stem_tool_dinolab.js',toolId:'dinoLab',width:1180,height:920,appStyles:true,probes:"var R=THREE.WebGLRenderer;THREE.WebGLRenderer=function(o){var r=new R(o),render=r.render.bind(r);r.render=function(s,c){window.__partScene=s;window.__partCamera=c;window.__partRenderer=r;return render(s,c);};return r;};"});
 test.beforeAll(async()=>{fs.mkdirSync(report,{recursive:true});await harness.start();});test.afterAll(async()=>harness.stop());test.afterEach(async({page})=>harness.destroy(page));
 async function settle(page){await page.evaluate(()=>new Promise<void>(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r()))));}

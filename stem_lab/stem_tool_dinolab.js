@@ -6465,6 +6465,107 @@ window.StemLab = window.StemLab || {
     return { texelSize: texel, floorY: floorY, min: bounds.min.toArray(), max: bounds.max.toArray() };
   }
 
+  var DINO_ANATOMY_SOURCES = {
+    "bones": {
+      "title": "AMNH: learning from fossils",
+      "url": "https://www.amnh.org/dinosaurs/dinosaur-bones"
+    },
+    "legs": {
+      "title": "Natural History Museum: dinosaur and bird legs",
+      "url": "https://www.nhm.ac.uk/discover/news/2024/november/dinosaur-fossils-reveal-how-birds-got-distinctive-walks.html"
+    },
+    "feathers": {
+      "title": "AMNH: Velociraptor feather evidence",
+      "url": "https://www.amnh.org/explore/news-blogs/velociraptor-feather-evidence"
+    },
+    "skin": {
+      "title": "AMNH: a dinosaur skin fossil",
+      "url": "https://www.amnh.org/exhibitions/permanent/ornithischian-dinosaurs/dinosaur-mummy"
+    }
+  };
+  var DINO_ANATOMY_GUIDES = {
+    "head": {
+      "purpose": "The jaws take in and process food; the skull protects the brain and supports sensory organs.",
+      "look": "Compare the muzzle, eye position and jaw margin. Look for teeth or a beak in the available layers.",
+      "evidence": "Skull bones and teeth constrain shape. Lips, cheek thickness and eye color usually require reconstruction.",
+      "clue": "Which region contains the jaws and the bony case surrounding the brain?",
+      "hint": "Look at the feeding end of the animal.",
+      "source": "bones"
+    },
+    "tail": {
+      "purpose": "The tail can contribute to balance and movement. Its shape and role differ among groups.",
+      "look": "Follow the taper behind the hips. Compare the bone chain with the outer surface.",
+      "evidence": "Tail vertebrae constrain length and joint arrangement. A modeled pose alone does not establish behavior or flexibility.",
+      "clue": "Which region has a bony axis made of caudal vertebrae extending behind the hips?",
+      "hint": "Look behind the pelvis, away from the head.",
+      "source": "bones"
+    },
+    "trunk": {
+      "purpose": "The torso contains major organs and links the limbs through the shoulder and pelvic regions.",
+      "look": "Trace the rib cage, then compare its outline with the life reconstruction.",
+      "evidence": "Ribs and back bones constrain the body. Rare skin fossils add surface clues; the full soft-tissue outline still needs interpretation.",
+      "clue": "Which body region contains the rib cage and is supported by the dorsal vertebrae?",
+      "hint": "Look at the main body between the neck and pelvis.",
+      "source": "skin"
+    },
+    "hand": {
+      "purpose": "The hand forms the end of the forelimb. Grasping, display and wing support differ among lineages.",
+      "look": "Find the wrist and digits. The model is a simplified guide to their arrangement.",
+      "evidence": "Wrist and finger bones constrain arrangement. Claw sheaths, skin and the exact range of motion often require inference.",
+      "clue": "Which part is called the manus and includes the wrist and fingers or front-foot digits?",
+      "hint": "Follow a forelimb to its far end.",
+      "source": "bones"
+    },
+    "foot": {
+      "purpose": "The hind foot transfers forces between the limb and the ground during standing and movement.",
+      "look": "Follow the lower leg past the ankle to the metatarsals and toes.",
+      "evidence": "Foot bones preserve structure; tracks record contact with a surface. A footprint is a trace fossil.",
+      "clue": "Which part is called the pes and includes the hind-limb metatarsals and toes?",
+      "hint": "Start at a hind leg and follow it toward the ground.",
+      "source": "bones"
+    },
+    "neck": {
+      "purpose": "The neck supports and positions the head; muscles and joints connect its vertebrae.",
+      "look": "Follow the vertebral chain from the back of the skull toward the shoulders.",
+      "evidence": "Neck vertebrae constrain the skeleton. Cartilage, muscle thickness and habitual posture are less directly preserved.",
+      "clue": "Which region connects the skull to the trunk through a series of cervical vertebrae?",
+      "hint": "Look at the connection between the head and main body.",
+      "source": "bones"
+    },
+    "forelimb": {
+      "purpose": "The arm positions the hand. In some feathered theropods, the forelimb also supported a wing.",
+      "look": "Trace shoulder, elbow and wrist. The humerus is above the elbow; radius and ulna continue below it.",
+      "evidence": "One example: quill knobs on a Velociraptor forearm support feather attachment. These marks alone do not establish powered flight.",
+      "clue": "Which region contains the humerus, the bone connecting the shoulder to the elbow?",
+      "hint": "Find the limb attached near the front of the trunk.",
+      "source": "feathers"
+    },
+    "knee": {
+      "purpose": "The knee lets the thigh and lower leg change angle during limb movement.",
+      "look": "Find the joint below the femur, then follow the lower leg to the separate ankle.",
+      "evidence": "Bone ends help locate the joint. In birds, the conspicuous backward-pointing lower joint is the ankle; the knee is higher up.",
+      "clue": "Which joint connects the femur to the lower leg, above the ankle?",
+      "hint": "Trace the thigh bone down from the hip to its first major joint.",
+      "source": "legs"
+    },
+    "ankle": {
+      "purpose": "The ankle connects the lower leg with the foot, helping transmit force during movement.",
+      "look": "Trace upward from the toes and metatarsals to find this joint before the knee.",
+      "evidence": "Ankle bones and their contacts constrain joint structure. The covering of soft tissue in this model is inferred.",
+      "clue": "Which joint lies between the lower leg and the metatarsals, below the knee?",
+      "hint": "Start at the toes and work upward toward the lower leg.",
+      "source": "legs"
+    },
+    "thigh": {
+      "purpose": "The femur transfers loads between the hip and knee, with muscles contributing to movement.",
+      "look": "Locate the upper hind limb between the body and knee. Its covering can conceal some of the bone.",
+      "evidence": "A femur preserves bone shape and attachment clues. Exact muscle volume or strength cannot be read directly from a model outline.",
+      "clue": "Which region contains the femur running from the hip to the knee?",
+      "hint": "Look at the upper segment of a hind limb.",
+      "source": "legs"
+    }
+  };
+
   function dinoBodyPartDefinitions(quadruped) {
     return [
       { id: 'head', label: 'Head', region: 'head', detail: 'The skull supports the jaws and surrounds the brain.' },
@@ -6477,7 +6578,41 @@ window.StemLab = window.StemLab || {
       { id: 'knee', label: 'Knee', region: 'body', detail: 'The knee joins the thigh bone (femur) to the lower leg. It is distinct from the ankle.' },
       { id: 'ankle', label: 'Ankle', region: 'body', detail: 'The ankle lies between the lower leg and the metatarsals of the foot.' },
       { id: 'thigh', label: 'Thigh', region: 'body', detail: 'The femur runs from the hip to the knee, surrounded by reconstructed muscle and skin.' }
-    ];
+    ].map(function (part) {
+      var guide = DINO_ANATOMY_GUIDES[part.id];
+      Object.keys(guide).forEach(function (key) { part[key] = guide[key]; });
+      if (quadruped && part.id === 'hand') part.purpose = 'In a four-legged stance, the front foot helps support the animal. Digits and claws vary among groups.';
+      if (quadruped && part.id === 'forelimb') part.purpose = 'The foreleg carries weight in this quadrupedal stance, connecting the shoulder to the front foot.';
+      return part;
+    });
+  }
+
+  // Seeded shuffling keeps each quest reproducible without changing the guide data.
+  function dinoAnatomyQuizDeck(quadruped, seed) {
+    var state = (Math.imul(Number(seed) >>> 0, 2654435761) >>> 0) || 1;
+    function shuffle(items) {
+      var copy = items.slice();
+      for (var i = copy.length - 1; i > 0; i--) {
+        state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+        var j = Math.floor(state / 4294967296 * (i + 1)), swap = copy[i];
+        copy[i] = copy[j]; copy[j] = swap;
+      }
+      return copy;
+    }
+    var parts = dinoBodyPartDefinitions(quadruped);
+    return shuffle(parts).slice(0, 5).map(function (part) {
+      var others = shuffle(parts.filter(function (other) { return other.id !== part.id; })).slice(0, 2);
+      return { partId: part.id, clue: part.clue, hint: part.hint, choices: shuffle([part.id, others[0].id, others[1].id]) };
+    });
+  }
+  function dinoAnatomyQuizAnswer(state, choice) {
+    var question = state.deck[state.index];
+    if (state.finished || !question || state.answers.length !== state.index || question.choices.indexOf(choice) < 0) return state;
+    return Object.assign({}, state, { answers: state.answers.concat([{ partId: question.partId, choice: choice, correct: choice === question.partId, hintUsed: !!state.hint }]) });
+  }
+  function dinoAnatomyQuizAdvance(state) {
+    if (state.finished || !state.deck.length || state.answers.length !== state.index + 1) return state;
+    return state.index === state.deck.length - 1 ? Object.assign({}, state, { finished: true }) : Object.assign({}, state, { index: state.index + 1, hint: false });
   }
 
   // Place readable callouts in screen space; omit crowded labels rather than
@@ -7837,6 +7972,21 @@ window.StemLab = window.StemLab || {
         var skeletalProfile = skeletalAnatomyProfileFor(props.species);
         var bodyPartDefinitions = dinoBodyPartDefinitions(skeletalProfile.weightBearingForelimbs);
         var selectedBodyPart = bodyPartDefinitions.find(function (part) { return part.id === selectedBodyPartId; });
+        var quizState = React.useState({ speciesId: props.species.id, open: false, deck: [], index: 0, answers: [], hint: false, finished: false, review: '' });
+        var setAnatomyQuiz = quizState[1], anatomyQuiz = quizState[0].speciesId === props.species.id ? quizState[0] : { speciesId: props.species.id, open: false, deck: [], index: 0, answers: [], hint: false, finished: false, review: '' };
+        var quizQuestion = anatomyQuiz.deck[anatomyQuiz.index], quizAnswered = anatomyQuiz.answers.length > anatomyQuiz.index;
+        var quizTarget = quizQuestion && bodyPartDefinitions.find(function (part) { return part.id === quizQuestion.partId; });
+        var quizScore = anatomyQuiz.answers.filter(function (answer) { return answer.correct; }).length;
+        var quizHeadingRef = React.useRef(null), quizNextRef = React.useRef(null), quizStartRef = React.useRef(null), quizRunRef = React.useRef(0);
+        React.useEffect(function () {
+          setAnatomyQuiz(function (old) { return old.speciesId === props.species.id ? old : { speciesId: props.species.id, open: false, deck: [], index: 0, answers: [], hint: false, finished: false, review: '' }; });
+        }, [props.species.id]);
+        React.useEffect(function () {
+          if (!anatomyQuiz.open) return;
+          var target = !quizQuestion ? quizStartRef.current : quizAnswered && !anatomyQuiz.finished ? quizNextRef.current : quizHeadingRef.current;
+          if (target) target.focus({ preventScroll: true });
+        }, [anatomyQuiz.open, anatomyQuiz.deck, anatomyQuiz.index, anatomyQuiz.answers.length, anatomyQuiz.finished]);
+
         var cranialSurface = cranialSurfaceProfileFor(props.species);
         var postcranialSurface = postcranialSurfaceProfileFor(props.species);
         var habitat = habitatProfileFor(props.species);
@@ -11058,6 +11208,61 @@ window.StemLab = window.StemLab || {
           var view = presets[preset] || presets.reset;
           cameraControlRef.current(view.yaw, view.pitch, view.zoom, view.message, preset === 'reset' ? 'full' : null);
         }
+        function showQuizPart(id) {
+          if (props.onLabelModeChange && props.labelMode !== 'anatomy') props.onLabelModeChange('anatomy');
+          selectBodyPart(id);
+        }
+        function startAnatomyQuiz() {
+          quizRunRef.current++;
+          setAnatomyQuiz({ speciesId: props.species.id, open: true, deck: dinoAnatomyQuizDeck(skeletalProfile.weightBearingForelimbs, Date.now() + quizRunRef.current), index: 0, answers: [], hint: false, finished: false, review: '' });
+          selectBodyPart(''); applyCameraPreset('reset');
+        }
+        function renderBodyPartGuide(part) {
+          var source = DINO_ANATOMY_SOURCES[part.source];
+          return el('div', { className: 'dinolab-part-guide', style: { marginTop: 10, fontSize: 12, lineHeight: 1.55, color: T.text } },
+            el('dl', { style: { margin: 0 } }, [['What it does', part.purpose], ['Look for', part.look], ['Fossils and inference', part.evidence]].map(function (row) {
+              return el(React.Fragment, { key: row[0] }, el('dt', { style: { fontWeight: 800, marginTop: 8 } }, row[0]), el('dd', { style: { margin: '2px 0 0', color: T.soft } }, row[1]));
+            })),
+            el('a', { href: source.url, target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '8px 0', color: T.text, textDecoration: 'underline' } }, 'Read more: ' + source.title));
+        }
+        function renderAnatomyQuest() {
+          var buttonStyle = { minHeight: 44, padding: '9px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.panel, color: T.text, fontSize: 13, fontWeight: 800, cursor: 'pointer' };
+          var missed = anatomyQuiz.answers.filter(function (answer) { return !answer.correct; });
+          var reviewPart = bodyPartDefinitions.find(function (part) { return part.id === anatomyQuiz.review; });
+          return el('section', { className: 'dinolab-anatomy-quest', 'aria-label': 'Anatomy Quest', style: { marginTop: 10, maxWidth: 620, border: '1px solid ' + T.border, borderRadius: 10, background: T.deeper, overflow: 'hidden' } },
+            el('button', { type: 'button', 'aria-label': 'Anatomy Quest', 'aria-expanded': anatomyQuiz.open, 'aria-controls': anatomyQuiz.open ? 'dinolab-anatomy-quest-panel' : undefined, onClick: function () { setAnatomyQuiz(function (old) { return Object.assign({}, old, { open: !old.open }); }); }, style: Object.assign({}, buttonStyle, { display: 'block', width: '100%', border: 0, borderRadius: 0, textAlign: 'left', background: anatomyQuiz.open ? '#0f766e' : T.deeper, color: anatomyQuiz.open ? '#fff' : T.text }) }, 'Anatomy Quest · 5 clues'),
+            anatomyQuiz.open ? el('div', { id: 'dinolab-anatomy-quest-panel', style: { padding: 14 } },
+              !quizQuestion ? el('div', null,
+                el('p', { style: { margin: '0 0 12px', color: T.soft, fontSize: 13, lineHeight: 1.55 } }, 'Match five clues to body parts on ' + props.species.common + '. Use hints, explore the model, and learn from every answer. No timer.'),
+                el('button', { ref: quizStartRef, type: 'button', onClick: startAnatomyQuiz, style: Object.assign({}, buttonStyle, { background: '#0f766e', color: '#fff' }) }, 'Start anatomy quiz')) :
+              anatomyQuiz.finished ? el('div', null,
+                el('h3', { ref: quizHeadingRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: 17, fontWeight: 800, color: T.text } }, 'Quest complete: ' + quizScore + ' of ' + anatomyQuiz.deck.length + ' correct'),
+                el('p', { style: { color: T.soft, fontSize: 13 } }, missed.length ? 'Revisit these parts, then try another set of clues.' : 'You connected every clue to its body part. Try another set to keep exploring.'),
+                el('div', { className: 'dinolab-quiz-review', style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 } }, (missed.length ? missed : anatomyQuiz.answers).map(function (answer) {
+                  var part = bodyPartDefinitions.find(function (item) { return item.id === answer.partId; });
+                  return el('button', { key: part.id, type: 'button', onClick: function () { showQuizPart(part.id); setAnatomyQuiz(function (old) { return Object.assign({}, old, { review: part.id }); }); }, style: buttonStyle }, 'Review ' + part.label);
+                })),
+                reviewPart ? el('div', { className: 'dinolab-quiz-review-guide', style: { padding: 10, marginBottom: 12, border: '1px solid ' + T.border, borderRadius: 8 } }, el('strong', { style: { color: T.text } }, reviewPart.label + '. ' + reviewPart.detail), renderBodyPartGuide(reviewPart)) : null,
+                el('button', { type: 'button', onClick: startAnatomyQuiz, style: Object.assign({}, buttonStyle, { background: '#0f766e', color: '#fff' }) }, 'Play another quest')) : el('div', null,
+                el('div', { className: 'dinolab-quiz-progress', style: { color: T.soft, fontSize: 12, fontWeight: 800, marginBottom: 8 } }, 'Clue ' + (anatomyQuiz.index + 1) + ' of ' + anatomyQuiz.deck.length + ' · ' + quizScore + ' correct'),
+                el('h3', { ref: quizHeadingRef, tabIndex: -1, className: 'dinolab-quiz-question', style: { margin: '0 0 12px', color: T.text, fontSize: 15, fontWeight: 800, lineHeight: 1.5 } }, quizQuestion.clue),
+                el('div', { className: 'dinolab-quiz-choices', role: 'group', 'aria-label': 'Choose a body part', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8 } }, quizQuestion.choices.map(function (id) {
+                  var part = bodyPartDefinitions.find(function (item) { return item.id === id; });
+                  var correct = quizAnswered && id === quizTarget.id, picked = quizAnswered && anatomyQuiz.answers[anatomyQuiz.index].choice === id;
+                  return el('button', { key: id, type: 'button', disabled: quizAnswered, onClick: function () { setAnatomyQuiz(function (old) { return dinoAnatomyQuizAnswer(old, id); }); showQuizPart(quizTarget.id); }, style: Object.assign({}, buttonStyle, { textAlign: 'left', opacity: 1, cursor: quizAnswered ? 'default' : 'pointer', background: correct ? '#134e4a' : picked ? '#7f1d1d' : T.panel, color: correct || picked ? '#fff' : T.text, borderColor: correct ? '#5eead4' : picked ? '#fca5a5' : T.border }) }, part.label + (correct ? ' — correct answer' : picked ? ' — your choice' : ''));
+                })),
+                !quizAnswered ? el('div', { style: { marginTop: 10 } },
+                  el('button', { type: 'button', disabled: anatomyQuiz.hint, onClick: function () { setAnatomyQuiz(function (old) { return Object.assign({}, old, { hint: true }); }); }, style: Object.assign({}, buttonStyle, { fontSize: 12 }) }, anatomyQuiz.hint ? 'Hint shown' : 'Need a hint?'),
+                  anatomyQuiz.hint ? el('p', { role: 'status', style: { color: T.soft, fontSize: 13, lineHeight: 1.5 } }, quizQuestion.hint) : null) : null,
+                quizAnswered ? el('div', { className: 'dinolab-quiz-feedback', style: { marginTop: 12, padding: 12, border: '1px solid ' + T.border, borderRadius: 8 } },
+                  el('p', { role: 'status', 'aria-live': 'polite', style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, (anatomyQuiz.answers[anatomyQuiz.index].correct ? 'Correct. ' : 'The answer is ' + quizTarget.label + '. ') + quizTarget.detail),
+                  renderBodyPartGuide(quizTarget),
+                  el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 } },
+                    el('button', { type: 'button', onClick: function () { showQuizPart(quizTarget.id); }, style: buttonStyle }, 'Show answer on model'),
+                    el('button', { ref: quizNextRef, type: 'button', onClick: function () { setAnatomyQuiz(dinoAnatomyQuizAdvance); selectBodyPart(''); applyCameraPreset('reset'); }, style: Object.assign({}, buttonStyle, { background: '#0f766e', color: '#fff' }) }, anatomyQuiz.index === anatomyQuiz.deck.length - 1 ? 'See results' : 'Next clue'))) : null),
+              !props.showBody && !props.showSkeleton ? el('p', { style: { color: T.soft, fontSize: 12, lineHeight: 1.5 } }, 'The text quiz works with the model hidden. Turn on a model layer to see its landmarks.') : null
+            ) : null);
+        }
         function selectBodyPart(id) {
           var part = bodyPartDefinitions.find(function (item) { return item.id === id; });
           selectedBodyPartRef.current = part ? part.id : '';
@@ -11219,6 +11424,7 @@ var evidenceRoute = [
                 style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (selected ? '#0f766e' : T.border), background: selected ? '#0f766e' : T.deeper, color: selected ? '#ffffff' : T.text, cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, label);
             })
           ),
+          renderAnatomyQuest(),
           el('div', { className: 'dinolab-body-label-controls', style: { marginTop: 10 } },
             el('button', { type: 'button', 'aria-pressed': props.labelMode === 'anatomy' ? 'true' : 'false', onClick: function () { notifyOrientationInteraction(); if (props.onLabelModeChange) props.onLabelModeChange(props.labelMode === 'anatomy' ? 'key' : 'anatomy'); },
               style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: props.labelMode === 'anatomy' ? '#0f766e' : T.deeper, color: props.labelMode === 'anatomy' ? '#ffffff' : T.text, fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.dinolab.body_part_labels', 'Body-part labels')),
@@ -11232,6 +11438,7 @@ var evidenceRoute = [
               el('div', { id: 'dinolab-part-explanation', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { marginTop: 8, fontSize: 12, lineHeight: 1.55, color: T.text } },
                 selectedBodyPart ? el('strong', null, selectedBodyPart.label + '. ') : null,
                 selectedBodyPart ? selectedBodyPart.detail : 'Choose a part to frame its region and keep its callout visible. You can still rotate and zoom.'),
+              selectedBodyPart ? renderBodyPartGuide(selectedBodyPart) : null,
               selectedBodyPart ? el('p', { ref: bodyPartVisibilityRef, className: 'dinolab-part-visibility', style: { color: T.soft, margin: '6px 0 0', fontSize: 11.5, lineHeight: 1.5 } }, 'Locating the selected part…') : null
             ) : null,
             props.labelMode === 'anatomy' ? el('details', { className: 'dinolab-body-part-key', style: { marginTop: 8, color: T.text, fontSize: 12, lineHeight: 1.5 } },

@@ -1,0 +1,15 @@
+{
+  "violations": [],
+  "allTenGuides": true,
+  "quadrupedLabels": true,
+  "hiddenLayerQuiz": true,
+  "speciesReset": true,
+  "after": {
+    "model": "37C58377-6556-47E8-BEA9-6151722DB9AF",
+    "geometries": 2,
+    "textures": 3,
+    "errors": [],
+    "lost": false,
+    "shaderFailures": 0
+  }
+}
