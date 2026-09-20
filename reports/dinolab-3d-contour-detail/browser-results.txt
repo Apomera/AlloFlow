@@ -1,0 +1,21 @@
+
+Running 7 tests using 1 worker
+
+
+(node:12112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+
+(node:12112) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:28:81 › microraptor shows rooted continuous plumage
+[2/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:28:81 › yutyrannus shows rooted continuous plumage
+[3/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:28:81 › sinosauropteryx shows rooted continuous plumage
+[4/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:68:5 › Tyrannosaurus alternative is restricted to a speculative dorsal tract
+[5/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:76:5 › Psittacosaurus bristles never become an inferred full coat
+[6/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:80:5 › coat stays rooted during motion and follows opacity without rebuilding
+[7/7] [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts:98:5 › Velociraptor minimum keeps forearm feathers without claiming a preserved body coat
+  Slow test file: [chromium] › tests\e2e\dinolab-3d-feather-evidence.spec.ts (7.8m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  7 passed (8.6m)

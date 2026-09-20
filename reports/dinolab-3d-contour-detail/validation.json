@@ -1,0 +1,62 @@
+{
+  "unitTests": 53,
+  "unitSuites": 5,
+  "browserScenarios": 8,
+  "reviewedImages": [
+    "anchiornis-life.png",
+    "anchiornis-body-detail.png",
+    "microraptor-body-detail.png",
+    "microraptor-phone.png",
+    "sinosauropteryx-life.png",
+    "yutyrannus-life.png"
+  ],
+  "mirrors": [
+    {
+      "path": "stem_lab/stem_tool_dinolab.js",
+      "sha256": "29cd4bf2da47c57de096945b0abbe33af5e186cd7c22b32f387b1d2eb93550c8"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_dinolab.js",
+      "sha256": "29cd4bf2da47c57de096945b0abbe33af5e186cd7c22b32f387b1d2eb93550c8"
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "29cd4bf2da47c57de096945b0abbe33af5e186cd7c22b32f387b1d2eb93550c8"
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_dinolab.js",
+      "sha256": "29cd4bf2da47c57de096945b0abbe33af5e186cd7c22b32f387b1d2eb93550c8"
+    }
+  ],
+  "geometry": {
+    "pennaceousVerticesPerFeather": 27,
+    "previousVerticesPerFeather": 12,
+    "additionalTextures": 0
+  },
+  "motion": {
+    "gap": 0,
+    "travel": 0.00005220188838238443,
+    "scaleBefore": [
+      1,
+      1.0104943789527847,
+      1.0058302105293249
+    ],
+    "scaleAfter": [
+      1,
+      1.0173309457388018,
+      1.0096283031882232
+    ]
+  },
+  "resources": {
+    "before": {
+      "geometries": 419,
+      "textures": 8
+    },
+    "after": {
+      "geometries": 419,
+      "textures": 8
+    }
+  },
+  "axeViolations": 0,
+  "deployed": false
+}

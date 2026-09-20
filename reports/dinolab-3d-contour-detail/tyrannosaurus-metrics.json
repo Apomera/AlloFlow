@@ -1,0 +1,25 @@
+{
+  "coats": [
+    {
+      "region": "torso",
+      "roots": 198,
+      "pennaceous": false,
+      "dorsalOnly": true,
+      "vertices": 7128,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 1,
+      "transparent": false
+    }
+  ],
+  "invalid": 0,
+  "outside": 0,
+  "errors": [],
+  "lost": false,
+  "geometries": 169,
+  "textures": 7,
+  "shaderFailures": 0
+}

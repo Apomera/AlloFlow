@@ -6636,7 +6636,7 @@ window.StemLab = window.StemLab || {
       totalArea += area; triangles.push({ ids: [ia, ib, ic], end: totalArea });
     }
     if (!triangles.length || !(options.length > 0) || !(options.count > 0)) return null;
-    var positions = [], normalData = [], rootPositions = [], rootNormals = [], colors = [], uvs = [], indices = [];
+    var positions = [], normalData = [], rootPositions = [], rootNormals = [], colors = [], uvs = [], vanes = [], indices = [];
     var count = Math.min(1600, Math.round(options.count));
     for (var rootIndex = 0; rootIndex < count; rootIndex++) {
       var areaPick = (rootIndex + random()) / count * totalArea, low = 0, high = triangles.length - 1;
@@ -6657,18 +6657,26 @@ window.StemLab = window.StemLab || {
       var shade = 0.90 + random() * 0.12, blades = pennaceous ? 1 : 3;
       for (var blade = 0; blade < blades; blade++) {
         var start = positions.length / 3, fan = pennaceous ? 0 : (blade - 1) * 0.22;
-        var breadth = length * (pennaceous ? 0.29 : 0.055);
-        for (var row = 0; row <= 5; row++) {
-          var t = row / 5, width = breadth * Math.pow(Math.sin(Math.PI * t), pennaceous ? 0.65 : 0.9);
-          var lift = length * (0.015 + (pennaceous ? 0.24 : 0.64) * t - 0.08 * t * t);
+        var breadth = length * (pennaceous ? 0.18 : 0.055), rows = pennaceous ? 8 : 5, columns = pennaceous ? 2 : 1;
+        // A narrow, cambered vane lays along the skin instead of reading as a flat scale.
+        for (var row = 0; row <= rows; row++) {
+          var t = row / rows, envelope = Math.sin(Math.PI * t);
+          var width = breadth * Math.pow(envelope, pennaceous ? 0.85 : 0.9) * (pennaceous ? 1 - t * 0.24 : 1);
+          var lift = length * (pennaceous ? 0.015 + 0.18 * t - 0.10 * t * t + 0.065 * envelope : 0.015 + 0.64 * t - 0.08 * t * t);
           var point = root.clone().addScaledVector(along, length * t).addScaledVector(n, lift).addScaledVector(across, fan * length * t * t);
-          for (var side = -1; side <= 1; side += 2) {
-            var p = point.clone().addScaledVector(across, width * side);
+          for (var column = 0; column <= columns; column++) {
+            var side = column / columns * 2 - 1;
+            var p = point.clone().addScaledVector(across, width * side)
+              .addScaledVector(n, pennaceous ? length * 0.028 * envelope * (1 - side * side) : 0);
             positions.push(p.x, p.y, p.z); normalData.push(n.x, n.y, n.z);
             rootPositions.push(root.x, root.y, root.z); rootNormals.push(n.x, n.y, n.z);
-            var tone = shade * (0.92 + 0.08 * t); colors.push(tone, tone, tone); uvs.push(rootU, (side + 1) / 2);
+            var tone = shade * (pennaceous ? 0.96 + 0.04 * t : 0.92 + 0.08 * t); colors.push(tone, tone, tone); uvs.push(rootU, (side + 1) / 2);
+            vanes.push(side, t, pennaceous ? 1 : 0);
+            if (row < rows && column < columns) {
+              var base = start + row * (columns + 1) + column;
+              indices.push(base, base + 1, base + columns + 1, base + 1, base + columns + 2, base + columns + 1);
+            }
           }
-          if (row < 5) { var base = start + row * 2; indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2); }
         }
       }
     }
@@ -6679,7 +6687,19 @@ window.StemLab = window.StemLab || {
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
     geometry.setAttribute('dinoCoatRoot', new THREE.Float32BufferAttribute(rootPositions, 3));
     geometry.setAttribute('dinoCoatNormal', new THREE.Float32BufferAttribute(rootNormals, 3));
-    geometry.setIndex(indices); geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+    geometry.setAttribute('dinoCoatVane', new THREE.Float32BufferAttribute(vanes, 3));
+    geometry.setIndex(indices);
+    if (options.pennaceous) {
+      geometry.computeVertexNormals();
+      // Coincident root/tip vertices have no triangle area; retain a valid skin normal there.
+      var coatNormals = geometry.attributes.normal;
+      for (var vertex = 0; vertex < coatNormals.count; vertex++) {
+        if (a.fromBufferAttribute(coatNormals, vertex).lengthSq() < 0.5) {
+          coatNormals.setXYZ(vertex, rootNormals[vertex * 3], rootNormals[vertex * 3 + 1], rootNormals[vertex * 3 + 2]);
+        }
+      }
+    }
+    geometry.computeBoundingBox(); geometry.computeBoundingSphere();
     geometry.parameters = { roots: count, pennaceous: !!options.pennaceous, length: options.length, dorsalOnly: !!options.dorsalOnly };
     return geometry;
   }
@@ -6856,6 +6876,31 @@ window.StemLab = window.StemLab || {
         THREE.ShaderChunk.roughnessmap_fragment.replace('texture2D( roughnessMap, vUv )', 'dinoSampleSkin( roughnessMap, vDinoSkinPosition )'));
     };
     material.customProgramCacheKey = function () { return 'dinolab-specimen-skin-v2'; };
+    return material;
+  }
+
+  // Feather-local detail is independent of the fossil-informed pigment coordinates.
+  // Filter the fine barbs with screen derivatives so distant coats do not shimmer.
+  function dinoCoatShading(material) {
+    var skinCompile = material.onBeforeCompile;
+    material.extensions = Object.assign({}, material.extensions, { derivatives: true });
+    material.onBeforeCompile = function (shader) {
+      skinCompile.call(this, shader);
+      shader.vertexShader = 'attribute vec3 dinoCoatVane;\nvarying vec3 vDinoCoatVane;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvDinoCoatVane = dinoCoatVane;');
+      shader.fragmentShader = 'varying vec3 vDinoCoatVane;\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
+        '#include <color_fragment>',
+        'float coatAcross = abs(vDinoCoatVane.x);',
+        'float coatPhase = (vDinoCoatVane.y * 22.0 - coatAcross * 4.0) * 6.283185;',
+        'float coatResolved = 1.0 - smoothstep(0.6, 3.0, fwidth(coatPhase));',
+        'float coatBarbs = sin(coatPhase) * coatResolved;',
+        'float coatShaft = (1.0 - smoothstep(0.025, 0.09 + fwidth(coatAcross), coatAcross))',
+        '  * smoothstep(0.05, 0.2, vDinoCoatVane.y) * (1.0 - smoothstep(0.80, 1.0, vDinoCoatVane.y));',
+        'diffuseColor.rgb *= 1.0 + vDinoCoatVane.z * (0.035 * coatBarbs + 0.045 * coatShaft);'
+      ].join('\n'));
+    };
+    material.customProgramCacheKey = function () { return 'dinolab-contour-feathers-v1'; };
     return material;
   }
 
@@ -8100,6 +8145,7 @@ window.StemLab = window.StemLab || {
               contourCoatMat.bumpMap = null; contourCoatMat.roughnessMap = null;
               contourCoatMat.roughness = 0.96;
               dinoSkinMapping(THREE, contourCoatMat, Math.max(len * 0.20, ht * 0.60), 0.07, integument);
+              dinoCoatShading(contourCoatMat);
             }
             // A shared, restrained barb pattern follows each vane's own UVs.
             if (props.showBody && (surfaceHypothesis.wingFeathers || surfaceHypothesis.hindWingFeathers || surfaceHypothesis.tailFan || surfaceHypothesis.tailFrond)) {

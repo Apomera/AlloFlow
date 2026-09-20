@@ -17,8 +17,9 @@ async function inspect(page){return page.evaluate(()=>{
  const w=window as any,T=w.THREE,scene=w.__coatScene,cam=w.__coatCamera,model=scene.getObjectByName('dinolab-specimen');scene.updateMatrixWorld(true);cam.updateMatrixWorld(true);
  const coats:any[]=[];let invalid=0,outside=0;model.traverse(p=>{
   if(p.userData.dinoFeature!=='contour-plumage')return;
-  const pos=p.geometry.attributes.position,roots=p.geometry.attributes.dinoCoatRoot;
-  for(let i=0;i<pos.count;i++){const v=new T.Vector3().fromBufferAttribute(pos,i).applyMatrix4(p.matrixWorld).project(cam);if(!Number.isFinite(v.x+v.y+v.z))invalid++;if(Math.abs(v.x)>1||Math.abs(v.y)>1||Math.abs(v.z)>1)outside++;}
+  const pos=p.geometry.attributes.position,roots=p.geometry.attributes.dinoCoatRoot,vane=p.geometry.attributes.dinoCoatVane;
+  if(!vane||vane.count!==pos.count||p.material.customProgramCacheKey()!=='dinolab-contour-feathers-v1')invalid++;
+  for(let i=0;i<pos.count;i++){const v=new T.Vector3().fromBufferAttribute(pos,i).applyMatrix4(p.matrixWorld).project(cam);if(!Number.isFinite(v.x+v.y+v.z)||(vane&&!Number.isFinite(vane.getX(i)+vane.getY(i)+vane.getZ(i))))invalid++;if(Math.abs(v.x)>1||Math.abs(v.y)>1||Math.abs(v.z)>1)outside++;}
   if(p.parent.userData.dinoRegion!==p.userData.dinoRegion||pos.count!==roots.count||!p.geometry.attributes.dinoSkinRegion)invalid++;
   coats.push({region:p.userData.dinoRegion,roots:p.geometry.parameters.roots,pennaceous:p.geometry.parameters.pennaceous,dorsalOnly:p.geometry.parameters.dorsalOnly,vertices:pos.count,position:p.position.toArray(),opacity:p.material.opacity,transparent:p.material.transparent});
  });return {coats,invalid,outside,errors:w.__events.errors,lost:w.__glLive().lost,geometries:w.__coatRenderer.info.memory.geometries,textures:w.__coatRenderer.info.memory.textures,shaderFailures:w.__coatRenderer.info.programs.filter(p=>p.diagnostics&&p.diagnostics.runnable===false).length};
@@ -31,6 +32,11 @@ for(const id of ['microraptor','anchiornis','yutyrannus','sinosauropteryx'])test
  expect(result.coats.every(p=>p.opacity===1&&!p.transparent)).toBe(true);
  expect(result.coats.every(p=>p.pennaceous===['microraptor','anchiornis'].includes(id))).toBe(true);
  await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+id+'-life.png'});
+ if(id==='anchiornis'||id==='microraptor'){
+  await page.getByRole('button',{name:'Study body details',exact:true}).click();
+  await page.locator('.dinolab-3d-canvas').screenshot({path:report+'/'+id+'-body-detail.png'});
+  await page.getByRole('button',{name:'Study whole animal',exact:true}).click();check(await inspect(page));
+ }
  await page.getByRole('button',{name:/^Compare coverings:/}).click();
  await page.getByText('Why this covering?',{exact:true}).click();await expect(page.locator('.dinolab-covering-evidence')).toContainText('Supported:');await expect(page.locator('.dinolab-covering-evidence a')).toHaveAttribute('href',/^https:\/\/doi.org\//);
  if(id==='microraptor'){
