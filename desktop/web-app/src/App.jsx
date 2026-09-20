@@ -34625,6 +34625,10 @@ const parseTaggedContent = (text) => {
       canvasRecoveryPendingSaveCountRef.current = 0;
       canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
       clearCanvasWorkspaceState();
+      // A new workspace needs setup even if the previous one completed or skipped it.
+      try { safeRemoveItem('allo_wizard_completed'); } catch (_) {}
+      setWizardInitialMode(null);
+      setShowWizard(true);
       setPendingSync(false);
       setCanvasRecoveryError('');
       setCanvasRecoveryDecisionMade(true);

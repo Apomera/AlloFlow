@@ -1,0 +1,159 @@
+{
+  "phase": "after",
+  "checkedAt": "2026-09-20T14:25:53.575Z",
+  "freshHandlerSha256": "a51b806ed2ebb50be3861ac0995d69c339c7792ae356977c9f532bd61d0cca36",
+  "results": [
+    {
+      "name": "completed-cached",
+      "visible": true,
+      "requests": 0,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": true,
+        "wizardInitialMode": null,
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": null,
+      "dialogText": "Quick Start\n\nStep 1 of 4\n\nNext",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "guided-cached",
+      "visible": true,
+      "requests": 0,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": true,
+        "wizardInitialMode": null,
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": null,
+      "dialogText": "Quick Start\n\nStep 1 of 4\n\nNext",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "cold-mobile",
+      "visible": true,
+      "requests": 1,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": true,
+        "wizardInitialMode": null,
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": null,
+      "dialogText": "Quick Start\n\nStep 1 of 4\n\nNext",
+      "scrollWidth": 320,
+      "width": 320,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "cold-role-selection",
+      "visible": true,
+      "requests": 1,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": true,
+        "wizardInitialMode": null,
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": null,
+      "dialogText": "Quick Start\n\nStep 1 of 4\n\nNext",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    }
+  ]
+}

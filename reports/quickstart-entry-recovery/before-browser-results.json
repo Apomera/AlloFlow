@@ -1,0 +1,159 @@
+{
+  "phase": "before",
+  "checkedAt": "2026-09-20T14:23:08.727Z",
+  "freshHandlerSha256": "1d595979d4ac740caa58df6ec4b2e9d482d57c43c398d226d4962f767fe964d8",
+  "results": [
+    {
+      "name": "completed-cached",
+      "visible": false,
+      "requests": 0,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": false,
+        "wizardInitialMode": "search",
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": "true",
+      "dialogText": "",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "guided-cached",
+      "visible": false,
+      "requests": 0,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": false,
+        "wizardInitialMode": "search",
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": "true",
+      "dialogText": "",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "cold-mobile",
+      "visible": false,
+      "requests": 0,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": false,
+        "wizardInitialMode": "search",
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": "true",
+      "dialogText": "",
+      "scrollWidth": 320,
+      "width": 320,
+      "errors": [],
+      "external": []
+    },
+    {
+      "name": "cold-role-selection",
+      "visible": false,
+      "requests": 1,
+      "saved": {
+        "id": "saved-original",
+        "title": "Previous reading",
+        "savedAt": "2026-09-19T10:00:00Z",
+        "resourceCount": 1,
+        "workspace": {
+          "history": [
+            {
+              "id": "original",
+              "type": "source",
+              "data": {
+                "text": "Preserve this exact original reading."
+              }
+            }
+          ]
+        }
+      },
+      "state": {
+        "showWizard": false,
+        "wizardInitialMode": "search",
+        "guidedMode": false,
+        "hasSelectedRole": true,
+        "isTeacherMode": true,
+        "revision": 1,
+        "snapshotCount": 1,
+        "oldText": "Preserve this exact original reading."
+      },
+      "completed": "true",
+      "dialogText": "",
+      "scrollWidth": 1280,
+      "width": 1280,
+      "errors": [],
+      "external": []
+    }
+  ]
+}

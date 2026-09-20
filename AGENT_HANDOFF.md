@@ -101,6 +101,8 @@ Recent validation from the desktop work:
 
 ## Work Log
 
+- 2026-09-20 | Codex | Quick Start fresh-workspace fix VERIFIED: clear the prior completion marker and initial source mode, then reopen setup when Start a fresh workspace is selected. All three shells synchronized and parsed. Before: 4/6 new tests fail and all four real-button browser fixtures skip setup. After: 69 passing tests, 1 existing skip; four Chromium cases open and advance setup, preserve saved work, and report no errors. Background pump and role gating unchanged. Scope: shells, tests/quickstart_fresh_workspace.test.js, reports/quickstart-entry-recovery. Preparing a focused release from an isolated checkout; preserve concurrent STEM/UI work.
+
 - 2026-09-20 | Codex | Collective release COMPLETE: user-authorized all-work source f5b045fc9 and generated c1bd2e5cf pushed to GitHub and Codeberg. All blocking deploy preflight checks, hosted/desktop builds, desktop artifact verification, and resumed deploy.sh steps6–10 passed. Recovered an abandoned index lock before final commit without bypassing checks. Cloudflare Pages succeeded;21/21 additional live SHA-256 checks and actual Chromium startup passed, screenshot visually checked. Full CI still has failures (known manifest/visual baseline issues plus results detailed in release-ci-snapshot.json); separate Workers build failed. Firebase intentionally unconfigured; no new installer or Apps Script deployment. Release/evidence: reports/homework-mailbox-reliability/RELEASE.md.
 
 

@@ -1,0 +1,16 @@
+  const startFreshCanvasWorkspace = () => {
+      canvasRecoverySaveTokenRef.current += 1;
+      canvasRecoveryPendingSaveCountRef.current = 0;
+      canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
+      clearCanvasWorkspaceState();
+      setPendingSync(false);
+      setCanvasRecoveryError('');
+      setCanvasRecoveryDecisionMade(true);
+      setCanvasRecoveryDialogMode(null);
+      setCanvasRecoverySaveStatus('idle');
+      setLastSaved(null);
+      setCanvasRecoveryRevision(value => value + 1);
+      addToast(canvasRecoveryStoreRef.current.snapshots.length > 0
+          ? 'Fresh workspace started. Your previous saved work is still available on this device.'
+          : 'Fresh workspace started.', 'info');
+  };
